@@ -351,6 +351,9 @@ export interface InsertDeleteEventArgs {
     freezePane?: boolean;
 }
 
+/**
+ * Data source changed event options.
+ */
 export interface DataSourceChangedEventArgs {
     data?: Object[];
     action?: string;

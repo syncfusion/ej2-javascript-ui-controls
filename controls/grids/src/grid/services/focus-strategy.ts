@@ -24,6 +24,8 @@ export class FocusStrategy {
     public content: IFocus; public header: IFocus; public active: IFocus;
     public fContent: IFocus; public fHeader: IFocus;
     public frContent: IFocus; public frHeader: IFocus;
+    /** @hidden */
+    public isInfiniteScroll: boolean = false;
     private forget: boolean = false;
     private skipFocus: boolean = true;
     private focusByClick: boolean = false;
@@ -187,7 +189,7 @@ export class FocusStrategy {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
             } else {
-                if (this.isVirtualScroll) {
+                if (this.isVirtualScroll || this.isInfiniteScroll) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
                 } else {
@@ -195,7 +197,7 @@ export class FocusStrategy {
                 }
             }
         }
-        this.isVirtualScroll = false;
+        this.isVirtualScroll = this.isInfiniteScroll = false;
     }
 
     public getFocusedElement(): HTMLElement {
@@ -273,6 +275,7 @@ export class FocusStrategy {
 
     protected addFocus(info: FocusInfo, e?: KeyboardEventArgs): void {
         this.currentInfo = info; this.currentInfo.outline = info.outline && !isNullOrUndefined(e);
+        if (this.isInfiniteScroll) { this.currentInfo.outline = true; }
         if (!info.element) { return; }
         const isFocused: boolean = info.elementToFocus.classList.contains('e-focus');
         if (isFocused) { return; }

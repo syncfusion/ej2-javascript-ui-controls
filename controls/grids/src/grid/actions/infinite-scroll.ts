@@ -9,8 +9,8 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import * as events from '../base/constant';
 import { Grid } from '../base/grid';
-import { getScrollBarWidth, ensureLastRow, ensureFirstRow, getEditedDataIndex, resetRowIndex, setRowElements } from '../base/util';
-import { Action, freezeTable } from '../base/enum';
+import { getScrollBarWidth, getEditedDataIndex, resetRowIndex, setRowElements } from '../base/util';
+import { Action, freezeTable, FocusKeys } from '../base/enum';
 import { ColumnWidthService } from '../services/width-controller';
 import * as literals from '../base/string-literals';
 
@@ -34,12 +34,12 @@ export class InfiniteScroll implements IAction {
     private top: number;
     private enableContinuousScroll: boolean = false;
     private initialRender: boolean = true;
-    private pressedKey: string;
+    private pressedKey: FocusKeys;
     private isRemove: boolean = false;
     private isInitialCollapse: boolean = false;
     protected prevScrollTop: number = 0;
     private actions: string[] = ['filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'sorting', 'refresh'];
-    private keys: string[] = ['downArrow', 'upArrow', 'PageUp', 'PageDown'];
+    private keys: FocusKeys[] = [literals.downArrow, literals.upArrow, literals.enter, literals.shiftEnter];
     private rowIndex: number;
     protected cellIndex: number;
     private rowTop: number = 0;
@@ -113,6 +113,7 @@ export class InfiniteScroll implements IAction {
         this.parent.on(events.modelChanged, this.modelChanged, this);
         this.parent.on(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.contentReady, this.selectNewRow, this);
         this.actionBeginFunction = this.actionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
         this.parent.on(events.deleteComplete, this.deleteComplate, this);
@@ -148,6 +149,7 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.modelChanged, this.modelChanged);
         this.parent.off(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.contentReady, this.selectNewRow);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
     }
@@ -670,32 +672,42 @@ export class InfiniteScroll implements IAction {
     }
 
     private infiniteCellFocus(e: CellFocusArgs): void {
-        if (e.byKey && (e.keyArgs.action === 'upArrow' || e.keyArgs.action === 'downArrow')) {
-            this.pressedKey = e.keyArgs.action;
-            const ele: Element = document.activeElement;
-            const rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.ariaRowIndex), 10);
-            const scrollEle: Element = this.parent.getContent().firstElementChild;
-            this.rowIndex = e.keyArgs.action === 'downArrow' ? rowIndex + 1 : rowIndex - 1;
-            this.cellIndex = parseInt(ele.getAttribute(literals.ariaColIndex), 10);
-            const row: Element = this.parent.getRowByIndex(rowIndex);
-            const visibleRowCount: number = Math.floor((scrollEle as HTMLElement).offsetHeight / this.parent.getRowHeight());
-            if (!row || ensureLastRow(row, this.parent) || ensureFirstRow(row, this.rowTop)) {
-                const height: number = row ? row.getBoundingClientRect().height : this.parent.getRowHeight();
-                if (!this.parent.infiniteScrollSettings.enableCache) {
-                    if (e.keyArgs.action === 'downArrow' && (ensureLastRow(row, this.parent) || !row)) {
-                        const nTop: number = (this.rowIndex - visibleRowCount) * height;
-                        const oTop: number = scrollEle.scrollTop + this.parent.getRowHeight();
-                        scrollEle.scrollTop = nTop < oTop ? oTop : nTop;
+        const gObj: IGrid = this.parent;
+        if (e.byKey) {
+            const cell: Element = document.activeElement;
+            let rowIndex: number = parseInt(cell.parentElement.getAttribute(literals.ariaRowIndex), 10);
+            this.cellIndex = parseInt(cell.getAttribute(literals.ariaColIndex), 10);
+            const content: Element = gObj.getContent().firstElementChild;
+            const totalRowsCount: number = (this.maxPage * gObj.pageSettings.pageSize) - 1;
+            const visibleRowCount: number = Math.floor((content as HTMLElement).offsetHeight / this.parent.getRowHeight());
+            const contentRect: ClientRect = content.getBoundingClientRect();
+            if (!isNaN(rowIndex)) {
+                if (e.keyArgs.action === literals.downArrow || e.keyArgs.action === literals.enter) {
+                    this.rowIndex = rowIndex += 1;
+                    const row: Element = gObj.getRowByIndex(rowIndex);
+                    const rowRect: ClientRect = row && row.getBoundingClientRect();
+                    if (gObj.infiniteScrollSettings.enableCache) {
+                        rowIndex = (cell.parentElement as HTMLTableRowElement).rowIndex + 1;
                     }
-                    if (e.keyArgs.action === 'upArrow' && ensureFirstRow(row, this.rowTop)) {
-                        scrollEle.scrollTop = this.rowIndex * height;
+                    if ((!row && rowIndex < totalRowsCount) || (rowRect && rowRect.bottom >= contentRect.bottom)) {
+                        this.pressedKey = e.keyArgs.action;
+                        content.scrollTop = (rowIndex - visibleRowCount) * this.parent.getRowHeight();
+                    }
+                } else if (e.keyArgs.action === literals.upArrow || e.keyArgs.action === literals.shiftEnter) {
+                    this.rowIndex = rowIndex -= 1;
+                    const row: Element = gObj.getRowByIndex(rowIndex);
+                    const rowRect: ClientRect = row && row.getBoundingClientRect();
+                    if (gObj.infiniteScrollSettings.enableCache) {
+                        rowIndex = (cell.parentElement as HTMLTableRowElement).rowIndex - 1;
+                    }
+                    if (!row || rowRect.top <= contentRect.top) {
+                        this.pressedKey = e.keyArgs.action;
+                        content.scrollTop = rowIndex * this.parent.getRowHeight();
                     }
                 }
-            } else {
-                this.pressedKey = this.empty as string;
             }
         } else if ((e as KeyboardEventArgs).key === 'PageDown' || (e as KeyboardEventArgs).key === 'PageUp') {
-            this.pressedKey = (e as KeyboardEventArgs).key;
+            this.pressedKey = (e as KeyboardEventArgs).key as FocusKeys;
         }
     }
 
@@ -822,8 +834,6 @@ export class InfiniteScroll implements IAction {
                     scrollEle.scrollTop = this.top;
                 }
                 setRowElements(this.parent);
-                this.selectNewRow(e.tbody, e.args.startIndex);
-                this.pressedKey = undefined;
             }
             this.restoreInfiniteAdd();
             this.isScroll = true;
@@ -831,30 +841,36 @@ export class InfiniteScroll implements IAction {
         this.isInfiniteScroll = false;
     }
 
-    private selectNewRow(tbody: Element, startIndex: number): void {
+    private selectNewRow(args: { direction: string }): void {
+        const gObj: IGrid = this.parent;
         const row: Element = this.parent.getRowByIndex(this.rowIndex);
-        if (this.keys.some((value: string) => value === this.pressedKey)) {
-            if (this.pressedKey === 'downArrow' || (this.parent.infiniteScrollSettings.enableCache && this.pressedKey === 'upArrow')) {
-                setTimeout(
-                    () => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const target: any = (<{ cells?: HTMLElement[] }>row).cells[0];
-                        target.focus({ preventScroll: true });
-                        this.parent.selectRow(this.rowIndex);
-                        this.parent.getContent().firstElementChild.scrollTop += this.parent.getRowHeight();
-                    },
-                    0);
-            }
-            if (this.pressedKey === 'PageDown') {
-                const row: Element = this.parent.getRowByIndex(startIndex);
-                if (row) {
-                    (<{ cells?: HTMLElement[] }>row).cells[0].focus();
+        if (row && this.keys.some((value: string) => value === this.pressedKey)) {
+            const content: Element = gObj.getContent().firstElementChild;
+            const rowHeight: number = gObj.getRowHeight();
+            const target: HTMLTableCellElement = (row as HTMLTableRowElement).cells[this.cellIndex];
+            const cache: boolean = gObj.infiniteScrollSettings.enableCache;
+            if ((this.pressedKey === literals.downArrow || this.pressedKey === literals.enter)
+                || (cache && (this.pressedKey === literals.upArrow || this.pressedKey === literals.shiftEnter))) {
+                if (!cache && this.pressedKey !== literals.upArrow && this.pressedKey !== literals.shiftEnter) {
+                    content.scrollTop = content.scrollTop + rowHeight;
                 }
+                gObj.focusModule.isInfiniteScroll = true;
+                gObj.focusModule.onClick({ target }, true);
+                gObj.selectRow(this.rowIndex);
             }
-            if (this.pressedKey === 'PageUp') {
-                (<{ cells?: HTMLElement[] }>tbody.querySelector('.' + literals.row)).cells[0].focus();
+        } else if (this.pressedKey === literals.pageDown || this.pressedKey === literals.pageUp) {
+            const focusMatrix: number[] = gObj.focusModule.content.matrix.current;
+            const rows: Element[] = gObj.getRows();
+            let row: Element = rows[rows.length - gObj.pageSettings.pageSize];
+            if (args.direction === 'up') {
+                row = rows[gObj.pageSettings.pageSize];
+            }
+            if (row) {
+                const target: HTMLTableCellElement = (row as HTMLTableRowElement).cells[focusMatrix[1]];
+                gObj.focusModule.onClick({ target }, true);
             }
         }
+        this.pressedKey = undefined;
     }
 
     private removeInfiniteCacheRows(e: { args: InfiniteScrollArgs }): void {

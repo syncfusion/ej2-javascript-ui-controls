@@ -951,12 +951,26 @@ export class Render {
         /* eslint-disable-next-line */
         let column: string = args.column.field === '0.formattedText' ? '0.formattedText' : (args.column.customAttributes as any).cell.valueSort.levelName;
         this.parent.resizeInfo[column] = Number(args.column.width.toString().split('px')[0]);
+        (this.parent.grid.columns[this.parent.grid.columns.length - 1] as ColumnModel).minWidth = this.parent.gridSettings.columnWidth;
+        this.parent.layoutRefresh();
         this.setGroupWidth(args);
         this.calculateGridHeight(true);
         this.parent.grid.hideScroll();
     }
 
     private setGroupWidth(args: ResizeArgs): void {
+        if (this.parent.enableVirtualization) {
+            if (args.column.field === '0.formattedText') {
+                if (this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) && Number(args.column.width.toString().split('px')[0]) < 250) {
+                    args.cancel = true;
+                }
+                else {
+                    (this.parent.element.querySelector('.e-frozenscrollbar') as any).style.width = args.column.width.toString().split('px')[0] + 'px';
+                }
+            } else {
+                args.cancel = true;
+            }
+        }
         if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
             this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
             this.parent.groupingBarModule.refreshUI();
@@ -975,6 +989,7 @@ export class Render {
             let firstRowHeight: number = (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight;
             (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = firstRowHeight + 'px';
         }
+        this.parent.resizedValue = args.cancel ? this.parent.resizedValue : Number(args.column.width.toString().split('px')[0]);
         this.parent.trigger(args.e.type === 'touchend' || args.e.type === 'mouseup' ? events.resizeStop : events.resizing, args);
     }
 
@@ -1496,6 +1511,7 @@ export class Render {
     }
 
     public calculateColWidth(colCount: number): number {
+        this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
         let offsetWidth: number = this.parent.element.offsetWidth ? this.parent.element.offsetWidth :
             this.parent.element.getBoundingClientRect().width;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
@@ -1510,6 +1526,7 @@ export class Render {
     }
 
     public resizeColWidth(colCount: number): number {
+        this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
@@ -1703,7 +1720,11 @@ export class Render {
     /* eslint-disable-next-line */
     /** @hidden */
     public setSavedWidth(column: string, width: number): number {
-        width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
+        if (column === '0.formattedText' && !isNullOrUndefined(this.parent.resizedValue)) {
+            width = this.parent.resizedValue
+        } else {
+            width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
+        }
         return width;
     }
 

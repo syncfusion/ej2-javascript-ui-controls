@@ -419,7 +419,7 @@ export class Annotation {
                     if (inputFields === null && !isNullOrUndefined(signatureFieldElement)) {
                         inputFields = signatureFieldElement.children[0].children[0]
                     }
-                    if (inputFields && inputFields.className === 'e-pdfviewer-signatureformfields-signature') {
+                    if (inputFields && inputFields.classList.contains('e-pdfviewer-signatureformfields-signature')) {
                         inputFields.className = 'e-pdfviewer-signatureformfields';
                         inputFields.style.pointerEvents = '';
                         inputFields.parentElement.style.pointerEvents = '';
@@ -1065,6 +1065,8 @@ for (let i: number = 0; i < collections.length; i++) {
                 }
             }
         }
+        if (this.pdfViewer.selectedItems.annotations.length === 0)
+            this.pdfViewer.selectedItems.annotations.push((this.pdfViewer.nameTable as any)[annotationId]);
     }
 
     // eslint-disable-next-line
@@ -3252,21 +3254,20 @@ for (let i: number = 0; i < collections.length; i++) {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.enableAnnotationPropertiesTools(true);
                     }
                     if (!isBlazor()) {
-                        let signatureFieldAnnotation: any = this.pdfViewer.selectedItems.annotations.length === 1 ? (this.pdfViewer.nameTable as any)[this.pdfViewer.selectedItems.annotations[0].id.split('_')[0] + '_content'] : null;
-                        if(this.pdfViewer.selectedItems.annotations.length === 1 && !signatureFieldAnnotation ) {
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
-                        // eslint-disable-next-line max-len
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
-                        if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
-                            let formDesignerMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + "_formdesigner_toolbar");
-                            formDesignerMainDiv.style.display = "none"; 
-                            if (this.pdfViewer.toolbarModule) {
-                            this.pdfViewer.toolbarModule.formDesignerToolbarModule.isToolbarHidden = false;
-                            this.pdfViewer.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar( this.pdfViewer.toolbarModule.formDesignerItem);
-                            this.pdfViewer.toolbarModule.annotationToolbarModule.adjustViewer(true);
-                             }
+                        if (this.pdfViewer.selectedItems.annotations.length === 1 && !this.pdfViewer.designerMode) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
+                            // eslint-disable-next-line max-len
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                            if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
+                                let formDesignerMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + "_formdesigner_toolbar");
+                                formDesignerMainDiv.style.display = "none";
+                                if (this.pdfViewer.toolbarModule) {
+                                    this.pdfViewer.toolbarModule.formDesignerToolbarModule.isToolbarHidden = false;
+                                    this.pdfViewer.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar(this.pdfViewer.toolbarModule.formDesignerItem);
+                                    this.pdfViewer.toolbarModule.annotationToolbarModule.adjustViewer(true);
+                                }
                             }
                         }
                     }

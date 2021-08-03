@@ -83,7 +83,7 @@ export class ContentRender implements IRenderer {
             }
             this.ariaService.setBusy(<HTMLElement>this.getPanel().querySelector('.' + literals.content), false);
             if (this.parent.isDestroyed) { return; }
-            let rows: Row<Column>[] = this.rows.slice(0);
+            let rows: Row<Column>[] = this.parent.enableInfiniteScrolling ? this.parent.getRowsObject() : this.rows.slice(0);
             if (this.parent.isFrozenGrid()) {
                 rows = args.isFrozen ? this.freezeRows : args.renderFrozenRightContent ? this.parent.getFrozenRightRowsObject()
                     : this.movableRows;

@@ -849,7 +849,7 @@ export class Magnification {
                             canvas.style.height = height + 'px';
                             if (this.pdfViewer.annotation) {
                                 this.pdfViewer.annotationModule.resizeAnnotations(width, height, i);
-                            } else {
+                            } else if (this.pdfViewer.formDesignerModule) {
                                 this.pdfViewer.formDesignerModule.resizeAnnotations(width, height, i);
                             }
                         }

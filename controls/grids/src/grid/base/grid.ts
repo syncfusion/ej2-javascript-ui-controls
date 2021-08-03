@@ -1147,6 +1147,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public allowKeyboard: boolean;
 
     /**
+     * If 'enableStickyHeader' set to true, then the user can able to make the column headers visible when the document is scrolled.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableStickyHeader: boolean;
+
+    /**
      * If `allowTextWrap` set to true,
      * then text content will wrap to the next line when its text content exceeds the width of the Column Cells.
      * {% codeBlock src='grid/allowTextWrap/index.md' %}{% endcodeBlock %}
@@ -3253,6 +3261,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.enableVerticalRendering();
             this.notify(events.rowModeChange, {});
             this.refresh();
+            break;
+        case 'enableStickyHeader':
+            this.scrollModule.addStickyListener(newProp.enableStickyHeader);
             break;
         }
     }

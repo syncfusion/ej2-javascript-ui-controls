@@ -697,7 +697,7 @@ export class Renderer {
         let leftMargin: number = elementBox.margin.left;
         let format: WCharacterFormat = elementBox.listLevel.characterFormat;
         let breakCharacterFormat: WCharacterFormat = elementBox.line.paragraph.characterFormat;
-        let color: string = format.fontColor === 'empty' ? breakCharacterFormat.fontColor : format.fontColor;
+        let color: string = (format.fontColor === 'empty' || format.fontColor === '#00000000') ? breakCharacterFormat.fontColor : format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
         let italic: string = '';
@@ -736,7 +736,7 @@ export class Renderer {
             let index: number = text.indexOf('.');
             text = text.substr(index) + text.substring(0, index);
         }
-        if (color === "empty") {
+        if (color === "empty" || color === '#00000000') {
             let bgColor: string = this.documentHelper.backgroundColor;
             this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
         } else {
@@ -800,7 +800,8 @@ export class Renderer {
         }
         let baselineOffset: number = elementBox.baselineOffset;
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
-        if (color === "empty") {
+        // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
+        if (color === "empty" || color === '#00000000') {
             let bgColor: string = this.documentHelper.backgroundColor;
             this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
         } else {

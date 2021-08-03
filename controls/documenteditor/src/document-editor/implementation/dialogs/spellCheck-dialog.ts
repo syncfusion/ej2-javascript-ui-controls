@@ -211,7 +211,7 @@ export class SpellCheckDialog {
             this.documentHelper.selection.caret.style.display = 'none';
         }
 
-        this.documentHelper.dialog.header = 'Spelling Editor';
+        this.documentHelper.dialog.header = this.localValue.getConstant('Spelling Editor');
         this.documentHelper.dialog.height = 'auto';
         this.documentHelper.dialog.width = 'auto';
         this.documentHelper.dialog.content = this.target;

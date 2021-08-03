@@ -988,10 +988,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public constructor(options?: DocumentEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        this.initHelper();
     }
     protected preRender(): void {
         //pre render section
         this.findResultsList = [];
+        if (this.refreshing) {
+            this.initHelper();
+        }
+    }
+    private initHelper(): void {
         this.documentHelper = new DocumentHelper(this);
         if (this.layoutType === 'Pages') {
             this.viewer = new PageLayoutViewer(this);

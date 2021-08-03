@@ -676,7 +676,7 @@ console.log('Fontcolor Apply validation');
     it('undo after FontColor apply at list text', () => {
 console.log('undo after FontColor apply at list text');
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#00000000');
     });
     it('redo after FontColor apply at list text', () => {
 console.log('redo after FontColor apply at list text');
@@ -692,7 +692,7 @@ console.log('Multiple undo and redo after FontColor at list text');
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#00000000');
     });
 });
 
@@ -738,7 +738,7 @@ console.log('Fontcolor Apply validation');
     it('undo after FontColor apply at list text', () => {
 console.log('undo after FontColor apply at list text');
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#00000000');
     });
     it('redo after FontColor apply at list text', () => {
 console.log('redo after FontColor apply at list text');
@@ -754,7 +754,7 @@ console.log('Multiple undo and redo after FontColor at list text');
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#00000000');
     });
 });
 

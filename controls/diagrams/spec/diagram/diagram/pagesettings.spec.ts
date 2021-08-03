@@ -5,10 +5,10 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
-import { LayerModel, Rect } from '../../../src/index';
+import { LayerModel, Rect, UndoRedo } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-Diagram.Inject(BpmnDiagrams);
+Diagram.Inject(BpmnDiagrams, UndoRedo);
 /**
  * PageSettings Spec
  */
@@ -1655,6 +1655,265 @@ describe('Swimlane & Child - Bring to Front command', () => {
         diagram.bringToFront();
         diagram.clearSelection();
         expect(node.zIndex === 5).toBe(true);
+        done();
+    });
+})
+
+describe('Swimlane Order commands - Undo & Redo', () => {
+    let diagram: Diagram;
+    let zIndex: number = 0;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] =  [
+            {
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
+             },
+             {
+                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
+              },
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'Lane 1' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 150
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'Lane 2' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 150
+                        },
+        
+                    ],
+        
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            
+             
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Diagram Save and load operaion', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.sendToBack();
+        zIndex = node.zIndex;
+        let save: string = diagram.saveDiagram();
+        diagram.loadDiagram(save);
+        expect(node.zIndex === zIndex).toBe(true);
+        done();
+    });
+    it('Diagram order commands after save and load', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        zIndex = node.zIndex;
+        diagram.bringToFront();
+        expect(node.zIndex !== zIndex).toBe(true);
+        done();
+    });
+})
+
+describe('Swimlane Order commands - Undo & Redo', () => {
+    let diagram: Diagram;
+    let zIndex: number = 0;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] =  [
+            {
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
+             },
+             {
+                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
+              },
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'Lane 1' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 150
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'Lane 2' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 150
+                        },
+        
+                    ],
+        
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            
+             
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Diagram Undo operation for Send to back order command', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.sendToBack();
+        zIndex = node.zIndex;
+        diagram.undo();
+        expect(node.zIndex !== zIndex).toBe(true);
+        done();
+    });
+    it('Diagram Redo operation for Send to back order command', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.redo();
+        expect(node.zIndex === zIndex).toBe(true);
+        done();
+    });
+})
+
+describe('Swimlane & Child - Bring to Front command - undo', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] =  [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100
+                        },
+        
+                    ],
+        
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            
+             
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Bring child Front to swimlane', (done: Function) => {
+        let newnode: NodeModel =  {
+            id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
+         };
+         diagram.add(newnode);
+         let newNode2: NodeModel = {
+            id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
+         };
+         diagram.add(newNode2);
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.bringToFront();
+        zIndex = node.zIndex;
+        diagram.clearSelection();
+        diagram.undo();
+        expect(node.zIndex !== zIndex ).toBe(true);
+        done();
+    });
+    it('Bring Swimlane Front to all child', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.redo();
+        expect(node.zIndex === zIndex).toBe(true);
         done();
     });
 })

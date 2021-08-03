@@ -652,7 +652,7 @@ export class PdfViewerBase {
                         this.toolbarHeight = 0;
                         toolbarDiv.style.display = 'none';
                     }
-                    if (!this.pdfViewer.enableNavigationToolbar) {
+                    if (!this.pdfViewer.enableNavigationToolbar && ((Browser.isDevice && this.pdfViewer.enableDesktopMode) || (!Browser.isDevice))) {
                         this.navigationPane.sideBarToolbar.style.display = 'none';
                         this.navigationPane.sideBarToolbarSplitter.style.display = 'none';
                         if (this.navigationPane.isBookmarkOpen || this.navigationPane.isThumbnailOpen) {
@@ -1323,6 +1323,9 @@ export class PdfViewerBase {
      * @private
      */
     public enableFormFieldButton(isEnable: boolean): void {
+        if (isEnable) {
+            this.pdfViewer.isFormFieldDocument = true;
+        }
         if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.submitItem) {
             this.pdfViewer.toolbarModule.toolbar.enableItems(this.pdfViewer.toolbarModule.submitItem.parentElement, isEnable);
         }
@@ -6384,13 +6387,13 @@ export class PdfViewerBase {
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
                 // eslint-disable-next-line
-            } else if (e.target && (e as any).path && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.classList.contains('foreign-object')) {
+            } else if (e.target && (e && (e as any).path) && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.classList.contains('foreign-object')) {
                 // eslint-disable-next-line
                 const targetParentRect: ClientRect = (e as any).path[4].getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
                 // eslint-disable-next-line
-            } else if (e.target && (e as any).path && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.parentElement.classList.contains('foreign-object')) {
+            } else if (e.target && (e && (e as any).path) && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.parentElement.classList.contains('foreign-object')) {
                 // eslint-disable-next-line
                 const targetParentRect: ClientRect = (e as any).path[4].getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
@@ -7412,22 +7415,30 @@ export class PdfViewerBase {
                 this.pdfViewer.toolbar.formDesignerToolbarModule.showHideDeleteIcon(true);
             }
         }
+        let signatureFieldAnnotation: any = this.pdfViewer.selectedItems.annotations.length === 1 ? (this.pdfViewer.nameTable as any)[this.pdfViewer.selectedItems.annotations[0].id.split('_')[0] + '_content'] : null;
+        if (!signatureFieldAnnotation) {
+            signatureFieldAnnotation = this.pdfViewer.selectedItems.annotations.length === 1 ? (this.pdfViewer.nameTable as any)[this.pdfViewer.selectedItems.annotations[0].id] : null;
+        }
         // eslint-disable-next-line max-len
-        if (this.eventArgs && this.eventArgs.source && (this.eventArgs.source as PdfFormFieldBaseModel).formFieldAnnotationType && !this.pdfViewer.designerMode) {
-            const currentObject: PdfFormFieldBaseModel = this.eventArgs.source;
-            // eslint-disable-next-line
-            const currentValue: any = (this.pdfViewer.nameTable as any)[currentObject.id.split('_')[0] + '_content'] ? (this.pdfViewer.nameTable as any)[currentObject.id.split('_')[0] + '_content'].value : null;
-            if (!currentValue) {
-                const field: IFormField = {
-                    // eslint-disable-next-line max-len
-                    // eslint-disable-next-line
-                    id: currentObject.id, fontFamily: currentObject.fontFamily, fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
-                    // eslint-disable-next-line
-                    color: (currentObject as PdfFormFieldBaseModel).color, value: currentObject.value, type: (this.eventArgs.source as PdfAnnotationBaseModel).formFieldAnnotationType, backgroundColor: (currentObject as PdfFormFieldBaseModel).backgroundColor, alignment: (currentObject as any).alignment
-                };
-                this.currentTarget = document.getElementById(currentObject.id);
-                this.pdfViewer.fireFormFieldClickEvent('formFieldClicked', field as unknown as FormFieldModel);
+        if (this.eventArgs && this.eventArgs.source && ((this.eventArgs.source as PdfFormFieldBaseModel).formFieldAnnotationType || signatureFieldAnnotation) && !this.pdfViewer.designerMode) {
+            let currentObject: any;
+            if (signatureFieldAnnotation) {
+                currentObject = (this.pdfViewer.nameTable as any)[this.pdfViewer.selectedItems.annotations[0].id.split('_')[0]];
+            } else {
+                currentObject = this.eventArgs.source;
             }
+            if (!currentObject) {
+                currentObject = this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === signatureFieldAnnotation.id)]
+            }
+            // eslint-disable-next-line
+            const field: IFormField = {
+                // eslint-disable-next-line max-len
+                id: currentObject.id, fontFamily: currentObject.fontFamily, fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
+                // eslint-disable-next-line
+                color: (currentObject as PdfFormFieldBaseModel).color, value: currentObject.value, type: currentObject.formFieldAnnotationType ? currentObject.formFieldAnnotationType : currentObject.type, backgroundColor: (currentObject as PdfFormFieldBaseModel).backgroundColor, alignment: (currentObject as any).alignment
+            };
+            this.currentTarget = document.getElementById(currentObject.id);
+            this.pdfViewer.fireFormFieldClickEvent('formFieldClicked', field as unknown as FormFieldModel);
         }
         this.initialEventArgs = { source: this.eventArgs.source, sourceWrapper: this.eventArgs.sourceWrapper };
         this.initialEventArgs.position = this.currentPosition;

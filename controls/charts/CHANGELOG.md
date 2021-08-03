@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.2.51 (2021-08-03)
+
+### Chart
+
+#### Bug Fixes
+
+- `#337240` - Stripline working properly on canvas mode.
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#335684` - Data label positioning properly for pie chart.
+
 ## 19.2.49 (2021-07-27)
 
 ### Chart

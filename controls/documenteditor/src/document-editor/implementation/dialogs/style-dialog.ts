@@ -775,7 +775,8 @@ export class StyleDialog {
         }
         this.fontFamily.value = this.characterFormat.fontFamily;
         this.fontSize.value = this.characterFormat.fontSize;
-        this.fontColor.value = this.characterFormat.fontColor;
+        let color: string = this.characterFormat.fontColor;
+        this.fontColor.value = color === '#00000000' ? '#000000' : color;
         this.fontButtonClicked();
     }
 

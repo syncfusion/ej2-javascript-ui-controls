@@ -5928,6 +5928,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 fieldValue.signatureType = fieldValue.signatureType[0];
             }
             fieldValue.fontName = fieldValue.fontName ? fieldValue.fontName: fieldValue.fontFamily;
+            if ((target as any).classList.contains('e-pdfviewer-signatureformfields-signature')) {
+                if (this.formDesignerModule)
+                    this.annotation.deleteAnnotationById(fieldValue.id.split('_')[0] + '_content');
+                else
+                    this.annotation.deleteAnnotationById(fieldValue.id);
+            }
+            if (!fieldValue.signatureType)
+                fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
             this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
         } else {
             this.formFieldsModule.updateDataInSession(target);
@@ -6001,7 +6009,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             if (typeof (importData) === 'string') {
                 let isXfdfFile: boolean = (importData.indexOf('.xfdf') > -1) ? true : false;
                 if (annotationDataFormat) {
-                    this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
+                    if (importData.indexOf('</xfdf>') > -1) {
+                        this.viewerBase.importAnnotations(importData, annotationDataFormat, false);
+                    } else {
+                        this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
+                    }
                 } else {
                     if (importData.split('.')[1] === 'json') {
                         this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
@@ -6190,9 +6202,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.triggerEvent('formFieldClick', eventArgs);
         }
-        if (field.type === 'SignatureField') {
-            if (!eventArgs.cancel) {
+        if (field.type === 'SignatureField' || field.type === 'InitialField') {
+            if (field.type === 'InitialField')
+                this.viewerBase.isInitialField = true;
+            else
                 this.viewerBase.isInitialField = false;
+            let target: any = document.getElementById(field.id);
+            target = target ? target : document.getElementById(field.id + '_content_html_element').children[0].children[0];
+            if (!eventArgs.cancel && (target as any).classList.contains('e-pdfviewer-signatureformfields')) {
                 this.viewerBase.signatureModule.showSignatureDialog(true);
             }
         }

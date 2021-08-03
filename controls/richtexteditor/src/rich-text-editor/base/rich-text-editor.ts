@@ -1546,7 +1546,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
             this.formatter.onKeyHandler(this, e);
         }
-        if (this.inputElement && this.inputElement.textContent.length !== 0) {
+        if (this.inputElement && this.inputElement.textContent.length !== 0
+            || this.element.querySelectorAll('.e-toolbar-item.e-active').length > 0) {
             this.notify(events.toolbarRefresh, { args: e });
         }
         if (!isNOU(this.placeholder)) {

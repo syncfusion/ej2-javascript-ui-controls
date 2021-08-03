@@ -1242,18 +1242,15 @@ export class QuickPopups {
         const classNames: string = '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.HEADER_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS +
             ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.e-popup';
         const popupWrap: Element = this.parent.element.querySelector('.' + cls.POPUP_WRAPPER_CLASS);
-        if (popupWrap && popupWrap.childElementCount > 0 && !closest(target, classNames)) {
+        if ((popupWrap && popupWrap.childElementCount > 0 && !closest(target, classNames)) || !closest(target, classNames)) {
             this.quickPopupHide();
+            this.parent.removeNewEventElement();
         }
         const tar: Element = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS);
         if (tar && tar !== target && this.parent.allowInline) {
             this.parent.inlineModule.documentClick();
         }
         if (closest(target, '.' + cls.APPOINTMENT_CLASS + ',.' + cls.HEADER_CELLS_CLASS)) {
-            this.parent.removeNewEventElement();
-        }
-        if (!closest(target, classNames)) {
-            this.quickPopupHide();
             this.parent.removeNewEventElement();
         }
         if (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && (target.classList &&

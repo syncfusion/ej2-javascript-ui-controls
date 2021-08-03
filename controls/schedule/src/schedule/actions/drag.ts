@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, remove, removeClass, setStyleAttribute, Browser, EventHandler } from '@syncfusion/ej2-base';
-import { DragEventArgs, TdData, EJ2Instance } from '../base/interface';
+import { DragEventArgs, EventFieldsMapping, TdData, EJ2Instance } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
 import { TimelineEvent } from '../event-renderer/timeline-view';
@@ -234,6 +234,22 @@ export class DragAndDrop extends ActionBase {
             }
             if (this.parent.currentView === 'Day' || this.parent.currentView === 'Week' || this.parent.currentView === 'WorkWeek') {
                 this.verticalEvent = new VerticalEvent(this.parent);
+                this.verticalEvent.initializeValues();
+                const splitEvents: Record<string, any>[] = this.splitEvent(this.actionObj.event);
+                splitEvents.forEach(event => {
+                    let query: string =
+                        `.e-day-wrapper[data-date="${(<Date>util.resetTime(event[this.parent.eventFields.startTime])).getTime()}"]`;
+                    if (this.parent.activeViewOptions.group.resources.length > 0) {
+                        query = query.concat('[data-group-index = "' + this.actionObj.groupIndex + '"]');
+                    }
+                    let appWrap: HTMLTableCellElement = this.parent.element.querySelector(query) as HTMLTableCellElement;
+                    if (appWrap) {
+                        const appEle: Element = appWrap.querySelector('[data-id="' + this.actionObj.clone.getAttribute('data-id') + '"]');
+                        if (appEle) {
+                            addClass([appEle], cls.EVENT_ACTION_CLASS);
+                        }
+                    }
+                });
             }
         });
     }
@@ -592,6 +608,10 @@ export class DragAndDrop extends ActionBase {
         this.actionObj.start = new Date(+dragStart);
         this.actionObj.end = new Date(+dragEnd);
         const event: Record<string, any> = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
+        const dynamicWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-dynamic-clone'));
+        for (const wrapper of dynamicWrappers) {
+            remove(wrapper);
+        }
         if (this.multiData.length > 0) {
             if (this.isAllDayTarget && this.isAllDayDrag && !isNullOrUndefined(this.actionObj.isAllDay) && !this.actionObj.isAllDay) {
                 const targetCellTime: number = parseInt((closest((<HTMLElement>this.actionObj.target), 'td')).getAttribute('data-date'), 10);
@@ -634,6 +654,32 @@ export class DragAndDrop extends ActionBase {
             this.updateEventHeight(event);
         }
         this.updateTimePosition(this.actionObj.start, this.updatedData);
+    }
+
+    private splitEvent(event: Record<string, any>): Record<string, any>[] {
+        const eventFields: EventFieldsMapping = this.parent.eventFields;
+        const eventData: Record<string, any>[] = [];
+        const startTime: Date = event[eventFields.startTime] as Date;
+        const endTime: Date = event[eventFields.endTime] as Date;
+        const isDifferentDate: boolean =
+            util.resetTime(new Date(startTime.getTime())) < util.resetTime(new Date(endTime.getTime()));
+        if (isDifferentDate) {
+            const scheduleStartHour: Date = this.parent.activeView.getStartHour();
+            const scheduleEndHour: Date = this.parent.activeView.getEndHour();
+            const startDate: { [key: string]: Date } =
+                util.getStartEndHours(util.resetTime(startTime), scheduleStartHour, scheduleEndHour);
+            const endDate: { [key: string]: Date } =
+                util.getStartEndHours(util.resetTime(endTime), scheduleStartHour, scheduleEndHour);
+            let firstEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+            firstEventObj[eventFields.endTime] = startDate.endHour;
+            eventData.push(firstEventObj);
+            let secondEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+            secondEventObj[eventFields.startTime] = endDate.startHour;
+            eventData.push(secondEventObj);
+        } else {
+            eventData.push(event);
+        }
+        return eventData;
     }
 
     private updateMultipleData(data: Record<string, any>, timeDifference: number): Record<string, any> {
@@ -690,46 +736,93 @@ export class DragAndDrop extends ActionBase {
         const target: boolean = (this.parent.activeViewOptions.group.byDate &&
             !isNullOrUndefined(this.parent.getDateFromElement(this.actionObj.target as HTMLElement))) ? true : false;
         if (target || !this.parent.activeViewOptions.group.byDate) {
-            const dayIndex: number = !this.parent.activeViewOptions.group.byDate ?
+            let dynamicIndex: number = -1;
+            let dayIndex: number = !this.parent.activeViewOptions.group.byDate ?
                 isNullOrUndefined(index) ? this.actionObj.index - datesCount : colIndex - datesCount
                 : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], util.resetTime(
                     // eslint-disable-next-line max-len
                     this.parent.getDateFromElement(isNullOrUndefined(index) ? this.actionObj.target as HTMLElement : this.targetTd as HTMLElement)));
-            const record: Record<string, any> = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
-            const eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
-            const eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
-            let appHeight: number = this.parent.activeViewOptions.timeScale.enable ? this.verticalEvent.getHeight(eStart, eEnd) :
-                this.actionObj.element.offsetHeight;
-            let topValue: number = this.parent.activeViewOptions.timeScale.enable ?
-                this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex) : this.actionObj.element.offsetTop;
-            if (isNullOrUndefined(index)) {
-                this.actionObj.clone.style.top = formatUnit(topValue);
-                this.actionObj.clone.style.height = formatUnit(appHeight);
-            } else {
-                let appWidth: number = this.actionObj.cellWidth;
-                if (event[this.parent.eventFields.isAllDay]) {
-                    topValue = (<HTMLElement>this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)).offsetTop;
-                    appHeight = this.getAllDayEventHeight();
-                    const timeDiff: number = (event[this.parent.eventFields.endTime] as Date).getTime() -
-                        (event[this.parent.eventFields.startTime] as Date).getTime();
-                    const allDayDifference: number = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                    if (allDayDifference >= 0) {
-                        appWidth = (allDayDifference * this.actionObj.cellWidth);
+            const splitEvents: Record<string, any>[] = this.splitEvent(event);
+            const events: Record<string, any>[] = event[this.parent.eventFields.isAllDay] ||
+                this.parent.eventBase.isAllDayAppointment(event) || splitEvents.length > 2 ? [event] : splitEvents;
+            for (let i: number = 0; i < events.length; i++) {
+                if (i > 0) {
+                    let filterQuery: string =
+                        `.e-day-wrapper[data-date="${(<Date>util.resetTime(events[i][this.parent.eventFields.startTime])).getTime()}"]`;
+                    if (this.parent.activeViewOptions.group.resources.length > 0) {
+                        filterQuery = filterQuery.concat('[data-group-index = "' + this.actionObj.groupIndex + '"]');
+                    }
+                    let appWrap: HTMLTableCellElement = this.parent.element.querySelector(filterQuery) as HTMLTableCellElement;
+                    if (appWrap) {
+                        dayIndex = dayIndex + 1;
+                        dynamicIndex = appWrap.cellIndex;
+                    } else {
+                        dayIndex = -1;
                     }
                 }
-                if (this.actionObj.cloneElement[index]) {
-                    this.actionObj.cloneElement[index].style.top = formatUnit(topValue);
-                    this.actionObj.cloneElement[index].style.height = formatUnit(appHeight);
-                    this.actionObj.cloneElement[index].style.width = formatUnit(appWidth);
-                    this.actionObj.cloneElement[index].style.left = formatUnit(0);
+                if (dayIndex >= 0) {
+                    const record: Record<string, any> = this.verticalEvent.isSpannedEvent(events[i], dayIndex, this.actionObj.groupIndex);
+                    const eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
+                    const eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
+                    let appHeight: number = this.parent.activeViewOptions.timeScale.enable ? this.verticalEvent.getHeight(eStart, eEnd) :
+                        this.actionObj.element.offsetHeight;
+                    let topValue: number = this.parent.activeViewOptions.timeScale.enable ?
+                        this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex) : this.actionObj.element.offsetTop;
+                    if (isNullOrUndefined(index)) {
+                        if (i === 0) {
+                            this.actionObj.clone.style.top = formatUnit(topValue);
+                            this.actionObj.clone.style.height = formatUnit(appHeight);
+                        } else {
+                            this.renderSpannedEvents(record, dynamicIndex, topValue, appHeight);
+                        }
+                    } else {
+                        let appWidth: number = this.actionObj.cellWidth;
+                        if (event[this.parent.eventFields.isAllDay]) {
+                            topValue = (<HTMLElement>this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)).offsetTop;
+                            appHeight = this.getAllDayEventHeight();
+                            const timeDiff: number = (event[this.parent.eventFields.endTime] as Date).getTime() -
+                                (event[this.parent.eventFields.startTime] as Date).getTime();
+                            const allDayDifference: number = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                            if (allDayDifference >= 0) {
+                                appWidth = (allDayDifference * this.actionObj.cellWidth);
+                            }
+                        }
+                        if (this.actionObj.cloneElement[index]) {
+                            if (i === 0) {
+                                this.actionObj.cloneElement[index].style.top = formatUnit(topValue);
+                                this.actionObj.cloneElement[index].style.height = formatUnit(appHeight);
+                                this.actionObj.cloneElement[index].style.width = formatUnit(appWidth);
+                                this.actionObj.cloneElement[index].style.left = formatUnit(0);
+                            } else {
+                                this.renderSpannedEvents(record, dynamicIndex, topValue, appHeight);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    private updateAllDayEvents(startDate: Date, endDate: Date, colIndex: number): void {
-        this.parent.eventBase.slots = [];
-        const event: Record<string, any> = this.getUpdatedEvent(startDate, endDate, this.actionObj.event);
+    private renderSpannedEvents(record: Record<string, any>, index: number, top: number, height: number): void {
+        const startTime: number = (record[this.parent.eventFields.startTime] as Date).getTime();
+        const endTime: number = (record[this.parent.eventFields.endTime] as Date).getTime();
+        if (startTime !== endTime) {
+            let appointmentElement: HTMLElement = this.verticalEvent.
+                createAppointmentElement(record, false, record.isSpanned as Record<string, any>, this.actionObj.groupIndex);
+            addClass([appointmentElement], [cls.CLONE_ELEMENT_CLASS, "e-dynamic-clone"]);
+            setStyleAttribute(appointmentElement, {
+                'width': '100%',
+                'height': height + 'px',
+                'top': top + 'px',
+                'border': '0px'
+            });
+            const appointmentWrap: HTMLElement[] =
+                [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
+            appointmentWrap[index].appendChild(appointmentElement);
+        }
+    }
+
+    private getRenderedDates(): Date[] {
         let renderDates: Date[] = this.parent.activeView.renderDates;
         this.parent.eventBase.slots.push(...this.parent.activeView.renderDates.map((date: Date) => +date));
         if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -739,6 +832,13 @@ export class DragAndDrop extends ActionBase {
             renderDates = resources[0].renderDates;
             this.parent.eventBase.slots.push(...renderDates.map((date: Date) => +date));
         }
+        return renderDates;
+    }
+
+    private updateAllDayEvents(startDate: Date, endDate: Date, colIndex: number): void {
+        this.parent.eventBase.slots = [];
+        const event: Record<string, any> = this.getUpdatedEvent(startDate, endDate, this.actionObj.event);
+        let renderDates: Date[] = this.getRenderedDates();
         const events: Record<string, any>[] = this.parent.eventBase.splitEvent(event, renderDates);
         let query: string = `.e-all-day-cells[data-date="${(<Date>events[0][this.parent.eventFields.startTime]).getTime()}"]`;
         if (this.parent.activeViewOptions.group.resources.length > 0) {

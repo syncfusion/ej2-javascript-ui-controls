@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 19.2.51 (2021-08-03)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F167351` - An issue with the scheduler quick popup closes when using multi-select in the popup content has been fixed.
+
 ## 19.2.49 (2021-07-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I331086` - An issue with the drag and drop the spanned events in vertical views has been fixed.
+- `#I336108` - An issue with the scheduler import of recurring events has been fixed.
+
+## 19.2.47 (2021-07-13)
 
 ### Schedule
 

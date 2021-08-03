@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 19.2.51 (2021-08-03)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#F166428` - Issue while resizing column with virtualization in the pivot table has been resolved.
+- `#336591`,`#337082` - When using the virtualization feature, the pivot table columns are now properly displayed when scrolling horizontally.
+- `#337082` - The pivot table is now properly displayed when scrolling horizontally while filtering is applied when using the virtualization feature.
+
 ## 19.2.49 (2021-07-27)
 
 ### Pivot Table

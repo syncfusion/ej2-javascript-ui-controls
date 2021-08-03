@@ -154,6 +154,21 @@ describe('Template', () => {
         result.push(createElement('div', { innerHTML: 'two three', className:' class1 class2 class3' }));
         expect(outDOM(template.compile(templateStr), JSONArray)).toEqual(result);
     });
+    
+    it('JSON array input with href value with apostrophe', () => {
+        let templateStr: string = `<div><a href='https://en.wikipedia.org/wiki/France'>France</a><a href='/Projects/Details?id=VINET'>VINET</a></div>`;
+        let getString: any = template.compile(templateStr);
+        let output: any = getString(templateStr);
+        expect(output).toEqual("<div><a href=\"https://en.wikipedia.org/wiki/France\">France</a><a href=\"/Projects/Details?id=VINET\">VINET</a></div>");
+    });
+
+    it('JSON array input with special character apostrophe', () => {
+        debugger
+        let templateStr: string = `<div><input value='HANAR's'></div>`;
+        let getString: any = template.compile(templateStr);
+        let output: any = getString(templateStr);
+        expect(output).toEqual("<div><input value=\"HANAR's\"></div>");
+    });
 
     it('JSON Array input with multiple key mapping String', () => {
         let templateStr: string = '<div>${name}${info.id}</div>';

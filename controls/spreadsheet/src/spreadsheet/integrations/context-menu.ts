@@ -7,7 +7,7 @@ import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, in
 import { openHyperlink, initiateHyperlink, editHyperlink, hideShow, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale } from '../common/index';
 import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel } from '../../workbook/common/index';
-import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndexByName, getSheetIndex, moveSheet, duplicateSheet } from '../../workbook/index';
+import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet } from '../../workbook/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -219,9 +219,25 @@ export class ContextMenu {
      * @returns {void} - Before open event handler.
      */
     private beforeOpenHandler(args: BeforeOpenCloseMenuEventArgs): void {
-        const target: string = this.getTarget(args.event.target as Element); let items: MenuItemModel[];
+        const trgt: Element = args.event.target as Element;
+        const target: string = this.getTarget(trgt); let items: MenuItemModel[];
         if (args.element.classList.contains('e-contextmenu')) {
-            items = this.getDataSource(target);
+            if (args.event.target && (trgt.classList.contains('e-rowresize') || trgt.classList.contains('e-colresize'))) {
+                const sheet: SheetModel = this.parent.getActiveSheet();
+                const range: number[] = getRangeIndexes(sheet.selectedRange);
+                if (!(trgt.classList.contains('e-rowresize') ? range[1] === 0 && range[3] === sheet.colCount - 1 :
+                    range[0] === 0 && range[2] === sheet.rowCount - 1)) {
+                    args.cancel = true; return;
+                }
+                if (trgt.classList.contains('e-rowresize') ? this.parent.hiddenCount(range[0], range[2]) !== Math.abs(range[2] - range[0]) +
+                    1 : this.parent.hiddenCount(range[1], range[3], 'columns') !== Math.abs(range[3] - range[1]) + 1) {
+                    items = this.getDataSource(target);
+                } else {
+                    items = this.getDataSource(target, trgt);
+                }
+            } else {
+                items = this.getDataSource(target);
+            }
             this.contextMenuInstance.items = items;
             this.contextMenuInstance.dataBind();
         } else {
@@ -247,7 +263,7 @@ export class ContextMenu {
                 }
             }
         } else if (target === 'Footer') {
-            const sheetIdx: number = getSheetIndex(this.parent, (args.event.target as Element).textContent);
+            const sheetIdx: number = getSheetIndex(this.parent, trgt.textContent);
             if (sheetIdx === 0) {
                 args.element.querySelector('#' + this.parent.element.id + '_cmenu_move_left').classList.add('e-disabled');
             }
@@ -290,7 +306,7 @@ export class ContextMenu {
      * @param {string} target - Specify the target
      * @returns {MenuItemModel[]} - To populate context menu items based on target area.
      */
-    private getDataSource(target: string): MenuItemModel[] {
+    private getDataSource(target: string, targetEle?: Element): MenuItemModel[] {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const items: MenuItemModel[] = [];
         const id: string = this.parent.element.id + '_cmenu';
@@ -307,13 +323,18 @@ export class ContextMenu {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]], ['Above', 'Below']);
-            if (!sheet.frozenRows && !sheet.frozenColumns) { this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]); }
+            if (!sheet.frozenRows && !sheet.frozenColumns && (!targetEle || !targetEle.parentElement ||
+                !targetEle.parentElement.classList.value.includes('e-hide'))) {
+                this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
+            }
         } else if (target === 'ColumnHeader') {
             this.setClipboardData(items, l10n, id);
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]], ['Before', 'After']);
-            if (!sheet.frozenRows && !sheet.frozenColumns) { this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]); }
+            if (!sheet.frozenRows && !sheet.frozenColumns && (!targetEle || !targetEle.classList.value.includes('e-hide'))) {
+                this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
+            }
         } else if (target === 'SelectAll') {
             this.setClipboardData(items, l10n, id);
             this.setFilterItems(items, id);

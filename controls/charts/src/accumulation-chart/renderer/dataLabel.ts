@@ -120,6 +120,9 @@ export class AccumulationDataLabel extends AccumulationBase {
         let previousPoint: AccPoints = this.findPreviousPoint(points, point.index, point.labelPosition);
 
         if (dataLabel.position === 'Inside') {
+            // `4` is padding adding to height and width of label region.
+            point.labelRegion.height -= 4;
+            point.labelRegion.width -= 4;
             if (previousPoint && previousPoint.labelRegion && (isOverlap(point.labelRegion, previousPoint.labelRegion)
                 || this.isOverlapping(point, points)) || !circular && !containsRect(point.region, point.labelRegion)) {
                 point.labelPosition = 'Outside';
@@ -691,7 +694,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                         element = getElement(id + 'shape_' + point.index);
                         const startLocation: ChartLocation = element ? new ChartLocation(
                             +element.getAttribute('x'), +element.getAttribute('y')
-                        ) : null;                        
+                        ) : null;
                         dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
                             id + 'shape_' + point.index, point.argsData.color, point.argsData.border, 1,
                             point.labelRegion, dataLabel.rx, dataLabel.ry));

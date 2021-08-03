@@ -738,6 +738,13 @@ export interface GridModel extends ComponentModel{
     allowKeyboard?: boolean;
 
     /**
+     * If 'enableStickyHeader' set to true, then the user can able to make the column headers visible when the document is scrolled.
+     *
+     * @default false
+     */
+    enableStickyHeader?: boolean;
+
+    /**
      * If `allowTextWrap` set to true,
      * then text content will wrap to the next line when its text content exceeds the width of the Column Cells.
      * {% codeBlock src='grid/allowTextWrap/index.md' %}{% endcodeBlock %}

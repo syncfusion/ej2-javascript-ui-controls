@@ -2233,7 +2233,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.initCommands();
         const hiddenUserHandleTemplate: HTMLCollection = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
         createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems, this.element.id);
-        this.updateTemplate();
+        if (isBlazor() && this.layout && this.layout.type === 'None') {
+            this.updateTemplate();
+        }
         this.isLoading = false;
         this.renderComplete();
         this.updateFitToPage();
@@ -6046,7 +6048,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private renderGridLayer(bounds: ClientRect, commonStyle: string): void {
         const svgGridSvg: SVGElement = this.createSvg(this.element.id + '_gridline_svg', bounds.width, bounds.height);
         svgGridSvg.setAttribute('class', 'e-grid-layer');
-        const svgGrid: SVGElement = createSvgElement('g', { 'id': this.element.id + '_gridline', 'width': '100%', 'height': '100%' });
+        const svgGrid: SVGElement = createSvgElement('g', { 'id': this.element.id + '_gridline' });
         const rect: SVGElement = createSvgElement('rect', {
             'id': this.element.id + '_grid_rect', 'x': '0', 'y': '0', 'width': '100%', 'height': '100%'
         });

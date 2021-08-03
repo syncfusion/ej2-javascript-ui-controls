@@ -23,7 +23,7 @@ console.log('constructor testing');
         expect(format.strikethrough).toBe('None');
         expect(format.baselineAlignment).toBe('Normal');
         expect(format.highlightColor).toBe('NoColor');
-        expect(format.fontColor).toBe('empty');
+        expect(format.fontColor).toBe('#00000000');
         expect(format.fontFamily).toBe('Calibri');
     });
 
@@ -40,7 +40,7 @@ console.log('constructor testing');
         expect(format.strikethrough).toBe('None');
         expect(format.baselineAlignment).toBe('Normal');
         expect(format.highlightColor).toBe('NoColor');
-        expect(format.fontColor).toBe('empty');
+        expect(format.fontColor).toBe('#00000000');
         expect(format.fontFamily).toBe('Calibri');
     });
 });

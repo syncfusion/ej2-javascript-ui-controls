@@ -474,7 +474,8 @@ export class Selection {
                 left = e.clientX - (cliRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true) + 1);
             }
             left += this.parent.viewport.beforeFreezeWidth;
-            if (!e.target || (e.target && !closest(e.target, '.e-row-header') && !closest(e.target, '.e-selectall-container'))) {
+            if (!e.target || (!closest(e.target, '.e-row-header') && !closest(e.target, '.e-selectall-container')) ||
+                this.isScrollableArea(e.clientX, e.target, true)) {
                 left += this.getScrollLeft();
             }
         }
@@ -488,6 +489,15 @@ export class Selection {
         }
     }
 
+    private isScrollableArea(offset: number, target: Element, isclientX?: boolean): boolean {
+        if (!target.classList.contains('e-table')) { return false; }
+        if (isclientX) {
+            return offset > this.parent.getMainContent().getBoundingClientRect().left;
+        } else {
+            return offset > this.parent.getMainContent().parentElement.getBoundingClientRect().top;
+        }
+    }
+
     private getRowIdxFromClientY(args: { clientY: number, isImage?: boolean, target?: Element, size?: number }): number {
         let height: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -498,7 +508,7 @@ export class Selection {
             const sheetEle: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
             top = args.clientY + this.parent.viewport.beforeFreezeHeight -
                 (sheetEle.getBoundingClientRect().top + (sheet.showHeaders ? 31 : 0));
-            if (!args.target || (args.target && !closest(args.target, '.e-header-panel'))) {
+            if (!args.target || !closest(args.target, '.e-header-panel') || this.isScrollableArea(args.clientY, args.target)) {
                 top += this.parent.getMainContent().parentElement.scrollTop;
             }
         }

@@ -287,6 +287,7 @@ export class VirtualScroll {
     private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
         return (e: Event) => {
             let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            this.parent.isHScrollEnd = (ele.scrollLeft + ele.offsetWidth) - ele.scrollWidth === 0;
             this.update(
                 mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
                 ele.scrollLeft * this.parent.horizontalScrollScale, e);

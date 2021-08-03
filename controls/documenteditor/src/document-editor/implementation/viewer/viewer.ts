@@ -875,7 +875,7 @@ export class DocumentHelper {
         characterFormat.fontFamilyBidi = 'Calibri';
         characterFormat.baselineAlignment = 'Normal';
         characterFormat.highlightColor = 'NoColor';
-        characterFormat.fontColor = 'empty';
+        characterFormat.fontColor = '#00000000';
         characterFormat.allCaps = false;
     }
     private setDefaultParagraphValue(paragraphFormat: WParagraphFormat): void {

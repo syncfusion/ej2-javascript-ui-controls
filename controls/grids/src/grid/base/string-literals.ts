@@ -1,6 +1,9 @@
 /**
  * Specifies class names
  */
+
+import { FocusKeys } from './enum';
+
 /** @hidden */
 export const rowCell: string = 'e-rowcell';
 
@@ -93,3 +96,27 @@ export const create: string = 'created';
 
 /** @hidden */
 export const beforeOpen: string = 'beforeOpen';
+
+/** @hidden */
+export const downArrow: FocusKeys = 'downArrow';
+
+/** @hidden */
+export const upArrow: FocusKeys = 'upArrow';
+
+/** @hidden */
+export const pageUp: FocusKeys = 'PageUp';
+
+/** @hidden */
+export const pageDown: FocusKeys = 'PageDown';
+
+/** @hidden */
+export const enter: FocusKeys = 'enter';
+
+/** @hidden */
+export const shiftEnter: FocusKeys = 'shiftEnter';
+
+/** @hidden */
+export const tab: FocusKeys = 'tab';
+
+/** @hidden */
+export const shiftTab: FocusKeys = 'shiftTab';

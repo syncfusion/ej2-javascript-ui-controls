@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.51 (2021-08-03)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#334546` - Now, the provided PDF document is loading correctly in the PDF Viewer.
+
 ## 19.2.49 (2021-07-27)
 
 ### PDF Viewer

@@ -1453,8 +1453,11 @@ export class FormDesigner {
                 (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].value = formFieldsData[i].FormField.value;
                 this.pdfViewerBase.formFieldCollection[i].FormField.value = formFieldsData[i].FormField.value;
                 if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
-                    let inputElement: Element = document.getElementById((formFieldsData[i].Key.split("_")[0] + "_content_html_element")).firstElementChild.firstElementChild;
-                    (inputElement as IElement).value = formFieldsData[i].FormField.value;
+                    let element: Element = document.getElementById(formFieldsData[i].Key.split("_")[0] + "_content_html_element");
+                    if (element && element.firstElementChild && element.firstElementChild.firstElementChild) {
+                        let inputElement: Element = element.firstElementChild.firstElementChild;
+                        (inputElement as IElement).value = formFieldsData[i].FormField.value;
+                    }
                 }
                 this.updateFormFieldCollections(this.pdfViewerBase.formFieldCollection[i].FormField);
                 this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", this.pdfViewerBase.formFieldCollection[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,

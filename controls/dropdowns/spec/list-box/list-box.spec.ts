@@ -771,12 +771,29 @@ describe('ListBox', () => {
     });
     describe('Customer Reported Bug', () => {
         let elem: HTMLElement = createElement('input');
+        let elem1: HTMLElement = createElement('input', { id: 'listbox1' });
+        let elem2: HTMLElement = createElement('input', { id: 'listbox2' });
+        let listObj1: any;
+        let listObj2: any;
+        let listObj: any
         beforeAll(() => {
             document.body.appendChild(elem);
+            document.body.appendChild(elem1);
+            document.body.appendChild(elem2);
+        });
+
+        beforeEach(() => {
+            listObj1 = new ListBox({
+                enableRtl: true,
+                dataSource: data, scope: '#listbox2',
+                toolbarSettings: { items: ['moveUp', 'moveDown', 'moveTo', 'moveFrom', 'moveAllTo', 'moveAllFrom'] }
+            }, elem1);
+            listObj2 = new ListBox({ dataSource: vegetableData , enableRtl: true}, elem2);
         });
 
         afterEach(() => {
-            listObj.destroy();
+            listObj1.destroy();
+            listObj2.destroy();
         });
 
         it('EJ2-48312', () => {
@@ -823,6 +840,7 @@ describe('ListBox', () => {
             expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
             clearEle.click();
             expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
+            listObj.destroy();
         });
 
         it('EJ2-45800 - Items not updated in filtering while using delete button', () => {
@@ -870,7 +888,23 @@ describe('ListBox', () => {
             listObj.onInput()
             listObj.KeyUp(keyEventArgs);
             expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(2);
+            listObj.destroy();
+        });
+
+        it('EJ2-47596 - Provided showSpinner and hideSpinner method support', () => {
+            listObj = new ListBox({
+                dataSource: data
+            }, elem);
+            listObj.showSpinner();
+            expect(listObj.list.children[2].children[0].classList.contains('e-spin-show')).toBeTruthy();
+            listObj.hideSpinner();
+            expect(listObj.list.children[2].children[0].classList.contains('e-spin-show')).toBeFalsy();
+            listObj.destroy();
+        });
+
+        it('EJ2-50548 - Toolbar settings not aligned properly when Rtl mode is applied', () => {
+            expect(listObj1.list.nextElementSibling.classList.contains('e-rtl')).toBeFalsy();
+            expect(listObj1.list.classList.contains('e-rtl')).toBeTruthy();
         });
     });
-
 });

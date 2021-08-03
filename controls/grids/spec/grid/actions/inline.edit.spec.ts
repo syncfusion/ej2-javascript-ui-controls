@@ -3181,4 +3181,37 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             gridObj = null;
         });
     });
+    describe('EJ2-51487 - Borderline is not applied when edit form rendered at bottom for adding a row', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0,5),
+		            height: '500px',
+            		editSettings: { allowAdding: true, newRowPosition: 'Bottom' },
+            		toolbar: ["Add"],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, validationRules: { required: true }, width: 120  },
+                        { field: 'Freight', textAlign: 'Right', format: 'C2', width: 120 },
+                        { field: 'CustomerID', headerText: 'Contact Name', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('check the borderline in bottom row', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(args.row.querySelector('.e-rowcell').classList.contains('e-lastrowadded')).toBeTruthy();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

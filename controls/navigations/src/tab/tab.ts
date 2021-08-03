@@ -1552,7 +1552,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private bindDraggable(): void {
         if (this.allowDragAndDrop) {
-            let items: NodeList = this.element.querySelectorAll('.' + CLS_TB_ITEM);
+            const tabHeader: Element = this.element.querySelector('.' + CLS_HEADER);
+            const items: NodeList = tabHeader.querySelectorAll('.' + CLS_TB_ITEM);
             items.forEach((element: HTMLElement) => {
                 this.initializeDrag(element as HTMLElement);
             });
@@ -1880,7 +1881,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     let x: number = this.cloneElement.getBoundingClientRect().left;
                     let y: number = this.cloneElement.getBoundingClientRect().top;
                     let ele: HTMLElement = <HTMLElement>document.elementFromPoint(x, y);
-                    dropItem = <HTMLElement>closest(ele, '.' + CLS_TB_ITEM);
+                    dropItem = <HTMLElement>closest(ele, '.' + CLS_TB_ITEM + '.e-draggable');
                     let scrollContentWidth: number = 0;
                     if (this.overflowMode === 'Scrollable' && !isNOU(this.element.querySelector('.e-hscroll'))) {
                         scrollContentWidth = (<HTMLElement>this.element.querySelector('.e-hscroll-content')).offsetWidth;

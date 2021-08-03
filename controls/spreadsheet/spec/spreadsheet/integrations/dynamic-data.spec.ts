@@ -149,6 +149,7 @@ describe('Dynamic data binding - ', () => {
             helper.click('#' + helper.id + '_undo');
             expect(dataChangeArgs.action).toBe('edit');
             expect(dataChangeArgs.data[0]['Profit']).toBe(10);
+            expect(dataChangeArgs.data[0]['Date']).toBe('2/14/2014');
             expect(dataChangeArgs.data[2]['Profit']).toBe(27);
 
             helper.click('#' + helper.id + '_redo');

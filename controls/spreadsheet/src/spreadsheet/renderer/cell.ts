@@ -1,13 +1,14 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat, removeAllChildren } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
 import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
+import { removeAllChildren } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
-import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel, Workbook } from '../../workbook/base/index';
-import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
+import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel} from '../../workbook/base/index';
+import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth, getSheet, setCell, Workbook  } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/index';
-import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes } from '../../workbook/index';
+import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView } from '../../workbook/index';
 import { checkIsFormula } from '../../workbook/common/util';
 /**
  * CellRenderer class which responsible for building cell content.
@@ -25,7 +26,7 @@ export class CellRenderer implements ICellRenderer {
         this.element = this.parent.createElement('td') as HTMLTableCellElement;
         this.th = this.parent.createElement('th', { className: 'e-header-cell' }) as HTMLTableHeaderCellElement;
         this.tableRow = parent.createElement('tr', { className: 'e-row' });
-        this.parent.on('updateView', this.updateView, this);
+        this.parent.on(updateView, this.updateView, this);
         this.parent.on('calculateFormula', this.calculateFormula, this);
     }
 
@@ -91,19 +92,22 @@ export class CellRenderer implements ICellRenderer {
             row: args.row,
             hRow: args.hRow
         });
+        this.setWrapByValue(sheet, args);
+        return evtArgs.element;
+    }
+
+    private setWrapByValue(sheet: SheetModel, args: CellRenderArgs): void {
         const isWrap: boolean = args.td.classList.contains('e-wraptext');
         const cellValue: string = args.td.innerHTML;
         if (cellValue.indexOf('\n') > -1 && !isWrap) {
             const splitVal: string[] = cellValue.split('\n');
             if (splitVal.length > 1) {
                 setCell(args.rowIdx, args.colIdx, sheet, { wrap: true }, true);
-                this.parent.notify(wrapEvent, {
-                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet:
-                        this.parent.getActiveSheet(), td: args.td, row: args.row, hRow: args.hRow
-                });
+                this.parent.notify(
+                    wrapEvent, { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet: sheet,
+                    td: args.td, row: args.row, hRow: args.hRow });
             }
         }
-        return evtArgs.element;
     }
 
     private update(args: CellRenderArgs): void {
@@ -565,20 +569,21 @@ export class CellRenderer implements ICellRenderer {
      * @param {number[]} range - Specifies the range.
      * @returns {void}
      */
-    public refreshRange(range: number[], refreshing?: boolean): void {
+    public refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const cRange: number[] = range.slice();
+        const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
             for (let i: number = cRange[0]; i <= cRange[2]; i++) {
                 if (isHiddenRow(sheet, i)) { continue; }
                 for (let j: number = cRange[1]; j <= cRange[3]; j++) {
                     if (isHiddenCol(sheet, j)) { continue; }
-                    const cell: HTMLElement = this.parent.getCell(i, j);
+                    cell = this.parent.getCell(i, j) as HTMLTableCellElement;
                     if (cell) {
-                        this.update(<CellRenderArgs>{
-                            rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell:
-                                j === cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' });
+                        args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
+                            cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' }
+                        this.update(args);
                         this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
+                        if (checkWrap) { this.setWrapByValue(sheet, args); }
                     }
                 }
             }
@@ -598,9 +603,9 @@ export class CellRenderer implements ICellRenderer {
         }
     }
 
-    private updateView(args: { indexes: number[], sheetIndex?: number, refreshing?: boolean }): void {
+    private updateView(args: { indexes: number[], sheetIndex?: number, refreshing?: boolean, checkWrap?: boolean }): void {
         if (isNullOrUndefined(args.sheetIndex) || (args.sheetIndex === this.parent.activeSheetIndex)) {
-            this.refreshRange(args.indexes, args.refreshing);
+            this.refreshRange(args.indexes, args.refreshing, args.checkWrap);
         } else if (args.refreshing) {
             this.calculateFormula(
                 { cell: getCell(args.indexes[0], args.indexes[1], getSheet(this.parent, args.sheetIndex), true), rowIdx: args.indexes[0],

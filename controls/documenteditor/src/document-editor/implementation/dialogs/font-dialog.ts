@@ -344,7 +344,11 @@ export class FontDialog {
             }
         }
         if (!isNullOrUndefined(characterFormat.fontColor)) {
-            this.colorPicker.value = characterFormat.fontColor;
+            let fontColor: string = characterFormat.fontColor;
+            if (fontColor === '#00000000') {
+                fontColor = '#000000';
+            }
+            this.colorPicker.value = fontColor;
         } else {
             this.colorPicker.value = '#000000';
         }

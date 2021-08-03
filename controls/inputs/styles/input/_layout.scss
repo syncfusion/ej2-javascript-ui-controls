@@ -372,7 +372,7 @@
 
   .e-input-group .e-input-group-icon:last-child,
   .e-input-group.e-control-wrapper .e-input-group-icon:last-child {
-    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4') {
+    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
       border-bottom-right-radius: $input-group-icon-border-radius;
       border-top-right-radius: $input-group-icon-border-radius;
     }
@@ -380,7 +380,7 @@
 
   .e-input-group .e-input-group-icon:first-child,
   .e-input-group.e-control-wrapper .e-input-group-icon:first-child {
-    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4') {
+    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
       border-bottom-left-radius: $input-group-icon-border-radius;
       border-top-left-radius: $input-group-icon-border-radius;
     }
@@ -390,7 +390,7 @@
   .e-input-group.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
   .e-rtl .e-input-group .e-input-group-icon:last-child,
   .e-rtl .e-input-group.e-control-wrapper .e-input-group-icon:last-child {
-    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4') {
+    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
       border-bottom-left-radius: $input-group-icon-border-radius;
       border-bottom-right-radius: $zero-value;
       border-top-left-radius: $input-group-icon-border-radius;
@@ -1104,7 +1104,7 @@
     @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
       font-weight: 500;
       padding-right: 0;
-      transform: translate3d(-10px, -33px, 0) scale(1);
+      transform: translate3d(-10px, -35px, 0) scale(1);
     }
   }
 
@@ -1153,7 +1153,7 @@
     @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
       font-weight: 500;
       padding-right: 0;
-      transform: translate3d(-10px, -32px, 0) scale(1);
+      transform: translate3d(-10px, -34px, 0) scale(1);
     }
   }
 
@@ -1204,7 +1204,7 @@
     @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
       font-weight: 500;
       padding-right: 0;
-      transform: translate3d(-10px, -35px, 0) scale(1);
+      transform: translate3d(-10px, -37px, 0) scale(1);
     }
   }
 
@@ -4018,8 +4018,11 @@
     @if $input-skin-name == 'material' {
       top: -8px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
       top: 18px;
+    }
+    @else if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      top: -11px;
     }
   }
 

@@ -272,9 +272,9 @@ export class StripLine {
     ): void {
         const element: Element = getElement(id);
         const direction: string = element ? element.getAttribute('d') : '';
-        const d: string = (axis.orientation === 'Vertical') ? ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + (rect.x + rect.width)
+        const d: string = (axis.orientation === 'Vertical') ? ('M ' + rect.x + ' ' + rect.y + ' ' + 'L ' + (rect.x + rect.width)
             + ' ' + rect.y) :
-            ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + rect.x + ' ' + (rect.y + rect.height));
+            ('M ' + rect.x + ' ' + rect.y + ' ' + 'L ' + rect.x + ' ' + (rect.y + rect.height));
         appendChildElement(
             chart.enableCanvas, parent, chart.renderer.drawPath(
                 new PathOption(

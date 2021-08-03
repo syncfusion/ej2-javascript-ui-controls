@@ -2558,3 +2558,44 @@ describe('EJ2-51105 - apply Filter programmatically throws script error when hav
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-51485 - CellSelection with box mode is not working properly after filtering applied', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0,2),
+                allowFiltering: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                allowPaging: true,
+                selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('CellSelection after filter action', (done: Function) => {
+        actionComplete = (args: any) => {
+            if (args.requestType == 'filtering') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectionModule.selectCellsByRange({ rowIndex: 1, cellIndex: 1 });
+        gridObj.filterByColumn('OrderID', 'equal', 10248, 'and', true);
+    });
+    it('Check the cell Selection', () => {
+        gridObj.selectionModule.selectCellsByRange({ rowIndex: 0, cellIndex: 1 });
+        expect(gridObj.getSelectedRowCellIndexes().length).toBeTruthy(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

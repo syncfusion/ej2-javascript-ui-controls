@@ -1617,6 +1617,10 @@ export class Toolbar {
                 } else {
                     if (!isBlazor()) {
                         this.deSelectItem(this.textSearchItem);
+                        this.textSearchItem.blur();
+                    } else {
+                        let searchItem: any = this.pdfViewerBase.getElement('_search') as HTMLElement;
+                        searchItem.firstElementChild.blur();
                     }
                 }
             }

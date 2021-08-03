@@ -200,9 +200,16 @@ export class ColumnChooser implements IAction {
             this.dlgObj.element.style.maxHeight = '430px';
             const elementVisible: string = this.dlgObj.element.style.display;
             this.dlgObj.element.style.display = 'block';
-            const newpos: { top: number, left: number } = calculateRelativeBasedPosition(
-                (<HTMLElement>closest(target, '.e-toolbar-item')), this.dlgObj.element
-            );
+            let isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
+            const toolbarItem: HTMLElement = <HTMLElement>closest(target, '.e-toolbar-item');
+            let newpos: { top: number, left: number };
+            if (isSticky) {
+                newpos = toolbarItem.getBoundingClientRect();
+                this.dlgObj.element.classList.add('e-sticky');
+            } else {
+                this.dlgObj.element.classList.remove('e-sticky');
+                newpos = calculateRelativeBasedPosition(toolbarItem, this.dlgObj.element);
+            }  
             this.dlgObj.element.style.display = elementVisible;
             this.dlgObj.element.style.top = newpos.top + closest(target, '.e-cc-toolbar').getBoundingClientRect().height + 'px';
             const dlgWidth: number = 250;

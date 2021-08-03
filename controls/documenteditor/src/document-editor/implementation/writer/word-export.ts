@@ -5467,7 +5467,8 @@ export class WordExport {
         }
         if (!isNullOrUndefined(characterFormat.fontColor)) {
             writer.writeStartElement(undefined, 'color', this.wNamespace);
-            if (characterFormat.fontColor === 'empty') {
+            // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
+            if (characterFormat.fontColor === 'empty' || characterFormat.fontColor === '#00000000') {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'auto');
             } else {
                 writer.writeAttributeString('w', 'val', this.wNamespace, this.getColor(characterFormat.fontColor));

@@ -13,7 +13,7 @@ import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, Unpro
 import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
-import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, getRangeIndexes } from '../common/index';
+import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
@@ -22,7 +22,7 @@ import { WorkbookNumberFormat } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
-import { setLinkModel, setImage, setChart } from '../common/event';
+import { setLinkModel, setImage, setChart, updateView } from '../common/event';
 import { beginAction, completeAction, deleteChart } from '../../spreadsheet/common/event';
 import { WorkbookFindAndReplace } from '../actions/find-and-replace';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
@@ -1274,6 +1274,24 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     sheetIndex: sheetIdx
                 });
         }
+        this.notify(updateView, { indexes: range, sheetIndex: sheetIdx });
+    }
+
+    /**
+     * Used to get a row data from the data source with updated cell value.
+     * 
+     * @param {number} index? - Specifies the row index.
+     * @param {number} sheetIndex? - Specifies the sheet index. By default, it consider the active sheet index.
+     * @returns {Object[]} - Return row data.
+     * {% codeBlock src='spreadsheet/getRowData/index.md' %}{% endcodeBlock %}
+     */
+     public getRowData(index?: number, sheetIndex?: number): Object[] {
+        if (isNullOrUndefined(index)) { index = 0; }
+        if (isNullOrUndefined(sheetIndex)) { sheetIndex = this.activeSheetIndex; }
+        const eventArgs: { sheetIdx: number, startIndex: number, modelType: ModelType, isDataRequest: boolean, data?: Object[] } =
+            { sheetIdx: sheetIndex, startIndex: index, modelType: 'Row', isDataRequest: true };
+        this.notify(dataChanged, eventArgs);
+        return eventArgs.data;
     }
 
     /**

@@ -521,6 +521,24 @@
       user-select: none;
     }
 
+    .e-groupdroparea.e-sticky,
+    .e-toolbar.e-sticky,
+    .e-gridheader.e-sticky {
+        position: sticky;
+        z-index: 10;
+    }
+
+    .e-gridheader.e-sticky .e-headercontent .e-reorderuparrow,
+    .e-gridheader.e-sticky .e-headercontent .e-reorderdownarrow,
+    .e-ccdlg.e-sticky {
+      position: fixed;
+      z-index: 10;
+    }
+    
+    .e-groupdroparea.e-sticky {
+        opacity: 1;
+    }
+
     .e-gridheader .e-firstrow-dragborder,
     &.e-rtl .e-gridheader .e-firstrow-dragborder,
     .e-gridcontent .e-lastrow-dragborder,
@@ -1796,7 +1814,7 @@
       cursor: not-allowed;
     }
 
-    .e-pointercur {
+    .e-grabcur {
       cursor: grabbing;
     }
 

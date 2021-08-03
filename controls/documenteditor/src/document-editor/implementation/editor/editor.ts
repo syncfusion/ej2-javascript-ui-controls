@@ -17426,7 +17426,7 @@ export class Editor {
         const paragraph: ParagraphWidget = new ParagraphWidget();
         const lineWidget: LineWidget = new LineWidget(paragraph);
         const text: TextElementBox = new TextElementBox();
-        text.characterFormat.fontColor = 'empty';
+        text.characterFormat.fontColor = '#00000000';
         text.line = lineWidget;
         text.text = '\u0003';
         lineWidget.children.push(text);
@@ -17442,7 +17442,7 @@ export class Editor {
         const paragraph: ParagraphWidget = new ParagraphWidget();
         const lineWidget: LineWidget = new LineWidget(paragraph);
         const text: TextElementBox = new TextElementBox();
-        text.characterFormat.fontColor = 'empty';
+        text.characterFormat.fontColor = '#00000000';
         text.line = lineWidget;
         text.text = '\u0004';
         lineWidget.children.push(text);

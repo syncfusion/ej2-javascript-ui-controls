@@ -451,7 +451,7 @@ export class WorkbookNumberFormat {
     }
 
     private checkCustomDateFormat(val: string): string {
-        const dateArr: string | string[] = val.indexOf('/') > -1 ? val.split('/') : val.indexOf('-') > 0 ? val.split('-') : '';
+        const dateArr: string[] = val.indexOf('/') > -1 ? val.split('/') : val.indexOf('-') > 0 ? val.split('-') : [''];
         const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
         if (dateArr.length === 2) {
             if (months.indexOf(dateArr[0].toLowerCase()) > -1 && Number(dateArr[1]) <= 31) {
@@ -468,6 +468,12 @@ export class WorkbookNumberFormat {
                 return '01-' + dateArr[0] + '-' + dateArr[1];
             } else {
                 return 'Invalid';
+            }
+        } else if (dateArr.length > 2) {
+            for (let i: number = 0; i < dateArr.length; i++) {
+                if (!(Number(dateArr[i]) > -1)) {
+                    if (!months.filter((month: string) => dateArr[i].toLowerCase().includes(month)).length) { return 'Invalid'; }
+                }
             }
         }
         return val;

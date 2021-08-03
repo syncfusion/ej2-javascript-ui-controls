@@ -16,6 +16,8 @@ export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';
 /** @hidden */
+export const checkUniqueRange: string = 'checkUniqueRange';
+/** @hidden */
 export const sortImport: string = 'sortImport';
 /** @hidden */
 export const ribbonFind: string = 'ribbonFind';
@@ -230,3 +232,5 @@ export const moveOrDuplicateSheet: string = 'moveOrDuplicateSheet';
 export const cFUndo: string = 'cFUndo';
 /** @hidden */
 export const refreshClipboard: string = 'refreshClipboard';
+/** @hidden */
+export const updateView: string = 'updateView';

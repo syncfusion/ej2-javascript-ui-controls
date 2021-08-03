@@ -274,6 +274,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isNotified;
     private isAddSuccess;
     private isNotValueChange;
+    private isRoot;
     /**
      * Triggers when the component is created.
      *
@@ -514,6 +515,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private createSubFields;
     private operatorChangeSuccess;
     private changeRuleValues;
+    private popupOpen;
     private destroyControls;
     private templateDestroy;
     /**

@@ -10,6 +10,7 @@ import { lazyLoadScrollHandler, checkScrollReset } from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
 import * as literals from '../base/string-literals';
+import * as events from '../base/constant';
 
 /**
  * The `Scroll` module is used to handle scrolling behaviour.
@@ -23,6 +24,7 @@ export class Scroll implements IAction {
     private header: HTMLDivElement;
     private widthService: ColumnWidthService;
     private pageXY: { x: number, y: number };
+    private parentElement: HTMLElement;
 
     /**
      * Constructor for the Grid scrolling.
@@ -298,6 +300,37 @@ export class Scroll implements IAction {
         return pageXY;
     }
 
+    private getScrollbleParent(node: HTMLElement): HTMLElement {
+        if (node === null) {
+            return null;
+        }
+        const parent = isNullOrUndefined(node.tagName) ? (node as any).scrollingElement : node;
+        const overflowY = document.defaultView.getComputedStyle(parent, null).overflowY;
+        if (parent.scrollHeight > parent.clientHeight && overflowY !== 'hidden'
+            && overflowY !== 'visible' || node.tagName === "HTML" || node.tagName === "BODY") {
+            return node
+        } else {
+            return this.getScrollbleParent(node.parentNode as HTMLElement);
+        }
+    }
+
+    /**
+     * @param {boolean} isAdd - specifies whether adding/removing the event
+     * @returns {void}
+     * @hidden
+     */
+    public addStickyListener(isAdd: boolean): void {
+        if (isAdd) {
+            this.parentElement = this.getScrollbleParent(this.parent.element.parentElement);
+            if (this.parentElement) {
+                EventHandler.add(this.parentElement.tagName === 'HTML' || this.parentElement.tagName === 'BODY' ? document :
+                    this.parentElement, 'scroll', this.makeStickyHeader, this);
+            }
+        } else {
+            EventHandler.remove(this.parentElement, 'scroll', this.makeStickyHeader);
+        }
+    }
+
     private wireEvents(): void {
         if (this.oneTimeReady) {
             const frzCols: boolean = this.parent.isFrozenGrid();
@@ -375,6 +408,9 @@ export class Scroll implements IAction {
             }
         );
         this.parent.isPreventScrollEvent = false;
+        if (this.parent.enableStickyHeader) {
+            this.addStickyListener(true);
+        }
     }
 
     /**
@@ -409,6 +445,60 @@ export class Scroll implements IAction {
         this.setWidth(!isNullOrUndefined(e.properties[width]));
     }
 
+    private makeStickyHeader(): void {
+        if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent()) {
+            const contentRect: ClientRect = this.parent.getContent().getClientRects()[0];
+            const headerEle: HTMLElement = this.parent.getHeaderContent() as HTMLElement;
+            const toolbarEle: HTMLElement = this.parent.element.querySelector('.e-toolbar') as HTMLElement;
+            const groupHeaderEle: HTMLElement = this.parent.element.querySelector('.e-groupdroparea') as HTMLElement;
+            const height: number = headerEle.offsetHeight + (toolbarEle ? toolbarEle.offsetHeight : 0) +
+                (groupHeaderEle ? groupHeaderEle.offsetHeight : 0);
+            const parentTop: number = this.parentElement.getClientRects()[0].top;
+            const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
+            const left: number = contentRect.left;
+            if (top < height && contentRect.bottom > 0) {
+                headerEle.classList.add('e-sticky');
+                let elemTop: number = 0;
+                if (groupHeaderEle) {
+                    this.setSticky(groupHeaderEle, elemTop, contentRect.width, left, true);
+                    elemTop += groupHeaderEle.getClientRects()[0].height;
+                }
+                if (toolbarEle) {
+                    this.setSticky(toolbarEle, elemTop, contentRect.width, left, true);
+                    elemTop += toolbarEle.getClientRects()[0].height;
+                }
+                this.setSticky(headerEle, elemTop, contentRect.width, left, true);
+            }
+            else {
+                if (headerEle.classList.contains('e-sticky')) {
+                    this.setSticky(headerEle, null, null, null, false);
+                    if (toolbarEle) {
+                        this.setSticky(toolbarEle, null, null, null, false);
+                    }
+                    if (groupHeaderEle) {
+                        this.setSticky(groupHeaderEle, null, null, null, false);
+                    }
+                    const ccDlg: HTMLElement = this.parent.element.querySelector('.e-ccdlg');
+                    if (ccDlg) {
+                        ccDlg.classList.remove('e-sticky');
+                    }
+                }
+            }
+            this.parent.notify(events.stickyScrollComplete, {});
+        }
+    }
+
+    private setSticky(ele: HTMLElement, top?: number, width?: number, left?: number, isAdd?: boolean): void {
+        if (isAdd) {
+            ele.style.width = width + 'px';
+            ele.classList.add('e-sticky');
+        } else {
+            ele.classList.remove('e-sticky');
+        }
+        ele.style.top = top != null ? top + 'px' : '';
+        ele.style.left = left !== null ? parseInt(ele.style.left, 10) !== left ? left + 'px' : ele.style.left : '';
+    }
+
     /**
      * @returns {void}
      * @hidden
@@ -432,6 +522,9 @@ export class Scroll implements IAction {
 
         //Remove Dom event
         EventHandler.remove(<HTMLDivElement>cont, 'scroll', this.onContentScroll);
+        if (this.parent.enableStickyHeader) {
+            this.addStickyListener(false);
+        }
     }
 
     /**

@@ -220,7 +220,7 @@ export class Text {
         this.highlightColorElement.appendChild(nocolor);
         const nocolorDiv: HTMLElement = createElement('div', { styles: 'width:24px;height:24px;background-color:#ffffff;margin:3px;', id: 'noColorDiv' });
         nocolor.appendChild(nocolorDiv);
-        const nocolorDivValue: HTMLElement = createElement('div', { innerHTML: 'No color', className: 'e-de-ctnr-hglt-no-color' });
+        const nocolorDivValue: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('No color'), className: 'e-de-ctnr-hglt-no-color' });
         nocolorDiv.appendChild(nocolorDivValue);
         yellowDiv.addEventListener('click', this.onHighLightColor.bind(this));
         brightGreenDiv.addEventListener('click', this.onHighLightColor.bind(this));
@@ -645,7 +645,11 @@ export class Text {
                 }
             }
             if (this.documentEditor.selection.characterFormat.fontColor) {
-                this.fontColorInputElement.value = this.documentEditor.selection.characterFormat.fontColor;
+                let fontColor: string = this.documentEditor.selection.characterFormat.fontColor;
+                if (fontColor === '#00000000') {
+                    fontColor = '#000000';
+                }
+                this.fontColorInputElement.value = fontColor;
             }
             if (this.documentEditor.selection.characterFormat.highlightColor) {
                 this.highlightColorInputElement.style.backgroundColor = this.appliedHighlightColor;

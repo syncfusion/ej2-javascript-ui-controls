@@ -997,3 +997,175 @@ describe('Keep lines together Table case validation', () => {
         expect(editor.documentHelper.pages[1].bodyWidgets[0].childWidgets.length).toBe(1);
     });
 });
+
+describe('Keep with next with page break', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, height: '700px' });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it('Paragraph has page break', () => {
+        var sfdt = {
+            "sections": [
+                {
+                    "blocks": [
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true,
+                                        fontSize: 32
+                                    },
+                                    "text": "Adventure Works Cycles"
+                                }
+                            ]
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true
+                                    },
+                                    "text": "Adventure Works Cycles"
+                                }
+                            ],
+                            "paragraphFormat": {
+                                "keepWithNext": true
+                            }
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true
+                                    },
+                                    "text": "\f"
+                                }
+                            ],
+                            "paragraphFormat": {
+                                "keepWithNext": true
+                            }
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true
+                                    },
+                                    "text": "Adventure Works Cycles"
+                                }
+                            ],
+                            "paragraphFormat": {
+                                "keepWithNext": true
+                            }
+                        }
+                    ],
+                    "headersFooters": {
+                    }
+                }
+            ]
+        };
+        editor.open(JSON.stringify(sfdt));
+        expect(editor.documentHelper.pages.length).toBe(2);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        expect(editor.documentHelper.pages[1].bodyWidgets[0].childWidgets.length).toBe(1);
+    });
+    it('Paragraph ends with page break', () => {
+        var sfdt = {
+            "sections": [
+                {
+                    "blocks": [
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true,
+                                        fontSize: 32
+                                    },
+                                    "text": "Adventure Works Cycles"
+                                }
+                            ]
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true
+                                    },
+                                    "text": "Adventure Works Cycles"
+                                }
+                            ],
+                            "paragraphFormat": {
+                                "keepWithNext": true
+                            }
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true
+                                    },
+                                    "text": "Adventure Works Cycles"
+                                },
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true
+                                    },
+                                    "text": "\f"
+                                }
+                            ],
+                            "paragraphFormat": {
+                                "keepWithNext": true
+                            }
+                        },
+                        {
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bold": true,
+                                        "italic": true
+                                    },
+                                    "text": "Adventure Works Cycles"
+                                }
+                            ],
+                            "paragraphFormat": {
+                                "keepWithNext": true
+                            }
+                        }
+                    ],
+                    "headersFooters": {
+                    }
+                }
+            ]
+        };
+        editor.open(JSON.stringify(sfdt));
+        expect(editor.documentHelper.pages.length).toBe(2);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        expect(editor.documentHelper.pages[1].bodyWidgets[0].childWidgets.length).toBe(1);
+    });
+});

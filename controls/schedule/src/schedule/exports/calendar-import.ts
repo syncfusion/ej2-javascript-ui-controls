@@ -36,6 +36,7 @@ export class ICalendarImport {
         let isEvent: boolean = false;
         let curEvent: Record<string, any>;
         let id: number | string = this.parent.eventBase.getEventMaxID();
+        let count: number = 0;
         calArray.forEach((element: string) => {
             let index: number;
             let type: string;
@@ -71,13 +72,13 @@ export class ICalendarImport {
                     curEvent[fields.recurrenceException] = value;
                     curEvent[fields.recurrenceID] = value;
                 } else {
-                    id = (id as number)++;
                     switch (type) {
                     case 'BEGIN':
                         break;
                     case 'UID':
                         curEvent[uId] = value;
-                        curEvent[fields.id] = id;
+                        curEvent[fields.id] = typeof(id) === 'string'? id + count.toString() : id + count;
+                        count++;
                         break;
                     case 'SUMMARY':
                         curEvent[fields.subject] = value;
@@ -155,7 +156,7 @@ export class ICalendarImport {
         const split: string[] = (element.match(expression)).slice(1);
         const value: string = split[split.length - 1];
         let newDate: Date = new Date(this.getDateString(value));
-        if (element && element.indexOf('VALUE=DATE') > -1) {
+        if (element && (element.indexOf('VALUE=DATE') > -1 || element.indexOf('RECURRENCE-ID;TZID') > -1)) {
             const data: string[] = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
             if (data !== null) {
                 newDate = new Date(parseInt(data[1], 10), parseInt(data[2], 10) - 1, parseInt(data[3], 10));

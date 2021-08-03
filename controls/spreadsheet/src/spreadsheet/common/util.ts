@@ -115,8 +115,14 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
         const leftIdx: number = context.viewport.leftIndex;
         const bottomIdx: number = topIdx + context.viewport.rowCount + context.getThreshold('row') * 2;
         const rightIdx: number = leftIdx + context.viewport.colCount + context.getThreshold('col') * 2;
-        let inView: boolean = topIdx <= range[0] && bottomIdx >= range[2] && leftIdx <= range[1] && rightIdx >= range[3];
-        if (inView) { return true; }
+        const sheet: SheetModel = context.getActiveSheet();
+        let inView: boolean;
+        if (sheet.frozenRows || sheet.frozenColumns) {
+            return context.insideViewport(range[0], range[1]) || context.insideViewport(range[2], range[3]);
+        } else {
+            inView = topIdx <= range[0] && bottomIdx >= range[2] && leftIdx <= range[1] && rightIdx >= range[3];
+            if (inView) { return true; }
+        }
         if (isModify) {
             if (range[0] < topIdx && range[2] < topIdx || range[0] > bottomIdx && range[2] > bottomIdx) {
                 return false;

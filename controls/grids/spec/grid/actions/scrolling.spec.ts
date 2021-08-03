@@ -8,11 +8,17 @@ import { Grid } from '../../../src/grid/base/grid';
 import { uiUpdate } from '../../../src/grid/base/constant';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Scroll } from '../../../src/grid/actions/scroll';
-import { data } from '../base/datasource.spec';
+import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { getClickObj } from '../base/specutil.spec';
+import { SortSettingsModel } from '../../../src/grid/base/grid-model';
+import { Sort } from '../../../src/grid/actions/sort';
+import { Filter } from '../../../src/grid/actions/filter';
+import { Group } from '../../../src/grid/actions/group';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 
-Grid.Inject(Scroll);
+Grid.Inject(Scroll, Group, Filter, Sort, Toolbar);
 
 const ieUa: string = 'Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET4.0E; .NET4.0C; ' +
     'Tablet PC 2.0; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; InfoPath.3; rv:11.0) like Gecko';
@@ -399,6 +405,63 @@ describe('Scrolling module', () => {
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
             grid = old = null;
+        });
+    });
+
+    describe('Scrolling scroll event', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: filterData,
+                    width: 300,
+                    enableStickyHeader: true,
+                    toolbar: ["Add", "Edit", "Delete"],
+                    allowGrouping: true,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    filterSettings: { type: "Menu" },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: 200
+                        },
+                        { field: 'Verified', displayAsCheckbox: true, type: 'boolean', width: 200 },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 200 },
+                        { field: 'OrderDate', format: 'yMd', width: 200 },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 200 }
+                    ]
+                },
+                done
+            );
+        });
+        it('check sticky class without scroll', () => {
+            expect(grid.getHeaderContent().classList.contains('e-sticky')).toBeFalsy();
+        });
+        it('Scrolling down', (done: Function) => {
+            let listner: Function = () => {
+                expect(grid.getHeaderContent().classList.contains('e-sticky')).toBeTruthy();
+                grid.off('sticky-scroll-complete', listner);
+                done();
+            };
+            grid.on('sticky-scroll-complete', listner, this);
+            document.scrollingElement.scrollTop = 500;
+        });
+        it('Scrolling up', (done: Function) => {
+            let listner: Function = () => {
+                expect(grid.getHeaderContent().classList.contains('e-sticky')).toBeFalsy();
+                grid.off('sticky-scroll-complete', listner);
+                done();
+            };
+            grid.on('sticky-scroll-complete', listner, this);
+            document.scrollingElement.scrollTop = 0;
+        });
+
+        afterAll(() => {
+            grid.enableStickyHeader = false;
+            destroy(grid);
+            grid = null;
         });
     });
 });

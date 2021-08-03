@@ -46,7 +46,7 @@ export class DataBind {
     // eslint-disable-next-line
     private updateSheetFromDataSourceHandler(
         args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
-        sheetIndex?: number }): void {
+        sheetIndex?: number, dataSourceChange?: boolean }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
@@ -122,7 +122,7 @@ export class DataBind {
                                     if (!cell) {
                                         args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
                                             : { value: field };
-                                    } else if (!cell.value && !field.includes('emptyCell')) {
+                                    } else if ((!cell.value || args.dataSourceChange) && !field.includes('emptyCell')) {
                                         cell.value = field;
                                     }
                                 });
@@ -133,7 +133,7 @@ export class DataBind {
                                 for (let j: number = 0; j < flds.length; j++) {
                                     cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
                                     if (cell) {
-                                        if (!cell.value && !flds[j].includes('emptyCell')) {
+                                        if ((!cell.value || args.dataSourceChange) && !flds[j].includes('emptyCell')) {
                                             setCell(rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j]]), true);
                                         }
                                     } else {
@@ -378,14 +378,14 @@ export class DataBind {
             interface Viewport { topIndex: number; bottomIndex: number; leftIndex: number; rightIndex: number; }
             const viewport: Viewport = (this.parent as unknown as { viewport: Viewport }).viewport;
             const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
-            const eventArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel> } = {
-                sheet: sheet as ExtendedSheet, indexes: refreshRange, promise:
+            const eventArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, dataSourceChange?: boolean } = {
+                sheet: sheet as ExtendedSheet, indexes: refreshRange, dataSourceChange: true, promise:
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
             this.updateSheetFromDataSourceHandler(eventArgs);
             eventArgs.promise.then(() => {
-                this.parent.notify('updateView', { indexes: refreshRange });
+                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true });
                 this.parent.trigger(
                     'dataSourceChanged',
                     { data: args.changedData, action: 'dataSourceChanged', rangeIndex: Number(args.rangeIdx), sheetIndex:
@@ -431,7 +431,7 @@ export class DataBind {
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number, modelType: string,
         deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, pastedRange: string,
-        range: string, isUndoRedo: boolean, requestType: string
+        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean
     }): void {
         const changedData: Object[] = [{}];
         let action: string;
@@ -441,7 +441,7 @@ export class DataBind {
         let inRange: boolean;
         let inRangeCut: boolean;
         let deleteRowDetails: { count: number, index: number };
-        const sheetIdx: number = this.parent.activeSheetIndex;
+        const sheetIdx: number = args.sheetIdx === undefined ? this.parent.activeSheetIndex : args.sheetIdx;
         const sheet: SheetModel = this.parent.sheets[sheetIdx];
         let cellIndices: number[];
         let cutIndices: number[];
@@ -469,7 +469,11 @@ export class DataBind {
                         }
                     } else {
                         inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
-                        action = 'delete';
+                        if (args.isDataRequest) {
+                            cellIndices = [args.startIndex, dataRange[1], args.startIndex, dataRange[1]];
+                        } else {
+                            action = 'delete';
+                        }
                     }
                 } else {
                     cellIndices = getRangeIndexes(args.requestType === 'paste' ? args.pastedRange.split('!')[1] : args.sheetIdx > -1 ? args.address : (args.address || args.range).split('!')[1]);
@@ -482,13 +486,13 @@ export class DataBind {
                     }
                 }
                 if (inRange || isNewRow || inRangeCut) {
-                    if (args.modelType === 'Row' && !args.insertType) {
+                    if (args.modelType === 'Row' && !args.insertType && !args.isDataRequest) {
                         args.deletedModel.forEach((row: RowModel, rowIdx: number) => {
                             changedData[rowIdx] = {};
                             range.info.flds.forEach((fld: string, idx: number) => {
                                 if (row.cells) {
                                     cell = row.cells[startCell[1] + idx];
-                                    changedData[rowIdx][fld] = (cell && cell.value) || null;
+                                    changedData[rowIdx][fld] = this.getFormattedValue(cell);
                                 } else {
                                     changedData[rowIdx][fld] = null;
                                 }
@@ -505,7 +509,7 @@ export class DataBind {
                                 changedData[i] = {};
                                 range.info.flds.forEach((fld: string, idx: number) => {
                                     cell = getCell(cutIndices[0] + i, startCell[1] + idx, sheet);
-                                    changedData[i][fld] = (cell && cell.value) || null;
+                                    changedData[i][fld] = this.getFormattedValue(cell);
                                 });
                             }
                         }
@@ -514,17 +518,31 @@ export class DataBind {
                                 changedData[i + addedCutData] = {};
                                 range.info.flds.forEach((fld: string, idx: number) => {
                                     cell = getCell(cellIndices[0] + i, startCell[1] + idx, sheet);
-                                    changedData[i + addedCutData][fld] = (cell && cell.value) || null;
+                                    changedData[i + addedCutData][fld] = this.getFormattedValue(cell);
                                 });
                             }
                         }
                     }
-                    this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
+                    if (args.isDataRequest) {
+                        args.data = changedData;
+                    } else {
+                        this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
+                    }
                 } else if (deleteRowDetails && deleteRowDetails.count && dataRange[0] > deleteRowDetails.index) {
                     range.startCell = getCellAddress(startCell[0] - deleteRowDetails.count, startCell[1]);
                 }
             }
         });
+    }
+
+    private getFormattedValue(cell: CellModel): string {
+        const value: string = this.parent.getDisplayText(cell);
+        if (value === '') {
+            return null;
+        } else if (cell && !cell.format && typeof cell.value === 'number') {
+            return cell.value;
+        }
+        return value;
     }
 
     private triggerDataChangeHandler(args: {

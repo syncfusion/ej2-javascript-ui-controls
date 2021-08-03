@@ -571,9 +571,11 @@ export class Reorder implements IAction {
                 }
             }
         }
-        this.upArrow.style.top = cliRect.top + cliRect.height - cliRectBase.top + 'px';
-        this.downArrow.style.top = cliRect.top - cliRectBase.top - 7 + 'px';
-        this.upArrow.style.left = this.downArrow.style.left = (isLeft ? cliRect.left : cliRect.right) - cliRectBase.left - 4 + 'px';
+        let isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
+        this.upArrow.style.top = isSticky ? cliRect.top + cliRect.height + 'px' : cliRect.top + cliRect.height - cliRectBase.top + 'px';
+        this.downArrow.style.top = isSticky ? cliRect.top - 7 + 'px' : cliRect.top - cliRectBase.top - 7 + 'px';
+        this.upArrow.style.left = this.downArrow.style.left = isSticky ? (isLeft ? cliRect.left : cliRect.right) - 4 + 'px' :
+            (isLeft ? cliRect.left : cliRect.right) - cliRectBase.left - 4 + 'px';
         this.setDisplay('');
     }
 

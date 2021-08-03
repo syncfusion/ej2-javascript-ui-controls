@@ -1986,8 +1986,20 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public updateCell(cell: CellModel, address?: string): void {
         address = address || this.getActiveSheet().activeCell;
         super.updateCell(cell, address);
-        this.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(address));
         this.notify(activeCellChanged, null);
+    }
+
+    /**
+     * Used to get a row data from the data source with updated cell value.
+     *
+     * {% codeBlock src='spreadsheet/getRowData/index.md' %}{% endcodeBlock %}
+     *
+     * @param {number} index? - Specifies the row index.
+     * @param {number} sheetIndex? - Specifies the sheet index. By default, it consider the active sheet index.
+     * @returns {Object[]} - Return row data.
+     */
+    public getRowData(index?: number, sheetIndex?: number): Object[] {
+        return super.getRowData(index, sheetIndex);
     }
 
     /**

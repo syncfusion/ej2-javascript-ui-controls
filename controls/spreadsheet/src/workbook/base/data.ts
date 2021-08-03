@@ -1,5 +1,5 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
-import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
+import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat, checkUniqueRange } from '../common/index';
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete, workbookFormulaOperation } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -250,20 +250,28 @@ export function clearRange(context: Workbook, address: string, sheetIdx: number,
         sCIdx = range[1];
         eCIdx = range[3];
         for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-            const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
-            cellValue = cell && cell.value;
-            context.notify(cFDelete, { rowIdx: sRIdx, colIdx: sCIdx } );
-            if (!isNullOrUndefined(cell) && valueOnly) {
-                delete cell.value;
-                if (!isNullOrUndefined(cell.formula)) {
-                    delete cell.formula;
-                }
-                if (!isNullOrUndefined(cell.hyperlink)) {
-                    delete cell.hyperlink;
-                }
+            const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [sRIdx, sCIdx], isUnique: false , uniqueRange: ''};
+            context.notify(checkUniqueRange, args); let skip: boolean = false;
+            if (args.uniqueRange !== '') {
+                const rangeIndex: number[] = getIndexesFromAddress(args.uniqueRange);
+                skip = getCell(rangeIndex[0], rangeIndex[1], sheet).value === '#SPILL!';
             }
-            if (!isNullOrUndefined(cellValue) && cellValue !== '') {
-                context.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRIdx, colIndex: sCIdx });
+            if (!args.isUnique || skip) {
+                const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
+                cellValue = cell && cell.value;
+                context.notify(cFDelete, { rowIdx: sRIdx, colIdx: sCIdx });
+                if (!isNullOrUndefined(cell) && valueOnly) {
+                    delete cell.value;
+                    if (!isNullOrUndefined(cell.formula)) {
+                        delete cell.formula;
+                    }
+                    if (!isNullOrUndefined(cell.hyperlink)) {
+                        delete cell.hyperlink;
+                    }
+                }
+                if (!isNullOrUndefined(cellValue) && cellValue !== '') {
+                    context.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRIdx, colIndex: sCIdx });
+                }
             }
         }
     }

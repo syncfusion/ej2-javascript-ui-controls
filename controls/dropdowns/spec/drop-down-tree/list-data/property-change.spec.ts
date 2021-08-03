@@ -2091,7 +2091,6 @@ describe('DropDownTree control', () => {
             });
 
             it('click', (done: Function) => {
-                ddtreeObj = new DropDownTree({ fields: { dataSource: localData1, value: "nodeId", parentValue: 'nodePid', text: "nodeText", hasChildren: "hasChild" } }, '#ddtree');
                 ddtreeObj.showPopup();
                 ddtreeObj.treeSettings.expandOn = 'Click';
                 ddtreeObj.dataBind();
@@ -2101,31 +2100,33 @@ describe('DropDownTree control', () => {
                 expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
                 expect(li[0].childElementCount).toBe(2);
                 ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(false);
                     expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(true);
                     expect(li[0].childElementCount).toBe(3);
                     expect(li[0].getAttribute('aria-expanded')).toBe('true');
                     ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(true);
                         expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
                         expect(li[0].getAttribute('aria-expanded')).toBe('false');
                         expect((li[0]).classList.contains('e-node-collapsed')).toBe(true);
                         ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(function () {
                             expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(false);
                             expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(true);
                             expect(li[0].getAttribute('aria-expanded')).toBe('true');
                             expect((li[0]).classList.contains('e-node-collapsed')).toBe(false);
                             let newli: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
-                            expect(newli[1].querySelector('.e-icons')).toBe(null);
+                            expect(newli[1].querySelector('.e-icons')).not.toBe(null);
                             expect(newli[1].childElementCount).toBe(2);
-                            expect(newli[1].getAttribute('aria-expanded')).toBe(null);
-                            done();
+                            mouseEventArgs.target = newli[1].querySelector('.e-list-text');
+                            ddtreeObj.treeObj.touchExpandObj.tap(tapEvent);
+                            setTimeout(function() {
+                                expect(newli[1].querySelector('.e-icons')).toBe(null);
+                                expect(newli[1].getAttribute('aria-expanded')).toBe(null);
+                                done();
+                            }, 450);
                         }, 450);
                     }, 450);
                 }, 450);

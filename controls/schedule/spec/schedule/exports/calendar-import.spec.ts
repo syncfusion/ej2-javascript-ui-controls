@@ -7,6 +7,7 @@ import {
     MonthAgenda, ScheduleModel, ICalendarImport
 } from '../../../src/schedule/index';
 import { createSchedule, destroy } from '../util.spec';
+import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, ICalendarImport);
@@ -262,6 +263,45 @@ TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR`;
 
+const icalStr: string = `BEGIN:VCALENDAR
+PRODID:-//Syncfusion Inc//Scheduler//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Calendar
+X-WR-TIMEZONE:Asia/Calcutta
+BEGIN:VEVENT
+LOCATION:
+SUMMARY:My_event
+UID:dbddfb8a-db2a-9da5-c861-d2ba047894a7
+RRULE:FREQ=WEEKLY;BYDAY=WE;INTERVAL=1;COUNT=5;
+DTSTART;VALUE=DATE:20170201
+DTEND;VALUE=DATE:20170202
+DESCRIPTION:
+ISREADONLY:false
+END:VEVENT
+BEGIN:VEVENT
+LOCATION:
+SUMMARY:testing
+UID:db367cbd-3419-b48e-8906-1dbd63bb9ad9
+DTSTART;VALUE=DATE:20170202
+DTEND;VALUE=DATE:20170203
+DESCRIPTION:
+ISREADONLY:false
+END:VEVENT
+BEGIN:VEVENT
+LOCATION:
+SUMMARY:My_event_exception
+UID:dbddfb8a-db2a-9da5-c861-d2ba047894a7
+RECURRENCE-ID;TZID="Asia/Calcutta":20170208
+RRULE:FREQ=WEEKLY;BYDAY=WE;INTERVAL=1;COUNT=5;
+DTSTART;VALUE=DATE:20170208
+DTEND;VALUE=DATE:20170209
+DESCRIPTION:
+ISREADONLY:false
+END:VEVENT
+END:VCALENDAR`;
+
 describe('ICS calendar import', () => {
     beforeAll(() => {
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
@@ -407,6 +447,62 @@ describe('ICS calendar import', () => {
             expect(events[1].classList).toContain('e-read-only');
             expect(events[1].getAttribute('aria-readonly')).toEqual('true');
             }
+        });
+    });
+
+    describe('EJ2-51402 - Issue with importing recurrence events', () => {
+        let schObj: Schedule;        
+        beforeAll((done: DoneFn) => {
+            const events: Record<string, any>[] = [{
+                Id: 10,
+                Subject: 'recurrence event',
+                StartTime: new Date(2017, 9, 19, 10, 0),
+                EndTime: new Date(2017, 9, 19, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }, {
+                Id: 11,
+                Subject: 'testing1',
+                StartTime: new Date(2017, 1, 2),
+                EndTime: new Date(2017, 1, 2),
+                IsAllDay: true
+            }, {
+                Id: 12,
+                Subject: 'event 2',
+                StartTime: new Date(2017, 9, 20, 11, 0),
+                EndTime: new Date(2017, 9, 20, 12, 30),
+            }];
+            const options: ScheduleModel = { selectedDate: new Date(2017, 1, 7), currentView: 'Month' };
+            schObj = createSchedule(options, events, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Import checking with EJ2 scheduler exported file', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(3);
+            const fileObj: File = new File([icalStr], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
+            schObj.importICalendar(fileObj);
+        });
+
+        it('Import checking with readonly event', () => {
+            schObj.dataBound = () => {
+            expect(schObj.eventsData.length).toEqual(6);
+            expect(schObj.element.querySelectorAll('.e-appointment')[1].querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('event');
+            }
+            (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-edit')).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const subjectElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
+            expect(subjectElement.value).toEqual('testing');
+            subjectElement.value = 'event';
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
         });
     });
 

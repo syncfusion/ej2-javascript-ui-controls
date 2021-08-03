@@ -599,6 +599,18 @@ describe('Print and export', () => {
             expect(image).not.toBeNull();
             done();
         });
+        it('Export settings With diagram mode Download and format JPG - Download', (done: Function) => {
+            let options: IExportOptions = {};
+            options.mode = 'Data';
+            options.format = 'JPG';
+            options.region = 'PageSettings';
+            options.fileName = 'export';
+            let data: any = diagram.exportDiagram(options);
+            let imageData = data.substring(data.indexOf(":") + 1, data.indexOf(";"));
+            let imageFormat = imageData.substring(imageData.indexOf("/") + 1);
+            expect(imageFormat).toBe('jpeg');
+            done();
+        });
     });
     describe('Print and Export Settings', () => {
         let diagram: Diagram;

@@ -1,5 +1,6 @@
-import { Browser, createElement } from '@syncfusion/ej2-base';
+import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { DropDownTree } from '../../src/drop-down-tree/drop-down-tree';
+import { Dialog } from '@syncfusion/ej2-popups';
 import { listData } from '../../spec/drop-down-tree/dataSource.spec'
 import '../../node_modules/es6-promise/dist/es6-promise';
 
@@ -276,6 +277,62 @@ describe('DropDownTree control', () => {
             ddtreeObj.showCheckBox = false;
             ddtreeObj.dataBind();
             expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe(null);
+        });
+    });
+
+    describe('Popup detached testing', () => {
+        let dialog: Dialog;
+        let ddTreeObj: DropDownTree;
+        beforeEach((): void => {
+            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+            Browser.userAgent = Chromebrowser;
+            ddTreeObj = undefined;
+            dialog = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            document.body.appendChild(ele);
+            let content: HTMLElement = createElement('div', { id: 'dlgContent' });
+            document.body.appendChild(content);
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'default' });
+            content.appendChild(element);
+        });
+        afterEach((): void => {
+            if (dialog) {
+                dialog.destroy();
+                detach(dialog.element);
+            }
+            if (ddTreeObj)
+                ddTreeObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('dialog', () => {
+            dialog = new Dialog({ header: 'Dialog',  showCloseIcon: true,  content: document.getElementById("dlgContent"),
+            height: '300px',   width: '400px' });
+            dialog.appendTo('#dialog');
+            // Render drop-down-tree inside dialog
+            ddTreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#default');
+            expect(document.getElementById('dialog').querySelector("#dlgContent").children[0].classList.contains('e-ddt')).toBe(true);
+            ddTreeObj.showPopup();
+            // open drop-down-tree  popup
+            expect(document.querySelector('.e-ddt.e-popup').classList.contains('e-popup-open')).toBe(true);
+            ddTreeObj.hidePopup();
+            // detached the drop-down-tree input from the dom
+            detach(document.getElementsByClassName("e-ddt")[0]);
+            expect(document.getElementById('dialog').querySelector("#dlgContent").childElementCount).toBe(0);
+            expect(document.querySelectorAll('.e-ddt.e-popup').length).toBe(1);
+            // create the drop-down-tree input and again append to dom
+            var inputEle = createElement('input', { attrs: { role: 'textbox', type: 'text' } }) as HTMLInputElement;
+            inputEle.id = "default";
+            document.getElementById('dlgContent').appendChild(inputEle);
+            ddTreeObj.appendTo('#default');
+            expect(document.getElementById('dialog').querySelector("#dlgContent").children[0].classList.contains('e-ddt')).toBe(true);
+            ddTreeObj.showPopup();
+            expect(document.querySelectorAll('.e-ddt.e-popup').length).toBe(1);
+            // open drop-down-tree  popup
+            expect(document.querySelectorAll('.e-ddt.e-popup')[0].classList.contains('e-popup-open')).toBe(true);
+            var li = (ddTreeObj as any).treeObj.element.querySelectorAll('li');
+            expect(li.length).toBe(24);
+            expect(li[0].querySelector('.e-list-text').innerText).toBe('Australia');
+            ddTreeObj.hidePopup();
         });
     });
 });

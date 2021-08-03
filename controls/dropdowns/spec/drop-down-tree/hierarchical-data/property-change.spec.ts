@@ -2027,12 +2027,6 @@ describe('DropDownTree control', () => {
                 }, 100);
             });
             it('click', (done: Function) => {
-                ddtreeObj = new DropDownTree({
-                    fields: {
-                        dataSource: hierarchicalData1, value: "nodeId", text: "nodeText", child: "nodeChild",
-                        iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr', selected: 'nodeSelected'
-                    },
-                }, '#ddtree');
                 ddtreeObj.showPopup();
                 ddtreeObj.treeSettings.expandOn = 'Click';
                 ddtreeObj.dataBind();

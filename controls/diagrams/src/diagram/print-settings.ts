@@ -26,7 +26,7 @@ import { DiagramElement } from './core/elements/diagram-element';
 import { Container } from './core/containers/container';
 import { LinearGradient } from './core/appearance';
 
-
+let storeFormat: string;
 
 /**
  * Print and Export Settings
@@ -139,10 +139,14 @@ export class PrintAndExport {
             } as IExportOptions,
             customBounds);
         let image: string;
-        if (options.format === 'JPG' && mode === "Data") {
-            image = content = canvas.toDataURL('image/jpeg');
-        } else {
-            image = content = canvas.toDataURL();
+        if (options.format === 'JPG') {
+            image = content = storeFormat = canvas.toDataURL('image/jpeg');
+        }
+        else if (options.format === 'BMP') {
+            image = content = storeFormat = canvas.toDataURL('image/bmp');
+        }
+        else {
+            image = content = storeFormat = canvas.toDataURL();
         }
         if (mode === 'Data') {
             return content;
@@ -154,7 +158,14 @@ export class PrintAndExport {
     private canvasMultiplePage(
         options: IExportOptions, canvas: HTMLCanvasElement, margin: MarginModel, image: string, fileName: string): void {
         let images: HTMLElement | string[] = [];
-        const fileType: string = options.format || 'JPG';
+        let imageData = image.substring(image.indexOf(":") + 1, image.indexOf(";"));
+        let imageFormat = imageData.substring(imageData.indexOf("/") + 1);
+        if (imageFormat === 'jpeg') {
+            imageFormat = undefined;
+        } else {
+            imageFormat = imageFormat.toUpperCase()
+        }
+        const fileType: string = imageFormat || 'JPG';
 
         if (options.multiplePage) {
             options.pageHeight = options.pageHeight ? options.pageHeight : this.diagram.pageSettings.height;

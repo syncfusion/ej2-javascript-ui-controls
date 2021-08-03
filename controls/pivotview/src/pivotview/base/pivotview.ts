@@ -447,6 +447,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public verticalScrollScale: number = 1;
     /** @hidden */
+    public resizedValue: number;
+    /** @hidden */
     public horizontalScrollScale: number = 1;
     /** @hidden */
     public scrollerBrowserLimit: number = 8000000;
@@ -593,6 +595,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public guid: string;
     /** @hidden */
     public isServerWaitingPopup: boolean = false;
+    /** @hidden */
+    public isHScrollEnd: boolean = false;
 
     /* eslint-disable */
     //Property Declarations
@@ -3736,7 +3740,39 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     transform: horiOffset + 0 + 'px)'
                 });
                 /* eslint-disable */
+                if (!this.renderModule.isOverflows) {
+                    let columWidth = this.renderModule.calculateColWidth(this.pivotColumns.length);
+                    vWidth = columWidth * engine.columnCount - engine.columnCount * 3;
+                }
+                if (!isNullOrUndefined(this.resizedValue)) {
+                    (this.element.querySelector('.e-frozenscrollbar') as HTMLElement).style.width = this.resizedValue + 'px';
+                }
                 (this.grid.element.querySelector('.' + cls.MOVABLECHILD_DIV) as any).style.width = (vWidth + (mCnt.parentElement.offsetWidth - mCnt.parentElement.clientWidth)) + 'px';
+                let colValues: number = this.dataType === 'pivot' ? (this.dataSourceSettings.valueAxis === 'column' ? this.dataSourceSettings.values.length : 1) : 1;
+                let exactSize: number = (this.pageSettings.columnSize * colValues * this.gridSettings.columnWidth);
+                let hScrollPos: number = (ele.scrollWidth - (ele.scrollLeft + ele.offsetWidth));
+                if (this.virtualscrollModule && exactSize > 0 && hScrollPos <= exactSize) {
+                    this.virtualDiv.style.display = 'none';
+                    let mCntScrollPos: number = (mCnt.scrollWidth - (mCnt.scrollLeft + mCnt.offsetWidth));
+                    this.virtualDiv.style.display = '';
+                    let mCntVScrollPos: number = (mCnt.scrollWidth - (mCnt.scrollLeft + mCnt.offsetWidth));
+                    this.scrollPosObject.horizontalSection -= (this.isHScrollEnd ? (mCntScrollPos > hScrollPos ? mCntScrollPos : -mCntVScrollPos) :
+                        (mCntVScrollPos === mCntScrollPos ? (mCntScrollPos - hScrollPos) :
+                            (mCntScrollPos < mCntVScrollPos && (hScrollPos === mCntVScrollPos || hScrollPos > mCntScrollPos) ?
+                                -(mCntVScrollPos - mCntScrollPos) : 0)));
+                    horiOffset = (ele.scrollLeft > this.scrollerBrowserLimit) ?
+                        ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
+                        'translate(' + -(((ele.scrollLeft * this.horizontalScrollScale) -
+                            this.scrollPosObject.horizontalSection - ele.scrollLeft)) + 'px,';
+
+                    setStyleAttribute(mCnt.querySelector('.e-table') as HTMLElement, {
+                        transform: horiOffset + verOffset
+                    });
+                    setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
+                        transform: horiOffset + 0 + 'px)'
+                    });
+                    this.isHScrollEnd = false;
+                }
                 if (this.grid.height !== 'auto') {
                     (this.grid.contentModule as any).setHeightToContent(this.virtualDiv.offsetHeight + movableTable.clientHeight);
                 } else {
@@ -4212,6 +4248,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             dataSourceSettings: this.dataSourceSettings as IDataOptions
         };
         this.trigger(events.beforeColumnsRender, eventArgs);
+        if (this.enableVirtualization && eventArgs.columns.length > 0 && (eventArgs.columns as PivotColumn[])[0].width !== (gridcolumns as ColumnModel[])[0].width) {
+            (this.element.querySelector('.e-frozenscrollbar') as any).style.width = Number((eventArgs.columns as PivotColumn[])[0].width.toString().split('px')[0]) + 'px';
+        }
         this.updateTotColWidth();
         if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;
@@ -4640,9 +4679,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.renderModule.bindGrid(this, true);
             this.grid.showSpinner = () => { };  /* eslint-disable-line */
             this.grid.hideSpinner = () => { };  /* eslint-disable-line */
-            this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
+            let element: HTMLElement = createElement('div', { id: this.element.id + '_grid' });
+            this.element.appendChild(element);
             this.grid.isStringTemplate = true;
-            this.grid.appendTo('#' + this.element.id + '_grid');
+            this.grid.appendTo(element);
             this.grid.on('refresh-frozen-height', () => {
                 if (!this.enableVirtualization) {
                     (this.grid.contentModule as any).setHeightToContent((this.grid.contentModule.getTable() as HTMLElement).offsetHeight);  /* eslint-disable-line */

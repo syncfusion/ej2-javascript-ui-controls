@@ -593,7 +593,7 @@ export class ListBox extends DropDownBase {
             addClass([wrap], this.cssClass.split(' '));
         }
         if (this.enableRtl) {
-            addClass([wrap], 'e-rtl');
+            addClass([this.list], 'e-rtl');
         }
     }
 
@@ -1107,6 +1107,7 @@ export class ListBox extends DropDownBase {
         }
         for (let i: number = 0; i < liCollections.length; i++) {
             this.ulElement.removeChild(liCollections[i]);
+            
         }
         if (this.listData.length === 0) {
             this.l10nUpdate();
@@ -2413,9 +2414,9 @@ export class ListBox extends DropDownBase {
                 break;
             case 'enableRtl':
                 if (newProp.enableRtl) {
-                    wrap.classList.add('e-rtl');
+                    this.list.classList.add('e-rtl');
                 } else {
-                    wrap.classList.remove('e-rtl');
+                    this.list.classList.remove('e-rtl');
                 }
                 break;
             case 'value':

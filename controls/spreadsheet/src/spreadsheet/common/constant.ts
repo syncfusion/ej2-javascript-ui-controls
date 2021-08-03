@@ -237,6 +237,7 @@ export const defaultLocale: object = {
     RANDBETWEEN: 'Returns a random integer based on specified values.',
     FLOOR: 'Rounds a number down to the nearest multiple of a given factor.',
     CEILING: 'Rounds a number up to the nearest multiple of a given factor.',
+    T: 'Checks whether a value is text and returns the text if it is, or returns empty string if it is not.',
     PRODUCT: 'Multiplies a series of numbers and/or cells.',
     INT: 'Returns a number to the nearest integer.',
     UNIQUE: 'Returns a unique values from a range or array',

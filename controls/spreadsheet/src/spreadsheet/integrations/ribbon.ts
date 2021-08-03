@@ -1668,7 +1668,8 @@ export class Ribbon {
         if ((closest(e.target as Element, '.e-findRib-close')) || (!closest(e.target as Element, '.e-spreadsheet'))) {
             if (!isNullOrUndefined(this.findDialog)) {
                 this.findDialog.hide();
-                detach(this.parent.element.querySelector('.e-findtool-dlg'));
+                const findToolDlg: Element = this.parent.element.querySelector('.e-findtool-dlg');
+                if (findToolDlg) { detach(findToolDlg); }
                 this.findDialog = null;
             }
         }
@@ -2726,6 +2727,7 @@ export class Ribbon {
         this.ribbon.destroy();
         if (ribbonEle) { detach(ribbonEle); } this.ribbon = null;
         if (cPickerEle) { detach(cPickerEle); } this.cPickerEle = null;
+        if (this.findDialog) {  this.findDialog.destroy(); }
         this.removeEventListener();
     }
     private removeEventListener(): void {

@@ -2682,6 +2682,7 @@ export class Layout {
         this.updateLineWidget(line);
         height = this.maxTextHeight;
         maxDescent = height - this.maxTextBaseline;
+        let Index: number = this.documentHelper.pages.indexOf(paragraph.bodyWidget.page);
 
         //Updates before spacing at the top of Paragraph first line.
         if (isParagraphStart) {
@@ -2769,7 +2770,11 @@ export class Layout {
             } else if (lineSpacing > topMargin + elementBox.height + bottomMargin) {
                 topMargin += lineSpacing - (topMargin + elementBox.height + bottomMargin);
             }
-            topMargin += beforeSpacing;
+            if (Index > 0 && paragraph === paragraph.bodyWidget.childWidgets[0]) {
+                topMargin += 0;
+            } else {
+                topMargin += beforeSpacing;
+            }
             bottomMargin += afterSpacing;
             if (i === 0 || (!(elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') &&
                 elementBox.previousElement instanceof ShapeBase && elementBox.previousElement.textWrappingStyle !== 'Inline')
@@ -2887,7 +2892,7 @@ export class Layout {
                 if (index > 0 || isPageBreak) {
                     paragraphWidget.height = viewer.clientActiveArea.y - paragraphWidget.y;
                 }
-                if (index === 0) {
+                if (index === 0 && !paragraphWidget.isEndsWithPageBreak) {
                     let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
                     if (!isNullOrUndefined(blockInfo.node)) {
                         startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : blockInfo.node as BlockWidget;
@@ -3016,7 +3021,10 @@ export class Layout {
     /**
      * Align block based on keep with next and keep lines together property.
      */
-     private alignBlockElement(block: ParagraphWidget | TableRowWidget): BlockInfo {
+    private alignBlockElement(block: ParagraphWidget | TableRowWidget): BlockInfo {
+        if (block instanceof ParagraphWidget && block.isEndsWithPageBreak) {
+            return { node: undefined, position: { index: '' } };
+        }
         let startBlock: BlockWidget;
         let startIndex: number = 0;
         // Check previous block has keep with next property.
@@ -3024,7 +3032,7 @@ export class Layout {
 
         while (previousBlock) {
             if (previousBlock instanceof ParagraphWidget) {
-                if (!previousBlock.paragraphFormat.keepWithNext) {
+                if (!previousBlock.paragraphFormat.keepWithNext || previousBlock.isEndsWithPageBreak) {
                     break;
                 }
                 startBlock = previousBlock;

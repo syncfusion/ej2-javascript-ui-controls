@@ -325,6 +325,9 @@ export class Edit {
                 args.cancel = true;
                 this.keyPress = null;
             }
+            if (!args.columnObject.allowEditing) {
+                args.cancel = true;   
+            }
         }
     // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
     //   this.isAdd = false;
@@ -686,8 +689,9 @@ export class Edit {
                 args.data = [...data, ...childs];
             }
         }
-        if (args.requestType === 'add' || (this.isAddedRowByMethod && this.parent.enableVirtualization)) {
-            if (!(this.parent.grid.selectedRowIndex == -1 && this.isAddedRowByMethod)) {
+        if (args.requestType === 'add' || (this.isAddedRowByMethod && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling))) {
+            if (!(this.parent.grid.selectedRowIndex === -1 && this.isAddedRowByMethod)
+            && args.index === this.parent.grid.selectedRowIndex || args.index === 0 ) {
                 this.selectedIndex = this.parent.grid.selectedRowIndex;
             }
             if (this.parent.enableVirtualization) {
@@ -708,15 +712,26 @@ export class Edit {
                     }
                 }
             } else {
-                this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+                if (this.isAddedRowByMethod && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+                    this.addRowIndex = args.index;
+                } else {
+                    this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+                }
             }
-            this.addRowRecord = this.parent.getSelectedRecords()[0];
-            this.isAddedRowByMethod = false;
+            if (this.isAddedRowByMethod && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+                this.addRowRecord = this.parent.flatData[args.index];
+            } else {
+                this.addRowRecord = this.parent.getSelectedRecords()[0];
+            }
+        }
+        if (this.isAddedRowByMethod) {
+            this.addRowRecord = this.parent.flatData[args.index];
         }
         if (this.parent.editSettings.newRowPosition === 'Child' && isNullOrUndefined(this.addRowRecord)
         && !isNullOrUndefined(this.parent.getSelectedRecords()[0])) {
             this.addRowRecord = this.parent.getSelectedRecords()[0];
         }
+        this.isAddedRowByMethod = false;
         args = this.beginAddEdit(args);
         // if (args.requestType === 'save' &&
         //    ((this.parent.dataSource instanceof DataManager && this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor))) {

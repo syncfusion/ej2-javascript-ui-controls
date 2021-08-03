@@ -2707,7 +2707,6 @@ export class CommandHandler {
             } else if (action === 'SendToBack') {
                 this.sendToBack(selectedObject[0]);
             }
-
         } else {
             const startZIndex: number = selectedObject[0].zIndex;
             const endZIndex: number = this.diagram.nameTable[selectedObject[0].id].zIndex;
@@ -2724,30 +2723,37 @@ export class CommandHandler {
                     (this.diagram.layers[layer] as Layer).zIndexTable[undoObject.zIndex] = undoObject.id;
                 }
             } else if (action === 'BringToFront') {
-                const k: number = 1;
-                for (let j: number = endZIndex; j > startZIndex; j--) {
-                    if (zIndexTable[j]) {
-                        if (!zIndexTable[j - k]) {
-                            zIndexTable[j - k] = zIndexTable[j];
-                            this.diagram.nameTable[zIndexTable[j - k]].zIndex = j;
-                            delete zIndexTable[j];
-                        } else {
-                            zIndexTable[j] = zIndexTable[j - k];
-                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                if (selectedObject[0].shape.type === 'SwimLane') {
+                    this.sendToBack(selectedObject[0]);
+                } else {
+                    const k: number = 1;
+                    for (let j: number = endZIndex; j > startZIndex; j--) {
+                        if (zIndexTable[j]) {
+                            if (!zIndexTable[j - k]) {
+                                zIndexTable[j - k] = zIndexTable[j];
+                                this.diagram.nameTable[zIndexTable[j - k]].zIndex = j;
+                                delete zIndexTable[j];
+                            } else {
+                                zIndexTable[j] = zIndexTable[j - k];
+                                this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                            }
                         }
                     }
                 }
-
             } else if (action === 'SendToBack') {
-                for (let j: number = endZIndex; j < startZIndex; j++) {
-                    if (zIndexTable[j]) {
-                        if (!zIndexTable[j + 1]) {
-                            zIndexTable[j + 1] = zIndexTable[j];
-                            this.diagram.nameTable[zIndexTable[j + 1]].zIndex = j;
-                            delete zIndexTable[j];
-                        } else {
-                            zIndexTable[j] = zIndexTable[j + 1];
-                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                if (selectedObject[0].shape.type === 'SwimLane') {
+                    this.bringToFront(selectedObject[0]);
+                } else {
+                    for (let j: number = endZIndex; j < startZIndex; j++) {
+                        if (zIndexTable[j]) {
+                            if (!zIndexTable[j + 1]) {
+                                zIndexTable[j + 1] = zIndexTable[j];
+                                this.diagram.nameTable[zIndexTable[j + 1]].zIndex = j;
+                                delete zIndexTable[j];
+                            } else {
+                                zIndexTable[j] = zIndexTable[j + 1];
+                                this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                            }
                         }
                     }
                 }
@@ -2763,13 +2769,17 @@ export class CommandHandler {
                 } else if (action === 'SendForward') {
                     this.moveObject(selectedObject[0].id, selectedObject[1].id);
                 } else if (action === 'BringToFront') {
-                    this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
+                    if (selectedObject[0].shape.type !== 'SwimLane') {
+                        this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
+                    }
                 } else if (action === 'SendToBack') {
-                    const layer: LayerModel = this.getObjectLayer(selectedObject[0].id);
-                    for (let i: number = 0; i <= selectedObject[0].zIndex; i++) {
-                        if (layer.objects[i] !== selectedObject[0].id) {
-                            this.moveSvgNode(layer.objects[i], selectedObject[0].id);
-                            this.updateNativeNodeIndex(selectedObject[0].id);
+                    if (selectedObject[0].shape.type !== 'SwimLane') {
+                        const layer: LayerModel = this.getObjectLayer(selectedObject[0].id);
+                        for (let i: number = 0; i <= selectedObject[0].zIndex; i++) {
+                            if (layer.objects[i] !== selectedObject[0].id) {
+                                this.moveSvgNode(layer.objects[i], selectedObject[0].id);
+                                this.updateNativeNodeIndex(selectedObject[0].id);
+                            }
                         }
                     }
                 }

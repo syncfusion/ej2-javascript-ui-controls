@@ -928,6 +928,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     public render(): void {
+        const isTree: Element = document.querySelector('#' + this.element.id + '_tree');
+        if (isTree) {
+            const popupDiv: Element = document.querySelector('#' + this.element.id + '_popup');
+            detach(popupDiv ? popupDiv : isTree.parentElement);
+        }
         this.ensureAutoCheck();
         if (this.element.tagName === 'INPUT') {
             this.inputEle = this.element as HTMLInputElement;

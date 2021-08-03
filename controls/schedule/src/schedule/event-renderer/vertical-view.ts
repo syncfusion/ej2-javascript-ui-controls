@@ -253,7 +253,7 @@ export class VerticalEvent extends EventBase {
     }
 
     // eslint-disable-next-line max-len
-    private createAppointmentElement(record: Record<string, any>, isAllDay: boolean, data: Record<string, any>, resource: number): HTMLElement {
+    public createAppointmentElement(record: Record<string, any>, isAllDay: boolean, data: Record<string, any>, resource: number): HTMLElement {
         const fieldMapping: EventFieldsMapping = this.parent.eventFields;
         const recordSubject: string = (record[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default
             || this.parent.localeObj.getConstant('addTitle')) as string;

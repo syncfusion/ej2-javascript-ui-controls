@@ -709,8 +709,8 @@ export class RowDD {
         const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         this.removeFirstRowBorder(element);
         this.removeLastRowBorder(element);
-        if (parentsUntil(element, 'e-grid') && element.classList.contains(literals.row) &&
-            (parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id || this.istargetGrid)) {
+        if (parentsUntil(element, 'e-grid') && element.classList.contains(literals.row) && ((!this.parent.rowDropSettings.targetID &&
+            parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id) || this.istargetGrid)) {
             removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'), ['e-dragborder']);
             let rowElement: HTMLElement[] = [];
             const targetRowIndex: number = parseInt(targetRow.getAttribute(literals.ariaRowIndex), 10);

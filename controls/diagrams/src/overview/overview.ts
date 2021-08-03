@@ -310,7 +310,6 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         const attr: Object = {
             id: this.canvas.id + '_svg',
             version: '1.1',
-            xlink: 'http://www.w3.org/1999/xlink',
             'class': 'overview_svg'
         };
         const svg: SVGElement = createSvgElement('svg', attr);
@@ -418,7 +417,6 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             id: this.canvas.id + '_overviewsvg',
             class: 'overviewsvg',
             version: '1.1',
-            xlink: 'http://www.w3.org/1999/xlink',
             'style': 'position:absolute;left:0px;top:0px; aria-label:Specifies overview',
             width: this.model.width,
             height: this.model.height
@@ -764,8 +762,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         const heightratio: number = (Number(this.model.height) / this.contentHeight);
         widthratio = Math.min(widthratio, heightratio);
         let transform: TransformFactor = this.parent.scroller.transform;
-        const tx: number = transform.tx * transform.scale;
-        const ty: number = transform.ty * transform.scale;
+        const tx: number = transform.tx;
+        const ty: number = transform.ty;
         nativeLayer.setAttribute('transform', 'translate('
             + (tx * widthratio) + ',' + (ty * heightratio) + '),scale('
             + widthratio + ')');

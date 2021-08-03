@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.2.51 (2021-08-03)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I337055` - The issue with Tooltip not destroyed while applying reset after validation been fixed.
+
+## 19.2.46 (2021-07-06)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I333679` - The issue with setRules method not works in header template has been fixed.
+
 ## 19.1.57 (2021-04-20)
 
 ### QueryBuilder

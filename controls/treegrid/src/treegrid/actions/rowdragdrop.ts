@@ -315,9 +315,10 @@ export class RowDD {
     }
 
     private removeLastrowBorder(element: HTMLTableRowElement): void {
-        const isEmptyRow: boolean = element && (element.classList.contains('e-emptyrow') || element.classList.contains('e-columnheader'));
+        const isEmptyRow: boolean = element && (element.classList.contains('e-emptyrow') || element.classList.contains('e-columnheader')
+            || element.classList.contains('e-detailrow'));
         const islastRowIndex: boolean = element && !isEmptyRow &&
-        this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') !==
+        this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
             element.getAttribute('data-uid');
         const canremove: boolean = islastRowIndex || this.dropPosition === 'topSegment';
         if (this.parent.element.getElementsByClassName('e-lastrow-border').length > 0 && element && (islastRowIndex || canremove)) {
@@ -433,8 +434,8 @@ export class RowDD {
 
     private addLastRowborder(trElement: HTMLTableRowElement): void {
         const isEmptyRow: boolean = trElement && (trElement.classList.contains('e-emptyrow') ||
-        trElement.classList.contains('e-columnheader'));
-        if (trElement && !isEmptyRow && this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') ===
+        trElement.classList.contains('e-columnheader') || trElement.classList.contains('e-detailrow'));
+        if (trElement && !isEmptyRow && this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
             trElement.getAttribute('data-uid')) {
             const bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-border' });
             const gridcontentEle: Element = this.parent.getContent();
@@ -921,6 +922,9 @@ export class RowDD {
             this.treeData = this.parent.dataSource as ITreeData[];
         }
         const deletedRow: ITreeData = getParentData(this.parent, this.draggedRecord.uniqueID);
+        if (!isNullOrUndefined(deletedRow.childRecords) && deletedRow.childRecords.length) {
+            deletedRow.hasChildRecords = true;
+        }
         this.removeRecords(deletedRow);
     }
 

@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 19.2.51 (2021-08-03)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I336931`- The issue with "Character count is increased, when formats are being applied in empty content" has been fixed.
+
+- `#I335821` - The issue with "Upload image restriction not working with the paste action" has been resolved.
+
 ## 19.2.49 (2021-07-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I335580` - The issue with the Rich Text Editor toolbar status not updated, once the contents have been removed has been rectified.
+
+## 19.2.48 (2021-07-20)
 
 ### RichTextEditor
 

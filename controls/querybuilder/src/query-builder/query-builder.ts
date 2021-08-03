@@ -316,6 +316,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isNotified: boolean = false;
     private isAddSuccess: boolean = false;
     private isNotValueChange: boolean = false;
+    private isRoot: boolean;
     /**
      * Triggers when the component is created.
      *
@@ -541,7 +542,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public reset(): void {
         this.isImportRules = false;
         const bodeElem: Element = this.element.querySelector('.e-group-body');
+        const inputElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('input.e-control') as NodeListOf<HTMLElement>;
+        for (let i: number = 0, len: number = inputElement.length; i < len; i++) {
+            if (inputElement[i].parentElement.className.indexOf('e-tooltip') > -1) {
+                (getComponent(inputElement[i].parentElement, 'tooltip') as Tooltip).destroy();
+            }
+        }
         bodeElem.innerHTML = '';
+        if (this.headerTemplate && this.isRoot) {
+            this.element.innerHTML = '';
+            this.isRoot = false;
+        }
         if (this.enableNotCondition) {
             removeClass(this.element.querySelectorAll('.e-qb-toggle'), 'e-active-toggle');
         }
@@ -814,6 +825,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     removeClass([event.element.querySelector('li span.e-addgroup').parentElement], 'e-button-hide');
                 }
+                if (this.enableRtl) {
+                    addClass([event.element.querySelector('li').parentElement], 'e-rtl');
+                }
             } else {
                 addClass([event.element.querySelector('li span.e-addgroup').parentElement], 'e-button-hide');
             }
@@ -933,7 +947,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     dataSource: this.columns as { [key: string]: Object }[], // tslint:disable-line
                     fields: this.fields, placeholder: this.l10n.getConstant('SelectField'),
                     popupHeight: ((this.columns.length > 5) ? height : 'auto'),
-                    change: this.changeField.bind(this), value: rule ? ddlValue : null
+                    change: this.changeField.bind(this), value: rule ? ddlValue : null,
+                    open: this.popupOpen.bind(this)
                 };
                 if (this.fieldModel) {
                     ddlField = {...ddlField, ...this.fieldModel};
@@ -1158,26 +1173,33 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         ruleElem.appendChild(fieldElem);
         return ruleElem;
     }
-    private addGroupElement(isGroup: boolean, target: Element, condition?: string, isBtnClick?: boolean, not?: boolean): void {
+    private addGroupElement(isGroup: boolean, target: Element, condition?: string, isBtnClick?: boolean, not?: boolean, isRoot?: boolean): void {
         const args: ChangeEventArgs = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertGroup' };
         if (!this.isImportRules && !this.isInitialLoad) {
             this.trigger('beforeChange', args, (observedChangeArgs: ChangeEventArgs) => {
-                this.addGroupSuccess(observedChangeArgs, isGroup, target, condition, isBtnClick, not);
+                this.addGroupSuccess(observedChangeArgs, isGroup, target, condition, isBtnClick, not, isRoot);
             });
         } else {
             this.isInitialLoad = false;
-            this.addGroupSuccess(args, isGroup, target, condition, isBtnClick, not);
+            this.addGroupSuccess(args, isGroup, target, condition, isBtnClick, not, isRoot);
         }
     }
 
     private addGroupSuccess(
-        args: ChangeEventArgs, isGroup : boolean, eventTarget: Element, condition: string, isBtnClick: boolean, not?: boolean): void {
+        args: ChangeEventArgs, isGroup : boolean, eventTarget: Element, condition: string, isBtnClick: boolean, not?: boolean, isRoot?: boolean): void {
         if (!args.cancel && (this.element.querySelectorAll('.e-group-container').length <= this.maxGroupCount)) {
             const target: Element = eventTarget; let dltGroupBtn: HTMLElement;
             const groupElem: Element = this.groupElem.cloneNode(true) as Element;
             groupElem.setAttribute('id', this.element.id + '_group' + this.groupIdCounter);
-            if (this.headerTemplate) {
-                this.headerTemplateFn(groupElem, not, condition);
+            if (this.headerTemplate ) {
+                if (isRoot) {
+                    isGroup = false;
+                    groupElem.setAttribute('id', this.element.id + '_group0');
+                    this.headerTemplateFn(groupElem, not, condition);
+                    this.groupIdCounter = 0;
+                } else {
+                    this.headerTemplateFn(groupElem, not, condition);
+                }
             }
             this.groupIdCounter++;
             if (!this.headerTemplate) {
@@ -1211,7 +1233,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         grpLen += 1;
                     }
                 }
-                ruleList.appendChild(groupElem); const level: number[] = this.levelColl[target.id].slice(0);
+                ruleList.appendChild(groupElem);
+                const level: number[] = this.levelColl[target.id].slice(0);
                 level.push(grpLen); this.levelColl[groupElem.id] = level;
                 if (!this.isImportRules) {
                     this.isAddSuccess = true; this.addGroups([], target.id.replace(this.element.id + '_', ''));
@@ -1590,7 +1613,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             placeholder: this.l10n.getConstant('SelectField'),
             popupHeight: ((subFieldData.length > 5) ? height : 'auto'),
             change: this.changeField.bind(this),
-            index: 0
+            index: 0,
+            open: this.popupOpen.bind(this)
         });
         dropDownList.appendTo('#' + ruleId + '_subfilterkey' + this.subFilterCounter);
         if (this.isImportRules) {
@@ -1698,7 +1722,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     popupHeight: ((operatorList.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this),
                     index: 0,
-                    value: value
+                    value: value,
+                    open: this.popupOpen.bind(this)
                 };
                 if (this.operatorModel) {
                     ddlOperator = {...ddlOperator, ...this.operatorModel};
@@ -1717,6 +1742,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         if (!this.isImportRules) {
             this.updateRules(ddlArgs.element, ddlArgs.item);
+        }
+    }
+
+    private popupOpen( args: PopupEventArgs): void {
+        if (this.enableRtl) {
+            addClass([args.popup.element], 'e-rtl' );
         }
     }
 
@@ -1895,7 +1926,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             width: '100%',
             change: this.changeValue.bind(this, i),
             close: this.closePopup.bind(this, i),
-            actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
+            actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i),
+            open: this.popupOpen.bind(this)
         };
         if (this.valueModel && this.valueModel.multiSelectModel) {
             multiSelectValue = {...multiSelectValue, ...this.valueModel.multiSelectModel};
@@ -3361,14 +3393,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
 
-    private setGroupRules(rule: RuleModel): void {
+    private setGroupRules(rule: RuleModel, isRoot?: boolean): void {
+        if (this.headerTemplate && isRoot) {
+            this.isRoot = true;
+        }
         this.reset();
         this.groupIdCounter = 1;
         this.ruleIdCounter = 0;
         this.isImportRules = true;
         this.rule = rule;
         rule = this.getRuleCollection(this.rule, false);
-        this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
+        this.importRules(this.rule, this.element.querySelector('.e-group-container'), true, this.rule.not, isRoot);
         this.isImportRules = false;
     }
 
@@ -3483,7 +3518,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     public setRules(rule: RuleModel): void {
         const mRules: RuleModel = extend({}, rule, {}, true);
-        this.setGroupRules(mRules);
+        if (this.headerTemplate) {
+            let isRoot: boolean = true;
+            this.setGroupRules(mRules, isRoot);
+        } else {
+            this.setGroupRules(mRules);
+        }
     }
     /**
      * Gets the rule or rule collection.
@@ -3897,7 +3937,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return false;
     }
 
-    private importRules(rule: RuleModel, parentElem?: Element, isReset?: boolean, not?: boolean): Element {
+    private importRules(rule: RuleModel, parentElem?: Element, isReset?: boolean, not?: boolean, isRoot?: boolean): Element {
         if (!isReset) {
             parentElem = this.renderGroup(rule.condition, parentElem, not);
         } else {
@@ -3915,6 +3955,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else {
                 // enable/disable conditions when rule condition is added
                 this.disableRuleCondition(parentElem);
+            }
+            if (this.headerTemplate && isRoot) {
+                parentElem = this.renderGroup(rule.condition, this.element, rule.not, isRoot);
             }
             if (this.enableNotCondition && !this.headerTemplate) {
                 const tglBtnElem: Element = parentElem.querySelector('.e-qb-toggle');
@@ -3943,8 +3986,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return parentElem;
     }
-    private renderGroup(condition: string, parentElem?: Element, not?: boolean): Element {
-        this.addGroupElement(true, parentElem, condition, false, not); //Child group
+    private renderGroup(condition: string, parentElem?: Element, not?: boolean, isRoot?: boolean): Element {
+        this.addGroupElement(true, parentElem, condition, false, not, isRoot); //Child group
         const element: NodeListOf<Element> = parentElem.querySelectorAll('.e-group-container');
         return element[element.length - 1];
     }

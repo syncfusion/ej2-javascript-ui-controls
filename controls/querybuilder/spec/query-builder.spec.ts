@@ -2824,6 +2824,10 @@ describe('QueryBuilder', () => {
     describe('Customer_Bugs', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+            let template: Element = createElement('script', { id: 'headerTemplate' });
+            template.setAttribute('type', 'text/x-template');
+            template.innerHTML = '<div class="e-groupheader">${if(notCondition !== undefined)}<input type="checkbox" class="e-not" id="${ruleID}_notoption">${/if}<input type="text" class= "e-custom-group-btn" id="${ruleID}_cndtnbtn"><button id = "${ruleID}_addbtn" class="e-add-btn"></button>${if(ruleID !== "querybuilder_group0")}<button id="dltbtn" class="e-btn e-delete-btn e-small e-round e-icon-btn"><span class = "e-btn-icon e-icons e-delete-icon"></span></button>${/if}</div>';
+            document.body.appendChild(template);
         });
         afterEach(() => {
             remove(queryBuilder.element.nextElementSibling);
@@ -2912,6 +2916,144 @@ describe('QueryBuilder', () => {
             expect(items[3].textContent).toEqual('Title Details');
             expect(items[7].textContent).toEqual('Other Fields'); 
         });
+
+        it('EJ2-50725 - setRules not works for header template', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            let valRule: RuleModel = {'condition': 'or', 'not': true,
+                'rules': [{
+                    'label': 'Employee ID',
+                    'field': 'EmployeeID',
+                    'type': 'number',
+                    'operator': 'equal',
+                    'value': 32
+                },
+                {
+                    'label': 'LastName',
+                    'field': 'LastName',
+                    'type': 'string',
+                    'operator': 'equal',
+                    'value': 'vinit'
+                },
+                {
+                'condition': 'and', 
+                'rules': [{
+                    'label': 'Employee ID',
+                    'field': 'EmployeeID',
+                    'type': 'number',
+                    'operator': 'equal',
+                    'value': 32
+                }]
+            }] 
+            };
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                enableNotCondition: true,
+                columns: customFieldData,
+                headerTemplate: '#headerTemplate',
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'header-template-create') {
+                        let checkBoxObj: CheckBox = new CheckBox({ 
+                            label: 'NOT', checked: args.notCondition,
+                            change: function(e:any){
+                                queryBuilder.notifyChange(e.checked,e.event.target, 'not')
+                            }
+                         });
+                        checkBoxObj.appendTo('#' + args.ruleID + '_notoption');
+                        let ds: { [key: string]: Object }[] = [{'key': 'AND', 'value': 'and'},{'key': 'OR', 'value': 'or'}];
+                        let btnObj: DropDownList= new DropDownList({
+                            dataSource: ds, fields: { text: 'key', value: 'value' },
+                            value: args.condition, cssClass: 'e-custom-group-btn e-active-toggle',
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'condition');
+                            }
+                        });
+                        btnObj.appendTo('#' + args.ruleID + '_cndtnbtn');
+                        let ddbitems: ItemModel[] = [
+                            { text: 'AddGroup', iconCss: 'e-icons e-add-icon e-addgroup' },
+                            { text: 'AddCondition', iconCss: 'e-icons e-add-icon e-addrule' }
+                        ];
+                        let addbtn: DropDownButton = new DropDownButton({
+                            items: ddbitems,
+                            cssClass: 'e-round e-small e-caret-hide e-addrulegroup',
+                            iconCss: 'e-icons e-add-icon',
+                            select: function(event: any) {
+                                let addbtn: Element = closest(event.element,'.e-dropdown-popup');  let ddb: string[]= addbtn.id.split('_');
+                                if (event.item.text === 'AddGroup') {
+                                    queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], ddb[1]);
+                                } else if (event.item.text === 'AddCondition') {
+                                    queryBuilder.addRules([{}], ddb[1]);
+                                }
+                            }
+                        });
+                        addbtn.appendTo('#' + args.ruleID + '_addbtn');
+                        let deleteGroup: Element =  document.getElementById(args.ruleID).querySelector('.e-delete-btn');
+                        if (deleteGroup) {
+                            (deleteGroup as HTMLElement).onclick = function (e:any) {
+                                queryBuilder.deleteGroup(closest(e.target.offsetParent, '.e-group-container'));
+                            }
+                        }
+                    }
+                }
+            }, '#querybuilder');
+            queryBuilder.setRules(valRule);
+            expect(document.querySelector('#querybuilder_group0_notoption').nextElementSibling.classList.contains('e-check')).toEqual(true);
+            expect(queryBuilder.element.querySelector('#querybuilder_group0_cndtnbtn').value).toEqual('OR');
+        });
+
+        it('EJ2-50550 - Rtl class not added for dropdown button popup', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            let iRules: RuleModel = {
+                'condition': 'and',
+                    'rules': [{
+                        'label': 'FirstName',
+                        'field': 'FirstName',
+                        'type': 'string',
+                        'operator': 'in'
+                    }]
+                };
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                enableRtl: true,
+                columns: customFieldData,
+                rule: iRules
+            }, '#querybuilder');
+            (document.getElementsByClassName('e-dropdown-btn')[0] as HTMLElement).click();
+            expect(document.getElementsByClassName('e-item')[0].parentElement.classList.contains('e-rtl')).toBeTruthy();
+            (document.getElementsByClassName('e-dropdown-btn')[0] as HTMLElement).click();
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            filterElem.showPopup();
+            let ddlItems = document.getElementById('querybuilder_group0_rule0_filterkey_options').parentElement;
+            expect(ddlItems.parentElement.classList.contains('e-rtl')).toBeTruthy();
+            let multiObj: MultiSelect = queryBuilder.element.querySelector('.e-control.e-multiselect').ej2_instances[0];
+            multiObj.showPopup();
+            let msItems = document.getElementById('querybuilder_group0_rule0_valuekey0_options').parentElement;
+            expect(msItems.parentElement.classList.contains('e-rtl')).toBeTruthy();
+        });
+
+        it('EJ2-51636 - Tooltip not destroyed while applying reset after validation', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                enableRtl: true,
+                columns: customFieldData
+                
+            }, '#querybuilder');
+            queryBuilder.validateFields();
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter input.e-control').ej2_instances;
+            queryBuilder.reset();  
+            expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+        });
+
 
     });
 

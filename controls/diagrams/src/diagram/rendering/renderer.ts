@@ -224,7 +224,7 @@ export class DiagramRenderer {
      * @private
      */
     public drawSelectionRectangle(x: number, y: number, w: number, h: number, canvas: HTMLCanvasElement | SVGElement, t: Transforms):
-    void {
+        void {
         x = (x + t.tx) * t.scale;
         y = (y + t.ty) * t.scale;
         const options: BaseAttributes = {
@@ -1091,16 +1091,25 @@ export class DiagramRenderer {
                 space = getSpaceValue(intervals, isLine, i, space);
                 const spaceY: number = 0;
                 hLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
+                let attr: Object;
                 let d: number = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
-                let attr: Object;
                 if (isLine) {
+                    if(dashArray.toString() === '') {
+                    attr = {
+                        'stroke-width': intervals[i], 
+                        'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                        'stroke': snapSettings.horizontalGridlines.lineColor
+                    };
+                } else {
                     attr = {
                         'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
                         'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                        'dashArray': dashArray.toString(),
-                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                        'dashArray': dashArray.toString()
                     };
+                }
                     setAttributeSvg(hLine, attr);
                     pattern.appendChild(hLine);
                     space += intervals[i + 1] + intervals[i];
@@ -1156,17 +1165,28 @@ export class DiagramRenderer {
             intervals = getInterval(intervals, isLine);
             for (let i: number = 0; i < intervals.length; i = i + 2) {
                 space = getSpaceValue(intervals, isLine, i, space);
-                vLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
                 let d: number = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
+                vLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
                 let attr: Object;
                 if (isLine) {
-                    attr = {
-                        'stroke-width': intervals[i], 'stroke': snapSettings.verticalGridlines.lineColor,
-                        'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
-                        'dashArray': dashArray.toString(),
-                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
-                    };
+                    if (dashArray.toString() === '') {
+                        attr = {
+                            'stroke-width': intervals[i],
+                            'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
+                            'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                            'stroke': snapSettings.verticalGridlines.lineColor,
+                        };
+                    } else {
+                        attr = {
+                            'stroke-width': intervals[i],
+                            'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                            'stroke': snapSettings.verticalGridlines.lineColor,
+                            'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
+                            'dashArray': dashArray.toString(),
+                            
+                        };
+                    }
                     setAttributeSvg(vLine, attr);
                     pattern.appendChild(vLine);
                     space += intervals[i + 1] + intervals[i];
@@ -1371,28 +1391,28 @@ export class DiagramRenderer {
         (options as RectAttributes).stroke = 'transparent';
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         switch (element.scale) {
-        case 'None':
-            templateWidth = element.contentSize.width;
-            templateHeight = element.contentSize.height;
-            break;
-        case 'Stretch':
-            templateWidth = element.actualSize.width;
-            templateHeight = element.actualSize.height;
-            break;
-        case 'Meet':
-            if (element.actualSize.width <= element.actualSize.height) {
-                templateWidth = templateHeight = element.actualSize.width;
-            } else {
-                templateWidth = templateHeight = element.actualSize.height;
-            }
-            break;
-        case 'Slice':
-            if (element.actualSize.width >= element.actualSize.height) {
-                templateWidth = templateHeight = element.actualSize.width;
-            } else {
-                templateWidth = templateHeight = element.actualSize.height;
-            }
-            break;
+            case 'None':
+                templateWidth = element.contentSize.width;
+                templateHeight = element.contentSize.height;
+                break;
+            case 'Stretch':
+                templateWidth = element.actualSize.width;
+                templateHeight = element.actualSize.height;
+                break;
+            case 'Meet':
+                if (element.actualSize.width <= element.actualSize.height) {
+                    templateWidth = templateHeight = element.actualSize.width;
+                } else {
+                    templateWidth = templateHeight = element.actualSize.height;
+                }
+                break;
+            case 'Slice':
+                if (element.actualSize.width >= element.actualSize.height) {
+                    templateWidth = templateHeight = element.actualSize.width;
+                } else {
+                    templateWidth = templateHeight = element.actualSize.height;
+                }
+                break;
         }
         if (this.svgRenderer) {
             this.svgRenderer.drawNativeContent(element, nativeLayer, templateHeight, templateWidth, nativeSvg);
@@ -1449,26 +1469,26 @@ export class DiagramRenderer {
 
             let ratio: number;
             switch (element.stretch) {
-            case 'Meet':
-                ratio = Math.min(widthRatio, heightRatio);
-                imageWidth = contentWidth * ratio;
-                imageHeight = contentHeight * ratio;
-                options.x += Math.abs(options.width - imageWidth) / 2;
-                options.y += Math.abs(options.height - imageHeight) / 2;
-                break;
-            case 'Slice':
-                widthRatio = options.width / contentWidth;
-                heightRatio = options.height / contentHeight;
-                ratio = Math.max(widthRatio, heightRatio);
-                imageWidth = contentWidth * ratio;
-                imageHeight = contentHeight * ratio;
-                sourceWidth = options.width / imageWidth * contentWidth;
-                sourceHeight = options.height / imageHeight * contentHeight;
-                break;
-            case 'None':
-                imageWidth = contentWidth;
-                imageHeight = contentHeight;
-                break;
+                case 'Meet':
+                    ratio = Math.min(widthRatio, heightRatio);
+                    imageWidth = contentWidth * ratio;
+                    imageHeight = contentHeight * ratio;
+                    options.x += Math.abs(options.width - imageWidth) / 2;
+                    options.y += Math.abs(options.height - imageHeight) / 2;
+                    break;
+                case 'Slice':
+                    widthRatio = options.width / contentWidth;
+                    heightRatio = options.height / contentHeight;
+                    ratio = Math.max(widthRatio, heightRatio);
+                    imageWidth = contentWidth * ratio;
+                    imageHeight = contentHeight * ratio;
+                    sourceWidth = options.width / imageWidth * contentWidth;
+                    sourceHeight = options.height / imageHeight * contentHeight;
+                    break;
+                case 'None':
+                    imageWidth = contentWidth;
+                    imageHeight = contentHeight;
+                    break;
             }
         }
         options.width = imageWidth;
@@ -1606,7 +1626,7 @@ export class DiagramRenderer {
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
                 if (canvas) {
                     canvas.style.transform =
-                     'scale(' + scaleX + ',' + scaleY + ')' + 'rotate(' + (element.rotateAngle + element.parentTransform) + 'deg)';
+                        'scale(' + scaleX + ',' + scaleY + ')' + 'rotate(' + (element.rotateAngle + element.parentTransform) + 'deg)';
                 }
             } else {
                 setAttributeSvg(canvas as SVGElement, attr);

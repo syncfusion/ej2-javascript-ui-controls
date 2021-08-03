@@ -14,7 +14,7 @@ export interface AngularEventEmitter {
     subscribe?: (generatorOrNext?: any, error?: any, complete?: any) => any;
 }
 
-export declare type EmitType<T> = AngularEventEmitter & ((arg?: T, ...rest: any[]) => void);
+export declare type EmitType<T> = AngularEventEmitter & ((arg?: any, ...rest: any[]) => void);
 
 export interface BlazorDotnetObject {
     dispose(): void;

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.2.51 (2021-08-03)
+
+### Common
+
+#### Bug Fixes
+
+- `I306072` - Resolved Dashboard Layout floating panel issue.
+
+## 19.2.49 (2021-07-27)
+
+### Common
+
+#### Bug Fixes
+
+- `I336794`,`I336872`, `I336649` - Resolved the issue with Template Compilation malfunctions when value have special character apostrophe.
+
 ## 19.2.48 (2021-07-20)
 
 ### Common

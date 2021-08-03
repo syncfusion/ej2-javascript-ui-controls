@@ -542,3 +542,5 @@ export const createVirtualValidationForm: string = 'create-virtual-validation-fo
 export const validateVirtualForm: string = 'validate-virtual-form';
 /** @hidden */
 export const destroyChildGrid: string = 'destroy-child-grid';
+/** @hidden */
+export const stickyScrollComplete: string = 'sticky-scroll-complete';

@@ -762,6 +762,8 @@ export class Selection implements IAction {
             this.clearCellSelection();
             this.clearColumnSelection();
             this.prevRowIndex = undefined;
+            this.prevCIdxs = undefined;
+            this.prevECIdxs = undefined;
             this.enableSelectMultiTouch = false;
             this.isInteracted = false;
             this.checkSelectAllClicked = false;
@@ -3083,6 +3085,9 @@ export class Selection implements IAction {
             }
             prev.cellIndex = !isNullOrUndefined(prev.cellIndex) ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
             cellIndex = cIdx;
+        }
+        if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
+            rowIndex = parseInt(e.element.parentElement.getAttribute('aria-rowindex'), 10);
         }
         if ((headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 &&
             e.keyArgs.action !== 'space' && rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) &&

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.49 (2021-07-27)
+## 19.2.51 (2021-08-03)
+
+### Tab
+
+#### Bug Fixes
+
+- `#F167176` - An issue with Tab item drag has been fixed.
+
+## 19.2.48 (2021-07-20)
 
 ### Toolbar
 

@@ -774,3 +774,18 @@ export type RowRenderingDirection =
     'Horizontal' |
     /**  Defined vertical row rendering */
     'Vertical';
+
+/**
+ * Defines keyboard focus keys.
+ *
+ * @hidden
+ */
+export type FocusKeys =
+    'downArrow' |
+    'upArrow' |
+    'PageUp' |
+    'PageDown' |
+    'enter' |
+    'shiftEnter' |
+    'tab' |
+    'shiftTab'

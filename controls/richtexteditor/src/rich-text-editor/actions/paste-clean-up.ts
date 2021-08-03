@@ -284,8 +284,18 @@ export class PasteCleanup {
             },
             uploading: (e: UploadingEventArgs) => {
                 if (!this.parent.isServerRendered) {
-                    this.parent.trigger(events.imageUploading, e);
-                    this.parent.inputElement.contentEditable = 'false';
+                    this.parent.trigger(events.imageUploading, e, (imageUploadingArgs: UploadingEventArgs) => {
+                        if (imageUploadingArgs.cancel) {
+                            if (!isNullOrUndefined(imgElem)) {
+                                detach(imgElem);
+                            }
+                            if(!isNullOrUndefined(popupObj.element)) {
+                                detach(popupObj.element);
+                            }
+                        } else {
+                            this.parent.inputElement.contentEditable = 'false';
+                        }
+                    });
                 }
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {

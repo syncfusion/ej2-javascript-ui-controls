@@ -2359,8 +2359,10 @@ export class PivotEngine {
         let field: IFieldOptions = fields[position];
         let showSubTotals: boolean = true;
         if (axis === 'column') {
-            showSubTotals = this.showSubTotals && this.showColumnSubTotals && field ? field.showSubTotals : true;
+            // showSubTotals = this.showSubTotals && this.showColumnSubTotals && field ? field.showSubTotals : true;
+            showSubTotals = this.showSubTotals && this.showColumnSubTotals && field.showSubTotals;
         } else {
+
             showSubTotals = this.showSubTotals && this.showRowSubTotals && field ? field.showSubTotals : true;
         }
         while (lenCnt < headers.length) {
@@ -3183,7 +3185,7 @@ export class PivotEngine {
                 let hpos: number = tnum;
                 let actpos: number = actCnt;
                 let rowIndex: number = tnum;
-                if (!(rows[rln].hasChild && ((!isNullOrUndefined(rows[rln].showSubTotals) &&
+                if (!(rows[rln].hasChild && rows[rln].isDrilled && ((!isNullOrUndefined(rows[rln].showSubTotals) &&
                     !rows[rln].showSubTotals) || !this.showSubTotals || !this.showRowSubTotals))) {
                     for (let vln: number = 0; vln < vlt; vln++) {
                         tnum++;

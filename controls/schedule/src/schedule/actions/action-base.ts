@@ -242,7 +242,8 @@ export class ActionBase {
 
     public removeCloneElementClasses(): void {
         let elements: HTMLElement[] = this.actionObj.originalElement;
-        if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear' ||
+            this.parent.currentView === 'Day' || this.parent.currentView === 'Week' || this.parent.currentView === 'WorkWeek') {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_ACTION_CLASS));
         }
         removeClass(elements, cls.EVENT_ACTION_CLASS);
@@ -250,6 +251,10 @@ export class ActionBase {
 
     public removeCloneElement(): void {
         this.actionObj.originalElement = [];
+        let dynamicEle: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-dynamic-clone'));
+        for (const cloneEle of dynamicEle) {
+            remove(cloneEle);
+        }
         for (const cloneElement of this.actionObj.cloneElement) {
             if (!isNullOrUndefined(cloneElement.parentNode)) { remove(cloneElement); }
         }

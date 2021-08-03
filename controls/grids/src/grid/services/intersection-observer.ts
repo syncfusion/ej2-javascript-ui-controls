@@ -27,9 +27,9 @@ export class InterSectionObserver {
         },
         'down': {
             check: (rect: ClientRect, info: SentinelType) => {
-                const top: number = rect.bottom;
+                const bottom: number = rect.bottom;
                 info.entered = rect.bottom <= this.containerRect.bottom;
-                return top - (this.options.pageHeight / 2) <= this.options.pageHeight / 2;
+                return ((bottom - this.containerRect.top) - (this.options.pageHeight / 2)) <= this.options.pageHeight / 2;
             }, axis: 'Y'
         },
         'right': {

@@ -543,7 +543,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'TrackChanges': 'Track Changes',
         'AllCaps': 'AllCaps',
         'Change case Tooltip': 'Change case',
-        'UPPERCASE': 'UPPERCASE'
+        'UPPERCASE': 'UPPERCASE',
+        'No color': 'No color'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 

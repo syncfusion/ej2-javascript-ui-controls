@@ -153,7 +153,8 @@ export class BasicFormulas {
             description: 'Returns the geometric mean of an array or range of positive data.'
         },
         { formulaName: 'TEXT', category: 'Lookup & Reference', description: 'Converts a value to text in specified number format.' },
-        { formulaName: 'SORT', category: 'Lookup & Reference', description: 'Sorts a range of an array.' }
+        { formulaName: 'SORT', category: 'Lookup & Reference', description: 'Sorts a range of an array.' },
+        { formulaName: 'T', category: 'Text', description: 'Checks whether a value is text and returns the text if it is, or returns empty string if it is not.' }
     ];
     private isConcat: boolean = false;
     constructor(parent?: Calculate) {
@@ -228,6 +229,27 @@ export class BasicFormulas {
         }
         return sum;
     }
+
+    /**
+     * @hidden
+     * @param {string} args - specify the args.
+     * @returns {string} - Compute the text or null value.
+     */
+    public ComputeT(...args: string[]): string {
+        let result: string = '';
+        if (isNullOrUndefined(args) || args.length !== 1 || args[0] === '') {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        let value: string = args[0];
+        value = value.indexOf(':') > - 1 ? value.split(':')[0] : value;
+        value = this.parent.getValueFromArg(value);
+        const letters: RegExp = /^[0-9.]+$/;
+        if (value.match(letters) === null && value.toUpperCase() !== 'TRUE' && value.toUpperCase() !== 'FALSE') {
+            result = value;
+        }
+        return result;
+    }
+
     /**
      * @hidden
      * @param {string[]} args - specify the args.

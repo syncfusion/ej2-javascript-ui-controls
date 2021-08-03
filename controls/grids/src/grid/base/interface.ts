@@ -86,6 +86,13 @@ export interface IGrid extends Component<HTMLElement> {
     allowKeyboard?: boolean;
 
     /**
+     * If 'enableStickyHeader' set to true, then the user can able to make the column headers visible when the document is scrolled.
+     *
+     * @default null
+     */
+    enableStickyHeader?: boolean;
+
+    /**
      * Specifies whether the allowTextWrap is enabled or not.
      *
      * @default null

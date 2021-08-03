@@ -1794,6 +1794,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     protected render(): void {
         if ((<{ isReact?: boolean }>this).isReact) {
             (<{ isReact?: boolean }>this.grid).isReact = true;
+            (<{ portals?: object[] }>this.grid).portals = [];
         }
         createSpinner({ target: this.element }, this.createElement);
         this.log(['mapping_fields_missing']);
@@ -2719,9 +2720,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public destroy(): void {
+        const treeGridElement: Element = this.element;
+        if (!treeGridElement) { return; }
+        const hasTreeGridChild: boolean = treeGridElement.querySelector('.' + 'e-gridheader') &&
+            treeGridElement.querySelector( '.' + 'e-gridcontent') ? true : false;
+        if (hasTreeGridChild) {
+            this.unwireEvents();
+        }
         this.removeListener();
-        this.unwireEvents();
-        super.destroy();
+        if (hasTreeGridChild) {
+            super.destroy();
+        }
         if (this.grid) {
             this.grid.destroy();
         }

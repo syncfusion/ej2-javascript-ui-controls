@@ -1066,6 +1066,38 @@ describe('update rows method', () => {
       destroy(gridObj);
     });
   });
+  
+  describe('Tab Next Cell allowEdit false Testing - EJ2-51661', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, allowNextRowEdit: true, mode: "Cell",
+          newRowPosition: "Child" },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'priority',allowEditing: false, headerText: 'priority' },
+          ]
+        },
+        done
+      );
+    });
+    it('Edit mode is not continued to the Cell on tab click', () => {
+      gridObj.editCell(0, 'taskName');
+      gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+      expect(gridObj.getRows()[0].classList.contains("e-editedrow")).toBe(true);
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+      expect(gridObj.getRows()[0].classList.contains("e-editedrow")).toBe(false);
+  });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   describe('EJ2-43565 - Cell Edit with isFrozen property', () => {
     let gridObj: TreeGrid;
