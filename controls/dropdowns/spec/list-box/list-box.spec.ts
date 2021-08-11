@@ -785,10 +785,13 @@ describe('ListBox', () => {
         beforeEach(() => {
             listObj1 = new ListBox({
                 enableRtl: true,
-                dataSource: data, scope: '#listbox2',
-                toolbarSettings: { items: ['moveUp', 'moveDown', 'moveTo', 'moveFrom', 'moveAllTo', 'moveAllFrom'] }
+                dataSource: data, scope: '#listbox2', allowFiltering: true,
+                toolbarSettings: { items: ['moveUp', 'moveDown', 'moveTo', 'moveFrom', 'moveAllTo', 'moveAllFrom'] },
+                noRecordsTemplate : '<div style="padding:10px; padding-left:20%; position:relative;"> <span class = "img" > <img src="http://www.404errorpages.com/images/image001.png" height="40px", width="40px"/></span> <span style="padding:10px; position: absolute;">No records found</span></div>'
             }, elem1);
-            listObj2 = new ListBox({ dataSource: vegetableData , enableRtl: true}, elem2);
+            listObj2 = new ListBox({ dataSource: vegetableData , enableRtl: true, allowFiltering: true,
+                noRecordsTemplate : '<div style="padding:10px; padding-left:20%; position:relative;"> <span class = "img" > <img src="http://www.404errorpages.com/images/image001.png" height="40px", width="40px"/></span> <span style="padding:10px; position: absolute;">No records found</span></div>'
+            }, elem2);
         });
 
         afterEach(() => {
@@ -905,6 +908,43 @@ describe('ListBox', () => {
         it('EJ2-50548 - Toolbar settings not aligned properly when Rtl mode is applied', () => {
             expect(listObj1.list.nextElementSibling.classList.contains('e-rtl')).toBeFalsy();
             expect(listObj1.list.classList.contains('e-rtl')).toBeTruthy();
+        });
+
+        it('EJ2-51528 - getDataList not updated properly after removing the items', () => {
+            listObj = new ListBox({ dataSource: vegetableData }, elem);
+            expect(listObj.getDataList().length).toEqual(11);
+            listObj.removeItem(['Garlic', 'Nopal' ]);
+            expect(listObj.getDataList().length).toEqual(9);
+        });
+        
+        it('EJ2-38419-Need to provide noRecordsTemplate support in Listbox', () => {
+            let toolChild: any = listObj1.getToolElem().children;
+            toolChild[4].click();
+            expect(listObj1.ulElement.childElementCount).toEqual(1);
+            expect(listObj1.list.getElementsByClassName('e-ul')[0].children[0].children[1].textContent).toEqual('No records found');
+            expect(listObj1.list.getElementsByClassName('e-ul')[0].children[0].children[0].classList).toContain('img');
+            expect(listObj2.ulElement.childElementCount).toEqual(16);
+            var ele = listObj1.list.getElementsByClassName('e-input-filter')[0];
+            ele.click();
+            ele.value = "c";
+            listObj1.dataBind();
+            listObj1.keyDownStatus = true;
+            listObj1.onInput();
+            listObj1.KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'c',
+                charCode: 22,
+                keyCode: 67,
+                which: 22,
+                code: 22
+            });
+            expect(listObj1.ulElement.childElementCount).toEqual(1);
+            expect(listObj1.list.getElementsByClassName('e-ul')[0].children[0].children[1].textContent).toEqual('No records found');
+            expect(listObj1.list.getElementsByClassName('e-ul')[0].children[0].children[0].classList).toContain('img');
         });
     });
 });

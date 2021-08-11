@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile, isBlazor } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit } from '../common/collision';
+import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit } from '../common/collision';
 import {TooltipAnimationSettings,Position,TipPointerPosition,TooltipEventArgs} from "./tooltip";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -49,7 +49,6 @@ export interface TooltipModel extends ComponentModel{
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
      *
-     * @blazorType object
      */
     content?: string | HTMLElement;
 
@@ -66,7 +65,6 @@ export interface TooltipModel extends ComponentModel{
      *
      * {% codeBlock src="tooltip/position-api/index.ts" %}{% endcodeBlock %}
      *
-     * @default 'TopCenter'
      */
     position?: Position;
 
@@ -212,7 +210,6 @@ export interface TooltipModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * @event
-     * @blazorProperty 'OnRender'
      */
     beforeRender?: EmitType<TooltipEventArgs>;
 
@@ -224,7 +221,6 @@ export interface TooltipModel extends ComponentModel{
      * {% codeBlock src="tooltip/beforeOpen/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<TooltipEventArgs>;
 
@@ -233,7 +229,6 @@ export interface TooltipModel extends ComponentModel{
      * {% codeBlock src="tooltip/afterOpen/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'Opened'
      */
     afterOpen?: EmitType<TooltipEventArgs>;
 
@@ -242,7 +237,6 @@ export interface TooltipModel extends ComponentModel{
      * {% codeBlock src="tooltip/beforeClose/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<TooltipEventArgs>;
 
@@ -251,7 +245,6 @@ export interface TooltipModel extends ComponentModel{
      * {% codeBlock src="tooltip/afterClose/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'Closed'
      */
     afterClose?: EmitType<TooltipEventArgs>;
 
@@ -260,7 +253,6 @@ export interface TooltipModel extends ComponentModel{
      * {% codeBlock src="tooltip/beforeCollision/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnCollision'
      */
     beforeCollision?: EmitType<TooltipEventArgs>;
 
@@ -268,7 +260,6 @@ export interface TooltipModel extends ComponentModel{
      * We can trigger `created` event after the Tooltip component is created.
      *
      * @event
-     * @blazorProperty 'Created'
      */
     /* eslint-disable */
     created?: EmitType<Object>;
@@ -277,7 +268,6 @@ export interface TooltipModel extends ComponentModel{
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
      *
      * @event
-     * @blazorProperty 'Destroyed'
      */
     /* eslint-disable */
     destroyed?: EmitType<Object>;

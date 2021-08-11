@@ -2,7 +2,7 @@
  * Image module spec 
  */
 import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
-import { RichTextEditor, QuickToolbar, IRenderer } from './../../../src/index';
+import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
 import { SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -2439,7 +2439,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_image');
                 done();
-            }, 4000);
+            }, 4500);
         });
     });
 
@@ -3079,6 +3079,80 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('RTE Drag and Drop Image with paste restrictions', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        let imgSize: number;
+        let size: number;
+        let sizeInBytes: number;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                        <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                        </textarea>
+                        <div id="dateError"></div>
+                    </div>
+                    ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                imageUploading: function (args) {
+                    imgSize = size;
+                    sizeInBytes = args.fileData.size;
+                    if ( imgSize < sizeInBytes ) {
+                        args.cancel = true;
+                    }
+                }
+            });
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-imginline'))
+            done();
+        });
+        it(" Check image after drop", function (done: Function) {
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.imageModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.imageModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('img')[0];
+            setTimeout(() => {
+                expect(rteObj.element.getElementsByTagName('img').length).toBe(1);
+                expect(ele.classList.contains('e-rte-image')).toBe(true);
+                expect(ele.classList.contains('e-imginline')).toBe(true);
+                expect(ele.classList.contains('e-resize')).toBe(true);
+                done();
+            }, 2000);
+           
+        });
+        it(" Check image being removed with args.cancel as true", function (done: Function) {
+            size = 7;
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('upload-image');
+            var popupEle = createElement('div', { className: 'e-rte-pop e-popup-open' });
+            rteObj.inputElement.appendChild(popupEle);
+            rteObj.inputElement.appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
+            rteObj.notify('drop', { args: event });
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (rteObj.imageModule as any).uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect((rteObj.inputElement.querySelectorAll("img")[0] as HTMLImageElement).classList.contains('e-rte-image')).toBe(false);
+                done(); 
+            }, 50);
+       });
+    });
+
     describe('EJ2-39317 - beforeImageUpload event - ', () => {
         let rteObj: RichTextEditor;
         let beforeImageUploadSpy: jasmine.Spy = jasmine.createSpy('onBeforeImageUpload');
@@ -3414,6 +3488,28 @@ client side. Customer easy to edit the contents and get the HTML content for
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();                
             expect((rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('img')).not.toBe(null);    
             done();
+        });
+    });
+    describe('EJ2-49981 - ShowDialog, CloseDialog method testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({ });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('beforeDialogOpen event trigger testing', (done) => {
+            rteObj.showDialog(DialogType.InsertImage);
+            setTimeout(() => {
+                expect(document.body.querySelectorAll('.e-rte-img-dialog.e-dialog').length).toBe(1);
+                rteObj.closeDialog(DialogType.InsertImage);
+                setTimeout(() => {
+                    expect(document.body.querySelectorAll('.e-rte-img-dialog.e-dialog').length).toBe(0);
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 });

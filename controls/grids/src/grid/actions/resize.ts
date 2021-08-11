@@ -204,6 +204,9 @@ export class Resize implements IAction {
                 (<HTMLTableElement>footerTable).style.width = formatUnit(calcTableWidth);
             }
         }
+        if (gObj.isFrozenGrid()) {
+            this.widthService.refreshFrozenScrollbar();
+        }
         const tableWidth: number = (headerTable as HTMLElement).offsetWidth;
         const contentwidth: number = (gObj.getContent().scrollWidth);
         if (contentwidth > tableWidth) {

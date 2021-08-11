@@ -498,6 +498,8 @@ export class SelectionParagraphFormat {
     private lineSpacingIn: number = 1;
     private lineSpacingTypeIn: LineSpacingType = undefined;
     private bidiIn: boolean = undefined;
+    private keepWithNextIn: boolean = undefined;
+    private keepLinesTogetherIn: boolean = undefined;
     private contextualSpacingIn: boolean = undefined;
     /**
      * @private
@@ -720,6 +722,48 @@ export class SelectionParagraphFormat {
         this.bidiIn = value;
         this.notifyPropertyChanged('bidi');
     }
+
+    /**
+     * Gets or sets a value indicating whether the specified paragraph remains on the same page as the paragraph that follows it while paginating the document.
+     *
+     * @default false
+     * @aspType bool
+     * @returns {boolean} - `true` if the specified paragraph remains on the same page as the paragraph that follows it; otherwise, `false`.
+     */
+    public get keepWithNext(): boolean {
+        return this.keepWithNextIn;
+    }
+    /**
+     * Sets a value indicating whether the specified paragraph remains on the same page as the paragraph that follows it while paginating the document.
+     *
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set keepWithNext(value: boolean) {
+        this.keepWithNextIn = value;
+        this.notifyPropertyChanged('keepWithNext');
+    }
+
+    /**
+     * Gets or sets a value indicating whether all lines in the specified paragraphs remain on the same page while paginating the document.
+     *
+     * @default false
+     * @aspType bool
+     * @returns {boolean} - `true` if all lines in the specified paragraphs remain on the same page; otherwise, `false`.
+     */
+    public get keepLinesTogether(): boolean {
+        return this.keepLinesTogetherIn;
+    }
+    /**
+     * Sets a value indicating whether all lines in the specified paragraphs remain on the same page while paginating the document.
+     *
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set keepLinesTogether(value: boolean) {
+        this.keepLinesTogetherIn = value;
+        this.notifyPropertyChanged('keepLinesTogether');
+    }
     /**
      * Gets or sets a value indicating whether to add space between the paragraphs of same style.
      *
@@ -805,6 +849,10 @@ export class SelectionParagraphFormat {
             return this.bidi;
         case 'contextualSpacing':
             return this.contextualSpacing;
+        case 'keepWithNext':
+            return this.keepWithNext;
+        case 'keepLinesTogether':
+            return this.keepLinesTogether;                    
         default:
             return undefined;
         }
@@ -870,6 +918,8 @@ export class SelectionParagraphFormat {
         this.lineSpacingType = format.lineSpacingType;
         this.textAlignment = format.textAlignment;
         this.bidi = format.bidi;
+        this.keepLinesTogether = format.keepLinesTogether;
+        this.keepWithNext = format.keepWithNext;
         this.contextualSpacing = format.contextualSpacing;
         if (!isNullOrUndefined(format.listFormat) && !isNullOrUndefined(format.listFormat.listId)) {
             this.listId = format.listFormat.listId;
@@ -917,6 +967,12 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.bidi)) {
             format.bidi = this.bidi;
         }
+        if (!isNullOrUndefined(this.keepWithNext)) {
+            format.keepWithNext = this.keepWithNext;
+        }
+        if (!isNullOrUndefined(this.keepLinesTogether)) {
+            format.keepLinesTogether = this.keepLinesTogether;
+        }
         if (!isNullOrUndefined(this.contextualSpacing)) {
             format.contextualSpacing = this.contextualSpacing;
         }
@@ -960,6 +1016,12 @@ export class SelectionParagraphFormat {
         }
         if (!isNullOrUndefined(this.bidi) && this.bidi !== format.bidi) {
             this.bidi = undefined;
+        }
+        if (!isNullOrUndefined(this.keepLinesTogether) && this.keepLinesTogether !== format.keepLinesTogether) {
+            this.keepLinesTogether = undefined;
+        }
+        if (!isNullOrUndefined(this.keepWithNext) && this.keepWithNext !== format.keepWithNext) {
+            this.keepWithNext = undefined;
         }
         if (!isNullOrUndefined(this.contextualSpacing) && this.contextualSpacing !== format.contextualSpacing) {
             this.contextualSpacing = undefined;

@@ -700,9 +700,31 @@ export namespace ListBase {
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
+                    // eslint-disable-next-line
+                    const compiledElement: any = compiledString(
+                        curItem,
+                        componentInstance,
+                        'headerTemplate',
+                        currentID,
+                        !!curOpt.isStringTemplate,
+                        null,
+                        li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 } else {
-                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
+                    // eslint-disable-next-line
+                    const compiledElement: any = compiledString(
+                        curItem,
+                        componentInstance,
+                        'template',
+                        currentID,
+                        !!curOpt.isStringTemplate,
+                        null,
+                        li);
+                    if (compiledElement) {
+                        append(compiledElement, li);
+                    }
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -751,14 +773,16 @@ export namespace ListBase {
             const headerData: { [key: string]: string; } = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(
-                compiledString(
-                    headerData,
-                    componentInstance,
-                    'groupTemplate',
-                    curOpt.groupTemplateID,
-                    !!curOpt.isStringTemplate),
-                header);
+            // eslint-disable-next-line
+            const compiledElement: any = compiledString(
+                headerData,
+                componentInstance,
+                'groupTemplate',
+                curOpt.groupTemplateID,
+                !!curOpt.isStringTemplate, null, header);
+            if (compiledElement) {
+                append(compiledElement, header);
+            }
         }
         return headerItems;
     }
@@ -943,21 +967,36 @@ export namespace ListBase {
         {
             li.setAttribute('data-uid', generateId());
         }
-        const blazId: string = 'BlazId';
-        if (options && !!options.removeBlazorID
-            && typeof item === 'object'
-            // eslint-disable-next-line no-prototype-builtins
-            && (item as Object).hasOwnProperty(blazId)) {
-            delete item[blazId];
-        }
         if (grpLI && options && options.groupTemplate) {
             // eslint-disable-next-line @typescript-eslint/ban-types
             const compiledString: Function = compile(options.groupTemplate);
-            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
+            // eslint-disable-next-line
+            const compiledElement: any = compiledString(
+                item,
+                componentInstance,
+                'groupTemplate',
+                curOpt.groupTemplateID,
+                !!curOpt.isStringTemplate,
+                null,
+                li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         } else if (!grpLI && options && options.template) {
             // eslint-disable-next-line @typescript-eslint/ban-types
             const compiledString: Function = compile(options.template);
-            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+            // eslint-disable-next-line
+            const compiledElement: any = compiledString(
+                item,
+                componentInstance,
+                'template',
+                curOpt.templateID,
+                !!curOpt.isStringTemplate,
+                null,
+                li);
+            if (compiledElement) {
+                append(compiledElement, li);
+            }
         } else {
             const innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,
@@ -1056,24 +1095,12 @@ export interface FieldsMapping {
     expanded?: string;
     selected?: string;
     iconCss?: string;
-    /**
-     * @blazorType object
-     */
     child?: string;
     tooltip?: string;
     hasChildren?: string;
-    /**
-     * @blazorType object
-     */
     htmlAttributes?: string;
-    /**
-     * @blazorType object
-     */
     urlAttributes?: string;
     imageUrl?: string;
-    /**
-     * @blazorType object
-     */
     imageAttributes?: string;
 }
 
@@ -1180,10 +1207,6 @@ export interface ListBaseOptions {
      * Force template compiler to compile as string template
      */
     isStringTemplate?: string;
-    /**
-     * Remove Blazor ID from items
-     */
-    removeBlazorID?: boolean;
     /**
      * Defines whether to allow the cross scripting site or not.
      */

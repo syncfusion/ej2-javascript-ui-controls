@@ -273,7 +273,6 @@ describe('ListView', () => {
                     data: dataSourceWithComplexData[0]
                 };
                 expect(treeObj.getSelectedItems()).toEqual(data);
-                treeObj.blazorGetSelectedItems(treeObj.getSelectedItems());
                 expect((<HTMLElement>li.firstChild.firstChild).classList.contains('iconClass1')).toBe(true);
                 expect(li.innerText.trim()).toBe('text1');
 
@@ -472,7 +471,6 @@ describe('ListView', () => {
             };
 
             expect(treeObj.getSelectedItems()).toEqual(data);
-            treeObj.blazorGetSelectedItems(treeObj.getSelectedItems());
         });
 
         it('contentcontainer after and before empty the datasource', () => {
@@ -704,7 +702,6 @@ describe('ListView', () => {
                 expect((nTree.getSelectedItems().item as HTMLElement[])[0]).toBe(liItem1);
                 expect((nTree.getSelectedItems().item as HTMLElement[])[1]).toBe(liItem2);
                 expect((nTree.getSelectedItems().item as HTMLElement[])[2]).toBe(liItem3);
-                (nTree as any).blazorGetSelectedItems(nTree.getSelectedItems());
             });
 
 
@@ -713,6 +710,114 @@ describe('ListView', () => {
             });
         });
 
+        describe('default remote data binding without query', () => {
+            let ele: HTMLElement = document.createElement('div');
+            ele.appendChild(document.createElement('ul'));
+            ele.id = 'newTree';
+            let nTree: ListView;
+            let count: number = 0;
+            beforeAll((done: Function) => {
+                document.body.appendChild(ele);
+                nTree = new ListView({
+                    dataSource: new DataManager({
+                        url: '/api/Employees',
+                        adaptor: new ODataV4Adaptor,
+                        offline: true
+                    }),
+                    fields: { id: 'EmployeeID', text: 'FirstName' },
+                    actionComplete: () => {
+                        count = count + 1;
+                        done();
+                    }
+                });
+                nTree.appendTo('#newTree');
+            });
+
+            it('validate the actionComplete event triggered count details', () => {
+                expect(count).toBe(1);
+            });
+
+            afterAll(() => {
+                ele.remove();
+            });
+        });
+
+        describe('default remote data binding with template property', () => {
+            let template: Element = createElement('div', { id: 'template' });
+            template.innerHTML = '<b>${FirstName}</b>';             
+            let ele: HTMLElement = document.createElement('div');
+            ele.appendChild(document.createElement('ul'));
+            ele.id = 'newTree';
+            let nTree: ListView;
+            let count: number = 0;
+            beforeAll((done: Function) => {
+                document.body.appendChild(template);
+                document.body.appendChild(ele);
+                nTree = new ListView({
+                    dataSource: new DataManager({
+                        url: '/api/Employees',
+                        adaptor: new ODataV4Adaptor,
+                        offline: true
+                    }),
+                    fields: { id: 'EmployeeID', text: 'FirstName' },
+                    template: "#template",
+                    actionComplete: () => {
+                        count = count + 1;
+                        done();
+                    }
+                });
+                nTree.appendTo('#newTree');
+            });
+
+            it('validate the actionComplete event triggered count details', () => {
+                expect(count).toBe(1);
+            });
+
+            afterAll(() => {
+                template.remove();
+                ele.remove();
+            });
+        });
+
+        describe('actionFailure event after destroyed the listview', () => {
+            let actionFailedFunction: any = jasmine.createSpy('actionFailure');
+            let ele: HTMLElement = document.createElement('div');
+            ele.appendChild(document.createElement('ul'));
+            ele.id = 'newTree';
+            let nTree: ListView;
+            beforeAll(() => {
+                jasmine.Ajax.install();
+                document.body.appendChild(ele);
+                nTree = new ListView({
+                    dataSource: new DataManager({
+                        url: '/test/db',
+                        adaptor: new ODataV4Adaptor,
+                        offline: true
+                    }),
+                    fields: { id: 'EmployeeID', text: 'FirstName' },
+                    actionFailure: actionFailedFunction
+                });
+                nTree.appendTo('#newTree');
+                nTree.destroy();
+            });
+            beforeEach(() => {
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 404,
+                    'contentType': 'application/json',
+                    'responseText': 'Page not found'
+                });
+            });
+            it('validate the actionFailure event after destroyed the listview', () => {
+                expect(actionFailedFunction).not.toHaveBeenCalled();
+            });
+    
+            afterAll(() => {
+                ele.remove();
+                jasmine.Ajax.uninstall();
+            });
+        });
+    
         describe('custom table name fields', () => {
             let ele: HTMLElement = document.createElement('div');
             ele.appendChild(document.createElement('ul'));
@@ -909,7 +1014,6 @@ describe('ListView', () => {
             };
 
             expect(treeObj.getSelectedItems()).toEqual(data);
-            treeObj.blazorGetSelectedItems(treeObj.getSelectedItems());
         });
 
         describe('back', () => {
@@ -1233,7 +1337,6 @@ describe('ListView', () => {
             let listItem: any = ele.getElementsByClassName('e-list-item');
             listObj.selectMultipleItems([listItem[0], listItem[1]]);
             let selectedListItem = (listObj.getSelectedItems().item as HTMLElement[]);
-            (listObj as any).blazorGetSelectedItems(listObj.getSelectedItems());
             listItem = ele.getElementsByClassName('e-active');
             expect(listItem.length).toBe(selectedListItem.length);
             expect(listItem[0]).toBe(selectedListItem[0]);
@@ -1514,7 +1617,6 @@ describe('ListView', () => {
             listObj.selectItem(listObj.liCollection[0]);
             listObj.selectItem(listObj.liCollection[0]);
             expect(listObj.getSelectedItems().text[0]).toBe('subText1');
-            listObj.blazorGetSelectedItems(listObj.getSelectedItems());
         });
 
         it('Navigation to parent from child', () => {
@@ -1534,7 +1636,6 @@ describe('ListView', () => {
             listObj.selectItem(listObj.liCollection[0]);
             expect(listObj.getSelectedItems().text[0]).toBe('subText1');
             expect(listObj.getSelectedItems().data[0].parentId[0]).toBe('01');
-            listObj.blazorGetSelectedItems(listObj.getSelectedItems());
         });
 
         it('Checking and unchecking checkbox', () => {
@@ -3196,21 +3297,6 @@ describe('ListView', () => {
             ele.remove();
         });
     });
-
-    describe('Blazor update template methods', () => {
-        it('Update template method', () => {
-            const ele: HTMLElement = createElement('div', { id: 'ListView' });
-            const listObj = new ListView({
-                dataSource: [{ id: '1', text: 'text', category: 'odd' }], fields: { groupBy: 'category' },
-                template: '<div>${text}</div>',
-                groupTemplate: '<div>${text}</div>',
-                headerTemplate: '<div>Header template</div>',
-                showHeader: true
-            });
-            listObj.appendTo(ele);
-        });
-    });
-
     describe('addItem testing', () => {
         let listObj: ListView;
         const ele: HTMLElement = createElement('div', { id: 'listview' });

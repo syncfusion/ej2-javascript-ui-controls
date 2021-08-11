@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.55 (2021-08-11)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I306072` - The Floating issue in Dashboard Layout when the scroll bar is in the middle of the page has been resolved.
+
 ## 19.2.48 (2021-07-20)
 
 ### Splitter

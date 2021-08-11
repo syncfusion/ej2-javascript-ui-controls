@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I328768` - The issue with "The Tooltip content is not updated while hovering over the target quickly" has been resolved.
+
 ## 19.2.46 (2021-07-06)
 
 ### Tooltip

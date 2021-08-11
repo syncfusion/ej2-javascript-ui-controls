@@ -1,19 +1,16 @@
-/* eslint-disable */
 import { PdfAnnotationBaseModel } from './pdf-annotation-model';
-// eslint-disable-next-line max-len
 import { PointModel, PathElement, Rect, DrawingElement, Point, Size, RotateTransform, TextElement, randomId, Matrix, identityMatrix, rotateMatrix, transformPointByMatrix, DecoratorShapes, Intersection, Segment, intersect3 } from '@syncfusion/ej2-drawings';
 import { setElementStype, findPointsLength } from './drawing-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MeasureAnnotation, PdfViewer } from '../index';
 
 /**
- * @param obj
- * @param points
  * @private
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel[]} points - Specified the annotation points.
+ * @returns {PointModel[]} - Returns the annotation points model array.
  */
 export function getConnectorPoints(obj: PdfAnnotationBaseModel, points?: PointModel[]): PointModel[] {
-    const width: number = Math.abs(obj.sourcePoint.x - obj.targetPoint.x);
-    const height: number = Math.abs(obj.sourcePoint.y - obj.targetPoint.y);
     points = obj.vertexPoints;
     const newPoints: PointModel[] = points.slice(0);
     if (newPoints && newPoints.length > 0) {
@@ -23,13 +20,13 @@ export function getConnectorPoints(obj: PdfAnnotationBaseModel, points?: PointMo
     return newPoints;
 }
 /**
- * @param connector
- * @param points
  * @private
+ * @param {PdfAnnotationBaseModel} connector - Specified the annotation connector model.
+ * @param {PointModel[]} points - Specified the annotation points.
+ * @returns {string} - Returns the annotation path value.
  */
 export function getSegmentPath(connector: PdfAnnotationBaseModel, points: PointModel[]): string {
     let path: string = ''; let getPt: PointModel;
-    let end: PointModel; let st: PointModel;
     let pts: PointModel[] = [];
     let j: number = 0;
     while (j < points.length) {
@@ -51,21 +48,15 @@ export function getSegmentPath(connector: PdfAnnotationBaseModel, points: PointM
 
 
 /**
- * @param connector
- * @param points
- * @param element
- * @param connector
- * @param points
- * @param element
- * @param connector
- * @param points
- * @param element
  * @private
+ * @param {PdfAnnotationBaseModel} connector - Specified the annotation connector model.
+ * @param {PointModel[]} points - Specified the annotation points.
+ * @param {PathElement} element - Specified the annotation element.
+ * @returns {PathElement} - Returns the annotation path element.
  */
 export function updateSegmentElement(connector: PdfAnnotationBaseModel, points: PointModel[], element: PathElement): PathElement {
-    let segmentPath: string; let bounds: Rect = new Rect();
-    let point: PointModel[];
-    segmentPath = getSegmentPath(connector, points);
+    let bounds: Rect = new Rect();
+    const segmentPath: string = getSegmentPath(connector, points);
     bounds = Rect.toBounds(points);
     element.width = bounds.width;
     element.height = bounds.height;
@@ -82,14 +73,12 @@ export function updateSegmentElement(connector: PdfAnnotationBaseModel, points: 
 }
 
 /**
- * @param connector
- * @param segmentElement
- * @param connector
- * @param segmentElement
  * @private
+ * @param {PdfAnnotationBaseModel} connector - Specified the annotation connector model.
+ * @param {PathElement} segmentElement - Specified the annotation segment element.
+ * @returns {PathElement} - Returns the annotation path element.
  */
 export function getSegmentElement(connector: PdfAnnotationBaseModel, segmentElement: PathElement): PathElement {
-    let bounds: Rect; let segmentPath: string;
     let points: PointModel[] = [];
     points = getConnectorPoints(connector);
     segmentElement.staticSize = true;
@@ -99,30 +88,20 @@ export function getSegmentElement(connector: PdfAnnotationBaseModel, segmentElem
 }
 
 /**
- * @param obj
- * @param element
- * @param pt
- * @param adjacentPoint
- * @param isSource
- * @param obj
- * @param element
- * @param pt
- * @param adjacentPoint
- * @param isSource
- * @param obj
- * @param element
- * @param pt
- * @param adjacentPoint
- * @param isSource
  * @private
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {DrawingElement} element - Specified the annotation drawing element.
+ * @param {PointModel} pt - Specified the annotation point.
+ * @param {PointModel} adjacentPoint - Specified the annotation adjacent point.
+ * @param {boolean} isSource - Specified the is source value or not.
+ * @returns {void}
  */
 export function updateDecoratorElement(
     obj: PdfAnnotationBaseModel, element: DrawingElement, pt: PointModel, adjacentPoint: PointModel, isSource: boolean): void {
-    let getPath: string; let angle: number;
     element.offsetX = pt.x; element.offsetY = pt.y;
-    angle = Point.findAngle(pt, adjacentPoint);
+    const angle: number = Point.findAngle(pt, adjacentPoint);
     const thickness: number = obj.thickness <= 5 ? 5 : obj.thickness;
-    getPath = getDecoratorShape(isSource ? obj.sourceDecoraterShapes : obj.taregetDecoraterShapes);
+    const getPath: string = getDecoratorShape(isSource ? obj.sourceDecoraterShapes : obj.taregetDecoraterShapes);
     const size: Size = new Size(thickness * 2, thickness * 2);
     element.transform = RotateTransform.Self;
     setElementStype(obj, element);
@@ -140,15 +119,12 @@ export function updateDecoratorElement(
 }
 
 /**
- * @param obj
- * @param offsetPoint
- * @param adjacentPoint
- * @param isSource
- * @param obj
- * @param offsetPoint
- * @param adjacentPoint
- * @param isSource
  * @private
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel} offsetPoint - Specified the annotation offset point.
+ * @param {PointModel} adjacentPoint - Specified the annotation adjacent point.
+ * @param {boolean} isSource - Specified the is source value or not.
+ * @returns {PathElement} - Returns the annotation path element.
  */
 export function getDecoratorElement(
     obj: PdfAnnotationBaseModel, offsetPoint: PointModel, adjacentPoint: PointModel,
@@ -156,17 +132,15 @@ export function getDecoratorElement(
     :
     PathElement {
     const decEle: PathElement = new PathElement();
-    let getPath: string; let angle: number;
     updateDecoratorElement(obj, decEle, offsetPoint, adjacentPoint, isSource);
     return decEle;
 }
 
 /**
- * @param connector
- * @param pts
- * @param connector
- * @param pts
  * @private
+ * @param {PdfAnnotationBaseModel} connector - Specified the annotation object.
+ * @param {PointModel[]} pts - Specified the annotation point model array.
+ * @returns {PointModel[]} - Returns the annotation point model array.
  */
 export function clipDecorators(connector: PdfAnnotationBaseModel, pts: PointModel[]): PointModel[] {
     pts[0] = clipDecorator(connector, pts, true);
@@ -175,16 +149,11 @@ export function clipDecorators(connector: PdfAnnotationBaseModel, pts: PointMode
 }
 
 /**
- * @param connector
- * @param points
- * @param isSource
- * @param connector
- * @param points
- * @param isSource
- * @param connector
- * @param points
- * @param isSource
  * @private
+ * @param {PdfAnnotationBaseModel} connector - Specified the annotation connector object.
+ * @param {PointModel[]} points - Specified the annotation offset point.
+ * @param {boolean} isSource - Specified the is source value or not.
+ * @returns {PointModel} - Returns the annotation point model.
  */
 export function clipDecorator(connector: PdfAnnotationBaseModel, points: PointModel[], isSource: boolean): PointModel {
     let point: PointModel = { x: 0, y: 0 };
@@ -203,26 +172,18 @@ export function clipDecorator(connector: PdfAnnotationBaseModel, points: PointMo
     return point;
 }
 /**
- * @param obj
- * @param points
- * @param measure
- * @param pdfviewer
- * @param obj
- * @param points
- * @param measure
- * @param pdfviewer
- * @param obj
- * @param points
- * @param measure
- * @param pdfviewer
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel[]} points - Specified the annotation point model array.
+ * @param {MeasureAnnotation} measure - Specified the measure annotation object.
+ * @param {PdfViewer} pdfviewer - Specified the pdfviewer element.
  * @hidden
+ * @returns {TextElement[]} - Returns the text element collections.
  */
 // eslint-disable-next-line max-len
 export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation, pdfviewer: PdfViewer): TextElement[] {
     const labels: TextElement[] = [];
-    let textele: TextElement;
     const angle: number = Point.findAngle(points[0], points[1]);
-    textele = textElement(obj, angle);
+    const textele: TextElement = textElement(obj, angle);
     if (!pdfviewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
         textele.content = obj.notes;
     } else {
@@ -241,10 +202,11 @@ export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointMode
 }
 
 /**
- * @param obj
- * @param points
- * @param measure
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel[]} points - Specified the annotation point model array.
+ * @param {MeasureAnnotation} measure - Specified the measure annotation object.
  * @hidden
+ * @returns {string} - Returns the distance value.
  */
 export function updateDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): string {
     let distance: string;
@@ -261,9 +223,10 @@ export function updateDistanceLabel(obj: PdfAnnotationBaseModel, points: PointMo
 }
 
 /**
- * @param obj
- * @param measure
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {MeasureAnnotation} measure - Specified the measure annotation object.
  * @hidden
+ * @returns {string} - Returns the radius label value.
  */
 export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureAnnotation): string {
     let radius: string;
@@ -285,22 +248,18 @@ export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureA
 }
 
 /**
- * @param obj
- * @param points
- * @param measure
- * @param pdfviewer
- * @param obj
- * @param points
- * @param measure
- * @param pdfviewer
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel[]} points - Specified the annotation point model array.
+ * @param {MeasureAnnotation} measure - Specified the measure annotation object.
+ * @param {PdfViewer} pdfviewer - Specified the pdfviewer element.
  * @hidden
+ * @returns {TextElement[]} - Returns the text element collections.
  */
 // eslint-disable-next-line max-len
 export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation, pdfviewer: PdfViewer): TextElement[] {
     const labels: TextElement[] = [];
-    let textele: TextElement;
     const angle: number = Point.findAngle(points[0], points[1]);
-    textele = textElement(obj, angle);
+    const textele: TextElement = textElement(obj, angle);
     if (!pdfviewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
         textele.content = obj.notes;
     } else {
@@ -319,13 +278,11 @@ export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointMod
 }
 
 /**
- * @param obj
- * @param points
- * @param measure
- * @param obj
- * @param points
- * @param measure
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel[]} points - Specified the annotation point model array.
+ * @param {MeasureAnnotation} measure - Specified the measure annotation object.
  * @hidden
+ * @returns {string} - Returns the perimeter label value.
  */
 export function updatePerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): string {
     let perimeter: string;
@@ -342,8 +299,9 @@ export function updatePerimeterLabel(obj: PdfAnnotationBaseModel, points: PointM
 }
 
 /**
- * @param obj
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
  * @hidden
+ * @returns {void}
  */
 export function removePerimeterLabel(obj: PdfAnnotationBaseModel): void {
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
@@ -355,8 +313,9 @@ export function removePerimeterLabel(obj: PdfAnnotationBaseModel): void {
 }
 
 /**
- * @param obj
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
  * @hidden
+ * @returns {void}
  */
 export function updateCalibrateLabel(obj: PdfAnnotationBaseModel): void {
     if (obj.wrapper && obj.wrapper.children) {
@@ -374,8 +333,9 @@ export function updateCalibrateLabel(obj: PdfAnnotationBaseModel): void {
 /**
  * Used to find the path for polygon shapes
  *
- * @param collection
+ * @param {PointModel[]} collection - Specified the polygon annotaion points collection.
  * @hidden
+ * @returns {string} - Returns the polygon annotation path.
  */
 export function getPolygonPath(collection: PointModel[]): string {
     let path: string = '';
@@ -390,11 +350,10 @@ export function getPolygonPath(collection: PointModel[]): string {
     return path;
 }
 /**
- * @param obj
- * @param angle
- * @param obj
- * @param angle
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {number} angle - Specified the annotaion rotation angle.
  * @hidden
+ * @returns {TextElement} - Returns the annotation text element.
  */
 export function textElement(obj: PdfAnnotationBaseModel, angle: number): TextElement {
     const textele: TextElement = new TextElement();
@@ -412,11 +371,10 @@ export function textElement(obj: PdfAnnotationBaseModel, angle: number): TextEle
     return textele;
 }
 /**
- * @param obj
- * @param points
- * @param obj
- * @param points
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel[]} points - Specified the annotaion leader points.
  * @hidden
+ * @returns {PathElement[]} - Returns the annotation path elements.
  */
 export function initLeaders(obj: PdfAnnotationBaseModel, points: PointModel[]): PathElement[] {
     const leaders: PathElement[] = [];
@@ -427,19 +385,12 @@ export function initLeaders(obj: PdfAnnotationBaseModel, points: PointModel[]): 
     return leaders;
 }
 /**
- * @param obj
- * @param point1
- * @param point2
- * @param isSecondLeader
- * @param obj
- * @param point1
- * @param point2
- * @param isSecondLeader
- * @param obj
- * @param point1
- * @param point2
- * @param isSecondLeader
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {PointModel} point1 - Specified the annotaion leader point1.
+ * @param {PointModel} point2 - Specified the annotaion leader point2.
+ * @param {boolean} isSecondLeader - Specified the is second leader or not.
  * @hidden
+ * @returns {PathElement} - Returns the annotation path element.
  */
 export function initLeader(
     obj: PdfAnnotationBaseModel, point1: PointModel, point2: PointModel, isSecondLeader?: boolean): PathElement {
@@ -447,7 +398,6 @@ export function initLeader(
     element.offsetX = point1.x; element.offsetY = point1.y;
     const angle: number = Point.findAngle(point1, point2);
     const center: PointModel = { x: (point1.x + point2.x) / 2, y: (point1.y + point2.y) / 2 };
-    let getPath: string;
     let matrix: Matrix = identityMatrix();
     rotateMatrix(matrix, 0 - angle, center.x, center.y);
     let rotatedPoint: PointModel = transformPointByMatrix(matrix, point1);
@@ -459,7 +409,7 @@ export function initLeader(
 
     element.offsetX = finalPoint.x; element.offsetY = finalPoint.y;
     element.transform = RotateTransform.Self;
-    getPath = 'M' + point1.x + ',' + point1.y + ',L' + rotatedPoint.x + ',' + rotatedPoint.y + 'Z';
+    const getPath: string = 'M' + point1.x + ',' + point1.y + ',L' + rotatedPoint.x + ',' + rotatedPoint.y + 'Z';
     const size: Size = new Size(0, obj.leaderHeight);
     element.pivot.x = .5;
     if (isSecondLeader) {
@@ -480,9 +430,10 @@ export function initLeader(
     return element;
 }
 /**
- * @param connector
- * @param reference
  * @private
+ * @param {PdfAnnotationBaseModel} connector - Specified the annotation connector object.
+ * @param {PointModel} reference - Specified the pointer reference value.
+ * @returns {boolean} - Returns true or false.
  */
 export function isPointOverConnector(connector: PdfAnnotationBaseModel, reference: PointModel): boolean {
     const vertexPoints: PointModel[] = connector.vertexPoints;
@@ -517,16 +468,11 @@ export function isPointOverConnector(connector: PdfAnnotationBaseModel, referenc
 }
 
 /**
- * @param reference
- * @param start
- * @param end
- * @param reference
- * @param start
- * @param end
- * @param reference
- * @param start
- * @param end
+ * @param {PointModel} reference - Specified the pointer reference value.
+ * @param {PointModel} start - Specified the pointer start value.
+ * @param {PointModel} end - Specified the pointer end value.
  * @private
+ * @returns {PointModel} - Returns annotation point model.
  */
 export function findNearestPoint(reference: PointModel, start: PointModel, end: PointModel): PointModel {
     let shortestPoint: PointModel;
@@ -548,8 +494,9 @@ export function findNearestPoint(reference: PointModel, start: PointModel, end: 
 }
 
 /**
- * @param shape
+ * @param {DecoratorShapes} shape - Specified the annotation decorator shapes.
  * @hidden
+ * @returns {string} - Returns the annotation decorator shape value.
  */
 export function getDecoratorShape(shape: DecoratorShapes ): string {
     // eslint-disable-next-line

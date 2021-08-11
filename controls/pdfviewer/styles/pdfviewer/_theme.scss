@@ -2592,7 +2592,7 @@
 
   .e-pv-radio-btn + .e-pv-radiobtn-span::before {
     content: '';
-    display: inline-block;
+    display: block;
     height: inherit;
     width: inherit;
   }
@@ -3002,5 +3002,9 @@
     @if ($skin-name == 'bootstrap4') {
       color: $pv-stamp-icon-color;
     }
+  }
+
+  .e-pv-signature-dialog-height {
+    height: $pv-signature-dialog-height;
   }
 }

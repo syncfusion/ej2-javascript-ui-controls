@@ -620,6 +620,8 @@ export class FreeTextAnnotation {
      */
     // eslint-disable-next-line
     public onFocusOutInputBox(): void {
+        let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
+        this.pdfViewer.enableServerDataBinding(false);
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
             // eslint-disable-next-line
@@ -750,6 +752,7 @@ export class FreeTextAnnotation {
                 window.getSelection().removeAllRanges();
             }
         }
+        this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
     }
 
     /**

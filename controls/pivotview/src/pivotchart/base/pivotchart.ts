@@ -1167,7 +1167,12 @@ export class PivotChart {
                 if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
                     this.parent.element.querySelector('.e-pivot-grouping-bar') &&
                     this.parent.element.querySelector('.e-chart-grouping-bar')) {
-                    (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = '';
+                    let groupingTable: HTMLElement = this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement;
+                    groupingTable.style.display = '';
+                    if (groupingTable && groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.parent.groupingBarModule.gridPanel != null &&
+                        !this.parent.groupingBarModule.gridPanel.isDestroyed) {
+                        this.parent.groupingBarModule.gridPanel.refreshOverflow();
+                    }
                     (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
                 }
                 if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
@@ -1180,7 +1185,12 @@ export class PivotChart {
                     this.parent.element.querySelector('.e-pivot-grouping-bar') &&
                     this.parent.element.querySelector('.e-chart-grouping-bar')) {
                     (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = 'none';
-                    (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = '';
+                    let groupingChartTable: HTMLElement = this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement;
+                    groupingChartTable.style.display = '';
+                    if (groupingChartTable && groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) &&
+                        this.parent.groupingBarModule.chartPanel != null && !this.parent.groupingBarModule.chartPanel.isDestroyed) {
+                        this.parent.groupingBarModule.chartPanel.refreshOverflow();
+                    }
                 }
                 if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
                     (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = '';

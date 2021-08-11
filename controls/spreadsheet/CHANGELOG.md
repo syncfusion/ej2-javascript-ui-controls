@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.2.55 (2021-08-11)
+
+### Spreadsheet
+
+#### New Features
+
+- `I327430` - Provided support for updating the defined names range while performing insert and delete operation.
+- `I331963` - Number formatting applied while performing copy / paste operation between our different spreadsheets.
+
+#### Bug Fixes
+
+- `I336304` - Conditional formatting select button enabled while pressing `SPACE` key without any data issue resolved.
+- `I337258` - Script error throws while importing excel file which contains conditional formatting issue resolved.
+
 ## 19.2.51 (2021-08-03)
 
 ### Spreadsheet

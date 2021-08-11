@@ -350,11 +350,13 @@ export class InfiniteScroll implements IAction {
                 (<{ visibleRows?: Row<Column>[] }>this.parent.contentModule).visibleRows = this.requestType === 'add'
                     ? row.concat(rows) : rows.concat(row);
                 if (this.parent.getFrozenMode() === literals.leftRight) {
+                    (<{ renderMovableContent?: boolean }>args.e).renderMovableContent = true;
                     this.createRow(this.parent.getFrozenRightRowsObject(), args, false, false, true);
                 }
             } else {
                 (<{ visibleFrozenRows?: Row<Column>[] }>this.parent.contentModule).visibleFrozenRows = this.requestType === 'add'
                     ? row.concat(rows) : rows.concat(row);
+                args.e.isFrozen = true;
                 this.createRow(this.parent.getMovableRowsObject(), args, true);
             }
         }
@@ -691,7 +693,7 @@ export class InfiniteScroll implements IAction {
                     }
                     if ((!row && rowIndex < totalRowsCount) || (rowRect && rowRect.bottom >= contentRect.bottom)) {
                         this.pressedKey = e.keyArgs.action;
-                        content.scrollTop = (rowIndex - visibleRowCount) * this.parent.getRowHeight();
+                        content.scrollTop = ((rowIndex - visibleRowCount) + 1) * this.parent.getRowHeight();
                     }
                 } else if (e.keyArgs.action === literals.upArrow || e.keyArgs.action === literals.shiftEnter) {
                     this.rowIndex = rowIndex -= 1;

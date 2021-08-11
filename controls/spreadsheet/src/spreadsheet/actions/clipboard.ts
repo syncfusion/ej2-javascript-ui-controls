@@ -731,7 +731,11 @@ export class Clipboard {
             data += '<tr>';
             for (let j: number = range[1]; j <= range[3]; j++) {
                 cell = getCell(i, j, sheet);
-                data += '<td style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
+                data += '<td style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;"';
+                if (cell && cell.format && cell.format !== 'General') {
+                    // eslint-disable-next-line
+                    data += cell.format.includes('"') ? " number-format='" + cell.format + "'" : ' number-format="' + cell.format + '"';
+                }
                 if (cell && cell.style) {
                     Object.keys(cell.style).forEach((style: string) => {
                         const regex: RegExpMatchArray = style.match(/[A-Z]/);
@@ -740,7 +744,6 @@ export class Clipboard {
                             ? cell.style[style].slice(0, 7) : cell.style[style]) + ';';
                     });
                 }
-                data += '">';
                 if (cell && !isNullOrUndefined(cell.value)) {
                     const eventArgs: { [key: string]: string | number | boolean } = {
                         formattedText: cell.value,
@@ -748,13 +751,19 @@ export class Clipboard {
                         format: cell.format,
                         onLoad: true
                     };
-                    if (cell.format) {
+                    if (cell.format && cell.format !== 'General') {
+                        // eslint-disable-next-line
+                        data += cell.value.toString().includes('"') ? " cell-value='" + cell.value + "'" : ' cell-value="' + cell.value +
+                            '"';
                         this.parent.notify(getFormattedCellObject, eventArgs);
                     }
+                    data += '>';
                     data += eventArgs.formattedText;
                     text += eventArgs.formattedText;
+                    data += '</td>';
+                } else {
+                    data += '></td>';
                 }
-                data += '</td>';
                 text += j === range[3] ? '' : '\t';
             }
             data += '</tr>';
@@ -804,6 +813,12 @@ export class Clipboard {
                             value: td.textContent ? <string>parseIntValue(td.textContent.trim()) : null, style: cellStyle, colSpan: cSpan,
                             rowSpan: rSpan, wrap: wrap
                         };
+                        if (td.getAttribute('number-format')) {
+                            cells[j].format = td.getAttribute('number-format');
+                            if (cells[j].value && td.getAttribute('cell-value')) {
+                                cells[j].value = <string>parseIntValue(td.getAttribute('cell-value').trim());
+                            }
+                        }
                     });
                     (rows as RowModel[]).push({ cells: cells });
                     cells = [];

@@ -3,7 +3,7 @@ import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullO
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
-import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange } from '../../workbook/common/event';
+import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
@@ -33,7 +33,7 @@ export class Edit {
     private uniqueColl: string;
     private uniqueCell: boolean;
     private uniqueActCell: string = '';
-
+    private isSpill: boolean = false;
     private keyCodes: { [key: string]: number } = {
         BACKSPACE: 8,
         SPACE: 32,
@@ -92,6 +92,7 @@ export class Edit {
         this.parent.on(initiateEdit, this.initiateRefSelection, this);
         this.parent.on(forRefSelRender, this.refSelectionRender, this);
         this.parent.on(checkUniqueRange, this.checkUniqueRange, this);
+        this.parent.on(reApplyFormula, this.reApplyFormula, this);
     }
 
     private removeEventListener(): void {
@@ -107,6 +108,7 @@ export class Edit {
             this.parent.off(initiateEdit, this.initiateRefSelection);
             this.parent.off(forRefSelRender, this.refSelectionRender);
             this.parent.off(checkUniqueRange, this.checkUniqueRange);
+            this.parent.off(reApplyFormula, this.reApplyFormula);
         }
     }
 
@@ -475,6 +477,7 @@ export class Edit {
                         if (!skip) { this.reApplyFormula(); }
                     }
                 }
+                this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
             }
             break;
         }
@@ -846,9 +849,11 @@ export class Edit {
             }
             if (tdRefresh) { this.parent.refreshNode(this.editCellData.element, eventArgs); }
             if (isUniqueRange) {
+                const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
+                if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.indexOf('#SPILL!') > - 1) { this.isSpill = true; }
                 if ((oldCellValue !== '' && this.editCellData.value === '') ||
                 (this.editCellData.formula && this.editCellData.formula.length > 1 && oldCellValue !== this.editCellData.formula)) {
-                    const rangeIdx: number[] = getRangeIndexes(this.uniqueColl); let skip: boolean = false;
+                    let skip: boolean = false;
                     for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
                         for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
                             const cell: CellModel = getCell(j, k, sheet);
@@ -1015,11 +1020,17 @@ export class Edit {
         const cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         const eventArgs: CellEditEventArgs | CellSaveEventArgs = {
             element: this.editCellData.element,
-            value: this.editCellData.value,
+            value: cell ? cell.value : this.editCellData.value,
             oldValue: this.editCellData.oldValue,
             address: this.editCellData.fullAddr,
             displayText: this.parent.getDisplayText(cell)
         };
+        if (eventArgs.address) {
+            const indexes: number[] = getRangeIndexes(eventArgs.address);
+            const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: indexes, isUnique: false };
+            this.checkUniqueRange(args);
+            if (args.isUnique) { eventArgs.isSpill = this.isSpill; }
+        }
         if (eventArgs.value !== eventArgs.oldValue) {
             if (eventName === 'cellSave') {
                 if (this.editCellData.formula) {

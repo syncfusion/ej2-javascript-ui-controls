@@ -2065,9 +2065,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Click to View/Edit Footnote': 'Click to View/Edit Footnote',
         'Click to View/Edit Endnote': 'Click to View/Edit Endnote',
         'Multiple Comment': 'Please post your comment',
-        "No suggestions": 'No suggestions',
-		"More Suggestion": 'More Suggestion',
-		"Ignore Once": 'Ignore Once'
+        'No suggestions': 'No suggestions',
+		'More Suggestion': 'More Suggestion',
+        'Ignore Once': 'Ignore Once',
+        'Keep With Next': 'Keep with next',
+        'Keep Lines Together': 'Keep lines together',
+        'Indents and Spacing': 'Indents and Spacing',
+        'Line and Page breaks': 'Line and Page breaks',
+        'Pagination': 'Pagination'
+
     };
     /* eslint-enable */
     // Public Implementation Starts

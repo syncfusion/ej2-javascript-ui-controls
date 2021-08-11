@@ -1289,6 +1289,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             if (this.backCommand) {
                 this.remoteCustomValue = false;
+                if (this.allowCustomValue && list.querySelectorAll('li').length == 0 && this.mainData.length > 0) {
+                    this.mainData = [];
+                }
                 this.onActionComplete(list, this.mainData);
                 if (this.value && this.value.length) {
                     this.refreshSelection();

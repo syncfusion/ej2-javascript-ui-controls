@@ -1,12 +1,11 @@
-/* eslint-disable */
 import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';
-// eslint-disable-next-line max-len
 import { DrawingElement, TextElement, PointModel, Point, BaseAttributes, rotateMatrix, identityMatrix, transformPointByMatrix, Matrix } from '@syncfusion/ej2-drawings';
 import { Transforms } from './drawing';
 import { getValue } from '@syncfusion/ej2-base';
 /**
- * @param obj
+ * @param {PdfAnnotationBaseModel} obj - Specified the shape annotation object.
  * @hidden
+ * @returns {void}
  */
 export function isLineShapes(obj: PdfAnnotationBaseModel): boolean {
     if (obj.shapeAnnotationType === 'Line' || obj.shapeAnnotationType === 'LineWidthArrowHead'
@@ -16,38 +15,42 @@ export function isLineShapes(obj: PdfAnnotationBaseModel): boolean {
     return false;
 }
 /**
- * @param obj
- * @param element
+ * @param {PdfAnnotationBaseModel | PdfFormFieldBaseModel} obj - Specified the annotation or form fields object.
+ * @param {DrawingElement} element - Specified the annotation drawing element.
+ * @returns {void}
  * @hidden
  */
 export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseModel, element: DrawingElement): void {
     if (obj && element) {
-        if((obj as PdfFormFieldBaseModel).formFieldAnnotationType) {
-            if(obj.id.indexOf("diagram_helper") !==-1) {
+        if ((obj as PdfFormFieldBaseModel).formFieldAnnotationType) {
+            if (obj.id.indexOf('diagram_helper') !== -1) {
                 element.style.fill = 'transparent';
-                element.style.strokeWidth = 1; 
+                element.style.strokeWidth = 1;
                 element.style.strokeDashArray = (obj as PdfAnnotationBaseModel).borderDashArray;
             } else {
-            element.style.fill = 'transparent';
-            element.style.strokeWidth = 0;
+                element.style.fill = 'transparent';
+                element.style.strokeWidth = 0;
             }
         } else {
-        const fillColor: string = ((obj as PdfAnnotationBaseModel).fillColor === '#ffffff00' ? 'transparent' : (obj as PdfAnnotationBaseModel).fillColor);
-        element.style.fill = fillColor ? fillColor: "white";
-        element.style.strokeColor = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor: (obj as PdfFormFieldBaseModel).borderColor;
-        (element as TextElement).style.color = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor: (obj as PdfFormFieldBaseModel).borderColor;
-        element.style.strokeWidth = obj.thickness;
-        if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage' ) {
-            element.style.strokeWidth = 0;
+            const fillColor: string = ((obj as PdfAnnotationBaseModel).fillColor === '#ffffff00' ? 'transparent' : (obj as PdfAnnotationBaseModel).fillColor);
+            element.style.fill = fillColor ? fillColor : 'white';
+            // eslint-disable-next-line max-len
+            element.style.strokeColor = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor : (obj as PdfFormFieldBaseModel).borderColor;
+            // eslint-disable-next-line max-len
+            (element as TextElement).style.color = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor : (obj as PdfFormFieldBaseModel).borderColor;
+            element.style.strokeWidth = obj.thickness;
+            if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage' ) {
+                element.style.strokeWidth = 0;
+            }
+            element.style.strokeDashArray = (obj as PdfAnnotationBaseModel).borderDashArray;
+            element.style.opacity = obj.opacity;
         }
-        element.style.strokeDashArray = (obj as PdfAnnotationBaseModel).borderDashArray;
-        element.style.opacity = obj.opacity; 
-      }
     }
 }
 /**
- * @param points
+ * @param {PointModel[]} points - Specified the annotation points value.
  * @hidden
+ * @returns {number} - Returns the points length.
  */
 export function findPointsLength(points: PointModel[]): number {
     let length: number = 0;
@@ -58,8 +61,9 @@ export function findPointsLength(points: PointModel[]): number {
 }
 
 /**
- * @param points
+ * @param {PointModel[]} points - Specified the annotation points value.
  * @hidden
+ * @returns {number} - Returns the points length.
  */
 export function findPerimeterLength(points: PointModel[]): number {
     const length: number = Point.getLengthFromListOfPoints(points);
@@ -67,11 +71,10 @@ export function findPerimeterLength(points: PointModel[]): number {
 }
 
 /**
- * @param element
- * @param transform
- * @param element
- * @param transform
  * @private
+ * @param {DrawingElement} element - Specified the drawing element.
+ * @param {Transforms} transform - Specified the transform value.
+ * @returns {BaseAttributes} - Returns the base attributes value.
  */
 export function getBaseShapeAttributes(element: DrawingElement, transform?: Transforms): BaseAttributes {
     const baseShapeAttributes: BaseAttributes = {
@@ -83,7 +86,6 @@ export function getBaseShapeAttributes(element: DrawingElement, transform?: Tran
         opacity: element.style.opacity, dashArray: element.style.strokeDashArray || '',
         visible: element.visible, id: element.id
     };
-
     if (transform) {
         baseShapeAttributes.x += transform.tx;
         baseShapeAttributes.y += transform.ty;
@@ -94,30 +96,25 @@ export function getBaseShapeAttributes(element: DrawingElement, transform?: Tran
 /**
  * Get function
  *
- * @param value
  * @private
+ * @param {Function | string} value - Type of the function.
+ * @returns {Function} - Returns the function.
  */
 export function getFunction(value: Function | string): Function {
     if (value !== undefined) {
         if (typeof value === 'string') {
             value = getValue(value, window);
         }
-
     }
     return value as Function;
 }
 
 /**
- * @param obj
- * @param additionalProp
- * @param key
- * @param obj
- * @param additionalProp
- * @param key
- * @param obj
- * @param additionalProp
- * @param key
  * @private
+ * @param {any} obj - Specified the annotation object.
+ * @param {Function | string} additionalProp - Specified the annotation additional properties.
+ * @param {string} key - Specified the annotation key value.
+ * @returns {Object} - Returns the cloned object.
  */
 // eslint-disable-next-line
 export function cloneObject(obj: any, additionalProp?: Function | string, key?: string): Object {
@@ -146,9 +143,8 @@ export function cloneObject(obj: any, additionalProp?: Function | string, key?: 
         for (const property of properties) {
             if (property !== 'historyManager') {
                 if (property !== 'wrapper') {
-                    const constructorId: string = 'constructor';
-                    const name: string = 'name';
-                    const isEventEmmitter: boolean = obj[property] && obj.hasOwnProperty('observers') ? true : false;
+                    // eslint-disable-next-line
+                    const isEventEmmitter: boolean = obj[property] && (obj as any).hasOwnProperty('observers') ? true : false;
                     if (!isEventEmmitter) {
                         if (obj[property] instanceof Array) {
                             newObject[property] = cloneArray(
@@ -179,16 +175,11 @@ export function cloneObject(obj: any, additionalProp?: Function | string, key?: 
 }
 
 /**
- * @param sourceArray
- * @param additionalProp
- * @param key
- * @param sourceArray
- * @param additionalProp
- * @param key
- * @param sourceArray
- * @param additionalProp
- * @param key
  * @private
+ * @param {Object[]} sourceArray - Specified the annotation source collections.
+ * @param {Function | string} additionalProp - Specified the annotation additional properties.
+ * @param {string} key - Specified the annotation key value.
+ * @returns {Object[]} - Returns the cloned object array.
  */
 export function cloneArray(sourceArray: Object[], additionalProp?: Function | string, key?: string): Object[] {
     let clonedArray: Object[];
@@ -207,10 +198,10 @@ export function cloneArray(sourceArray: Object[], additionalProp?: Function | st
     return clonedArray;
 }
 
-
 /**
- * @param propName
  * @private
+ * @param {string} propName - Specified the annotation property name.
+ * @returns {string[]} - Returns the internal properties.
  */
 export function getInternalProperties(propName: string): string[] {
     switch (propName) {
@@ -229,11 +220,10 @@ export function getInternalProperties(propName: string): string[] {
     return [];
 }
 /**
- * @param obj
- * @param position
- * @param obj
- * @param position
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+ * @param {string} position - Specified the annotation position.
  * @hidden
+ * @returns {Leader} - Returns the leader value.
  */
 export function isLeader(obj: PdfAnnotationBaseModel, position: string): Leader {
     let rotatedPoint: PointModel;

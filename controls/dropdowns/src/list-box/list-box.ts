@@ -326,15 +326,6 @@ export class ListBox extends DropDownBase {
     @Property(null)
     public groupTemplate: string;
     /**
-     * Accepts the template design and assigns it to list of component
-     * when no data is available on the component.
-     *
-     * @default 'No records found'
-     * @private
-     */
-    @Property('No records found')
-    public noRecordsTemplate: string;
-    /**
      * Accepts the template and assigns it to the list content of the ListBox component
      * when the data fetch request from the remote server fails.
      *
@@ -667,7 +658,7 @@ export class ListBox extends DropDownBase {
             }
         }
         if (list.length === 0) {
-            const noRecElem: Element = ulElement.getElementsByClassName('e-list-nrt')[0];
+            const noRecElem: Element = ulElement.childNodes[0] as Element;
             if (noRecElem) {
                 ulElement.removeChild(noRecElem);
             }
@@ -745,7 +736,7 @@ export class ListBox extends DropDownBase {
         this.trigger('drag', this.getDragArgs(args as DragEventArgs & BlazorDragEventArgs));
         const listObj: ListBox = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
-            const noRecElem: Element = listObj.ulElement.getElementsByClassName('e-list-nrt')[0];
+            const noRecElem: Element = listObj.ulElement.childNodes[0] as Element;
             if (noRecElem) {
                 listObj.ulElement.removeChild(noRecElem);
             }
@@ -1096,6 +1087,9 @@ export class ListBox extends DropDownBase {
             for (let k: number = removeIdxes.length - 1; k >= 0; k--) {
                 (this.listData as { [key: string]: Object }[]).splice(removeIdxes[k], 1);
             }
+            for (let k: number = removeIdxes.length - 1; k >= 0; k--) {
+                (this.jsonData as { [key: string]: Object }[]).splice(removeIdxes[k], 1);
+            }
             for (let k: number = removeLiIdxes.length - 1; k >= 0; k--) {
                 this.updateLiCollection(removeLiIdxes[k]);
             }
@@ -1103,6 +1097,7 @@ export class ListBox extends DropDownBase {
             itemIndex = itemIndex ? itemIndex : 0;
             liCollections.push(liElement[itemIndex]);
             (this.listData as { [key: string]: Object }[]).splice(itemIndex, 1);
+            (this.jsonData as { [key: string]: Object }[]).splice(itemIndex, 1);
             this.updateLiCollection(itemIndex);
         }
         for (let i: number = 0; i < liCollections.length; i++) {
@@ -1688,7 +1683,7 @@ export class ListBox extends DropDownBase {
                     tListBox.liCollections = tliCollections.concat(rLiCollection.reverse());
                 }
                 if (tListBox.listData.length === 0) {
-                    const noRecElem: Element = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                    const noRecElem: Element = tListBox.ulElement.childNodes[0] as Element;
                     if (noRecElem) {
                         tListBox.ulElement.removeChild(noRecElem);
                     }
@@ -1805,13 +1800,13 @@ export class ListBox extends DropDownBase {
         }
         if (!isBlazor()) {
             if (tListBox.listData.length === 0) {
-                const noRecElem: Element = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                const noRecElem: Element = tListBox.ulElement.childNodes[0] as Element;
                 if (noRecElem) {
                     tListBox.ulElement.removeChild(noRecElem);
                 }
             }
             if (isRefresh) {
-                const noRecElem: Element = fListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                const noRecElem: Element = fListBox.ulElement.childNodes[0] as Element;
                 if (noRecElem) {
                     fListBox.ulElement.removeChild(noRecElem);
                 }
@@ -2480,7 +2475,7 @@ export class ListBox extends DropDownBase {
                     }
                 }
                 if (newProp.toolbarSettings.items) {
-                    if (oldProp.toolbarSettings.items.length) {
+                    if (oldProp.toolbarSettings && oldProp.toolbarSettings.items.length) {
                         ele = this.list.parentElement;
                         ele.parentElement.insertBefore(this.list, ele);
                         detach(ele);

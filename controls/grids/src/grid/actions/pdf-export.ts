@@ -1,7 +1,7 @@
 import {
     IGrid, PdfExportProperties, PdfHeader, PdfFooter, PdfHeaderFooterContent,
     PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
-    AggregateQueryCellInfoEventArgs, ExportHelperArgs
+    AggregateQueryCellInfoEventArgs, ExportHelperArgs, PdfHeaderQueryCellInfoEventArgs
 } from '../base/interface';
 import { Column } from './../models/column';
 import { Row } from './../models/row';
@@ -509,6 +509,13 @@ export class PdfExport {
                 style: pdfCell.style
             };
             this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
+            const evtArgs: PdfHeaderQueryCellInfoEventArgs = args;
+            if (!isNullOrUndefined(evtArgs.image)) {
+                pdfCell.value = new PdfBitmap(evtArgs.image.base64);
+            }
+            if (!isNullOrUndefined(evtArgs.hyperLink)) {
+                pdfCell.value = this.setHyperLink(evtArgs);
+            }
         };
         const recuHeader: Function = (cols: Column[], depth: number, spanCnt: number, colIndex: number,
                                       rowIndex: number, isRoot: boolean) => {
@@ -1041,17 +1048,7 @@ export class PdfExport {
                 }
                 cell.value = args.value;
                 if (!isNullOrUndefined(args.hyperLink)) {
-                    // create the Text Web Link
-                    const textLink: PdfTextWebLink = new PdfTextWebLink();
-                    // set the hyperlink
-                    textLink.url = args.hyperLink.target;
-                    // set the link text
-                    textLink.text = args.hyperLink.displayText || args.hyperLink.target;
-                    // set the font
-                    textLink.font = new PdfStandardFont(PdfFontFamily.Helvetica, 9.75);
-                    // set the brush and pen for the text color
-                    textLink.brush = new PdfSolidBrush(new PdfColor(51, 102, 187));
-                    cell.value = textLink;
+                    cell.value = this.setHyperLink(args);
                 }
                 if (!isNullOrUndefined(args.style)) {
                     this.processCellStyle(cell, args);
@@ -1090,6 +1087,20 @@ export class PdfExport {
             this.parent.notify( events.exportRowDataBound, { type: 'pdf', rowObj: row });
         }
         return rowIndex;
+    }
+
+    private setHyperLink(args: PdfHeaderQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): PdfTextWebLink{
+        // create the Text Web Link
+        const textLink: PdfTextWebLink = new PdfTextWebLink();
+        // set the hyperlink
+        textLink.url = args.hyperLink.target;
+        // set the link text
+        textLink.text = args.hyperLink.displayText || args.hyperLink.target;
+        // set the font
+        textLink.font = new PdfStandardFont(PdfFontFamily.Helvetica, 9.75);
+        // set the brush and pen for the text color
+        textLink.brush = new PdfSolidBrush(new PdfColor(51, 102, 187));
+        return textLink;
     }
 
     private childGridCell(cell: PdfGridCell, childGridObj: IGrid, pdfExportProperties: PdfExportProperties): (value: Object) => Object {

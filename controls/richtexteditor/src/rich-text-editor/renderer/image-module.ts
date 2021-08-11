@@ -63,6 +63,8 @@ export class Image {
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.keyUp, this.onKeyUp, this);
         this.parent.on(events.insertImage, this.insertImage, this);
+        this.parent.on(events.showImageDialog, this.showDialog, this);
+        this.parent.on(events.closeImageDialog, this.closeDialog, this);
         this.parent.on(events.windowResize, this.onWindowResize, this);
         this.parent.on(events.insertCompleted, this.showImageQuickToolbar, this);
         this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
@@ -89,6 +91,8 @@ export class Image {
         this.parent.off(events.keyUp, this.onKeyUp);
         this.parent.off(events.windowResize, this.onWindowResize);
         this.parent.off(events.insertImage, this.insertImage);
+        this.parent.off(events.showImageDialog, this.showDialog);
+        this.parent.off(events.closeImageDialog, this.closeDialog);
         this.parent.off(events.insertCompleted, this.showImageQuickToolbar);
         this.parent.off(events.clearDialogObj, this.clearDialogObj);
         this.parent.off(events.imageCaption, this.caption);
@@ -627,32 +631,56 @@ export class Image {
             }
             break;
         case 'insert-image':
-            if (this.parent.editorMode === 'HTML') {
-                this.insertImage({
-                    args: {
-                        item: { command: 'Images', subCommand: 'Image' } as IToolbarItemModel,
-                        originalEvent: originalEvent
-                    },
-                    selectNode: selectNodeEle,
-                    selection: save,
-                    selectParent: selectParentEle
-                });
-            } else {
-                this.insertImage({
-                    args: {
-                        item: { command: 'Images', subCommand: 'Image' } as IToolbarItemModel,
-                        originalEvent: originalEvent
-                    },
-                    member: 'image',
-                    text: this.parent.formatter.editorManager.markdownSelection.getSelectedText(
-                        this.parent.contentModule.getEditPanel() as HTMLTextAreaElement),
-                    module: 'Markdown',
-                    name: 'insertImage'
-                });
-            }
+            this.openDialog(true, originalEvent, save, selectNodeEle, selectParentEle);
             originalEvent.preventDefault();
             break;
         }
+    }
+    private openDialog(isInternal?: boolean, event?: KeyboardEventArgs, selection?: NodeSelection, ele?: Node[], parentEle?: Node[]): void {
+        let range: Range;
+        let save: NodeSelection;
+        let selectNodeEle: Node[];
+        let selectParentEle: Node[];
+        if (!isInternal && !isNOU(this.parent.formatter.editorManager.nodeSelection)) {
+            range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            save = this.parent.formatter.editorManager.nodeSelection.save(
+                range, this.parent.contentModule.getDocument());
+            selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+            selectParentEle = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
+        } else {
+            save = selection;
+            selectNodeEle = ele;
+            selectParentEle = parentEle;
+        }
+        if (this.parent.editorMode === 'HTML') {
+            this.insertImage({
+                args: {
+                    item: { command: 'Images', subCommand: 'Image' } as IToolbarItemModel,
+                    originalEvent: event
+                },
+                selectNode: selectNodeEle,
+                selection: save,
+                selectParent: selectParentEle
+            });
+        } else {
+            this.insertImage({
+                args: {
+                    item: { command: 'Images', subCommand: 'Image' } as IToolbarItemModel,
+                    originalEvent: event
+                },
+                member: 'image',
+                text: this.parent.formatter.editorManager.markdownSelection.getSelectedText(
+                    this.parent.contentModule.getEditPanel() as HTMLTextAreaElement),
+                module: 'Markdown',
+                name: 'insertImage'
+            });
+        }
+    }
+    private showDialog(): void {
+        this.openDialog(false);
+    }
+    private closeDialog(): void {
+        if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
     }
     // eslint-disable-next-line
     private onKeyUp(event: NotifyArgs): void {
@@ -744,7 +772,7 @@ export class Image {
 
     private showImageQuickToolbar(e: IShowPopupArgs): void {
         if (e.type !== 'Images' || isNullOrUndefined(this.parent.quickToolbarModule)
-            || isNullOrUndefined(this.parent.quickToolbarModule.imageQTBar)) {
+            || isNullOrUndefined(this.parent.quickToolbarModule.imageQTBar) || isNullOrUndefined(e.args)) {
             return;
         }
         this.quickToolObj = this.parent.quickToolbarModule;
@@ -1912,8 +1940,18 @@ export class Image {
             uploading: (e: UploadingEventArgs) => {
                 if (!this.parent.isServerRendered) {
                     isUploading = true;
-                    this.parent.trigger(events.imageUploading, e);
-                    this.parent.inputElement.contentEditable = 'false';
+                    this.parent.trigger(events.imageUploading, e, (imageUploadingArgs: UploadingEventArgs) => {
+                        if (imageUploadingArgs.cancel) {
+                            if (!isNullOrUndefined(imageElement)) {
+                                detach(imageElement);
+                            }
+                            if(!isNullOrUndefined(this.popupObj.element)) {
+                                detach(this.popupObj.element);
+                            }
+                        } else {
+                            this.parent.inputElement.contentEditable = 'false';
+                        }
+                    });
                 }
             },
             selected: (e: SelectedEventArgs) => {

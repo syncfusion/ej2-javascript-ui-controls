@@ -67,6 +67,7 @@ export class MsWordPaste {
         pattern4.test(tempHTMLContent)) {
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
+            this.addListClass(elm);
             listNodes = this.cleanUp(elm, listNodes);
             if (!isNOU(listNodes[0]) && listNodes[0].parentElement.tagName !== 'UL' &&
             listNodes[0].parentElement.tagName !== 'OL') {
@@ -86,6 +87,15 @@ export class MsWordPaste {
             e.callBack(elm.innerHTML);
         }
     }
+    private addListClass(elm: HTMLElement): void {
+        const allNodes: NodeListOf<Element> = elm.querySelectorAll('*');
+        for (let index: number = 0; index < allNodes.length; index++) {
+            if (!isNOU(allNodes[index].getAttribute('style')) && allNodes[index].getAttribute('style').replace(/ /g, '').replace('\n', '').indexOf('mso-list:l') >= 0 &&
+            (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') === -1 && allNodes[index].tagName.charAt(0) !== 'H') {
+                allNodes[index].classList.add('msolistparagraph');
+            }
+        }
+    } 
 
     private addTableBorderClass(elm: HTMLElement): void {
         const allTableElm: NodeListOf<HTMLElement> = elm.querySelectorAll('table');
@@ -110,7 +120,7 @@ export class MsWordPaste {
         const imgSrc: string[] = [];
         const base64Src: string[] = [];
         const imgName: string[] = [];
-        const linkRegex = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+        const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (imgElem.length > 0) {
             for (let i: number = 0; i < imgElem.length; i++) {
                 imgSrc.push(imgElem[i].getAttribute('src'));
@@ -342,6 +352,7 @@ export class MsWordPaste {
                         const changedValue: string = styleProperty + values[i];
                         resultElem[j].setAttribute('style', changedValue);
                     } else {
+                        values[i] = values[i].replace(/text-indent:-(.*?)(?=;|$)/gm, '');
                         resultElem[j].setAttribute('style', values[i]);
                     }
                 }
@@ -413,17 +424,24 @@ export class MsWordPaste {
                 continue;
             } else if ((allNodes[index] as Element).className &&
                 (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 &&
-                (allNodes[index] as Element).childElementCount !== 1) {
+                (allNodes[index] as Element).childElementCount !== 1 && !isNOU(allNodes[index].getAttribute('style')) &&
+                allNodes[index].getAttribute('style').indexOf('mso-list:') >= 0) {
+                if (allNodes[index].className.indexOf('MsoListParagraphCxSpFirst') >= 0 && listNodes.length > 0 &&
+                listNodes[listNodes.length - 1] !== null) {
+                    listNodes.push(null);
+                }
                 listNodes.push(allNodes[index] as Element);
             }
             if (prevflagState && (this.blockNode.indexOf(allNodes[index].nodeName.toLowerCase()) !== -1) &&
                 !((allNodes[index] as Element).className &&
-                    (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1)) {
+                    (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 && !isNOU(allNodes[index].getAttribute('style')) &&
+                    allNodes[index].getAttribute('style').indexOf('mso-list:') >= 0)) {
                 listNodes.push(null);
             }
             if (this.blockNode.indexOf(allNodes[index].nodeName.toLowerCase()) !== -1) {
                 if ((allNodes[index] as Element).className &&
-                    (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1) {
+                    (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 && !isNOU(allNodes[index].getAttribute('style')) &&
+                    allNodes[index].getAttribute('style').indexOf('mso-list:') >= 0) {
                     prevflagState = true;
                 } else {
                     prevflagState = false;
@@ -439,9 +457,10 @@ export class MsWordPaste {
     private listConverter(listNodes: Element[]): void {
         let level: number;
         const data: { content: HTMLElement; node: Element }[] = [];
-        let collection: { listType: string; content: string[]; nestedLevel: number; class: string }[] = [];
+        let collection: { listType: string; content: string[]; nestedLevel: number; class: string, listStyle: string}[] = [];
         let content: string = '';
         let stNode: Element;
+        let currentListStyle: string = '';
         for (let i: number = 0; i < listNodes.length; i++) {
             if (listNodes[i] === null) {
                 data.push({ content: this.makeConversion(collection), node: listNodes[i - 1] });
@@ -471,7 +490,15 @@ export class MsWordPaste {
                 if (!isNOU(listNodes[i].className)) {
                     currentClassName = listNodes[i].className;
                 }
-                collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName });
+                if (!isNOU(listNodes[i].getAttribute('style'))) {
+                    listNodes[i].setAttribute('style', listNodes[i].getAttribute('style').replace('text-align:start;', ''));
+                    if ((listNodes[i] as HTMLElement).style.textAlign !== '') {
+                        listNodes[i].setAttribute('style', 'text-align:' + (listNodes[i] as HTMLElement).style.textAlign);
+                        currentListStyle = listNodes[i].getAttribute('style');
+                    }
+                }
+                collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName,
+                    listStyle: currentListStyle });
             }
         }
         stNode = listNodes.shift();
@@ -496,7 +523,8 @@ export class MsWordPaste {
         }
     }
 
-    private makeConversion(collection: { listType: string; content: string[]; nestedLevel: number; class: string }[]): HTMLElement {
+    private makeConversion(
+        collection: { listType: string; content: string[]; nestedLevel: number; class: string, listStyle: string }[]): HTMLElement {
         const root: HTMLElement = createElement('div');
         let temp: HTMLElement;
         let pLevel: number = 1;
@@ -582,6 +610,8 @@ export class MsWordPaste {
                 }
             }
             prevList.setAttribute('class', collection[index].class);
+            const currentStyle: string = prevList.getAttribute('style');
+            prevList.setAttribute('style', (!isNOU(currentStyle) ? currentStyle : '') + collection[index].listStyle);
             pLevel = collection[index].nestedLevel;
             listCount++;
         }

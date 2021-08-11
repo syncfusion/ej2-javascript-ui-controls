@@ -174,8 +174,8 @@ $tab-fill-big-active-item-wrap-margin-bottom: 0 !default;
 $tab-fill-nrml-active-item-wrap-margin-bottom: 0 !default;
 $tab-bg-big-active-item-wrap-margin-bottom: 0 !default;
 $tab-bg-nrml-active-item-wrap-margin-bottom: 0 !default;
-$tab-alt-big-active-item-padding: 0 !default;
-$tab-alt-nrml-active-item-padding: 0 !default;
+$tab-alt-big-active-item-padding: 0 12px !default;
+$tab-alt-nrml-active-item-padding: 0 8px !default;
 
 
 $tab-active-text-container-margin: 0 !default;
@@ -308,7 +308,7 @@ $tab-mob-close-icon-color: rgba($icon-color, .87) !default;
 $tab-close-icon-hover-color: $tab-hover-text-color !default;
 $tab-close-icon-active-color: $primary !default;
 $tab-alt-close-icon-color: $icon-color !default;
-$tab-alt-active-close-icon-color: $icon-color !default;
+$tab-alt-active-close-icon-color: $primary-text-color !default;
 $tab-alt-active-hover-close-icon-color: rgba($primary, 1) !default;
 $tab-pop-bg-color: $flyout-bg-color !default;
 $tab-pop-border: 0 !default;

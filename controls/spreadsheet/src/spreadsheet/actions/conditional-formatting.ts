@@ -397,7 +397,7 @@ export class ConditionalFormatting {
             text = (e.target.parentElement.querySelector(
                 (e.target.classList.contains('e-between') ? '.e-input' : '.e-between')) as HTMLInputElement).value;
         }
-        btn.disabled = !text;
+        btn.disabled = !(text.trim());
     }
 
     private checkCellHandler(rowIdx: number, colIdx: number, conditionalFormat: ConditionalFormatModel): boolean {
@@ -540,17 +540,16 @@ export class ConditionalFormatting {
         }
     }
 
-    private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel, isAction?: true }): void {
+    private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel, td: HTMLElement, isAction?: true }): void {
         let indexes: number[];
         let isApply: boolean = false;
         let result: boolean = false;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cell: CellModel = args.cell;
-        let td: HTMLElement;
+        let td: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
         const cFRules: ConditionalFormatModel[] = sheet.conditionalFormats as ConditionalFormatModel[];
         const value: string = !cell ? '' : !isNullOrUndefined(cell.value) ? cell.value : '';
         const cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
-        td = this.parent.getCell(args.rowIdx, args.colIdx);
         if (!cFRules || cFRules.length < 1) {
             return;
         }
@@ -687,7 +686,7 @@ export class ConditionalFormatting {
         let cFRuleValue2: string = '';
         const cellValue: string = value.toString();
         if (cFRule.value) {
-            const valueArr: string[] = cFRule.value.split(',');
+            const valueArr: string[] = cFRule.value.split(',').filter((value: string) => !!value.trim());
             if (valueArr.length > 1) {
                 if (valueArr[0].split('(').length > 1) {
                     let valueStr: string = '';
@@ -706,7 +705,7 @@ export class ConditionalFormatting {
                     }
                 }
             } else {
-                cFRuleValue1 = cFRule.value;
+                cFRuleValue1 = valueArr.length === 1 ? valueArr[0] : cFRule.value;
             }
         }
         let isApply: boolean = false;
@@ -1191,7 +1190,7 @@ export class ConditionalFormatting {
                     isApply = isGrearThan ? value.toLowerCase() > input.toLowerCase() : value.toLowerCase() < input.toLowerCase();
                 }
             }
-        } else if (value === '' && !isGrearThan) {
+        } else if (value === '' && Number(input) !== 0 && !isGrearThan) {
             isApply = true;
         }
         return isApply;

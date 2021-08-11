@@ -978,6 +978,9 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-alt-first-item-margin;
           padding: 0;
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            padding: 0 12px;
+          }
         }
 
         .e-toolbar-item {
@@ -1212,6 +1215,9 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-alt-first-item-margin;
           padding: 0;
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            padding: 0 12px;
+          }
         }
 
         .e-toolbar-item {
@@ -3036,6 +3042,9 @@
           &:not(.e-tbar-pos) .e-toolbar-item:last-child {
             margin: $tab-nrml-alt-first-item-margin;
             padding: 0;
+            @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+              padding: 0 8px;
+            }
           }
         }
 
@@ -3301,6 +3310,9 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-nrml-alt-first-item-margin;
           padding: 0;
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            padding: 0 8px;
+          }
         }
 
         .e-toolbar-item {

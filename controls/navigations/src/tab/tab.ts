@@ -3,8 +3,8 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, i
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
-import { isBlazor, getRandomId, SanitizeHtmlHelper, Draggable, DragEventArgs as DragArgs, DropEventArgs } from '@syncfusion/ej2-base';
-import { getElement, BlazorDragEventArgs, Base } from '@syncfusion/ej2-base';
+import { getRandomId, SanitizeHtmlHelper, Draggable, DragEventArgs as DragArgs, DropEventArgs } from '@syncfusion/ej2-base';
+import { Base } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -1385,7 +1385,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
                 this.templateEle = [];
                 this.getContent(ele, this.items[0].content, 'render', 0);
-                ele.classList.remove(CLS_ACTIVE);
             }
             setStyle(this.cntEle, { 'height': this.maxHeight + 'px' });
         } else {
@@ -1614,7 +1613,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (e.velocity < 3 && isNOU(e.originalEvent.changedTouches)) {
             return;
         }
-        if (e.originalEvent) {
+        if (e.originalEvent && this.isNested) {
             e.originalEvent.stopPropagation();
         }
         this.isSwipeed = true;
@@ -1818,7 +1817,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
                 this.templateEle = [];
                 const selectElement: HTEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
-                while (selectElement.firstElementChild && !isBlazor()) {
+                while (selectElement.firstElementChild) {
                     detach(selectElement.firstElementChild);
                 }
                 this.select(this.selectedItem);
@@ -1926,7 +1925,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         return this.cloneElement;
     }
 
-    private itemDragStart(e: DragArgs & BlazorDragEventArgs): void {
+    private itemDragStart(e: DragArgs): void {
         this.draggingItems = this.items.map((x: TabItemModel) => x);
         this.dragItem = e.element;
         let dragArgs: DragEventArgs = {
@@ -1945,9 +1944,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.removeActiveClass();
                 addClass([this.tbItems.querySelector('.' + CLS_INDICATOR)], CLS_HIDDEN);
                 (<HTEle>this.dragItem.querySelector('.' + CLS_WRAP)).style.visibility = 'hidden';
-            }
-            if (isBlazor()) {
-                e.bindEvents(getElement(e.dragElement));
             }
         });
     }

@@ -1462,3 +1462,58 @@ describe('EJ2-50385 - Infinite scroll records removed after refreshing => ', () 
         gridObj = null;
     });
 });
+
+describe('EJ2-51576 - Adding is not working in infinite scroll with frozen columns => ', () => {
+    let gridObj: Grid;
+    let localData: object[] = [
+        { FIELD1: '10001', FIELD2: 'Test1', FIELD3: 0, FIELD4: 5 },
+        { FIELD1: '10002', FIELD2: 'Test2', FIELD3: 1, FIELD4: 5 },
+        { FIELD1: '10003', FIELD2: 'Test3', FIELD3: 3, FIELD4: 5 }
+    ];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: localData,
+                enableInfiniteScrolling: true,
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                frozenColumns: 1,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('Add the row', function(done: Function){
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'add') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    it('Update the row', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'save') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.endEdit();
+    });
+    it('check the frozen updated row', function(){
+        expect(gridObj.getMovableRowsObject()[0].cells.length).toBe(3);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = localData = null;
+    });
+});

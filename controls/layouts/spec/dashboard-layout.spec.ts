@@ -2,7 +2,7 @@ import { DashboardLayout, ResizeArgs, ChangeEventArgs, DragStartArgs, DragStopAr
 import { PanelModel } from "../src/dashboard-layout/dashboard-layout-model";
 import { setStyleAttribute as setStyle, isNullOrUndefined, createElement, detach, EventHandler } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from './common.spec';
-import { enableBlazorMode, disableBlazorMode, Browser } from '@syncfusion/ej2-base';
+import { Browser } from '@syncfusion/ej2-base';
 
 function copyObject(source: any, destiation: any): Object {
     for (let prop in source) {
@@ -5084,6 +5084,180 @@ describe('GridLayout', () => {
         });
     });
 
+    describe('Floating panel testing', () => { 
+        beforeEach(() => {
+            ele = createElement('div', { id: 'gridlayout' });
+            let parentEle: HTMLElement = createElement('div', { id: 'container' });
+            parentEle.style.width = '1264px';
+            parentEle.appendChild(ele);
+            document.body.appendChild(parentEle);
+            setStyle(ele, { 'position': 'relative' });
+           
+        });
+        afterEach(() => {
+            if (gridLayOut) {
+                gridLayOut.destroy();
+                detach(ele);
+            }
+        });
+        it('when scroll bar is in middle of the page', () => {
+            let gridLayOut: DashboardLayout = new DashboardLayout({
+                allowFloating: false,
+                cellSpacing: [20, 20],
+                columns: 12,
+                showGridLines: true,
+                mediaQuery: "max-width: 767px",
+                panels: [
+                  {
+                      id: "1",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 0,
+                    col: 0,
+                    header: "<div>Panel 1</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "2",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 0,
+                    col: 2,
+                    header: "<div>Panel 2</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "3",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 0,
+                    col: 4,
+                    header: "<div>Panel 3</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "4",
+                    sizeX: 4,
+                    sizeY: 2,
+                    row: 2,
+                    col: 0,
+                    header: "<div>Panel 4</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "5",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 2,
+                    col: 4,
+                    header: "<div>Panel 5</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "6",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 3,
+                    col: 4,
+                    header: "<div>Panel 5-9</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "7",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 5,
+                    col: 5,
+                    header: "<div>Panel 5-8</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "8",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 5,
+                    col: 2,
+                    header: "<div>Panel 5-7</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "9",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 5,
+                    col: 1,
+                    header: "<div>Panel 5-6</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "10",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 5,
+                    col: 4,
+                    header: "<div>Panel 5-5</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "11",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 3,
+                    col: 5,
+                    header: "<div>Panel 5-4</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "12",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 3,
+                    col: 1,
+                    header: "<div>Panel 5-3</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "13",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 4,
+                    col: 3,
+                    header: "<div>Panel 5-2</div>",
+                    content: "<div></div>"
+                  },
+                  {
+                    id: "14",
+                    sizeX: 2,
+                    sizeY: 2,
+                    row: 4,
+                    col: 4,
+                    header: "<div>Panel 5 - 1</div>",
+                    content: "<div></div>"
+                  }
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            let movingElemnt: HTMLElement = document.getElementById('7');
+            let targetElemnt: HTMLElement = document.getElementById('8');
+            expect((<any>gridLayOut).getCellInstance('7').row == 5).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('8').row == 10).toBe(true);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 0, 875);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 875);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 0, 750);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 0, 750);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect((<any>gridLayOut).getCellInstance('7').row).toBe(10);
+        });
+    });
+
     describe('left and right allowPushing of panels testing', () => {
         it('Right side allowPushing of default case of sizeX and sieY values as 1', () => {
             let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
@@ -7788,94 +7962,4 @@ describe('GridLayout', () => {
             detach(ele);
         }
             });
-        });
-describe('Blazor dashboard layout testing', () => {
-    let gridLayOut: any;
-    let ele: HTMLElement;
-    beforeEach(() => {
-        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
-        Browser.userAgent = Chromebrowser;
-        enableBlazorMode();
-        (window as any)["sfBlazor"] = function () { };
-        (window as any).sfBlazor["updateModel"] = function () { };
-        (window as any).sfBlazor["renderComplete"] = function () { };
-        ele = createElement('div', { id: 'gridlayout', className: 'e-control e-lib e-dashboardlayout' });
-        let parentEle: HTMLElement = createElement('div', { id: 'container' });
-        parentEle.style.width = '1264px';
-        parentEle.appendChild(ele);
-        document.body.appendChild(parentEle);
-        setStyle(ele, { 'position': 'relative' });
-    });
-    afterEach(() => {
-        disableBlazorMode();
-        if (gridLayOut) {
-            gridLayOut.destroy();
-            detach(ele);
-        }
-    });
-    it('for panel property', () => {
-        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
-        gridLayOut = new DashboardLayout({
-            allowResizing: true,
-            panels: [
-                { "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
-            ]
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.isServerRendered = false;
-        expect(gridLayOut.element.childElementCount === 1).toBe(true);
-    });
-    it('for heigth and width property', () => {
-        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header' style='height: 20px;'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
-        gridLayOut = new DashboardLayout({
-            allowResizing: true,
-            panels: [
-                { "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
-            ]
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.isServerRendered = false;
-        expect(document.getElementById("layout_0_body").style.height == "calc(100% - 20px)").toBe(true);
-    });
-    it('checking panel length in inline rendering', () => {
-        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header' style='height: 20px;'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
-        gridLayOut = new DashboardLayout({
-            allowResizing: true
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.isInlineRendering = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.isServerRendered = false;
-        expect(gridLayOut.panels.length == 1).toBe(true);
-    });
-    it('for heigth and width property without body element', () => {
-        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header' style='height: 20px;'></div></div></div>";
-        gridLayOut = new DashboardLayout({
-            allowResizing: true,
-            panels: [
-                { "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
-            ]
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.isServerRendered = false;
-        expect(document.getElementById("layout_0").querySelector(".e-panel-header") == null).toBe(false);
-        expect(document.getElementById("layout_0").querySelector(".e-panel-content") == null).toBe(true);
-    });
-    it('for panel property with Id', () => {
-        ele.innerHTML = "<div id='1' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
-        gridLayOut = new DashboardLayout({
-            allowResizing: true,
-            panels: [
-                { "id": "1", "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
-            ]
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.isServerRendered = false;
-        expect(document.getElementById("1")).not.toBe(null);
-    });
-
-});
+ });

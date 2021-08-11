@@ -6,7 +6,7 @@ import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyCh
 import { addClass, removeClass, closest, prepend, detach, classList, isBlazor } from '@syncfusion/ej2-base';
 import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { incrementalSearch } from '../common/incremental-search';
+import { incrementalSearch, resetIncrementalSearchValues } from '../common/incremental-search';
 import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';
 import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
@@ -3152,6 +3152,7 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public destroy(): void {
         this.isActive = false;
+        resetIncrementalSearchValues(this.element.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.clearTemplate();

@@ -1734,6 +1734,41 @@ describe('Isprimary Button Action while focus on form element', () => {
         });
     });
 
+    describe('EJ2-51744 - Styles are not properly removed from the body when open and close the fullscreen dialog', () => {
+        let events: any;
+        let target: HTMLElement;
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            target = createElement('div', { id: 'block' });
+            document.body.appendChild(target);
+            document.body.appendChild(ele);
+            events = new Dialog({
+                showCloseIcon: true,
+                header: "Dialog Header",
+                target: target,
+                isModal: true,
+                visible: false
+            });
+            events.appendTo(ele);
+        });
+
+        it('Check the scroll class being removed', (done) => {
+            events.show(true);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            (<HTMLButtonElement>document.querySelector('.e-dlg-header-content .e-icon-btn')).dispatchEvent(clickEvent);
+            expect(target.classList.contains('e-dlg-target')).toBe(false);
+            expect(target.classList.contains('e-scroll-disabled')).toBe(false);
+            expect(document.body.classList.contains('e-dlg-target')).toBe(false);
+            expect(document.body.classList.contains('e-scroll-disabled')).toBe(false);
+            done();
+        });
+
+        afterAll((): void => {
+            destroyDialog(events);
+        });
+    });
+
     describe('focus action innerHTML', () => {
         let events: any;
         beforeAll(() => {

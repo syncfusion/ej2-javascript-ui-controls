@@ -2,13 +2,27 @@
 
 ## [Unreleased]
 
-## 19.2.51 (2021-08-03)
+## 19.2.55 (2021-08-11)
+
+### ListView
+
+#### Bug Fixes
+
+- `#F167149` - The issue with "Multiple requests are made to the controller when using remote data source with template support in the ListView component" has been resolved.
+
+## 19.2.49 (2021-07-27)
 
 ### Common
 
 #### Bug Fixes
 
 - Sortable helper element issue resolved in List Box.
+
+### ListView
+
+#### Bug Fixes
+
+- `#I335874` - The issue with "The additional new element is added in the template element of the List components" has been resolved.
 
 ## 19.2.48 (2021-07-20)
 

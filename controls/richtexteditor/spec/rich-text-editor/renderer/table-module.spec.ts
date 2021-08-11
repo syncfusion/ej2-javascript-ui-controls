@@ -2,7 +2,7 @@
  * Table module spec
  */
 import { addClass, Browser, closest, isNullOrUndefined } from "@syncfusion/ej2-base";
-import { RichTextEditor, dispatchEvent } from "../../../src/rich-text-editor/index";
+import { RichTextEditor, dispatchEvent, DialogType } from "../../../src/rich-text-editor/index";
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
@@ -3618,6 +3618,28 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect(rows[0].children[2].style.width).not.toBe("33.3333%");
                 done();
             }, 400);
+        });
+    });
+    describe('EJ2-49981 - ShowDialog, CloseDialog method testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({ });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('beforeDialogOpen event trigger testing', (done) => {
+            rteObj.showDialog(DialogType.InsertTable);
+            setTimeout(() => {
+                expect(document.body.querySelectorAll('.e-rte-edit-table.e-dialog').length).toBe(1);
+                rteObj.closeDialog(DialogType.InsertTable);
+                setTimeout(() => {
+                    expect(document.body.querySelectorAll('.e-rte-edit-table.e-dialog').length).toBe(0);
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 });

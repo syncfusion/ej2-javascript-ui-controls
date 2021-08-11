@@ -1,4 +1,4 @@
-import { createElement, remove, extend, getInstance, addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance, addClass, removeClass, isBlazor, select } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import * as cls from '../base/css-constant';
 import { GroupType, DateGroup } from '../../base/types';
@@ -542,8 +542,8 @@ export class Grouping implements IAction {
                         locale: this.parent.locale,
                         change: (args: ChangeEventArgs) => {
                             let startAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
-                                getInstance('#' + this.parentElement.id + 'group_start_input', DateTimePicker) as DateTimePicker :
-                                getInstance('#' + this.parentElement.id + 'group_start_input', NumericTextBox) as NumericTextBox);
+                                getInstance(select('#' + this.parentElement.id + 'group_start_input'), DateTimePicker) as DateTimePicker :
+                                getInstance(select('#' + this.parentElement.id + 'group_start_input'), NumericTextBox) as NumericTextBox);
                             startAtObj.enabled = args.checked;
                             startAtObj.dataBind();
                         }
@@ -557,8 +557,8 @@ export class Grouping implements IAction {
                         locale: this.parent.locale,
                         change: (args: ChangeEventArgs) => {
                             let endAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
-                                getInstance('#' + this.parentElement.id + 'group_end_input', DateTimePicker) as DateTimePicker :
-                                getInstance('#' + this.parentElement.id + 'group_end_input', NumericTextBox) as NumericTextBox);
+                                getInstance(select('#' + this.parentElement.id + 'group_end_input'), DateTimePicker) as DateTimePicker :
+                                getInstance(select('#' + this.parentElement.id + 'group_end_input'), NumericTextBox) as NumericTextBox);
                             endAtObj.enabled = args.checked;
                             endAtObj.dataBind();
                         }
@@ -586,9 +586,9 @@ export class Grouping implements IAction {
         }
         if (groupType === 'custom') {
             let inputInstance: MaskedTextBox =
-                getInstance('#' + this.parentElement.id + 'group_input_option', MaskedTextBox) as MaskedTextBox;
+                getInstance(select('#' + this.parentElement.id + 'group_input_option'), MaskedTextBox) as MaskedTextBox;
             let captionInputInstance: MaskedTextBox =
-                getInstance('#' + this.parentElement.id + 'group_caption_option', MaskedTextBox) as MaskedTextBox;
+                getInstance(select('#' + this.parentElement.id + 'group_caption_option'), MaskedTextBox) as MaskedTextBox;
             removeClass([inputInstance.element], cls.EMPTY_FIELD);
             if (inputInstance.value === null || inputInstance.value === '') {
                 addClass([inputInstance.element], cls.EMPTY_FIELD);
@@ -637,17 +637,17 @@ export class Grouping implements IAction {
             }
             groupFields = this.validateSettings(fieldName, groupFields, groupType, (splicedItems.length === 0 ? customGroup.items : splicedItems), newItems);
         } else if (groupType === 'date' || groupType === 'number') {
-            let startCheckBoxInstance: CheckBox = getInstance('#' + this.parentElement.id + 'group_start_option', CheckBox) as CheckBox;
-            let endCheckBoxInstance: CheckBox = getInstance('#' + this.parentElement.id + 'group_end_option', CheckBox) as CheckBox;
+            let startCheckBoxInstance: CheckBox = getInstance(select('#' + this.parentElement.id + 'group_start_option'), CheckBox) as CheckBox;
+            let endCheckBoxInstance: CheckBox = getInstance(select('#' + this.parentElement.id + 'group_end_option'), CheckBox) as CheckBox;
             let startInputInstance: DateTimePicker | NumericTextBox = (groupType === 'date' ?
-                getInstance('#' + this.parentElement.id + 'group_start_input', DateTimePicker) as DateTimePicker :
-                getInstance('#' + this.parentElement.id + 'group_start_input', NumericTextBox) as NumericTextBox);
+                getInstance(select('#' + this.parentElement.id + 'group_start_input'), DateTimePicker) as DateTimePicker :
+                getInstance(select('#' + this.parentElement.id + 'group_start_input'), NumericTextBox) as NumericTextBox);
             let endInputInstance: DateTimePicker | NumericTextBox = (groupType === 'date' ?
-                getInstance('#' + this.parentElement.id + 'group_end_input', DateTimePicker) as DateTimePicker :
-                getInstance('#' + this.parentElement.id + 'group_end_input', NumericTextBox) as NumericTextBox);
+                getInstance(select('#' + this.parentElement.id + 'group_end_input'), DateTimePicker) as DateTimePicker :
+                getInstance(select('#' + this.parentElement.id + 'group_end_input'), NumericTextBox) as NumericTextBox);
             let intervalInstance: MultiSelect | NumericTextBox = (groupType === 'date' ?
-                getInstance('#' + this.parentElement.id + 'group_interval_input', MultiSelect) as MultiSelect :
-                getInstance('#' + this.parentElement.id + 'group_interval_input', NumericTextBox) as NumericTextBox);
+                getInstance(select('#' + this.parentElement.id + 'group_interval_input'), MultiSelect) as MultiSelect :
+                getInstance(select('#' + this.parentElement.id + 'group_interval_input'), NumericTextBox) as NumericTextBox);
             let startAt: string = startCheckBoxInstance.checked ? startInputInstance.value.toString() : undefined;
             let endAt: string = endCheckBoxInstance.checked ? endInputInstance.value.toString() : undefined;
             let field: IGroupSettings = { name: fieldName, startingAt: startAt, endingAt: endAt };

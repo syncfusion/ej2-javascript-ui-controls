@@ -1088,11 +1088,12 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
     case 'insert':
         if (isRedo === false) {
             spreadsheet.delete(
-                options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
+                options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType,
+                options.eventArgs.sheet.name);
         } else {
             spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
                 model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                    spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index +
+                    options.eventArgs.sheet, start: options.eventArgs.index, end: options.eventArgs.index +
                         (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType,
                 isAction: false, checkCount: options.eventArgs.sheetCount,
                 activeSheetIndex: options.eventArgs.activeSheetIndex
@@ -1103,11 +1104,12 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         if (isRedo === false) {
             spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
                 model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                    spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
-                isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel
+                    options.eventArgs.sheet, start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
+                isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames: options.eventArgs.definedNames
             });
         } else {
-            spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
+            spreadsheet.delete(
+                options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType, options.eventArgs.sheet.name);
         }
         break;
     case 'validation':

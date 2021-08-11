@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';
 import { Point } from '@syncfusion/ej2-drawings';
@@ -7,7 +6,6 @@ import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-anno
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationType, FormFieldAnnotationType } from './enum';
 import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel } from '../index';
-import { FontStyle } from '../base';
 /**
  * The `PdfBounds` is base for annotation bounds.
  *
@@ -158,7 +156,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property('Rectangle')
     public shapeAnnotationType: PdfAnnotationType;
-        
+
     /**
      * Represents the annotation type of the form field
      *
@@ -701,9 +699,9 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
      *
      * @default ''
      */
-     @Property('')
-     public value: string;
-        
+    @Property('')
+    public value: string;
+
     /**
      * Represents the annotation type of the form field
      *
@@ -912,7 +910,7 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
     public isSelected: boolean;
 
     /**
-     * Specify whether an form field element is mandatory.
+     * Specified whether an form field element is mandatory.
      */
     @Property(false)
     public isRequired: boolean;
@@ -955,38 +953,54 @@ export class ZOrderPageTable {
 
     private pageIdTemp: number = 0;
 
-    /** @private */
+    /**
+     * @private
+     * @returns {number} - Returns the page Id.
+     */
     public get pageId(): number {
         return this.pageIdTemp;
     }
 
-    /** @private */
+    /**
+     * @private
+     * @param {number} offset - The page offset value.
+     */
     public set pageId(offset: number) {
         this.pageIdTemp = offset;
-
     }
 
     private zIndexTemp: number = -1;
 
-    /** @private */
+    /**
+     * @private
+     * @returns {number} - Returns the z-index value.
+     */
     public get zIndex(): number {
         return this.zIndexTemp;
     }
 
-    /** @private */
+    /**
+     * @private
+     * @param {number} offset - The page offset value.
+     */
     public set zIndex(offset: number) {
         this.zIndexTemp = offset;
-
     }
 
     private childNodesTemp: PdfAnnotationBaseModel[] = [];
 
-    /** @private */
+    /**
+     * @private
+     * @returns {PdfAnnotationBaseModel[]} - Returns the annotation childNodes.
+     */
     public get objects(): PdfAnnotationBaseModel[] {
         return this.childNodesTemp;
     }
 
-    /** @private */
+    /**
+     * @private
+     * @param {PdfAnnotationBaseModel[]} childNodes - Specified the annotation child nodes.
+     */
     public set objects(childNodes: PdfAnnotationBaseModel[]) {
         this.childNodesTemp = childNodes;
 

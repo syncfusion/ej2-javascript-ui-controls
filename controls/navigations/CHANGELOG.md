@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.2.55 (2021-08-11)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I337237` - Resolved the performance issue that occurred when removing more than 500 nodes from the TreeView using multiple selection.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I335995` - An issue with the touch event not triggering on tab content swipe has been fixed.
+
 ## 19.2.51 (2021-08-03)
 
 ### Tab

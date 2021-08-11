@@ -1432,6 +1432,11 @@ export interface PdfHeaderQueryCellInfoEventArgs {
     style?: PdfStyle;
     /** Defines the current cell with column */
     gridCell?: object;
+    /** Defines the image details */
+    image?: { base64: string};
+    /** Defines the hyperlink of the cell */
+    hyperLink?: Hyperlink;
+
 }
 
 export interface Image {
@@ -1470,7 +1475,11 @@ export interface ExcelHeaderQueryCellInfoEventArgs {
     /** Defines the style of the current cell. */
     style?: ExcelStyle;
     /** Defines the Grid cell instance */
-    gridCell?: Cell<Column>;
+    gridCell?: Cell<Column> | ExcelCell;
+    /** Defines the image details */
+    image?: Image;
+    /** Defines the hyperlink */
+    hyperLink?: Hyperlink;
 }
 
 export interface FilterSearchBeginEventArgs {

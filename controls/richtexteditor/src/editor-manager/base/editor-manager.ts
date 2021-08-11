@@ -20,6 +20,7 @@ import { MsWordPaste } from '../plugin/ms-word-clean-up';
 import { NotifyArgs } from './../../rich-text-editor/base/interface';
 import * as EVENTS from './../../common/constant';
 import { InsertTextExec } from '../plugin/insert-text';
+import { NodeCutter } from '../plugin/nodecutter';
 /**
  * EditorManager internal component
  *
@@ -31,6 +32,7 @@ export class EditorManager {
     public observer: Observer;
     public listObj: Lists;
     public nodeSelection: NodeSelection;
+    public nodeCutter: NodeCutter
     public domNode: DOMNode;
     public formatObj: Formats;
     public linkObj: LinkCommand;
@@ -56,6 +58,7 @@ export class EditorManager {
         this.currentDocument = options.document;
         this.editableElement = options.editableElement;
         this.nodeSelection = new NodeSelection();
+        this.nodeCutter = new NodeCutter();
         this.domNode = new DOMNode(this.editableElement, this.currentDocument);
         this.observer = new Observer(this);
         this.listObj = new Lists(this);

@@ -1,4 +1,4 @@
-import { Input, InputObject, FloatLabelType, TextBox, InputEventArgs } from '@syncfusion/ej2-inputs';import { createCheckBox } from '@syncfusion/ej2-buttons';import { NotifyPropertyChanges, INotifyPropertyChanged, Property, Event, EmitType } from '@syncfusion/ej2-base';import { Component, EventHandler, attributes, formatUnit, ChildProperty, remove, L10n, extend } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, prepend, Complex, closest, setValue, getValue, compile, append } from '@syncfusion/ej2-base';import { select, selectAll, isNullOrUndefined as isNOU, matches, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Popup } from '@syncfusion/ej2-popups';import { updateBlazorTemplate, resetBlazorTemplate, isBlazor} from '@syncfusion/ej2-base';import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs } from '@syncfusion/ej2-navigations';import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
+import { Input, InputObject, FloatLabelType, TextBox, InputEventArgs } from '@syncfusion/ej2-inputs';import { createCheckBox } from '@syncfusion/ej2-buttons';import { NotifyPropertyChanges, INotifyPropertyChanged, Property, Event, EmitType } from '@syncfusion/ej2-base';import { Component, EventHandler, attributes, formatUnit, ChildProperty, remove, L10n, extend } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, prepend, Complex, closest, setValue, getValue, compile, append } from '@syncfusion/ej2-base';import { select, selectAll, isNullOrUndefined as isNOU, matches, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Popup } from '@syncfusion/ej2-popups';import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs } from '@syncfusion/ej2-navigations';import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
 import {Mode,ExpandOn,TreeFilterType,SortOrder,DdtBeforeOpenEventArgs,DdtChangeEventArgs,DdtPopupEventArgs,DdtDataBoundEventArgs,DdtFilteringEventArgs,DdtFocusEventArgs,DdtKeyPressEventArgs,DdtSelectEventArgs} from "./drop-down-tree";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -502,7 +502,6 @@ export interface DropDownTreeModel extends ComponentModel{
      * Triggers on typing a character in the filter bar when the **allowFiltering** is enabled.
      *
      * @event
-     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<DdtFilteringEventArgs>;
 

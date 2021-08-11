@@ -97,7 +97,7 @@ export interface ClickEventArgs extends BaseEventArgs {
     cancel?: boolean
 }
 
-/** @deprecated */
+/** An interface that holds options to control before the toolbar create. */
 export interface BeforeCreateArgs extends BaseEventArgs {
     /** Enable or disable the popup collision. */
     enableCollision: boolean
@@ -1766,7 +1766,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @param  {ItemModel[]} items - DOM element or an array of items to be added to the Toolbar.
      * @param  {number} index - Number value that determines where the command is to be added. By default, index is 0.
      * @returns {void}.
-     * @deprecated
      */
     public addItems(items: ItemModel[], index?: number): void {
         let innerItems: HTEle[];
@@ -1835,7 +1834,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @param  {number|HTMLElement|NodeList|HTMLElement[]} args
      * Index or DOM element or an Array of item which is to be removed from the Toolbar.
      * @returns {void}.
-     * @deprecated
      */
     public removeItems(args: number | HTMLElement | NodeList | Element | HTMLElement[]): void {
         const elements: NodeList = <NodeList>args;

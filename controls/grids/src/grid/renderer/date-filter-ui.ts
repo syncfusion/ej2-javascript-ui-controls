@@ -88,10 +88,10 @@ export class DateFilterUI implements IFilterMUI {
     }
 
     private destroy(): void {
-        if (this.datePickerObj.isDestroyed) { return; }
-        this.datePickerObj.removeEventListener(literals.open, this.dpOpen);
-        this.datePickerObj.destroy();
         this.parent.off(events.filterMenuClose, this.destroy);
         this.parent.off(events.destroy, this.destroy);
+        if (isNullOrUndefined(this.datePickerObj) || this.datePickerObj.isDestroyed) { return; }
+        this.datePickerObj.removeEventListener(literals.open, this.dpOpen);
+        this.datePickerObj.destroy();
     }
 }

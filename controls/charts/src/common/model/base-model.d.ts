@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { EmptyPointMode} from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { EmptyPointMode, FadeOutMode } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
 
 /**
  * Interface for a class Connector
@@ -539,6 +539,14 @@ export interface TooltipSettingsModel {
      */
 
     fadeOutDuration?: number;
+
+    /**
+     * Fade Out duration for the Tooltip hide.
+     *
+     * @default Move
+     */
+
+    fadeOutMode?: FadeOutMode;
 
     /**
      * To wrap the tooltip long text based on available space.

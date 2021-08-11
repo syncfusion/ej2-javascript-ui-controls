@@ -3,10 +3,10 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, initiateFilterUI } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, FilterCollectionModel, triggerDataChange } from '../../workbook/index';
-import { addClass, extend, L10n } from '@syncfusion/ej2-base';
+import { addClass, extend, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getFilteredCollection, CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
@@ -364,8 +364,35 @@ export class UndoRedo {
         const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);
         const actionData: BeforeActionData = eventArgs.beforeActionData;
         const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex);
+        const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [range[0], range[1]], isUnique: false , uniqueRange: ''};
+        this.parent.notify(checkUniqueRange, uniqueArgs);
         if (this.isUndo) {
+            if (uniqueArgs.isUnique && eventArgs.formula && eventArgs.formula.indexOf('UNIQUE') > - 1) {
+                const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                if (getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
+                    for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
+                        for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
+                            if (j === rangeIdx[0] && k === rangeIdx[1]) {
+                                k = k + 1;
+                            }
+                            this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                        }
+                    }
+                }
+            }
             this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
+            if (!eventArgs.isSpill && uniqueArgs.uniqueRange !== '') {
+                const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                for (let j: number = indexes[0]; j <= indexes[2]; j++) {
+                    for (let k: number = indexes[1]; k <= indexes[3]; k++) {
+                        if (j === indexes[0] && k === indexes[1]) {
+                            k = k + 1;
+                        }
+                        this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                    }
+                }
+                this.parent.notify(reApplyFormula, null);
+            }
         } else {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             const argsEventArgs: any = args.eventArgs;
@@ -424,6 +451,20 @@ export class UndoRedo {
                 (argsEventArgs.style as CellStyleModel).textDecoration = value;
                 args.eventArgs = argsEventArgs as UndoRedoEventArgs;
             } else {
+                if (!isNullOrUndefined(eventArgs.oldValue) && eventArgs.oldValue !== eventArgs.value && uniqueArgs.isUnique) {
+                    const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                    if (getCell(indexes[0], indexes[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
+                        for (let j: number = indexes[0]; j <= indexes[2]; j++) {
+                            for (let k: number = indexes[1]; k <= indexes[3]; k++) {
+                                if (j === indexes[0] && k === indexes[1]) {
+                                    this.parent.updateCell({value: '#SPILL!'}, getRangeAddress([indexes[0], indexes[1]]));
+                                    k = k + 1;
+                                }
+                                this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                            }
+                        }
+                    }
+                }
                 updateAction(args, this.parent, true);
             }
         }

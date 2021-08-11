@@ -595,8 +595,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public guid: string;
     /** @hidden */
     public isServerWaitingPopup: boolean = false;
-    /** @hidden */
-    public isHScrollEnd: boolean = false;
 
     /* eslint-disable */
     //Property Declarations
@@ -3756,7 +3754,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     let mCntScrollPos: number = (mCnt.scrollWidth - (mCnt.scrollLeft + mCnt.offsetWidth));
                     this.virtualDiv.style.display = '';
                     let mCntVScrollPos: number = (mCnt.scrollWidth - (mCnt.scrollLeft + mCnt.offsetWidth));
-                    this.scrollPosObject.horizontalSection -= (this.isHScrollEnd ? (mCntScrollPos > hScrollPos ? mCntScrollPos : -mCntVScrollPos) :
+                    this.scrollPosObject.horizontalSection -= (hScrollPos <= 0 ? (mCntScrollPos > hScrollPos ? mCntScrollPos : -mCntVScrollPos) :
                         (mCntVScrollPos === mCntScrollPos ? (mCntScrollPos - hScrollPos) :
                             (mCntScrollPos < mCntVScrollPos && (hScrollPos === mCntVScrollPos || hScrollPos > mCntScrollPos) ?
                                 -(mCntVScrollPos - mCntScrollPos) : 0)));
@@ -3764,14 +3762,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
                         'translate(' + -(((ele.scrollLeft * this.horizontalScrollScale) -
                             this.scrollPosObject.horizontalSection - ele.scrollLeft)) + 'px,';
-
                     setStyleAttribute(mCnt.querySelector('.e-table') as HTMLElement, {
                         transform: horiOffset + verOffset
                     });
                     setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
                         transform: horiOffset + 0 + 'px)'
                     });
-                    this.isHScrollEnd = false;
                 }
                 if (this.grid.height !== 'auto') {
                     (this.grid.contentModule as any).setHeightToContent(this.virtualDiv.offsetHeight + movableTable.clientHeight);

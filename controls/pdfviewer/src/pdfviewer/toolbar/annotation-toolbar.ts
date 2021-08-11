@@ -2456,7 +2456,8 @@ export class AnnotationToolbar {
             cssClass: 'e-pv-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
-            width: '80px'
+            width: '80px',
+            popupWidth: '100px'
         });
         this.fontSize.value = '16px';
         this.fontSize.appendTo(fontSelectElement);
@@ -2477,7 +2478,8 @@ export class AnnotationToolbar {
             itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
             allowCustom: true,
             showClearButton: false,
-            width: '100px'
+            width: '100px',
+            popupWidth: '190px'
         });
         this.fontFamily.isStringTemplate = true;
         this.fontFamily.value = 'Helvetica';
@@ -3917,7 +3919,7 @@ export class AnnotationToolbar {
                 }
             } else {
                 // this.pdfViewer._dotnetInstance.invokeMethodAsync('AnnotationSelect', 'TextMarkup');
-                this.pdfViewerBase.blazorUIAdaptor.annotationSelect('TextMarkup');
+                this.pdfViewerBase.blazorUIAdaptor.enableTextMarkupAnnotationPropertiesTools(isEnable);
             }
         }
     }
@@ -4234,6 +4236,9 @@ export class AnnotationToolbar {
      */
     public clearTextMarkupMode(): void {
         if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+            if (isBlazor()) {
+                this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+            }
             this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
         }
     }

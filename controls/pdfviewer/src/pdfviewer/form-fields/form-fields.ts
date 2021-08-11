@@ -900,7 +900,7 @@ export class FormFields {
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
         // eslint-disable-next-line
-        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString);
+        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
         this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
         this.pdfViewerBase.drawSignatureWithTool = false;
         this.pdfViewer.isInitialFieldToolbarSelection = false;

@@ -6,6 +6,7 @@ import { Chart } from '../../../src/chart/chart';
 import { ChartSeriesType, ChartRangePadding, ValueType, LabelPlacement, } from '../../../src/chart/utils/enum';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
+import { AreaSeries } from '../../../src/chart/series/area-series';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 
@@ -20,7 +21,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs,  } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DateTime, Category, Tooltip, DataEditing);
-Chart.Inject(Crosshair);
+Chart.Inject(Crosshair, AreaSeries);
 
 
 describe('Chart Crosshair', () => {
@@ -578,6 +579,115 @@ describe('Chart Crosshair', () => {
             chartObj.refresh();
         });
     });
+
+    describe('Crosshair customization', () => {
+        let chartObj: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let elem: HTMLElement = createElement('div', { id: 'crosshairContainer' }); 
+        let series1: Object[] = [];
+        let point1: Object;
+        let value: number = 80;
+        let i: number;
+        for (i = 1; i < 500; i++) {
+            if (Math.random() > .5) {
+                value += Math.random();
+            } else {
+                value -= Math.random();
+            }
+            point1 = { x: new Date(1910, i + 2, i), y: value.toFixed(1) };
+            series1.push(point1);
+        }
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    //Initializing Primary X Axis
+                    primaryXAxis: {
+                        majorGridLines: { width: 0 },
+                        valueType: 'DateTime',
+                        crosshairTooltip: { enable: true },
+                    },
+                    primaryYAxis:
+                    {
+                        minimum: 83, maximum: 95, interval: 1,
+                        title: 'Millions in USD',
+                        labelFormat: '{value}M',
+                        rowIndex: 0,
+                        crosshairTooltip: {
+                            enable: true
+                        }
+                    },
+
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Area',
+                            dataSource: series1,
+                            name: 'Product X',
+                            xName: 'x',
+                            yName: 'y',
+                            border: { width: 0.5, color: 'black' },
+                        },
+                    ],
+                    //Initializing Zooming
+
+                    //Initializing Chart title
+                    title: 'Sales History of Product X',
+                    crosshair: { enable: true },
+                });
+            chartObj.appendTo('#crosshairContainer');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+
+        it('X axis crosshair opacity checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                let chartArea: HTMLElement = document.getElementById('crosshairContainer_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 4 + elem.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 4 + elem.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                let crosshair: Element = <Element>document.getElementById('crosshairContainer_svg').lastChild;
+                let element1: HTMLElement;
+                let element2: HTMLElement;
+                expect(crosshair.childNodes.length == 3 || crosshair.childNodes.length == 2).toBe(true);
+                element1 = <HTMLElement>crosshair.childNodes[0];
+                expect(element1.getAttribute('opacity') == '0.5' || element1.getAttribute('opacity') == '1').toBe(true);
+                element2 = <HTMLElement>crosshair.childNodes[1];
+                expect(element2.getAttribute('opacity') == '0.5' || element2.getAttribute('opacity') == null).toBe(true);
+                done();
+            };
+            chartObj.crosshair.opacity = 0.5;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Customizing crosshair color', (done: Function) => {
+            loaded = (args: Object): void => {
+                let chartArea: HTMLElement = document.getElementById('crosshairContainer_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 4 + elem.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 4 + elem.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                let crosshair: Element = <Element>document.getElementById('crosshairContainer_svg').lastChild;
+                let element1: HTMLElement;
+                let element2: HTMLElement;
+                expect(crosshair.childNodes.length == 3 || crosshair.childNodes.length == 2).toBe(true);
+                element1 = <HTMLElement>crosshair.childNodes[0];
+                element2 = <HTMLElement>crosshair.childNodes[1];
+                expect(element1.getAttribute('fill') == 'red' || element1.getAttribute('fill') == 'transparent' ).toBe(true);
+                expect(element2.getAttribute('fill') == 'green' || element2.getAttribute('fill') == null ).toBe(true); 
+                done();
+            };
+            chartObj.crosshair.horizontalColor= 'red';
+            chartObj.crosshair.verticalColor = 'green'; 
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

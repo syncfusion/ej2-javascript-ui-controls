@@ -15,7 +15,7 @@ import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs,
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { RenderType, ToolbarType } from './enum';
+import { RenderType, ToolbarType, DialogType } from './enum';
 import { EditorMode } from './../../common/types';
 import { Toolbar } from '../actions/toolbar';
 import { ExecCommandCallBack } from '../actions/execute-command-callback';
@@ -2543,6 +2543,40 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const htmlText : string = this.editorMode === 'Markdown' ? (this.inputElement as HTMLTextAreaElement).value.trim() :
             (this.inputElement as HTMLTextAreaElement).textContent.trim();
         return htmlText.length;
+    }
+
+    /**
+     * Show the dialog in the Rich Text Editor.
+     *
+     * @param {DialogType} type - specifies the dialog type.
+     * @returns {void}
+     * @public
+     */
+     public showDialog(type: DialogType): void {
+        if (type === DialogType.InsertLink) {
+            this.notify(events.showLinkDialog, {});
+        } else if (type === DialogType.InsertImage) {
+            this.notify(events.showImageDialog, {});
+        } else if (type === DialogType.InsertTable) {
+            this.notify(events.showTableDialog, {});
+        }
+    }
+
+    /**
+     * Close the dialog in the Rich Text Editor.
+     *
+     * @param {DialogType} type - specifies the dialog type.
+     * @returns {void}
+     * @public
+     */
+    public closeDialog(type: DialogType): void {
+        if (type === DialogType.InsertLink) {
+            this.notify(events.closeLinkDialog, {});
+        } else if (type === DialogType.InsertImage) {
+            this.notify(events.closeImageDialog, {});
+        } else if (type === DialogType.InsertTable) {
+            this.notify(events.closeTableDialog, {});
+        }
     }
 
     /**

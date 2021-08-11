@@ -174,6 +174,26 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     @Property('Both')
     public lineType: LineType;
 
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    @Property('')
+    public verticalColor: string;
+      
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    @Property('')
+    public horizontalColor: string;
+    
+    /**
+     * The opacity for background.
+     * @default 1
+     */
+     @Property(1)
+     public opacity: number;
 }
 /**
  * Configures the zooming behavior for the chart.

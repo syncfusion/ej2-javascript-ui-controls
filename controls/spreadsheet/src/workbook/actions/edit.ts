@@ -1,5 +1,5 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
-import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart } from '../common/event';
+import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange } from '../common/event';
 import { getRangeIndexes, parseIntValue } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
@@ -130,7 +130,9 @@ export class WorkbookEdit {
             if (value === '#SPILL!') {
                 cell.value = value;
             } else {
-                if (!skipFormula && value !== '') {
+                const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
+                this.parent.notify(checkUniqueRange, args);
+                if (!skipFormula && value !== '' && (!args.isUnique || value.indexOf('UNIQUE') > - 1)) {
                     this.parent.notify(workbookFormulaOperation, eventArgs);
                 } else {
                     value = cell.value;

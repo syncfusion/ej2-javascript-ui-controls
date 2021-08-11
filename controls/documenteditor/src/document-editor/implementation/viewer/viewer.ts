@@ -888,6 +888,8 @@ export class DocumentHelper {
         paragraphFormat.lineSpacing = 1;
         paragraphFormat.lineSpacingType = 'Multiple';
         paragraphFormat.bidi = false;
+        paragraphFormat.keepWithNext = false;
+        paragraphFormat.keepLinesTogether = false;
     }
     /**
      * @private
@@ -2778,7 +2780,8 @@ export class DocumentHelper {
                     return this.selection.getLineWidgetBodyWidget(childWidgets, cursorPoint);
                 }
             } else {
-                let shapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged);
+                let shapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged, false);
+                let behindShapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged, true);
                 if (shapeInfo.isShapeSelected) {
                     if (shapeInfo.isInShapeBorder) {
                         return shapeInfo.element.line;
@@ -2817,9 +2820,88 @@ export class DocumentHelper {
                         }
                     }
                 }
+                let inlineShapeInfo: ShapeInfo = this.checkInlineShapeItems(widget, cursorPoint, isMouseDragged);
+                if (inlineShapeInfo.isShapeSelected) {
+                    if (inlineShapeInfo.isInShapeBorder) {
+                        return inlineShapeInfo.element.line;
+                    }
+                    if (inlineShapeInfo.element instanceof ShapeElementBox) {
+                        widget = this.selection.getLineWidgetBodyWidget((inlineShapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    }
+                } else if (!this.checkPointIsInLine(widget, cursorPoint) && behindShapeInfo.isShapeSelected) {
+                    if (behindShapeInfo.isInShapeBorder) {
+                        return behindShapeInfo.element.line;
+                    }
+                    if (behindShapeInfo.element instanceof ShapeElementBox) {
+                        widget = this.selection.getLineWidgetBodyWidget((behindShapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    }
+                }
             }
         }
         return widget;
+    }
+    private checkInlineShapeItems(widget: LineWidget, cursorPoint: Point, isMouseDragged: boolean): ShapeInfo {
+        let isInShape: boolean = false;
+        let isInShapeBorder: boolean = false;
+        let floatingElement: ShapeElementBox;
+        let selectionInShape: boolean = this.selection.isInShape;
+        let isMouseDraggedInShape: boolean = isMouseDragged && selectionInShape;
+        if (!isNullOrUndefined(widget) && widget.children.length > 0) {
+            if (isMouseDraggedInShape) {
+                let textFrame: TextFrame = this.owner.selection.getCurrentTextFrame();
+                if (textFrame) {
+                    floatingElement = textFrame.containerShape as ShapeElementBox;
+                    isInShape = true;
+                }
+            } else {
+                for (let i: number = 0; i < widget.children.length; i++) {
+                    if (!(widget.children[i] instanceof ShapeElementBox && (widget.children[i] as ShapeElementBox).textWrappingStyle === 'Inline')) {
+                        continue;
+                    }
+                    floatingElement = widget.children[i] as ShapeElementBox;
+                    if (cursorPoint.x < floatingElement.x + floatingElement.margin.left + floatingElement.width &&
+                        cursorPoint.x > floatingElement.x && cursorPoint.y < floatingElement.y + floatingElement.margin.top +
+                        floatingElement.height && cursorPoint.y > floatingElement.y) {
+                        isInShape = true;
+                        if (this.isInShapeBorder(floatingElement, cursorPoint)) {
+                            isInShapeBorder = true;
+                        }
+                        break;
+                    }
+                }
+                if (isMouseDragged && !selectionInShape) {
+                    isInShape = false;
+                }
+            }
+        }
+        return {
+            'element': floatingElement,
+            'caretPosition': cursorPoint,
+            'isInShapeBorder': isInShapeBorder,
+            'isShapeSelected': isInShape
+        }
+    }
+    /**
+     * @private
+     */
+    public checkPointIsInLine(widget: LineWidget, cursorPoint: Point): boolean {
+        if (!isNullOrUndefined(widget) && widget.children.length > 0) {
+            let element: ElementBox;
+            let left: number = widget.paragraph.x;
+            let top: number = this.selection.getTop(widget);
+            for (let i: number = widget.children.indexOf(widget.children[0]); i < widget.children.length; i++) {
+                element = widget.children[i];
+                if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                    continue;
+                }
+                if (cursorPoint.x < left + element.margin.left + element.width + element.padding.left
+                    && cursorPoint.x > left && cursorPoint.y < top + widget.height && cursorPoint.y > top) {
+                    return true;
+                }
+                left += element.margin.left + element.width + element.padding.left;
+            }
+        }
+        return false;
     }
     private isInFootnoteWidget(footnoteWidget: FootNoteWidget, point: Point): boolean {
         for (let i: number = 0; i < footnoteWidget.childWidgets.length; i++) {
@@ -2831,7 +2913,7 @@ export class DocumentHelper {
         }
         return false;
     }
-    private checkFloatingItems(blockContainer: BlockContainer, cursorPoint: Point, isMouseDragged: boolean): ShapeInfo {
+    private checkFloatingItems(blockContainer: BlockContainer, cursorPoint: Point, isMouseDragged: boolean, isBehind?: boolean): ShapeInfo {
         let isInShape: boolean = false;
         let isInShapeBorder: boolean = false;
         let floatElement: ShapeBase;
@@ -2855,7 +2937,8 @@ export class DocumentHelper {
                 }
             } else {
                 for (let i: number = 0; i < blockContainer.floatingElements.length; i++) {
-                    if (blockContainer.floatingElements[i] instanceof TableWidget) {
+                    if (blockContainer.floatingElements[i] instanceof TableWidget
+                        || (!isNullOrUndefined(isBehind) && isBehind ? (blockContainer.floatingElements[i] as ShapeBase).textWrappingStyle !== 'Behind' : (blockContainer.floatingElements[i] as ShapeBase).textWrappingStyle === 'Behind')) {
                         continue;
                     }
                     floatElement = blockContainer.floatingElements[i] as ShapeBase;
@@ -3204,6 +3287,7 @@ export class DocumentHelper {
         let lineLeft: number = 0;
         let formField: FieldElementBox = undefined;
         let referenceField: FieldElementBox = undefined;
+        let isInInline: boolean = this.checkPointIsInLine(widget, touchPoint);
         if (!isNullOrUndefined(widget)) {
             lineLeft = this.selection.getLineStartLeft(widget);
             hyperlinkField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint);
@@ -3299,7 +3383,7 @@ export class DocumentHelper {
         } else if (isCellResize) {
             div.style.cursor = 'col-resize';
         }
-        if (floatItemInfo.isInShapeBorder) {
+        if (floatItemInfo.isInShapeBorder && !isInInline) {
             div.style.cursor = 'all-scroll';
         }
     }

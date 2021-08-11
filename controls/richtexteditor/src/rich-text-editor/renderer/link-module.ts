@@ -43,6 +43,8 @@ export class Link {
             return;
         }
         this.parent.on(events.insertLink, this.linkDialog, this);
+        this.parent.on(events.showLinkDialog, this.showDialog, this);
+        this.parent.on(events.closeLinkDialog, this.closeDialog, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.insertCompleted, this.showLinkQuickToolbar, this);
         this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
@@ -73,6 +75,8 @@ export class Link {
             return;
         }
         this.parent.off(events.insertLink, this.linkDialog);
+        this.parent.off(events.showLinkDialog, this.showDialog);
+        this.parent.off(events.closeLinkDialog, this.closeDialog);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.insertCompleted, this.showLinkQuickToolbar);
         this.parent.off(events.clearDialogObj, this.clearDialogObj);
@@ -90,7 +94,8 @@ export class Link {
         }
     }
     private showLinkQuickToolbar(e: IShowPopupArgs): void {
-        if ((e.args as KeyboardEventArgs).action !== 'enter' && (e.args as KeyboardEventArgs).action !== 'space') {
+        if (!isNullOrUndefined(e.args) && (e.args as KeyboardEventArgs).action !== 'enter' &&
+            (e.args as KeyboardEventArgs).action !== 'space') {
             let pageX: number;
             let pageY: number;
             if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
@@ -175,34 +180,50 @@ export class Link {
             }
             break;
         case 'insert-link':
-            if (this.parent.editorMode === 'HTML') {
-                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-                const save: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
-                    range, this.parent.contentModule.getDocument());
-                const selectNodeEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
-                const selectParentEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
-                const eventArgs: NotifyArgs = {
-                    args: event.args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                };
-                this.linkDialog(eventArgs);
-            } else {
-                const textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
-                this.parent.formatter.editorManager.markdownSelection.save(textArea.selectionStart, textArea.selectionEnd);
-                this.linkDialog({
-                    args: {
-                        item: { command: 'Links', subCommand: 'Link' } as IToolbarItemModel,
-                        originalEvent: originalEvent
-                    },
-                    member: 'link',
-                    text: this.parent.formatter.editorManager.markdownSelection.getSelectedText(
-                        this.parent.contentModule.getEditPanel() as HTMLTextAreaElement),
-                    module: 'Markdown',
-                    name: 'insertLink'
-                });
-            }
+            this.openDialog(true, event);
             originalEvent.preventDefault();
             break;
         }
+    }
+    private openDialog(isInternal?: boolean, event?: NotifyArgs): void {
+        if (!isInternal) {
+            (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
+        }
+        if (this.parent.editorMode === 'HTML') {
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            const save: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
+                range, this.parent.contentModule.getDocument());
+            const selectNodeEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+            const selectParentEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
+            const eventArgs: NotifyArgs = {
+                args: event ? event.args : { 
+                    item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel,
+                    originalEvent: undefined
+                },
+                selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+            };
+            this.linkDialog(eventArgs);
+        } else {
+            const textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
+            this.parent.formatter.editorManager.markdownSelection.save(textArea.selectionStart, textArea.selectionEnd);
+            this.linkDialog({
+                args: {
+                    item: { command: 'Links', subCommand: 'Link' } as IToolbarItemModel,
+                    originalEvent: event && event.args as KeyboardEventArgs
+                },
+                member: 'link',
+                text: this.parent.formatter.editorManager.markdownSelection.getSelectedText(
+                    this.parent.contentModule.getEditPanel() as HTMLTextAreaElement),
+                module: 'Markdown',
+                name: 'insertLink'
+            });
+        }
+    }
+    private showDialog(): void {
+        this.openDialog(false);
+    }
+    private closeDialog(): void {
+        if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
     }
     private clearDialogObj(): void {
         if (this.dialogObj) {
@@ -394,7 +415,7 @@ export class Link {
         }
         (this as NotifyArgs).selfLink.parent.formatter.process(
             (this as NotifyArgs).selfLink.parent, argsValue,
-            ((this as NotifyArgs).args as ClickEventArgs).originalEvent, value);
+            (!isNullOrUndefined((this as NotifyArgs).args as ClickEventArgs) && ((this as NotifyArgs).args as ClickEventArgs).originalEvent), value);
         ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }
     private isUrl(url: string): boolean {
@@ -484,6 +505,7 @@ export class Link {
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))
         ) {
             this.dialogObj.hide({ returnValue: true } as Event);
+            EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
         }

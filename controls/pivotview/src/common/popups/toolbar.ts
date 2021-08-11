@@ -1456,9 +1456,9 @@ export class Toolbar {
         }
     }
     private chartTypeDialogUpdate(): void {
-        let chartType: ChartSeriesType = (getInstance('#' + this.parent.element.id + '_ChartTypeOption', DropDownList) as DropDownList).value as ChartSeriesType;
-        let checked: boolean = (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).checked;
-        let checkedShow: boolean = (getInstance('#' + this.parent.element.id + '_DialogShowLabel', CheckBox) as CheckBox).checked;
+        let chartType: ChartSeriesType = (getInstance(select('#' + this.parent.element.id + '_ChartTypeOption'), DropDownList) as DropDownList).value as ChartSeriesType;
+        let checked: boolean = (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox).checked;
+        let checkedShow: boolean = (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked;
         this.parent.chart.legendSettings.visible = checkedShow;
         if (this.chartLableState) {
             this.parent.chart.legendSettings.visible = checkedShow;
@@ -1470,7 +1470,7 @@ export class Toolbar {
         }
         this.updateChartType(chartType, false);
         this.parent.chartSettings.enableMultipleAxis = checked;
-        this.parent.chartSettings.multipleAxisMode = (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).value as MultipleAxisMode;
+        this.parent.chartSettings.multipleAxisMode = (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).value as MultipleAxisMode;
         this.chartTypesDialog.close();
     }
     private updateChartType(type: ChartSeriesType, isMultiAxis: boolean): void {
@@ -1551,15 +1551,15 @@ export class Toolbar {
         if (!(chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined)) {
             let checked: boolean = ['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(args.value.toString()) > -1 ?
                 false : true;
-            (getInstance('#' + this.parent.element.id + '_DialogShowLabel', CheckBox) as CheckBox).checked = checked;
+            (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked = checked;
         }
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(args.value.toString()) > -1) {
-            (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).disabled = true;
-            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = false;
+            (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox).disabled = true;
+            (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = false;
         } else {
-            let multipleAxisCheckBox: CheckBox = (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox);
+            let multipleAxisCheckBox: CheckBox = (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox);
             multipleAxisCheckBox.disabled = false;
-            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = multipleAxisCheckBox.checked;
+            (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = multipleAxisCheckBox.checked;
         }
     }
 
@@ -1569,7 +1569,7 @@ export class Toolbar {
             cssClass: 'e-dialog-multiple-axis',
             checked: this.parent.chartSettings.enableMultipleAxis ? this.parent.chartSettings.enableMultipleAxis : false,
             change: (args: StateChange) => {
-                (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = args.checked;
+                (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = args.checked;
             },
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale
@@ -1586,7 +1586,7 @@ export class Toolbar {
         checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element) as HTMLElement);
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
             checkbox.disabled = true;
-            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = false;
+            (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = false;
         }
         let chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {

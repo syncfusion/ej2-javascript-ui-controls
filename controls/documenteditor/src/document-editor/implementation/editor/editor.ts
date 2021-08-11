@@ -75,6 +75,7 @@ export class Editor {
     private isTrackingFormField: boolean = false;
     private isCmtDeleteStarted: boolean = false;
     private removeCommentCharacters: CommentCharacterElementBox[] = [];
+    private previousBlockToLayout: BlockWidget;
     /**
      * @private
      */
@@ -4124,6 +4125,14 @@ export class Editor {
             || (!isNullOrUndefined(dest.contextualSpacing) && source.contextualSpacing !== dest.contextualSpacing)) {
             return false;
         }
+        if ((isNullOrUndefined(dest.keepWithNext) && source.keepWithNext !== false)
+            || (!isNullOrUndefined(dest.keepWithNext) && source.keepWithNext !== dest.keepWithNext)) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.keepLinesTogether) && source.keepLinesTogether !== false)
+            || (!isNullOrUndefined(dest.keepLinesTogether) && source.keepLinesTogether !== dest.keepLinesTogether)) {
+            return false;
+        }
         if ((isNullOrUndefined(dest.outlineLevel) && source.outlineLevel !== 'BodyText')
             || (!isNullOrUndefined(dest.outlineLevel) && source.outlineLevel !== dest.outlineLevel)) {
             return false;
@@ -6832,6 +6841,12 @@ export class Editor {
      * @returns {void}
      */
     public reLayout(selection: Selection, isSelectionChanged?: boolean): void {
+        if (!isNullOrUndefined(this.previousBlockToLayout)) {
+            // Layout content for previous page to fix content based on KeepWithNext format.
+            let previousBlock: BlockWidget = this.previousBlockToLayout;
+            this.documentHelper.layout.layoutBodyWidgetCollection(previousBlock.index, previousBlock.bodyWidget, previousBlock, false, false);
+            this.previousBlockToLayout = undefined;
+        }
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
@@ -6993,6 +7008,12 @@ export class Editor {
 
     private removeFieldInBlock(block: BlockWidget, isBookmark?: boolean, isContentControl?: boolean): void {
         if (block instanceof TableWidget) {
+            if (block.wrapTextAround && !isNullOrUndefined(block.bodyWidget)) {
+                let index: number = block.bodyWidget.floatingElements.indexOf(block);
+                if (index !== -1) {
+                    block.bodyWidget.floatingElements.splice(index, 1);
+                }
+            }
             this.removeFieldTable(block, isBookmark, isContentControl);
         } else {
             this.removeField(block as ParagraphWidget, isBookmark, isContentControl);
@@ -7485,6 +7506,7 @@ export class Editor {
      */
     public clearFormatting(): void {
         let selection: Selection = this.documentHelper.selection;
+        this.setPreviousBlockToLayout();
         this.initComplexHistory('ClearFormat');
         // let startIndex: string = selection.start.getHierarchicalIndexInternal();
         // let endIndex: string = selection.end.getHierarchicalIndexInternal();
@@ -8716,6 +8738,25 @@ export class Editor {
         }
     }
     /**
+     * @private
+     */
+    public setPreviousBlockToLayout(): void {
+        let startPosition: TextPosition = this.documentHelper.selection.start;
+        if (!this.documentHelper.selection.isForward) {
+            startPosition = this.documentHelper.selection.end;
+        }
+        let startParagraph: ParagraphWidget = startPosition.paragraph;
+        if (startParagraph.paragraphFormat.keepWithNext) {
+            let bodyWidget: BlockContainer = startParagraph.bodyWidget;
+            if (!isNullOrUndefined(bodyWidget) && bodyWidget instanceof BodyWidget && bodyWidget.page) {
+                let previousPage: Page = bodyWidget.page.previousPage;
+                if (previousPage) {
+                    this.previousBlockToLayout = previousPage.bodyWidgets[0].lastChild as BlockWidget;
+                }
+            }
+        }
+    }
+    /**
      * Applies paragraph format for the selection ranges.
      *
      * @param {string} property - Specifies the property
@@ -8731,7 +8772,7 @@ export class Editor {
         if (this.restrictFormatting && !allowFormatting) {
             return;
         }
-
+        this.setPreviousBlockToLayout();
         let action: Action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1)) as Action;
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection: Selection = this.documentHelper.selection;
@@ -9049,6 +9090,10 @@ export class Editor {
             return;
         } else if (property === 'bidi') {
             format.bidi = value as boolean;
+        } else if (property === 'keepWithNext') {
+            format.keepWithNext = value as boolean;
+        } else if (property === 'keepLinesTogether') {
+            format.keepLinesTogether = value as boolean;
         } else if (property === 'contextualSpacing') {
             format.contextualSpacing = value as boolean;
         }
@@ -17635,6 +17680,14 @@ export interface ParagraphFormatProperties {
      * Defines the bidirectional property of paragraph
      */
     bidi?: boolean;
+    /**
+     * Defines the keep with next property of paragraph
+     */
+    keepWithNext?: boolean;
+    /**
+     * Defines the keep lines together property of paragraph
+     */
+    keepLinesTogether?: boolean;
 }
 /**
  * Defines the section format properties of document editor

@@ -392,10 +392,10 @@ export class AggregateMenu {
     }
     private updateValueSettings(): void {
         let dialogElement: HTMLElement = this.valueDialog.element;
-        let captionInstance: MaskedTextBox = getInstance('#' + this.parentElement.id + 'type_input_option', MaskedTextBox) as MaskedTextBox;
-        let summaryInstance: DropDownList = getInstance('#' + this.parentElement.id + '_type_option', DropDownList) as DropDownList;
-        let baseFieldInstance: DropDownList = getInstance('#' + this.parentElement.id + '_base_field_option', DropDownList) as DropDownList;
-        let baseItemInstance: DropDownList = getInstance('#' + this.parentElement.id + '_base_item_option', DropDownList) as DropDownList;
+        let captionInstance: MaskedTextBox = getInstance(select('#' + this.parentElement.id + 'type_input_option'), MaskedTextBox) as MaskedTextBox;
+        let summaryInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_type_option'), DropDownList) as DropDownList;
+        let baseFieldInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_base_field_option'), DropDownList) as DropDownList;
+        let baseItemInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_base_item_option'), DropDownList) as DropDownList;
         let fieldName: string = dialogElement.getAttribute('data-field');
         let buttonElement: HTMLElement;
         if (this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS)) {

@@ -186,10 +186,10 @@ export class InkAnnotation {
                 document.getElementById(commentsDivid).id = annotationName;
             }
             annot.annotName = annotationName;
-            this.pdfViewer.annotationModule.storeAnnotations(pageIndex, annot, '_annotations_ink');
-            this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Ink', bounds, settings);
             // eslint-disable-next-line max-len
             this.pdfViewer.annotation.addAction(pageIndex, null, annotation, 'Addition', '', annotation, annotation);
+            this.pdfViewer.annotationModule.storeAnnotations(pageIndex, annot, '_annotations_ink');
+            this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Ink', bounds, settings);
             if (this.pdfViewerBase.isInkAdded) {
                 this.outputString = '';
                 this.newObject = [];

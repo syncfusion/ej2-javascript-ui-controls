@@ -207,7 +207,7 @@ export class CellRenderer implements ICellRenderer {
                 args.isHeightCheckNeeded, manualUpdate: args.manualUpdate});
         }
         if (this.parent.allowConditionalFormat && args.lastCell) {
-            this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell });
+            this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell, td: args.td });
         }
         if (args.checkNextBorder === 'Row') {
             const borderTop: string = this.parent.getCellStyleValue(

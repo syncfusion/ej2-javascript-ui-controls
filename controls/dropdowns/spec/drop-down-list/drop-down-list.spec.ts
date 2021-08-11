@@ -5536,4 +5536,88 @@ describe('DDList', () => {
             expect(listObj.element.style.display).toBe('none');
         });
     });
+    describe('EJ2-51558 - Incremental search not working in grid', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, key: 'c', code: 'KeyC', charCode: 99 };
+        let Country: { [key: string]: Object }[] = [
+            {  Id : "Game1", Game :"Golf"  },
+            {  Id : "Game2", Game :"Cricket"  },
+            {  Id : "Game3", Game : "Tennis" },
+            {  Id:  "Game4", Game :"Carrom" },
+        ]
+        let originalTimeout: number;
+        let listObj1: any;
+        let listObj2: any;
+        let element1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist1' });
+        let element2: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist2' });
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2500;
+            document.body.appendChild(element1);
+            document.body.appendChild(element2);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('Testing the incremental search for destroy case', () => {
+            listObj1 = new DropDownList({
+                dataSource: Country,
+                fields: { text: 'Game', value: 'Game'},
+            });
+            listObj1.appendTo(element1);
+            expect(listObj1.value).toBe(null);
+            listObj1.inputWrapper.container.click();
+            listObj1.onSearch(keyEventArgs);
+            expect(listObj1.value).toBe('Cricket');
+            listObj1.destroy();
+            listObj1 = new DropDownList({
+                dataSource: Country,
+                fields: { text: 'Game', value: 'Game'},
+            });
+            listObj1.appendTo(element1);
+            listObj1.inputWrapper.container.click();
+            keyEventArgs.key = 'c';
+            keyEventArgs.code = 'keyC';
+            keyEventArgs.charCode = 99;
+            listObj1.inputWrapper.container.click();
+            listObj1.onSearch(keyEventArgs);
+            expect(listObj1.value).toBe('Cricket');
+            listObj1.destroy();
+        });
+        it('Testing the incremental search for destroy case with multiple dropdown', (done) => {
+            listObj1 = new DropDownList({
+                dataSource: Country,
+                fields: { text: 'Game', value: 'Game'},
+            });
+            listObj1.appendTo(element1);
+            listObj2 = new DropDownList({
+                dataSource: Country,
+                fields: { text: 'Game', value: 'Game'},
+            });
+            listObj2.appendTo(element2);
+            expect(listObj1.value).toBe(null);
+            listObj1.inputWrapper.container.click();
+            listObj1.onSearch(keyEventArgs);
+            expect(listObj1.value).toBe('Cricket');
+            setTimeout(() => {
+                listObj2.inputWrapper.container.click();
+                listObj2.onSearch(keyEventArgs);
+                expect(listObj2.value).toBe('Cricket');
+                listObj1.destroy();
+                listObj2.inputWrapper.container.click();
+                keyEventArgs.key = 'c';
+                keyEventArgs.code = 'keyC';
+                keyEventArgs.charCode = 99;
+                setTimeout(() => {
+                    listObj2.inputWrapper.container.click();
+                    listObj2.onSearch(keyEventArgs);
+                    expect(listObj2.value).toBe('Carrom');
+                    listObj2.destroy();
+                    element2.remove();
+                    listObj1.destroy();
+                    element1.remove();
+                    done();
+                }, 1000);                    
+            }, 1000);
+        });
+    });
 });

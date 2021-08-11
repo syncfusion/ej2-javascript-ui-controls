@@ -1,6 +1,6 @@
 import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
 import { BorderModel, FontModel, PeriodsModel } from './base-model';
-import { EmptyPointMode} from '../../chart/utils/enum';
+import { EmptyPointMode, FadeOutMode } from '../../chart/utils/enum';
 import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';
 import { Alignment, TextOverflow } from '../utils/enum';
 import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
@@ -595,6 +595,15 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     @Property(1000)
     public fadeOutDuration: number;
+
+    /**
+     * Fade Out duration for the Tooltip hide.
+     *
+     * @default Move
+     */
+
+    @Property('Move')
+    public fadeOutMode: FadeOutMode;
 
     /**
      * To wrap the tooltip long text based on available space.

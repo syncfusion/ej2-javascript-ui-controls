@@ -184,7 +184,7 @@ export class WorkbookDelete {
             action: 'refreshNamedRange', insertArgs: {
                 startIndex: args.start, endIndex: args.end, modelType: args.modelType,
                 isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
-                activeSheetIndex: this.parent.activeSheetIndex, name: 'delete'
+                activeSheetIndex: this.parent.activeSheetIndex, name: 'delete', sheet: args.model
             }
         };
         // const eventArgs: { [key: string]: Object } = {
@@ -201,9 +201,9 @@ export class WorkbookDelete {
             if (args.model !== this.parent.getActiveSheet()) { return; }
         }
         this.parent.notify(deleteAction, {
-            startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+            startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: insertArgs.insertArgs.definedNames,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
-            activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane
+            activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane, sheet: args.model
         });
     }
     private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {

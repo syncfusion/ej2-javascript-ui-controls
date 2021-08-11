@@ -1,6 +1,6 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate, setValue } from '@syncfusion/ej2-base';
-import { EmitType, Event, formatUnit, ChildProperty, compile, closest, isBlazor, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';
+import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, setValue } from '@syncfusion/ej2-base';
+import { EmitType, Event, formatUnit, ChildProperty, compile, closest, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser, extend } from '@syncfusion/ej2-base';
 import { DashboardLayoutModel, PanelModel } from './dashboard-layout-model';
 
@@ -55,7 +55,6 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Defines the template value that should be displayed as the panel's header.
      *
-     * @blazorType RenderFragment
      */
     @Property('')
     public header: string | HTMLElement;
@@ -63,7 +62,6 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Defines the template value that should be displayed as the panel's content.
      *
-     * @blazorType RenderFragment
      */
 
     @Property('')
@@ -82,7 +80,6 @@ export class Panel extends ChildProperty<Panel> {
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      */
     @Property(0)
     public row: number;
@@ -92,7 +89,6 @@ export class Panel extends ChildProperty<Panel> {
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      */
     @Property(0)
     public col: number;
@@ -101,7 +97,6 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the width of the panel in the layout in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     @Property(1)
     public sizeX: number;
@@ -110,7 +105,6 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the height of the panel in the layout in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     @Property(1)
     public sizeY: number;
@@ -119,7 +113,6 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the minimum height of the panel in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     @Property(1)
     public minSizeY: number;
@@ -128,7 +121,6 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the minimum width of the panel in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     @Property(1)
     public minSizeX: number;
@@ -138,7 +130,6 @@ export class Panel extends ChildProperty<Panel> {
      *
      * @default null
      * @aspType int
-     * @blazorType int?
      *
      */
     @Property(null)
@@ -149,7 +140,6 @@ export class Panel extends ChildProperty<Panel> {
      *
      * @default null
      * @aspType int
-     * @blazorType int?
      */
     @Property(null)
     public maxSizeX: number;
@@ -159,7 +149,6 @@ export class Panel extends ChildProperty<Panel> {
      *
      * @default 1000
      * @aspType double
-     * @blazorType double
      */
     @Property(1000)
     public zIndex: number;
@@ -285,7 +274,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected isMouseUpBound: boolean;
     protected isMouseMoveBound: boolean;
     protected contentTemplateChild: HTMLElement[];
-    private isBlazor: boolean = false;
     private isInlineRendering: boolean = false;
     private removeAllCalled: boolean = false;
     // to check whether removePanel is executed in mobile device
@@ -359,7 +347,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Defines the number of columns to be created in the DashboardLayout.
      *
      * @default 1
-     * @blazorType int
      */
     @Property(1)
     public columns: number;
@@ -419,7 +406,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers whenever the panels positions are changed.
      *
      * @event 'object'
-     * @blazorProperty 'Changed'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -430,7 +416,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers when a panel is about to drag.
      *
      * @event 'object'
-     * @blazorProperty 'OnDragStart'
      */
     @Event()
     public dragStart: EmitType<DragStartArgs>;
@@ -439,7 +424,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers while a panel is dragged continuously.
      *
      * @event 'object'
-     * @blazorProperty 'Dragging'
      */
     @Event()
     public drag: EmitType<DraggedEventArgs>;
@@ -448,7 +432,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers when a dragged panel is dropped.
      *
      * @event 'object'
-     * @blazorProperty 'OnDragStop'
      */
     @Event()
     public dragStop: EmitType<DragStopArgs>;
@@ -457,7 +440,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers when a panel is about to resize.
      *
      * @event 'object'
-     * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
@@ -466,7 +448,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers when a panel is being resized continuously.
      *
      * @event 'object'
-     * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<ResizeArgs>;
@@ -475,7 +456,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers when a panel resize ends.
      *
      * @event 'object'
-     * @blazorProperty 'OnResizeStop'
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
@@ -484,7 +464,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers when Dashboard Layout is created.
      *
      * @event 'object'
-     * @blazorProperty 'Created'
      */
 
     @Event()
@@ -493,7 +472,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Triggers when Dashboard Layout is destroyed.
      *
      * @event 'object'
-     * @blazorProperty 'Destroyed'
      */
 
     @Event()
@@ -507,7 +485,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      */
 
     protected preRender(): void {
-        this.isBlazor = (isBlazor() && this.isServerRendered);
         this.panelCollection = [];
         this.sortedArray = [];
         this.gridPanelCollection = [];
@@ -558,16 +535,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         this.updateDragArea();
         this.renderComplete();
-        this.updateServerPanelData();
         this.renderReactTemplates();
-    }
-
-    private updateServerPanelData(): void {
-        if (isBlazor() && this.isServerRendered) {
-            this.setProperties({ panels: this.panels }, true);
-            this.allowServerDataBinding = true;
-            this.serverDataBind();
-        }
     }
 
     private initGridLines(): void {
@@ -594,8 +562,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     private initialize(): void {
         this.updateRowHeight();
-        if (this.element.childElementCount > 0 && this.element.querySelectorAll('.e-panel').length > 0
-            && !(this.isBlazor && this.panels.length > 0)) {
+        if (this.element.childElementCount > 0 && this.element.querySelectorAll('.e-panel').length > 0) {
             const panelElements: HTMLElement[] = [];
             this.setProperties({ panels: [] }, true);
             this.isInlineRendering = true;
@@ -619,9 +586,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     this.panelPropertyChange(this.panels[i], { col: colValue < 0 ? 0 : colValue });
                 }
                 this.setXYAttributes(panelElement, this.panels[i]);
-                this.isBlazor = false;
                 const panel: HTMLElement = this.renderPanels(panelElement, this.panels[i], this.panels[i].id, false);
-                this.isBlazor = (isBlazor() && this.isServerRendered);
                 this.panelCollection.push(panel);
                 this.setHeightAndWidth(panelElement, this.panels[i]);
                 this.tempObject = this;
@@ -651,9 +616,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (!(this.checkMediaQuery())) {
             this.panelResponsiveUpdate();
         }
-        if (!this.isBlazor) {
-            this.setEnableRtl();
-        }
+        this.setEnableRtl();
     }
     protected checkMediaQuery(): boolean {
         return (this.mediaQuery && window.matchMedia('(' + this.mediaQuery + ')').matches);
@@ -765,29 +728,22 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     protected renderPanels(cellElement: HTMLElement, panelModel: PanelModel, panelId: string, isStringTemplate: boolean): HTMLElement {
-        if (!this.isBlazor) {
-            addClass([cellElement], [panel, panelTransition]);
-        }
+        addClass([cellElement], [panel, panelTransition]);
         const cssClass: string[] = panelModel.cssClass ? panelModel.cssClass.split(' ') : null;
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
             this.createSubElement(cssClass, cellElement.id + '_content', panelContainer);
-        if (!this.isBlazor) {
-            cellElement.appendChild(this.panelContent);
-            if (!panelModel.enabled) { this.disablePanel(cellElement); }
-        }
+        cellElement.appendChild(this.panelContent);
+        if (!panelModel.enabled) { this.disablePanel(cellElement); }
         if (panelModel.header) {
             const headerTemplateElement: HTMLElement = cellElement.querySelector('.e-panel-header') ?
                 cellElement.querySelector('.e-panel-header') : this.createSubElement([], cellElement.id + 'template', '');
-            if (!this.isBlazor) {
-                addClass([headerTemplateElement], [header]);
-            }
-            if (!cellElement.querySelector('.e-panel-header') && !this.isBlazor) {
+            addClass([headerTemplateElement], [header]);
+            if (!cellElement.querySelector('.e-panel-header')) {
                 const id: string = this.element.id + 'HeaderTemplate' + panelId;
                 this.renderTemplate(<string>panelModel.header, headerTemplateElement, id, isStringTemplate, 'header');
                 this.panelContent.appendChild(headerTemplateElement);
                 this.renderReactTemplates();
-                updateBlazorTemplate(id, 'HeaderTemplate', panelModel);
             }
         }
         if (panelModel.content) {
@@ -798,12 +754,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
             const contentHeightValue: string = 'calc( 100% - ' + headerHeight + ')';
             setStyle(this.panelBody, { height: contentHeightValue });
-            if (!cellElement.querySelector('.e-panel-content') && !this.isBlazor) {
+            if (!cellElement.querySelector('.e-panel-content')) {
                 const id: string = this.element.id + 'ContentTemplate' + panelId;
                 this.renderTemplate(<string>panelModel.content, this.panelBody, id, isStringTemplate, 'content');
                 this.panelContent.appendChild(this.panelBody);
                 this.renderReactTemplates();
-                updateBlazorTemplate(id, 'ContentTemplate', panelModel);
             }
 
         }
@@ -1064,7 +1019,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (isNullOrUndefined(this.downTarget)) {
             return;
         }
-        this.updateServerPanelData();
         this.upTarget = (<HTMLElement>this.downTarget);
         const el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.upTarget), '.e-panel'));
         const args: ResizeArgs = { event: e, element: el, isInteracted: true };
@@ -1351,17 +1305,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     (<HTMLElement>panelElement).style.height = '' + updatedHeight + 'px';
                 }
                 this.resizeHeight = true;
-                if (this.addPanelCalled && this.isBlazor) {
-                    const panelProp: PanelModel = this.getActualProperties(updatedPanel[i]);
-                    panelProp.row = i;
-                    panelProp.col = 0;
-                    this.panelPropertyChange(updatedPanel[i], panelProp);
-                    this.setPanelPosition(<HTMLElement>panelElement, i, 0);
-                } else {
-                    this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
-                    this.setPanelPosition(<HTMLElement>panelElement, updatedPanel[i].row, updatedPanel[i].col);
-                    this.panelsSizeY = this.panelsSizeY + updatedPanel[i].sizeY;
-                }
+                this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
+                this.setPanelPosition(<HTMLElement>panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                this.panelsSizeY = this.panelsSizeY + updatedPanel[i].sizeY;
                 this.setClasses(this.panelCollection);
                 this.checkDragging(this.dragCollection);
                 this.removeResizeClasses(this.panelCollection);
@@ -1417,33 +1363,19 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (isUndefined(panel.enabled)) {
             panel.enabled = true;
         }
-        if (this.isBlazor) {
-            cellElement = document.getElementById(panel.id);
+        if (this.contentTemplateChild.length > 0 && !isNullOrUndefined(index)) {
+            cellElement = this.contentTemplateChild[index];
+            if (panel.cssClass) { addClass([cellElement], [panel.cssClass]); }
+            if (panel.id) { cellElement.setAttribute('id', panel.id); }
         } else {
-            if (this.contentTemplateChild.length > 0 && !isNullOrUndefined(index)) {
-                cellElement = this.contentTemplateChild[index];
-                if (panel.cssClass) { addClass([cellElement], [panel.cssClass]); }
-                if (panel.id) { cellElement.setAttribute('id', panel.id); }
-            } else {
-                cellElement = this.createPanelElement(panel.cssClass ? panel.cssClass.split(' ') : null, panel.id);
-            }
-            cellElement.style.zIndex = '' + panel.zIndex;
-            this.element.appendChild(cellElement);
-            this.renderReactTemplates();
+            cellElement = this.createPanelElement(panel.cssClass ? panel.cssClass.split(' ') : null, panel.id);
         }
+        cellElement.style.zIndex = '' + panel.zIndex;
+        this.element.appendChild(cellElement);
+        this.renderReactTemplates();
         const dashBoardCell: HTMLElement = this.renderPanels(cellElement, panel, panel.id, isStringTemplate);
         this.panelCollection.push(dashBoardCell);
-        if (!this.isBlazor) {
-            this.setXYAttributes(cellElement, panel);
-        } else {
-            const bodyElement: HTMLElement = cellElement.querySelector('.e-panel-content');
-            if (bodyElement) {
-                const headerHeight: string = cellElement.querySelector('.e-panel-header') ?
-                    window.getComputedStyle(cellElement.querySelector('.e-panel-header')).height : '0px';
-                const contentHeightValue: string = 'calc( 100% - ' + headerHeight + ')';
-                setStyle(bodyElement, { height: contentHeightValue });
-            }
-        }
+        this.setXYAttributes(cellElement, panel);
         this.setHeightAndWidth(cellElement, panel);
         return cellElement;
     }
@@ -1512,7 +1444,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     protected panelPropertyChange(panel: PanelModel, value: IChangePanel): void {
-        this.allowServerDataBinding = false;
         // eslint-disable-next-line
         (panel as any).setProperties(value, true);
     }
@@ -1521,20 +1452,16 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (this.element.querySelectorAll('.e-panel').length > 0 || this.panels.length > 0) {
             for (let j: number = 0; j < cells.length; j++) {
                 this.gridPanelCollection.push(<HTMLElement>cells[j]);
-                if (!(this.isBlazor && this.panels.length > 0)) {
-                    this.setMinMaxValues(cells[j]);
-                }
+                this.setMinMaxValues(cells[j]);
                 if (this.maxColumnValue < cells[j].col || this.maxColumnValue < (cells[j].col + cells[j].sizeX)) {
                     this.panelPropertyChange(cells[j], { col: this.maxColumnValue - cells[j].sizeX });
                 }
                 const cell: HTMLElement = this.renderCell(cells[j], false, j);
-                if (!this.isBlazor) {
-                    if (this.enableRtl) {
-                        addClass([cell], 'e-rtl');
-                    }
-                    this.element.appendChild(cell);
-                    this.renderReactTemplates();
+                if (this.enableRtl) {
+                    addClass([cell], 'e-rtl');
                 }
+                this.element.appendChild(cell);
+                this.renderReactTemplates();
                 if (this.checkMediaQuery() && j === cells.length - 1) {
                     this.checkMediaQuerySizing();
                 } else {
@@ -2448,7 +2375,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         const panelInstance: PanelModel = this.getCellInstance(args.element.id);
                         this.setPanelPosition(args.element, panelInstance.row, panelInstance.col);
                         this.updatePanels();
-                        this.updateServerPanelData();
                         this.updateCloneArrayObject();
                         this.checkForChanges(true);
                         this.dragStopEventArgs = { event: args.event, element: args.element };
@@ -2468,6 +2394,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.onDragStart(args);
                     }
                 });
+                this.dragobj.enableScrollHandler = true;
                 if (this.dragCollection.indexOf(this.dragobj) === -1) {
                     this.dragCollection.push(this.dragobj);
                 }
@@ -2495,12 +2422,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
     }
 
-    private onDraggingStart(args: DragEventArgs & BlazorDragEventArgs): void {
-        const dragArgs: DragEventArgs & BlazorDragEventArgs = args;
-        this.trigger('dragStart', dragArgs, (dragArgs: DragEventArgs & BlazorDragEventArgs) => {
-            if (isBlazor()) {
-                dragArgs.bindEvents(args.element);
-            }
+    private onDraggingStart(args: DragEventArgs): void {
+        const dragArgs: DragEventArgs = args;
+        this.trigger('dragStart', dragArgs, (dragArgs: DragEventArgs) => {
         });
         this.panelsInitialModel = this.cloneModels(this.panels);
         this.mainElement = args.element;
@@ -2679,7 +2603,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     public addPanel(panel: PanelModel): void {
         this.panelsSizeY = 0;
-        this.allowServerDataBinding = false;
         this.maxCol();
         if (!panel.minSizeX) {
             panel.minSizeX = 1;
@@ -2707,7 +2630,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.addPanelCalled = true;
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
-            if (this.isBlazor) { cell.style.removeProperty('visibility'); }
             this.removeResizeClasses(this.panelCollection);
         } else {
             this.mainElement = cell;
@@ -2715,7 +2637,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 this.checkCollision = [];
             }
             this.setPanelPosition(cell, panelProp.row, panelProp.col);
-            if (this.isBlazor) { cell.style.removeProperty('visibility'); }
             this.updatePanelLayout(cell, panelProp);
         }
         this.addPanelCalled = false;
@@ -2741,8 +2662,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             }
         }
         this.checkForChanges(false, [panelProp]);
-        this.allowServerDataBinding = true;
-        this.serverDataBind();
     }
 
     /**
@@ -2858,7 +2777,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.clearTemplate();
         }
         this.removeAllPanel();
-        this.updateServerPanelData();
         this.rows = 0;
         this.gridPanelCollection = [];
         this.setHeightWidth();
@@ -2909,7 +2827,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.checkMediaQuerySizing();
             this.isPanelRemoved = false;
         }
-        this.updateServerPanelData();
         this.gridPanelCollection.forEach((item: HTMLElement) => {
             if (item.id === id) {
                 this.gridPanelCollection.splice(this.gridPanelCollection.indexOf(item), 1);
@@ -2959,7 +2876,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updatePanelLayout(ele, panelInstance);
         this.updateRowHeight();
         this.updatePanels();
-        this.updateServerPanelData();
         this.updateCloneArrayObject();
         this.mainElement = null;
         if (this.allowFloating) {
@@ -3025,7 +2941,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.setHeightAndWidth(ele, panelInstance);
         this.updatePanelLayout(ele, panelInstance);
         this.updatePanels();
-        this.updateServerPanelData();
         this.updateRowHeight();
         this.resizeCalled = false;
         this.trigger('resizeStop', args);
@@ -3091,12 +3006,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.setProperties({ panels: panels }, true);
         this.setOldRowCol();
         if (this.table) { this.table.remove(); }
-        this.isBlazor = false;
         this.initialize();
         if (this.checkMediaQuery()) {
             this.refresh();
         }
-        this.isBlazor = (isBlazor() && this.isServerRendered);
         if (this.showGridLines) {
             this.initGridLines();
         }

@@ -2,7 +2,7 @@
  * Link module spec
  */
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { RichTextEditor } from './../../../src/index';
+import { DialogType, RichTextEditor } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
 
@@ -1536,6 +1536,28 @@ describe('IE 11 insert link', () => {
                 (rteObj.element.querySelectorAll('.e-toolbar-item')[0].querySelector('button') as HTMLElement).click();
                 setTimeout(() => {
                     expect(count).toBe(2);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe('EJ2-49981 - ShowDialog, CloseDialog method testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({ });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('beforeDialogOpen event trigger testing', (done) => {
+            rteObj.showDialog(DialogType.InsertLink);
+            setTimeout(() => {
+                expect(document.body.querySelectorAll('.e-rte-link-dialog.e-dialog').length).toBe(1);
+                rteObj.closeDialog(DialogType.InsertLink);
+                setTimeout(() => {
+                    expect(document.body.querySelectorAll('.e-rte-link-dialog.e-dialog').length).toBe(0);
                     done();
                 }, 100);
             }, 100);

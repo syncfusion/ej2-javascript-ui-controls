@@ -59,6 +59,28 @@ describe('Toolbar Control', () => {
         });
     });
 
+    describe('EJ2-48818 - Toolbar not rendering when using number as Id', () => {
+        let toolbar: any;
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: '123' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('Control class testing', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#123');
+            let element: HTMLElement = document.getElementById('123');
+            expect(element.classList.contains('e-toolbar')).toEqual(true);
+        });
+    });
+
     // Main Property  with items Default value testing.
     describe('Main Property with default value', () => {
         let toolbar: Toolbar;

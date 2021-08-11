@@ -16,7 +16,6 @@ $de-spellcheck-listview-border-color: #e4e4e4;
 $de-spellcheck-container-height: 140px !default;
 $de-spellcheck-container-gap: 25px !default;
 $de-dlg-heading-main-header: $gray-900 !default;
-$de-para-dlg-heading-font-size: 14px !default;
 $de-para-dlg-small-heading-font-size: 14px !default;
 $de-para-dlg-heading-font-weight: 400 !default;
 $de-insert-spellchecker-height: 360px !default;
@@ -45,7 +44,6 @@ $de-toc-dlg-style-label-top: 50px !default;
 $de-para-sub-title-bottom-margin: 8px !default;
 $de-para-sub-title-top-margin: 0 !default;
 $de-para-sub-container-bottom: 14px !default;
-$de-para-dlg-right-contaner-top: 33px !default;
 $de-hyperlink-dlg-margin-bottom: 8px !default;
 $de-hyperlink-dlg-margin-top: 8px !default;
 $de-hyperlink-dlg-input-bottom: 8px !default;
@@ -487,3 +485,22 @@ $de-rp-btn-enforce-prtct-margin: 0 46px;
 $de-rp-nav-lbl: 0 28px;
 $de-rp-nav-btn-mrgn: 0 12px;
 $de-rp-btn-enforce-bx-shadow: 0 2px 2px 0 $de-rp-btn-nav-box-shadow, 0 2px 4px 0 $de-rp-btn-nav-box-shadow-next;
+$de-para-dlg-right-sub-container-top-margin: 0;
+
+
+//New Implementation
+
+$de-par-dlg-hdr-weight: 400 !default;
+$de-para-dlg-hdr-margin-bottom: 15px;
+$de-dlg-heading-opacity: 87%;
+$de-para-dlg-hdr-margin-top: 15px;
+$de-dlg-heading-main-header: $grey-dark !default;
+$de-para-dlg-sub-title-bottom-margin: 15px !default;
+$de-para-dlg-sub-title-top-margin: 0 !default;
+$de-para-dlg-heading-font-size: 16px !default;
+$de-para-dlg-right-contaner-top: 0 !default;
+$de-para-dlg-rtl-btn-margin-right: 24px;
+$de-para-dlg-rtl-btn-font-size: 12px;
+$de-para-dlg-rtl-btn-width: 200px;
+$de-de-rtl-btn-div-e-de-rtl-margin-right: 24px;
+$de-de-rtl-btn-div-e-de-rtl-margin-left: 12px;

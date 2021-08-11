@@ -2,13 +2,30 @@
 
 ## [Unreleased]
 
+## 19.2.55 (2021-08-11)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I335578` - The issue with "alignment mismatching when pasting content from MS Word in the Rich Text Editor" has been fixed.
+
+#### New Features
+
+- `#I309446`, `#I336258` - Provided support to paste rare list contents from MS Word in the Rich Text Editor.
+
+- `#I304121` - Improvements with the `deleteKey` action in the Rich Text Editor.
+- Provided `showDialog`, `closeDialog` methods to opens/closes the Link, Image, Table dialogs in the Rich Text Editor.
+
 ## 19.2.51 (2021-08-03)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
-- `#I336931`- The issue with "Character count is increased, when formats are being applied in empty content" has been fixed.
+- `#I324790, #I337356` - The issue with "`div` element is created instead of `paragraph` element when enter key is pressed twice to exit the list" has been fixed.
+
+- `#I336931` - The issue with "Character count is increased, when formats are being applied in empty content" has been fixed.
 
 - `#I335821` - The issue with "Upload image restriction not working with the paste action" has been resolved.
 

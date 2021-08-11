@@ -279,6 +279,122 @@ describe('DropDownTree control', () => {
             expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe(null);
         });
     });
+});
+
+describe('Destroy Method', () => {
+    let ddtreeObj: any;
+    let mouseEventArgs: any;
+    let originalTimeout: any;
+    let tapEvent: any;
+    let i: number = 0, j: number = 0;
+    function clickFn(): void {
+        i++;
+    }
+    beforeEach((): void => {
+        mouseEventArgs = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false,
+            originalEvent: { target: null }
+        };
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        i = 0, j = 0;
+        ddtreeObj = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    });
+    afterEach((): void => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        document.body.innerHTML = '';
+    });
+    it('performance testing', (done) => {
+        let hugeitems: any = [];
+        let startDate:number;
+        let timeTaken:number;
+        for (let i = 0; i < 5; i++) {
+            const topLevelId = getRandomId();
+            hugeitems.push({
+                id: topLevelId,
+                name: 'Top Level Item ' + topLevelId,
+                hasChild: true
+            });
+
+            for (let c = 0; c < 20; c++) {
+                const childId = getRandomId();
+                hugeitems.push({
+                    id: childId,
+                    pid: topLevelId,
+                    name: 'Second Level Item ' + childId,
+                    hasChild: true
+                });
+
+                for (let cc = 0; cc < 10; cc++) {
+                    const subChildId = getRandomId();
+                    hugeitems.push({
+                        id: subChildId,
+                        pid: childId,
+                        name: 'Third Level Item ' + subChildId,
+                        hasChild: true
+                    });
+
+                    for (let ccc = 0; ccc < 10; ccc++) {
+                        const subSubChildId = getRandomId();
+                        hugeitems.push({
+                            id: subSubChildId,
+                            pid: subChildId,
+                            name: 'Fourth Level Item ' + subSubChildId,
+                            hasChild: false
+                        });
+                    }
+                }
+            }
+        }
+
+        function getRandomId() {
+            const min = Math.ceil(0);
+            const max = Math.floor(9999999);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        ddtreeObj = new DropDownTree({
+            fields: {
+                dataSource: hugeitems, value: 'id',
+                parentValue: 'pid',
+                text: 'name',
+                hasChildren: 'hasChild'
+            },
+            showCheckBox: true,
+            mode: 'Delimiter',
+            treeSettings: {
+                expandOn: 'Auto',
+                loadOnDemand: true,
+                autoCheck: true
+            },
+            destroyed: function() {
+                timeTaken = new Date().getTime() - startDate;
+            }
+        }, '#ddtree');
+        ddtreeObj.showPopup();
+        let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
+        mouseEventArgs.target = li[0].querySelector('.e-checkbox-wrapper');
+        ddtreeObj.treeObj.touchClickObj.tap(tapEvent);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            startDate = new Date().getTime();
+            ddtreeObj.destroy();
+            setTimeout(() => {
+                expect(timeTaken).toBeLessThan(100);
+                done();
+            },100 );  
+        }, 100);
+    });
 
     describe('Popup detached testing', () => {
         let dialog: Dialog;

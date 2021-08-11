@@ -99,11 +99,32 @@ export class Lists {
     // eslint-disable-next-line
     private enterList(e: IHtmlKeyboardEvent): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
-        const endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
-        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
-        startNode.textContent.charCodeAt(0) === 65279) {
-            startNode.textContent = '';
+        const startNode: Element = range.startContainer.nodeName === 'LI' ? (range.startContainer as Element) :
+            range.startContainer.parentElement.closest('LI');
+        const endNode: Element = range.endContainer.nodeName === 'LI' ? (range.endContainer as Element) :
+            range.endContainer.parentElement.closest('LI');
+        if (!isNOU(startNode) && !isNOU(endNode) && startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '') {
+            if (startNode.textContent.charCodeAt(0) === 65279) {
+                startNode.textContent = '';
+            }
+            const startNodeParent: HTMLElement = startNode.parentElement;
+            if (isNOU(startNodeParent.parentElement.closest('UL')) && isNOU(startNodeParent.parentElement.closest('OL'))) {
+                if (!isNOU(startNode.nextElementSibling)) {
+                    //startNode.classList.add('innerNode');
+                    const nearBlockNode: Element = this.parent.domNode.blockParentNode(startNode);
+                    this.parent.nodeCutter.GetSpliceNode(range, (nearBlockNode as HTMLElement));
+                }
+                const paraTag: HTMLElement = createElement('p');
+                paraTag.innerHTML = '<br>';
+                this.parent.domNode.insertAfter(paraTag, startNodeParent);
+                e.event.preventDefault();
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, paraTag, 0);
+                if (startNodeParent.textContent === '') {
+                    detach(startNodeParent);
+                } else {
+                    detach(startNode);
+                }
+            }
         }
     }
     // eslint-disable-next-line

@@ -587,6 +587,24 @@ export class PasteCleanup {
         const allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
         for (let i: number = 0; i < allImg.length; i++) {
             allImg[i].classList.add('pasteContent_Img');
+            if (this.parent.insertImageSettings.width !== 'auto') {
+                allImg[i].setAttribute('width', this.parent.insertImageSettings.width);
+            }
+            if (this.parent.insertImageSettings.minWidth !== '0' && this.parent.insertImageSettings.minWidth !== 0) {
+                allImg[i].style.minWidth = this.parent.insertImageSettings.minWidth.toString();
+            }
+            if (this.parent.insertImageSettings.maxWidth !== null) {
+                allImg[i].style.maxWidth = this.parent.getInsertImgMaxWidth().toString();
+            }
+            if (this.parent.insertImageSettings.height !== 'auto') {
+                allImg[i].setAttribute('height', this.parent.insertImageSettings.height);
+            }
+            if (this.parent.insertImageSettings.minHeight !== '0' && this.parent.insertImageSettings.minHeight !== 0) {
+                allImg[i].style.minHeight = this.parent.insertImageSettings.minHeight.toString();
+            }
+            if (this.parent.insertImageSettings.maxHeight !== null) {
+                allImg[i].style.maxHeight = this.parent.insertImageSettings.maxHeight.toString();
+            }
         }
         this.addTempClass(clipBoardElem);
         if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||

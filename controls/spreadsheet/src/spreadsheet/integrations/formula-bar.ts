@@ -149,6 +149,7 @@ export class FormulaBar {
         if (args.isInteracted) {
             const refersTo: string = (<DefineNameModel>args.itemData).refersTo.substr(1);
             const sheetIdx: number = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(refersTo));
+            if (sheetIdx === undefined) { return; }
             let range: string = getRangeFromAddress(refersTo);
             const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
             if (range.indexOf(':') !== -1) {

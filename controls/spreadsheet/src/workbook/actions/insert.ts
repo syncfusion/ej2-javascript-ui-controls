@@ -131,13 +131,13 @@ export class WorkbookInsert {
         }
         const insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {
             action: 'refreshNamedRange', insertArgs: {
-                model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
-                    args.activeSheetIndex, sheetCount: this.parent.sheets.length, name: 'insert' }
+                model: model, index: index, modelType: args.modelType, isAction: args.isAction, definedNames: args.definedNames,
+                    activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, name: 'insert', sheet: args.model }
         };
         const eventArgs: { [key: string]: Object } = {
             action: 'refreshInsDelFormula', insertArgs: {
-                model: model, startIndex: args.start, endIndex: args.end, modelType: args.modelType, name: 'insert', activeSheetIndex:
-                    args.activeSheetIndex, sheetCount: this.parent.sheets.length }
+                model: model, startIndex: index, endIndex: index + model.length - 1, modelType: args.modelType, name: 'insert',
+                    activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length }
         };
         if (args.modelType !== 'Sheet') {
             this.parent.notify(workbookFormulaOperation, insertArgs); this.parent.notify(workbookFormulaOperation, eventArgs);
@@ -147,7 +147,7 @@ export class WorkbookInsert {
             if (args.model !== this.parent.getActiveSheet()) { return; }
         }
         this.parent.notify(insert, {
-            model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
+            model: model, index: index, modelType: args.modelType, isAction: args.isAction, sheet: args.model, activeSheetIndex:
                 args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType, freezePane: freezePane
         });
     }

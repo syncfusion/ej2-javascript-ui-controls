@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { IElement } from '@syncfusion/ej2-drawings';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { Rect } from '@syncfusion/ej2-drawings';
@@ -11,11 +10,12 @@ import { isPointOverConnector } from './connector-util';
 import { LineTool, NodeDrawingTool } from './tools';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
- * @param event
- * @param pdfBase
- * @param pdfViewer
- * @param isOverlapped
  * @private
+ * @param {MouseEvent | TouchEvent} event - Specified the annotaion event.
+ * @param {PdfViewerBase} pdfBase - Specified the pdfviewer base element.
+ * @param {PdfViewer} pdfViewer - Specified the pdfviewer element.
+ * @param {boolean} isOverlapped - Specified the overlapped element or not.
+ * @returns {any} - Returns the active element.
  */
 // eslint-disable-next-line
 export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer, isOverlapped?: boolean): any {
@@ -31,19 +31,14 @@ export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfVi
 }
 
 /**
- * @param pdfBase
- * @param pdfViewer
- * @param event
- * @param pdfBase
- * @param pdfViewer
- * @param event
  * @private
+ * @param {PdfViewerBase} pdfBase - Specified the pdfviewer base element.
+ * @param {PdfViewer} pdfViewer - Specified the pdfviewer element.
+ * @param {MouseEvent} event - Specified the annotaion event.
+ * @returns {IElement[]} - Returns the annotaion elements.
  */
 export function findObjectsUnderMouse(
     pdfBase: PdfViewerBase, pdfViewer: PdfViewer, event: MouseEvent): IElement[] {
-    const actualTarget: IElement[] = [];
-    let bounds: Rect;
-    // eslint-disable-next-line
     let pt: PointModel = pdfBase.currentPosition || { x: event.offsetX, y: event.offsetY };
     pt = { x: pt.x / pdfBase.getZoomFactor(), y: pt.y / pdfBase.getZoomFactor() };
     const pageTable: ZOrderPageTable = pdfViewer.getPageTable(pdfBase.activeElements.activePageID);
@@ -52,11 +47,12 @@ export function findObjectsUnderMouse(
 }
 
 /**
- * @param objects
- * @param event
- * @param pdfBase
- * @param pdfViewer
  * @private
+ * @param {PdfAnnotationBaseModel[]} objects - Specified the annotaion object model.
+ * @param {any} event - Specified the annotaion event.
+ * @param {PdfViewerBase} pdfBase - Specified the pdfviewer base element.
+ * @param {PdfViewer} pdfViewer - Specified the pdfviewer element.
+ * @returns {IElement} - Returns the annotaion element.
  */
 export function findObjectUnderMouse(
     // eslint-disable-next-line
@@ -78,7 +74,9 @@ export function findObjectUnderMouse(
                 offsetY = touchArg.changedTouches[0].clientY - pageCurrentRect.top;
             }
         }
-    } else if(event && event.target &&  (event as any).path && event.target.parentElement && event.target.parentElement.classList.contains("foreign-object")){
+    // eslint-disable-next-line
+    } else if (event && event.target &&  (event as any).path && event.target.parentElement && event.target.parentElement.classList.contains('foreign-object')) {
+        // eslint-disable-next-line
         const targetParentRect: ClientRect = (event as any).path[4].getBoundingClientRect();
         offsetX = (event as PointerEvent).clientX - targetParentRect.left;
         offsetY = (event as PointerEvent).clientY - targetParentRect.top;
@@ -89,7 +87,6 @@ export function findObjectUnderMouse(
     const offsetForSelector: number = 5;
     let boundsDiff: number = 0;
     for (let i: number = 0; i < objects.length; i++) {
-        // eslint-disable-next-line max-len
         if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {
             const bounds: PdfBoundsModel = objects[i].wrapper.bounds;
             let rotationValue: number = 0;
@@ -98,6 +95,7 @@ export function findObjectUnderMouse(
             }
             // eslint-disable-next-line max-len
             if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) && (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
+                // eslint-disable-next-line max-len
                 (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
                 if (pdfBase.tool instanceof NodeDrawingTool) {
                     actualTarget = objects[i];
@@ -106,10 +104,12 @@ export function findObjectUnderMouse(
                         actualTarget = objects[i];
                         // eslint-disable-next-line max-len
                         boundsDiff = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) + (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
+                        // eslint-disable-next-line max-len
                         (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
                     } else {
                         // eslint-disable-next-line max-len
                         const objectBounds: number = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) + (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
+                        // eslint-disable-next-line max-len
                         (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
                         if (boundsDiff > objectBounds) {
                             actualTarget = objects[i];
@@ -140,9 +140,10 @@ export function findObjectUnderMouse(
     return actualTarget as IElement;
 }
 /**
- * @param selector
- * @param currentobject
  * @private
+ * @param {any} selector - Specified the annotaion selctor.
+ * @param {any} currentobject - Specified the current annotaion object.
+ * @returns {any} - Returns the leader points.
  */
 // eslint-disable-next-line
 export function CalculateLeaderPoints(selector: any, currentobject: any): any {
@@ -171,22 +172,21 @@ export function CalculateLeaderPoints(selector: any, currentobject: any): any {
     }
 }
 /**
- * @param obj
- * @param position
- * @param padding
  * @private
+ * @param {IElement} obj - Specified the annotation element.
+ * @param {PointModel} position - Specified the annotation position value.
+ * @param {number} padding - Specified the annotation padding.
+ * @returns {DrawingElement} - Returns the annotation drawing element.
  */
 export function findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DrawingElement {
     return findTargetShapeElement(obj.wrapper, position, padding);
 }
 /**
- * @param obj
- * @param key
- * @param collection
- * @param obj
- * @param key
- * @param collection
  * @private
+ * @param {PdfAnnotationBaseModel} obj - Specified the annotation object model.
+ * @param {string} key - Specified the annotation key value.
+ * @param {Object[]} collection - Specified the annotation collection.
+ * @returns {void}
  */
 export function insertObject(obj: PdfAnnotationBaseModel, key: string, collection: Object[]): void {
     if (collection.length === 0) {
@@ -227,23 +227,21 @@ export function insertObject(obj: PdfAnnotationBaseModel, key: string, collectio
 }
 
 /**
- * @param container
- * @param position
- * @param padding
- * @param container
- * @param position
- * @param padding
- * @param container
- * @param position
- * @param padding
  * @private
+ * @param {Container} container - Specified the annotaion container.
+ * @param {PointModel} position - Specified the annotation position.
+ * @param {number} padding - Specified the annotaion padding value.
+ * @returns {DrawingElement} - Returns the annotation drawing element.
  */
 export function findTargetShapeElement(container: Container, position: PointModel, padding?: number): DrawingElement {
     if (container && container.children) {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             const shapeElement: DrawingElement = container.children[i];
+            // eslint-disable-next-line
             if (!isNullOrUndefined((shapeElement as any).children) && (shapeElement as any).children.length > 0) {
+                // eslint-disable-next-line
                 for (let j: number = (shapeElement as any).children.length - 1; j >= 0; j--) {
+                    // eslint-disable-next-line
                     let currentTarget: any = (shapeElement as any).children[j];
                     if (currentTarget && currentTarget.bounds.containsPoint(position, 10)) {
                         if (currentTarget instanceof Container) {
@@ -279,16 +277,14 @@ export function findTargetShapeElement(container: Container, position: PointMode
 }
 
 /**
- * @param region
- * @param objCollection
- * @param region
- * @param objCollection
  * @private
+ * @param {PointModel} region - Specified the annotation region point model.
+ * @param {PdfAnnotationBaseModel[]} objCollection - Specified the annotation object collections.
+ * @returns {PdfAnnotationBaseModel[]} - Returns the annotation object collections.
  */
 export function findObjects(region: PointModel, objCollection: (PdfAnnotationBaseModel)[]): (PdfAnnotationBaseModel)[] {
     const objects: (PdfAnnotationBaseModel)[] = [];
     for (const obj of objCollection) {
-        // eslint-disable-next-line max-len
         if (findElementUnderMouse(obj as IElement, region, 10)  || ((obj.shapeAnnotationType === 'Stamp' || obj.shapeAnnotationType === 'Image') && findElementUnderMouse(obj as IElement, region, 40))) {
             insertObject(obj, 'zIndex', objects);
         }
@@ -296,11 +292,11 @@ export function findObjects(region: PointModel, objCollection: (PdfAnnotationBas
     return objects;
 }
 
-
 /**
- * @param event
- * @param pdfBase
  * @private
+ * @param {MouseEvent} event - Specified the annotaion mouse event.
+ * @param {PdfViewerBase} pdfBase - Specified the pdfBase element.
+ * @returns {number} - Returns the active page Id.
  */
 export function findActivePage(event: MouseEvent, pdfBase: PdfViewerBase): number {
     let activePageID: number = undefined;
@@ -322,12 +318,18 @@ export function findActivePage(event: MouseEvent, pdfBase: PdfViewerBase): numbe
 export class ActiveElements {
 
     private activePage: number = undefined;
-    /** @private */
+    /**
+     * @private
+     * @returns {number} - Returns the active page Id.
+     */
     public get activePageID(): number {
         return this.activePage;
     }
 
-    /** @private */
+    /**
+     * @private
+     * @param {number} offset - The page offset value.
+     */
     public set activePageID(offset: number) {
         this.activePage = offset;
         // eslint-disable-next-line

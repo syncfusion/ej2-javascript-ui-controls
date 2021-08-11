@@ -22,6 +22,10 @@
       pointer-events: none;
     }
 
+    &:not(.e-list-template) .e-list-nrt {
+      text-align: center;
+    }
+
     &:not(.e-list-template) .e-list-item,
     .e-list-nrt,
     .e-selectall-parent {
@@ -103,7 +107,7 @@
       font-weight: 600;
       height: $listview-groupheader-item-height;
       line-height: $listview-groupheader-item-line-height;
-      padding: $listbox-item-padding;
+      padding: $listview-item-padding;
     }
 
     & .e-icon-collapsible {

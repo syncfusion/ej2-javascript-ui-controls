@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * @hidden
  */
@@ -94,12 +93,12 @@ export type FormFieldAnnotationType =
     'RadioButton' |
     /**
      * DropdownList - Represents the form field type as DropdownList.
-    */
+     */
     'DropdownList' |
     /**
      * Listbox - Represents the form field type as Listbox.
-    */
-   'ListBox' |
+     */
+    'ListBox' |
     /**
      * SignatureField - Represents the form field type as SignatureField.
      */
@@ -107,7 +106,7 @@ export type FormFieldAnnotationType =
     /**
      * InitialField - Represents the form field type as InitialField.
      */
-    'InitialField' 
+    'InitialField'
     ;
 
 /**

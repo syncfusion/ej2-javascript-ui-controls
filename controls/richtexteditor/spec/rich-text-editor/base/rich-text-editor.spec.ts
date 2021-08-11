@@ -238,6 +238,91 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
     });
 });
 
+describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    it('Checking the deletekey between two nodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Testing 1<br></p><p>Testing 2</p>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[0];
+        setCursorPoint(document, node, 1);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.childNodes[0].innerHTML).toBe('Testing 1Testing 2');
+        expect((rteObj as any).inputElement.childNodes[0].parentElement.hasAttribute('style')).toBe(false);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    it('Checking the delete key between two LI nodes with no childNodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>TextContent</p><ul><li>Testing 1</li><li>Testing 2\uFEFF\uFEFF<br></li></ul>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[1].childNodes[0];
+        setCursorPoint(document, node, 1);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.inputElement.childNodes[1].childNodes[0].textContent === "Testing 1").toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    it('Checking the deletekey between two nodes with child elements', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p><b>Functional\nSpecifications/Requirements:</b></p><ol><li><p>Provide\nthe tool bar support, it\u2019s also customizable.</p></li><li><p>Options\nto get the HTML elements with styles.</p></li><li><p>Support\nto insert image from a defined path.</p></li></ol></p>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[1].childNodes[0].childNodes[0].firstChild;
+        setCursorPoint(document, node, rteObj.inputElement.childNodes[1].childNodes[0].childNodes[0].textContent.length);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.inputElement.childNodes[1].childNodes[0].textContent === "Provide\nthe tool bar support, it’s also customizable.Options\nto get the HTML elements with styles.").toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    it('Checking the deletekey between two nodes one with child elements and other with no child', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p><b>Functional\nSpecifications/Requirements:</b></p><ol><li><p>Provide\nthe tool bar support, it\u2019s also customizable.</p></li><li><p>Options\nto get the HTML elements with styles.</p></li><li>Support\nto insert image from a defined path.</li><li><p>Footer\nelements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol><p></p>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[1].childNodes[1].firstChild;
+        setCursorPoint(document, node.firstChild, node.firstChild.textContent.length);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.inputElement.childNodes[1].childNodes[1].textContent === "Options\nto get the HTML elements with styles.Support\nto insert image from a defined path.").toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('RTE base module', () => {
 
     beforeAll(() => {

@@ -302,6 +302,7 @@ export interface CellSaveEventArgs {
     displayText?: string;
     /** Defines the type of Event. */
     originalEvent?: MouseEvent & TouchEvent | KeyboardEventArgs;
+    isSpill?: boolean;
 }
 
 /**

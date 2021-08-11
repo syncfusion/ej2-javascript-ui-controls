@@ -117,7 +117,8 @@
     }
   }
 
-  .e-ddl.e-input-group .e-ddl-hidden {
+  .e-ddl.e-input-group .e-ddl-hidden,
+  .e-ddl.e-float-input .e-ddl-hidden {
     border: 0;
     height: 0;
     visibility: hidden;

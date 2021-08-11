@@ -1,4 +1,4 @@
-import { CellStyleModel, HyperlinkModel } from './class-model';
+import { CellStyleModel, DefineNameModel, HyperlinkModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
@@ -283,6 +283,7 @@ export interface InsertDeleteModelArgs {
     columnCellsModel?: RowModel[];
     activeSheetIndex?: number;
     checkCount?: number;
+    definedNames?: DefineNameModel[];
 }
 
 /**
@@ -337,6 +338,7 @@ export interface UnprotectArgs {
  */
 export interface InsertDeleteEventArgs {
     model?: RowModel[] | ColumnModel[] | CellModel[];
+    sheet?: SheetModel;
     index?: number;
     modelType?: ModelType;
     insertType?: string;
@@ -349,6 +351,7 @@ export interface InsertDeleteEventArgs {
     sheetCount?: number;
     name?: string;
     freezePane?: boolean;
+    definedNames?: DefineNameModel[];
 }
 
 /**

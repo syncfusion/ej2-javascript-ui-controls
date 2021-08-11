@@ -18,6 +18,8 @@ export const beginSave: string = 'beginSave';
 /** @hidden */
 export const checkUniqueRange: string = 'checkUniqueRange';
 /** @hidden */
+export const reApplyFormula: string = 'reApplyFormula';
+/** @hidden */
 export const sortImport: string = 'sortImport';
 /** @hidden */
 export const ribbonFind: string = 'ribbonFind';

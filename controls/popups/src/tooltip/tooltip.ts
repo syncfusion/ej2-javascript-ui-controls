@@ -1,7 +1,7 @@
-import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile, isBlazor } from '@syncfusion/ej2-base';
+import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';
-import { attributes, closest, removeClass, addClass, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Popup } from '../popup/popup';
 import { OffsetPosition, calculatePosition } from '../common/position';
@@ -154,11 +154,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private touchModule: Touch;
     private tipHeight: number;
     private autoCloseTimer: number;
-    private isBlazorTemplate: boolean;
-    private isBlazorTooltip: boolean = false;
-    private contentTargetValue: HTMLElement = null;
-    private contentEvent: Event = null;
-    private contentAnimation: TooltipAnimationSettings = null;
     private mouseMoveEvent: MouseEvent & TouchEvent = null;
     private mouseMoveTarget: HTMLElement = null;
 
@@ -188,7 +183,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
      *
-     * @blazorType object
      */
     @Property()
     public content: string | HTMLElement;
@@ -205,7 +199,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * {% codeBlock src="tooltip/position-api/index.ts" %}{% endcodeBlock %}
      *
-     * @default 'TopCenter'
      */
     @Property('TopCenter')
     public position: Position;
@@ -351,7 +344,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  to know more about this property with demo.
      *
      * @event
-     * @blazorProperty 'OnRender'
      */
     @Event()
     public beforeRender: EmitType<TooltipEventArgs>;
@@ -363,7 +355,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * {% codeBlock src="tooltip/beforeOpen/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<TooltipEventArgs>;
@@ -372,7 +363,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * {% codeBlock src="tooltip/afterOpen/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'Opened'
      */
     @Event()
     public afterOpen: EmitType<TooltipEventArgs>;
@@ -381,7 +371,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * {% codeBlock src="tooltip/beforeClose/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<TooltipEventArgs>;
@@ -390,7 +379,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * {% codeBlock src="tooltip/afterClose/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'Closed'
      */
     @Event()
     public afterClose: EmitType<TooltipEventArgs>;
@@ -399,7 +387,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * {% codeBlock src="tooltip/beforeCollision/index.md" %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnCollision'
      */
     @Event()
     public beforeCollision: EmitType<TooltipEventArgs>;
@@ -407,7 +394,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * We can trigger `created` event after the Tooltip component is created.
      *
      * @event
-     * @blazorProperty 'Created'
      */
     /* eslint-disable */
     @Event()
@@ -417,7 +403,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
      *
      * @event
-     * @blazorProperty 'Destroyed'
      */
     /* eslint-disable */
     @Event()
@@ -436,14 +421,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private initialize(): void {
         this.formatPosition();
-        if (!(this.isServerRender())) {
-            addClass([this.element], ROOT);
-        }
+        addClass([this.element], ROOT);
     }
 
-    private isServerRender(): boolean {
-        return isBlazor() && this.isServerRendered;
-    }
     private formatPosition(): void {
         if (this.position.indexOf('Top') === 0 || this.position.indexOf('Bottom') === 0) {
             [this.tooltipPositionY, this.tooltipPositionX] = this.position.split(/(?=[A-Z])/);
@@ -453,17 +433,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private renderArrow(): void {
         this.setTipClass(this.position);
-        if (!(this.isServerRender())) {
-            const tip: HTMLElement = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
-            tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
-            tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
-            this.tooltipEle.appendChild(tip);
-        } else {
-            const tip: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP);
-            addClass([tip.querySelector('.' + ARROW_TIP_OUTER)], this.tipClass);
-            addClass([tip.querySelector('.' + ARROW_TIP_INNER)], this.tipClass);
-            this.tooltipEle.appendChild(tip);
-        }
+        const tip: HTMLElement = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
+        tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
+        tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
+        this.tooltipEle.appendChild(tip);
     }
     private setTipClass(position: Position): void {
         if (position.indexOf('Right') === 0) {
@@ -508,7 +481,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.trigger('afterOpen', this.tooltipEventArgs);
     }
     private closePopupHandler(): void {
-        resetBlazorTemplate(this.element.id + 'content', 'Content');
         this.clearTemplate(['content']);
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
@@ -650,29 +622,23 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             target.removeAttribute('title');
         }
         if (!isNullOrUndefined(this.content)) {
-            if (this.isBlazorTooltip || !(this.isServerRender())) {
-                tooltipContent.innerHTML = '';
-                if (this.content instanceof HTMLElement) {
-                    tooltipContent.appendChild(this.content);
-                } else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
-                    if (this.enableHtmlSanitizer) {
-                        this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
-                    }
-                    tooltipContent[this.enableHtmlParse ? 'innerHTML' : 'textContent'] = this.content;
-                } else {
-                    // eslint-disable-next-line
-                    const templateFunction: Function = compile(this.content);
-                    const tempArr: Element[] = templateFunction(
-                        {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
-                    if (tempArr) {
-                        append(tempArr, tooltipContent);
-                    }
-                    this.renderReactTemplates();
-                    if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
-                        this.isBlazorTemplate = true;
-                        updateBlazorTemplate(this.element.id + 'content', 'Content', this);
-                    }
+            tooltipContent.innerHTML = '';
+            if (this.content instanceof HTMLElement) {
+                tooltipContent.appendChild(this.content);
+            } else if (typeof this.content === 'string') {
+                if (this.enableHtmlSanitizer) {
+                    this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
                 }
+                tooltipContent[this.enableHtmlParse ? 'innerHTML' : 'textContent'] = this.content;
+            } else {
+                // eslint-disable-next-line
+                const templateFunction: Function = compile(this.content);
+                const tempArr: Element[] = templateFunction(
+                    {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                if (tempArr) {
+                    append(tempArr, tooltipContent);
+                }
+                this.renderReactTemplates();
             }
         } else {
             if (target && !isNullOrUndefined(target.getAttribute('data-content'))) {
@@ -786,7 +752,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         target: HTMLElement,
         e: Event,
         showAnimation: TooltipAnimationSettings): void {
-        let isBlazorTooltipRendered: boolean = false;
         if (beforeRenderArgs.cancel) {
             this.isHidden = true;
             this.clear();
@@ -794,66 +759,31 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             this.isHidden = false;
             if (isNullOrUndefined(this.tooltipEle)) {
-                if (this.isServerRender()) {
-                    this.contentTargetValue = target;
-                    this.contentEvent = e;
-                    this.contentAnimation = showAnimation;
-                    // eslint-disable-next-line
-                    const args: object = { 'enableTooltip': 'true' };
-                    /* eslint-disable */
-                    (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                    /* eslint-enable */
-                    isBlazorTooltipRendered = true;
-                } else {
-                    this.ctrlId = this.element.getAttribute('id') ?
-                        getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
-                    this.tooltipEle = this.createElement('div', {
-                        className: TOOLTIP_WRAP + ' ' + POPUP_ROOT + ' ' + POPUP_LIB, attrs: {
-                            role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
-                        }, styles: 'width:' +
-                            formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
-                    });
-                    this.beforeRenderBlazor(target, this);
-                }
-                if (!isBlazorTooltipRendered) {
-                    this.afterRenderBlazor(target, e, showAnimation, this);
-                }
+                this.ctrlId = this.element.getAttribute('id') ?
+                    getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
+                this.tooltipEle = this.createElement('div', {
+                    className: TOOLTIP_WRAP + ' ' + POPUP_ROOT + ' ' + POPUP_LIB, attrs: {
+                        role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
+                    }, styles: 'width:' +
+                        formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
+                });
+                this.tooltipBeforeRender(target, this);
+                this.tooltipAfterRender(target, e, showAnimation, this);
             } else {
-                if (this.isServerRender()) {
-                    addClass([this.tooltipEle], POPUP_OPEN);
-                    document.body.appendChild(this.tooltipEle);
-                    this.renderCloseIcon();
-                    this.renderPopup(target);
-                }
                 if (target) {
                     this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
                     this.addDescribedBy(target, this.ctrlId + '_content');
                     this.renderContent(target);
                     PopupAnimation.stop(this.tooltipEle);
                     this.reposition(target);
-                    this.afterRenderBlazor(target, e, showAnimation, this);
+                    this.tooltipAfterRender(target, e, showAnimation, this);
                 }
             }
         }
     }
 
-    private contentUpdated(args: boolean): void {
-        if (isNullOrUndefined(this.tooltipEle)) {
-            if (this.isServerRender()) {
-                this.ctrlId = this.element.id;
-                this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
-                if (this.tooltipEle) {
-                    this.tooltipEle.setAttribute('style', 'width:' + formatUnit(this.width) +
-                        ';height:' + formatUnit(this.height) + ';position:absolute;');
-                    this.beforeRenderBlazor(this.contentTargetValue, this);
-                    this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
-                    this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
-                }
-            }
-        }
-    }
 
-    private beforeRenderBlazor(target: HTMLElement, ctrlObj: Tooltip): void {
+    private tooltipBeforeRender(target: HTMLElement, ctrlObj: Tooltip): void {
         if (target) {
             if (Browser.isDevice) {
                 addClass([ctrlObj.tooltipEle], DEVICE);
@@ -861,9 +791,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (ctrlObj.width !== 'auto') {
                 ctrlObj.tooltipEle.style.maxWidth = formatUnit(ctrlObj.width);
             }
-            if (!(this.isServerRender())) {
-                ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
-            }
+            ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
             document.body.appendChild(ctrlObj.tooltipEle);
             removeClass([ctrlObj.tooltipEle], HIDE_POPUP);
             ctrlObj.addDescribedBy(target, ctrlObj.ctrlId + '_content');
@@ -880,7 +808,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private afterRenderBlazor(target: HTMLElement, e: Event, showAnimation: TooltipAnimationSettings, ctrlObj: Tooltip): void {
+    private tooltipAfterRender(target: HTMLElement, e: Event, showAnimation: TooltipAnimationSettings, ctrlObj: Tooltip): void {
         if (target) {
             removeClass([ctrlObj.tooltipEle], POPUP_OPEN);
             addClass([ctrlObj.tooltipEle], POPUP_CLOSE);
@@ -945,8 +873,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         // eslint-disable-next-line
         const tooltip: any = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
-            && typeof tooltip.viewContainerRef !== 'string'
-            || (this.isServerRender()) && this.isBlazorTemplate;
+            && typeof tooltip.viewContainerRef !== 'string';
     }
 
     private checkCollision(target: HTMLElement, x: number, y: number): ElementPosition {
@@ -1052,31 +979,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, (observedArgs: TooltipEventArgs) => {
             if (!observedArgs.cancel) {
-                if (this.isServerRender()) {
-                    this.blazorHide(hideAnimation, target);
-                } else {
-                    this.mouseMoveBeforeRemove();
-                    this.popupHide(hideAnimation, target);
-                }
+                this.mouseMoveBeforeRemove();
+                this.popupHide(hideAnimation, target);
             } else {
                 this.isHidden = false;
             }
         });
     }
-    /* istanbul ignore next */
-    private blazorHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const proxy: Tooltip = this;
-        // eslint-disable-next-line
-        const hide: Function = (): void => {
-            proxy.popupHide(hideAnimation, target);
-        };
-        if (this.popupObj) {
-            this.popupHide(hideAnimation, target);
-        } else {
-            setTimeout(hide, 200);
-        }
-    }
+   
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
         if (target) { this.restoreElement(target); }
         this.isHidden = true;
@@ -1107,15 +1017,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.isHidden) {
             if (this.popupObj) { this.popupObj.destroy(); }
-            if (this.isServerRender() && this.tooltipEle) {
-                this.tooltipEle.style.display = 'none';
-                // eslint-disable-next-line
-                const args: object = { 'enableTooltip': 'false' };
-                /* eslint-disable */
-                (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                /* eslint-enable */
-                remove(this.tooltipEle);
-            } else if (this.tooltipEle) {
+            if (this.tooltipEle) {
                 remove(this.tooltipEle);
             }
             this.tooltipEle = null;
@@ -1255,7 +1157,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     EventHandler.add(this.element, Browser.touchEndEvent, this.touchEndHandler, this);
                 } else {
                     EventHandler.add(this.element, 'mouseover', this.targetHover, this);
-                    if (this.isServerRender() && !this.isSticky) { EventHandler.add(this.element, 'mouseleave', this.onMouseOut, this); }
                 }
             }
         }
@@ -1286,7 +1187,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     EventHandler.add(target, 'blur', this.onMouseOut, this);
                 }
                 if (e.type === 'mouseover') {
-                    if (!this.isServerRender()) { EventHandler.add(target, 'mouseleave', this.onMouseOut, this); }
+                    EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
                 }
                 if (this.closeDelay) {
                     EventHandler.add(this.tooltipEle, 'mouseenter', this.tooltipHover, this);
@@ -1323,7 +1224,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     EventHandler.remove(this.element, Browser.touchEndEvent, this.touchEndHandler);
                 } else {
                     EventHandler.remove(this.element, 'mouseover', this.targetHover);
-                    if (this.isServerRender() && !this.isSticky) { EventHandler.remove(this.element, 'mouseleave', this.onMouseOut); }
                 }
             }
         }
@@ -1349,7 +1249,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     EventHandler.remove(target, 'blur', this.onMouseOut);
                 }
                 if (opensOn === 'Hover' && !Browser.isDevice) {
-                    if (!this.isServerRender()) { EventHandler.remove(target, 'mouseleave', this.onMouseOut); }
+                    EventHandler.remove(target, 'mouseleave', this.onMouseOut);
                 }
             }
             if (this.closeDelay) {
@@ -1413,14 +1313,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 break;
             case 'content':
                 if (this.tooltipEle) {
-                    if (this.isServerRender()) { this.isBlazorTooltip = true; }
                     this.renderContent();
-                } else if (this.isServerRender()) {
-                    // eslint-disable-next-line
-                    const args: object = { 'content': newProp.content };
-                    /* eslint-disable */
-                        (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                        /* eslint-enable */
                 }
                 break;
             case 'opensOn':
@@ -1512,14 +1405,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * @memberof Tooltip
      */
     public destroy(): void {
-        if (!this.isServerRender()) {
-            super.destroy();
-            if (this.tooltipEle) { remove(this.tooltipEle); }
-        }
-        if (this.isServerRender() && this.tooltipEle) {
-            const placeholder: HTMLElement = document.querySelector('#' + this.ctrlId + '_content_placeholder');
-            if (placeholder) { placeholder.appendChild(this.tooltipEle); }
-        }
+        super.destroy();
+        if (this.tooltipEle) { remove(this.tooltipEle); }
         if (this.popupObj) { this.popupObj.destroy(); }
         removeClass([this.element], ROOT);
         this.unwireEvents(this.opensOn);

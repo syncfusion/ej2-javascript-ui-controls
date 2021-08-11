@@ -362,6 +362,9 @@ export class Scroll implements IAction {
                 EventHandler.add(
                     <HTMLDivElement>this.parent.getFooterContent().firstChild, 'scroll', this.onContentScroll(this.content), this);
             }
+            if (this.parent.enableStickyHeader) {
+                this.addStickyListener(true);
+            }
             this.refresh();
             this.oneTimeReady = false;
         }
@@ -408,9 +411,6 @@ export class Scroll implements IAction {
             }
         );
         this.parent.isPreventScrollEvent = false;
-        if (this.parent.enableStickyHeader) {
-            this.addStickyListener(true);
-        }
     }
 
     /**
@@ -448,6 +448,7 @@ export class Scroll implements IAction {
     private makeStickyHeader(): void {
         if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent()) {
             const contentRect: ClientRect = this.parent.getContent().getClientRects()[0];
+            if (contentRect) {
             const headerEle: HTMLElement = this.parent.getHeaderContent() as HTMLElement;
             const toolbarEle: HTMLElement = this.parent.element.querySelector('.e-toolbar') as HTMLElement;
             const groupHeaderEle: HTMLElement = this.parent.element.querySelector('.e-groupdroparea') as HTMLElement;
@@ -485,6 +486,7 @@ export class Scroll implements IAction {
                 }
             }
             this.parent.notify(events.stickyScrollComplete, {});
+        }
         }
     }
 

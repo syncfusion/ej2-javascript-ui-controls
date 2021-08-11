@@ -9,6 +9,7 @@ import { WParagraphFormat } from '../index';
 import { TextAlignment, LineSpacingType } from '../../base/types';
 import { RadioButton, ChangeArgs, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DocumentHelper } from '../viewer';
+import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
 
 /**
  * The Paragraph dialog is used to modify formatting of selected paragraphs.
@@ -31,6 +32,8 @@ export class ParagraphDialog {
     private rtlButton: RadioButton;
     private ltrButton: RadioButton;
     private contextSpacing: CheckBox;
+    private keepWithNext: CheckBox;
+    private keepLinesTogether: CheckBox;
 
     //paragraph Format properties
 
@@ -47,6 +50,9 @@ export class ParagraphDialog {
     private contextualSpacing: boolean = undefined;
     public isStyleDialog: boolean = false;
     private directionDiv: HTMLElement = undefined;
+    public keepWithNextValue: boolean = undefined;
+    public keepLineTogetherValue: boolean = undefined;
+    private tabObj: Tab = undefined;
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -71,11 +77,14 @@ export class ParagraphDialog {
      * @returns {void}
      */
     public initParagraphDialog(locale: L10n): void {
+        let tabContainer: HTMLElement = <HTMLDivElement>createElement('div');
+        const ejtab: HTMLDivElement = <HTMLDivElement>createElement('div');
         let instance: ParagraphDialog = this;
         let ownerId: string = this.documentHelper.owner.containerId;
         let id: string = ownerId + '_paragraph_dialog';
-        this.target = createElement('div', { id: id, className: 'e-de-para-dlg-container' });
-
+        let indentContainer: HTMLElement = createElement('div', { id: id, className: 'e-de-para-dlg-container' });
+        this.target = tabContainer;
+        tabContainer.appendChild(ejtab);
         let div: HTMLDivElement = createElement('div', { id: 'property_div', styles: 'width:400px;' }) as HTMLDivElement;
         let generalDiv: HTMLDivElement = createElement('div', { id: 'genral_div', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
 
@@ -122,6 +131,11 @@ export class ParagraphDialog {
         this.ltrButton.appendTo(ltrInputELe);
 
         let indentionDiv: HTMLDivElement = createElement('div', { id: 'indention_div', styles: 'width: 400px;', className: 'e-de-para-dlg-sub-container e-para-dlg-sub-height' }) as HTMLDivElement;
+        
+        let indentLabel: HTMLLabelElement = createElement('div', {
+            id: ownerId + '_indentLabel', className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Indentation'), styles: 'float:top;position:relative'
+        }) as HTMLLabelElement;
+        indentionDiv.appendChild(indentLabel);
         let leftIndentionDiv: HTMLDivElement = createElement('div', { id: 'left_indention', styles: 'float:left;position:relative;' }) as HTMLDivElement;
         indentionDiv.appendChild(leftIndentionDiv);
 
@@ -129,7 +143,7 @@ export class ParagraphDialog {
         indentionDiv.appendChild(rightIndentionDiv);
 
         let spacingDiv: HTMLDivElement = createElement('div', { id: 'spacing_div' }) as HTMLDivElement;
-        let leftSpacingDiv: HTMLDivElement = createElement('div', { id: 'left_spacing', styles: 'float:left;position:relative;' }) as HTMLDivElement;
+        let leftSpacingDiv: HTMLDivElement = createElement('div', { id: 'left_spacing', styles: 'position:relative;' }) as HTMLDivElement;
         spacingDiv.appendChild(leftSpacingDiv);
         let contextSpacingStyles: string = 'float:left';
         if (isRtl) {
@@ -149,9 +163,6 @@ export class ParagraphDialog {
         contextSpacingDiv.appendChild(contextInputEle);
 
 
-        let indentLabel: HTMLLabelElement = createElement('div', {
-            id: ownerId + '_indentLabel', className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Indentation')
-        }) as HTMLLabelElement;
         let beforeTextLabel: HTMLLabelElement = createElement('div', {
             id: ownerId + '_bfTextLabel',
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Before text')
@@ -165,7 +176,6 @@ export class ParagraphDialog {
                 '</option><option value="First Line">' + locale.getConstant('First line') +
                 '</option><option value="Hanging">' + locale.getConstant('Hanging') + '</option> '
         }) as HTMLSelectElement;
-        leftIndentionDiv.appendChild(indentLabel);
         leftIndentionDiv.appendChild(beforeTextLabel);
         leftIndentionDiv.appendChild(leftIndent);
         leftIndentionDiv.appendChild(specialLabel);
@@ -225,7 +235,7 @@ export class ParagraphDialog {
         div.appendChild(generalDiv);
         div.appendChild(indentionDiv);
         div.appendChild(spacingDiv);
-        this.target.appendChild(div);
+        indentContainer.appendChild(div);
         this.leftIndentIn = new NumericTextBox({
             format: 'n1', value: 0, min: -1584, max: 1584, width: 180, enablePersistence: false, change: this.changeLeftIndent
         });
@@ -265,11 +275,53 @@ export class ParagraphDialog {
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
         this.contextSpacing.appendTo(contextInputEle);
-        this.target.addEventListener('keyup', instance.keyUpParagraphSettings);
+        indentContainer.addEventListener('keyup', instance.keyUpParagraphSettings);
         if (isRtl) {
             afterSpacingWholeDiv.classList.add('e-de-rtl');
             lineTypeDiv.classList.add('e-de-rtl');
         }
+        let lineBreakContainer: HTMLDivElement = createElement('div') as HTMLDivElement;
+        let paginationDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
+
+        let paginationLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Pagination') });
+        paginationDiv.appendChild(paginationLabel);
+
+        let keepNextContainer: HTMLElement = createElement('div', { styles: 'display:block' });
+        paginationDiv.appendChild(keepNextContainer);
+        let keepLines: HTMLElement = createElement('div', { styles: 'display:block' });
+        paginationDiv.appendChild(keepLines);
+        let keepWithNext: HTMLInputElement = createElement('input', {
+            attrs: { type: 'checkbox' },
+        }) as HTMLInputElement;
+        keepNextContainer.appendChild(keepWithNext);
+
+        this.keepWithNext = new CheckBox({
+            change: this.changeKeepWithNext,
+            label: locale.getConstant('Keep With Next'),
+            enableRtl: isRtl,
+            cssClass: 'e-de-para-dlg-cs-check-box'
+        });
+        this.keepWithNext.appendTo(keepWithNext);
+
+        let keepLinesTogether: HTMLInputElement = createElement('input', {
+            attrs: { type: 'checkbox' },
+        }) as HTMLInputElement;
+        keepLines.appendChild(keepLinesTogether);
+
+        this.keepLinesTogether = new CheckBox({
+            change: this.changeKeepLinesTogether,
+            label: locale.getConstant('Keep Lines Together'),
+            enableRtl: isRtl,
+            cssClass: 'e-de-para-dlg-cs-check-box'
+        });
+        this.keepLinesTogether.appendTo(keepLinesTogether);
+
+        lineBreakContainer.appendChild(paginationDiv);
+        const items: TabItemModel[] = [
+            { header: { text: locale.getConstant('Indents and Spacing') }, content: indentContainer },
+            { header: { text: locale.getConstant('Line and Page breaks') }, content: lineBreakContainer }];
+        this.tabObj = new Tab({ items: items, enableRtl: isRtl }, ejtab);
+        this.tabObj.isStringTemplate = true;
     }
     /**
      * @private
@@ -365,6 +417,25 @@ export class ParagraphDialog {
     private changeContextualSpacing = (args: ChangeEventArgs): void => {
         this.contextualSpacing = args.checked;
     };
+
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies change event args.
+     * @returns {void}
+     */
+    private changeKeepWithNext = (args: ChangeEventArgs): void => {
+        this.keepWithNextValue = args.checked;
+    };
+
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies change event args.
+     * @returns {void}
+     */
+    private changeKeepLinesTogether = (args: ChangeEventArgs): void => {
+        this.keepLineTogetherValue = args.checked;
+    };
+
     private changeAlignmentByBidi(): void {
         if (this.textAlignment === 'Left') {
             this.textAlignment = 'Right';
@@ -466,6 +537,9 @@ export class ParagraphDialog {
         this.rightIndentIn.value = selectionFormat.rightIndent;
         this.byIn.value = Math.abs(selectionFormat.firstLineIndent);
         let lineSpaceValue: number = this.lineSpacing.index;
+        this.keepWithNextValue = undefined;
+        this.keepLineTogetherValue = undefined;
+
         if (selectionFormat.firstLineIndent > 0) {
             this.special.index = 1;
         } else if (selectionFormat.firstLineIndent < 0) {
@@ -491,6 +565,17 @@ export class ParagraphDialog {
             this.ltrButton.checked = true;
             this.rtlButton.checked = false;
         }
+        if (isNullOrUndefined(this.keepWithNext)) {
+            this.keepWithNext.indeterminate = true;
+        } else {
+            this.keepWithNext.checked = selectionFormat.keepWithNext;
+        }
+        if (isNullOrUndefined(this.keepLinesTogether)) {
+            this.keepLinesTogether.indeterminate = true;
+        } else {
+            this.keepLinesTogether.checked = selectionFormat.keepLinesTogether;
+        }
+
         this.contextSpacing.checked = selectionFormat.contextualSpacing;
     };
 
@@ -555,6 +640,16 @@ export class ParagraphDialog {
         if (!isNullOrUndefined(this.contextualSpacing)) {
             paraFormat.contextualSpacing = this.contextualSpacing;
         }
+        if (!isNullOrUndefined(this.keepWithNextValue)) {
+            paraFormat.keepWithNext = this.keepWithNextValue;
+        } else if (this.documentHelper.selection.paragraphFormat.keepWithNext) {
+            paraFormat.keepWithNext = this.documentHelper.selection.paragraphFormat.keepWithNext;
+        }
+        if (!isNullOrUndefined(this.keepLineTogetherValue)) {
+            paraFormat.keepLinesTogether = this.keepLineTogetherValue;
+        } else if (this.documentHelper.selection.paragraphFormat.keepLinesTogether) {
+            paraFormat.keepLinesTogether = this.documentHelper.selection.paragraphFormat.keepLinesTogether;
+        }
 
         if (isApply) {
             this.onParagraphFormat(paraFormat);
@@ -576,6 +671,7 @@ export class ParagraphDialog {
         if (!isListBidi) {
             this.documentHelper.layout.isBidiReLayout = true;
         }
+        this.documentHelper.owner.editor.setPreviousBlockToLayout();
         this.documentHelper.owner.editorModule.initHistory('ParagraphFormat');
         this.documentHelper.owner.isShiftingEnabled = true;
         if (this.documentHelper.selection.isEmpty) {

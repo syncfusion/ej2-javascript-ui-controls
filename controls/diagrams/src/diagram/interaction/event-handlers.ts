@@ -16,7 +16,7 @@ import { Diagram } from '../diagram';
 import { Connector } from '../objects/connector';
 import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool } from './tool';
 import { PolygonDrawingTool, PolyLineDrawingTool, FixedUserHandleTool } from './tool';
-import { Node, SwimLane } from '../objects/node';
+import { Native, Node, SwimLane } from '../objects/node';
 import { ConnectorModel } from '../objects/connector-model';
 import { PointPortModel } from '../objects/port-model';
 import { NodeModel, BpmnShapeModel, BasicShapeModel, SwimLaneModel, LaneModel, PhaseModel } from '../objects/node-model';
@@ -1357,7 +1357,8 @@ export class DiagramEventHandler {
             this.diagram.tooltipObject.offsetY = 0;
             const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             const obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
-            let targetEle = document.getElementById((obj as Node).id + '_groupElement');
+            let idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';
+            let targetEle: HTMLElement = document.getElementById((obj as Node).id + idName);
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                 (this.diagram.tooltipObject as Tooltip).close();
                 (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;

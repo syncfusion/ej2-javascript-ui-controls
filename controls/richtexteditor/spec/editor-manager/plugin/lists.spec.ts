@@ -1553,7 +1553,7 @@ describe ('left indent testing', () => {
 
         describe('Enter key press testing in list', () => {
             let elem: HTMLElement;
-            let innerValue: string = `<div id="content-edit"><ol><li id='firstli'>&#65279;&#65279;</li></ol><div>`;
+            let innerValue: string = `<div id="content-edit"><ol><li id='firstli'>&#65279;&#65279;</li></ol></div>`;
             beforeEach(() => {
                 elem = createElement('div', {
                     id: 'dom-node', innerHTML: innerValue
@@ -1575,7 +1575,37 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'enter';
                 keyBoardEvent.event.which = 13;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('#firstli').textContent.length === 0).toBe(true);
+                expect(editNode.querySelector('#firstli')).toBe(null);
+                innerValue = `<div id="content-edit"><ol id="olList"><li>First List</li><li id='secondli'>&#65279;&#65279;</li></ol></div>`;
+            });
+
+            it('-  EJ2-51918 - enter key press in the second empty list ', () => {
+                startNode = editNode.querySelector('#secondli');
+                expect(startNode.textContent.length === 2).toBe(true);
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('#secondli')).toBe(null);
+                expect(editNode.querySelector('#olList').nextElementSibling.tagName).toBe('P');
+                innerValue = `<div id="content-edit"><ol id="olList"><li>First List</li><li id='secondli'>&#65279;&#65279;</li><li>third List</li></ol></div>`;
+            });
+
+            it('-  EJ2-51918 - enter key press in the second empty list which is in between li elements ', () => {
+                startNode = editNode.querySelector('#secondli');
+                expect(startNode.textContent.length === 2).toBe(true);
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('#secondli')).toBe(null);
+                expect(editNode.querySelector('#olList').nextElementSibling.tagName).toBe('P');
+                expect(editNode.querySelector('#olList').nextElementSibling.nextElementSibling.tagName).toBe('OL');
+
             });
             afterAll(() => {
                 detach(elem);

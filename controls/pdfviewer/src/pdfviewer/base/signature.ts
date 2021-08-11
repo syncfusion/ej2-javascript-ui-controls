@@ -340,9 +340,11 @@ export class Signature {
                 if (type[0] === 'Image') {
                     this.imageAddSignature();
                     isSignatureAdded = true;
+                    this.outputString = '';
                 } else if (type[0] === 'Type') {
                     this.typeAddSignature();
                     isSignatureAdded = true;
+                    this.outputString = '';
                 }
             }
             if (!isSignatureAdded) {
@@ -413,6 +415,22 @@ export class Signature {
             this.hideSignaturePanel();
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
+            if (this.outputString === '') {
+                // eslint-disable-next-line
+                let fontElements: any = document.querySelectorAll('.e-pv-font-sign');
+                if (fontElements) {
+                    for (let j: number = 0; j < fontElements.length; j++) {
+                        if (fontElements[j] && fontElements[j].style.borderColor === 'red') {
+                            this.outputString = fontElements[j].textContent;
+                            try {
+                                this.fontName = JSON.parse(fontElements[j].style.fontFamily);
+                            } catch (e) {
+                                this.fontName = fontElements[j].style.fontFamily;
+                            }
+                        }
+                    }
+                }
+            }
             this.pdfViewer.formFieldsModule.drawSignature('Type', '', this.pdfViewerBase.currentTarget);
             this.hideSignaturePanel();
         }
@@ -837,6 +855,9 @@ export class Signature {
         for (let i: number = 0; i < this.signfontStyle.length; i++) {
             this.fontsign[i].innerHTML = textBox.value;
             this.fontsign[i].style.fontFamily = this.signfontStyle[i].FontName;
+            if (this.signfontStyle[i].FontName === 'Helvetica') {
+                this.fontsign[i].style.borderColor = 'red';
+            }
             fontDiv.appendChild(this.fontsign[i]);
         }
         for (let i: number = 0; i < this.signfontStyle.length; i++) {
@@ -844,6 +865,7 @@ export class Signature {
             let clickSign: any = document.getElementById('_font_signature' + i + '');
             clickSign.addEventListener('click', this.typeSignatureclick.bind(this));
         }
+        this.enableCreateButton(false);
         this.enableClearbutton(false);
     }
     private typeSignatureclick(): void {

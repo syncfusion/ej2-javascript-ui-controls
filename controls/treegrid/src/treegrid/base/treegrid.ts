@@ -2758,6 +2758,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public dataBind(): void {
+        if (isNullOrUndefined(this.grid)) {
+            return;
+        }
         super.dataBind();
         this.grid.dataBind();
     }

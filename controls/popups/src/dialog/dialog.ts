@@ -2074,9 +2074,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.trigger('beforeClose', eventArgs, (beforeCloseArgs: BeforeCloseEventArgs) => {
                 if (!beforeCloseArgs.cancel) {
                     if (this.isModal) {
-                        // eslint-disable-next-line
-                        !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle],  [DLG_TARGET , SCROLL_DISABLED]) :
+                        if (!isNullOrUndefined(this.targetEle)) {
+                            removeClass([this.targetEle],  [DLG_TARGET , SCROLL_DISABLED]);
+                        }
+                        if (document.body.classList.contains(DLG_TARGET) &&
+                            document.body.classList.contains(SCROLL_DISABLED)) {
                             removeClass([document.body],  [DLG_TARGET , SCROLL_DISABLED]);
+                        }
                     }
                     // eslint-disable-next-line
                     const closeAnimation: Object = {

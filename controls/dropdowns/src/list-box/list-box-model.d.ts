@@ -223,15 +223,6 @@ export interface ListBoxModel extends DropDownBaseModel{
     groupTemplate?: string;
 
     /**
-     * Accepts the template design and assigns it to list of component
-     * when no data is available on the component.
-     *
-     * @default 'No records found'
-     * @private
-     */
-    noRecordsTemplate?: string;
-
-    /**
      * Accepts the template and assigns it to the list content of the ListBox component
      * when the data fetch request from the remote server fails.
      *

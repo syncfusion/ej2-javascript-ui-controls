@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType, FormFieldAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel } from '../index';import { FontStyle } from '../base';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType, FormFieldAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel } from '../index';
 
 /**
  * Interface for a class PdfBounds
@@ -786,7 +786,7 @@ export interface PdfFormFieldBaseModel {
     isSelected?: boolean;
 
     /**
-     * Specify whether an form field element is mandatory.
+     * Specified whether an form field element is mandatory.
      */
     isRequired?: boolean;
 

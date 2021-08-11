@@ -100,3 +100,12 @@ export function Search(
     }
     return itemData;
 }
+
+export function resetIncrementalSearchValues(elementId: string) : void {
+    if (prevElementId === elementId) {
+        prevElementId = '';
+        prevString = '';
+        queryString = '';
+        matches = [];
+    }
+}

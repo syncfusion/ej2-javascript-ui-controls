@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate, setValue } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest, isBlazor, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser, extend } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, setValue } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser, extend } from '@syncfusion/ej2-base';
 import {ChangeEventArgs,DragStartArgs,DraggedEventArgs,DragStopArgs,ResizeArgs} from "./dashboard-layout";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -24,14 +24,12 @@ export interface PanelModel {
     /**
      * Defines the template value that should be displayed as the panel's header.
      *
-     * @blazorType RenderFragment
      */
     header?: string | HTMLElement;
 
     /**
      * Defines the template value that should be displayed as the panel's content.
      *
-     * @blazorType RenderFragment
      */
 
     content?: string | HTMLElement;
@@ -48,7 +46,6 @@ export interface PanelModel {
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      */
     row?: number;
 
@@ -57,7 +54,6 @@ export interface PanelModel {
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      */
     col?: number;
 
@@ -65,7 +61,6 @@ export interface PanelModel {
      * Specifies the width of the panel in the layout in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     sizeX?: number;
 
@@ -73,7 +68,6 @@ export interface PanelModel {
      * Specifies the height of the panel in the layout in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     sizeY?: number;
 
@@ -81,7 +75,6 @@ export interface PanelModel {
      * Specifies the minimum height of the panel in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     minSizeY?: number;
 
@@ -89,7 +82,6 @@ export interface PanelModel {
      * Specifies the minimum width of the panel in cells count.
      *
      * @default 1
-     * @blazorType int
      */
     minSizeX?: number;
 
@@ -98,7 +90,6 @@ export interface PanelModel {
      *
      * @default null
      * @aspType int
-     * @blazorType int?
      *
      */
     maxSizeY?: number;
@@ -108,7 +99,6 @@ export interface PanelModel {
      *
      * @default null
      * @aspType int
-     * @blazorType int?
      */
     maxSizeX?: number;
 
@@ -117,7 +107,6 @@ export interface PanelModel {
      *
      * @default 1000
      * @aspType double
-     * @blazorType double
      */
     zIndex?: number;
 
@@ -184,7 +173,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Defines the number of columns to be created in the DashboardLayout.
      *
      * @default 1
-     * @blazorType int
      */
     columns?: number;
 
@@ -238,7 +226,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers whenever the panels positions are changed.
      *
      * @event 'object'
-     * @blazorProperty 'Changed'
      */
     change?: EmitType<ChangeEventArgs>;
 
@@ -246,7 +233,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers when a panel is about to drag.
      *
      * @event 'object'
-     * @blazorProperty 'OnDragStart'
      */
     dragStart?: EmitType<DragStartArgs>;
 
@@ -254,7 +240,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers while a panel is dragged continuously.
      *
      * @event 'object'
-     * @blazorProperty 'Dragging'
      */
     drag?: EmitType<DraggedEventArgs>;
 
@@ -262,7 +247,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers when a dragged panel is dropped.
      *
      * @event 'object'
-     * @blazorProperty 'OnDragStop'
      */
     dragStop?: EmitType<DragStopArgs>;
 
@@ -270,7 +254,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers when a panel is about to resize.
      *
      * @event 'object'
-     * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeArgs>;
 
@@ -278,7 +261,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers when a panel is being resized continuously.
      *
      * @event 'object'
-     * @blazorProperty 'Resizing'
      */
     resize?: EmitType<ResizeArgs>;
 
@@ -286,7 +268,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers when a panel resize ends.
      *
      * @event 'object'
-     * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<ResizeArgs>;
 
@@ -294,7 +275,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers when Dashboard Layout is created.
      *
      * @event 'object'
-     * @blazorProperty 'Created'
      */
 
     created?: EmitType<Object>;
@@ -303,7 +283,6 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers when Dashboard Layout is destroyed.
      *
      * @event 'object'
-     * @blazorProperty 'Destroyed'
      */
 
     destroyed?: EmitType<Object>;

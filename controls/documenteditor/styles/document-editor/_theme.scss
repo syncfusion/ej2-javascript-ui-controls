@@ -184,31 +184,6 @@
             background: $spin-up-hvr;
         }
     }
-    .e-de-para-dlg-heading {
-        color: $de-dlg-heading-main-header;
-        display: block;
-        font-size: $de-para-dlg-heading-font-size;
-        font-weight: $de-para-dlg-heading-font-weight;
-        margin-bottom: $de-para-title-bottom-margin;
-        @if $skin-name=='tailwind' or $skin-name=='tailwind-dark' {
-            line-height: 22px;
-        }
-    }
-    .e-de-para-dlg-container {
-        height: $de-para-dlg-height;
-        width: $de-para-dlg-width;
-    }
-    .e-de-para-dlg-cs-check-box {
-        margin-bottom: $de-para-dlg-cs-check-box-mrgn-btm;
-        margin-top: $de-para-dlg-cs-check-box;
-    }
-    .e-de-para-dlg-spacing-div {
-        margin-left: $de-para-dlg-spacing-div-mrgn-left;
-    }
-    .e-de-para-dlg-spacing-div.e-de-rtl {
-        margin-left: 0;
-        margin-right: $de-para-dlg-spacing-div-mrgn-left;
-    }
     .e-de-toc-dlg-heading {
         color: $de-dlg-heading-main-header;
         display: block;
@@ -373,15 +348,6 @@
         font-weight: $de-header-font-weight;
         margin-bottom: $de-para-sub-title-bottom-margin;
         margin-top: $de-para-sub-title-top-margin;
-    }
-    .e-de-para-dlg-sub-container .e-input-group {
-        margin-bottom: $de-para-sub-title-bottom-margin;
-    }
-    .e-de-para-dlg-sub-container {
-        margin-bottom: $de-para-sub-container-bottom;
-    }
-    .e-de-para-dlg-right-sub-container {
-        top: $de-para-dlg-right-contaner-top;
     }
     .e-de-dlg-footer .e-btn {
         margin-left: 10px;
@@ -946,7 +912,6 @@
             .e-de-cmt-date {
                 font-size: 14px !important;
             }
-            .e-de-para-dlg-heading,
             .e-de-table-dialog-options-label,
             .e-de-table-setting-heading,
             .e-de-cell-dia-options-label,
@@ -983,7 +948,6 @@
                 width: 308px;
             }
             .e-de-font-dlg-cb-right.e-de-rtl,
-            .e-de-para-dlg-spacing-div.e-de-rtl,
             .e-de-style-left-div,
             .e-bookmark-list,
             .e-de-ff-dlg-lft-hlf,
@@ -1014,7 +978,6 @@
             .e-de-tbl-dlg-border-btn {
                 margin-top: 20px;
             }
-            .e-de-para-dlg-sub-container,
             .e-de-font-dlg-padding,
             .e-de-page-setup-dlg-sub-title-header,
             .e-de-op-result-container .e-de-list-ddl-subheaderbottom,
@@ -1128,7 +1091,6 @@
             .e-de-style-nametype-div .e-input {
                 width: 320px !important;
             }
-            .e-de-para-dlg-cs-check-box,
             .e-de-font-color-label,
             .e-de-hyperlink-bookmark-check,
             .e-de-search-tab-content,
@@ -1157,13 +1119,9 @@
             .e-de-op-header {
                 margin-bottom: 0;
             }
-            .e-de-para-dlg-sub-container,
             .e-de-style-based-para-div,
             .e-de-table-options-dlg-div {
                 margin-bottom: 20px;
-            }
-            .e-de-para-dlg-container .e-input-group {
-                width: 192px !important;
             }
             .e-de-font-dlg .e-input-group {
                 width: 200px !important;
@@ -1232,7 +1190,6 @@
         .e-de-table-options-dlg-div .e-input-group {
             width: 187px !important;
         }
-        .e-de-para-dlg-container .e-input-group,
         .e-de-font-dlg .e-input-group,
         .e-de-list-dlg .e-input-group,
         .e-de-list-dlg .e-input {
@@ -2365,15 +2322,7 @@
         .e-de-header-footer-list {
             color: $de-op-search-txt;
         }
-        .e-de-rtl-btn-div {
-            font-size: 12px;
-            margin-right: 14px;
-            width: 200px;
-        }
-        .e-de-rtl-btn-div.e-de-rtl {
-            margin-left: 14px;
-            margin-right: 0;
-        }
+        
         .e-de-ltr-btn-div {
             font-size: 12px;
             width: 200px;
@@ -2391,9 +2340,7 @@
             font-size: 12px;
             width: 140px;
         }
-        .e-para-dlg-sub-height {
-            height: 145px;
-        }
+        
         .e-de-disabledbutton {
             opacity: $de-paradialog-dir-div;
             pointer-events: none;
@@ -3080,17 +3027,10 @@
             cursor: pointer;
             color: $dialog-active-icon-color;
         }
-        .e-de-para-dlg-container, .e-de-table-options-dlg {
-            .e-checkbox-wrapper .e-label {
-                font-size: 12px;
-            }
+        // Blazor 
+        .e-de-para-dlg-right-sub-container-blazor {
+            top: $de-para-dlg-right-sub-container-top-margin;
         }
-    
-        .e-bigger {
-            .e-de-para-dlg-container, .e-de-table-options-dlg {
-                .e-checkbox-wrapper .e-label {
-                    font-size: 14px;
-                }
-            }
-        }
+
+
 }

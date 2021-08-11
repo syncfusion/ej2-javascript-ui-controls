@@ -210,8 +210,8 @@ describe('Selection public API validation', () => {
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog);
-        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
+        DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableSfdtExport:true, isReadOnly: false, enableTablePropertiesDialog: true });
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -392,6 +392,15 @@ console.log('select using hierarchical index');
         editor.editor.insertText('Hello world');
         editor.selection.select('0;0;0', '0;0;11');
         expect(editor.selection.text).toBe('Hello world');
+    });
+    it('Get as SFDT', () => {
+        editor.openBlank();
+        console.log('Get as SFDT');
+        editor.editor.insertText('Hello world');
+        expect(editor.selection.sfdt).toBeUndefined();
+        editor.editor.insertText('Hello world');
+        editor.selection.select('0;0;0', '0;0;11');
+        expect(editor.selection.sfdt.length).toBeGreaterThan(10);
     });
 });
 describe('Selection extension in backward selection', () => {

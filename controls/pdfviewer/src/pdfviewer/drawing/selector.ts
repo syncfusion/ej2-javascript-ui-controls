@@ -1,10 +1,8 @@
-/* eslint-disable */
-import { Property, ChildProperty, Collection, Complex,isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Collection, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IElement, ThumbsConstraints } from '@syncfusion/ej2-drawings';
 import { Container } from '@syncfusion/ej2-drawings';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { Point } from '@syncfusion/ej2-drawings';
-import { Size } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';
 import { PdfAnnotationBase, PdfFormFieldBase } from './pdf-annotation';
 
@@ -32,8 +30,8 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Defines the collection of selected form Fields
      */
-     @Collection<PdfFormFieldBaseModel>([], PdfFormFieldBase)
-     public formFields: PdfFormFieldBaseModel[];
+    @Collection<PdfFormFieldBaseModel>([], PdfFormFieldBase)
+    public formFields: PdfFormFieldBaseModel[];
 
     /**
      * Sets/Gets the width of the container
@@ -106,15 +104,15 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Initializes the UI of the container
      *
-     * @param diagram
+     * @param  {any} diagram - diagram element.
+     * @returns {Container} - Returns the container element.
      */
     // eslint-disable-next-line
     public init(diagram: any): Container {
         const container: Container = new Container();
         container.measureChildren = false;
-        const consize: Size = new Size();
         container.children = [];
-        if(this.formFields && this.formFields.length > 0) {
+        if (this.formFields && this.formFields.length > 0) {
             for (let i: number = 0; i < this.formFields.length; i++) {
                 const node: PdfFormFieldBaseModel = diagram.pdfViewer.nameTable[this.formFields[i].id];
                 const wrapper: Container = node.wrapper;
@@ -122,12 +120,12 @@ export class Selector extends ChildProperty<Selector> implements IElement {
             }
         } else if (this.annotations) {
             for (let i: number = 0; i < this.annotations.length; i++) {
-                if(!isNullOrUndefined(this.annotations[i])){
-                const node: PdfAnnotationBaseModel = diagram.pdfViewer.nameTable[this.annotations[i].id];
-                const wrapper: Container = node.wrapper;
-                container.children.push(wrapper);
+                if (!isNullOrUndefined(this.annotations[i])) {
+                    const node: PdfAnnotationBaseModel = diagram.pdfViewer.nameTable[this.annotations[i].id];
+                    const wrapper: Container = node.wrapper;
+                    container.children.push(wrapper);
+                }
             }
-        }
         }
         this.wrapper = container;
         return container;

@@ -45,6 +45,20 @@ Expand = 'Expand',
 }
 
 /**
+ * Defines the type of dialog, which open or close in the Rich Text Editor.
+ */
+export enum DialogType {
+/* eslint-disable */
+/** Defines ToolbarType as Standard */
+        InsertLink = 'InsertLink',
+/** Defines ToolbarType as MultiRow */
+        InsertImage = 'InsertImage',
+/** Defines ToolbarType as Scrollable */
+        InsertTable = 'InsertTable'
+/* eslint-enable */
+}
+
+/**
  * Defines types to be used to configure the toolbar items.
  */
 export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'justifyRight'

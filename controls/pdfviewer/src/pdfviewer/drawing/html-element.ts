@@ -1,4 +1,3 @@
-
 import { compile as baseTemplateComplier } from '@syncfusion/ej2-base';
 import { DrawingElement } from '@syncfusion/ej2-drawings';
 
@@ -8,13 +7,10 @@ import { DrawingElement } from '@syncfusion/ej2-drawings';
 export class DiagramHtmlElement extends DrawingElement {
 
     /**
-     * set the id for each element \
+     * set the id for each element
      *
-     * @returns { void }set the id for each element\
-     * @param {string} nodeId - provide the x value.
-     * @param {string} diagramId - provide the y value.
-     * @param {string} annotationId - provide the id value.
-     * @param {string} nodeTemplate - provide the id value.
+     * @param {string} nodeTemplate - Set the id for each element.
+     * @returns {void}
      *
      * @private
      */
@@ -49,7 +45,6 @@ export class DiagramHtmlElement extends DrawingElement {
         return this.templateFn;
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
     private templateFn: Function;
 
     /**

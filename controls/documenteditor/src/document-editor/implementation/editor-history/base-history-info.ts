@@ -994,6 +994,7 @@ export class BaseHistoryInfo {
                 this.owner.editorModule.updateSelectionParagraphFormatting(property, (this.modifiedProperties[0] as WParagraphFormat).baseStyle, false);
                 return;
             }
+            this.owner.editor.setPreviousBlockToLayout();
             let selection: Selection = this.owner.documentHelper.selection;
             let isBidiList: boolean = (selection.paragraphFormat.bidi ||
                 (this.modifiedProperties[0] instanceof WParagraphFormat && this.modifiedProperties[0] as WParagraphFormat).bidi

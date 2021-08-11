@@ -287,7 +287,6 @@ export class VirtualScroll {
     private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
         return (e: Event) => {
             let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
-            this.parent.isHScrollEnd = (ele.scrollLeft + ele.offsetWidth) - ele.scrollWidth === 0;
             this.update(
                 mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
                 ele.scrollLeft * this.parent.horizontalScrollScale, e);
@@ -357,6 +356,25 @@ export class VirtualScroll {
                     transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
                 });
                 this.parent.scrollPosObject.horizontalSection = this.parent.scrollPosObject.horizontalSection + excessMove;
+            }
+            let hScrollPos: number = (ele.scrollWidth - (ele.scrollLeft + ele.offsetWidth));
+            if (hScrollPos <= 0) {
+                let virtualDiv: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV);
+                virtualDiv.style.display = 'none';
+                let mCntScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
+                virtualDiv.style.display = '';
+                let mCntVScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
+                this.parent.scrollPosObject.horizontalSection -= mCntScrollPos > hScrollPos ? mCntScrollPos : -mCntVScrollPos;
+                horiOffset = (ele.scrollLeft > this.parent.scrollerBrowserLimit) ?
+                    Number((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].split('px')[0].trim()) :
+                    -(((ele.scrollLeft * this.parent.horizontalScrollScale) -
+                        this.parent.scrollPosObject.horizontalSection - ele.scrollLeft));
+                setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
+                    transform: 'translate(' + horiOffset + 'px,' + vertiOffset
+                });
+                setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
+                    transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
+                });
             }
             this.previousValues.left = left;
             this.frozenPreviousValues.left = left;

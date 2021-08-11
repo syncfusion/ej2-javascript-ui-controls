@@ -62,6 +62,8 @@ export class Table {
         this.parent.on(events.createTable, this.renderDlgContent, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
         this.parent.on(events.dynamicModule, this.afterRender, this);
+        this.parent.on(events.showTableDialog, this.showDialog, this);
+        this.parent.on(events.closeTableDialog, this.closeDialog, this);
         this.parent.on(events.docClick, this.docClick, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
@@ -80,6 +82,8 @@ export class Table {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.dynamicModule, this.afterRender);
         this.parent.off(events.docClick, this.docClick);
+        this.parent.off(events.showTableDialog, this.showDialog);
+        this.parent.off(events.closeTableDialog, this.closeDialog);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.off(events.clearDialogObj, this.clearDialogObj);
         this.parent.off(events.tableToolbarAction, this.onToolbarAction);
@@ -164,22 +168,7 @@ export class Table {
         case 'escape':
             break;
         case 'insert-table':
-            if (this.parent.editorMode === 'HTML') {
-                const docElement: Document = this.parent.contentModule.getDocument();
-                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(docElement);
-                const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, docElement);
-                const  args: ClickEventArgs = <ClickEventArgs>{
-                    originalEvent: e.args,
-                    item: {
-                        command: 'Table',
-                        subCommand: 'CreateTable'
-                    }
-                };
-                this.insertTableDialog({
-                    self: this,
-                    args: args, selection: selection
-                } as NotifyArgs);
-            }
+            this.openDialog(true, e);
             event.preventDefault();
             break;
         }
@@ -218,7 +207,28 @@ export class Table {
             }
         }
     }
-
+    private openDialog(isInternal?: boolean, e?: NotifyArgs): void {
+        if (!isInternal) { (this.parent.contentModule.getEditPanel() as HTMLElement).focus(); }
+        if (this.parent.editorMode === 'HTML') {
+            const docElement: Document = this.parent.contentModule.getDocument();
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(docElement);
+            const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, docElement);
+            const  args: ClickEventArgs = <ClickEventArgs>{
+                originalEvent: e ? e.args : { action: 'insert-table' },
+                item: {
+                    command: 'Table',
+                    subCommand: 'CreateTable'
+                }
+            };
+            this.insertTableDialog({ self: this, args: args, selection: selection } as NotifyArgs);
+        }
+    }
+    private showDialog(): void {
+        this.openDialog(false);
+    }
+    private closeDialog(): void {
+        if (this.editdlgObj) { this.editdlgObj.hide({ returnValue: true } as Event); }
+    }
     private onToolbarAction(args: ITableNotifyArgs): void {
         const item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
         switch (item.subCommand) {

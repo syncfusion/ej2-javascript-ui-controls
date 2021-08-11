@@ -265,7 +265,16 @@ export class TableResizer {
         for (let j: number = 0; j < widget.childWidgets.length; j++) {
             if (widget.childWidgets[j] instanceof TableWidget) {
                 const childWidget: TableWidget = widget.childWidgets[j] as TableWidget;
-                if (childWidget.y <= point.y && (childWidget.y + childWidget.height) >= point.y) {
+                let tableWidth: number = 0;
+                if (childWidget.wrapTextAround) {
+                    tableWidth = childWidget.getTableCellWidth();
+                }
+                if (!(childWidget.wrapTextAround) && childWidget.y <= point.y && (childWidget.y + childWidget.height) >= point.y) {
+                    return childWidget;
+                }
+                if ((childWidget.wrapTextAround &&
+                    (childWidget.x <= point.x && (childWidget.x + tableWidth) >= point.x &&
+                        childWidget.y <= point.y && (childWidget.y + childWidget.height) >= point.y))) {
                     return childWidget;
                 }
             }

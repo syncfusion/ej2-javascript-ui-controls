@@ -159,11 +159,18 @@ export class Crosshair {
             }
             options = new PathOption(
                 this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                crosshair.line.color || chart.themeStyle.crosshairLine, 1, crosshair.dashArray, horizontalCross
+                crosshair.horizontalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
             );
             this.drawCrosshairLine(options, cross, chartRect.x, this.valueY, chartRect.width, 0, horizontalCross);
-            options.d = verticalCross; options.id = this.elementID + '_VerticalLine';
-            this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);
+            /**
+             * due to not working for vertical line side I added new option
+             * options.d = verticalCross; options.id = this.elementID + '_VerticalLine';
+             */
+            options = new PathOption(
+                this.elementID + '_VerticalLine', 'none', crosshair.line.width,
+                crosshair.verticalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
+            );
+            this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);   
             this.renderAxisTooltip(chart, chartRect, <Element>axisTooltipGroup);
             crosshairsvg.appendChild(axisTooltipGroup);
             if (!chart.tooltip.enable) {
@@ -174,10 +181,13 @@ export class Crosshair {
                 axisTooltipGroup = chart.renderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
                 options = new PathOption(
                     this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                    crosshair.line.color || chart.themeStyle.crosshairLine, 1, crosshair.dashArray, horizontalCross
+                    crosshair.horizontalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
-                options.d = verticalCross; options.id = this.elementID + '_VerticalLine';
+                options = new PathOption(
+                    this.elementID + '_VerticalLine', 'none', crosshair.line.width,
+                    crosshair.verticalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
+                );
                 this.renderCrosshairLine(options, crossGroup);
                 crossGroup.appendChild(axisTooltipGroup);
                 this.renderAxisTooltip(chart, chartRect, <Element>crossGroup.lastChild);
@@ -210,7 +220,8 @@ export class Crosshair {
                 'width:' + width + 'px;' +
                 'height:' + height + 'px;' +
                 'fill:' + options.stroke + ';' +
-                'border: 0.5px solid black;' +
+                'border: 0.5px solid ' + options.stroke + ';' +
+                'opacity: ' + options.opacity + ' ; ' +
                 'position: absolute';
             const crosshairline: HTMLElement = document.getElementById(options.id);
             const crosshairtooltip: HTMLElement = document.getElementById(this.elementID + '_crosshair_axis');

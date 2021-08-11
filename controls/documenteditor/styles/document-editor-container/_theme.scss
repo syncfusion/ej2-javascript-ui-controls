@@ -1795,7 +1795,7 @@
             .e-btn-icon {
                font-size: $e-de-bzr-btn-font-size; 
                @if $skin-name=='tailwind' or  $skin-name=='tailwind-dark' {  
-                   padding-bottom: 0 !important;
+                   padding-bottom: 4px !important;
                }
             }
         }
@@ -1828,7 +1828,7 @@
             }
 
             .e-de-bzr-break.e-de-bzr-button {
-                @if  $skin-name=='material' or  $skin-name=='material-dark' {
+                @if  $skin-name == 'material' or  $skin-name == 'material-dark' {
                     padding-top: 11px !important;
                 }
             }

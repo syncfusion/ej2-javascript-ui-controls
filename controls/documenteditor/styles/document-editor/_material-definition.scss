@@ -40,7 +40,6 @@ $de-toc-dlg-style-label-top: 58px !default;
 $de-para-sub-title-bottom-margin: 15px !default;
 $de-para-sub-title-top-margin: 8px !default;
 $de-para-sub-container-bottom: 14px !default;
-$de-para-dlg-right-contaner-top: 17px !default;
 $de-hyperlink-dlg-margin-bottom: 8px !default;
 $de-hyperlink-dlg-margin-top: 8px !default;
 $de-hyperlink-dlg-input-bottom: 20px !default;
@@ -470,7 +469,6 @@ $de-ff-drpdwn-dlg-scndiv-mrgn-botton: 16px;
 $de-drp-dwn-frst-div-mrgn-btm: 23.5px;
 $de-ff-dlg-lft-hlf-mrgn-rgt: 5%;
 $de-ff-dlg-lft-hlf-wdth: 47.5%;
-$de-para-dlg-spacing-div-mrgn-left: 40px;
 $de-para-dlg-cs-check-box: 8px;
 $de-op-close-button-top: 18px;
 $de-table-row-cell-pdng: 20px;
@@ -494,3 +492,21 @@ $de-rp-btn-enforce-prtct-margin: 0 46px;
 $de-rp-nav-lbl: 0 28px;
 $de-rp-nav-btn-mrgn: 0 12px;
 $de-rp-btn-enforce-bx-shadow: 0 2px 2px 0 $de-rp-btn-nav-box-shadow, 0 2px 4px 0 $de-rp-btn-nav-box-shadow-next;
+$de-para-dlg-right-sub-container-top-margin: 0;
+
+
+//New Implemenatation
+
+$de-par-dlg-hdr-weight: 700 !default;
+$de-para-dlg-hdr-margin-bottom: 20px;
+$de-dlg-heading-opacity: 87%;
+$de-para-dlg-hdr-margin-top: 24px;
+$de-para-dlg-right-contaner-top: 0 !default;
+$de-para-dlg-sub-title-bottom-margin: 8px !default;
+$de-para-dlg-sub-title-top-margin: 0 !default;
+$de-para-dlg-rtl-btn-margin-right: 24px;
+$de-para-dlg-rtl-btn-font-size: 12px;
+$de-para-dlg-rtl-btn-width: 200px;
+$de-de-rtl-btn-div-e-de-rtl-margin-right: 24px;
+$de-de-rtl-btn-div-e-de-rtl-margin-left: 12px;
+$de-para-dlg-spacing-div-mrgn-left: 40px;

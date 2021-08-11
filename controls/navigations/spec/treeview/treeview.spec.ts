@@ -16,7 +16,6 @@ import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcia
 import { remoteData4, remoteData4_1, remoteData4_2, remoteData4_3 } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
-import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
 
 
 function copyObject(source: any, destiation: any): Object {
@@ -5153,6 +5152,74 @@ describe('TreeView control', () => {
                         done();
                     },2000 );  
                 },10000 );            
+            });
+        });
+
+        describe('Remove nodes(with multiple selection) Performance testing', () => {
+            let treeObj: any;
+            let mouseEventArgs: any;
+            let originalTimeout: any;
+            let tapEvent: any;
+            beforeEach((): void => {
+                mouseEventArgs = {
+                    preventDefault: (): void => {},
+                    stopImmediatePropagation: (): void => {},
+                    target: null,
+                    type: null,
+                    shiftKey: false,
+                    ctrlKey: false,
+                    originalEvent:{ target: null}
+                };
+                tapEvent = {
+                    originalEvent: mouseEventArgs,
+                    tapCount: 1
+                };
+                let ele: HTMLElement = createElement('div', { id: 'tree' });
+                document.body.appendChild(ele);
+                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            });
+            afterEach((): void => {
+                if (treeObj)
+                    treeObj.destroy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+                document.body.innerHTML = '';
+            });
+            it('with 1000 nodes', (done) => {
+                let hierarchicalData: { [key: string]: Object }[] = [];
+                for (let i: number = 1; i <= 1000; i++) {
+                    hierarchicalData.push({
+                      id: '01' + i,
+                      name: 'TreeNode-' + i,
+                      expanded: false,
+                      hasAttribute: { class: 'remove rename' },
+                      subChild: [{ id: '01-01' + i, name: 'TreeNodeChild' + i, expanded: false }]
+                    });
+                  }
+                let startDate:number;
+                let timeTaken:number;
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData, id: "id", text: "name", child: "subChild", },
+                    allowMultiSelection: true
+                });
+                treeObj.appendTo('#tree');    
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let li: any = treeObj.element.querySelectorAll('li');
+                    mouseEventArgs.shiftKey = true;
+                    mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                    treeObj.touchClickObj.tap(tapEvent);
+                    expect(treeObj.selectedNodes.length).toBe(1);
+                    mouseEventArgs.target = li[499].querySelector('.e-list-text');
+                    treeObj.touchClickObj.tap(tapEvent);
+                    expect(treeObj.selectedNodes.length).toBe(500);
+                    mouseEventArgs.shiftKey = false;
+                    startDate = new Date().getTime();
+                    treeObj.removeNodes(treeObj.selectedNodes);
+                    timeTaken = new Date().getTime() - startDate;
+                    expect(timeTaken).toBeLessThan(100);
+                    done();
+                }, 100);
             });
         });
     });
@@ -15470,116 +15537,5 @@ describe('Hierarchical data binding testing', () => {
             expect(treeObj.element.querySelectorAll('li')[1].classList.contains('firstnode')).toBe(true);
             expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
         });
-    });
-});
-
-describe('Blazor TreeView testing', () => {
-    let gridLayOut: any;
-    let ele: HTMLElement;
-    beforeEach(() => {
-        enableBlazorMode();
-        (window as any)["sfBlazor"] = function () { };
-        (window as any).sfBlazor["updateModel"] = function () { };
-        (window as any).sfBlazor["renderComplete"] = function () { };
-        ele = createElement('div', { id: 'gridlayout', className: 'e-control e-lib e-treeview' });
-        let parentEle: HTMLElement = createElement('div', { id: 'container' });
-        parentEle.appendChild(ele);
-        document.body.appendChild(parentEle);
-    });
-    afterEach(() => {
-        disableBlazorMode();
-        if (gridLayOut) {
-            gridLayOut.destroy();
-        }
-        document.body.innerHTML = '';
-    });
-    it('Default Blazor Rendering', () => {
-        ele.innerHTML = "<div id='gridLayout' class='e-control e-lib e-treeview e-fullrow-wrap e-touch e-keyboard' role='tree' tabindex='0' aria-activedescendant='navigations533lo0wtof0_active'><ul class='e-list-parent e-ul ' role='tree' style=''><li class='e-list-item e-level-1 e-node-focus' role='treeitem' data-uid='01' aria-level='1' style='' aria-expanded='false' id='navigations533lo0wtof0_active'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Inbox</span></div></li><li class='e-list-item e-level-1' role='treeitem' data-uid='02' aria-level='1' style='' aria-expanded='false'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Others</span></div></li></ul></div>";
-        let BlazorData: { [key: string]: Object }[] = [
-            {
-                Id: "01", FolderName: "Inbox"
-            },
-            {
-                Id: "02", FolderName: "Others"
-            }
-        ];
-        gridLayOut = new TreeView({
-            fields: { dataSource: BlazorData, id: "Id", text: "FolderName" },
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.isServerRendered = false;
-        expect(gridLayOut.element.childElementCount === 1).toBe(true);
-    });
-    it('Default Blazor Rendering', () => {
-        ele.innerHTML = "<div id='gridLayout' class='e-control e-lib e-treeview e-fullrow-wrap e-touch e-keyboard' role='tree' tabindex='0' aria-activedescendant='navigations533lo0wtof0_active'><ul class='e-list-parent e-ul ' role='tree' style=''><li class='e-list-item e-level-1 e-node-focus' role='treeitem' data-uid='01' aria-level='1' style='' aria-expanded='false' id='navigations533lo0wtof0_active'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Inbox</span></div></li><li class='e-list-item e-level-1' role='treeitem' data-uid='02' aria-level='1' style='' aria-expanded='false'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Others</span></div></li></ul></div>";
-        let BlazorData: { [key: string]: Object }[] = [
-            {
-                Id: "01", FolderName: "Inbox"
-            },
-            {
-                Id: "02", FolderName: "Others"
-            }
-        ];
-        gridLayOut = new TreeView({
-            fields: { dataSource: BlazorData, id: "Id", text: "FolderName" },
-        });
-        gridLayOut.clientUpdateInitial();
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.isServerRendered = false;
-        expect(gridLayOut.element.childElementCount === 1).toBe(true);
-    });
-    it('Default Blazor Rendering', () => {
-        ele.innerHTML = "<div id='gridLayout' class='e-control e-lib e-treeview e-fullrow-wrap e-touch e-keyboard' role='tree' tabindex='0' aria-activedescendant='navigations533lo0wtof0_active'><ul class='e-list-parent e-ul ' role='tree' style=''><li class='e-list-item e-level-1 e-node-focus' role='treeitem' data-uid='01' aria-level='1' style='' aria-expanded='false' id='navigations533lo0wtof0_active'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Inbox</span></div></li><li class='e-list-item e-level-1' role='treeitem' data-uid='02' aria-level='1' style='' aria-expanded='false'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Others</span></div></li></ul></div>";
-        let BlazorData: { [key: string]: Object }[] = [
-            {
-                Id: "01", FolderName: "Inbox"
-            },
-            {
-                Id: "02", FolderName: "Others"
-            }
-        ];
-        gridLayOut = new TreeView({
-            fields: { dataSource: BlazorData, id: "Id", text: "FolderName" },
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        gridLayOut.expandedNodes = ["01"];
-        gridLayOut.dataBind();
-        gridLayOut.isServerRendered = false;
-        expect(gridLayOut.element.childElementCount === 1).toBe(true);
-    });
-    it('Default Blazor Rendering', () => {
-        ele.innerHTML = "<div id='gridLayout' class='e-control e-lib e-treeview e-fullrow-wrap e-touch e-keyboard' role='tree' tabindex='0' aria-activedescendant='navigations533lo0wtof0_active'><ul class='e-list-parent e-ul ' role='tree' style=''><li class='e-list-item e-level-1 e-node-focus' role='treeitem' data-uid='01' aria-level='1' style='' aria-expanded='false' id='navigations533lo0wtof0_active'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Inbox</span></div></li><li class='e-list-item e-level-1' role='treeitem' data-uid='02' aria-level='1' style='' aria-expanded='false'><div class='e-fullrow'></div><div class='e-text-content' role=''><span class='e-list-text' role=''>Others</span></div></li></ul></div>";
-        let BlazorData: { [key: string]: Object }[] = [
-            {
-                Id: "01", FolderName: "Inbox"
-            },
-            {
-                Id: "02", FolderName: "Others"
-            }
-        ];
-        gridLayOut = new TreeView({
-            fields: { dataSource: BlazorData, id: "Id", text: "FolderName" },
-        });
-        gridLayOut.isServerRendered = true;
-        gridLayOut.appendTo('#gridlayout');
-        let BlazorDatas: { [key: string]: Object }[] = [
-            {
-                Id: "01", FolderName: "Inbox"
-            },
-            {
-                Id: "02", FolderName: "Others"
-            },
-            {
-                Id: "03", FolderName: "Social"
-            }
-        ];
-        gridLayOut.clientUpdateInitial();
-        gridLayOut.fields = { dataSource: BlazorDatas, id: "Id", text: "FolderName" };
-        gridLayOut.dataBind();
-        gridLayOut.isServerRendered = false;
-        expect(gridLayOut.element.childElementCount === 1).toBe(true);
     });
 });

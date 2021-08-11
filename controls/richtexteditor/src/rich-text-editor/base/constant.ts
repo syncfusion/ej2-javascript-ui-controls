@@ -566,3 +566,33 @@ export const afterPasteCleanup: string = 'afterPasteCleanup';
  * @deprecated
  */
 export const updateTbItemsStatus: string = 'updateTbItemsStatus';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const showLinkDialog: string = 'showLinkDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const closeLinkDialog: string = 'closeLinkDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const showImageDialog: string = 'showImageDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const closeImageDialog: string = 'closeImageDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const showTableDialog: string = 'showTableDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const closeTableDialog: string = 'closeTableDialog';

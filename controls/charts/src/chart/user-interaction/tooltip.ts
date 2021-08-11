@@ -45,15 +45,21 @@ export class Tooltip extends BaseTooltip {
 
     private mouseUpHandler(): void {
         const chart: Chart = this.control as Chart;
+        let data: PointData = this.getData();
+        data.lierIndex = this.lierIndex;
         if (chart.isTouch && !this.isSelected(chart) &&
             ((withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect) && chart.tooltip.shared)
              || !chart.tooltip.shared)) {
             if (!chart.crosshair.enable) {
                 this.tooltip();
-                this.removeTooltip(2000);
-            } else if (chart.startMove) {
+                if (chart.tooltip.fadeOutMode === 'Move') {
+                    this.removeTooltip(2000);
+                }
+            } else if (chart.startMove && chart.tooltip.fadeOutMode === 'Move') {
                 this.removeTooltip(2000);
             }
+        } else if (!this.findData(data, this.previousPoints[0] as PointData) && chart.tooltip.fadeOutMode === 'Click') {
+            this.removeTooltip(0);
         }
     }
 
@@ -73,7 +79,7 @@ export class Tooltip extends BaseTooltip {
                     this.tooltip();
                 }
             } else {
-                if (chart.tooltip.shared) {
+                if (chart.tooltip.shared && chart.tooltip.fadeOutMode === 'Move') {
                     this.removeTooltip(this.chart.tooltip.fadeOutDuration);
                 }
             }
@@ -154,7 +160,7 @@ export class Tooltip extends BaseTooltip {
                 this.triggerTooltipRender(data, isFirst, this.getTooltipText(data), this.findHeader(data));
             }
         } else {
-            if (!data.point && this.isRemove) {
+            if (!data.point && this.isRemove && chart.tooltip.fadeOutMode === 'Move') {
                 this.removeTooltip(this.chart.tooltip.fadeOutDuration);
                 this.isRemove = false;
             } else {

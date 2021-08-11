@@ -247,6 +247,8 @@ export class Annotation {
      */
     // eslint-disable-next-line max-len
     public setAnnotationMode(type: AnnotationType, dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem, standardBusinessStampItem?: StandardBusinessStampItem): void {
+        let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
+        this.pdfViewer.enableServerDataBinding(false);
         if (type === 'None') {
             this.clearAnnotationMode();
         } else if (type === 'Highlight' || type === 'Strikethrough' || type === 'Underline') {
@@ -301,6 +303,7 @@ export class Annotation {
                 this.stampAnnotationModule.retrievestampAnnotation(stampName);
             }
         }
+        this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
     }
     public deleteAnnotationById(annotationId: string | object): void {
         if (annotationId) {
@@ -2410,20 +2413,22 @@ for (let i: number = 0; i < collections.length; i++) {
      */
     public modifyThickness(thicknessValue: number): void {
         const currentAnnotation: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
-        const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
-        const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
-        redoClonedObject.thickness = thicknessValue;
-        this.pdfViewer.nodePropertyChange(currentAnnotation, { thickness: thicknessValue });
-        this.modifyInCollections(currentAnnotation, 'thickness');
-        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature' || currentAnnotation.shapeAnnotationType === 'SignatureText' || currentAnnotation.shapeAnnotationType === 'SignatureImage') {
+        if (currentAnnotation.thickness !== thicknessValue) {
+            const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
+            const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
+            redoClonedObject.thickness = thicknessValue;
+            this.pdfViewer.nodePropertyChange(currentAnnotation, { thickness: thicknessValue });
+            this.modifyInCollections(currentAnnotation, 'thickness');
+            if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature' || currentAnnotation.shapeAnnotationType === 'SignatureText' || currentAnnotation.shapeAnnotationType === 'SignatureImage') {
+                // eslint-disable-next-line max-len
+                this.pdfViewer.fireSignaturePropertiesChange(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType as AnnotationType, false, false, true, clonedObject.thickness, redoClonedObject.thickness);
+            } else {
+                this.triggerAnnotationPropChange(currentAnnotation, false, false, true, false);
+            }
             // eslint-disable-next-line max-len
-            this.pdfViewer.fireSignaturePropertiesChange(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType as AnnotationType, false, false, true, clonedObject.thickness, redoClonedObject.thickness);
-        } else {
-            this.triggerAnnotationPropChange(currentAnnotation, false, false, true, false);
+            this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Shape Thickness', '', clonedObject, redoClonedObject);
+            this.pdfViewer.renderDrawing();
         }
-        // eslint-disable-next-line max-len
-        this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Shape Thickness', '', clonedObject, redoClonedObject);
-        this.pdfViewer.renderDrawing();
     }
 
     /**
@@ -4189,10 +4194,10 @@ for (let i: number = 0; i < collections.length; i++) {
         } else if (annotation.measureType !== '') {
             if (annotation.measureType === 'Distance') {
                 // eslint-disable-next-line max-len
-                annotSettings = { type: 'Measure', subType: 'Distance', opacity: annotation.opacity, fillColor: annotation.fillColor, strokeColor: annotation.strokeColor, thickness: annotation.thickness, borderDashArray: annotation.borderDashArray, lineHeadStartStyle: annotation.sourceDecoraterShapes, lineHeadEndStyle: annotation.taregetDecoraterShapes, customData: annotation.customData };
+                annotSettings = { type: 'Measure', subType: 'Distance', opacity: annotation.opacity, fillColor: annotation.fillColor, strokeColor: annotation.strokeColor, thickness: annotation.thickness, borderDashArray: annotation.borderDashArray, lineHeadStartStyle: this.getArrowString(annotation.sourceDecoraterShapes), lineHeadEndStyle: this.getArrowString(annotation.taregetDecoraterShapes), customData: annotation.customData };
             } else if (annotation.measureType === 'Perimeter') {
                 // eslint-disable-next-line max-len
-                annotSettings = { type: 'Measure', subType: 'Perimeter', opacity: annotation.opacity, fillColor: annotation.fillColor, strokeColor: annotation.strokeColor, thickness: annotation.thickness, borderDashArray: annotation.borderDashArray, lineHeadStartStyle: annotation.sourceDecoraterShapes, lineHeadEndStyle: annotation.taregetDecoraterShapes, customData: annotation.customData };
+                annotSettings = { type: 'Measure', subType: 'Perimeter', opacity: annotation.opacity, fillColor: annotation.fillColor, strokeColor: annotation.strokeColor, thickness: annotation.thickness, borderDashArray: annotation.borderDashArray, lineHeadStartStyle: this.getArrowString(annotation.sourceDecoraterShapes), lineHeadEndStyle: this.getArrowString(annotation.taregetDecoraterShapes), customData: annotation.customData };
             } else if (annotation.measureType === 'Area') {
                 annotSettings = {
                     type: 'Measure', subType: 'Area', opacity: annotation.opacity, fillColor: annotation.fillColor,

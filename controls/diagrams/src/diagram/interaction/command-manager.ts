@@ -9,7 +9,7 @@ import { ConnectorValue } from '../objects/interface/IElement';
 import { DiagramEventObjectCollection } from '../objects/interface/IElement';
 import { IDropEventArgs, IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { Connector, getBezierPoints, isEmptyVector, BezierSegment, BpmnFlow } from '../objects/connector';
-import { Node, BpmnShape, BpmnSubEvent, BpmnAnnotation, DiagramShape } from '../objects/node';
+import { Node, BpmnShape, BpmnSubEvent, BpmnAnnotation, DiagramShape, Native } from '../objects/node';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { View } from '../objects/interface/interfaces';
@@ -175,19 +175,27 @@ export class CommandHandler {
         isTooltipVisible: boolean): void {
         let targetId: string;
         let targetEle: HTMLElement;
+        let isNative: Boolean = false;
         if (node instanceof Selector) {
-            if ((node.nodes.length == 1) && node.connectors.length == 0) { targetId = node.nodes[0].id }
+            if ((node.nodes.length == 1) && node.connectors.length == 0) {
+                targetId = node.nodes[0].id;
+                if (node.nodes[0].shape && node.nodes[0].shape instanceof Native) { isNative = true; }
+            }
             else if ((node.nodes.length == 0) && node.connectors.length == 1) { targetId = node.connectors[0].id }
             else {
                 targetEle = document.getElementById(this.diagram.element.id + '_SelectorElement');
             }
         } else if (node instanceof Node) {
             targetId = (node as Node).id;
+            if ((node as Node).shape && ((node as Node).shape instanceof Native)) {
+                isNative = true;
+            }
         } else {
             targetId = (node as Connector).id;
         }
         if (isNullOrUndefined(targetEle) && !isNullOrUndefined(targetId)) {
-            targetEle = document.getElementById(targetId + '_groupElement');
+            let idName: string = isNative ? '_content_native_element' : '_groupElement';
+            targetEle = document.getElementById(targetId + idName);
         }
         if (isTooltipVisible) {
             this.diagram.tooltipObject.position = 'BottomCenter';

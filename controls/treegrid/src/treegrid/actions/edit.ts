@@ -263,7 +263,6 @@ export class Edit {
         const updateMethod: Function = getObject('updateEditObj', this.parent.grid.editModule) as Function;
         updateMethod.apply(this.parent.grid.editModule);
         this.parent.grid.isEdit = false;
-        setValue('isEditCollapse', false, this.parent);
     }
 
     private resetIsOnBatch(): void {
@@ -324,6 +323,7 @@ export class Edit {
             } else if (this.keyPress === 'enter') {
                 args.cancel = true;
                 this.keyPress = null;
+                setValue('isEditCollapse', false, this.parent);
             }
             if (!args.columnObject.allowEditing) {
                 args.cancel = true;   

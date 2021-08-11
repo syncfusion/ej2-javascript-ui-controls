@@ -36,6 +36,8 @@ export class HtmlEditor {
     private rangeCollection: Range[] = [];
     private rangeElement: Element;
     private oldRangeElement: Element;
+    private deleteRangeElement: Element;
+    private deleteOldRangeElement: Element;
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
 
@@ -118,6 +120,7 @@ export class HtmlEditor {
         if (Browser.info.name === 'chrome') {
             currentRange = this.parent.getRange();
             this.backSpaceCleanup(e, currentRange);
+            this.deleteCleanup(e, currentRange);
         }
         if ((e.args as KeyboardEvent).keyCode === 9 && this.parent.enableTabKey) {
             const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
@@ -175,10 +178,13 @@ export class HtmlEditor {
                 });
             }
         }
-        if (Browser.info.name === 'chrome' && !isNullOrUndefined(this.rangeElement) && !isNullOrUndefined(this.oldRangeElement) &&
-            currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
+        if (Browser.info.name === 'chrome' && (!isNullOrUndefined(this.rangeElement) && !isNullOrUndefined(this.oldRangeElement) ||
+        !isNullOrUndefined(this.deleteRangeElement) && !isNullOrUndefined(this.deleteOldRangeElement)) &&
+        currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
             this.rangeElement = null;
             this.oldRangeElement = null;
+            this.deleteRangeElement = null;
+            this.deleteOldRangeElement = null;
             (e.args as KeyboardEvent).preventDefault();
         }
     }
@@ -251,6 +257,84 @@ export class HtmlEditor {
                 }
             }
         }
+    }
+    private deleteCleanup(e: NotifyArgs, currentRange: Range): void {
+        let isLiElement: boolean = false;
+        let liElement: HTMLElement;
+        let rootElement: HTMLElement;
+        if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Delete' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 46 &&
+            this.parent.contentModule.getText().trim().length !== 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.parentElement.tagName !== 'TD' &&
+            currentRange.startContainer.parentElement.tagName !== 'TH') {
+            this.deleteRangeElement = rootElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);
+            if (this.deleteRangeElement.tagName === 'OL' || this.deleteRangeElement.tagName === 'UL') {
+                liElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
+                if (liElement.nextElementSibling && liElement.nextElementSibling.childElementCount > 0
+                    && !liElement.nextElementSibling.querySelector('BR')) {
+                    if (!isNullOrUndefined(liElement.lastElementChild)) {
+                        this.deleteRangeElement = liElement.lastElementChild;
+                        isLiElement = true;
+                    }
+                    else {
+                        this.deleteRangeElement = liElement;
+                    }
+                } else {
+                    this.deleteRangeElement = this.getRangeElement(liElement);
+                }
+            }
+            else if (this.deleteRangeElement.nodeType === 3 || (this.deleteRangeElement.tagName === 'TABLE' ||
+            (!isNullOrUndefined(this.deleteRangeElement.nextElementSibling) && this.deleteRangeElement.nextElementSibling.tagName === 'TABLE'))) {
+                return;
+            }
+            if (this.getCaretIndex(currentRange, this.deleteRangeElement) === this.deleteRangeElement.textContent.length) {
+                if (!isNullOrUndefined(liElement)) {
+                    if (isLiElement || !isNullOrUndefined(liElement.nextElementSibling)) {
+                        this.deleteOldRangeElement = this.getRangeElement(liElement.nextElementSibling);
+                    } else {
+                        this.deleteOldRangeElement = rootElement.nextElementSibling;
+                    }
+                } else {
+                    this.deleteOldRangeElement = this.deleteRangeElement.nextElementSibling;
+                }
+                if (isNullOrUndefined(this.deleteOldRangeElement)) {
+                    return;
+                }
+                else {
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
+                    if (this.deleteRangeElement.querySelector('BR')) {
+                        detach(this.deleteRangeElement.querySelector('BR'));
+                    }
+                    if (!isNullOrUndefined(this.deleteRangeElement) && (this.deleteOldRangeElement.tagName !== 'OL' && this.deleteOldRangeElement.tagName !== 'UL')
+                        && this.deleteOldRangeElement !== this.deleteRangeElement) {
+                        while (this.deleteOldRangeElement.firstChild) {
+                            this.deleteRangeElement.appendChild(this.deleteOldRangeElement.childNodes[0]);
+                        }
+                        !isLiElement ? detach(this.deleteOldRangeElement) : detach(this.deleteOldRangeElement.parentElement);
+                        this.deleteRangeElement.normalize();
+                    } else {
+                        this.deleteRangeElement = null;
+                        this.deleteOldRangeElement = null;
+                    }
+                }
+            } else {
+                this.deleteRangeElement = null;
+            }
+        }
+    }
+    private getCaretIndex(currentRange: Range, element: Element): number {
+        let position: number = 0;
+        if (this.parent.contentModule.getDocument().getSelection().rangeCount !== 0) {
+            const preCaretRange: Range = currentRange.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(currentRange.endContainer, currentRange.endOffset);
+            position = preCaretRange.toString().length;
+        }
+        return position;
+    }
+    private getRangeElement(element: Element): Element {
+        const rangeElement: Element = element.lastElementChild ? element.lastElementChild.tagName === 'BR' ?
+            element.lastElementChild.previousElementSibling ? element.lastElementChild.previousElementSibling
+            : element : element.lastElementChild : element;
+        return rangeElement;
     }
     private getRootBlockNode(rangeBlockNode: Node): Node {
         // eslint-disable-next-line

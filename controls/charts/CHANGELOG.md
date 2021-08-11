@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.55 (2021-08-11)
+
+### Chart
+
+#### New Features
+
+- `#335166` - Provide Fade out support for chart tooltip on touch.
+
 ## 19.2.51 (2021-08-03)
 
 ### Chart

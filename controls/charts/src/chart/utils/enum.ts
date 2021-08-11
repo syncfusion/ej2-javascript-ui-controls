@@ -682,6 +682,17 @@ export type EmptyPointMode =
     'Average';
 
 /**
+ * Defines the tooltip fade out mode of the chart.
+ * * Click - Used to remove the tooltip on click.
+ * * Move - Used to remove the tooltip with some delay.
+ */
+export type FadeOutMode =
+    /** Used to remove the tooltip on click  */
+    'Click' |
+    /** Used to remove the tooltip with some delay  */
+    'Move';
+
+/**
  * Defines the type of technical indicators. They are
  * * Sma - Predicts the trend using Simple Moving Average approach
  * * Ema - Predicts the trend using Exponential Moving Average approach

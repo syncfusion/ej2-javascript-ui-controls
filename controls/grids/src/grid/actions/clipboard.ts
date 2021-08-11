@@ -62,6 +62,9 @@ export class Clipboard implements IAction {
     private pasteHandler(e: KeyboardEvent): void {
         const grid: IGrid = this.parent;
         const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        if (e.keyCode === 67 && isMacLike && e.metaKey && !grid.isEdit) {
+            this.copy();
+        }
         if (e.keyCode === 86 && (e.ctrlKey || (isMacLike && e.metaKey)) && !grid.isEdit) {
             const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
             if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||

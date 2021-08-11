@@ -44,7 +44,7 @@ import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEvent
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
-import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
+import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export'; 
 
 
 /**
@@ -5579,7 +5579,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 member: 'Navigation', args: [this, this.viewerBase]
             });
         }
-        if (this.enableToolbar || this.enableNavigationToolbar) {
+        if (this.enableToolbar || this.enableNavigationToolbar || this.enableAnnotationToolbar || this.enableFormDesignerToolbar) {
             modules.push({
                 member: 'Toolbar', args: [this, this.viewerBase]
             });
@@ -6208,8 +6208,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             else
                 this.viewerBase.isInitialField = false;
             let target: any = document.getElementById(field.id);
-            target = target ? target : document.getElementById(field.id + '_content_html_element').children[0].children[0];
-            if (!eventArgs.cancel && (target as any).classList.contains('e-pdfviewer-signatureformfields')) {
+            target = target ? target : (document.getElementById(field.id + '_content_html_element') ? document.getElementById(field.id + '_content_html_element').children[0].children[0] : null);
+            if (!eventArgs.cancel && target && (target as any).classList.contains('e-pdfviewer-signatureformfields')) {
                 this.viewerBase.signatureModule.showSignatureDialog(true);
             }
         }
@@ -7681,6 +7681,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // eslint-disable-next-line max-len
     public select(objArray: string[], currentSelector?: AnnotationSelectorSettingsModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
+        let allowServerDataBind: boolean = this.allowServerDataBinding;
+        this.enableServerDataBinding(false);
         if (this.annotationModule) {
             const annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
             // eslint-disable-next-line
@@ -7716,6 +7718,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         }
         this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
+        this.enableServerDataBinding(allowServerDataBind, true);
     }
     /**
      * @param pageId
@@ -7795,6 +7798,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public clearSelection(pageId: number): void {
+        let allowServerDataBind: boolean = this.allowServerDataBinding;
+        this.enableServerDataBinding(false);
         const selectormodel: SelectorModel = this.selectedItems;
         const node: PdfAnnotationBaseModel | PdfFormFieldBaseModel = selectormodel.annotations.length > 0 ? this.selectedItems.annotations[0]: this.selectedItems.formFields[0];
         if (selectormodel.annotations.length > 0) {
@@ -7817,6 +7822,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.drawing.clearSelectorLayer(pageId);
         this.viewerBase.isAnnotationSelect = false;
         this.viewerBase.isFormFieldSelect = false;
+        this.enableServerDataBinding(allowServerDataBind, true);
     }
 
     /**
@@ -7916,6 +7922,24 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel): void {
         this.drawing.nodePropertyChange(actualObject, node);
     }
+
+    /**
+     * enableServerDataBinding method \
+     *
+     * @returns { void }  enableServerDataBinding method .\
+     * @param {boolean} enable - provide the node value.
+     *
+     * @private
+     */
+    public enableServerDataBinding(enable: boolean, clearBulkChanges: boolean = false): void {
+        if (isBlazor()) {
+            this.allowServerDataBinding = enable;
+            if (clearBulkChanges) {
+                this.bulkChanges = {};
+            }
+        }
+    }
+
     /**
      * @param tx
      * @param ty

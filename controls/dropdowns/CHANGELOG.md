@@ -2,7 +2,39 @@
 
 ## [Unreleased]
 
+## 19.2.55 (2021-08-11)
+
+### ListBox
+
+#### New Features
+
+- Provided No Record Template support.
+
+### DropDownList
+
+#### Bug Fixes
+
+- Issue with "incremental search is not working properly while destroying and rendering the component again" has been resolved.
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `I335313` - Issue with "select element is displayed while rendering the component with floating label" has been resolved.
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#F167371` - The performance issue that occurred when destroying the Dropdown Tree with a huge data source and CheckBox support has been resolved.
+
 ## 19.2.51 (2021-08-03)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I336382` - The issue with getDataList not updated properly after removing the items has been fixed.
 
 ### Dropdown Tree
 

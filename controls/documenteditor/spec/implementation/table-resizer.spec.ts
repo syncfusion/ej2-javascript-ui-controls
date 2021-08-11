@@ -282,3 +282,253 @@ console.log('Selection At Row Resizing Tesing');
         (editor.editorModule.tableResize as any).getRowReSizerPosition(null, new Point(252.5, 391.33));
     });
 });
+
+describe('Table resizer validation for row and column table with floating left table in a document', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', {
+            id: 'container',
+            styles: 'width:1280px;height:500px'
+        });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableEditorHistory: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Row resizer', (done) => {
+        editor.open(getFloatLeftTableJSON());
+        setTimeout(()=>{
+            documentHelper = editor.documentHelper;
+            let event: any = { offsetX: 274, offsetY: 175, preventDefault: function () { }, ctrlKey: false, which: 0 };
+            editor.documentHelper.onMouseMoveInternal(event);
+            expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+            done();
+        }, 1000);
+    });
+    it('Column resizer', (done) => {
+        editor.open(getFloatLeftTableJSON());
+        setTimeout(()=>{
+            documentHelper = editor.documentHelper;
+            let event: any = { offsetX: 326, offsetY: 160, preventDefault: function () { }, ctrlKey: false, which: 0 };
+            editor.documentHelper.onMouseMoveInternal(event);
+            expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+            done();
+        }, 1000);
+    });
+});
+
+function getFloatLeftTableJSON() { 
+    return JSON.stringify({
+        "sections": [{ "blocks": [{ "rows": [{ "rowFormat": { "allowBreakAcrossPages": true,"isHeader": false,"height": 0.0, 
+        "heightType": "AtLeast","borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None", 
+        "lineWidth": 0.0, "shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "None","lineWidth": 0.0, 
+        "shadow": false,"space": 0.0,"hasNoneStyle": false}, "vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"horizontal": { "lineStyle": "None","lineWidth": 0.0, "shadow": false,"space": 0.0, 
+        "hasNoneStyle": false},"diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0, 
+        "hasNoneStyle": false},"diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}}}, 
+        "cells": [{ "blocks": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": []}], 
+        "cellFormat": { "columnSpan": 1,"rowSpan": 1,"preferredWidth": 150.25,"preferredWidthType": "Point","verticalAlignment": "Top", 
+        "isSamePaddingAsTable": true,"borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0, 
+        "hasNoneStyle": false}, "right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "top": { "lineStyle": "None", "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, "space": 0.0,"hasNoneStyle": false}, 
+        "vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalUp": { "lineStyle": "None", "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}}, 
+        "cellWidth": 150.25}}]},{ "rowFormat": { "allowBreakAcrossPages": true, "isHeader": false,"height": 0.0,"heightType": "AtLeast", 
+        "borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0, "hasNoneStyle": false}, 
+        "right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, "top": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "None", "lineWidth": 0.0, 
+        "shadow": false,"space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}}},"cells": [{ "blocks": [{ "characterFormat": { "fontColor": "empty"}, 
+        "paragraphFormat": { "styleName": "Normal"},"inlines": []}],"cellFormat": { "columnSpan": 1,"rowSpan": 1,"preferredWidth": 150.25, 
+        "preferredWidthType": "Point","verticalAlignment": "Top","isSamePaddingAsTable": true,"borders": { "left": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}},"cellWidth": 150.25}}]}, 
+        { "rowFormat": { "allowBreakAcrossPages": true,"isHeader": false,"height": 0.0,"heightType": "AtLeast","borders": { "left": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}}}, 
+        "cells": [{ "blocks": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": []}], 
+        "cellFormat": { "columnSpan": 1,"rowSpan": 1,"preferredWidth": 150.25,"preferredWidthType": "Point","verticalAlignment": "Top", 
+        "isSamePaddingAsTable": true,"borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false}},"cellWidth": 150.25}}]}],"title": null,"description": null,"wrapTextAround": true, 
+        "positioning": { "allowOverlap": false,"distanceTop": 0.0,"distanceRight": 9.0,"distanceLeft": 9.0,"distanceBottom": 0.0, 
+        "verticalOrigin": "Paragraph","verticalPosition": 0.05,"horizontalOrigin": "Column","horizontalAlignment": "Left", 
+        "horizontalPosition": 0.0},"tableFormat": { "allowAutoFit": true,"leftIndent": 0.0,"tableAlignment": "Left","preferredWidthType": "Auto", 
+        "borders": { "left": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "right": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "Single", 
+        "lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "horizontal": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false}},"bidi": false,"horizontalPositionAbs": "Left","horizontalPosition": 0.0}}, 
+        { "rows": [{ "rowFormat": { "allowBreakAcrossPages": true,"isHeader": false,"height": 0.0,"heightType": "AtLeast", 
+        "borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"right": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0, 
+        "hasNoneStyle": false},"bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"horizontal": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}}}, 
+        "cells": [{ "blocks": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": []}], 
+        "cellFormat": { "columnSpan": 1,"rowSpan": 1,"preferredWidth": 150.25,"preferredWidthType": "Point","verticalAlignment": "Top", 
+        "isSamePaddingAsTable": true,"borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false}},"cellWidth": 150.25}}]},{ "rowFormat": { "allowBreakAcrossPages": true,"isHeader": false,"height": 0.0, 
+        "heightType": "AtLeast","borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false}}},"cells": [{ "blocks": [{ "characterFormat": { "fontColor": "empty"}, 
+        "paragraphFormat": { "styleName": "Normal"},"inlines": []}],"cellFormat": { "columnSpan": 1,"rowSpan": 1,"preferredWidth": 150.25, 
+        "preferredWidthType": "Point","verticalAlignment": "Top","isSamePaddingAsTable": true,"borders": { "left": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}},"cellWidth": 150.25}}]}, 
+        { "rowFormat": { "allowBreakAcrossPages": true,"isHeader": false,"height": 0.0,"heightType": "AtLeast","borders": { "left": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}}}, 
+        "cells": [{ "blocks": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": []}], 
+        "cellFormat": { "columnSpan": 1,"rowSpan": 1,"preferredWidth": 150.25,"preferredWidthType": "Point","verticalAlignment": "Top", 
+        "isSamePaddingAsTable": true,"borders": { "left": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "right": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "horizontal": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalDown": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None","lineWidth": 0.0,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false}},"cellWidth": 150.25}}]}],"title": null,"description": null,"wrapTextAround": true, 
+        "positioning": { "allowOverlap": true,"distanceTop": 0.0,"distanceRight": 9.0,"distanceLeft": 9.0,"distanceBottom": 0.0, 
+        "verticalOrigin": "Paragraph","verticalPosition": 1.85,"horizontalOrigin": "Page","horizontalAlignment": "Left", 
+        "horizontalPosition": 270.7},"tableFormat": { "allowAutoFit": true,"leftIndent": 0.0,"tableAlignment": "Left","preferredWidthType": "Auto", 
+        "borders": { "left": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "right": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false},"top": { "lineStyle": "Single", 
+        "lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false},"bottom": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false, 
+        "space": 0.0,"hasNoneStyle": false},"vertical": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "horizontal": { "lineStyle": "Single","lineWidth": 0.5,"shadow": false,"space": 0.0,"hasNoneStyle": false}, 
+        "diagonalDown": { "lineStyle": "None","lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false},"diagonalUp": { "lineStyle": "None", 
+        "lineWidth": 0.0,"shadow": false,"space": 0.0,"hasNoneStyle": false}},"bidi": false,"horizontalPositionAbs": "Left", 
+        "horizontalPosition": 270.7}},{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": []}, 
+        { "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": []}, 
+        { "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": []}], 
+        "headersFooters": { "header": { "blocks": [{ "inlines": []}]},"footer": { "blocks": [{ "inlines": []}]},"evenHeader": { "blocks": [{ "inlines": []}]}, 
+        "evenFooter": { "blocks": [{ "inlines": []}]},"firstPageHeader": { "blocks": [{ "inlines": []}]},"firstPageFooter": { "blocks": [{ "inlines": []}]}}, 
+        "sectionFormat": { "headerDistance": 35.400001525878906,"footerDistance": 35.400001525878906,"pageWidth": 595.29998779296875, 
+        "pageHeight": 841.9000244140625,"leftMargin": 72.0,"rightMargin": 72.0,"topMargin": 72.0,"bottomMargin": 72.0,"differentFirstPage": false, 
+        "differentOddAndEvenPages": false,"bidi": false,"restartPageNumbering": false,"pageStartingNumber": 0, 
+        "endnoteNumberFormat": "LowerCaseRoman","footNoteNumberFormat": "Arabic","restartIndexForFootnotes": "DoNotRestart", 
+        "restartIndexForEndnotes": "DoNotRestart"}}],"characterFormat": { "fontSize": 11.0,"fontFamily": "Calibri","fontColor": "empty", 
+        "fontSizeBidi": 11.0,"fontFamilyBidi": "Arial"},"paragraphFormat": { "afterSpacing": 8.0,"lineSpacing": 1.0791666507720947, 
+        "lineSpacingType": "Multiple"},"background": { "color": "#FFFFFFFF"},"styles": [{ "type": "Paragraph","name": "Normal","next": "Normal", 
+        "characterFormat": { "fontColor": "empty"}},{ "type": "Character","name": "Default Paragraph Font", 
+        "characterFormat": { "fontColor": "empty"}}],"defaultTabWidth": 36.0,"formatting": false,"trackChanges": false, 
+        "protectionType": "NoProtection","enforcement": false,"dontUseHTMLParagraphAutoSpacing": false,"alignTablesRowByRow": false, 
+        "formFieldShading": true,"footnotes": { "separator": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"}, 
+        "inlines": [{ "text": "u0003","characterFormat": { "fontColor": "empty"}}]}], 
+        "continuationSeparator": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"},"inlines": [{ "text": "u0004", 
+        "characterFormat": { "fontColor": "empty"}}]}],"continuationNotice": [{ "inlines": []}]}, 
+        "endnotes": { "separator": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"}, 
+        "inlines": [{ "text": "u0003","characterFormat": { "fontColor": "empty"}}]}], 
+        "continuationSeparator": [{ "characterFormat": { "fontColor": "empty"},"paragraphFormat": { "styleName": "Normal"}, 
+        "inlines": [{ "text": "u0004","characterFormat": { "fontColor": "empty"}}]}],"continuationNotice": [{ "inlines": []}]}
+  })
+}
+
+describe('Table resizer validation for row and column table with floating right table in a document', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', {
+            id: 'container',
+            styles: 'width:1280px;height:500px'
+        });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableEditorHistory: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Row resizer', (done) => {
+        editor.open(getFloatRightTableJSON());
+        setTimeout(()=>{
+            documentHelper = editor.documentHelper;
+            let event: any = { offsetX: 425, offsetY: 181, preventDefault: function () { }, ctrlKey: false, which: 0 };
+            editor.documentHelper.onMouseMoveInternal(event);
+            expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+            done();
+        }, 1000);
+    });
+    it('Column resizer', (done) => {
+        editor.open(getFloatRightTableJSON());
+        setTimeout(()=>{
+            documentHelper = editor.documentHelper;
+            let event: any = { offsetX: 527, offsetY: 163, preventDefault: function () { }, ctrlKey: false, which: 0 };
+            editor.documentHelper.onMouseMoveInternal(event);
+            expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+            done();
+        }, 1000);
+    });
+});
+
+function getFloatRightTableJSON() { 
+    return JSON.stringify({
+        "sections":[{"blocks":[{"rows":[{"rowFormat":{"allowBreakAcrossPages":true,"isHeader":false,"height":0.0,"heightType":"AtLeast","borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}}},"cells":[{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"cellFormat":{"columnSpan":1,"rowSpan":1,"preferredWidth":150.25,"preferredWidthType":"Point","verticalAlignment":"Top","isSamePaddingAsTable":true,"borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"cellWidth":150.25}}]},{"rowFormat":{"allowBreakAcrossPages":true,"isHeader":false,"height":0.0,"heightType":"AtLeast","borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}}},"cells":[{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"cellFormat":{"columnSpan":1,"rowSpan":1,"preferredWidth":150.25,"preferredWidthType":"Point","verticalAlignment":"Top","isSamePaddingAsTable":true,"borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"cellWidth":150.25}}]},{"rowFormat":{"allowBreakAcrossPages":true,"isHeader":false,"height":0.0,"heightType":"AtLeast","borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}}},"cells":[{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"cellFormat":{"columnSpan":1,"rowSpan":1,"preferredWidth":150.25,"preferredWidthType":"Point","verticalAlignment":"Top","isSamePaddingAsTable":true,"borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"cellWidth":150.25}}]}],"title":null,"description":null,"wrapTextAround":true,"positioning":{"allowOverlap":true,"distanceTop":0.0,"distanceRight":9.0,"distanceLeft":9.0,"distanceBottom":0.0,"verticalOrigin":"Paragraph","verticalPosition":2.05,"horizontalOrigin":"Page","horizontalAlignment":"Left","horizontalPosition":33.4},"tableFormat":{"allowAutoFit":true,"leftIndent":0.0,"tableAlignment":"Left","preferredWidthType":"Auto","borders":{"left":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"bidi":false,"horizontalPositionAbs":"Left","horizontalPosition":33.4}},{"rows":[{"rowFormat":{"allowBreakAcrossPages":true,"isHeader":false,"height":0.0,"heightType":"AtLeast","borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}}},"cells":[{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"cellFormat":{"columnSpan":1,"rowSpan":1,"preferredWidth":150.25,"preferredWidthType":"Point","verticalAlignment":"Top","isSamePaddingAsTable":true,"borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"cellWidth":150.25}}]},{"rowFormat":{"allowBreakAcrossPages":true,"isHeader":false,"height":0.0,"heightType":"AtLeast","borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}}},"cells":[{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"cellFormat":{"columnSpan":1,"rowSpan":1,"preferredWidth":150.25,"preferredWidthType":"Point","verticalAlignment":"Top","isSamePaddingAsTable":true,"borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"cellWidth":150.25}}]},{"rowFormat":{"allowBreakAcrossPages":true,"isHeader":false,"height":0.0,"heightType":"AtLeast","borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}}},"cells":[{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"cellFormat":{"columnSpan":1,"rowSpan":1,"preferredWidth":150.25,"preferredWidthType":"Point","verticalAlignment":"Top","isSamePaddingAsTable":true,"borders":{"left":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"cellWidth":150.25}}]}],"title":null,"description":null,"wrapTextAround":true,"positioning":{"allowOverlap":false,"distanceTop":0.0,"distanceRight":9.0,"distanceLeft":9.0,"distanceBottom":0.0,"verticalOrigin":"Paragraph","verticalPosition":2.7,"horizontalOrigin":"Margin","horizontalAlignment":"Center","horizontalPosition":-4.0},"tableFormat":{"allowAutoFit":true,"leftIndent":0.0,"tableAlignment":"Left","preferredWidthType":"Auto","borders":{"left":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"right":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"top":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"bottom":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"vertical":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"horizontal":{"lineStyle":"Single","lineWidth":0.5,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalDown":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false},"diagonalUp":{"lineStyle":"None","lineWidth":0.0,"shadow":false,"space":0.0,"hasNoneStyle":false}},"bidi":false,"horizontalPositionAbs":"Center","horizontalPosition":-4.0}},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"headersFooters":{"header":{"blocks":[{"inlines":[]}]},"footer":{"blocks":[{"inlines":[]}]},"evenHeader":{"blocks":[{"inlines":[]}]},"evenFooter":{"blocks":[{"inlines":[]}]},"firstPageHeader":{"blocks":[{"inlines":[]}]},"firstPageFooter":{"blocks":[{"inlines":[]}]}},"sectionFormat":{"headerDistance":35.400001525878906,"footerDistance":35.400001525878906,"pageWidth":595.29998779296875,"pageHeight":841.9000244140625,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart"}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontColor":"empty","fontSizeBidi":11.0,"fontFamilyBidi":"Arial"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"fontColor":"empty"}},{"type":"Character","name":"Default Paragraph Font","characterFormat":{"fontColor":"empty"}}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"u0003","characterFormat":{"fontColor":"empty"}}]}],"continuationSeparator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"u0004","characterFormat":{"fontColor":"empty"}}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"u0003","characterFormat":{"fontColor":"empty"}}]}],"continuationSeparator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"u0004","characterFormat":{"fontColor":"empty"}}]}],"continuationNotice":[{"inlines":[]}]}
+    })
+}
+

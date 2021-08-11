@@ -799,9 +799,15 @@ export class Selection implements IAction {
                     foreignKeyData.push(rowObj.foreignKeyData);
                 }
                 if (gObj.isFrozenGrid()) {
-                    mRow.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
+                    const mRows: Element[] = gObj.getMovableRows();
+                    if (mRows && mRows.length) {
+                        mRow.push(mRows[this.selectedRowIndexes[i]]);
+                    }
                     if (gObj.getFrozenMode() === literals.leftRight) {
-                        fRightRow.push(gObj.getFrozenRightRows()[this.selectedRowIndexes[i]]);
+                        const frRows: Element[] = gObj.getFrozenRightRows();
+                        if (frRows && frRows.length) {
+                            fRightRow.push(frRows[this.selectedRowIndexes[i]]);
+                        }
                     }
                 }
             }
@@ -3238,7 +3244,10 @@ export class Selection implements IAction {
                 this.target = this.contentRenderer.getRowByIndex(rowIndex).getElementsByClassName(literals.rowCell)[cIndex];
             }
         } else {
-            this.target = this.contentRenderer.getRowByIndex(rowIndex).getElementsByClassName(literals.rowCell)[cIndex];
+            const row: Element = this.contentRenderer.getRowByIndex(rowIndex);
+            if (row) {
+                this.target = row.getElementsByClassName(literals.rowCell)[cIndex];
+            }
         }
         this.addAttribute(this.target);
     }

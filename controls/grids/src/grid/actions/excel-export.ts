@@ -1,7 +1,7 @@
 import {
     IGrid, ExcelExportProperties, ExcelHeader, ExcelFooter, ExcelRow,
     ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
-    AggregateQueryCellInfoEventArgs
+    AggregateQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs
 } from '../base/interface';
 import * as events from '../base/constant';
 import { Workbook, Worksheets, Worksheet, Column as ExcelColumn } from '@syncfusion/ej2-excel-export';
@@ -536,17 +536,7 @@ export class ExcelExport {
                     };
                     gObj.trigger(events.excelQueryCellInfo, excelCellArgs);
                     if (!isNullOrUndefined(excelCellArgs.image) && !isNullOrUndefined(excelCellArgs.image.base64)) {
-                        if (isNullOrUndefined(this.sheet.images)) {
-                            this.sheet.images = [];
-                        }
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const excelImage: any = {
-                            image: excelCellArgs.image.base64, row: this.rowLength, column: idx,
-                            lastRow: this.rowLength, lastColumn: idx
-                        };
-                        this.sheet.images.push(excelImage);
-                        templateRowHeight = excelCellArgs.image.height || 50;
-                        this.columns[idx - 1].width = excelCellArgs.image.width || this.columns[idx - 1].width;
+                        templateRowHeight = this.setImage(excelCellArgs, idx);
                     }
 
                     if (!isNullOrUndefined(excelCellArgs.hyperLink)) {
@@ -608,6 +598,20 @@ export class ExcelExport {
             gObj.notify(events.exportRowDataBound, { rowObj: row, type: 'excel',  excelRows: excelRows });
         }
         return startIndex;
+    }
+
+    private setImage(args: ExcelHeaderQueryCellInfoEventArgs | ExcelQueryCellInfoEventArgs, idx: number): number {
+        if (isNullOrUndefined(this.sheet.images)) {
+            this.sheet.images = [];
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const excelImage: any = {
+            image: args.image.base64, row: this.rowLength, column: idx,
+            lastRow: this.rowLength, lastColumn: idx
+        };
+        this.sheet.images.push(excelImage);
+        this.columns[idx - 1].width = args.image.width || this.columns[idx - 1].width;
+        return args.image.height || 50;
     }
 
     private childGridCell(excelRow: ExcelRow, childGridObj: IGrid, excelExportProps: ExcelExportProperties,
@@ -834,6 +838,11 @@ export class ExcelExport {
                 index++;
             }
         }
+
+        for (let col: number = 0; col < gridColumns.length; col++) {
+            this.parseStyles(gObj, gridColumns[col], this.getRecordThemeStyle(this.theme) as ExcelStyle, indent + col + 1);
+        }
+        let templateRowHeight: number;
         for (let row: number = 0; row < gridRows.length; row++) {
             let currentCellIndex: number = 1 + indent;
             const cells: ExcelCell[] = [];
@@ -883,15 +892,24 @@ export class ExcelExport {
 
                 const excelHeaderCellArgs: ExcelHeaderQueryCellInfoEventArgs = { cell: cell, gridCell: gridCell, style: style };
                 gObj.trigger(events.excelHeaderQueryCellInfo, excelHeaderCellArgs);
+                if (!isNullOrUndefined(excelHeaderCellArgs.image) && !isNullOrUndefined(excelHeaderCellArgs.image.base64)) {
+                    templateRowHeight = this.setImage(excelHeaderCellArgs, currentCellIndex);
+                }
+
+                if (!isNullOrUndefined(excelHeaderCellArgs.hyperLink)) {
+                    (excelHeaderCellArgs.cell as ExcelCell).hyperlink = { target: excelHeaderCellArgs.hyperLink.target };
+                    cell.value = excelHeaderCellArgs.hyperLink.displayText || cell.value;
+                }
                 cell.style = excelHeaderCellArgs.style;
                 cells.push(cell);
                 currentCellIndex++;
             }
-            excelRows.push({ index: this.rowLength++, cells: cells });
-        }
-
-        for (let col: number = 0; col < gridColumns.length; col++) {
-            this.parseStyles(gObj, gridColumns[col], this.getRecordThemeStyle(this.theme) as ExcelStyle, indent + col + 1);
+            const excelRow: ExcelRow = { index: this.rowLength++, cells: cells };
+            if (!isNullOrUndefined(templateRowHeight)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (excelRow as any).height = templateRowHeight;
+            }
+            excelRows.push(excelRow);
         }
         return excelRows;
     }

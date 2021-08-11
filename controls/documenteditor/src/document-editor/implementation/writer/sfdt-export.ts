@@ -1108,16 +1108,6 @@ export class SfdtExport {
                 this.writeLine(child, (this.startLine !== this.endLine && child !== this.startLine) ? 0 : offset, inlines);
             } else {
                 this.writeInlines(paragraph, child, inlines);
-                for (let i:number = 0; i < paragraph.floatingElements.length; i++) {
-                    let shape: ShapeBase = paragraph.floatingElements[i];
-                    if (shape instanceof ShapeElementBox) {
-                        let inline: any = this.writeInline(shape);
-                        if (!isNullOrUndefined(inline)) {
-                            inlines.push(inline);
-                        }
-                    }
-                }
-
             }
         }
         return endParagraph;
@@ -1407,7 +1397,7 @@ export class SfdtExport {
         do {
             rowWidget = next;
             next = rowWidget.nextRenderedWidget as TableRowWidget;
-            if (next && ((rowWidget.ownerTable.index !== next.ownerTable.index &&
+            if (!isNullOrUndefined(rowWidget.ownerTable.bodyWidget) && next && ((rowWidget.ownerTable.index !== next.ownerTable.index &&
                 rowWidget.ownerTable.bodyWidget.sectionIndex === next.ownerTable.bodyWidget.sectionIndex)
                 || rowWidget.ownerTable.bodyWidget.sectionIndex !== next.ownerTable.bodyWidget.sectionIndex)) {
                 next = undefined;

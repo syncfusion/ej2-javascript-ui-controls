@@ -1624,7 +1624,7 @@ export class Ribbon {
                     this.findValue = (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement).value;
                     toolbarObj.destroy();
                     const element: HTMLElement = document.querySelector('.e-find-toolbar');
-                    EventHandler.remove(element, 'focus', this.textFocus);
+                    if (element) { EventHandler.remove(element, 'focus', this.textFocus); }
                     EventHandler.remove(document, 'click', this.closeDialog);
                     focus(this.parent.element);
                 },

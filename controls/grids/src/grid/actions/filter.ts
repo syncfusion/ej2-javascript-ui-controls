@@ -20,6 +20,7 @@ import { CheckBoxFilter } from '../actions/checkbox-filter';
 import { ExcelFilter } from '../actions/excel-filter';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import * as literals from '../base/string-literals';
+import { Input } from '@syncfusion/ej2-inputs';
 
 /**
  *
@@ -381,6 +382,7 @@ export class Filter implements IAction {
         this.parent.on(events.filterMenuClose, this.filterMenuClose, this);
         this.docClickHandler = this.clickHandler.bind(this);
         EventHandler.add(document, 'click', this.docClickHandler, this);
+        EventHandler.add(this.parent.element, 'mousedown', this.refreshClearIcon, this);
         this.parent.on(events.filterOpen, this.columnMenuFilter, this);
         this.parent.on(events.click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
@@ -396,6 +398,7 @@ export class Filter implements IAction {
      */
     public removeEventListener(): void {
         EventHandler.remove(document, 'click', this.docClickHandler);
+        EventHandler.remove(this.parent.element, 'mousedown', this.refreshClearIcon);
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
         this.parent.off(events.uiUpdate, this.enableAfterRender);
@@ -409,6 +412,13 @@ export class Filter implements IAction {
         this.parent.off(events.click, this.filterIconClickHandler);
         this.parent.off(events.closeFilterDialog, this.clickHandler);
         this.parent.off(events.destroy, this.destroy);
+    }
+
+    private refreshClearIcon(e: Event): void {
+        if (this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar' &&
+            (e.target as Element).classList.contains('e-clear-icon')) {
+            Input.setValue(null, (e.target as Element).parentElement.children[0] as HTMLInputElement | HTMLTextAreaElement, 'Never', true);
+        }
     }
 
     private filterMenuClose(): void {

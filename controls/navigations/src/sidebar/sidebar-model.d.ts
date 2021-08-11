@@ -1,4 +1,4 @@
-import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor, Browser } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, Browser } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import {SidebarPosition,SidebarType,EventArgs,ChangeEventArgs} from "./sidebar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -28,7 +28,6 @@ export interface SidebarModel extends ComponentModel{
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     mediaQuery?: string | MediaQueryList;
 
@@ -158,7 +157,6 @@ export interface SidebarModel extends ComponentModel{
      *
      * @default 1000
      * @aspType double
-     * @blazorType double
      */
     zIndex?: string | number;
 
@@ -167,7 +165,6 @@ export interface SidebarModel extends ComponentModel{
      *
      * @event
      *
-     * @blazorProperty 'Created'
      *
      */
     /* eslint-disable */
@@ -177,8 +174,6 @@ export interface SidebarModel extends ComponentModel{
      * Triggers when component is closed.
      *
      * @event
-     * @blazorProperty 'OnClose'
-     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     close?: EmitType<EventArgs>;
 
@@ -186,8 +181,6 @@ export interface SidebarModel extends ComponentModel{
      * Triggers when component is opened.
      *
      * @event
-     * @blazorProperty 'OnOpen'
-     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     open?: EmitType<EventArgs>;
 
@@ -195,7 +188,6 @@ export interface SidebarModel extends ComponentModel{
      * Triggers when the state(expand/collapse) of the component is changed.
      *
      * @event
-     * @blazorProperty 'Changed'
      */
     change?: EmitType<ChangeEventArgs>;
 
@@ -203,7 +195,6 @@ export interface SidebarModel extends ComponentModel{
      * Triggers when component gets destroyed.
      *
      * @event
-     * @blazorProperty 'Destroyed'
      */
     /* eslint-disable */
     destroyed?: EmitType<Object>;

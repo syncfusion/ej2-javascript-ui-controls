@@ -525,9 +525,20 @@ export class BodyWidget extends BlockContainer {
     }
     public getTableCellWidget(touchPoint: Point): TableCellWidget {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
-            if ((this.childWidgets[i] as Widget).y <= touchPoint.y
-                && ((this.childWidgets[i] as Widget).y + (this.childWidgets[i] as Widget).height) >= touchPoint.y) {
-                return (this.childWidgets[i] as Widget).getTableCellWidget(touchPoint);
+            if (this.childWidgets[i] instanceof TableWidget) {
+                const childWidget: TableWidget = this.childWidgets[i] as TableWidget;
+                let tableWidth: number = 0;
+                if (childWidget.wrapTextAround) {
+                    tableWidth = childWidget.getTableCellWidth();
+                }
+                if (!(childWidget.wrapTextAround) && childWidget.y <= touchPoint.y && (childWidget.y + childWidget.height) >= touchPoint.y) {
+                    return (childWidget as Widget).getTableCellWidget(touchPoint);
+                }
+                if ((childWidget.wrapTextAround &&
+                    (childWidget.x <= touchPoint.x && (childWidget.x + tableWidth) >= touchPoint.x &&
+                        childWidget.y <= touchPoint.y && (childWidget.y + childWidget.height) >= touchPoint.y))) {
+                    return (childWidget as Widget).getTableCellWidget(touchPoint);
+                }
             }
         }
         let tableCellWidget: TableCellWidget = undefined;
@@ -1747,6 +1758,9 @@ export class TableWidget extends BlockWidget {
                     this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth);
                 }
             }
+            if (sizeInfo.minimumWordWidth > tableWidth) {
+                tableWidth = HelperMethods.convertPixelToPoint(sizeInfo.minimumWordWidth);
+            }
         }
         if (isZeroWidth && !this.isDefaultFormatUpdated) {
             this.isDefaultFormatUpdated = true;
@@ -2102,6 +2116,11 @@ export class TableWidget extends BlockWidget {
             this.childWidgets = undefined;
         }
         if (!isNullOrUndefined(this.containerWidget)) {
+            if (this.containerWidget instanceof BodyWidget) {
+                if (this.containerWidget.floatingElements.indexOf(this) !== -1) {
+                    this.containerWidget.floatingElements.splice(this.containerWidget.floatingElements.indexOf(this), 1);
+                }
+            }
             if (!isNullOrUndefined(this.containerWidget.childWidgets)) {
                 if (this.containerWidget.childWidgets.indexOf(this) !== -1) {
                     this.containerWidget.childWidgets.splice(this.containerWidget.childWidgets.indexOf(this), 1);
@@ -5553,7 +5572,7 @@ export class ShapeElementBox extends ShapeBase {
         }
         if (this.textFrame) {
             shape.textFrame = this.textFrame.clone();
-            shape.textFrame.containerShape = this.textFrame.containerShape;
+            shape.textFrame.containerShape = shape;
         }
         if (this.margin) {
             shape.margin = this.margin.clone();

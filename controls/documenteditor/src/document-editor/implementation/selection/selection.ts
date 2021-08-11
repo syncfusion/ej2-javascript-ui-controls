@@ -422,6 +422,20 @@ export class Selection {
     }
 
     /**
+    * Gets the selected content of the document as SFDT(Syncfusion Document Text) file format.
+    *
+    * @default undefined
+    * @returns {string}
+    */
+    public get sfdt(): string {
+        if (this.owner.editorModule && (this.start.offset !== this.end.offset)) {
+            return JSON.stringify(this.writeSfdt());
+        } else {
+            return undefined;
+        }
+    }
+
+    /**
      * Gets the bookmark name collection in current selection
      *
      * @param includeHidden - Decide whether to include hidden bookmark name in current selection or not.
@@ -5796,8 +5810,21 @@ export class Selection {
      *
      * @private
      */
-    //Body Widget
+    //Body Widget 
     public getLineWidgetBodyWidget(widget: Widget, point: Point): LineWidget {
+        let bodyWgt: BodyWidget = widget as BodyWidget;
+        if (bodyWgt instanceof BlockContainer) {
+            for (let x: number = 0; x < bodyWgt.floatingElements.length; x++) {
+                const floatWidget: IWidget = bodyWgt.floatingElements[x];
+                if (floatWidget instanceof TableWidget) {
+                    let floatWidgetWidth: number = floatWidget.getTableCellWidth();
+                    if (point.x <= floatWidget.x + floatWidgetWidth && point.x >= floatWidget.x
+                        && point.y <= floatWidget.y + floatWidget.height && point.y >= floatWidget.y) {
+                        return this.getLineWidgetTableWidget(floatWidget, point);
+                    }
+                }
+            }
+        }
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
             const childWidget: IWidget = widget.childWidgets[i];
             if (childWidget instanceof FootNoteWidget) {
@@ -5818,7 +5845,11 @@ export class Selection {
                     if (childWidget instanceof ParagraphWidget) {
                         return this.getLineWidgetParaWidget((childWidget as ParagraphWidget), point);
                     } else {
-                        return this.getLineWidgetTableWidget((childWidget as TableWidget), point);
+                        let table: TableWidget = childWidget as TableWidget;
+                        if (table.wrapTextAround) {
+                            continue;
+                        }
+                        return this.getLineWidgetTableWidget(table, point);
                     }
                 }
             }
@@ -6191,11 +6222,15 @@ export class Selection {
         } else {
             if (!isNullOrUndefined(element)) {
                 if (caretPosition.x > left + element.margin.left || (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
+                    let isInInline: boolean = false;
+                    if (widget.paragraph.floatingElements.length > 0) {
+                        isInInline = this.documentHelper.checkPointIsInLine(widget, caretPosition);
+                    }
                     for (let i: number = widget.children.indexOf(element); i < widget.children.length; i++) {
                         element = widget.children[i];
                         if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
                             if (this.documentHelper.isInShapeBorder(element, caretPosition) &&
-                                !this.documentHelper.isSelectionChangedOnMouseMoved) {
+                                !this.documentHelper.isSelectionChangedOnMouseMoved && !isInInline) {
                                 left = element.x;
                                 top = element.y;
                                 break;
@@ -8874,18 +8909,23 @@ export class Selection {
         this.documentHelper.updateFocus();
     }
     /**
-     * @private
+     * Write the selected content as SFDT.
+     * @returns SFDT Object.
      */
-    public getHtmlContent(): string {
+    private writeSfdt(): any {
         let startPosition: TextPosition = this.start;
         let endPosition: TextPosition = this.end;
         if (!this.isForward) {
             startPosition = this.end;
             endPosition = this.start;
         }
-
-        let documentContent: any = this.owner.sfdtExportModule.write(startPosition.currentWidget, startPosition.offset, endPosition.currentWidget, endPosition.offset, true);
-
+        return (this.owner.sfdtExportModule.write(startPosition.currentWidget, startPosition.offset, endPosition.currentWidget, endPosition.offset, true));
+    }
+    /**
+     * @private
+     */
+    public getHtmlContent(): string {
+        let documentContent: any = this.writeSfdt();
         if (this.owner.editorModule) {
             this.owner.editorModule.copiedData = JSON.stringify(documentContent);
         }

@@ -50,6 +50,10 @@ export class Layout {
      * @private
      */
     public isRelayout: boolean = false;
+    /**
+     * @private
+     */
+    public isOverlapFloatTable: boolean = false;
     public isInitialLoad: boolean = true;
     private fieldBegin: FieldElementBox = undefined;
     private maxTextHeight: number = 0;
@@ -1408,14 +1412,14 @@ export class Layout {
                                     rect.x = xposition;
                                 }
                                 //else
-                                    // this.isXPositionUpdated = true;
-                                    // if (!(leafWidget is Break))
-                                    //     AdjustClientAreaBasedOnExceededTab(leafWidget, size, ref rect, ownerPara);
+                                // this.isXPositionUpdated = true;
+                                // if (!(leafWidget is Break))
+                                //     AdjustClientAreaBasedOnExceededTab(leafWidget, size, ref rect, ownerPara);
 
-                                    // //Microsoft Word 2013 doesn't split text character by character, when current line has floating item.
-                                    // if (ownerPara != null && ownerPara.Document.Settings.CompatibilityMode == CompatibilityMode.Word2013)
-                                    //     layouter.m_canSplitbyCharacter = false;
-                                    this.isWrapText = true;
+                                // //Microsoft Word 2013 doesn't split text character by character, when current line has floating item.
+                                // if (ownerPara != null && ownerPara.Document.Settings.CompatibilityMode == CompatibilityMode.Word2013)
+                                //     layouter.m_canSplitbyCharacter = false;
+                                this.isWrapText = true;
                                 this.viewer.updateClientAreaForTextWrap(rect);//
 
                             }
@@ -1614,7 +1618,7 @@ export class Layout {
                                 }
                             } else {
                                 let xposition: number = rect.x;
-                                rect.x = wrappingBounds.right;
+                                rect.x = wrappingBounds.right + ((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin;
                                 rect.width = this.viewer.clientArea.right - wrappingBounds.right;
                                 //When there is no space to fit the content in right, then update the y position.
                                 if (textWrappingStyle === 'Square' && rect.width < 0 && tableWidth > 0) {
@@ -1814,6 +1818,16 @@ export class Layout {
         if (line !== element.line || element.line === line && isNullOrUndefined(element.nextElement)
             && !element.line.isLastLine()) {
             this.moveToNextLine(line);
+            if (this.documentHelper.compatibilityMode !== 'Word2013' && this.isOverlapFloatTable) {
+                let table: TableWidget;
+                if(element.line.paragraph.previousRenderedWidget instanceof TableWidget && element.line.paragraph.previousRenderedWidget.wrapTextAround) {
+                    table = element.line.paragraph.previousRenderedWidget;
+                    this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -
+                    HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
+                }
+                this.viewer.clientActiveArea.x += line.paragraph.leftIndent;
+                this.isOverlapFloatTable = false;
+            }
             if (line !== element.line) {
                 this.isRTLLayout = false;
             }
@@ -2030,9 +2044,13 @@ export class Layout {
     private moveFromNextPage(line: LineWidget): void {
         const nextLine: LineWidget = line.nextLine;
         if (nextLine && line.paragraph.childWidgets.indexOf(nextLine) === -1) {
+            let splittedParagraph: ParagraphWidget = nextLine.paragraph;
             nextLine.paragraph.childWidgets.splice(nextLine.indexInOwner, 1);
             line.paragraph.childWidgets.push(nextLine);
             nextLine.paragraph = line.paragraph;
+            if (splittedParagraph.childWidgets.length === 0) {
+                splittedParagraph.destroy();
+            }
         }
     }
     private cutClientWidth(currentElement: ElementBox): boolean {
@@ -2682,8 +2700,10 @@ export class Layout {
         this.updateLineWidget(line);
         height = this.maxTextHeight;
         maxDescent = height - this.maxTextBaseline;
-        let Index: number = this.documentHelper.pages.indexOf(paragraph.bodyWidget.page);
-
+        let pageIndex: number = 0;
+        if (paragraph.bodyWidget) {
+            pageIndex = this.documentHelper.pages.indexOf(paragraph.bodyWidget.page);
+        }
         //Updates before spacing at the top of Paragraph first line.
         if (isParagraphStart) {
             beforeSpacing = this.getBeforeSpacing(paragraph);
@@ -2723,12 +2743,12 @@ export class Layout {
         // we need to calculate subwidth and add it to the left margin of the element.
         if (textAlignment !== 'Left' && this.viewer.textWrap && (!(textAlignment === 'Justify' && isParagraphEnd)
             || (textAlignment === 'Justify' && paraFormat.bidi))) {
-                getWidthAndSpace = this.getSubWidth(line, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
+            getWidthAndSpace = this.getSubWidth(line, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
             subWidth = getWidthAndSpace[0].subWidth;
             whiteSpaceCount = getWidthAndSpace[0].spaceCount;
         }
         let addSubWidth: boolean = false;
-        let wrapIndex : number = 0;
+        let wrapIndex: number = 0;
         let lineSpacingType: LineSpacingType = paraFormat.lineSpacingType;
         let isStarted: boolean = false;
         for (let i: number = 0; i < line.children.length; i++) {
@@ -2770,7 +2790,7 @@ export class Layout {
             } else if (lineSpacing > topMargin + elementBox.height + bottomMargin) {
                 topMargin += lineSpacing - (topMargin + elementBox.height + bottomMargin);
             }
-            if (Index > 0 && paragraph === paragraph.bodyWidget.childWidgets[0]) {
+            if (pageIndex > 0 && paragraph === paragraph.bodyWidget.childWidgets[0]) {
                 topMargin += 0;
             } else {
                 topMargin += beforeSpacing;
@@ -2947,13 +2967,11 @@ export class Layout {
                 paragraphWidget.containerWidget = nextBody;
                 this.viewer.updateClientAreaLocation(paragraphWidget, this.viewer.clientActiveArea);
                 if (keepLinesTogether || keepWithNext) {
-                    // conside table case
                     if (line.paragraph !== paragraphWidget) {
-                        this.updateClientAreaForNextBlock(undefined, paragraphWidget);
-                        paragraphWidget.height = this.viewer.clientActiveArea.y - paragraphWidget.y;
                         if (paragraphWidget instanceof TableWidget) {
-                            this.updateChildLocationForTable(paragraphWidget.y, paragraphWidget);
+                            this.clearTableWidget(paragraphWidget, true, true, false);
                         }
+                        this.layoutBlock(paragraphWidget, 0);
                         viewer.updateClientAreaForBlock(paragraphWidget, false);
                     }
                     let lastBlock: ParagraphWidget = line.paragraph;
@@ -2962,19 +2980,14 @@ export class Layout {
                         if (!isNullOrUndefined(nextBlock)) {
                             do {
                                 viewer.updateClientAreaForBlock(nextBlock, true);
-                                if (nextBlock instanceof ParagraphWidget) {
-                                    this.addParagraphWidget(this.viewer.clientActiveArea, nextBlock);
-                                } else {
-                                    this.addTableWidget(this.viewer.clientActiveArea, [nextBlock as TableWidget]);
-                                }
-                                this.viewer.updateClientAreaLocation(nextBlock, this.viewer.clientActiveArea);
-                                if (nextBlock instanceof TableWidget) {
-                                    this.updateChildLocationForTable(nextBlock.y, nextBlock);
-                                }
                                 if (nextBlock !== lastBlock) {
-                                    this.viewer.cutFromTop(this.viewer.clientActiveArea.y + nextBlock.height);
+                                    if (nextBlock instanceof TableWidget) {
+                                        this.clearTableWidget(nextBlock, true, true, false);
+                                    }
+                                    this.layoutBlock(nextBlock, 0);
                                     viewer.updateClientAreaForBlock(nextBlock, false);
                                 } else {
+                                    this.viewer.updateClientAreaLocation(nextBlock, this.viewer.clientActiveArea);
                                     break;
                                 }
                                 nextBlock = nextBlock.nextWidget as BlockWidget;
@@ -2989,7 +3002,8 @@ export class Layout {
                 }
             }
         }
-        if (paragraphWidget.floatingElements.length > 0) {
+        if (paragraphWidget instanceof ParagraphWidget &&
+            paragraphWidget.floatingElements.length > 0) {
             for (let m: number = 0; m < paragraphWidget.floatingElements.length; m++) {
                 let shape: ShapeBase = paragraphWidget.floatingElements[m];
                 let position: Point = this.getFloatingItemPoints(shape);
@@ -3017,7 +3031,7 @@ export class Layout {
             this.viewer.clientActiveArea.y = this.endOverlapWidget.y;
         }
     }
- 
+
     /**
      * Align block based on keep with next and keep lines together property.
      */
@@ -3097,6 +3111,7 @@ export class Layout {
             newTable.childWidgets.push(rowWidget);
             rowWidget.containerWidget = newTable;
             table.height -= rowWidget.height;
+            newTable.height += rowWidget.height;
         }
         table.containerWidget.childWidgets.splice(table.indexInOwner + 1, 0, newTable);
         newTable.containerWidget = table.containerWidget;
@@ -3153,6 +3168,7 @@ export class Layout {
                         this.addTableRowWidget(this.viewer.clientActiveArea, [nextRow]);
                         this.updateChildLocationForRow(this.viewer.clientActiveArea.y, nextRow);
                         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + nextRow.height);
+                        startBlock.height += nextRow.height;
                         nextRow = nextRow.nextWidget as TableRowWidget;
                     } while (nextRow);
                 } else {
@@ -3176,8 +3192,12 @@ export class Layout {
     }
     private layoutStartEndBlocks(startBlock: BlockWidget, endBlock: BlockWidget): void {
         let block: BlockWidget = startBlock;
+        this.isOverlapFloatTable = true;
         this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - startBlock.y;
         this.viewer.clientActiveArea.y = startBlock.y;
+        if (startBlock.leftIndent > 0) { 
+        this.viewer.clientActiveArea.x += startBlock.leftIndent;
+        }
         while (block) {
             if (block instanceof ParagraphWidget) {
                 this.layoutParagraph(block as ParagraphWidget, 0);
@@ -3850,7 +3870,7 @@ export class Layout {
                 width = Math.round(width);
             } else {
                 width = width;
-            }   
+            }
         }
         lineText = lineText.trim();
         spaceCount = lineText.length - HelperMethods.removeSpace(lineText).length;
@@ -3876,9 +3896,9 @@ export class Layout {
         let subWidths: SubWidthInfo[] = [];
         let width: number = 0;
         let lineContent: string = '';
-        let wrapIndex: number = this.wrapPosition.length - 1 ;
+        let wrapIndex: number = this.wrapPosition.length - 1;
         let trimSpace: boolean = true;
-        for (let z: number =  lineWidget.children.length - 1; z >= 0; z--) {
+        for (let z: number = lineWidget.children.length - 1; z >= 0; z--) {
             let elementBox: ElementBox = lineWidget.children[z];
             if (elementBox.width > 0 && elementBox instanceof TextElementBox) {
                 let elementText: string = (elementBox as TextElementBox).text;
@@ -4064,8 +4084,9 @@ export class Layout {
             }
         }
         cell.margin = new Margin(left, top, right, bottom);
+        let autofit: boolean = cell.ownerTable.tableFormat.allowAutoFit;
         let cellWidth: number = cell.cellFormat.cellWidth;
-        if (cellWidth > cell.cellFormat.preferredWidth && cell.cellFormat.preferredWidth !== 0 && cell.cellFormat.preferredWidthType !== 'Percent' && cell.ownerTable.tableFormat.preferredWidthType !== 'Percent') {
+        if (cellWidth > cell.cellFormat.preferredWidth && cell.cellFormat.preferredWidth !== 0 && cell.cellFormat.preferredWidthType !== 'Percent' && cell.ownerTable.tableFormat.preferredWidthType !== 'Percent' && !cell.ownerTable.wrapTextAround) {
             cellWidth = cell.cellFormat.preferredWidth;
         }
         cell.width = HelperMethods.convertPointToPixel(cellWidth);
@@ -4519,6 +4540,7 @@ export class Layout {
                                 if (tableWidgets.length > 1 && tableWidgets[tableWidgets.length - 1].childWidgets.length === 0) {
                                     tableWidgets.pop();
                                     tableWidget = tableWidgets[tableWidgets.length - 1];
+                                    tableWidget.height = 0;
                                 }
                             } else if (prev.node instanceof ParagraphWidget) {
                                 let previousWidget: BlockWidget = this.splitParagraph(prev.node as ParagraphWidget, parseInt(prev.position.index, 10));
@@ -4720,7 +4742,7 @@ export class Layout {
                     /* eslint-disable-next-line max-len */
                 } else if (isLayouted && spanEndRowWidget && (spanEndRowWidget.y !== 0 && spanEndRowWidget.height !== 0) && cellWidget.y + cellWidget.height + cellWidget.margin.bottom > spanEndRowWidget.y + spanEndRowWidget.height) {
                     if (spanEndRowWidget.rowFormat.heightType !== 'Exactly' || (spanEndRowWidget.rowFormat.heightType === 'Exactly' && spanEndRowWidget.rowFormat.height > cellWidget.y + cellWidget.height + cellWidget.margin.bottom - spanEndRowWidget.y)) {
-                    spanEndRowWidget.height = cellWidget.y + cellWidget.height + cellWidget.margin.bottom - spanEndRowWidget.y;
+                        spanEndRowWidget.height = cellWidget.y + cellWidget.height + cellWidget.margin.bottom - spanEndRowWidget.y;
                     } else {
                         cellWidget.height = (spanEndRowWidget.y - cellWidget.y) + spanEndRowWidget.height;
                     }
@@ -5009,32 +5031,32 @@ export class Layout {
 
     public getListLevelPattern(value: number): ListLevelPattern {
         switch (value) {
-        case 0:
-            return 'Arabic';
-        case 1:
-            return 'LowLetter';
-        case 2:
-            return 'LowRoman';
-        case 3:
-            return 'UpLetter';
-        case 4:
-            return 'UpRoman';
-        case 5:
-            return 'Ordinal';
-        case 6:
-            return 'Number';
-        case 7:
-            return 'OrdinalText';
-        case 8:
-            return 'LeadingZero';
-        case 9:
-            return 'Bullet';
-        case 10:
-            return 'FarEast';
-        case 11:
-            return 'Special';
-        default:
-            return 'None';
+            case 0:
+                return 'Arabic';
+            case 1:
+                return 'LowLetter';
+            case 2:
+                return 'LowRoman';
+            case 3:
+                return 'UpLetter';
+            case 4:
+                return 'UpRoman';
+            case 5:
+                return 'Ordinal';
+            case 6:
+                return 'Number';
+            case 7:
+                return 'OrdinalText';
+            case 8:
+                return 'LeadingZero';
+            case 9:
+                return 'Bullet';
+            case 10:
+                return 'FarEast';
+            case 11:
+                return 'Special';
+            default:
+                return 'None';
         }
     }
 
@@ -5062,6 +5084,8 @@ export class Layout {
         newTable.tableFormat = table.tableFormat;
         newTable.tableHolder = table.tableHolder;
         newTable.isGridUpdated = table.isGridUpdated;
+        newTable.wrapTextAround = table.wrapTextAround;
+        newTable.positioning = table.positioning;
         return newTable;
     }
 
@@ -5610,6 +5634,11 @@ export class Layout {
     /* eslint-disable-next-line max-len */
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
         this.isRelayout = true;
+        if (paragraphWidget.containerWidget instanceof TextFrame
+            && (paragraphWidget.containerWidget.containerShape as ShapeElementBox).textWrappingStyle === 'Inline') {
+            lineIndex = paragraphWidget.containerWidget.containerShape.line.indexInOwner;
+            paragraphWidget = paragraphWidget.containerWidget.containerShape.paragraph;
+        }
         isBidi = isNullOrUndefined(isBidi) ? false : isBidi;
         this.isRelayout = true;
         if (this.documentHelper.blockToShift === paragraphWidget) {
@@ -5742,14 +5771,32 @@ export class Layout {
         currentTable.x -= currentTable.leftBorderWidth;
         currentTable.y -= currentTable.topBorderWidth;
         //Update Client area for current position
-        this.viewer.cutFromTop(currentTable.y);
+        let yPos: number = this.getYPosition(currentTable);
+        this.viewer.cutFromTop(yPos);
         this.clearTableWidget(currentTable, true, true, true);
         this.isBidiReLayout = true;
         this.layoutBlock(currentTable, 0);
         this.viewer.updateClientAreaForBlock(currentTable, false);
         this.layoutNextItemsBlock(currentTable, this.viewer, isFootnoteReLayout);
     }
-
+    private getYPosition(table: TableWidget): number {
+        if (table.wrapTextAround) {
+            let prevWidget: Widget = table.previousWidget;
+            while (prevWidget) {
+                if (prevWidget instanceof ParagraphWidget) {
+                    return prevWidget.y + prevWidget.height;
+                } else if (prevWidget instanceof TableWidget) {
+                    if (prevWidget.wrapTextAround) {
+                        prevWidget = prevWidget.previousWidget;
+                    } else {
+                        return prevWidget.y + prevWidget.height;
+                    }
+                }
+            }
+            return this.viewer.clientActiveArea.y;
+        }
+        return table.y;
+    }
     public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean, clearGrid?: boolean): void {
         table.height = 0;
         if (clearGrid) {
@@ -5936,6 +5983,11 @@ export class Layout {
             clientActiveAreaForTableWrap = this.viewer.clientActiveArea.clone();
             clientAreaForTableWrap = this.viewer.clientArea.clone();
             this.updateTableFloatPoints(table);
+            let clienactare: Rect = this.viewer.clientActiveArea.clone();
+            let rect: Rect = this.adjustClientAreaBasedOnTextWrapForTable(table, this.viewer.clientActiveArea);
+            if (clienactare.x !== rect.x) {
+            table.x = this.viewer.clientActiveArea.x;
+            }
         } else {
             this.adjustClientAreaBasedOnTextWrapForTable(table, this.viewer.clientActiveArea);
             if (this.isWrapText) {
@@ -5955,14 +6007,31 @@ export class Layout {
             row = this.layoutRow(tableView, row);
             row = row.nextRow as TableRowWidget;
         }
+        if (this.documentHelper.viewer instanceof PageLayoutViewer && table.wrapTextAround && (table.positioning.verticalAlignment === 'Bottom' || table.positioning.verticalAlignment === 'Center' || table.positioning.verticalAlignment === 'Outside')) {
+            this.updateTableFloatPoints(table);
+            this.updateChildLocationForTable(table.y, table);
+        }
         this.updateWidgetsToPage(tableView, [], table);
         if (wrapDiff > 0) {
             this.viewer.clientArea.x = this.viewer.clientArea.x - wrapDiff;
         }
-        if (table.wrapTextAround && table.bodyWidget) {
-            this.viewer.clientActiveArea = clientActiveAreaForTableWrap.clone();
-            this.viewer.clientArea = clientAreaForTableWrap.clone();
-            table.bodyWidget.floatingElements.push(table);
+        if (table.wrapTextAround && !table.isInsideTable && table.bodyWidget) {
+            if (tableView.length == 1) {
+                if (table.bodyWidget.floatingElements.indexOf(table) === -1) {
+                    table.bodyWidget.floatingElements.push(table);
+                }
+                this.viewer.clientActiveArea = clientActiveAreaForTableWrap.clone();
+                this.viewer.clientArea = clientAreaForTableWrap.clone();
+            } else {
+                this.documentHelper.tableLefts.pop();
+                this.viewer.updateClientArea(table.bodyWidget.sectionFormat, table.bodyWidget.page);
+                for (let z: number = 0; z < tableView.length; z++) {
+                    let bodyWidget: BlockContainer = tableView[z].bodyWidget;
+                    if (bodyWidget.floatingElements.indexOf(tableView[z]) === -1) {
+                        bodyWidget.floatingElements.push(tableView[z]);
+                    }
+                }
+            }
         }
         tableView[tableView.length - 1].isLayouted = true;
         if (this.documentHelper.compatibilityMode !== 'Word2013') {
@@ -6433,7 +6502,7 @@ export class Layout {
         }
     }
     private reLayoutOrShiftWidgets(blockAdv: BlockWidget, viewer: LayoutViewer): void {
-        const block: BlockWidget = blockAdv;
+        let block: BlockWidget = blockAdv;
         // if (block instanceof ParagraphWidget) {
         //     reLayoutItems = viewer.renderedElements.get(block as ParagraphWidget).length === 0;
         // } else {
@@ -6443,7 +6512,8 @@ export class Layout {
             //Handle layouting the block.
             viewer.updateClientAreaForBlock(block, true);
             if (block instanceof TableWidget) {
-                this.clearTableWidget(block, true, true, true);
+                block = block.combineWidget(this.viewer) as TableWidget;
+                this.clearTableWidget(block as TableWidget, true, true, true);
             }
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
@@ -6451,6 +6521,15 @@ export class Layout {
             //Handled to check client area and shift layouted widget.
             this.shiftWidgetsBlock(block, viewer);
         }
+        let index: number = this.documentHelper.pages.indexOf(block.bodyWidget.page);
+       if (index > 0 && block === block.bodyWidget.childWidgets[0]) {
+           let val: any = ((block.bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children;
+           for (let i: number = 0; i < val.length; i++) {
+               let element: ElementBox = val[i];
+               if (element.margin.top > 0 && element.margin.top === this.getBeforeSpacing(element.paragraph))
+               element.margin.top -= this.getBeforeSpacing(element.paragraph);
+           }
+       }
         //Updates the list value of the rendered paragraph.
         if (this.viewer.owner.editorModule) {
             this.viewer.owner.editorModule.updateRenderedListItems(block);
@@ -6527,8 +6606,8 @@ export class Layout {
                         shape.x = position.x;
                         if (shape instanceof ShapeElementBox) {
                             this.updateChildLocationForCellOrShape(shape.y, shape as ShapeElementBox);
+                        }
                     }
-                }
                 }
                 viewer.cutFromTop(viewer.clientActiveArea.y + widget.height);
                 //Moves the paragraph widget to previous body widget.
@@ -6850,7 +6929,7 @@ export class Layout {
                 let startBlock: BlockWidget = paragraphWidget;
                 let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
                 if (!isNullOrUndefined(blockInfo.node)) {
-                    startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : blockInfo.node as BlockWidget;
+                    startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : this.splitParagraph(blockInfo.node as ParagraphWidget, parseInt(blockInfo.position.index, 10)) as BlockWidget;
                     paragraphWidget = startBlock as ParagraphWidget;
                     this.keepWithNext = true;
                 }
@@ -6863,8 +6942,7 @@ export class Layout {
                 let startBlock: BlockWidget = paragraphWidget;
                 let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
                 if (!isNullOrUndefined(blockInfo.node)) {
-                    startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : blockInfo.node as BlockWidget;
-                    this.keepWithNext = true;
+                    startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : this.splitParagraph(blockInfo.node as ParagraphWidget, parseInt(blockInfo.position.index, 10)) as BlockWidget; this.keepWithNext = true;
                     nextBodyWidget = this.moveBlocksToNextPage(startBlock.previousWidget as BlockWidget);
                     this.updateClientPositionForBlock(paragraphWidget.previousWidget as BlockWidget, paragraphWidget);
                     // TODO: Handle moving footnote widget
@@ -6892,6 +6970,7 @@ export class Layout {
         if (footnoteWidgets.length > 0) {
             let footNoteIndex: number = -1;
             let footNoteWidget: BlockWidget;
+            let insertIndex: number = 1;
             for (let k: number = 0; k < footnoteWidgets.length; k++) {
                 /* eslint-disable-next-line max-len */
                 footNoteWidget = footnoteWidgets[k];
@@ -6902,7 +6981,13 @@ export class Layout {
                     }
                     fromBodyWidget.page.footnoteWidget.childWidgets.splice(footNoteIndex, 1);
                     if (toBodyWidget.page.footnoteWidget.childWidgets.indexOf(footNoteWidget) < 0) {
-                        toBodyWidget.page.footnoteWidget.childWidgets.push(footNoteWidget);
+                        let childLength: number = toBodyWidget.page.footnoteWidget.childWidgets.length;
+                        if (childLength === 1) {
+                            toBodyWidget.page.footnoteWidget.childWidgets.push(footNoteWidget);
+                            insertIndex++;
+                        } else {
+                            toBodyWidget.page.footnoteWidget.childWidgets.splice(insertIndex++, 0, footNoteWidget);
+                        }
                         toBodyWidget.page.footnoteWidget.height += footNoteWidget.height;
                     }
                     fromBodyWidget.page.footnoteWidget.height -= footNoteWidget.height;
@@ -7097,7 +7182,7 @@ export class Layout {
                     bodyWidget.floatingElements.push(shape);
                     widget.bodyWidget.floatingElements.splice(widget.bodyWidget.floatingElements.indexOf(shape), 1);
                     /* eslint:disable */
-                    bodyWidget.floatingElements.sort(function (a : ShapeBase, b: ShapeBase) : number { return a.y - b.y; });
+                    bodyWidget.floatingElements.sort(function (a: ShapeBase, b: ShapeBase): number { return a.y - b.y; });
                 }
             }
         }
@@ -7265,7 +7350,7 @@ export class Layout {
         }
         this.layoutNextItemsBlock(paragraph, this.viewer);
         const prevWidget: BodyWidget = paragraph.getSplitWidgets()[0].previousRenderedWidget as BodyWidget;
-        if (!isNullOrUndefined(prevWidget) &&  (!(prevWidget instanceof ParagraphWidget) ||
+        if (!isNullOrUndefined(prevWidget) && (!(prevWidget instanceof ParagraphWidget) ||
             (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak)) {
             this.viewer.cutFromTop(paragraph.y + paragraph.height);
             if (paragraph.containerWidget !== prevWidget.containerWidget && !isNullOrUndefined(prevWidget.containerWidget)) {
@@ -7274,7 +7359,7 @@ export class Layout {
                 let newBodyWidget: BodyWidget = prevWidget.containerWidget as BodyWidget;
                 const footWidgets: BlockWidget[] = this.getFootNoteWidgetsOf(paragraph);
                 //this.updateContainerWidget(paragraph as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
-                this.moveFootNotesToPage(footWidgets,newBodyWidget, prevBodyWidget);
+                this.moveFootNotesToPage(footWidgets, newBodyWidget, prevBodyWidget);
             }
         }
         let page: number = this.documentHelper.pages.length;
@@ -7523,397 +7608,425 @@ export class Layout {
                 indentY = this.getVerticalPosition(floatElement, vertPosition, vertOrigin, textWrapStyle);
                 indentX = this.getHorizontalPosition(floatElement.width, floatElement, horzAlignment, horzOrigin, horzPosition, textWrapStyle, paragraph.associatedCell.cellFormat.cellWidth);
             } else {
-                if (mIsYPositionUpdated) { /* Upadte the Y Coordinate of floating image when floating image postion is changed based on the wrapping style. */
-                    indentY = this.viewer.clientArea.y;
-                } else {
+                if (this.documentHelper.viewer instanceof WebLayoutViewer) {
                     switch (vertOrigin) {
-                        case 'Page':
-                        case 'TopMargin':
-                            indentY = vertPosition;
-                            switch (vertAlignment) {
-                                case 'Top':
-                                    indentY = vertPosition;
-                                    break;
-                                case 'Center':
-                                    if (vertOrigin === 'TopMargin') {
-                                        indentY = (topMargin - shapeHeight) / 2;
-                                    } else {
-                                        indentY = (pageHeight - shapeHeight) / 2;
-                                    }
-                                    break;
-                                case 'Outside':
-                                case 'Bottom':
-                                    if (vertOrigin === 'Page' && vertAlignment === 'Bottom') {
-                                        indentY = pageHeight - shapeHeight;
-                                    } else {
-                                        if (vertOrigin === 'TopMargin') {
-                                            indentY = (topMargin - shapeHeight);
-                                        } else if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
-                                            indentY = pageHeight - shapeHeight - footerDistance / 2;
-                                        } else {
-                                            indentY = headerDistance / 2;
-                                        }
-                                    }
-                                    break;
-                                case 'Inside':
-                                    if (vertOrigin === 'Page') {
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                            indentY = pageHeight - shapeHeight - footerDistance / 2;
-                                        } else {
-                                            indentY = headerDistance / 2;
-                                        }
-                                    } else {
-                                        //Need to ensure this behaviour.
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                            indentY = ((topMargin - shapeHeight) / 2 - headerDistance);
-                                        }
-                                    }
-                                    break;
-                                case 'None':
-                                    if (Math.abs(verticalPercent) <= 1000) {
-                                        indentY = pageHeight * (verticalPercent / 100);
-                                    } else {
-                                        indentY = vertPosition;
-                                    }
-                                    break;
-                            }
-                            break;
                         case 'Line':
-                            indentY = vertPosition;
-                            switch (vertAlignment) {
-                                case 'Inside':
-                                case 'Top':
-                                    //Need to update line widget height instead of client active area.
-                                    indentY = this.viewer.clientActiveArea.y;
-                                    break;
-                                case 'Center':
-                                    indentY = this.viewer.clientActiveArea.y - shapeHeight / 2;
-                                    break;
-                                case 'Outside':
-                                case 'Bottom':
-                                    indentY = this.viewer.clientActiveArea.y - shapeHeight;
-                                    break;
-                                case 'None':
-                                    indentY = Math.round(paragraph.y) + vertPosition;
-                                    break;
-                            }
-                            break;
-                        case 'BottomMargin':
-                            indentY = vertPosition;
-                            switch (vertAlignment) {
-                                case 'Inside':
-                                case 'Top':
-                                    indentY = (pageHeight - bottomMargin);
-                                    break;
-                                case 'Center':
-                                    indentY = pageHeight - bottomMargin + ((bottomMargin - shapeHeight) / 2);
-                                    break;
-                                case 'Outside':
-                                case 'Bottom':
-                                    if (paragraph.bodyWidget.page.index + 1 % 2 !== 0 && vertAlignment === 'Outside') {
-                                        indentY = pageHeight - bottomMargin;
-                                    } else {
-                                        indentY = pageHeight - shapeHeight;
-                                    }
-                                    break;
-                                case 'None':
-                                    indentY = pageHeight - bottomMargin + vertPosition;
-                                    break;
-                            }
-                            break;
-                        case 'InsideMargin':
-                        case 'OutsideMargin':
-                            indentY = vertPosition;
-                            switch (vertAlignment) {
-                                case 'Inside':
-                                    if (vertOrigin === 'InsideMargin') {
-                                        if (vertOrigin === 'InsideMargin' && paragraph.bodyWidget.page.index + 1 % 2 === 0) {
-                                            indentY = pageHeight - shapeHeight;
-                                        } else {
-                                            indentY = 0;
-                                        }
-                                    } else {
-                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin : topMargin - shapeHeight;
-                                    }
-                                    break;
-                                case 'Top':
-                                    if (vertOrigin === 'InsideMargin') {
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                            indentY = pageHeight - bottomMargin;
-                                        } else {
-                                            indentY = 0;
-                                        }
-                                    } else {
-                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin : 0;
-                                    }
-                                    break;
-                                case 'Center':
-                                    if (vertOrigin === 'OutsideMargin') {
-                                        //Need to ensure this.
-                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin + (bottomMargin - shapeHeight) / 2 : (topMargin - shapeHeight) / 2;
-                                    } else {
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                            indentY = pageHeight - bottomMargin + (bottomMargin - shapeHeight) / 2;
-                                        } else {
-                                            indentY = (topMargin - shapeHeight) / 2;
-                                        }
-                                    }
-                                    break;
-                                case 'Outside':
-                                    if (vertOrigin === 'InsideMargin') {
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                            indentY = (pageHeight - bottomMargin);
-                                        } else {
-                                            indentY = (topMargin - shapeHeight);
-                                        }
-                                    } else {
-                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? topMargin - shapeHeight : pageHeight - bottomMargin;
-                                    }
-                                    break;
-                                case 'Bottom':
-                                    if (vertOrigin === 'OutsideMargin') {
-                                        indentY = (paragraph.bodyWidget.page.index + 1) !== 0 ? pageHeight - shapeHeight : topMargin - shapeHeight;
-                                    } else {
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                            indentY = pageHeight - shapeHeight;
-                                        } else {
-                                            indentY = topMargin - shapeHeight;
-                                        }
-                                    }
-                                    break;
-                                case 'None':
-                                    break;
-                            }
-                            break;
-                        case 'Paragraph':
-                            const space: number = 0;
-                            //let prevsibling: BlockWidget = paragraph.previousWidget as BlockWidget;
-                            // if (floatElement) {
-                            //     //Need to handle DocIO Implementation.
-                            //     if (Math.round(paragraph.y) !== Math.round(topMargin) && (prevsibling instanceof ParagraphWidget)
-                            //         && ((paragraph.paragraphFormat.beforeSpacing > prevsibling.paragraphFormat.afterSpacing)
-                            //             || (prevsibling.paragraphFormat.afterSpacing < 14)
-                            //             && !paragraph.paragraphFormat.contextualSpacing)) {
-                            //         space = prevsibling.paragraphFormat.afterSpacing;
-                            //     }
-                            // }
-
-                            /* eslint-disable-next-line max-len */
-                            //Floating item Y position is calculated from paragraph original Y position not from wrapped paragraph Y(ParagraphLayoutInfo.YPosition) position.
-                            indentY = Math.round(paragraph.y) + space + vertPosition;
-                            break;
-                        case 'Margin':
-                            //If header distance is more than top margin, then calculate the position of item based on header distance.
-                            //As per Microsoft Word behavior, it is need to consider paragraph height along with the distance.
-                            if (paragraph.isInHeaderFooter && headerDistance > topMargin) {
-                                //Need to udpate.
-                                indentY = (headerDistance + (paragraph.height)) + vertPosition;
-                            } else {
-                                indentY = topMargin + vertPosition;
-                            }
-                            switch (vertAlignment) {
-                                case 'Top':
-                                    indentY = topMargin;
-                                    break;
-                                case 'Center':
-                                    indentY = topMargin + (pageClientHeight - shapeHeight) / 2;
-                                    break;
-                                case 'Outside':
-                                case 'Bottom':
-                                    if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
-                                        indentY = topMargin + pageClientHeight - shapeHeight;
-                                    } else {
-                                        indentY = topMargin;
-                                    }
-                                    break;
-                                case 'Inside':
-                                    if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                        indentY = topMargin + pageClientHeight - shapeHeight;
-                                    } else {
-                                        indentY = topMargin;
-                                    }
-                                    break;
-                                case 'None':
-                                    break;
-                            }
+                            indentY = this.documentHelper.selection.getTop(floatElement.line);
                             break;
                         default:
-                            //Need to analyze further.
-                            indentY = this.viewer.clientArea.y - vertPosition;
+                            indentY = this.viewer.clientActiveArea.y;
+                            break;
+                    }
+                    switch (horzOrigin) {
+                        case 'Character':
+                            indentX = this.viewer.clientActiveArea.x;
+                            break;
+                        default:
+                            switch (horzAlignment) {
+                                case 'Center':
+                                    indentX = (this.viewer.clientArea.width / 2) - (floatElement.width / 2);
+                                    break;
+                                default:
+                                    indentX = this.viewer.clientArea.x;
+                                    break;
+                            }
                             break;
                     }
                 }
-                // if (horzOrigin !== 'Column' && horzAlignment !== 'None') {
-                //     indentX = this.viewer.clientArea.x;
-                //     //Update the floating item x position to zero when floating item’s width
-                //     //exceeds the page width when floating item and it wrapping style is not equal to  
-                //     // infront of text and behind text and also vertical origin is not equal to paragraph.
-                // } else 
-                if (paragraph && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind' &&
-                    vertOrigin === 'Paragraph' && shapeWidth >= pageWidth) {
-                    indentX = 0;
-                } else {
-                    switch (horzOrigin) {
-                        case 'Page':
-                            indentX = horzPosition;
-                            switch (horzAlignment) {
-                                case 'Center':
-                                    if (isLayoutInCell) {
-                                        indentX = (paragraph.associatedCell.cellFormat.cellWidth - shapeWidth) / 2;
-                                    } else {
-                                        indentX = (pageWidth - shapeWidth) / 2;
-                                    }
-                                    break;
-                                case 'Left':
-                                    indentX = 0;
-                                    break;
-                                case 'Outside':
-                                case 'Right':
-                                    if (isLayoutInCell) {
-                                        indentX = paragraph.associatedCell.cellFormat.cellWidth - shapeWidth;
-                                    } else {
-                                        indentX = pageWidth - shapeWidth;
-                                    }
-                                    break;
-                                case 'None':
-                                    if (isLayoutInCell) {
-                                        indentX = paragraph.associatedCell.x + horzPosition;
-                                    } else if (floatElement instanceof ShapeElementBox) {
-                                        indentX = horzPosition;
-                                        // Shape pItemShape = paraItem as Shape;
-                                        // float horRelPercent = pItemShape !== null ? pItemShape.TextFrame.HorizontalRelativePercent
-                                        //                       : (paraItem as WTextBox).TextBoxFormat.HorizontalRelativePercent;
-                                        // if (Math.Abs(horRelPercent) <= 1000)
-                                        //     indentX = pageWidth * (horRelPercent / 100);
-                                        // else
-                                        //     indentX = pItemShape !== null ? pItemShape.HorizontalPosition
-                                        //         : (paraItem as WTextBox).TextBoxFormat.HorizontalPosition;
-                                    } else {
-                                        indentX = horzPosition;
-                                    }
-                                    break;
-                            }
-                            if (indentX < 0 && isLayoutInCell) {
-                                indentX = paragraph.associatedCell.x;
-                            }
-                            break;
-                        case 'Column':
-                            //Update the Xposition while wrapping element exsit in the paragraph
-                            if (this.viewer.clientActiveArea.x < paragraph.x) {
-                                // let cellPadings = 0;
-                                // if (paragraph.isInsideTable) {
-                                //     CellLayoutInfo cellLayoutInfo = (ownerPara.GetOwnerEntity() as IWidget).LayoutInfo as CellLayoutInfo;
-                                //     cellPadings = cellLayoutInfo.Paddings.Left + cellLayoutInfo.Paddings.Right;
-                                // }
-                                // float minimumWidthRequired = DEF_MIN_WIDTH_SQUARE;
-                                // if (textWrapStyle === TextWrappingStyle.Tight || textWrapStyle === TextWrappingStyle.Through)
-                                //     minimumWidthRequired = ownerPara.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013 ?
-                                //         DEF_MIN_WIDTH_2013_TIGHTANDTHROW : DEF_MIN_WIDTH_TIGHTANDTHROW;
-                                // minimumWidthRequired -= cellPadings;
-                                // //Re Update the x position to the page left when paragraph starting position not equal to the 
-                                // //column starting and current inline item is x position equal to the column left position.
-                                // if ((ownerPara.IsXpositionUpated && ownerPara.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013)
-                                //     || paragraphLayoutInfo.XPosition > (pageWidth - minimumWidthRequired - rightMargin)
-                                //     || paragraphLayoutInfo.IsXPositionReUpdate)
-                                //     indentX = layouter.ClientLayoutArea.Left + horzPosition;
-                                // else
-                                indentX = paragraph.x + horzPosition;
-                            } else {
-                                //Re Update the x position to the page left when word version not equal to 2013 
-                                //and wrapping style not equal to infront of text and behind text. 
-                                if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'Behind')) {
-                                    if (autoShape === 'StraightConnector' || autoShape === 'Rectangle') {
-                                        indentX = horzPosition + HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
-                                    } else {
-                                        indentX = paragraph.x + horzPosition;
-                                    }
-                                } else {
-                                    indentX = this.viewer.clientActiveArea.x + horzPosition;
-                                }
-                            }
-                            //Update the Wrapping element right position as page right when 
-                            //wrapping element right position  exceeds the page right except position 
-                            //InFrontOfText and behindText wrapping style.
-                            if (textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind'
-                                && Math.round(indentX + shapeWidth) > Math.round(pageWidth) && shapeWidth < pageWidth) {
-                                indentX = (pageWidth - shapeWidth);
-                            }
-                            switch (horzAlignment) {
-                                case 'Center':
-                                    indentX = this.viewer.clientActiveArea.x + (this.viewer.clientActiveArea.width - shapeWidth) / 2;
-                                    break;
-                                case 'Left':
-                                    indentX = this.viewer.clientActiveArea.x;
-                                    break;
-                                case 'Right':
-                                    indentX = this.viewer.clientActiveArea.x + this.viewer.clientActiveArea.width - shapeWidth; //- TextBoxFormat.InternalMargin.Right;
-                                    break;
-                                case 'None':
-                                    break;
-                            }
-                            break;
-                        case 'Margin':
-                            if (paragraph.bodyWidget) {
-                                indentX = leftMargin + horzPosition;
-                                switch (horzAlignment) {
+                else {
+                    if (mIsYPositionUpdated) { /* Upadte the Y Coordinate of floating image when floating image postion is changed based on the wrapping style. */
+                        indentY = this.viewer.clientArea.y;
+                    } else {
+                        switch (vertOrigin) {
+                            case 'Page':
+                            case 'TopMargin':
+                                indentY = vertPosition;
+                                switch (vertAlignment) {
+                                    case 'Top':
+                                        indentY = vertPosition;
+                                        break;
                                     case 'Center':
-                                        indentX = leftMargin + (pageClientWidth - shapeWidth) / 2;
-                                        break;
-                                    case 'Left':
-                                        indentX = leftMargin;
-                                        break;
-                                    case 'Outside':
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
-                                            indentX = leftMargin + pageClientWidth - shapeWidth;
+                                        if (vertOrigin === 'TopMargin') {
+                                            indentY = (topMargin - shapeHeight) / 2;
+                                        } else {
+                                            indentY = (pageHeight - shapeHeight) / 2;
                                         }
                                         break;
-                                    case 'Right':
-                                        indentX = leftMargin + pageClientWidth - shapeWidth;
+                                    case 'Outside':
+                                    case 'Bottom':
+                                        if (vertOrigin === 'Page' && vertAlignment === 'Bottom') {
+                                            indentY = pageHeight - shapeHeight;
+                                        } else {
+                                            if (vertOrigin === 'TopMargin') {
+                                                indentY = (topMargin - shapeHeight);
+                                            } else if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
+                                                indentY = pageHeight - shapeHeight - footerDistance / 2;
+                                            } else {
+                                                indentY = headerDistance / 2;
+                                            }
+                                        }
                                         break;
                                     case 'Inside':
-                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                            indentX = leftMargin + pageClientWidth - shapeWidth;
+                                        if (vertOrigin === 'Page') {
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                                indentY = pageHeight - shapeHeight - footerDistance / 2;
+                                            } else {
+                                                indentY = headerDistance / 2;
+                                            }
+                                        } else {
+                                            //Need to ensure this behaviour.
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                                indentY = ((topMargin - shapeHeight) / 2 - headerDistance);
+                                            }
+                                        }
+                                        break;
+                                    case 'None':
+                                        if (Math.abs(verticalPercent) <= 1000) {
+                                            indentY = pageHeight * (verticalPercent / 100);
+                                        } else {
+                                            indentY = vertPosition;
+                                        }
+                                        break;
+                                }
+                                break;
+                            case 'Line':
+                                indentY = vertPosition;
+                                switch (vertAlignment) {
+                                    case 'Inside':
+                                    case 'Top':
+                                        //Need to update line widget height instead of client active area.
+                                        indentY = this.viewer.clientActiveArea.y;
+                                        break;
+                                    case 'Center':
+                                        indentY = this.viewer.clientActiveArea.y - shapeHeight / 2;
+                                        break;
+                                    case 'Outside':
+                                    case 'Bottom':
+                                        indentY = this.viewer.clientActiveArea.y - shapeHeight;
+                                        break;
+                                    case 'None':
+                                        indentY = Math.round(paragraph.y) + vertPosition;
+                                        break;
+                                }
+                                break;
+                            case 'BottomMargin':
+                                indentY = vertPosition;
+                                switch (vertAlignment) {
+                                    case 'Inside':
+                                    case 'Top':
+                                        indentY = (pageHeight - bottomMargin);
+                                        break;
+                                    case 'Center':
+                                        indentY = pageHeight - bottomMargin + ((bottomMargin - shapeHeight) / 2);
+                                        break;
+                                    case 'Outside':
+                                    case 'Bottom':
+                                        if (paragraph.bodyWidget.page.index + 1 % 2 !== 0 && vertAlignment === 'Outside') {
+                                            indentY = pageHeight - bottomMargin;
+                                        } else {
+                                            indentY = pageHeight - shapeHeight;
+                                        }
+                                        break;
+                                    case 'None':
+                                        indentY = pageHeight - bottomMargin + vertPosition;
+                                        break;
+                                }
+                                break;
+                            case 'InsideMargin':
+                            case 'OutsideMargin':
+                                indentY = vertPosition;
+                                switch (vertAlignment) {
+                                    case 'Inside':
+                                        if (vertOrigin === 'InsideMargin') {
+                                            if (vertOrigin === 'InsideMargin' && paragraph.bodyWidget.page.index + 1 % 2 === 0) {
+                                                indentY = pageHeight - shapeHeight;
+                                            } else {
+                                                indentY = 0;
+                                            }
+                                        } else {
+                                            indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin : topMargin - shapeHeight;
+                                        }
+                                        break;
+                                    case 'Top':
+                                        if (vertOrigin === 'InsideMargin') {
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                                indentY = pageHeight - bottomMargin;
+                                            } else {
+                                                indentY = 0;
+                                            }
+                                        } else {
+                                            indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin : 0;
+                                        }
+                                        break;
+                                    case 'Center':
+                                        if (vertOrigin === 'OutsideMargin') {
+                                            //Need to ensure this.
+                                            indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin + (bottomMargin - shapeHeight) / 2 : (topMargin - shapeHeight) / 2;
+                                        } else {
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                                indentY = pageHeight - bottomMargin + (bottomMargin - shapeHeight) / 2;
+                                            } else {
+                                                indentY = (topMargin - shapeHeight) / 2;
+                                            }
+                                        }
+                                        break;
+                                    case 'Outside':
+                                        if (vertOrigin === 'InsideMargin') {
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                                indentY = (pageHeight - bottomMargin);
+                                            } else {
+                                                indentY = (topMargin - shapeHeight);
+                                            }
+                                        } else {
+                                            indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? topMargin - shapeHeight : pageHeight - bottomMargin;
+                                        }
+                                        break;
+                                    case 'Bottom':
+                                        if (vertOrigin === 'OutsideMargin') {
+                                            indentY = (paragraph.bodyWidget.page.index + 1) !== 0 ? pageHeight - shapeHeight : topMargin - shapeHeight;
+                                        } else {
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                                indentY = pageHeight - shapeHeight;
+                                            } else {
+                                                indentY = topMargin - shapeHeight;
+                                            }
                                         }
                                         break;
                                     case 'None':
                                         break;
                                 }
-                            } else {
-                                indentX = this.viewer.clientArea.x + horzPosition;
-                            }
-                            break;
-                        case 'Character':
-                            if (horzAlignment === 'Right' || horzAlignment === 'Center') {
-                                indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
-                            } else {
-                                //Need to update this while layouting.**
-                                indentX = this.viewer.clientArea.x + horzPosition;
-                            }
-                            break;
-                        case 'LeftMargin':
-                            indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
-                            break;
-                        case 'RightMargin':
-                            indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
-                            break;
-                        case 'InsideMargin':
-                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
-                            } else {
-                                indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
-                            }
-                            break;
-                        case 'OutsideMargin':
-                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
-                                indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
-                            } else {
-                                indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
-                            }
-                            break;
-                        default:
-                            indentX = this.viewer.clientArea.x + horzPosition;
-                            break;
+                                break;
+                            case 'Paragraph':
+                                const space: number = 0;
+                                //let prevsibling: BlockWidget = paragraph.previousWidget as BlockWidget;
+                                // if (floatElement) {
+                                //     //Need to handle DocIO Implementation.
+                                //     if (Math.round(paragraph.y) !== Math.round(topMargin) && (prevsibling instanceof ParagraphWidget)
+                                //         && ((paragraph.paragraphFormat.beforeSpacing > prevsibling.paragraphFormat.afterSpacing)
+                                //             || (prevsibling.paragraphFormat.afterSpacing < 14)
+                                //             && !paragraph.paragraphFormat.contextualSpacing)) {
+                                //         space = prevsibling.paragraphFormat.afterSpacing;
+                                //     }
+                                // }
+
+                                // eslint-disable-next-line max-len
+                                //Floating item Y position is calculated from paragraph original Y position not from wrapped paragraph Y(ParagraphLayoutInfo.YPosition) position.
+                                indentY = Math.round(paragraph.y) + space + vertPosition;
+                                break;
+                            case 'Margin':
+                                //If header distance is more than top margin, then calculate the position of item based on header distance.
+                                //As per Microsoft Word behavior, it is need to consider paragraph height along with the distance.
+                                if (paragraph.isInHeaderFooter && headerDistance > topMargin) {
+                                    //Need to udpate.
+                                    indentY = (headerDistance + (paragraph.height)) + vertPosition;
+                                } else {
+                                    indentY = topMargin + vertPosition;
+                                }
+                                switch (vertAlignment) {
+                                    case 'Top':
+                                        indentY = topMargin;
+                                        break;
+                                    case 'Center':
+                                        indentY = topMargin + (pageClientHeight - shapeHeight) / 2;
+                                        break;
+                                    case 'Outside':
+                                    case 'Bottom':
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
+                                            indentY = topMargin + pageClientHeight - shapeHeight;
+                                        } else {
+                                            indentY = topMargin;
+                                        }
+                                        break;
+                                    case 'Inside':
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentY = topMargin + pageClientHeight - shapeHeight;
+                                        } else {
+                                            indentY = topMargin;
+                                        }
+                                        break;
+                                    case 'None':
+                                        break;
+                                }
+                                break;
+                            default:
+                                //Need to analyze further.
+                                indentY = this.viewer.clientArea.y - vertPosition;
+                                break;
+                        }
                     }
+                    // if (horzOrigin !== 'Column' && horzAlignment !== 'None') {
+                    //     indentX = this.viewer.clientArea.x;
+                    //     //Update the floating item x position to zero when floating item’s width
+                    //     //exceeds the page width when floating item and it wrapping style is not equal to  
+                    //     // infront of text and behind text and also vertical origin is not equal to paragraph.
+                    // } else 
+                    if (paragraph && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind' &&
+                        vertOrigin === 'Paragraph' && shapeWidth >= pageWidth) {
+                        indentX = 0;
+                    } else {
+                        switch (horzOrigin) {
+                            case 'Page':
+                                indentX = horzPosition;
+                                switch (horzAlignment) {
+                                    case 'Center':
+                                        if (isLayoutInCell) {
+                                            indentX = (paragraph.associatedCell.cellFormat.cellWidth - shapeWidth) / 2;
+                                        } else {
+                                            indentX = (pageWidth - shapeWidth) / 2;
+                                        }
+                                        break;
+                                    case 'Left':
+                                        indentX = 0;
+                                        break;
+                                    case 'Outside':
+                                    case 'Right':
+                                        if (isLayoutInCell) {
+                                            indentX = paragraph.associatedCell.cellFormat.cellWidth - shapeWidth;
+                                        } else {
+                                            indentX = pageWidth - shapeWidth;
+                                        }
+                                        break;
+                                    case 'None':
+                                        if (isLayoutInCell) {
+                                            indentX = paragraph.associatedCell.x + horzPosition;
+                                        } else if (floatElement instanceof ShapeElementBox) {
+                                            indentX = horzPosition;
+                                            // Shape pItemShape = paraItem as Shape;
+                                            // float horRelPercent = pItemShape !== null ? pItemShape.TextFrame.HorizontalRelativePercent
+                                            //                       : (paraItem as WTextBox).TextBoxFormat.HorizontalRelativePercent;
+                                            // if (Math.Abs(horRelPercent) <= 1000)
+                                            //     indentX = pageWidth * (horRelPercent / 100);
+                                            // else
+                                            //     indentX = pItemShape !== null ? pItemShape.HorizontalPosition
+                                            //         : (paraItem as WTextBox).TextBoxFormat.HorizontalPosition;
+                                        } else {
+                                            indentX = horzPosition;
+                                        }
+                                        break;
+                                }
+                                if (indentX < 0 && isLayoutInCell) {
+                                    indentX = paragraph.associatedCell.x;
+                                }
+                                break;
+                            case 'Column':
+                                //Update the Xposition while wrapping element exsit in the paragraph
+                                if (this.viewer.clientActiveArea.x < paragraph.x) {
+                                    // let cellPadings = 0;
+                                    // if (paragraph.isInsideTable) {
+                                    //     CellLayoutInfo cellLayoutInfo = (ownerPara.GetOwnerEntity() as IWidget).LayoutInfo as CellLayoutInfo;
+                                    //     cellPadings = cellLayoutInfo.Paddings.Left + cellLayoutInfo.Paddings.Right;
+                                    // }
+                                    // float minimumWidthRequired = DEF_MIN_WIDTH_SQUARE;
+                                    // if (textWrapStyle === TextWrappingStyle.Tight || textWrapStyle === TextWrappingStyle.Through)
+                                    //     minimumWidthRequired = ownerPara.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013 ?
+                                    //         DEF_MIN_WIDTH_2013_TIGHTANDTHROW : DEF_MIN_WIDTH_TIGHTANDTHROW;
+                                    // minimumWidthRequired -= cellPadings;
+                                    // //Re Update the x position to the page left when paragraph starting position not equal to the 
+                                    // //column starting and current inline item is x position equal to the column left position.
+                                    // if ((ownerPara.IsXpositionUpated && ownerPara.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013)
+                                    //     || paragraphLayoutInfo.XPosition > (pageWidth - minimumWidthRequired - rightMargin)
+                                    //     || paragraphLayoutInfo.IsXPositionReUpdate)
+                                    //     indentX = layouter.ClientLayoutArea.Left + horzPosition;
+                                    // else
+                                    indentX = paragraph.x + horzPosition;
+                                } else {
+                                    //Re Update the x position to the page left when word version not equal to 2013 
+                                    //and wrapping style not equal to infront of text and behind text. 
+                                    if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'Behind')) {
+                                        if (autoShape === 'StraightConnector' || autoShape === 'Rectangle') {
+                                            indentX = horzPosition + HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+                                        } else {
+                                            indentX = paragraph.x + horzPosition;
+                                        }
+                                    } else {
+                                        indentX = this.viewer.clientActiveArea.x + horzPosition;
+                                    }
+                                }
+                                //Update the Wrapping element right position as page right when 
+                                //wrapping element right position  exceeds the page right except position 
+                                //InFrontOfText and behindText wrapping style.
+                                if (textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind'
+                                    && Math.round(indentX + shapeWidth) > Math.round(pageWidth) && shapeWidth < pageWidth) {
+                                    indentX = (pageWidth - shapeWidth);
+                                }
+                                switch (horzAlignment) {
+                                    case 'Center':
+                                        indentX = this.viewer.clientActiveArea.x + (this.viewer.clientActiveArea.width - shapeWidth) / 2;
+                                        break;
+                                    case 'Left':
+                                        indentX = this.viewer.clientActiveArea.x;
+                                        break;
+                                    case 'Right':
+                                        indentX = this.viewer.clientActiveArea.x + this.viewer.clientActiveArea.width - shapeWidth; //- TextBoxFormat.InternalMargin.Right;
+                                        break;
+                                    case 'None':
+                                        break;
+                                }
+                                break;
+                            case 'Margin':
+                                if (paragraph.bodyWidget) {
+                                    indentX = leftMargin + horzPosition;
+                                    switch (horzAlignment) {
+                                        case 'Center':
+                                            indentX = leftMargin + (pageClientWidth - shapeWidth) / 2;
+                                            break;
+                                        case 'Left':
+                                            indentX = leftMargin;
+                                            break;
+                                        case 'Outside':
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
+                                                indentX = leftMargin + pageClientWidth - shapeWidth;
+                                            }
+                                            break;
+                                        case 'Right':
+                                            indentX = leftMargin + pageClientWidth - shapeWidth;
+                                            break;
+                                        case 'Inside':
+                                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                                indentX = leftMargin + pageClientWidth - shapeWidth;
+                                            }
+                                            break;
+                                        case 'None':
+                                            break;
+                                    }
+                                } else {
+                                    indentX = this.viewer.clientArea.x + horzPosition;
+                                }
+                                break;
+                            case 'Character':
+                                if (horzAlignment === 'Right' || horzAlignment === 'Center') {
+                                    indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                                } else {
+                                    //Need to update this while layouting.**
+                                    indentX = this.viewer.clientArea.x + horzPosition;
+                                }
+                                break;
+                            case 'LeftMargin':
+                                indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                                break;
+                            case 'RightMargin':
+                                indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                                break;
+                            case 'InsideMargin':
+                                if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                    indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                                } else {
+                                    indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                                }
+                                break;
+                            case 'OutsideMargin':
+                                if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                    indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                                } else {
+                                    indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                                }
+                                break;
+                            default:
+                                indentX = this.viewer.clientArea.x + horzPosition;
+                                break;
+                        }
+                    }
+
                     //Update the floating item right position to the page right when floating item 
                     //right position exceeds the page width and it wrapping style is not equal to  
                     // InFrontOfText and behind text and also vertical origin is not equal to paragraph.
@@ -7923,8 +8036,9 @@ export class Layout {
                     }
                 }
             }
-            //}
         }
+        //}
+
         return new Point(indentX, indentY);
     }
     private getLeftMarginHorizPosition(leftMargin: number, horzAlignment: HorizontalAlignment, horzPosition: number, shapeWidth: number, textWrapStyle: TextWrappingStyle): number {
@@ -8061,100 +8175,113 @@ export class Layout {
             let tableTotalWidth: number = table.getTableCellWidth();
             let position: TablePosition = table.positioning;
             let sectionFormat: WSectionFormat = table.bodyWidget.sectionFormat;
-            if (!(table.containerWidget instanceof TextFrame) && !table.isInsideTable) {
-                if (position.verticalOrigin === 'Page') {
-                    if (position.verticalAlignment === 'Top') {
-                        this.viewer.clientActiveArea.y = 0;
-                    } else if (position.verticalAlignment === 'Inside') {
-                        // TODO
-                        this.viewer.clientActiveArea.y = 0;
-                    }
-                } else if (position.verticalOrigin === 'Margin') {
-                    if (position.verticalAlignment === 'Top') {
-                        this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
-                    } else if (position.verticalAlignment === 'Inside') {
-                        // TODO
-                        this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+            if (this.documentHelper.viewer instanceof WebLayoutViewer) {
+                if (position.horizontalOrigin === 'Margin' || position.horizontalOrigin === 'Page' || position.horizontalOrigin === 'Column') {
+                    if (position.horizontalAlignment === 'Right' || position.horizontalAlignment === 'Outside') {
+                        this.viewer.clientActiveArea.x = this.viewer.clientArea.width - tableTotalWidth;
+                    } else {
+                        this.viewer.clientActiveArea.x = this.viewer.clientArea.x;
                     }
                 }
-
-                if (Math.round(position.verticalPosition) > 0 || position.verticalOrigin === 'Paragraph') {
-                    this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
-                }
-
-                if (position.horizontalOrigin === 'Page') {
-                    if (position.horizontalAlignment === 'Left') {
-                        this.viewer.clientActiveArea.x = 0;
-                    } else if (position.horizontalAlignment === 'Inside') {
-                        // TODO
-                        this.viewer.clientActiveArea.x = 0;
-                    } else if (position.horizontalAlignment === 'Right') {
-                        this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth) - tableTotalWidth;
-                    } else if (position.horizontalAlignment === 'Outside') {
-                        // TODO
-                        this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth) - tableTotalWidth;
+            } else {
+                if (!(table.containerWidget instanceof TextFrame) && !table.isInsideTable) {
+                    // Vertical position
+                    if (position.verticalOrigin === 'Page') {
+                        if (position.verticalAlignment === 'Top') {
+                            this.viewer.clientActiveArea.y = 0;
+                        } else if (position.verticalAlignment === 'Inside') {
+                            this.viewer.clientActiveArea.y = 0;
+                        } else if (isNullOrUndefined(position.verticalAlignment)) {
+                            this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(position.verticalPosition);
+                        }
+                    } else if (position.verticalOrigin === 'Margin') {
+                        if (position.verticalAlignment === 'Top') {
+                            this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                        } else if (position.verticalAlignment === 'Inside') {
+                            this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                        } else if (isNullOrUndefined(position.verticalAlignment)) {
+                            this.viewer.clientActiveArea.y = (HelperMethods.convertPointToPixel(sectionFormat.topMargin) + HelperMethods.convertPointToPixel(position.verticalPosition));
+                        }
+                    } else if (position.verticalOrigin === 'Paragraph') {
+                        if (isNullOrUndefined(position.verticalAlignment)) {
+                            this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
+                        }
                     }
-                } else if (position.horizontalOrigin === 'Margin' || position.horizontalOrigin === 'Column') {
-                    if (position.horizontalAlignment === 'Left') {
-                        this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
-                    } else if (position.horizontalAlignment === 'Inside') {
-                        // TODO
-                        this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
-                    } else if (position.horizontalAlignment === 'Right') {
-                        this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth)
-                            - (HelperMethods.convertPointToPixel(sectionFormat.rightMargin) + tableTotalWidth);
-                    } else if (position.horizontalAlignment === 'Outside') {
-                        // TODO
-                        this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth)
-                            - (HelperMethods.convertPointToPixel(sectionFormat.rightMargin) + tableTotalWidth);
+
+                    if (position.horizontalOrigin === 'Page') {
+                        if (position.horizontalAlignment === 'Left') {
+                            this.viewer.clientActiveArea.x = 0;
+                        } else if (position.horizontalAlignment === 'Inside') {
+                            // TODO
+                            this.viewer.clientActiveArea.x = 0;
+                        } else if (position.horizontalAlignment === 'Right') {
+                            this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth) - tableTotalWidth;
+                        } else if (position.horizontalAlignment === 'Outside') {
+                            // TODO
+                            this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth) - tableTotalWidth;
+                        }
+                    } else if (position.horizontalOrigin === 'Margin' || position.horizontalOrigin === 'Column') {
+                        if (position.horizontalAlignment === 'Left') {
+                            this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+                        } else if (position.horizontalAlignment === 'Inside') {
+                            // TODO
+                            this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+                        } else if (position.horizontalAlignment === 'Right') {
+                            this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth)
+                                - (HelperMethods.convertPointToPixel(sectionFormat.rightMargin) + tableTotalWidth);
+                        } else if (position.horizontalAlignment === 'Outside') {
+                            // TODO
+                            this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth)
+                                - (HelperMethods.convertPointToPixel(sectionFormat.rightMargin) + tableTotalWidth);
+                        }
                     }
-                }
 
-                if (Math.round(position.horizontalPosition) > 0) {
-                    this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
-                }
-                if (position.horizontalAlignment === 'Center') {
-                    this.viewer.clientActiveArea.x = (HelperMethods.convertPointToPixel(sectionFormat.pageWidth) / 2) - (tableTotalWidth / 2);
-                }
-            } else if (table.isInsideTable) {
-                let ownerCell: TableCellWidget = table.containerWidget as TableCellWidget;
-                let cellFormat: WCellFormat = ownerCell.cellFormat;
+                    if (Math.round(position.horizontalPosition) > 0) {
+                        this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
+                    }
+                    if (position.horizontalAlignment === 'Center') {
+                        this.viewer.clientActiveArea.x = (HelperMethods.convertPointToPixel(sectionFormat.pageWidth) / 2) - (tableTotalWidth / 2);
+                    }
+                } else if (table.isInsideTable) {
+                    let ownerCell: TableCellWidget = table.containerWidget as TableCellWidget;
+                    let cellFormat: WCellFormat = ownerCell.cellFormat;
 
-                if (position.verticalOrigin === 'Page') {
-                    this.viewer.clientActiveArea.y = ownerCell.y;
-                    this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
-                } else if (position.verticalOrigin === 'Margin') {
-                    this.viewer.clientActiveArea.y = ownerCell.y;
-                    this.viewer.clientActiveArea.y += ownerCell.topMargin;
-                    this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
-                } else {
-                    this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
-                }
+                    if (position.verticalOrigin === 'Page') {
+                        this.viewer.clientActiveArea.y = ownerCell.y;
+                        this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
+                    } else if (position.verticalOrigin === 'Margin') {
+                        this.viewer.clientActiveArea.y = ownerCell.y;
+                        this.viewer.clientActiveArea.y += ownerCell.topMargin;
+                        this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
+                    } else {
+                        this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
+                    }
 
-                if (position.horizontalOrigin === 'Page') {
-                    if (position.horizontalAlignment === 'Left' || position.horizontalAlignment === 'Inside') {
+                    if (position.horizontalOrigin === 'Page') {
+                        if (position.horizontalAlignment === 'Left' || position.horizontalAlignment === 'Inside') {
+                            this.viewer.clientActiveArea.x = ownerCell.x;
+                        } else if (position.horizontalAlignment === 'Right' || position.horizontalAlignment === 'Outside') {
+                            this.viewer.clientActiveArea.x = ((ownerCell.x + cellFormat.preferredWidth) - tableTotalWidth);
+                        }
+                    } else if (position.horizontalOrigin === 'Margin' || position.horizontalOrigin === 'Column') {
+                        if (position.horizontalAlignment === 'Left' || position.horizontalAlignment === 'Inside') {
+                            this.viewer.clientActiveArea.x = (ownerCell.x + ownerCell.leftMargin);
+                        } else if (position.horizontalAlignment === 'Right' || position.horizontalAlignment === 'Outside') {
+                            this.viewer.clientActiveArea.x = ((ownerCell.x + cellFormat.preferredWidth)
+                                - (tableTotalWidth + ownerCell.rightMargin));
+                        }
+                    }
+
+                    if (Math.round(position.horizontalPosition) > 0) {
                         this.viewer.clientActiveArea.x = ownerCell.x;
-                    } else if (position.horizontalAlignment === 'Right' || position.horizontalAlignment === 'Outside') {
-                        this.viewer.clientActiveArea.x = ((ownerCell.x + cellFormat.preferredWidth) - tableTotalWidth);
+                        if (position.horizontalOrigin === 'Margin') {
+                            this.viewer.clientActiveArea.x += ownerCell.leftMargin;
+                        }
+                        this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
                     }
-                } else if (position.horizontalOrigin === 'Margin' || position.horizontalOrigin === 'Column') {
-                    if (position.horizontalAlignment === 'Left' || position.horizontalAlignment === 'Inside') {
-                        this.viewer.clientActiveArea.x = (ownerCell.x + ownerCell.leftMargin);
-                    } else if (position.horizontalAlignment === 'Right' || position.horizontalAlignment === 'Outside') {
-                        this.viewer.clientActiveArea.x = ((ownerCell.x + cellFormat.preferredWidth)
-                            - (tableTotalWidth + ownerCell.rightMargin));
+                    if (position.horizontalAlignment === 'Center') {
+                        this.viewer.clientActiveArea.x = (cellFormat.preferredWidth / 2) - (tableTotalWidth / 2);
                     }
-                }
-
-                if (Math.round(position.horizontalPosition) > 0) {
-                    this.viewer.clientActiveArea.x = ownerCell.x;
-                    if (position.horizontalOrigin === 'Margin') {
-                        this.viewer.clientActiveArea.x += ownerCell.leftMargin;
-                    }
-                    this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
-                }
-                if (position.horizontalAlignment === 'Center') {
-                    this.viewer.clientActiveArea.x = (cellFormat.preferredWidth / 2) - (tableTotalWidth / 2);
                 }
             }
         }

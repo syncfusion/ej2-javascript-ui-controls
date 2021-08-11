@@ -6,7 +6,6 @@ import { addClass, removeClass, detach, prepend, Complex, closest, setValue, get
 import { select, selectAll, isNullOrUndefined as isNOU, matches, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor} from '@syncfusion/ej2-base';
 import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
 import { DropDownTreeModel, FieldsModel, TreeSettingsModel } from './drop-down-tree-model';
@@ -375,7 +374,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private keyEventArgs: KeyboardEvent;
     private keyboardModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
-    private isBlazorPlatForm: boolean;
     private overFlowWrapper: HTMLElement;
     private isFilteredData: boolean = false;
     private isFilterRestore: boolean = false;
@@ -805,7 +803,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * Triggers on typing a character in the filter bar when the **allowFiltering** is enabled.
      *
      * @event
-     * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<DdtFilteringEventArgs>;
@@ -883,7 +880,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.isNodeSelected = false;
         this.isDynamicChange = false;
         this.clearIconWidth = 0;
-        this.isBlazorPlatForm = isBlazor();
         this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE}`;
         this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE}`;
         this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE}`;
@@ -2938,7 +2934,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, this.header);
         }
-        this.ddtupdateBlazorTemplates(false, false, true, false);
         this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
     }
 
@@ -2973,7 +2968,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, this.footer);
         }
-        this.ddtupdateBlazorTemplates(false, false, false, true);
         append([this.footer], this.popupEle);
     }
 
@@ -3164,47 +3158,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 tempArr = Array.prototype.slice.call(tempArr);
                 append(tempArr, this.noRecord);
             }
-            this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         } else {
             // eslint-disable-next-line
             const l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed'};
             this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             this.noRecord.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
-        }
-    }
-
-    private ddtupdateBlazorTemplates(noRecord: boolean, action: boolean, header?: boolean, footer?: boolean, isEmpty?: boolean): void {
-        if (!this.isStringTemplate) {
-            if (this.noRecordsTemplate && noRecord) {
-                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE, this, isEmpty);
-            }
-            if (this.actionFailureTemplate && action) {
-                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE, this, isEmpty);
-            }
-            if (header) {
-                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE, this);
-            }
-            if (footer) {
-                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE, this);
-            }
-        }
-    }
-
-    private ddtresetBlazorTemplates( noRecord: boolean, action: boolean, header?: boolean, footer?: boolean): void {
-        if (!this.isStringTemplate) {
-            if (this.noRecordsTemplate && noRecord) {
-                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE);
-            }
-            if (this.actionFailureTemplate && action) {
-                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE);
-            }
-            if (header) {
-                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE);
-            }
-            if (footer) {
-                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE);
-            }
         }
     }
 
@@ -3466,11 +3425,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     public destroy(): void {
-        this.ddtresetBlazorTemplates( true, true, true, true);
         this.clearTemplate();
         this.unWireEvents();
         this.setCssClass(null, this.cssClass);
-        this.resetValue();
+        this.setProperties({ value: [] }, true);
+        this.setProperties({ text: null }, true);
         this.treeObj.destroy();
         this.destroyFilter();
         if (this.popupObj) {
@@ -3480,9 +3439,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.element.tagName !== this.getDirective()) {
             this.inputWrapper.parentElement.insertBefore(this.element, this.inputWrapper);
         }
+        Input.setValue(null, this.inputEle, this.floatLabelType);
         detach(this.inputWrapper);
         detach(this.popupDiv);
         this.element.classList.remove('e-input');
+        if (this.showCheckBox || this.allowMultiSelection) {
+            this.element.classList.remove(CHIP_INPUT);
+        }
         super.destroy();
     }
 

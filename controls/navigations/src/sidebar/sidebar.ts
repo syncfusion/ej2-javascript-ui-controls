@@ -1,4 +1,4 @@
-import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor, Browser } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, Browser } from '@syncfusion/ej2-base';
 import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, removeClass, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { SidebarModel } from './sidebar-model';
@@ -55,7 +55,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     private sidebarEleCopy: HTMLElement;
     protected tabIndex: string;
     private windowWidth: number;
-    private isBlazor: boolean = false;
     private targetEle: HTMLElement;
 
     /**
@@ -79,7 +78,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     @Property(null)
     public mediaQuery: string | MediaQueryList;
@@ -209,7 +207,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @default 1000
      * @aspType double
-     * @blazorType double
      */
     @Property(1000)
     public zIndex: string | number;
@@ -218,7 +215,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @event
      *
-     * @blazorProperty 'Created'
      *
      */
     /* eslint-disable */
@@ -229,8 +225,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when component is closed.
      *
      * @event
-     * @blazorProperty 'OnClose'
-     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     @Event()
     public close: EmitType<EventArgs>;
@@ -238,8 +232,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when component is opened.
      *
      * @event
-     * @blazorProperty 'OnOpen'
-     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     @Event()
     public open: EmitType<EventArgs>;
@@ -247,7 +239,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when the state(expand/collapse) of the component is changed.
      *
      * @event
-     * @blazorProperty 'Changed'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -255,7 +246,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when component gets destroyed.
      *
      * @event
-     * @blazorProperty 'Destroyed'
      */
     /* eslint-disable */
     @Event()
@@ -266,10 +256,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         super(options, element);
     }
     protected preRender(): void {
-        this.isBlazor = (isBlazor() && this.isServerRendered);
-        if (!this.isBlazor) {
-            this.setWidth();
-        }
+        this.setWidth();
     }
     protected render(): void {
         this.initialize();
@@ -280,9 +267,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     protected initialize(): void {
         this.setTarget();
         this.addClass();
-        if (!this.isBlazor) {
-            this.setZindex();
-        }
+        this.setZindex();
         if (this.enableDock) {
             this.setDock();
         }
@@ -294,9 +279,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
-        if (!this.isBlazor) {
-            this.setEnableRTL();
-        }
+        this.setEnableRTL();
         if (Browser.isDevice) {
             this.windowWidth = window.innerWidth;
         }
@@ -370,18 +353,16 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        if (!this.isBlazor) {
-            if (!this.enableDock && this.type !== 'Auto') {
-                addClass([this.element], [VISIBILITY]);
-            }
-            removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
-            this.element.classList.add(ROOT);
-            addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
-            if (this.enableDock) {
-                addClass([this.element], DOCKER);
-            }
-            this.element.setAttribute('tabindex', this.tabIndex);
+        if (!this.enableDock && this.type !== 'Auto') {
+            addClass([this.element], [VISIBILITY]);
         }
+        removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
+        this.element.classList.add(ROOT);
+        addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
+        if (this.enableDock) {
+            addClass([this.element], DOCKER);
+        }
+        this.element.setAttribute('tabindex', this.tabIndex);
         if (this.type === 'Auto' && !Browser.isDevice) {
             this.show();
         } else if (!this.isOpen) {
@@ -429,9 +410,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        if (isBlazor()) {
-            delete closeArguments.model;
-        }
         this.trigger('close', closeArguments, (observedcloseArgs: EventArgs) => {
             if (!observedcloseArgs.cancel) {
                 if (this.element.classList.contains(CLOSE)) {
@@ -494,9 +472,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        if (isBlazor()) {
-            delete openArguments.model;
-        }
         this.trigger('open', openArguments, (observedopenArgs: EventArgs) => {
             if (!observedopenArgs.cancel) {
                 removeClass([this.element], VISIBILITY);

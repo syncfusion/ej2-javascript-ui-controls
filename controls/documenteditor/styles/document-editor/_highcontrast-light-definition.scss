@@ -827,6 +827,23 @@ $de-rp-btn-enforce-prtct-margin: 0 46px;
 $de-rp-nav-lbl: 0 28px;
 $de-rp-nav-btn-mrgn: 0 12px;
 $de-rp-btn-enforce-bx-shadow: none;
+
+//New Implementation
+
+$de-par-dlg-hdr-weight: 700 !default;
+$de-para-dlg-hdr-margin-bottom: 15px !default;
+$de-para-dlg-hdr-margin-top: 17px !default;
+$de-dlg-heading-opacity: 87% !default;
+$de-para-dlg-right-contaner-top: 0 !default;
+$de-para-dlg-sub-title-bottom-margin: 8px !default;
+$de-para-dlg-sub-title-top-margin: 0 !default;
+$de-para-dlg-rtl-btn-margin-right: 24px !default;
+$de-para-dlg-rtl-btn-font-size: 12px !default;
+$de-para-dlg-rtl-btn-width: 200px !default;
+$de-de-rtl-btn-div-e-de-rtl-margin-right: 24px !default;
+$de-de-rtl-btn-div-e-de-rtl-margin-left: 12px !default;
+$de-para-dlg-spacing-div-mrgn-left: 40px !default;
+
 @include export-module('documenteditor-icons') {
   .e-documenteditor {
     .e-close::before {

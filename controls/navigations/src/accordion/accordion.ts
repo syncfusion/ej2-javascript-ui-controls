@@ -833,7 +833,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (isNOU(item.id)) {
             item.id = innerEle.id;
         }
-        attributes(innerEle, { 'aria-expanded': 'false' });
+        attributes(innerEle, { 'aria-expanded': 'false', 'role': 'row' });
         if (this.headerTemplate) {
             const ctnEle: HTEle = this.headerEleGenerate();
             const hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });

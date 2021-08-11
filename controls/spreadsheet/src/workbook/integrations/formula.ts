@@ -1,11 +1,12 @@
-import { Workbook, getSheetName, getSheetIndex, getSheet, SheetModel, RowModel, CellModel, getSheetIndexByName, getCell } from '../base/index';
-import { getSingleSelectedRange } from '../base/index';
-import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes, getUniqueRange, removeUniquecol } from '../common/index';
+import { Workbook, getSheetName, getSheetIndex, getSheet, SheetModel, RowModel, CellModel, getSheetIndexByName } from '../base/index';
+import { getSingleSelectedRange, getCell } from '../base/index';
+import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula} from '../common/index';
+import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol } from '../common/index';
 import { workbookEditOperation, getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference } from '../common/index';
+import { getUniqueRange, DefineName } from '../common/index';
 
 
 /**
@@ -149,7 +150,7 @@ export class WorkbookFormula {
             args.argumentSeparator = this.calculateInstance.getParseArgumentSeparator();
             break;
         case 'addDefinedName':
-            args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName);
+            args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName, false, <number>args.index);
             break;
         case 'removeDefinedName':
             args.isRemoved = this.removeDefinedName(<string>args.definedName, <string>args.scope);
@@ -565,7 +566,8 @@ export class WorkbookFormula {
      * @param {boolean} isValidate - Specify the boolean value.
      * @returns {boolean} - Used to add defined name to workbook.
      */
-    private addDefinedName(definedName: DefineNameModel, isValidate?: boolean): boolean {
+    private addDefinedName(definedName: DefineNameModel, isValidate: boolean, index?: number): boolean {
+        if (index === undefined || index < -1) { index = this.parent.definedNames.length; }
         let isAdded: boolean = true;
         let sheetIdx: number;
         let name: string = definedName.name;
@@ -595,7 +597,7 @@ export class WorkbookFormula {
                 definedName.refersTo = '=' + visibleRefersTo;
             }
             if (this.parent.definedNames.indexOf(definedName) < 0) {
-                this.parent.definedNames.push(definedName);
+                this.parent.definedNames.splice(index, 0, definedName);
             }
         }
         return isAdded;
@@ -777,7 +779,9 @@ export class WorkbookFormula {
             sheet = this.parent.sheets[s];
             address = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
             for (let i: number = address[2]; i >= address[0]; i--) {
+                if (args.modelType === 'Row' && i >= args.startIndex && i <= args.endIndex) { continue; }
                 for (let j: number = address[1]; j <= address[3]; j++) {
+                    if (args.modelType === 'Column' && i >= args.startIndex && i <= args.endIndex) { continue; }
                     cell = getCell(i, j, sheet);
                     if (cell && cell.formula && checkIsFormula(cell.formula)) {
                         if (args.activeSheetIndex !== s && !cell.formula.includes(sheetName)) {
@@ -889,81 +893,80 @@ export class WorkbookFormula {
     }
 
     private refreshNamedRange(args: InsertDeleteEventArgs): void {
-        let isChanged: boolean = false;
-        let modelDefinedNames: DefineNameModel[] = this.parent.definedNames;
-        const definedNames: DefineNameModel[] = Object.assign({}, modelDefinedNames);
-        let definedName: DefineNameModel;
-        const definedNameCnt: number = modelDefinedNames.length;
-        let range: string;
-        let rangeIndex: number[];
-        let count: number;
-        let startIndex: number;
-        let endIndex: number;
-        let newIndex: number[]; let newRange: string;
-        let sheetName: string;
-        let sheetIndex: number;
-        for (let idx: number = 0; idx < definedNameCnt; idx++) {
-            definedName = definedNames[idx];
-            range = definedNames[idx].refersTo.split('!')[1];
-            rangeIndex = getRangeIndexes(range);
-            sheetName = definedName.refersTo.split('!')[0].split('=')[1];
-            sheetIndex = getSheetIndex(this.parent, sheetName.replace(/'/g, ''));
-            if (sheetIndex === this.parent.activeSheetIndex) {
-                if (args.name === 'insert') {
-                    count = args.model.length;
-                    startIndex = args.index;
-                    endIndex = args.index + count;
-                    if (args.modelType === 'Row') { // for above the named range index
-                        if ((rangeIndex[0] >= endIndex) || (rangeIndex[0] >= startIndex && rangeIndex[2] >= endIndex)) {
-                            newIndex = [rangeIndex[0] + count, rangeIndex[1], rangeIndex[2] + count, rangeIndex[3]];
-                            isChanged = true;
-                        } else if ((rangeIndex[0] <= startIndex && rangeIndex[2] >= startIndex) || (rangeIndex[2] >= endIndex)) {
-                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2] + count, rangeIndex[3]];
-                            isChanged = true;
-                        }
-                    } else if (args.modelType === 'Column') {
-                        if ((rangeIndex[1] >= endIndex) || (rangeIndex[1] >= startIndex && rangeIndex[3] >= endIndex)) {
-                            newIndex = [rangeIndex[0], rangeIndex[1] + count, rangeIndex[2], rangeIndex[3] + count];
-                            isChanged = true;
-                        } else if ((rangeIndex[1] <= startIndex && rangeIndex[3] >= startIndex) || (rangeIndex[3] >= endIndex)) {
-                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2], rangeIndex[3] + count];
-                            isChanged = true;
-                        }
-                    }
-                } else {
-                    count = args.deletedModel.length;
-                    startIndex = args.startIndex;
-                    endIndex = args.endIndex;
-                    if (args.modelType === 'Row') { // for above the named range index
-                        if ((rangeIndex[0] >= endIndex) || (rangeIndex[0] >= startIndex && rangeIndex[2] >= endIndex)) {
-                            newIndex = [rangeIndex[0] - count, rangeIndex[1], rangeIndex[2] - count, rangeIndex[3]];
-                            isChanged = true;
-                        } else if ((rangeIndex[0] <= startIndex && rangeIndex[2] >= startIndex) || (rangeIndex[2] >= endIndex)) {
-                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2] - count, rangeIndex[3]];
-                            isChanged = true;
-                        }
-                    } else if (args.modelType === 'Column') {
-                        if ((rangeIndex[1] >= endIndex) || (rangeIndex[1] >= startIndex && rangeIndex[3] >= endIndex)) {
-                            newIndex = [rangeIndex[0], rangeIndex[1] - count, rangeIndex[2], rangeIndex[3] - count];
-                            isChanged = true;
-                        } else if ((rangeIndex[1] <= startIndex && rangeIndex[3] >= startIndex) || (rangeIndex[3] >= endIndex)) {
-                            newIndex = [rangeIndex[0], rangeIndex[1], rangeIndex[2], rangeIndex[3] - count];
-                            isChanged = true;
-                        }
-                    }
+        if (args.definedNames && args.definedNames.length) {
+            args.definedNames.forEach((definedName: DefineNameModel): void => {
+                this.parent.removeDefinedName(definedName.name, definedName.scope);
+                this.parent.addDefinedName(definedName);
+            });
+            return;
+        }
+        const len: number = this.parent.definedNames.length;
+        if (!len) { return; }
+        const definedNames: DefineNameModel[] = Object.assign({}, this.parent.definedNames);
+        let range: number[]; let sheetName: string; let splitedRef: string[]; let definedName: DefineNameModel; let changed: boolean;
+        for (let i: number = 0; i < len; i++) {
+            definedName = definedNames[i]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
+            if (sheetName !== args.sheet.name) { continue; }
+            range = getRangeIndexes(splitedRef[1]); changed = false;
+            if (args.name === 'insert') {
+                if (args.modelType === 'Row') {
+                    if (args.index <= range[0]) { range[0] += args.model.length; changed = true; }
+                    if (args.index <= range[2]) { range[2] += args.model.length; changed = true; }
+                } else if (args.modelType === 'Column') {
+                    if (args.index <= range[1]) { range[1] += args.model.length; changed = true; }
+                    if (args.index <= range[3]) { range[3] += args.model.length; changed = true; }
                 }
-                if (isChanged) {
-                    newRange = getRangeAddress(newIndex);
-                    definedName.refersTo = sheetName + '!' + newRange;
-                    this.parent.removeDefinedName(definedName.name, definedName.scope);
-                    const eventArgs: { [key: string]: Object } = {
-                        action: 'addDefinedName', definedName: definedName, isAdded: false
-                    };
-                    this.parent.notify(workbookFormulaOperation, eventArgs);
+                this.updateDefinedNames(definedName, sheetName, range, changed);
+            } else {
+                if (args.modelType === 'Row') {
+                    const startDiff: number = range[0] - args.startIndex;
+                    if (startDiff > 0) { range[0] -= startDiff; changed = true; }
+                    if (args.startIndex <= range[2]) {
+                        if (args.endIndex <= range[2]) {
+                            range[2] -= args.deletedModel.length;
+                        } else {
+                            range[2] -= (range[2] - args.startIndex) + 1;
+                        }
+                        changed = true;
+                    }
+                    this.updateDefinedNames(definedName, sheetName, range, changed, [range[0], range[2]], args);
+                } else if (args.modelType === 'Column') {
+                    const startDiff: number = range[1] - args.startIndex;
+                    if (startDiff > 0) { range[1] -= startDiff; changed = true; }
+                    if (args.startIndex <= range[3]) {
+                        if (args.endIndex <= range[3]) {
+                            range[3] -= args.deletedModel.length;
+                        } else {
+                            range[3] -= (range[3] - args.startIndex) + 1;
+                        }
+                        changed = true;
+                    }
+                    this.updateDefinedNames(definedName, sheetName, range, changed, [range[1], range[3]], args);
                 }
             }
-            modelDefinedNames = definedNames;
         }
+    }
+
+    private updateDefinedNames(
+        definedName: DefineNameModel, sheetName: string, range: number[], changed: boolean, idx?: number[],
+        args?: InsertDeleteEventArgs): void {
+        if (!changed) { return; }
+        const index: number = this.parent.definedNames.indexOf(definedName);
+        this.parent.removeDefinedName(definedName.name, definedName.scope);
+        if (idx) {
+            let oldDefinedName: DefineNameModel = { name: definedName.name, comment: definedName.comment, refersTo: definedName.refersTo,
+                scope: definedName.scope };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            oldDefinedName = new DefineName(this.parent as any, 'definedNames', oldDefinedName, true);
+            if (args.definedNames) {
+                args.definedNames.push(oldDefinedName);
+            } else {
+                args.definedNames = [oldDefinedName];
+            }
+            if (idx[1] < idx[0]) { return; }
+        }
+        definedName.refersTo = sheetName + '!' + getRangeAddress(range);
+        this.parent.notify(workbookFormulaOperation, { action: 'addDefinedName', definedName: definedName, isAdded: false, index: index });
     }
 }
 

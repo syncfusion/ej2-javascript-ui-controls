@@ -2416,6 +2416,50 @@ describe('MultiSelect', () => {
             }
         });
     });
+    describe('EJ2-51978 - Multiselct custom value removing using backspace key', () => {
+        let mObj: any;
+        let mEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let datasource: { [key: string]: Object }[] = [
+            { id: 'game1', sports: 'Badminton' },
+            { id: 'game2', sports: 'Football' },
+            { id: 'game3', sports: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(mEle);
+            mObj = new MultiSelect({
+                allowCustomValue: true, 
+            });
+            mObj.appendTo(mEle);
+        });
+        afterAll(() => {
+            mObj.destroy();
+            mEle.remove();
+        });
+
+        it('check whether the Multiselect popup is shown or not', () => {
+            mObj.focusIn();
+            mObj.inputElement.value = "a";
+            let event: any = new Event('keyup');
+            event.keyCode = 65;
+            event.key = "a";
+            mObj.isValidKey = true;
+            mObj.inputElement.dispatchEvent(event);
+            let popEle: any = mObj.popupObj.element.getElementsByTagName("li");
+            expect(popEle.length).toBe(1);
+            expect(popEle[0].textContent.trim() === 'a').toBe(true);
+            mObj.inputElement.value = "";
+            event.keyCode = 8;
+            event.key = "";
+            mObj.isValidKey = true;
+            mObj.inputElement.dispatchEvent(event);
+            popEle = mObj.popupObj.element.getElementsByTagName("li");
+            expect(popEle.length).toBe(0);
+            expect(mObj.popupObj.element.querySelector('.e-nodata')).not.toBeNull();
+            mObj.hidePopup();
+            mObj.showPopup();
+            expect(mObj.popupObj.element.querySelector('.e-nodata')).not.toBeNull();
+        });
+    });
     describe("EJ2-50033", () => {
         let listObj: any;
         let element: string = "<select id='select1'><option value = '0'>option1</option><option value=''>Empty</option><option value='1'>Option3</option></select>";

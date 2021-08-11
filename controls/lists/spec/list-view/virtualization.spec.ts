@@ -84,16 +84,6 @@ describe('UI virtualization', () => {
                 simulateScrollEvent(document.documentElement, startingHeight + 4500);
                 expect(99).toBe(listObj.virtualizationModule.uiLastIndex);
             });
-            it('Select list Item', () => {
-                let data = { text: '55', id: '55' };
-                listObj.selectItem(data);
-                let selectedItem = listObj.getSelectedItems();
-                listObj.blazorGetSelectedItems(selectedItem);
-                expect(selectedItem.index).toBe(55);
-                expect(selectedItem.text).toBe('55');
-                expect(selectedItem.data.text).toBe(data.text);
-                expect(selectedItem.data.id).toBe(data.id);
-            });
 
             it('Remove Selected list Item', () => {
                 let data = { text: '55', id: '55' };

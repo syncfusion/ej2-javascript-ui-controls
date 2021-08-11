@@ -4,7 +4,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { ParagraphWidget, LineWidget, BlockWidget, FootnoteElementBox, ShapeElementBox, ShapeBase, ElementBox } from '../../../src/document-editor/implementation/viewer/page';
 import { FootnoteType, WSectionFormat, FootnoteRestartIndex, FootEndNoteNumberFormat } from '../../../src';
-import { FieldTextElementBox } from '../../../blazor';
+import { FieldTextElementBox } from '../../../src';
 
 let footendNoteJson: any = {
     "sections": [

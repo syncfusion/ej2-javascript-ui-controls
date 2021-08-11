@@ -223,6 +223,9 @@ export class BlazorUiAdaptor {
         if (this.pdfViewer.enableInkAnnotation) {
             this.inkElement.classList.remove(this.cssClass);
         }
+        if (this.pdfViewer.enableCommentPanel) {
+            this.annotationCommentPanelElement.classList.remove(this.cssClass);
+        }
     }
 
     /**
@@ -423,6 +426,43 @@ export class BlazorUiAdaptor {
             this.redoElement.className += this.disableClass;
         }
     }
+    /**
+     * @returns {void}
+     */
+     public enableTextMarkupAnnotationPropertiesTools(isEnable: boolean): void {
+        if (isEnable) {
+           this.annotationColorElement.classList.remove(this.cssClass);
+           this.annotationOpacityElement.classList.remove(this.cssClass);
+        } else {
+           if (!this.isEnabled(this.annotationOpacityElement)) {
+               this.annotationOpacityElement.className += this.disableClass;
+           }
+           if (!this.isEnabled(this.annotationColorElement)) {
+               this.annotationColorElement.className += this.disableClass;
+           }
+        }
+        if (!this.isEnabled(this.annotationFontColorElement)) {
+           this.annotationFontColorElement.className += this.disableClass;
+       }
+       if (!this.isEnabled(this.annotationFontFamilyElement)) {
+           this.annotationFontFamilyElement.className += this.disableClass;
+       }
+       if (!this.isEnabled(this.annotationFontSizeElement)) {
+           this.annotationFontSizeElement.className += this.disableClass;
+       }
+       if (!this.isEnabled(this.annotationTextAlignElement)) {
+           this.annotationTextAlignElement.className += this.disableClass;
+       }
+       if (!this.isEnabled(this.annotationTextPropertiesElement)) {
+           this.annotationTextPropertiesElement.className += this.disableClass;
+       }
+       if (!this.isEnabled(this.annotationStrokeColorElement)) {
+           this.annotationStrokeColorElement.className += this.disableClass;
+       }
+       if (!this.isEnabled(this.annotationThicknessElement)) {
+           this.annotationThicknessElement.className += this.disableClass;
+       }
+     }
     /**
      * @param {boolean} isEnable - To enable the item or not.
      * @param {boolean} isProperitiesChange - To enable the item or not.
