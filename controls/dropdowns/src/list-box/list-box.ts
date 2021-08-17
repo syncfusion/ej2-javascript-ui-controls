@@ -6,7 +6,7 @@ import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
-import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} from '@syncfusion/ej2-base';
+import { prepend, append } from '@syncfusion/ej2-base';
 import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -388,39 +388,10 @@ export class ListBox extends DropDownBase {
         this.initLoad = true;
         this.isCustomFiltering = false;
         this.initialSelectedOptions = this.value;
-        if (isBlazor() && this.isServerRendered) {
-            this.list = this.element.parentElement;
-            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + cssClass.li);
-            this.mainList = this.ulElement = this.list.querySelector('ul');
-            this.setSelection(this.value);
-            if (this.allowFiltering) {
-                this.setFiltering();
-            }
-            this.initToolbarAndStyles();
-            this.updateSelectionSettings();
-            this.wireEvents();
-            this.initDraggable();
-            this.initLoad = false;
-        } else {
-            super.render();
-        }
+        super.render();
         this.renderComplete();
     }
 
-    private updateBlazorListData(
-        data: { [key: string]: Object }[] | string[] | boolean[] | number[], isDataSource: boolean, select?: boolean): void {
-        if (isDataSource) {
-            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + cssClass.li);
-            this.mainList = this.ulElement = this.list.querySelector('ul');
-            if (this.allowDragAndDrop && !this.ulElement.classList.contains('e-sortable')) {
-                this.initDraggable();
-            }
-            if (select) { this.selectItems(this.listData as string[], false); }
-        }
-        if (!isNullOrUndefined(data)) {
-            this.sortedData = this.jsonData = this.listData = data;
-        }
-    }
     private initWrapper(): void {
         const hiddenSelect: Element = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
         this.list.classList.add('e-listbox-wrapper');
@@ -594,9 +565,6 @@ export class ListBox extends DropDownBase {
             removeClass([ele], cssClass.disabled);
         } else {
             addClass([ele], cssClass.disabled);
-            if (isBlazor() && this.isServerRendered && this.toolbarSettings.items.length) {
-                removeClass([this.list], cssClass.disabled);
-            }
         }
     }
 
@@ -651,11 +619,7 @@ export class ListBox extends DropDownBase {
         e?: Object): void {
         let searchEle: Element;
         if (this.allowFiltering && this.list.getElementsByClassName('e-filter-parent')[0]) {
-            if (isBlazor() && this.isServerRendered) {
-                searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
-            } else {
-                searchEle = this.list.getElementsByClassName('e-filter-parent')[0].cloneNode(true) as Element;
-            }
+            searchEle = this.list.getElementsByClassName('e-filter-parent')[0].cloneNode(true) as Element;
         }
         if (list.length === 0) {
             const noRecElem: Element = ulElement.childNodes[0] as Element;
@@ -666,10 +630,8 @@ export class ListBox extends DropDownBase {
         super.onActionComplete(ulElement, list, e);
         if (this.allowFiltering && !isNullOrUndefined(searchEle)) {
             this.list.insertBefore(searchEle, this.list.firstElementChild);
-            if (!isBlazor() && !this.isServerRendered) {
-                this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0] as HTMLElement;
-                this.filterWireEvents(searchEle);
-            }
+            this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0] as HTMLElement;
+            this.filterWireEvents(searchEle);
         }
         this.initWrapper();
         this.setSelection();
@@ -713,9 +675,9 @@ export class ListBox extends DropDownBase {
         this.setHeight();
     }
 
-    private triggerDragStart(args: DragEventArgs & BlazorDragEventArgs): void {
+    private triggerDragStart(args: DragEventArgs ): void {
         let badge: Element;
-        args = extend(this.getDragArgs(args), { dragSelected: true }) as DragEventArgs & BlazorDragEventArgs;
+        args = extend(this.getDragArgs(args), { dragSelected: true }) as DragEventArgs;
         if (Browser.isIos) {
             this.list.style.overflow = 'hidden';
         }
@@ -725,15 +687,11 @@ export class ListBox extends DropDownBase {
                 badge = this.ulElement.getElementsByClassName('e-list-badge')[0];
                 if (badge) { detach(badge); }
             }
-            if (isBlazor()) {
-                args.bindEvents(args.dragElement);
-            }
-
         });
     }
 
     private triggerDrag(args: DragEventArgs): void {
-        this.trigger('drag', this.getDragArgs(args as DragEventArgs & BlazorDragEventArgs));
+        this.trigger('drag', this.getDragArgs(args as DragEventArgs));
         const listObj: ListBox = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
             const noRecElem: Element = listObj.ulElement.childNodes[0] as Element;
@@ -758,7 +716,7 @@ export class ListBox extends DropDownBase {
         let selectedOptions: (string | boolean | number)[]; let sortedData: dataType[];
         const dropValue: string | number | boolean = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         const listObj: ListBox = this.getComponent(args.droppedElement);
-        const getArgs: Object = this.getDragArgs({ target: args.droppedElement } as DragEventArgs & BlazorDragEventArgs, true);
+        const getArgs: Object = this.getDragArgs({ target: args.droppedElement } as DragEventArgs , true);
         const sourceArgs: Object = { previousData: this.dataSource }; const destArgs: Object = { previousData: listObj.dataSource };
         let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource }, previousIndex: args.previousIndex, currentIndex: args.currentIndex });
         if (listObj !== this) {
@@ -780,7 +738,7 @@ export class ListBox extends DropDownBase {
             listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0] as obj);
             sortedData.splice(toSortIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
             jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
-            if (!isBlazor()) { liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement); }
+            liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach((value: string) => {
@@ -794,29 +752,13 @@ export class ListBox extends DropDownBase {
                         jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
                         listData.splice(toIdx, 0, listData.splice(idx, 1)[0] as obj);
                         sortedData.splice(toSortIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
-                        if (!isBlazor()) {
-                            liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0] as HTMLElement);
-                            ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
-                        }
-                    } else if (isBlazor()) {
-                        const lists: HTMLElement[] = [].slice.call(this.ulElement.getElementsByClassName(cssClass.li));
-                        const refChild: HTMLElement = this.ulElement.removeChild(lists[args.currentIndex]);
-                        lists.splice(args.currentIndex, 1);
-                        this.ulElement.insertBefore(refChild, lists[args.previousIndex]);
-                    }
+                        liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0] as HTMLElement);
+                        ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
+                    } 
                 });
             }
             (this.listData as dataType[]) = listData; (this.jsonData as dataType[]) = jsonData;
             (this.sortedData as dataType[]) = sortedData; this.liCollections = liColl;
-            if (isBlazor()) {
-                const value: string[] | number[] | boolean[] = this.value;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (<any>this).interopAdaptor.invokeMethodAsync('UpdateListData', this.listData).then((): void => {
-                    this.updateBlazorListData(null, true);
-                    this.selectItems(this.listData as string[], false);
-                    this.selectItems(value as string[]);
-                });
-            }
         } else {
             let li: Element; const fLiColl: HTMLElement[] = [].slice.call(this.liCollections);
             let currIdx: number = args.currentIndex = this.getCurIdx(listObj, args.currentIndex); const ul: Element = listObj.ulElement;
@@ -835,9 +777,7 @@ export class ListBox extends DropDownBase {
                 const destIdx: number = value === dropValue ? args.currentIndex : currIdx;
                 listData.splice(destIdx, 0, droppedData); jsonData.splice(destIdx, 0, droppedData);
                 sortedData.splice(destIdx, 0, droppedData);
-                if (!isBlazor()) {
-                    liColl.splice(destIdx, 0, fLiColl.splice(srcIdx, 1)[0]);
-                }
+                liColl.splice(destIdx, 0, fLiColl.splice(srcIdx, 1)[0]);
                 if (!value) {
                     const liCollElem: Element[] = this.getItems();
                     for (let i: number = 0; i < liCollElem.length; i++ ) {
@@ -851,49 +791,24 @@ export class ListBox extends DropDownBase {
                 }
                 if (!li) { li = args.helper; }
                 this.removeSelected(this, value === dropValue ? [args.droppedElement] : [li]);
-                if (isBlazor()) {
-                    if (index === 0) {
-                        this.ulElement.insertBefore(
-                            ul.getElementsByClassName(cssClass.li)[args.currentIndex],
-                            this.ulElement.getElementsByClassName(cssClass.li)[args.previousIndex]);
-                    }
-                } else {
-                    ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
-                }
+                ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
                 currIdx++;
             });
-            if (isBlazor()) {
-                /* eslint-disable */
-                (<any>this).interopAdaptor.invokeMethodAsync('UpdateListData', this.listData).then((): void => {
-                    this.updateSelectedOptions();
-                    if (this.fields.groupBy) { this.setSelection(); }
-                    this.updateBlazorListData(null, true, this.value == null || !this.value.length);
-                });
-                (<any>listObj).interopAdaptor.invokeMethodAsync('UpdateListData', listData).then((): void => {
-                    if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
-                        !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
-                            listObj.setSelection();
-                    }
-                    listObj.updateBlazorListData(null, true, listObj.value == null || !listObj.value.length);
-                });
-                /* eslint-enable */
-            } else {
-                if (this.fields.groupBy) {
-                    let sourceElem: HTMLElement = this.renderItems(this.listData as obj[], this.fields);
-                    this.updateListItems(sourceElem, this.ulElement); this.setSelection();
-                }
-                if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
-                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy || listObj.itemTemplate || this.itemTemplate) {
-                    const sortable: { placeHolderElement: Element } = getComponent(ul as HTMLElement, 'sortable');
-                    let sourceElem: HTMLElement = listObj.renderItems(listData as obj[], listObj.fields);
-                    listObj.updateListItems(sourceElem, ul as HTMLElement); this.setSelection();
-                    if (sortable.placeHolderElement) {
-                        ul.appendChild(sortable.placeHolderElement);
-                    }
-                    ul.appendChild(args.helper); listObj.setSelection();
-                }
-                this.liCollections = fLiColl; listObj.liCollections = liColl;
+            if (this.fields.groupBy) {
+                let sourceElem: HTMLElement = this.renderItems(this.listData as obj[], this.fields);
+                this.updateListItems(sourceElem, this.ulElement); this.setSelection();
             }
+            if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
+                !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy || listObj.itemTemplate || this.itemTemplate) {
+                const sortable: { placeHolderElement: Element } = getComponent(ul as HTMLElement, 'sortable');
+                let sourceElem: HTMLElement = listObj.renderItems(listData as obj[], listObj.fields);
+                listObj.updateListItems(sourceElem, ul as HTMLElement); this.setSelection();
+                if (sortable.placeHolderElement) {
+                    ul.appendChild(sortable.placeHolderElement);
+                }
+                ul.appendChild(args.helper); listObj.setSelection();
+            }
+            this.liCollections = fLiColl; listObj.liCollections = liColl;
             (listObj.jsonData as dataType[]) = extend([], [], jsonData, false) as dataType[];
             (listObj.listData as dataType[]) = extend([], [], listData, false) as dataType[];
             (listObj.sortedData as dataType[]) = extend([], [], sortedData, false) as dataType[];
@@ -981,13 +896,7 @@ export class ListBox extends DropDownBase {
     public enableItems(items: string[], enable: boolean = true, isValue?: boolean): void {
         let li: HTMLElement;
         items.forEach((item: string) => {
-            let text: string;
-            if (isBlazor() && typeof(item) === 'object') {
-                text = getValue(isValue ? this.fields.value : this.fields.text, item);
-                if (isNullOrUndefined(text)) { return; }
-            } else {
-                text = item;
-            }
+            let text: string = item;
             li = this.findListElement(this.list, 'li', 'data-value', isValue ? text : this.getValueByText(text));
             if (!li) { return; }
             if (enable) {
@@ -1365,39 +1274,34 @@ export class ListBox extends DropDownBase {
     private setFiltering(): InputObject | void {
         let filterInputObj: InputObject;
         if (this.initLoad || isNullOrUndefined(this.filterParent)) {
-            if (isBlazor() && this.isServerRendered) {
-                this.filterParent = this.list.querySelector('.e-filter-parent');
-                this.filterInput = this.list.querySelector('.e-input-filter');
-            } else {
-                this.filterParent = this.createElement('span', {
-                    className: listBoxClasses.filterParent
-                });
-                this.filterInput = <HTMLInputElement>this.createElement('input', {
-                    attrs: { type: 'text' },
-                    className: listBoxClasses.filterInput
-                });
-                this.element.parentNode.insertBefore(this.filterInput, this.element);
-                filterInputObj = Input.createInput(
-                    {
-                        element: this.filterInput,
-                        buttons: [listBoxClasses.filterBarClearIcon],
-                        properties: { placeholder: this.filterBarPlaceholder }
-                    },
-                    this.createElement
-                );
-                append([filterInputObj.container], this.filterParent);
-                prepend([this.filterParent], this.list);
-                attributes(this.filterInput, {
-                    'aria-disabled': 'false',
-                    'aria-owns': this.element.id + '_options',
-                    'role': 'listbox',
-                    'aria-activedescendant': null,
-                    'autocomplete': 'off',
-                    'autocorrect': 'off',
-                    'autocapitalize': 'off',
-                    'spellcheck': 'false'
-                });
-            }
+            this.filterParent = this.createElement('span', {
+                className: listBoxClasses.filterParent
+            });
+            this.filterInput = <HTMLInputElement>this.createElement('input', {
+                attrs: { type: 'text' },
+                className: listBoxClasses.filterInput
+            });
+            this.element.parentNode.insertBefore(this.filterInput, this.element);
+            filterInputObj = Input.createInput(
+                {
+                    element: this.filterInput,
+                    buttons: [listBoxClasses.filterBarClearIcon],
+                    properties: { placeholder: this.filterBarPlaceholder }
+                },
+                this.createElement
+            );
+            append([filterInputObj.container], this.filterParent);
+            prepend([this.filterParent], this.list);
+            attributes(this.filterInput, {
+                'aria-disabled': 'false',
+                'aria-owns': this.element.id + '_options',
+                'role': 'listbox',
+                'aria-activedescendant': null,
+                'autocomplete': 'off',
+                'autocorrect': 'off',
+                'autocapitalize': 'off',
+                'spellcheck': 'false'
+            });
             if (this.height.toString().indexOf('%') < 0) {
                 addClass([this.list], 'e-filter-list');
             }
@@ -1670,23 +1574,21 @@ export class ListBox extends DropDownBase {
             if (localDataArgs.cancel) {
                 return;
             }
-            if (!isBlazor()) {
-                const rLiCollection: HTMLElement[] = [];
-                dataLiIdx.sort((n1: number, n2: number) => n1 - n2).reverse().forEach((i: number) => {
-                    rLiCollection.push(fliCollections.splice(i, 1)[0]);
-                });
-                fListBox.liCollections = fliCollections;
-                if (index) {
-                    const toColl: HTMLElement[] = tliCollections.splice(0, index);
-                    tListBox.liCollections = toColl.concat(rLiCollection.reverse()).concat(tliCollections);
-                } else {
-                    tListBox.liCollections = tliCollections.concat(rLiCollection.reverse());
-                }
-                if (tListBox.listData.length === 0) {
-                    const noRecElem: Element = tListBox.ulElement.childNodes[0] as Element;
-                    if (noRecElem) {
-                        tListBox.ulElement.removeChild(noRecElem);
-                    }
+            const rLiCollection: HTMLElement[] = [];
+            dataLiIdx.sort((n1: number, n2: number) => n1 - n2).reverse().forEach((i: number) => {
+            rLiCollection.push(fliCollections.splice(i, 1)[0]);
+            });
+            fListBox.liCollections = fliCollections;
+            if (index) {
+                const toColl: HTMLElement[] = tliCollections.splice(0, index);
+                tListBox.liCollections = toColl.concat(rLiCollection.reverse()).concat(tliCollections);
+            } else {
+                tListBox.liCollections = tliCollections.concat(rLiCollection.reverse());
+            }
+            if (tListBox.listData.length === 0) {
+                const noRecElem: Element = tListBox.ulElement.childNodes[0] as Element;
+                if (noRecElem) {
+                    tListBox.ulElement.removeChild(noRecElem);
                 }
             }
             dataIdx.sort((n1: number, n2: number) => n2 - n1).forEach((i: number) => {
@@ -1700,26 +1602,24 @@ export class ListBox extends DropDownBase {
             jsonIdx.slice().reverse().forEach((i: number) => {
                 data.push(fListBox.jsonData.splice(i, 1)[0]);
             });
-            if (!isBlazor()) {
-                if (isRefresh) {
-                    if (fListBox.fields.groupBy) {
-                        let sourceElem: HTMLElement = fListBox.renderItems(listData as obj[], fListBox.fields);
-                        fListBox.updateListItems(sourceElem, fListBox.ulElement);
-                    } else {
-                        elems.forEach((ele: Element) => { detach(ele); });
-                    }
+            if (isRefresh) {
+                if (fListBox.fields.groupBy) {
+                    let sourceElem: HTMLElement = fListBox.renderItems(listData as obj[], fListBox.fields);
+                    fListBox.updateListItems(sourceElem, fListBox.ulElement);
                 } else {
-                    moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
-                    fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
+                    elems.forEach((ele: Element) => { detach(ele); });
                 }
-                if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
-                    tListBox.mainList = tListBox.ulElement;
-                }
-                fListBox.updateMainList();
+            } else {
+                moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
+                fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
             }
+            if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
+                tListBox.mainList = tListBox.ulElement;
+            }
+            fListBox.updateMainList();
             const tJsonData: dataType[] = [].slice.call(tListBox.jsonData);
             tSortData = [].slice.call(tListBox.sortedData);
-            if (!isBlazor()) { this.selectNextList(elems, dataLiIdx, dataIdx, fListBox); }
+            this.selectNextList(elems, dataLiIdx, dataIdx, fListBox);
             if (isKey) { this.list.focus(); }
             (fListBox.listData as dataType[]) = listData;
             (fListBox.sortedData as dataType[]) = sortData;
@@ -1732,28 +1632,13 @@ export class ListBox extends DropDownBase {
             (tListBox.listData as dataType[]) = tListData;
             tListBox.jsonData = tJsonData as {[key: string]: object}[];
             tListBox.sortedData = tSortData as {[key: string]: object}[];
-            if (isBlazor()) {
-                /* eslint-disable */
-                (<any>fListBox).interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then((): void => {
-                    fListBox.updateBlazorListData(null, true);
-                    this.selectNextList(elems, dataLiIdx, dataIdx, fListBox);
-                    fListBox.updateSelectedOptions();
-                });
-                (<any>tListBox).interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then((): void => {
-                    if (isRefresh) { tListBox.setSelection(); }
-                    tListBox.updateBlazorListData(null, true);
-                    fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-                });
-                /* eslint-enable */
-            } else {
-                if (isRefresh) {
-                    let sourceElem: HTMLElement = tListBox.renderItems(tListData as obj[], tListBox.fields);
-                    tListBox.updateListItems(sourceElem, tListBox.ulElement);
-                    tListBox.setSelection();
-                    fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-                }
-                fListBox.updateSelectedOptions();
+            if (isRefresh) {
+                let sourceElem: HTMLElement = tListBox.renderItems(tListData as obj[], tListBox.fields);
+                tListBox.updateListItems(sourceElem, tListBox.ulElement);
+                tListBox.setSelection();
+                fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
             }
+            fListBox.updateSelectedOptions();
             if (fListBox.listData.length === 0) {
                 fListBox.l10nUpdate();
             }
@@ -1798,25 +1683,23 @@ export class ListBox extends DropDownBase {
         if (localDataArgs.cancel) {
             return;
         }
-        if (!isBlazor()) {
-            if (tListBox.listData.length === 0) {
-                const noRecElem: Element = tListBox.ulElement.childNodes[0] as Element;
-                if (noRecElem) {
-                    tListBox.ulElement.removeChild(noRecElem);
-                }
+        if (tListBox.listData.length === 0) {
+            const noRecElem: Element = tListBox.ulElement.childNodes[0] as Element;
+            if (noRecElem) {
+                tListBox.ulElement.removeChild(noRecElem);
             }
-            if (isRefresh) {
-                const noRecElem: Element = fListBox.ulElement.childNodes[0] as Element;
-                if (noRecElem) {
-                    fListBox.ulElement.removeChild(noRecElem);
-                }
-            }
-            moveTo(
-                fListBox.ulElement, tListBox.ulElement,
-                // eslint-disable-next-line prefer-spread
-                Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
-            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         }
+        if (isRefresh) {
+            const noRecElem: Element = fListBox.ulElement.childNodes[0] as Element;
+            if (noRecElem) {
+                fListBox.ulElement.removeChild(noRecElem);
+            }
+        }
+        moveTo(
+            fListBox.ulElement, tListBox.ulElement,
+            // eslint-disable-next-line prefer-spread
+            Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
+        this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         if (isKey) { this.list.focus(); }
         index = (index) ? index : listData.length;
         for (let i: number = 0; i < fListBox.listData.length; i++) {
@@ -1825,16 +1708,14 @@ export class ListBox extends DropDownBase {
         for (let i: number = 0; i < fListBox.jsonData.length; i++) {
             jsonData.splice(index + i, 0, fListBox.jsonData[i] as {[key: string]: object});
         }
-        if (!isBlazor()) {
-            const fliCollections: HTMLElement[] = [].slice.call(fListBox.liCollections);
-            const tliCollections: HTMLElement[] = [].slice.call(tListBox.liCollections);
-            fListBox.liCollections = [];
-            if (index) {
-                const toColl: HTMLElement[] = tliCollections.splice(0, index);
-                tListBox.liCollections = toColl.concat(fliCollections).concat(tliCollections);
-            } else {
-                tListBox.liCollections = tliCollections.concat(fliCollections);
-            }
+        const fliCollections: HTMLElement[] = [].slice.call(fListBox.liCollections);
+        const tliCollections: HTMLElement[] = [].slice.call(tListBox.liCollections);
+        fListBox.liCollections = [];
+        if (index) {
+            const toColl: HTMLElement[] = tliCollections.splice(0, index);
+            tListBox.liCollections = toColl.concat(fliCollections).concat(tliCollections);
+        } else {
+            tListBox.liCollections = tliCollections.concat(fliCollections);
         }
         fListBox.value = [];
         (listData as sortedType[]) = (listData as sortedType[])
@@ -1842,29 +1723,14 @@ export class ListBox extends DropDownBase {
         (tListBox.listData as dataType[]) = listData;
         tListBox.jsonData = jsonData;
         fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
-        if (isBlazor()) {
-            if (!isRefresh) { (tListBox.sortedData as dataType[]) = listData; }
-            /* eslint-disable */
-            (<any>fListBox).interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then((): void => {
-                fListBox.updateBlazorListData(null, true);
-                fListBox.updateSelectedOptions();
-            });
-            (<any>tListBox).interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then((): void => {
-                tListBox.updateBlazorListData(null, true);
-                fListBox.updateSelectedOptions();
-                fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-            });
-            /* eslint-enable */
+        if (isRefresh) {
+            let sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
+            tListBox.updateListItems(sourceElem, tListBox.ulElement);
+            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         } else {
-            if (isRefresh) {
-                let sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
-                tListBox.updateListItems(sourceElem, tListBox.ulElement);
-                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-            } else {
-                (tListBox.sortedData as dataType[]) = listData;
-            }
-            fListBox.updateSelectedOptions();
+            (tListBox.sortedData as dataType[]) = listData;
         }
+        fListBox.updateSelectedOptions();
         if (fListBox.listData.length === 0) {
             fListBox.l10nUpdate();
         }
@@ -1916,7 +1782,7 @@ export class ListBox extends DropDownBase {
         return elems;
     }
 
-    private getDragArgs(args: DragEventArgs & BlazorDragEventArgs, isDragEnd?: boolean): DragEventArgs & BlazorDragEventArgs {
+    private getDragArgs(args: DragEventArgs , isDragEnd?: boolean): DragEventArgs {
         let elems: Element[] = this.getGrabbedItems();
         if (elems.length) {
             if (isDragEnd) {
@@ -1925,12 +1791,7 @@ export class ListBox extends DropDownBase {
         } else {
             elems = [args.target];
         }
-        if (isBlazor()) {
-            return { elements: elems, items: this.getDataByElems(elems), bindEvents: args.bindEvents,
-                dragElement: args.dragElement };
-        } else {
-            return { elements: elems, items: this.getDataByElems(elems) } as DragEventArgs & BlazorDragEventArgs;
-        }
+        return { elements: elems, items: this.getDataByElems(elems) } as DragEventArgs;
     }
 
     private onKeyDown(e: KeyboardEvent): void {
@@ -2184,13 +2045,7 @@ export class ListBox extends DropDownBase {
             values.forEach((value: string) => {
                 let text: string | number | boolean;
                 if (isText) {
-                    if (isBlazor() && typeof(value) === 'object') {
-                        text = (value as { [key: string]: string })[this.fields.text || 'text'];
-                        if (isNullOrUndefined(text)) { return; }
-                        text = this.getValueByText(text);
-                    } else {
-                        text = this.getValueByText(value);
-                    }
+                    text = this.getValueByText(value);
                 } else {
                     text = value;
                 }
@@ -2283,12 +2138,10 @@ export class ListBox extends DropDownBase {
         const liColl: NodeListOf<Element> = this.list.lastElementChild.querySelectorAll('li');
         const liCollLen: number = this.list.lastElementChild.getElementsByClassName('e-list-item').length;
         if (showCheckbox) {
-            if (!isBlazor()) {
-                this.ulElement = this.renderItems(this.listData as obj[], this.fields);
-                this.mainList = this.ulElement;
-                this.list.removeChild(this.list.getElementsByTagName('ul')[0]);
-                this.list.appendChild(this.ulElement);
-            }
+            this.ulElement = this.renderItems(this.listData as obj[], this.fields);
+            this.mainList = this.ulElement;
+            this.list.removeChild(this.list.getElementsByTagName('ul')[0]);
+            this.list.appendChild(this.ulElement);
             if (this.selectionSettings.showSelectAll && !this.list.getElementsByClassName('e-selectall-parent')[0]) {
                 const l10nShow: L10n = new L10n(
                     this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
@@ -2304,17 +2157,15 @@ export class ListBox extends DropDownBase {
             if (this.list.getElementsByClassName('e-selectall-parent')[0]) {
                 this.list.removeChild(this.list.getElementsByClassName('e-selectall-parent')[0]);
             }
-            if (!isBlazor()) {
-                for (index; index < liCollLen; index++) {
-                    if (liColl[index].classList.contains('e-list-item')) {
-                        liColl[index].removeChild(liColl[index].getElementsByClassName('e-checkbox-wrapper')[0]);
-                    }
-                    if (liColl[index].hasAttribute('aria-selected')) {
-                        liColl[index].removeAttribute('aria-selected');
-                    }
+            for (index; index < liCollLen; index++) {
+                if (liColl[index].classList.contains('e-list-item')) {
+                    liColl[index].removeChild(liColl[index].getElementsByClassName('e-checkbox-wrapper')[0]);
                 }
-                this.mainList = this.ulElement;
+                if (liColl[index].hasAttribute('aria-selected')) {
+                    liColl[index].removeAttribute('aria-selected');
+                }
             }
+            this.mainList = this.ulElement;
         }
         this.value = [];
     }
@@ -2363,25 +2214,18 @@ export class ListBox extends DropDownBase {
     }
 
     public destroy(): void {
-        if (this.itemTemplate) {
-            resetBlazorTemplate(`${this.element.id}${ITEMTEMPLATE_PROPERTY}`, ITEMTEMPLATE_PROPERTY);
-        }
         this.unwireEvents();
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.innerHTML = '';
         } else {
-            if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
-                this.element.style.display = 'inline-block';
-                if (this.toolbarSettings.items.length) {
-                    this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
-                    detach(this.list.nextElementSibling);
-                }
-                this.list.parentElement.insertBefore(this.element, this.list);
+            this.element.style.display = 'inline-block';
+            if (this.toolbarSettings.items.length) {
+                this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
+                detach(this.list.nextElementSibling);
             }
+            this.list.parentElement.insertBefore(this.element, this.list);
         }
-        if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
-            super.destroy();
-        }
+        super.destroy();
         if (this.itemTemplate) { this.clearTemplate(); }
     }
 

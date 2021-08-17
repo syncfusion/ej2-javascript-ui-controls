@@ -4,9 +4,11 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
+import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+
 Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
 describe('Gantt - Base', () => {
 
@@ -354,6 +356,63 @@ describe('Gantt - Base', () => {
                 expect(getValue('style.background', ganttObj.element.querySelectorAll('.e-chart-row')[0])).toBe('pink');
             };
             ganttObj.dataBind();
+        });
+        
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+         describe('Empty datasource', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    allowSelection: true,
+                    allowResizing: true,
+                    allowSorting: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                            { text: 'update', id: 'update' }],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    toolbarClick: (args: ClickEventArgs) => {
+                        if (args.item.text === 'update') {
+                            let projectData: any = []
+                            ganttObj.dataSource = projectData; 
+                        }
+                    },
+                }, done);
+        });
+        it('Set datasource to empty', () => {
+            let update: HTMLElement = ganttObj.element.querySelector('#' + 'update') as HTMLElement;
+            triggerMouseEvent(update, 'click');
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.requestType === 'refresh') {
+                    expect(ganttObj.flatData.length).toBe(0);
+                }
+            };
         });
         
         afterAll(() => {

@@ -5,7 +5,7 @@ import { isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes, FilterCollectionModel, getCellAddress, sortImport } from '../common/index';
 import { sheetCreated, protectSheetWorkBook, getRangeAddress, updateFilter } from '../common/index';
-import { WorkbookModel, Workbook, initSheet, SheetModel } from '../base/index';
+import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel } from '../base/index';
 import { beginAction, initiateFilterUI } from '../../spreadsheet/common/event';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 
@@ -29,7 +29,7 @@ export class WorkbookOpen {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         if ((options as any).jsonObject) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            this.fetchSuccess((options as any).jsonObject as string, null);
+            this.fetchSuccess((options as any).jsonObject as string, null, true);
             return;
         }
         const formData: FormData = new FormData();
@@ -87,7 +87,7 @@ export class WorkbookOpen {
         this.parent.isOpen = false;
     }
 
-    private fetchSuccess(data: string, eventArgs: OpenOptions): void {
+    private fetchSuccess(data: string, eventArgs: OpenOptions, isOpenFromJson?: boolean): void {
         const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword'];
         let workbookData: string = data;
         workbookData = (typeof data === 'string') ? JSON.parse(data) : data;
@@ -99,7 +99,7 @@ export class WorkbookOpen {
             });
             return;
         }
-        this.updateModel(impData);
+        this.updateModel(impData, isOpenFromJson);
         this.parent.notify(openSuccess, {
             context: this, data: impData as string
         });
@@ -113,13 +113,13 @@ export class WorkbookOpen {
         }
     }
 
-    private updateModel(workbookModel: WorkbookModel): void {
+    private updateModel(workbookModel: WorkbookModel, isOpenFromJson: boolean): void {
         this.parent.notify(workbookFormulaOperation, { action: 'unRegisterSheet' });
+        this.setSelectAllRange(workbookModel.sheets, isOpenFromJson);
         this.parent.sheetNameCount = 1;
         this.parent.sheets = [];
         this.parent.notify(sheetsDestroyed, {});
         workbookModel.activeSheetIndex  = workbookModel.activeSheetIndex  || 0;
-        this.setSelectAllRange(workbookModel.sheets);
         this.parent.setProperties(
             {
                 'sheets': workbookModel.sheets,
@@ -138,7 +138,8 @@ export class WorkbookOpen {
         this.parent.notify(updateFilter, { isOpen: true });
     }
 
-    private setSelectAllRange(sheets: SheetModel[]): void {
+    private setSelectAllRange(sheets: SheetModel[], isOpenFromJson: boolean): void {
+        let curSheet: SheetModel; let curRange: RangeModel;
         sheets.forEach((sheet: SheetModel) => {
             if (sheet.selectedRange) {
                 const selectedIndex: number[] = getRangeIndexes(sheet.selectedRange);
@@ -157,6 +158,21 @@ export class WorkbookOpen {
                     selectedIndex[1] = colCount;
                 }
                 sheet.selectedRange = getRangeAddress(selectedIndex);
+            }
+            // eslint-disable-next-line
+            if (isOpenFromJson && (this.parent as any).isAngular) {
+                for (let i: number = 0; i < this.parent.sheets.length; i++) {
+                    curSheet = this.parent.sheets[i];
+                    if (sheet.name === curSheet.name) {
+                        if (sheet.ranges) {
+                            sheet.ranges.forEach((range: RangeModel, index: number): void => {
+                                curRange = curSheet.ranges[index];
+                                if (curRange && curRange.template) { range.template = curRange.template; }
+                            });
+                        }
+                        break;
+                    }
+                }
             }
         });
     }

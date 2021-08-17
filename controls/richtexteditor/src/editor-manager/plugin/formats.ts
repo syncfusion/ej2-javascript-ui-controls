@@ -45,7 +45,7 @@ export class Formats {
         if (e.event.which === 13 && range.startContainer === endCon && endCon.nodeType !== 3) {
             const pTag: HTMLElement = createElement('p');
             pTag.innerHTML = '<br>';
-            if (lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
+            if (lastChild && lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
                 endCon.replaceChild(pTag, lastChild);
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
             } else {

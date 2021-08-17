@@ -1375,7 +1375,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.valueTemplate && this.itemData !== null && !this.isServerBlazor) {
             this.DropDownBaseresetBlazorTemplates(false, false, false, false, true);
             this.setValueTemplate();
-        } else if (this.inputElement.previousSibling === this.valueTempElement) {
+        } else if (!isNullOrUndefined(this.valueTempElement) && this.inputElement.previousSibling === this.valueTempElement) {
             detach(this.valueTempElement);
             this.inputElement.style.display = 'block';
         }

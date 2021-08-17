@@ -29,6 +29,7 @@ export class AggregateMenu {
     private currentMenu: Element;
     private valueDialog: Dialog;
     private summaryTypes: AggregateTypes[];
+    private stringAggregateTypes: AggregateTypes[] = ['Count', 'DistinctCount'];
 
     /* eslint-disable */
     /**
@@ -85,7 +86,7 @@ export class AggregateMenu {
         for (let i: number = 0; i < this.summaryTypes.length; i++) {
             let key: AggregateTypes = this.summaryTypes[i] as AggregateTypes;
             if (isStringField) {
-                if ((['Count', 'DistinctCount'].indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
+                if ((this.stringAggregateTypes.indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
                     menuItems[isStringField].push(
                         { text: this.parent.localeObj.getConstant(key), id: this.parent.element.id + 'StringMenu_' + key });
                     checkDuplicates.push(key);
@@ -135,7 +136,7 @@ export class AggregateMenu {
         for (let i: number = 0; i < this.parent.aggregateTypes.length; i++) {
             let key: AggregateTypes = this.parent.aggregateTypes[i] as AggregateTypes;
             if (isStringField) {
-                if ((['Count', 'DistinctCount'].indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
+                if ((this.stringAggregateTypes.indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
                     menuItems.push(key);
                 }
             } else {

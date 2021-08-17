@@ -1850,6 +1850,58 @@ describe("EJ2-46613 - Pasting content with bolded list doesn't paste the content
     });
   });
 });
+describe("EJ2-51957-Unable to paste url more than two times", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+  
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: false
+        }
+      });
+      done();
+    });
+    it("Pasting url multiple times", (done) => {
+      let localElem: string = `https://hr.syncfusion.com/home`;
+      keyBoardEvent.clipboardData = {
+        getData: (e: any) => {
+            if (e === "text/plain") {
+                return localElem;
+            } else {
+                return '';
+            }
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.prompt = false;
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+      rteObj.onPaste(keyBoardEvent);
+      expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(1);
+      rteObj.onPaste(keyBoardEvent);
+      expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(2);
+      rteObj.onPaste(keyBoardEvent);
+      expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(3);
+      done();
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+  });
 
 describe("EJ2-51489 - Pasting image and checking width and height - ", () => {
     let rteObj: RichTextEditor;

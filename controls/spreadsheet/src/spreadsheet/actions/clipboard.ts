@@ -902,7 +902,9 @@ export class Clipboard {
         });
         if (keys.length) {
             if (ele.querySelector('style')) {
-                const tdStyle: string = ele.querySelector('style').innerHTML.split('td')[1].split('{')[1].split('}')[0];
+                let tdStyle: string = (ele.querySelector('style').innerHTML.includes('td') ?
+                    ele.querySelector('style').innerHTML.split('td')[1] : ele.querySelector('style').innerHTML);
+                tdStyle = tdStyle.includes('{') ? tdStyle.split('{')[1].split('}')[0] : tdStyle.split('}')[0];
                 for (let i: number = 0; i < keys.length; i++) {
                     let key: string = keys[i];
                     const regex: RegExpMatchArray = key.match(/[A-Z]/);

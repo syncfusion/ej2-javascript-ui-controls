@@ -1,11 +1,11 @@
-import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel } from '@syncfusion/ej2-base';
+import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel, isBlazor } from '@syncfusion/ej2-base';
 import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';
 import { Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, fit, Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates, extend, SanitizeHtmlHelper, isBlazor } from '@syncfusion/ej2-base';
+import { extend, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { MenuItemModel, MenuBaseModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';
 import { HScroll } from '../common/h-scroll';
@@ -495,14 +495,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected render(): void {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template && isBlazor()) {
-            const menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
-            resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-            if (Object.keys(blazorTemplates).length) {
-                extend(this.tempItem, (<{ [key: string]: Object }>blazorTemplates)[menuTemplateId], [], true);
-            }
-            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
-        }
         this.wireEvents();
         this.renderComplete();
         const wrapper: HTMLElement = this.getWrapper() as HTMLElement;
@@ -542,7 +534,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (!(this.items as objColl).length) {
             const items: { [key: string]: Object; }[] = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
             this.setProperties({ items: items }, true);
-            if (isBlazor()) {
+            if (isBlazor() && !this.isMenu) {
                 this.element = this.removeChildElement(this.element);
             } else {
                 this.element.innerHTML = '';
@@ -831,8 +823,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (!isClose) {
                 const liElem: Element = e && e.target && this.getLI(e.target as Element);
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null; items = item ? item.items : this.items as objColl;
-                beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, ulIndex) : item,
-                    items: items, event: e, cancel: false , isFocused: true };
+                beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false , isFocused: true };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
                     let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs; let popupId: string = '';
                     let popupObj: Popup; const isOpen: boolean = !observedCloseArgs.cancel;
@@ -1034,15 +1025,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
             this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
         }
-        if (this.isMenu && this.template && isBlazor()) {
-            const menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
-            if (Object.keys(blazorTemplates).length) {
-                const itemFromBlazorTemplate: objColl = (<obj>blazorTemplates)[menuTemplateId] as objColl;
-                this.tempItem = this.tempItem.concat(itemFromBlazorTemplate);
-                (<{ [key: string]: Object }>blazorTemplates)[menuTemplateId] = this.tempItem;
-            }
-            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
-        }
     }
 
     private calculateIndentSize(ul: HTMLElement, li: Element): void {
@@ -1131,9 +1113,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         top: number, left: number, type: string): void {
         const items: MenuItemModel[] = li ? (<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl : this.items as objColl;
         const eventArgs: BeforeOpenCloseMenuEventArgs = {
-            element: ul, items: items, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, this.navIdx.length - 1) :
-                item, event: e, cancel: false, top: top, left: left, showSubMenuOn: 'Auto'
-        };
+            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left, showSubMenuOn: 'Auto'};
         const menuType: string = type;
         this.trigger('beforeOpen', eventArgs, (observedOpenArgs: BeforeOpenCloseMenuEventArgs) => {
             switch (menuType) {
@@ -1344,23 +1324,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private createItems(items: MenuItemModel[] | objColl): HTMLElement {
         const level: number = this.navIdx ? this.navIdx.length : 0;
         const fields: FieldsMap = this.getFields(level);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (isBlazor() && this.template && items.length && (items[0] as any).properties) {
-            const itemsObj: objColl = [];
-            (<objColl>items).forEach((item: obj, index: number): void => {
-                itemsObj.push({});
-                (itemsObj[index] as obj)[fields.text] = item[fields.text];
-                if (!item[fields.id]) {
-                    item[fields.id] = getUniqueID('menuitem');
-                }
-                (itemsObj[index] as obj)[fields.id] = item[fields.id];
-                (itemsObj[index] as obj)[fields.iconCss] = item[fields.iconCss];
-                (itemsObj[index] as obj)[fields.url] = item[fields.url];
-                (itemsObj[index] as obj)[fields.child] = item[fields.child];
-                (itemsObj[index] as obj)[fields.separator] = item[fields.separator];
-            });
-            items = itemsObj;
-        }
         const showIcon: boolean = this.hasField(items, this.getField('iconCss', level));
         const listBaseOptions: ListBaseOptions = {
             showIcon: showIcon,
@@ -1753,12 +1716,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private getIdx(ul: Element, li: Element, skipHdr: boolean = true): number {
-        let idx: number = Array.prototype.indexOf.call(ul.querySelectorAll('li'), li);
-        if (this.isMenu && this.template && isBlazor()) {
-            idx = Array.prototype.indexOf.call(ul.querySelectorAll(li.tagName), li);
-        } else {
-            idx = Array.prototype.indexOf.call(ul.children, li);
-        }
+        let idx: number = Array.prototype.indexOf.call(ul.children, li);
         if (skipHdr && ul.children[0].classList.contains(HEADER)) {
             idx--;
         }
@@ -1857,11 +1815,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             detach(wrapper.lastElementChild);
                         }
                     }
-                    if (this.isMenu && isBlazor()) {
-                        this.updateItemsByNavIdx();
-                    } else {
-                        this.navIdx = [];
-                    }
+                    this.navIdx = [];
                 } else {
                     const keys: string[] = Object.keys(newProp.items);
                     for (let i: number = 0; i < keys.length; i++) {
@@ -1883,7 +1837,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private updateItem(ul: HTMLUListElement, items: MenuItemModel[]): void {
-        if (isBlazor()) {
+        if (isBlazor() && !this.isMenu) {
             ul = this.removeChildElement(ul);
         } else {
             ul.innerHTML = '';
@@ -2316,7 +2270,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         } else {
                             this.clonedElement.parentElement.appendChild(this.element);
                         }
-                        if (isBlazor()) {
+                        if (isBlazor() && !this.isMenu) {
                             this.element = this.removeChildElement(this.element);
                         } else {
                             this.element.innerHTML = '';
@@ -2329,7 +2283,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.clonedElement = null;
             } else {
                 this.closeMenu();
-                if (isBlazor()) {
+                if (isBlazor() && !this.isMenu) {
                     this.element = this.removeChildElement(this.element);
                 } else {
                     this.element.innerHTML = '';

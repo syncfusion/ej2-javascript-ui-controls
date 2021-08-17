@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.55 (2021-08-11)
+## 19.2.56 (2021-08-17)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I331403` -  The issue with "Kanban is not rendering properly when the data does not have the `keyField` mapping key" has been fixed.
+
+## 19.2.47 (2021-07-13)
 
 ### Kanban
 

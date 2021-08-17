@@ -1656,7 +1656,7 @@ describe('Kanban base module', () => {
         });
     });
 
-    describe('Key fileld as number type using methods', () => {
+    describe('Key field as number type using methods', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
             const data: Record<string, any>[] = [
@@ -1940,6 +1940,143 @@ describe('Kanban base module', () => {
             const contentArea: HTMLElement = document.querySelector('.e-kanban-content');
             expect(kanbanObj.scrollPosition.content.left).toEqual(0);
             expect(kanbanObj.scrollPosition.content.top).toEqual(0);
+        });
+    });
+
+    describe('EJ2-52138 - Undefined key field data source', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const kanbanData: Record<string, any>[] = [
+                {
+                    'Id': 1,
+                    'Status': 'Open',
+                    'StatusNum' : 1,
+                    'Summary': 'Analyze the new requirements gathered from the customer.',
+                    'Type': 'Story',
+                    'Priority': 'Low',
+                    'Tags': 'Analyze,Customer',
+                    'Estimate': 3.5,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 2,
+                    'Status': 'InProgress',
+                    'StatusNum' : 2,
+                    'Summary': 'Improve application performance',
+                    'Type': 'Improvement',
+                    'Priority': 'Normal',
+                    'Tags': 'Improvement',
+                    'Estimate': 6,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 3,
+                    'StatusNum' : 1,
+                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Critical',
+                    'Tags': 'Meeting',
+                    'Estimate': 5.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 4,
+                    'Status': '',
+                    'StatusNum' : 2,
+                    'Summary': 'Fix the issues reported in the IE browser.',
+                    'Type': 'Bug',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'IE',
+                    'Estimate': 2.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 5,
+                    'Status': 'Testing',
+                    'StatusNum' : 3,
+                    'Summary': 'Fix the issues reported by the customer.',
+                    'Type': 'Bug',
+                    'Priority': 'Low',
+                    'Tags': 'Customer',
+                    'Estimate': '3.5',
+                    'Assignee': 'Steven walker',
+                    'AssigneeName': 'Steven',
+                    'RankId': 1
+                },
+                {
+                    'Id': 6,
+                    'Status': 'Close',
+                    'StatusNum' : 4,
+                    'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Low',
+                    'Tags': 'Meeting',
+                    'Estimate': 2,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 7,
+                    'StatusNum' : 4,
+                    'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Low',
+                    'Tags': 'Meeting',
+                    'Estimate': 2,
+                    'Assignee': 'Robert',
+                    'RankId': 1
+                }
+            ];
+            const model: KanbanModel = {
+                keyField: 'Status',
+                dataSource: kanbanData,
+                height: 500,
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', showAddButton: true },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Testing', keyField: 'Testing' },
+                    { headerText: 'Done', keyField: 'Close' }
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                },
+                swimlaneSettings: {
+                    keyField: 'Assignee',
+                    showEmptyRow: true
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('KeyField as undefined', () => {
+            expect(kanbanObj.element.querySelectorAll('.e-content-table').length).toBe(1);
+        });
+
+        it('Card rendering testing', () => {
+            expect(kanbanObj.kanbanData.length).toEqual(7);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(4);
+        });
+        it('Swimlane row and content row count testing', () => {
+            expect(kanbanObj.element.querySelectorAll('.e-swimlane-row').length).toEqual(4);
+            expect(kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)').length).toEqual(4);
+            kanbanObj.swimlaneSettings.showEmptyRow = false;
+            kanbanObj.dataBind();
+            expect(kanbanObj.element.querySelectorAll('.e-swimlane-row').length).toEqual(2);
+            expect(kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)').length).toEqual(2);
         });
     });
 

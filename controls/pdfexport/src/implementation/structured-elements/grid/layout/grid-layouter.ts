@@ -1062,12 +1062,12 @@ export class PdfGridLayouter extends ElementLayouter {
             this.listOfNavigatePages.push(pageindex);
         }
         this.currentBounds = new RectangleF(new PointF(0, 0), nextPage.getClientSize());
-        // if ((format.paginateBounds.x !== format.paginateBounds.y) && (format.paginateBounds.y !== format.paginateBounds.height)
-        //     && (format.paginateBounds.height !== format.paginateBounds.width) && (format.paginateBounds.width !== 0)) {
-        //     this.currentBounds.x = format.paginateBounds.x;
-        //     this.currentBounds.y = format.paginateBounds.y;
-        //     this.currentBounds.height = format.paginateBounds.height;
-        // }
+        if ((typeof format !== 'undefined') && format != null && format.usePaginateBounds && (typeof format.paginateBounds !== 'undefined') && format.paginateBounds != null && (format.paginateBounds.x !== format.paginateBounds.y) && (format.paginateBounds.y !== format.paginateBounds.height)
+            && (format.paginateBounds.height !== format.paginateBounds.width) && (format.paginateBounds.width !== 0)) {
+            this.currentBounds.x = format.paginateBounds.x;
+            this.currentBounds.y = format.paginateBounds.y;
+            this.currentBounds.height = format.paginateBounds.height;
+        }
         return nextPage;
     }
     private CheckIfDefaultFormat(format : PdfStringFormat) : boolean {

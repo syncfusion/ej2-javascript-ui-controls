@@ -90,6 +90,10 @@ export class SvgRenderer implements IRenderer {
             'class': classval,
             'aria-label': ariaLabel ? ariaLabel['aria-label'] : ''
         };
+        let pointerEvents: string = 'pointer-events';
+        if (attr['aria-label'] === '') {
+            attr[pointerEvents] = 'none';
+        }
         circle.style.display = options.visible ? 'block' : 'none';
         setAttributeSvg(circle, attr);
         gElement.appendChild(circle);

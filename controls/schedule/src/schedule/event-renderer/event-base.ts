@@ -194,14 +194,26 @@ export class EventBase {
     }
 
     public filterBlockEvents(eventObj: Record<string, any>): Record<string, any>[] {
-        const eStart: Date = eventObj[this.parent.eventFields.startTime] as Date;
-        const eEnd: Date = eventObj[this.parent.eventFields.endTime] as Date;
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        const eStart: Date = eventObj[fields.startTime] as Date;
+        const eEnd: Date = eventObj[fields.endTime] as Date;
         let resourceData: TdData;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             const data: number = this.getGroupIndexFromEvent(eventObj);
             resourceData = this.parent.resourceBase.lastResourceLevel[data];
         }
-        return this.filterEvents(eStart, eEnd, this.parent.blockProcessed, resourceData);
+        let blockEvents: Record<string, any>[] = <Record<string, any>[]>extend([], this.parent.blockProcessed, null, true);
+        for (const eventObj of blockEvents) {
+            if (eventObj[fields.isAllDay]) {
+                const isDifferentTime: boolean = (eventObj[fields.endTime] as Date).getTime() >
+                    util.resetTime(new Date((eventObj[fields.endTime] as Date).getTime())).getTime();
+                if (isDifferentTime) {
+                    eventObj[fields.startTime] = util.resetTime(eventObj[fields.startTime] as Date);
+                    eventObj[fields.endTime] = util.addDays(util.resetTime(eventObj[fields.endTime] as Date), 1);
+                }
+            }
+        }
+        return this.filterEvents(eStart, eEnd, blockEvents, resourceData);
     }
 
     public filterEvents(startDate: Date, endDate: Date, appointments: Record<string, any>[] = this.parent.eventsProcessed, resourceTdData?: TdData): Record<string, any>[] {

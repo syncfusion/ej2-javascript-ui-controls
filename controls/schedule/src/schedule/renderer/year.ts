@@ -278,7 +278,7 @@ export class Year extends ViewBase implements IRenderer {
         const leftPanelSelector: string = `.${cls.MONTH_HEADER_WRAPPER},.${cls.RESOURCE_COLUMN_WRAP_CLASS}`;
         const leftPanelElement: HTMLElement = this.element.querySelector(leftPanelSelector) as HTMLElement;
         if (leftPanelElement) {
-            const isYScroll: boolean = contentWrapper.scrollWidth > contentWrapper.clientWidth; 
+            const isYScroll: boolean = contentWrapper.scrollWidth > contentWrapper.clientWidth;
             leftPanelElement.style.height = formatUnit(height - (isYScroll ? 17 : 0));
         }
         this.retainScrollPosition();

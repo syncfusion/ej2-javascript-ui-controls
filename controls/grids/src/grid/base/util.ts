@@ -1866,3 +1866,4 @@ export function removeEventHandlers(component: any, evts: string[], instance: an
         component.removeEventListener(evts[i], instance.eventHandlers[component.element.id][evts[i]]);
     }
 }
+

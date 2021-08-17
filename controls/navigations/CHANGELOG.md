@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#FB27112` - The issue with "The Sidebar flickering at initial loading" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#F167809` - Tab content item class white space issue is fixed.
+
 ## 19.2.55 (2021-08-11)
 
 ### TreeView

@@ -2,19 +2,40 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### Spreadsheet
+
+#### New Features
+
+- `I336317` - Updated the formula reference, while performing insert and delete operation.
+
+#### Bug Fixes
+
+- `I336287` - Filter getting removed on clicking the `undo` button issue resolved.
+- `I336900` - `Undo` operation with border and formatting not working properly issue resolved.
+- `I334797` - Time formatted value is updated without the starting date during editing.
+- `I337512` - After setting default cell style, script error occurs on external copy / paste action issue resolved.
+- `I337779` - Deleting empty rows not working issue resolved.
+- `I335158` - Filter popup is not visible, when scrolling the sheet issue resolved.
+- `I337789` - `Dropdown` values for list data validation are not updated, while referring the other sheet reference issue resolved.
+- `I337291` - Formula not calculated properly after loading the saved `JSON` data issue resolved.
+- `I336375` - Row height updated wrongly during scroll action issue resolved.
+
 ## 19.2.55 (2021-08-11)
 
 ### Spreadsheet
 
 #### New Features
 
-- `I327430` - Provided support for updating the defined names range while performing insert and delete operation.
+- `I327430` - Updated the defined names range, while performing insert and delete operation.
 - `I331963` - Number formatting applied while performing copy / paste operation between our different spreadsheets.
 
 #### Bug Fixes
 
 - `I336304` - Conditional formatting select button enabled while pressing `SPACE` key without any data issue resolved.
 - `I337258` - Script error throws while importing excel file which contains conditional formatting issue resolved.
+- `I338761` - UNIQUE function on multiple columns doesn't work properly issue resolved
 
 ## 19.2.51 (2021-08-03)
 

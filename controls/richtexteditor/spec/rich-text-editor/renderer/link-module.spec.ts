@@ -630,6 +630,53 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
         });
     });
+    describe('EJ2-51959- Link is not generated properly, when pasteCleanUpModule is imported', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion 1</p><p><span>syncfusion 2</span></p><p><span>syncfusion 3</span></p><p><span>syncfusion 4</span></p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Applying link for multiple nodes selected', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.contentModule.getEditPanel().childNodes[0].firstChild, (rteObj.contentModule.getEditPanel().childNodes[3] as any).lastElementChild.firstChild, 0, 12);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion 1syncfusion 2syncfusion 3syncfusion 4').toBe(true);
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect((rteObj.contentModule.getEditPanel().childNodes[0] as any).querySelector('a').text === 'syncfusion 1').toBe(true);
+            expect((rteObj.contentModule.getEditPanel().childNodes[1] as any).querySelector('a').text === 'syncfusion 2').toBe(true);
+            expect((rteObj.contentModule.getEditPanel().childNodes[2] as any).querySelector('a').text === 'syncfusion 3').toBe(true);
+            expect((rteObj.contentModule.getEditPanel().childNodes[3] as any).querySelector('a').text === 'syncfusion 4').toBe(true);
+            keyboardEventArgs.ctrlKey = true;
+            keyboardEventArgs.keyCode = 90;
+            keyboardEventArgs.action = 'undo';
+            (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
+            expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
+        });
+    });
     describe('iOS device - insert link with selected text', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

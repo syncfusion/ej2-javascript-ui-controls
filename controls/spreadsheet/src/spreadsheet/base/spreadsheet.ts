@@ -2021,13 +2021,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * @hidden
-     * @param {number} sheetIndex - specify the sheet index.
+     * @param {number} sheetId - specify the sheet id.
      * @param {string | number} value - Specify the value.
      * @param {number} rowIndex - Specify the row index.
      * @param {number} colIndex - Specify the col index.
      * @returns {void} - To set value for row and col.
      */
-    public setValueRowCol(sheetIndex: number, value: string | number, rowIndex: number, colIndex: number): void {
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number): void {
         if (value === 'circular reference: ') {
             const circularArgs: { action: string, argValue: string } = {
                 action: 'isCircularReference', argValue: value
@@ -2035,12 +2035,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(formulaOperation, circularArgs);
             value = circularArgs.argValue;
         }
-        super.setValueRowCol(sheetIndex, value, rowIndex, colIndex);
-        sheetIndex = getSheetIndexFromId(this as Workbook, sheetIndex);
+        super.setValueRowCol(sheetId, value, rowIndex, colIndex);
         this.notify(
             editOperation, {
                 action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,
-                sheetIdx: sheetIndex
+                sheetIdx: getSheetIndexFromId(this as Workbook, sheetId)
             });
     }
 

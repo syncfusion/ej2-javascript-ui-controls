@@ -726,6 +726,45 @@ describe('Schedule base module', () => {
         });
     });
 
+    describe('Testing event setting fields', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            const model: ScheduleModel = {
+                height: '600px',
+                eventSettings: {
+                    fields: {
+                        subject: { default: 'Default Subject' },
+                        location: { default: 'Default Location' },
+                        description: { default: 'Default Description' }
+                    }
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('default values', (done: Function) => {
+            schObj.dataBound = () => {
+                const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]');
+                eventElement.click();
+                const eventPopup: HTMLElement = document.querySelector('.' + cls.EVENT_POPUP_CLASS);
+                expect(eventPopup).toBeTruthy();
+                expect(eventPopup.querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('Default Subject');
+                expect(eventPopup.querySelector('.' + cls.LOCATION_DETAILS_CLASS).innerHTML).toEqual('Default Location');
+                expect(eventPopup.querySelector('.' + cls.DESCRIPTION_DETAILS_CLASS).innerHTML).toEqual('Default Description');
+                (eventPopup.querySelector('.' + cls.CLOSE_CLASS) as HTMLElement).click();
+                done();
+            }
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-hours');
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+        });
+    });
+
     describe('showWeekNumber property testing', () => {
         let schObj: Schedule;
         beforeEach((): void => {

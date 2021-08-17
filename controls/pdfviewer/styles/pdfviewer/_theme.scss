@@ -1092,6 +1092,7 @@
   .e-pv-shapes-toolbar .e-pv-tbar-btn:focus,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused:focus,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-menu-icon:focus,
+  .e-input-group.e-control-wrapper.e-pv-prop-dropdown.e-ddl.e-valid-input:not(.e-input-focus):hover,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-caret:focus {
     @if $skin-name == 'bootstrap4' {
       color: $pv-icon-color-hover;
@@ -1208,7 +1209,6 @@
     height: $pv-search-box-height;
     padding: $pv-search-box-padding;
     position: absolute;
-    top: $pv-search-box-top;
     width: $pv-search-box-width;
     z-index: 105;
   }
@@ -3006,5 +3006,10 @@
 
   .e-pv-signature-dialog-height {
     height: $pv-signature-dialog-height;
+  }
+
+  .e-pv-handwritten-signature-canvas {
+    height: $pv-handwritten-sign-height;
+    width: $pv-handwritten-sign-width;
   }
 }

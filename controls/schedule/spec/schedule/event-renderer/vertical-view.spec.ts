@@ -714,7 +714,7 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
-    xdescribe('Vertical view resource grouping appointment rendering allowGroupEdit', () => {
+    describe('Vertical view resource grouping appointment rendering allowGroupEdit', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const schOptions: ScheduleModel = {
@@ -1004,7 +1004,8 @@ describe('Vertical View Event Render Module', () => {
                 currentView: 'Week', views: [
                     { option: 'Week' },
                     { option: 'TimelineWeek' },
-                    { option: 'Month' }
+                    { option: 'Month' },
+                    { option: 'Agenda' }
                 ], height: '550px', width: '500px',
                 allowInline: true, selectedDate: new Date(2017, 10, 6)
             };
@@ -1027,11 +1028,29 @@ describe('Vertical View Event Render Module', () => {
             expect(eventElementList.length).toEqual(23);
             let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[126] as HTMLElement
             workCell.click();
-            expect(schObj.element.querySelector('.e-inline-appointment').classList.contains('e-inline-appointment')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
             let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'Testing';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+
+        });
+
+        it('Checking allowInline edit action', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
+                expect(eventElement).toBeTruthy();
+                expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing - edited');
+                done();
+            };
+            let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
+            expect(eventElement).toBeTruthy();
+            let subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            subjectElement.click();
+            let inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Testing - edited';
+            keyModule.keyActionHandler({ action: 'enter', target: inputElement });
 
         });
 
@@ -1045,12 +1064,18 @@ describe('Vertical View Event Render Module', () => {
             };
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(24);
-            (schObj.element.querySelectorAll('.e-all-day-cells')[1] as HTMLElement).click()
-            expect(schObj.element.querySelector('.e-inline-appointment').classList.contains('e-inline-appointment')).toBeTruthy();
+            (schObj.element.querySelectorAll('.e-all-day-cells')[1] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
             let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'week';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('Changing current view to timeline week view', (done: Function) => {
+            schObj.dataBound = () => done();
+            schObj.currentView = 'TimelineWeek';
+            schObj.dataBind();
         });
 
         it('Checking allowInline event in timeline week view', (done: Function) => {
@@ -1061,14 +1086,207 @@ describe('Vertical View Event Render Module', () => {
                 expect(eventElementList[2].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
-            schObj.currentView = 'TimelineWeek';
-            schObj.dataBind();
-            (schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement).click()
-            expect(schObj.element.querySelector('.e-inline-appointment').classList.contains('e-inline-appointment')).toBeTruthy();
+            (schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
             let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'timeline';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('Changing current view to Agenda', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(23);
+                done();
+            }
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+        });
+
+        it('Checking allowInline edit action in Agenda view', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_19"]');
+                expect(eventElement).toBeTruthy();
+                expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Agenda view testing');
+                done();
+            };
+            let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_19"]');
+            expect(eventElement).toBeTruthy();
+            let subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            subjectElement.click();
+            let inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Agenda view testing';
+            keyModule.keyActionHandler({ action: 'enter', target: inputElement });
+        });
+
+        xit('Changing current view to Month', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(30);
+                done();
+            }
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+
+        xit('Checking allowInline add action in Month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+                expect(eventElement).toBeTruthy();
+                expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Month view testing');
+                done();
+            };
+            let workCell: HTMLElement = schObj.element.querySelector('[data-date="1511461800000"]') as HTMLElement
+            workCell.click();
+            let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Month view testing';
+            keyModule.keyActionHandler({ action: 'enter', target: inputElement });
+        });
+
+        xit('Checking allowInline edit action in Month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+                expect(eventElement).toBeTruthy();
+                expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Month view testing edited');
+                done();
+            };
+            let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+            expect(eventElement).toBeTruthy();
+            let subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            subjectElement.click();
+            let inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Month view testing edited';
+            keyModule.keyActionHandler({ action: 'enter', target: inputElement });
+        });
+    });
+
+    describe('EJ2-50899 - Appointments are not rendering in vertical views with group resources in mobile mode', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2018, 3, 1),
+                enableAdaptiveUI: true,
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', RoomId: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Smith', OwnerId: 4, OwnerGroupId: 3, color: '#5978ee' },
+                    ],
+                    textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking appointment rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(10);
+                done();
+            };
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-hours') as HTMLElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            expect(schObj.eventsData.length).toEqual(9);
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Testing-1';
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+        });
+
+        it('Select other resource and checking appointment rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(11);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(10);
+            schObj.selectResourceByIndex(2);
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-hours') as HTMLElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Testing-2';
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+        });
+
+        it('Select other resource and checking appointment rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(12);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(11);
+            schObj.selectResourceByIndex(3);
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-hours') as HTMLElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Testing-3';
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+        });
+    });
+
+    describe('EJ2-51853 - Schedule events overlapping when same start and end time', () => {
+        let schObj: Schedule;
+        const eventsData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Test event-1',
+            StartTime: new Date(2017, 10, 1, 9),
+            EndTime: new Date(2017, 10, 1, 9)
+        }, {
+            Id: 2,
+            Subject: 'Test event-2',
+            StartTime: new Date(2017, 10, 1, 9),
+            EndTime: new Date(2017, 10, 1, 9)
+        }, {
+            Id: 3,
+            Subject: 'Test event-3',
+            StartTime: new Date(2017, 10, 1, 9),
+            EndTime: new Date(2017, 10, 1, 10)
+        }, {
+            Id: 4,
+            Subject: 'Test event-4',
+            StartTime: new Date(2017, 10, 1, 10),
+            EndTime: new Date(2017, 10, 1, 10)
+        }, {
+            Id: 5,
+            Subject: 'Test event-5',
+            StartTime: new Date(2017, 10, 1, 10),
+            EndTime: new Date(2017, 10, 1, 10)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                currentView: 'Week', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 2)
+            };
+            schObj = util.createSchedule(model, eventsData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking events overlapping', () => {
+            const eventNormalElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventNormalElementList.length).toEqual(5);
+            expect((eventNormalElementList[0] as HTMLElement).style.left).toBe('0%');
+            expect((eventNormalElementList[1] as HTMLElement).style.left).toBe('31.3333%');
+            expect((eventNormalElementList[2] as HTMLElement).style.left).toBe('62.6667%');
+            expect((eventNormalElementList[3] as HTMLElement).style.left).toBe('0%');
+            expect((eventNormalElementList[4] as HTMLElement).style.left).toBe('47%');
         });
     });
 

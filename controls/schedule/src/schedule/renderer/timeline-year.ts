@@ -138,10 +138,10 @@ export class TimelineYear extends Year {
         const contentTBody: HTMLTableSectionElement = contentTable.querySelector('tbody');
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             if (this.parent.rowAutoHeight) {
-                const addClassTable : HTMLElement[] = [contentTable];
-                const monthHeader: HTMLElement = 
+                const addClassTable: HTMLElement[] = [contentTable];
+                const monthHeader: HTMLElement =
                     this.parent.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER + ' .' + cls.SCHEDULE_TABLE_CLASS);
-                if(monthHeader){
+                if (monthHeader) {
                     addClassTable.push(monthHeader);
                 }
                 addClass(addClassTable, cls.AUTO_HEIGHT);

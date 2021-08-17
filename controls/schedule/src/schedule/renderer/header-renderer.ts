@@ -44,7 +44,7 @@ export class HeaderRenderer {
         if (this.parent.isAdaptive) {
             if (!isNullOrUndefined(closestPop) && (closestPop.classList.contains('e-toolbar-pop') ||
                 closestPop.classList.contains('e-hor-nav')) && !(closestPop.classList.contains('e-hor-nav') &&
-                this.element.querySelector('.e-toolbar-pop').classList.contains(cls.POPUP_OPEN)) ) {
+                    this.element.querySelector('.e-toolbar-pop').classList.contains(cls.POPUP_OPEN))) {
                 addClass([contentWrap], cls.SCROLL_HIDDEN);
             } else {
                 removeClass([contentWrap], cls.SCROLL_HIDDEN);

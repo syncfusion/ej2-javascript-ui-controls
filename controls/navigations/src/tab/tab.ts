@@ -850,7 +850,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const contents: HTMLCollection = this.cntEle.children;
             for (let i: number = 0; i < hdrItem.length; i++) {
                 if (contents.length - 1 >= i) {
-                    contents.item(i).className += CLS_ITEM;
+                    addClass([contents.item(i)], CLS_ITEM);
                     attributes(contents.item(i), { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM + this.tabId + '_' + i });
                     contents.item(i).id = CLS_CONTENT + this.tabId + '_' + i;
                 }

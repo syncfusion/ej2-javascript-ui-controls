@@ -769,9 +769,9 @@ export class Renderer {
         }
         let topMargin: number = elementBox.margin.top;
         let leftMargin: number = elementBox.margin.left;
-        if (isHeightType) {
-
-            this.clipRect(containerWidget.x, containerWidget.y, this.getScaledValue(containerWidget.width), this.getScaledValue(containerWidget.height));
+        if (isHeightType && containerWidget instanceof TableCellWidget) {
+            let width: number = (containerWidget.width + containerWidget.margin.left + containerWidget.margin.right) - containerWidget.leftBorderWidth;
+            this.clipRect(containerWidget.x - containerWidget.margin.left, containerWidget.y, this.getScaledValue(width), this.getScaledValue(containerWidget.height));
         }
         let format: WCharacterFormat = elementBox.characterFormat;
         if (format.highlightColor !== 'NoColor') {

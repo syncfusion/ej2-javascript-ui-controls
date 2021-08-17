@@ -122,6 +122,8 @@ export class WorkbookSave extends SaveWorker {
         let i: number = 0;
         const sheetCount: number = this.parent.sheets.length;
         const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader'];
+        // eslint-disable-next-line
+        if ((this.parent as any).isAngular) { skipProps.push('template'); }
         while (i < sheetCount) {
             executeTaskAsync(this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i], skipProps), i]);
             i++;

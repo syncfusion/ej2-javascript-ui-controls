@@ -804,8 +804,21 @@ export class BasicFormulas {
         const exactlyOne: string = argArr[2] ? argArr[2].toUpperCase() : 'FALSE';
         const uniqueCollection: string[] = [];
         if (argArr[0].indexOf(':') > -1) {
+            if (isNullOrUndefined(argArr[0].match(/[0-9]/))) {
+                const splitArray: string[] = argArr[0].split(':');
+                argArr[0] = splitArray[0] + '1' + ':' + splitArray[1] + (this.parent.spreadSheetUsedRange[0] + 1);
+            } else if (isNullOrUndefined(argArr[0].toUpperCase().match(/[A-Z]/))) {
+                const splitArray: string[] = argArr[0].split(':');
+                argArr[0] = 'A' + splitArray[0] + ':' + getAlphalabel(this.parent.spreadSheetUsedRange[1] + 1) + splitArray[1];
+            }
             const rangeSplit: string[] = argArr[0].split(':');
             if (this.parent.isCellReference(rangeSplit[0]) && this.parent.isCellReference(rangeSplit[1])) {
+                const collection: string[] = this.parent.dependencyCollection;
+                for (let i: number = 0; i < collection.length; i++) {
+                    if (collection[i].split(':')[0] === argArr[0].split(':')[0]) {
+                        this.clearDependency(collection[i]);
+                    }
+                }
                 if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
                     this.parent.dependencyCollection.push(argArr[0]);
                 } else { this.clearDependency(argArr[0]); }
@@ -835,21 +848,29 @@ export class BasicFormulas {
                 if (byCol === 'FALSE') {
                     if (colDiff === 0) {
                         for (let i: number = 0; i < cellValues.length; i++) {
-                            uniqueCollection.push(this.parent.getValueFromArg(cellValues[i]));
+                            let val: string = this.parent.getValueFromArg(cellValues[i]);
+                            val = val === '' ? '0' : val;
+                            uniqueCollection.push(val);
                         }
                     } else {
                         let temp: string = ''; let diff: number = colDiff;
                         for (let i: number = 0; i < cellValues.length; i++) {
                             if (i === cellValues.length - 1) {
-                                temp = temp + this.parent.getValueFromArg(cellValues[i]) + '+';
+                                let val: string = this.parent.getValueFromArg(cellValues[i]);
+                                val = val === '' ? '0' : val;
+                                temp = temp + val + '+';
                                 uniqueCollection.push(temp.substring(0, temp.length - 1));
                             }
                             if (i <= diff) {
-                                temp = temp + this.parent.getValueFromArg(cellValues[i]) + '+';
+                                let val: string = this.parent.getValueFromArg(cellValues[i]);
+                                val = val === '' ? '0' : val;
+                                temp = temp + val + '+';
                             } else {
                                 uniqueCollection.push(temp.substring(0, temp.length - 1));
                                 diff = colDiff + i;
-                                temp = this.parent.getValueFromArg(cellValues[i]) + '+';
+                                let val: string = this.parent.getValueFromArg(cellValues[i]);
+                                val = val === '' ? '0' : val;
+                                temp = val + '+';
                             }
                         }
                     }
@@ -857,12 +878,13 @@ export class BasicFormulas {
                     let temp: string = ''; const diff: number = colDiff + 1; const rowDiff: number = endRowIdx - rowIdx;
                     for (let i: number = 0; i < diff; i++) {
                         for (let j: number = 0; j <= rowDiff; j++) {
-                            temp = temp + this.parent.getValueFromArg(cellValues[j * diff + i]) + '+';
+                            let val: string = this.parent.getValueFromArg(cellValues[j * diff + i]);
+                            val = val === '' ? '0' : val;
+                            temp = temp + val + '+';
                         }
                         uniqueCollection.push(temp.substring(0, temp.length - 1));
                         temp = '';
                     }
-
                 }
                 let tmp: string[] = []; const tmp2: string[] = [];
                 for (let i: number = 0; i < uniqueCollection.length; i++) {
@@ -934,7 +956,7 @@ export class BasicFormulas {
                         if (i > 0) { actRowIdx++; actColIdx = this.parent.colIndex(actCell); }
                         for (let i: number = 0; i < splitValue.length; i++) {
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
-                                splitValue[i], actRowIdx, actColIdx);
+                                                                             splitValue[i], actRowIdx, actColIdx);
                             if (splitValue[i + 1]) {
                                 actColIdx++;
                             }
@@ -946,7 +968,7 @@ export class BasicFormulas {
                         const splitValue: string[] = tmp[i].split('+');
                         for (let i: number = 0; i < splitValue.length; i++) {
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
-                                splitValue[i], actRowIdx, actColIdx);
+                                                                             splitValue[i], actRowIdx, actColIdx);
                             if (splitValue[i + 1]) {
                                 actRowIdx++;
                             } else {

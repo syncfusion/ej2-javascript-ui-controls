@@ -10462,6 +10462,32 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('EJ2-52052 - Each tab items contains all tab items content issue checking', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('Tab items content class checking', () => {
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.innerHTML = `<div class="e-tab-header"><div><span id="tab-header-1">Tab 1</span></div><div><span id="tab-header-2">Tab 2</span></div></div>
+            <div class="e-content"><div class="tab-content-1">Content 1</div><div class="tab-content-2">Content 2</div></div>`;
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+            let content: HTMLElement = tab.element.querySelector('.e-content');
+            let items: NodeListOf<Element> = content.querySelectorAll('.e-item');
+            expect(items.length).toEqual(2);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

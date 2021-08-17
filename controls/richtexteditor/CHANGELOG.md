@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I338000` - Resolved the exception raised, when pressing the enter key after changing the font-size in RTL mode in `Firefox` browser.
+
+- `#I338062` - The issue with "Link is not generated properly, when `pasteCleanUpmodule` is imported" has been resolved.
+
+- `#I338062` - The issue with "Unable to paste url more than two times, in the Rich Text Editor" has been resolved.
+
 ## 19.2.55 (2021-08-11)
 
 ### RichTextEditor
@@ -9,6 +21,8 @@
 #### Bug Fixes
 
 - `#I335578` - The issue with "alignment mismatching when pasting content from MS Word in the Rich Text Editor" has been fixed.
+
+- `#I335315` - The issue with "Image size restriction not works in Drag and Drop action" has been resolved.
 
 #### New Features
 

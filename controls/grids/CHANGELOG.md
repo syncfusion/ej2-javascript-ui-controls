@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I338201` - tab key issue in details rows has been resolved.
+- `#I338152` - Focusing issue after collapsing all grouped records has been fixed.
+- `#I336671` - first column cell is not focused properly with keyboard navigation has been fixed.
+
 ## 19.2.55 (2021-08-11)
 
 ### Grid

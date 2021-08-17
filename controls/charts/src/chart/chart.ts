@@ -179,15 +179,15 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
      * @default ''
      */
     @Property('')
-    public verticalColor: string;
-      
+    public verticalLineColor: string;
+
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
      * @default ''
      */
     @Property('')
-    public horizontalColor: string;
-    
+    public horizontalLineColor: string;
+
     /**
      * The opacity for background.
      * @default 1
@@ -1566,12 +1566,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Return the proper ID when the special character exist in the ID
      */
     private isIdHasSpecialCharacter(elementId: string): string {
-        const regex: RegExp = /^[A-Za-z0-9 ]+$/;
+        const regex: RegExp = /^[A-Za-z ]+$/;
+        const numberRegex: RegExp = /^[0-9 ]+$/;
         let childElementId: string = '';
         if (!regex.test(elementId)) {
-            for (let i: number = 0; i < elementId.length; i++) {
+            let start: number = 0;
+            if (numberRegex.test(elementId[0])) {
+                childElementId += ('\\3' + elementId[0]);
+                start = 1;
+            }
+            for (let i: number = start; i < elementId.length; i++) {
                 if (!regex.test(elementId[i]) && elementId.indexOf('-') === -1 &&
-                    elementId.indexOf('_') === -1 && elementId.indexOf('\\') === -1) {
+                    elementId.indexOf('_') === -1 && elementId.indexOf('\\') === -1 && !numberRegex.test(elementId[i])) {
                     childElementId += ('\\' + elementId[i]);
                 } else {
                     childElementId += elementId[i];

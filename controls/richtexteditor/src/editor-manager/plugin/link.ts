@@ -139,7 +139,8 @@ export class LinkCommand {
                     currentNode.parentNode.parentNode.insertBefore(anchorEle.firstChild, anchorEle);
                     currentNode.parentNode.removeChild(anchorEle);
                 }
-                if (this.isBlockNode(currentNode.parentNode as Element) || txtArray.length === 0 || i === 0 || i === txtArray.length - 1) {
+                if (this.isBlockNode(currentNode.parentNode as Element) || txtArray.length === 0 || i === 0 || i === txtArray.length - 1
+                || range.startContainer.nodeType === 3) {
                     inlineNodes[i] = currentNode;
                     check = false;
                 } else {

@@ -437,6 +437,9 @@ export class StampAnnotation {
                 let author: any = existingAnnotation['Author'];
                 annotation.Author = author;
                 // eslint-disable-next-line
+                let subject: any = existingAnnotation['Subject'];
+                annotation.Subject = subject;
+                // eslint-disable-next-line
                 let customData: any = this.pdfViewer.annotation.getCustomData(existingAnnotation);
                 // eslint-disable-next-line
                 annotation.allowedInteractions = existingAnnotation['AllowedInteractions'] ? existingAnnotation['AllowedInteractions'] : existingAnnotation['allowedInteractions'] ? existingAnnotation['allowedInteractions'] : ['None'];

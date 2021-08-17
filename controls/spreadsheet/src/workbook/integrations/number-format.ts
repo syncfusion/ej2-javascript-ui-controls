@@ -487,14 +487,18 @@ export class WorkbookNumberFormat {
             (<CellModel>args.cell).format : getFormatFromType('ShortDate');
         const time: string = getFormatFromType('Time');
         switch (type) {
-        case 'ShortDate':
-        case 'LongDate':
-            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
-            break;
-        case 'Time':
-            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
-                this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
-            break;
+            case 'ShortDate':
+            case 'LongDate':
+                args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
+                break;
+            case 'Time':
+                if (beforeText && Number(beforeText) >= 1) {
+                    args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
+                        this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
+                } else {
+                    args.value = this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
+                }
+                break;
         }
         if (!args.value || (args.value && args.value.toString().indexOf('null') > -1)) {
             args.value = beforeText;

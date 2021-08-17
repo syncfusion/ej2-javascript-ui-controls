@@ -122,13 +122,18 @@ export class YearEvent extends TimelineEvent {
                 if (this.parent.uiStateValues.isGroupAdaptive) {
                     resource = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 }
-                const dayEvents: Record<string, any>[] = this.parent.eventBase.filterEvents(dayStart, dayEnd, undefined, resource);
+                let dayEvents: Record<string, any>[] = this.parent.eventBase.filterEvents(dayStart, dayEnd, undefined, resource);
+                dayEvents = this.parent.eventBase.sortByDateTime(dayEvents);
                 for (let index: number = 0, count: number = dayEvents.length; index < count; index++) {
                     const eventData: Record<string, any> = extend({}, dayEvents[index], null, true) as Record<string, any>;
                     this.updateSpannedEvents(eventData, dayStart, dayEnd);
                     const overlapIndex: number = this.getIndex(dayStart as Date);
                     eventData.Index = overlapIndex;
-                    const availedHeight: number = this.cellHeader + (this.eventHeight * (index + 1)) + EVENT_GAP + this.moreIndicatorHeight;
+                    const availedHeight: number = this.cellHeader + (this.eventHeight * (overlapIndex + 1)) + EVENT_GAP +
+                        this.moreIndicatorHeight;
+                    const appArea: number = this.cellHeight - this.cellHeader - this.moreIndicatorHeight;
+                    const renderedAppCount: number = Math.floor(appArea / (this.eventHeight + EVENT_GAP));
+                    const moreIndicatorCount: number = (count - renderedAppCount) <= 0 ? 1 : (count - renderedAppCount);
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                         const isRendered: Record<string, any>[] = this.renderedEvents.filter((eventObj: Record<string, any>) =>
                             eventObj.Guid === eventData.Guid);
@@ -136,8 +141,8 @@ export class YearEvent extends TimelineEvent {
                             eventObj.Guid === eventData.Guid);
                         if (isRendered.length > 0 && isRendered[0].MoreIndicator || isSpanned.length > 0 && isSpanned[0].MoreIndicator) {
                             const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                            this.renderMoreIndicator(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue);
-                            break;
+                            this.renderMoreIndicator(eventWrapper, moreIndicatorCount, dayStart, moreIndex, leftValue, rightValue);
+                            continue;
                         } else if (isRendered.length > 0 || isSpanned.length > 0) {
                             continue;
                         }
@@ -149,17 +154,12 @@ export class YearEvent extends TimelineEvent {
                         isSpannedCollection.push(eventData);
                     } else {
                         const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this.renderMoreIndicator(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue);
+                        this.renderMoreIndicator(eventWrapper, moreIndicatorCount, dayStart, moreIndex, leftValue, rightValue);
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-                            for (let a: number = index; a < dayEvents.length; a++) {
-                                const moreData: Record<string, any> =
-                                    extend({}, dayEvents[a], { Index: overlapIndex + a, MoreIndicator: true }, true) as Record<string, any>;
-                                this.renderedEvents.push(moreData);
-                                eventData.MoreIndicator = true;
-                                isSpannedCollection.push(eventData);
-                            }
+                            eventData.MoreIndicator = true;
+                            this.renderedEvents.push(eventData);
+                            isSpannedCollection.push(eventData);
                         }
-                        break;
                     }
                 }
                 monthStart = util.addDays(new Date(monthStart.getTime()), 1);
@@ -296,9 +296,10 @@ export class YearEvent extends TimelineEvent {
                 this.wireAppointmentEvents(wrap, eventObj);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     this.renderedEvents.push(extend({}, eventObj, null, true) as Record<string, any>);
-                } else if (!eventObj.isSpanned.isRight) {
+                } else if (this.parent.activeViewOptions.orientation === 'Vertical') {
                     this.renderedEvents.push(extend({}, eventObj, null, true) as Record<string, any>);
-                } else if ((eventObj.isSpanned.isRight || eventObj.isSpanned.isLeft) && this.parent.activeViewOptions.orientation === 'Horizontal') {
+                } else if ((eventObj.isSpanned.isRight || eventObj.isSpanned.isLeft) && this.parent.activeViewOptions.orientation === 'Horizontal'
+                    || !eventObj.isSpanned.isRight) {
                     this.renderedEvents.push(extend({}, eventObj, null, true) as Record<string, any>);
                 }
             }
@@ -307,6 +308,9 @@ export class YearEvent extends TimelineEvent {
 
     // eslint-disable-next-line max-len
     private renderMoreIndicator(wrapper: HTMLElement, count: number, startDate: Date, row: number, left: number, right: number, index?: number): void {
+        if (this.parent.activeViewOptions.group.resources.length === 0 && wrapper.querySelector('[data-start-date="' + startDate.getTime() + '"]')) {
+            return;
+        }
         let endDate: Date;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             endDate = util.addDays(util.lastDateOfMonth(new Date(startDate.getTime())), 1);
@@ -410,8 +414,12 @@ export class YearEvent extends TimelineEvent {
             isSpanned.isRight = true;
         }
         if (this.parent.activeViewOptions.group.resources.length === 0) {
-            isSpanned.count = Math.ceil(((eventData[this.fields.endTime] as Date).getTime() -
-                (eventData[this.fields.startTime] as Date).getTime()) / util.MS_PER_DAY);
+            let end: number = util.resetTime(eventData[this.fields.endTime]).getTime();
+            const start: number = util.resetTime(eventData[this.fields.startTime]).getTime();
+            if (eventObj[this.fields.isAllDay] && end === eventObj[this.fields.endTime].getTime() || isSpanned.isRight) {
+                end = util.addDays(new Date(end), -1).getTime();
+            }
+            isSpanned.count = Math.ceil((end - start) / util.MS_PER_DAY) + 1;
         }
         eventData.isSpanned = isSpanned;
         if (util.resetTime(eventStart).getTime() < util.resetTime(this.parent.minDate).getTime()) {

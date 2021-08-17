@@ -321,7 +321,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 const lastInx: number = this.totalRecords - 1;
                 const remains: number = this.endIndex % lastInx;
                 this.endIndex = lastInx;
-                this.startIndex = this.startIndex - remains;
+                this.startIndex = (this.startIndex - remains) < 0 ? 0: (this.startIndex - remains);
             }
             //var firsttdinx = parseInt(this.parent.getContent().querySelector('.e-content td').getAttribute('index'), 0);
             let rowPt: number = Math.ceil(scrollArgs.offset.top / this.parent.getRowHeight());

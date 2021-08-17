@@ -6979,6 +6979,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * @hidden
+     * @returns {void}
+     */
+    public updateVisibleExpandCollapseRows(): void {
+        const rows: Row<Column>[] = this.getRowsObject();
+        for (let i: number = 0, len: number = rows.length; i < len; i++) {
+            if (rows[i].isDataRow && (this.getRowElementByUID(rows[i].uid) as HTMLTableRowElement).style.display === 'none') {
+                (<{ visible?: boolean }>rows[i]).visible = false;
+            } else {
+                (<{ visible?: boolean }>rows[i]).visible = true;
+            }
+        }
+    }
+
+    /**
      * @param {string | number} height - specifies the height
      * @returns {number | string} - specifies the height number
      * @hidden

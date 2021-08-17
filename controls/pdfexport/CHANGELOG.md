@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.55 (2021-08-11)
+## 19.2.56 (2021-08-17)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Rendering issue with PDF Grid pagination is fixed.
+
+## 19.2.49 (2021-07-27)
 
 ### Pdf Export
 

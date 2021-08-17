@@ -390,6 +390,9 @@ export class Signature {
             currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
             currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
             const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+            if (!this.signtypevalue) {
+                this.updateSignatureTypeValue(true);
+            }
             const inputValue: string = this.signtypevalue;
             annot = {
                 // eslint-disable-next-line max-len
@@ -411,25 +414,12 @@ export class Signature {
             if (checkbox && checkbox.checked) {
                 this.addSignatureCollection();
             }
-
+            this.signtypevalue = '';
             this.hideSignaturePanel();
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
             if (this.outputString === '') {
-                // eslint-disable-next-line
-                let fontElements: any = document.querySelectorAll('.e-pv-font-sign');
-                if (fontElements) {
-                    for (let j: number = 0; j < fontElements.length; j++) {
-                        if (fontElements[j] && fontElements[j].style.borderColor === 'red') {
-                            this.outputString = fontElements[j].textContent;
-                            try {
-                                this.fontName = JSON.parse(fontElements[j].style.fontFamily);
-                            } catch (e) {
-                                this.fontName = fontElements[j].style.fontFamily;
-                            }
-                        }
-                    }
-                }
+                this.updateSignatureTypeValue();
             }
             this.pdfViewer.formFieldsModule.drawSignature('Type', '', this.pdfViewerBase.currentTarget);
             this.hideSignaturePanel();
@@ -478,6 +468,28 @@ export class Signature {
         } else {
             this.pdfViewer.formFieldsModule.drawSignature('Image', '', this.pdfViewerBase.currentTarget);
             this.hideSignaturePanel();
+        }
+    }
+
+    private updateSignatureTypeValue(isType?: boolean): void {
+        // eslint-disable-next-line
+        let fontElements: any = document.querySelectorAll('.e-pv-font-sign');
+        if (fontElements) {
+            for (let j: number = 0; j < fontElements.length; j++) {
+                if (fontElements[j] && fontElements[j].style.borderColor === 'red') {
+                    if (isType) {
+                        this.signtypevalue = fontElements[j].textContent;
+                        this.outputString = fontElements[j].textContent;
+                    } else {
+                        this.outputString = fontElements[j].textContent;
+                    }
+                    try {
+                        this.fontName = JSON.parse(fontElements[j].style.fontFamily);
+                    } catch (e) {
+                        this.fontName = fontElements[j].style.fontFamily;
+                    }
+                }
+            }
         }
     }
 
@@ -755,6 +767,7 @@ export class Signature {
             let drawCheckbox = document.getElementById("checkbox");
             this.hideSignatureCheckbox(drawCheckbox);
         } else if (e.selectedItem.textContent.toLocaleLowerCase() === 'type') {
+            this.outputString = '';
             this.signaturetype = 'Type';
             // eslint-disable-next-line
             this.enableCreateButton(true);
@@ -1772,9 +1785,13 @@ export class Signature {
     public destroy(): void {
         window.sessionStorage.removeItem('_annotations_sign');
         // eslint-disable-next-line
-        let signImage: any = document.getElementById(this.pdfViewer.element.id + '_signElement'); 
+        let signImage: any = document.getElementById(this.pdfViewer.element.id + '_signElement');
         if (signImage) {
-            signImage.parentElement.removeChild(signImage);
+            signImage.removeEventListener('change', this.addStampImage);
+            if (signImage.parentElement)
+                signImage.parentElement.removeChild(signImage);
         }
+        if (this.signatureDialog)
+            this.signatureDialog.destroy();
     }
 }

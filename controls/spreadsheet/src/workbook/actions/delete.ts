@@ -1,5 +1,5 @@
 import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
-import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete } from '../../workbook/common/index';
+import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete, checkUniqueRange } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
 import { SheetModel } from '../../workbook/base/index';
 
@@ -24,6 +24,25 @@ export class WorkbookDelete {
         if (args.modelType === 'Sheet' && sheetLength === 1) {
             return;
         }
+        if (args.modelType === 'Column') {
+            if (typeof (args.start) === 'number') {
+                for (let j: number = 0; j <= this.parent.getActiveSheet().usedRange.rowIndex + 1; j++) {
+                    const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: [j, args.start], isUnique: false };
+                    this.parent.notify(checkUniqueRange, uniqueArgs);
+                    if (uniqueArgs.isUnique) { return; }
+                }
+            }
+        } else if (args.modelType === 'Row') {
+            if (typeof (args.start) === 'number') {
+                for (let i: number = 0; i <= this.parent.getActiveSheet().usedRange.colIndex + 1; i++) {
+                    const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: [args.start, i], isUnique: false };
+                    this.parent.notify(checkUniqueRange, uniqueArgs);
+                    if (uniqueArgs.isUnique) {
+                        return;
+                    }
+                }
+            }
+        }
         const modelName: string = `${args.modelType.toLowerCase()}s`;
         args.start = <number>args.start;
         if (args.start > args.end) {
@@ -31,7 +50,14 @@ export class WorkbookDelete {
         }
         let deletedCells: RowModel[]; const mergeArgsCollection: MergeArgs[] = []; const count: number = (args.end - args.start) + 1;
         let prevCell: CellModel; let freezePane: boolean;
+        const eventArgs: { [key: string]: Object } = {
+            action: 'refreshInsDelFormula', insertArgs: {
+                startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+                name: 'delete', activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, sheet: args.model
+            }
+        };
         if (args.modelType === 'Row') {
+            this.parent.notify(workbookFormulaOperation, eventArgs);
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.rowIndex) { return; }
             if (args.end > args.model.usedRange.rowIndex) { args.end -= (args.end - args.model.usedRange.rowIndex); }
@@ -95,6 +121,7 @@ export class WorkbookDelete {
                 }
             }
         } else if (args.modelType === 'Column') {
+            this.parent.notify(workbookFormulaOperation, eventArgs);
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.colIndex) { return; }
             if (args.end > args.model.usedRange.colIndex) { args.end -= (args.end - args.model.usedRange.colIndex); }
@@ -170,8 +197,8 @@ export class WorkbookDelete {
                     action: 'deleteSheetTab', sheetName: '', index: i + 1
                 });
             }
-            if (args.model[modelName][args.start]) {
-                deletedModel.push(args.model[modelName][args.start]);
+            if (args.model[modelName][args.start] || args.start < args.model[modelName].length) {
+                deletedModel.push(args.model[modelName][args.start] || {});
                 args.model[modelName].splice(args.start, 1);
             } else {
                 deletedModel.push({});
@@ -187,16 +214,9 @@ export class WorkbookDelete {
                 activeSheetIndex: this.parent.activeSheetIndex, name: 'delete', sheet: args.model
             }
         };
-        // const eventArgs: { [key: string]: Object } = {
-        //     action: 'refreshInsDelFormula', insertArgs: {
-        //         model: deletedModel, startIndex: args.start, endIndex: args.end, modelType: args.modelType,
-        //         name: 'delete', activeSheetIndex:
-        //             args.activeSheetIndex, sheetCount: this.parent.sheets.length
-        //     }
-        // };
-        this.parent.notify(workbookFormulaOperation, insertArgs);
         this.parent.notify(beforeDelete, args);
         if (args.modelType !== 'Sheet') {
+            this.parent.notify(workbookFormulaOperation, insertArgs);
             this.parent.notify(refreshClipboard, args);
             if (args.model !== this.parent.getActiveSheet()) { return; }
         }

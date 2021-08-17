@@ -151,7 +151,9 @@ export namespace Input {
         }
         if (isNullOrUndefined(inputObject.container)) {
             inputObject.container = createInputContainer(args, CLASSNAMES.FLOATINPUT, CLASSNAMES.FLOATCUSTOMTAG, 'div', makeElement);
-            args.element.parentNode.insertBefore(inputObject.container, args.element);
+            if (args.element.parentNode) {
+                args.element.parentNode.insertBefore(inputObject.container, args.element);
+            }
         } else {
             if (!isNullOrUndefined(args.customTag)) {
                 inputObject.container.classList.add(CLASSNAMES.FLOATCUSTOMTAG);

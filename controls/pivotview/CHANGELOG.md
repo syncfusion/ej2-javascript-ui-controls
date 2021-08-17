@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### Pivot Table
+
+#### New Features
+
+- `#284641`,`#326945`,`#327746`,`#329355` - Through grid settings event, the pivot table's columns can now fit the widest cell’s content without wrapping.
+
+## 19.2.55 (2021-08-11)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I337487` - Now the field's caption can be changed dynamically using the value field settings dialog.
+- `#F167449` - Now the fields panel has been refreshed properly with toolbar UI.
+
 ## 19.2.51 (2021-08-03)
 
 ### Pivot Table

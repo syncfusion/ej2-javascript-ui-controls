@@ -251,7 +251,7 @@ export class ActionBase {
 
     public removeCloneElement(): void {
         this.actionObj.originalElement = [];
-        let dynamicEle: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-dynamic-clone'));
+        const dynamicEle: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-dynamic-clone'));
         for (const cloneEle of dynamicEle) {
             remove(cloneEle);
         }

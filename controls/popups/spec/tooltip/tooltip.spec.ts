@@ -2393,4 +2393,55 @@ describe('Tooltip Control', () => {
             tooltip.close();
         });
     });
+
+    describe('Tooltip starts with ID as number', () => {
+        let tooltip: Tooltip;
+        beforeEach((): void => {
+            tooltip = undefined;
+            let ele: HTMLElement = createElement('div', { id: '1tooltip', innerHTML: 'Show Tooltip' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tooltip) {
+                tooltip.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Opens on mouse hover', () => {
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                width: '100px', height: '50px', content: 'Tooltip Content'
+            });
+            tooltip.appendTo( '#1tooltip');
+            let target: HTMLElement = document.getElementById('1tooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(target, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            triggerMouseEvent(target, 'mouseover');
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseover');
+            document.getElementById('1tooltip').removeAttribute('aria-describedby');
+            expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+        });
+
+        it('Opens on Click', () => {
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                opensOn: 'Click'
+            });
+            tooltip.appendTo( '#1tooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            let target: HTMLElement = document.getElementById('1tooltip');
+            triggerMouseEvent(target, 'mousedown');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            triggerMouseEvent(target, 'mousedown');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+        });
+       
+    });
 });

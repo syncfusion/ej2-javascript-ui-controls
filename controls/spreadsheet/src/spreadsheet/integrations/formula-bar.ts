@@ -213,13 +213,10 @@ export class FormulaBar {
                                     skeleton: 'yMd'
                                 });
                             } else if (intDate.toString() !== 'Invalid Date' && type === 'Time') {
-                                value = intl.formatDate(intDate, {
-                                    type: 'dateTime',
-                                    skeleton: 'yMd'
-                                }) + ' ' + intl.formatDate(intDate, {
-                                    type: 'dateTime',
-                                    skeleton: 'hms'
-                                });
+                                if (Number(cell.value) >= 1) {
+                                    value = intl.formatDate(intDate, { type: 'dateTime', skeleton: 'yMd' }) + ' ';
+                                }
+                                value += intl.formatDate(intDate, { type: 'dateTime', skeleton: 'hms' });
                             } else {
                                 value = cell.value;
                             }
@@ -236,7 +233,8 @@ export class FormulaBar {
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
                     const addressRange: number[] = getRangeIndexes(address);
                     const cellEle: HTMLElement = this.parent.getCell(addressRange[0], addressRange[1]);
-                    if (cell && !cell.formula && cellEle && (!cell.validation || cell.validation.type !== 'List')) {
+                    if (cell && !cell.formula && cellEle && (!cell.validation || cell.validation.type !== 'List') && (type !== 'Time' ||
+                        !value)) {
                         formulaInp.value = cellEle.textContent;
                     } else {
                         formulaInp.value = value;

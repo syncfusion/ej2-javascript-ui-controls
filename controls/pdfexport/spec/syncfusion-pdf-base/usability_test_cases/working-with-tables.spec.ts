@@ -5,7 +5,7 @@ import { PdfGridRowStyle, PdfStandardFont, PdfFontFamily } from './../../../src/
 import { PdfStringFormat, PdfTextAlignment, PdfGridLayoutResult } from './../../../src/index';
 import { PdfFont, PdfPageTemplateElement, PdfLayoutResult, PdfGridLayoutFormat } from './../../../src/index';
 import { PdfFontStyle, PdfHorizontalOverflowType, PdfTextWebLink, PdfGridStyle } from './../../../src/index';
-import { PdfPaddings, PdfBorders, RectangleF, PdfLayoutType, PdfLayoutBreakType } from './../../../src/index';
+import { PdfPaddings, PdfBorders, RectangleF, PdfLayoutType, PdfLayoutBreakType, PdfVerticalAlignment } from './../../../src/index';
 import { Utils } from './../utils.spec';
 describe('UTC-01: creating a simple table', () => {
     it('-creating a simple table', (done) => {
@@ -1690,4 +1690,68 @@ describe('UTC-18: Stacked header - height calculation with row span - 2', () => 
         });
         document.destroy();
     })
+});
+
+describe('Customer reported issues', () => {
+    it('EJ2_51790_PaginationBoundsIssue', (done) => {
+        let pdfDocument: PdfDocument = new PdfDocument();
+        let page: PdfPage = pdfDocument.pages.add();
+        // create a PdfGrid
+        let grid: PdfGrid = new PdfGrid();
+        grid.columns.add(4);
+        grid.headers.add(1);
+        grid.repeatHeader = false;
+        let gridHeader: PdfGridRow = grid.headers.getHeader(0);
+        gridHeader.cells.getCell(0).value = 'Order ID';
+        gridHeader.cells.getCell(1).value = 'Product Name';
+        gridHeader.cells.getCell(2).value = 'Quantity';
+        gridHeader.cells.getCell(3).value = 'Ship city';
+        for (let i: number = 0; i < 150; i++) {
+            let row: PdfGridRow = grid.rows.addRow();
+            row.cells.getCell(0).value = i.toString();
+            row.cells.getCell(1).value = 'ALFKI';
+            row.cells.getCell(2).value = '1';
+            row.cells.getCell(3).value = 'Denmark';
+        }
+        let format: PdfGridLayoutFormat = new PdfGridLayoutFormat();
+        format.layout = PdfLayoutType.Paginate;
+        format.break = PdfLayoutBreakType.FitElement;
+        format.paginateBounds = new RectangleF(0, 30, page.graphics.clientSize.width, page.graphics.clientSize.height - 30);
+        let result: PdfLayoutResult = grid.draw(page, new RectangleF(0, 50, page.graphics.clientSize.width, page.graphics.clientSize.height - 50), format);
+        // create header font
+        let hfont1 = new PdfStandardFont(2, 20);
+        let hfont2 = new PdfStandardFont(2, 15);
+        // create back brush
+        let backBrush1 = new PdfSolidBrush(new PdfColor(245, 245, 245));
+        let backBrush2 = new PdfSolidBrush(new PdfColor(255, 182, 193));
+        // create black brush for header text
+        let hBrush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+        // create string format for alignment
+        let hStringFormat = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
+        // draw first page header
+        page.graphics.drawRectangle(backBrush1, 0, 0, 515, 50);
+        page.graphics.drawString('First page header', hfont1, null, hBrush, 0, 0, 515, 50, hStringFormat);
+        // iterate pages to add custom header
+        for (let i: number = 1; i < pdfDocument.pages.count; i++) {
+            let headerPage: PdfPage = pdfDocument.pages.getPageByIndex(i);
+            // draw all other page header
+            headerPage.graphics.drawRectangle(backBrush2, 0, 0, 515, 25);
+            headerPage.graphics.drawString('Other page header', hfont2, null, hBrush, 0, 0, 515, 25, hStringFormat);
+        }
+        //Save the document.
+        pdfDocument.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_51790_PaginationBoundsIssue.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        pdfDocument.destroy();
+    });
 });

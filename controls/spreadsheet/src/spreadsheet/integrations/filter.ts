@@ -198,13 +198,13 @@ export class Filter {
      */
     private initiateFilterUIHandler(args: {
         predicates?: PredicateModel[], range?: string,
-        sIdx?: number, isCut?: boolean
+        sIdx?: number, isCut?: boolean, isUndoRedo?: boolean
     }): void {
         const predicates: PredicateModel[] = args ? args.predicates : null;
         let sheetIdx: number = args.sIdx;
         if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
         if (this.filterRange.size > 0 && this.filterRange.has(sheetIdx)) { //disable filter
-            this.removeFilter(sheetIdx);
+            this.removeFilter(sheetIdx, args.isCut);
             if (!predicates) { return; }
         }
         const sheet: SheetModel = getSheet(this.parent  as Workbook, sheetIdx);
@@ -236,7 +236,8 @@ export class Filter {
                 this.filterSuccessHandler(
                     new DataManager(jsonData), {
                         action: 'filtering',
-                        filterCollection: predicates, field:  predicates[0] ? predicates[0].field : null, sIdx: args.sIdx
+                        filterCollection: predicates, field:  predicates[0] ? predicates[0].field : null, sIdx: args.sIdx, isUndoRedo:
+                        args.isUndoRedo
                     });
                 this.refreshFilterRange(null, false, args.sIdx);
             });
@@ -270,7 +271,7 @@ export class Filter {
      * @param {number} sheetIdx - Specify the sheet index.
      * @returns {void} - Removes all the filter related collections for the active sheet.
      */
-    private removeFilter(sheetIdx: number): void {
+    private removeFilter(sheetIdx: number, isCut?: boolean): void {
         const range: number[] = this.filterRange.get(sheetIdx).slice();
         const rangeAddr: string = getRangeAddress(range);
         const eventArgs: BeforeFilterEventArgs = { range: rangeAddr, cancel: false };
@@ -293,7 +294,9 @@ export class Filter {
                 }
             }
         }
-        this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
+        if (!isCut) {
+            this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
+        }
     }
     /**
      * Handles filtering cell value based on context menu.
@@ -608,6 +611,16 @@ export class Filter {
             const excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
             excelFilter.openDialog(options);
             const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
+            const gClient: ClientRect = this.parent.element.getBoundingClientRect();
+            const fClient: ClientRect = target.getBoundingClientRect();
+            if (filterPopup) {
+                const leftPos: number =  fClient.right - filterPopup.offsetWidth;
+                if (leftPos < 1) {
+                    filterPopup.style.left = ((leftPos + filterPopup.offsetWidth) - gClient.left).toString() + 'px';
+                } else {
+                    filterPopup.style.left = (leftPos - gClient.left).toString() + 'px';
+                }
+            }
             if (filterPopup && filterPopup.id.includes(this.parent.element.id)) {
                 EventHandler.add(filterPopup, getStartEvent(), this.filterMouseDownHandler, this);
                 filterPopup.style.top = '0px';
@@ -698,10 +711,11 @@ export class Filter {
      * @returns {void} - Triggers when OK button or clear filter item is selected
      */
     private filterSuccessHandler(dataSource: DataManager, args: {
-        action: string, filterCollection: PredicateModel[], field: string, sIdx?: number
+        action: string, filterCollection: PredicateModel[], field: string, sIdx?: number, isUndoRedo?: boolean
     }): void {
         let sheetIdx: number = args.sIdx;
         if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
+        const prevPredicates: PredicateModel[] = [].slice.call(this.filterCollection.get(sheetIdx));
         let predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
         const dataManager: DataManager = new DataManager(predicates as JSON[]);
         const query: Query = new Query();
@@ -734,7 +748,7 @@ export class Filter {
             predicates: this.getPredicates(sheetIdx)
         };
         this.filterRange.get(sheetIdx)[2] = getSheet(this.parent as Workbook, sheetIdx).usedRange.rowIndex; //extend the range if filtered
-        this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)), sheetIdx);
+        this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)), sheetIdx, prevPredicates, args.isUndoRedo);
     }
 
     /**
@@ -745,9 +759,10 @@ export class Filter {
      * @param {number} sheetIdx - Specify the sheet index.
      * @returns {void} - Triggers events for filtering and applies filter.
      */
-    private applyFilter(filterOptions: FilterOptions, range: string, sheetIdx: number): void {
-        const eventArgs: { range: string, predicates: PredicateModel[], cancel: boolean }
-            = { range: range, predicates: [].slice.call(this.filterCollection.get(sheetIdx)), cancel: false };
+    private applyFilter(
+        filterOptions: FilterOptions, range: string, sheetIdx: number, prevPredicates?: PredicateModel[], isUndoRedo?: boolean): void {
+        const eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], cancel: boolean } = { range:
+            range, predicates: [].slice.call(this.filterCollection.get(sheetIdx)), previousPredicates: prevPredicates, cancel: false };
         this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
         if (eventArgs.cancel) { return; }
         this.parent.showSpinner();
@@ -756,7 +771,9 @@ export class Filter {
             this.parent.notify(getFilteredCollection, null);
             this.parent.hideSpinner();
             delete eventArgs.cancel;
-            this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
+            if (!isUndoRedo) {
+                this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
+            }
             return Promise.resolve(args);
         }).catch((error: string) => {
             this.filterRangeAlertHandler({ error: error });

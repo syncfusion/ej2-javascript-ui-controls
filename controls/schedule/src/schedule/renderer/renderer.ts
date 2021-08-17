@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { isNullOrUndefined, extend, addClass, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { View, ReturnType } from '../base/type';
+import { View } from '../base/type';
 import { VirtualScroll } from '../actions/virtual-scroll';
 import { EventTooltip } from '../popups/event-tooltip';
-import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 
 /**
@@ -20,7 +18,7 @@ export class Render {
     public render(viewName: View, isDataRefresh: boolean = true): void {
         this.initializeLayout(viewName);
         if (this.parent.activeView && isDataRefresh) {
-            this.refreshDataManager();
+            this.parent.crudModule.refreshDataManager();
         }
     }
 
@@ -130,39 +128,6 @@ export class Render {
         const content: string = this.parent.activeView.getLabelText(view);
         this.parent.element.setAttribute('role', 'main');
         this.parent.element.setAttribute('aria-label', content);
-    }
-
-    public refreshDataManager(): void {
-        if (!this.parent.activeView) { return; }
-        const start: Date = this.parent.activeView.startDate();
-        const end: Date = this.parent.activeView.endDate();
-        const dataManager: Promise<any> = this.parent.dataModule.getData(this.parent.dataModule.generateQuery(start, end));
-        dataManager.then((e: ReturnType) => this.dataManagerSuccess(e)).catch((e: ReturnType) => this.dataManagerFailure(e));
-    }
-
-    private dataManagerSuccess(e: ReturnType): void {
-        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
-            const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
-            this.parent.eventsData = resultData.filter((data: Record<string, any>) => !data[this.parent.eventFields.isBlock]);
-            this.parent.blockData = resultData.filter((data: Record<string, any>) => data[this.parent.eventFields.isBlock]);
-            const processed: Record<string, any>[] = this.parent.eventBase.processData(resultData);
-            this.parent.notify(events.dataReady, { processedData: processed });
-            if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
-                this.parent.dragAndDropModule.navigationWrapper();
-            }
-            this.parent.trigger(events.dataBound, null, () => {
-                this.parent.hideSpinner();
-                if (this.parent.isPrinting) {
-                    this.parent.notify(events.print, {});
-                }
-            });
-        });
-    }
-
-    public dataManagerFailure(e: ReturnType): void {
-        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 
 }

@@ -159,7 +159,7 @@ export class Crosshair {
             }
             options = new PathOption(
                 this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                crosshair.horizontalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
+                crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
             );
             this.drawCrosshairLine(options, cross, chartRect.x, this.valueY, chartRect.width, 0, horizontalCross);
             /**
@@ -168,7 +168,7 @@ export class Crosshair {
              */
             options = new PathOption(
                 this.elementID + '_VerticalLine', 'none', crosshair.line.width,
-                crosshair.verticalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
+                crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
             );
             this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);   
             this.renderAxisTooltip(chart, chartRect, <Element>axisTooltipGroup);
@@ -181,12 +181,12 @@ export class Crosshair {
                 axisTooltipGroup = chart.renderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
                 options = new PathOption(
                     this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                    crosshair.horizontalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
+                    crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 options = new PathOption(
                     this.elementID + '_VerticalLine', 'none', crosshair.line.width,
-                    crosshair.verticalColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
+                    crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 crossGroup.appendChild(axisTooltipGroup);

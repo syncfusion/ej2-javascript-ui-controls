@@ -518,7 +518,7 @@ export class ResourceBase {
             promises.push(dataModule.getData(dataModule.generateQuery()));
         }
         Promise.all(promises).then((e: ReturnType[]) => this.dataManagerSuccess(e, isSetModel))
-            .catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
+            .catch((e: ReturnType) => this.parent.crudModule.dataManagerFailure(e));
     }
 
     private dataManagerSuccess(e: ReturnType[], isSetModel: boolean): void {

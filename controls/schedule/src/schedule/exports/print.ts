@@ -125,6 +125,7 @@ export class Print {
         this.printWindow = basePrint(this.printInstance.element, this.printWindow);
         this.printWindow.onbeforeunload = () => {
             this.printInstance.off(events.print, this.contentReady);
+            this.printInstance.element.remove();
             this.printInstance.destroy();
             this.printInstance = null;
             this.printWindow = null;

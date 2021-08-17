@@ -3,7 +3,7 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, initiateFilterUI } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula, getCellAddress } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, FilterCollectionModel, triggerDataChange } from '../../workbook/index';
 import { addClass, extend, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -381,6 +381,23 @@ export class UndoRedo {
                 }
             }
             this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
+            if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
+                const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                const cell: CellModel = getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet());
+                for (let i: number = rangeIdx[0]; i <= rangeIdx[2]; i++) {
+                    for (let j: number = rangeIdx[1]; j <= rangeIdx[3]; j++) {
+                        for (let k: number = range[0]; k <= range[2]; k++) {
+                            for (let l: number = range[1]; l <= range[3]; l++) {
+                                if (i !== k || j !== l) {
+                                    this.parent.updateCell({value: ''}, getCellAddress(i, j));
+                                }
+                            }
+                        }
+                    }
+                }
+                cell.value = '#SPILL!';
+                this.parent.updateCell(cell, getCellAddress(rangeIdx[0], rangeIdx[1]));
+            }
             if (!eventArgs.isSpill && uniqueArgs.uniqueRange !== '') {
                 const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
                 for (let j: number = indexes[0]; j <= indexes[2]; j++) {
@@ -466,6 +483,26 @@ export class UndoRedo {
                     }
                 }
                 updateAction(args, this.parent, true);
+                if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
+                    const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange); let Skip: boolean = false;
+                    for (let i: number = indexes[0]; i <= indexes[1]; i++) {
+                        for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                            if (i === indexes[0] && j === indexes[1]) {
+                                j++;
+                            }
+                            if (getCell(i, j, sheet) && !isNullOrUndefined(getCell(i, j, sheet).value)
+                            && getCell(i, j, sheet).value !== '') {
+                                Skip = true;
+                            }
+                        }
+                    }
+                    if (!Skip) {
+                        const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
+                        cell.value = '';
+                        this.parent.updateCell(cell, getCellAddress(indexes[0], indexes[1]));
+                        this.parent.notify(reApplyFormula, null);
+                    }
+                }
             }
         }
         if (isRefresh) {

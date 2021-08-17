@@ -1,5 +1,5 @@
 import { KeyboardEventArgs, removeClass, addClass, extend } from '@syncfusion/ej2-base';
-import { closest, classList } from '@syncfusion/ej2-base';
+import { closest, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
 import { parents, getUid, appendChildren } from '../base/util';
@@ -144,7 +144,7 @@ export class DetailRow {
                     tr.parentNode.appendChild(detailRow);
                 }
                 gObj.getRows().splice(tr.rowIndex + 1, 0, detailRow);
-                gObj.getRowsObject().splice(rowObj.index + 1, 0, row);
+                gObj.getRowsObject().splice(tr.rowIndex + 1, 0, row);
                 gObj.trigger(events.detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
                 gObj.notify(events.detailDataBound, { rows: gObj.getRowsObject() });
             }
@@ -172,6 +172,10 @@ export class DetailRow {
             }
             rowObj.isExpand = false;
             this.aria.setExpand(target as HTMLElement, false);
+        }
+        if (!isNullOrUndefined(gObj.detailTemplate)) {
+            gObj.updateVisibleExpandCollapseRows();
+            gObj.notify(events.refreshExpandandCollapse, { rows: gObj.getRowsObject() });
         }
     }
 

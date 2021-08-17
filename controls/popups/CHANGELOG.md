@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### Tooltip
+
+#### New Features
+
+- Now, the Tooltip will be rendered when giving the ID starts with integer type.
+
+## 19.2.55 (2021-08-11)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I337211` - The issue with "Styles are not properly removed from the body, when open and close the fullscreen dialog" has been resolved.
+
 ## 19.2.48 (2021-07-20)
 
 ### Tooltip

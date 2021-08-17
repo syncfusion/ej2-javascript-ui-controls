@@ -1,6 +1,10 @@
 @include export-module('sidebar-theme') {
 
   ejs-sidebar {
+    display: none;
+  }
+
+  .e-sidebar-display {
     display: block;
   }
 

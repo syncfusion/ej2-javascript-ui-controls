@@ -1998,6 +1998,9 @@ export class Edit {
         const currentData: IGanttData[] = this.parent.currentViewData;
         const deletedRecords: IGanttData[] = this.parent.getRecordFromFlatdata(args.deletedRecordCollection);
         const deleteRecordIDs: string[] = [];
+        if (deletedRecords.length > 0) {
+            this.parent.selectedRowIndex = deletedRecords[deletedRecords.length - 1].index;
+        }
         for (let i: number = 0; i < deletedRecords.length; i++) {
             const deleteRecord: IGanttData = deletedRecords[i];
             const currentIndex: number = currentData.indexOf(deleteRecord);
@@ -2445,6 +2448,7 @@ export class Edit {
         // this.parent.connectorLineIds = [];
         // this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
+        this.parent.selectedRowIndex = 0;
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.parent.modifiedRecords = args.modifiedRecords;
@@ -2812,7 +2816,8 @@ export class Edit {
             }
             else {
                 (args.data as IGanttData).ganttProperties.sharedTaskUniqueIds.push((args.data as IGanttData).ganttProperties.rowUniqueID);
-                if ((args.data as IGanttData).ganttProperties.resourceInfo.length) {
+                // eslint-disable-next-line
+                if ((args.data as IGanttData).ganttProperties.resourceInfo && (args.data as IGanttData).ganttProperties.resourceInfo.length) {
                     if ((args.data as IGanttData).ganttProperties.resourceInfo.length > 1) {
                         // eslint-disable-next-line
                         const resources: Object[] = extend([], [], (args.data as IGanttData).ganttProperties.resourceInfo, true) as Object[];

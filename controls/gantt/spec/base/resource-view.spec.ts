@@ -2,7 +2,7 @@
  * Gantt resource view spec
  */
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll } from '../../src/index';
-import { resourceCollection, resourceSelefReferenceData, normalResourceData, multiTaskbarData, multiResources,
+import { resourceCollection, resourcesData, resourceSelefReferenceData, normalResourceData, multiTaskbarData, multiResources,
      virtualResourceData, editingResources } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Edit, Selection, Toolbar, Filter, DayMarkers, VirtualScroll);
@@ -807,4 +807,96 @@ describe('Self reference data', () => {
         expect(ganttObj.element.getElementsByClassName('e-rangecontainer')[0].children.length).toBe(5);
       });
   });
+     describe("Add record using method", () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: resourcesData,
+            resources: resourceCollection,
+            viewType: 'ResourceView',
+            showOverAllocation: true,
+            taskFields: {
+              id: 'TaskID',
+              name: 'TaskName',
+              startDate: 'StartDate',
+              endDate: 'EndDate',
+              duration: 'Duration',
+              progress: 'Progress',
+              dependency: 'Predecessor',
+              resourceInfo: 'resources',
+              work: 'work',
+              child: 'subtasks'
+            },
+            resourceFields: {
+              id: 'resourceId',
+              name: 'resourceName',
+              unit: 'resourceUnit',
+              group: 'resourceGroup'
+            },
+            editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              allowTaskbarEditing: true,
+              showDeleteConfirmDialog: true
+            },
+            columns: [
+              { field: 'TaskID', visible: false },
+              { field: 'TaskName', headerText: 'Name', width: 250 },
+              { field: 'work', headerText: 'Work' },
+              { field: 'Progress' },
+              { field: 'resourceGroup', headerText: 'Group' },
+              { field: 'StartDate' },
+              { field: 'Duration' }
+            ],
+            toolbar: [
+              'Add',
+              'Edit',
+              'Update',
+              'Delete',
+              'Cancel',
+              'ExpandAll',
+              'CollapseAll',
+            ],
+            labelSettings: {
+              rightLabel: 'resources',
+              taskLabel: 'Progress'
+            },
+            splitterSettings: {
+              columnIndex: 3
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1000);
+    });
+  
+    it("Add record", () => {
+        let record: Object = {
+            TaskID: 10,
+            TaskName: 'Identify Site',
+            StartDate: new Date('04/02/2019'),
+            Duration: 3,
+            Progress: 50
+        };
+        ganttObj.editModule.addRecord(record, 'Below', 2);
+        expect(ganttObj.flatData.length).toBe(12);
+    });
+  });
+
 });

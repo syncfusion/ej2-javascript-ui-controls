@@ -128,5 +128,11 @@ describe('Gantt virtual scroll', () => {
             expect(ganttObj.flatData[1].expanded).toBe(false);
             expect(ganttObj.treeGrid.getRows()[1].getAttribute('aria-expanded')).toBe("false");
         });
+        it('Expand/CollapseAtLevel method', () => {
+            ganttObj.ganttChartModule.collapseAtLevel(0);
+            expect(ganttObj.flatData[0].expanded).toBe(false);
+            ganttObj.expandAtLevel(0);
+            expect(ganttObj.flatData[0].expanded).toBe(true);
+        });
     });
 });

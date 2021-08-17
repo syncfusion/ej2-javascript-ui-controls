@@ -1,7 +1,7 @@
 import { Grid, Resize, ContextMenu, Sort, VirtualScroll, RowSelectEventArgs, RowDeselectEventArgs, Column } from '@syncfusion/ej2-grids';
 import { select, KeyboardEvents, EventHandler, KeyboardEventArgs, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, setValue, addClass, removeClass } from '@syncfusion/ej2-base';
-import { Internationalization, closest, DragEventArgs, Draggable, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { Internationalization, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { FileManager } from '../base/file-manager';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -986,7 +986,7 @@ export class DetailsView {
                     dragArea: this.parent.element,
                     dragTarget: '.' + CLS.ROW,
                     drag: draggingHandler.bind(this, this.parent),
-                    dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
+                    dragStart: (args: DragEventArgs) => {
                         dragStartHandler(this.parent, args, this.dragObj);
                     },
                     dragStop: dragStopHandler.bind(this, this.parent),

@@ -1758,9 +1758,6 @@ export class TableWidget extends BlockWidget {
                     this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth);
                 }
             }
-            if (sizeInfo.minimumWordWidth > tableWidth) {
-                tableWidth = HelperMethods.convertPixelToPoint(sizeInfo.minimumWordWidth);
-            }
         }
         if (isZeroWidth && !this.isDefaultFormatUpdated) {
             this.isDefaultFormatUpdated = true;

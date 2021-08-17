@@ -36,6 +36,39 @@ export class Crud {
         return null;
     }
 
+    public refreshDataManager(): void {
+        if (!this.parent.activeView) { return; }
+        const start: Date = this.parent.activeView.startDate();
+        const end: Date = this.parent.activeView.endDate();
+        const dataManager: Promise<any> = this.parent.dataModule.getData(this.parent.dataModule.generateQuery(start, end));
+        dataManager.then((e: ReturnType) => this.dataManagerSuccess(e)).catch((e: ReturnType) => this.dataManagerFailure(e));
+    }
+
+    private dataManagerSuccess(e: ReturnType): void {
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
+            const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
+            this.parent.eventsData = resultData.filter((data: Record<string, any>) => !data[this.parent.eventFields.isBlock]);
+            this.parent.blockData = resultData.filter((data: Record<string, any>) => data[this.parent.eventFields.isBlock]);
+            const processed: Record<string, any>[] = this.parent.eventBase.processData(resultData);
+            this.parent.notify(events.dataReady, { processedData: processed });
+            if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
+                this.parent.dragAndDropModule.navigationWrapper();
+            }
+            this.parent.trigger(events.dataBound, null, () => {
+                this.parent.hideSpinner();
+                if (this.parent.isPrinting) {
+                    this.parent.notify(events.print, {});
+                }
+            });
+        });
+    }
+
+    public dataManagerFailure(e: ReturnType): void {
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
+    }
+
     private refreshData(args: CrudArgs): void {
         const actionArgs: ActionEventArgs = {
             requestType: args.requestType, cancel: false, data: args.data,
@@ -71,16 +104,15 @@ export class Crud {
         if (this.parent.dataModule.dataManager.dataSource.offline) {
             this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
                 if (!offlineArgs.cancel) {
-                    this.parent.renderModule.refreshDataManager();
+                    this.refreshDataManager();
                 }
             });
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            args.promise.then((e: ReturnType) => {
+            args.promise.then(() => {
                 if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
                 this.parent.trigger(events.actionComplete, actionArgs, (onlineArgs: ActionEventArgs) => {
                     if (!onlineArgs.cancel) {
-                        this.parent.renderModule.refreshDataManager();
+                        this.refreshDataManager();
                     }
                 });
             }).catch((e: ReturnType) => {
@@ -91,7 +123,7 @@ export class Crud {
     }
 
     public addEvent(eventData: Record<string, any> | Record<string, any>[]): void {
-        if (this.parent.eventSettings.allowAdding) {
+        if (this.parent.eventSettings.allowAdding && !this.parent.activeViewOptions.readonly) {
             if (!this.isBlockEvent(eventData) && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', eventData);
                 return;
@@ -127,7 +159,7 @@ export class Crud {
     }
 
     public saveEvent(eventData: Record<string, any> | Record<string, any>[], action: CurrentAction): void {
-        if (this.parent.eventSettings.allowEditing) {
+        if (this.parent.eventSettings.allowEditing && !this.parent.activeViewOptions.readonly) {
             if (this.parent.currentAction !== 'EditFollowingEvents' && !this.isBlockEvent(eventData)
                 && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', eventData);
@@ -183,7 +215,7 @@ export class Crud {
     }
 
     public deleteEvent(eventData: string | number | Record<string, any> | Record<string, any>[], action: CurrentAction): void {
-        if (this.parent.eventSettings.allowDeleting) {
+        if (this.parent.eventSettings.allowDeleting && !this.parent.activeViewOptions.readonly) {
             this.parent.currentAction = action;
             let deleteEvents: Record<string, any>[] = [];
             if (typeof eventData === 'string' || typeof eventData === 'number') {

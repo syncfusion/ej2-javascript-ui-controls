@@ -430,7 +430,7 @@ export class Edit {
 
     private editingHandler(action: string): void {
         const pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
-        const pictureLen: number = pictureElements.length;
+        const pictureLen: number = pictureElements.length; let isSpill: boolean;
         switch (action) {
         case 'delete':
             if (pictureLen > 0) {
@@ -456,6 +456,13 @@ export class Edit {
                 this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
                 const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
                 this.checkUniqueRange(args);
+                if (args.isUnique) {
+                    const indexes: number[] = getRangeIndexes(this.uniqueColl);
+                    const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
+                    if (cell) {
+                        isSpill = cell.value.indexOf('#SPILL!') > - 1;
+                    }
+                }
                 if (args.isUnique && this.uniqueColl.split(':')[0] === address.split(':')[0]) {
                     this.updateUniqueRange('');
                     this.parent.notify(removeUniquecol, null);
@@ -477,7 +484,12 @@ export class Edit {
                         if (!skip) { this.reApplyFormula(); }
                     }
                 }
-                this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
+                if (args.isUnique) {
+                    this.parent.notify(completeAction, { action: 'cellDelete',
+                        eventArgs: { address: sheet.name + '!' + address, isSpill: isSpill }});
+                } else {
+                    this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
+                }
             }
             break;
         }

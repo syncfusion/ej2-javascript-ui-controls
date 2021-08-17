@@ -4,7 +4,6 @@
 import { createElement, attributes, Browser, L10n } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { Slider } from '../src/slider/slider';
-import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
 function copyObject(source: any, destination: any): Object {
     for (let prop in source) {
         destination[prop] = source[prop];
@@ -4513,40 +4512,5 @@ describe("Slider ticks with decimal values", () => {
         expect(content).toBe("3.5");
         sliderInstance.destroy();
 
-    });
-    it("blazor large ticks", () => {
-       
-        let slider = document.createElement('div');
-        document.body.appendChild(slider);
-        const sliderInstance = new Slider({
-            min: 2,
-            max: 263.5,
-            ticks: { placement: 'Before', largeStep: 20, smallStep: 5, showSmallTicks: true }
-        });
-        sliderInstance.appendTo(slider);
-        let content = sliderInstance.element.querySelector('.e-first-tick');
-        enableBlazorMode();
-        (sliderInstance as any).updateTicksValues(1,content);
-        disableBlazorMode();
-        sliderInstance.destroy();
-  
-       
-    });
-    it("blazor small ticks", () => {
-        let slider = document.createElement('div');
-        document.body.appendChild(slider);
-        const sliderInstance = new Slider({
-            min: 2,
-            max: 263.5,
-            ticks: { placement: 'Before', largeStep: 20, smallStep: 5, showSmallTicks: true }
-        });
-        sliderInstance.appendTo(slider);
-        sliderInstance.isServerRendered=true;
-        let content = sliderInstance.element.querySelectorAll('.e-tick')[1];
-        enableBlazorMode();
-        (sliderInstance as any).updateTicksValues(1,content);
-        disableBlazorMode();
-        sliderInstance.destroy();
- 
     });
 })

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
-import { cldrData, removeClass, getValue, getDefaultDateObject, closest, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { cldrData, removeClass, getValue, getDefaultDateObject, closest, SanitizeHtmlHelper, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
@@ -48,6 +48,7 @@ export class EventWindow {
     private isCrudAction: boolean;
     private eventWindowTime: Record<string, Date>;
     private timezoneData: Record<string, any>[];
+    private isEnterKey: boolean;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -108,6 +109,7 @@ export class EventWindow {
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
+        EventHandler.add(this.dialogObject.element, 'keydown', this.preventEventSave, this);
         this.applyFormValidation();
     }
 
@@ -185,6 +187,12 @@ export class EventWindow {
     public setDialogContent(): void {
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
+    }
+
+    private preventEventSave(e: KeyboardEventArgs): void {
+        if (this.parent && !this.parent.allowKeyboardInteraction && (e as KeyboardEventArgs).code === 'Enter') {
+            this.isEnterKey = true;
+        }
     }
 
     private onBeforeOpen(args: BeforeOpenEventArgs): Deferred {
@@ -1110,6 +1118,10 @@ export class EventWindow {
     }
 
     public dialogClose(): void {
+        if (this.isEnterKey) {
+            this.isEnterKey = false;
+            return;
+        }
         this.isCrudAction = false;
         this.parent.activeEventData = { event: undefined, element: undefined };
         this.parent.currentAction = null;
@@ -1162,6 +1174,10 @@ export class EventWindow {
     }
 
     public eventSave(alert?: string): void {
+        if (this.isEnterKey) {
+            this.isEnterKey = false;
+            return;
+        }
         const formElement: Element = this.element.querySelector('.' + cls.FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
             !((formElement as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
@@ -1393,6 +1409,9 @@ export class EventWindow {
             if (isNullOrUndefined(alertMessage)) {
                 this.parent.quickPopup.quickDialog.hide();
             }
+        }
+        if (isNullOrUndefined(interval)) {
+            alertMessage = 'createError';
         }
         return alertMessage;
     }
@@ -1688,6 +1707,10 @@ export class EventWindow {
     }
 
     private eventDelete(): void {
+        if (this.isEnterKey) {
+            this.isEnterKey = false;
+            return;
+        }
         switch (this.parent.currentAction) {
         case 'EditOccurrence':
             if (!isNullOrUndefined((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceRule])) {
@@ -1701,6 +1724,11 @@ export class EventWindow {
             break;
         case 'Save':
             this.parent.currentAction = 'Delete';
+            break;
+        case 'EditFollowingEvents':
+            if (!isNullOrUndefined((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceRule])) {
+                this.parent.currentAction = 'DeleteFollowingEvents';
+            }
             break;
         }
         this.isCrudAction = false;
@@ -1757,6 +1785,9 @@ export class EventWindow {
             this.repeatDialogObject = null;
         }
         if (this.dialogObject) {
+            if (this.dialogObject.element) {
+                EventHandler.remove(this.dialogObject.element, 'keydown', this.preventEventSave);
+            }
             this.dialogObject.destroy();
             this.dialogObject = null;
         }

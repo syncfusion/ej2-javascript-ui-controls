@@ -183,7 +183,8 @@ export class VerticalEvent extends EventBase {
         let isRender: boolean;
         for (const resource of resources) {
             isRender = true;
-            if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction && eventType !== 'allDayEvents') {
+            if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction && eventType !== 'allDayEvents'
+                && !this.parent.uiStateValues.isGroupAdaptive) {
                 if (this.parent.crudModule.crudObj.sourceEvent.filter((data: TdData) => data.groupIndex === resource).length === 0 &&
                     this.parent.crudModule.crudObj.targetEvent.filter((data: TdData) => data.groupIndex === resource).length === 0) {
                     isRender = false;
@@ -597,7 +598,9 @@ export class VerticalEvent extends EventBase {
             const recordEnd: Date = record[fieldMapping.endTime] as Date;
             this.overlapList = appointmentList.filter((data: Record<string, any>) =>
                 (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] <= recordEnd) ||
-                (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart));
+                (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart) ||
+                (data[fieldMapping.endTime].getTime() === data[fieldMapping.startTime].getTime() &&
+                data[fieldMapping.startTime].getTime() === recordStart.getTime() && data[fieldMapping.endTime] < recordEnd));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
             }
@@ -615,7 +618,7 @@ export class VerticalEvent extends EventBase {
             });
             for (let i: number = 0; i < appointment.length - 1; i++) {
                 for (let j: number = i + 1; j < appointment.length; j++) {
-                    if (appointment[i].Id === appointment[j].Id) {
+                    if (appointment[i][fieldMapping.id] === appointment[j][fieldMapping.id]) {
                         appointment.splice(j, 1); j--;
                     }
                 }
@@ -633,10 +636,14 @@ export class VerticalEvent extends EventBase {
             }
         }
         if (!isAllDay) {
-            eventsList = eventsList.filter((obj: Record<string, any>) => obj[fieldMapping.startTime] === record[fieldMapping.startTime] &&
+            eventsList = eventsList.filter((obj: Record<string, any>) => (obj[fieldMapping.startTime] === record[fieldMapping.startTime] &&
                 obj[fieldMapping.endTime] > record[fieldMapping.endTime] || obj[fieldMapping.endTime] > record[fieldMapping.startTime] &&
                 obj[fieldMapping.startTime] < record[fieldMapping.endTime] || obj[fieldMapping.endTime] === record[fieldMapping.startTime]
-                && obj[fieldMapping.startTime] === record[fieldMapping.endTime]);
+                && obj[fieldMapping.startTime] === record[fieldMapping.endTime]) || ((obj[fieldMapping.startTime].getTime() ===
+                record[fieldMapping.startTime].getTime() && obj[fieldMapping.endTime].getTime() === record[fieldMapping.endTime].getTime())
+                || (obj[fieldMapping.startTime].getTime() === record[fieldMapping.startTime].getTime() &&
+                obj[fieldMapping.endTime].getTime() < record[fieldMapping.endTime].getTime() ||
+                obj[fieldMapping.endTime].getTime() > record[fieldMapping.endTime].getTime())));
         }
         if (eventsList.length > 0) {
             const appLevel: number[] = eventsList.map((obj: Record<string, any>) => obj.Index) as number[];

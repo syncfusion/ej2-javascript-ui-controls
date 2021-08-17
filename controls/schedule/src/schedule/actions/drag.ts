@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { addClass, remove, removeClass, setStyleAttribute, Browser, EventHandler } from '@syncfusion/ej2-base';
+import { addClass, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { DragEventArgs, EventFieldsMapping, TdData, EJ2Instance } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
@@ -41,7 +41,7 @@ export class DragAndDrop extends ActionBase {
     private isCursorAhead: boolean = false;
     public wireDragEvent(element: HTMLElement): void {
         const dragElement: HTMLElement = document.querySelector(this.parent.eventDragArea);
-        const dragObj: Draggable = new Draggable(element, {
+        new Draggable(element, {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
             clone: true,
             isDragScroll: true,
@@ -236,13 +236,13 @@ export class DragAndDrop extends ActionBase {
                 this.verticalEvent = new VerticalEvent(this.parent);
                 this.verticalEvent.initializeValues();
                 const splitEvents: Record<string, any>[] = this.splitEvent(this.actionObj.event);
-                splitEvents.forEach(event => {
+                splitEvents.forEach((event: Record<string, any>) => {
                     let query: string =
                         `.e-day-wrapper[data-date="${(<Date>util.resetTime(event[this.parent.eventFields.startTime])).getTime()}"]`;
                     if (this.parent.activeViewOptions.group.resources.length > 0) {
                         query = query.concat('[data-group-index = "' + this.actionObj.groupIndex + '"]');
                     }
-                    let appWrap: HTMLTableCellElement = this.parent.element.querySelector(query) as HTMLTableCellElement;
+                    const appWrap: HTMLTableCellElement = this.parent.element.querySelector(query) as HTMLTableCellElement;
                     if (appWrap) {
                         const appEle: Element = appWrap.querySelector('[data-id="' + this.actionObj.clone.getAttribute('data-id') + '"]');
                         if (appEle) {
@@ -670,10 +670,10 @@ export class DragAndDrop extends ActionBase {
                 util.getStartEndHours(util.resetTime(startTime), scheduleStartHour, scheduleEndHour);
             const endDate: { [key: string]: Date } =
                 util.getStartEndHours(util.resetTime(endTime), scheduleStartHour, scheduleEndHour);
-            let firstEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+            const firstEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
             firstEventObj[eventFields.endTime] = startDate.endHour;
             eventData.push(firstEventObj);
-            let secondEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+            const secondEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
             secondEventObj[eventFields.startTime] = endDate.startHour;
             eventData.push(secondEventObj);
         } else {
@@ -730,16 +730,19 @@ export class DragAndDrop extends ActionBase {
     private updateEventHeight(event: Record<string, any>, index?: number, colIndex?: number): void {
         this.verticalEvent.initializeValues();
         let datesCount: number = 0;
-        for (let i: number = 0; i < this.actionObj.groupIndex; i++) {
-            datesCount = datesCount + this.verticalEvent.dateRender[i].length;
+        if (!this.parent.uiStateValues.isGroupAdaptive) {
+            for (let i: number = 0; i < this.actionObj.groupIndex; i++) {
+                datesCount = datesCount + this.verticalEvent.dateRender[i].length;
+            }
         }
+        const indexGroup: number = this.parent.uiStateValues.isGroupAdaptive ? datesCount : this.actionObj.groupIndex;
         const target: boolean = (this.parent.activeViewOptions.group.byDate &&
             !isNullOrUndefined(this.parent.getDateFromElement(this.actionObj.target as HTMLElement))) ? true : false;
         if (target || !this.parent.activeViewOptions.group.byDate) {
             let dynamicIndex: number = -1;
             let dayIndex: number = !this.parent.activeViewOptions.group.byDate ?
                 isNullOrUndefined(index) ? this.actionObj.index - datesCount : colIndex - datesCount
-                : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], util.resetTime(
+                : this.parent.getIndexOfDate(this.verticalEvent.dateRender[indexGroup], util.resetTime(
                     // eslint-disable-next-line max-len
                     this.parent.getDateFromElement(isNullOrUndefined(index) ? this.actionObj.target as HTMLElement : this.targetTd as HTMLElement)));
             const splitEvents: Record<string, any>[] = this.splitEvent(event);
@@ -752,7 +755,7 @@ export class DragAndDrop extends ActionBase {
                     if (this.parent.activeViewOptions.group.resources.length > 0) {
                         filterQuery = filterQuery.concat('[data-group-index = "' + this.actionObj.groupIndex + '"]');
                     }
-                    let appWrap: HTMLTableCellElement = this.parent.element.querySelector(filterQuery) as HTMLTableCellElement;
+                    const appWrap: HTMLTableCellElement = this.parent.element.querySelector(filterQuery) as HTMLTableCellElement;
                     if (appWrap) {
                         dayIndex = dayIndex + 1;
                         dynamicIndex = appWrap.cellIndex;
@@ -761,13 +764,13 @@ export class DragAndDrop extends ActionBase {
                     }
                 }
                 if (dayIndex >= 0) {
-                    const record: Record<string, any> = this.verticalEvent.isSpannedEvent(events[i], dayIndex, this.actionObj.groupIndex);
+                    const record: Record<string, any> = this.verticalEvent.isSpannedEvent(events[i], dayIndex, indexGroup);
                     const eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
                     const eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
                     let appHeight: number = this.parent.activeViewOptions.timeScale.enable ? this.verticalEvent.getHeight(eStart, eEnd) :
                         this.actionObj.element.offsetHeight;
                     let topValue: number = this.parent.activeViewOptions.timeScale.enable ?
-                        this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex) : this.actionObj.element.offsetTop;
+                        this.verticalEvent.getTopValue(eStart, dayIndex, indexGroup) : this.actionObj.element.offsetTop;
                     if (isNullOrUndefined(index)) {
                         if (i === 0) {
                             this.actionObj.clone.style.top = formatUnit(topValue);
@@ -807,9 +810,9 @@ export class DragAndDrop extends ActionBase {
         const startTime: number = (record[this.parent.eventFields.startTime] as Date).getTime();
         const endTime: number = (record[this.parent.eventFields.endTime] as Date).getTime();
         if (startTime !== endTime) {
-            let appointmentElement: HTMLElement = this.verticalEvent.
+            const appointmentElement: HTMLElement = this.verticalEvent.
                 createAppointmentElement(record, false, record.isSpanned as Record<string, any>, this.actionObj.groupIndex);
-            addClass([appointmentElement], [cls.CLONE_ELEMENT_CLASS, "e-dynamic-clone"]);
+            addClass([appointmentElement], [cls.CLONE_ELEMENT_CLASS, 'e-dynamic-clone']);
             setStyleAttribute(appointmentElement, {
                 'width': '100%',
                 'height': height + 'px',
@@ -838,7 +841,7 @@ export class DragAndDrop extends ActionBase {
     private updateAllDayEvents(startDate: Date, endDate: Date, colIndex: number): void {
         this.parent.eventBase.slots = [];
         const event: Record<string, any> = this.getUpdatedEvent(startDate, endDate, this.actionObj.event);
-        let renderDates: Date[] = this.getRenderedDates();
+        const renderDates: Date[] = this.getRenderedDates();
         const events: Record<string, any>[] = this.parent.eventBase.splitEvent(event, renderDates);
         let query: string = `.e-all-day-cells[data-date="${(<Date>events[0][this.parent.eventFields.startTime]).getTime()}"]`;
         if (this.parent.activeViewOptions.group.resources.length > 0) {

@@ -5853,6 +5853,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             if (this.toolbarModule) {
                 this.toolbarModule.resetToolbar();
             }
+        } else {
+            this.viewerBase.blazorUIAdaptor.resetToolbar();
         }
         this.viewerBase.initiatePageRender(document, password);
     }

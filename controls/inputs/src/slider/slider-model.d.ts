@@ -1,4 +1,4 @@
-﻿import { Component, EventHandler, Property, Event, EmitType, Complex, Collection, isBlazor } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs, getZindexPartial } from '@syncfusion/ej2-popups';
+﻿import { Component, EventHandler, Property, Event, EmitType, Complex, Collection } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs, getZindexPartial } from '@syncfusion/ej2-popups';
 import {Placement,TooltipPlacement,TooltipShowOn,SliderType,SliderOrientation,SliderChangeEventArgs,SliderTickEventArgs,SliderTickRenderedEventArgs,SliderTooltipEventArgs} from "./slider";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -317,7 +317,6 @@ export interface SliderModel extends ComponentModel{
     /**
      * Triggers when the Slider is successfully created.
      * @event
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -326,7 +325,6 @@ export interface SliderModel extends ComponentModel{
      *  In other term, this event will be triggered while drag the slider thumb.
      * {% codeBlock src='slider/changeEvent/index.md' %}{% endcodeBlock %}
      * @event
-     * @blazorProperty 'OnChange'
      */
     change?: EmitType<SliderChangeEventArgs>;
 
@@ -334,7 +332,6 @@ export interface SliderModel extends ComponentModel{
      * Fires whenever the Slider value is changed.
      * In other term, this event will be triggered, while drag the slider thumb completed.
      * @event
-     * @blazorProperty 'ValueChange'
      */
     changed?: EmitType<SliderChangeEventArgs>;
 
@@ -343,7 +340,6 @@ export interface SliderModel extends ComponentModel{
      * which is used to customize the ticks labels dynamically.
      * {% codeBlock src='slider/renderingticksEvent/index.md' %}{% endcodeBlock %}
      * @event
-     * @blazorProperty 'TicksRendering'
      */
     renderingTicks?: EmitType<SliderTickEventArgs>;
 
@@ -351,7 +347,6 @@ export interface SliderModel extends ComponentModel{
      * Triggers when the ticks are rendered on the Slider.
      * {% codeBlock src='slider/renderedticksEvent/index.md' %}{% endcodeBlock %}
      * @event
-     * @blazorProperty 'TicksRendered'
      */
     renderedTicks?: EmitType<SliderTickRenderedEventArgs>;
 
@@ -359,7 +354,6 @@ export interface SliderModel extends ComponentModel{
      * Triggers when the Sider tooltip value is changed.
      * {% codeBlock src='slider/tooltipChangeEvent/index.md' %}{% endcodeBlock %}
      * @event
-     * @blazorProperty 'OnTooltipChange'
      */
     tooltipChange?: EmitType<SliderTooltipEventArgs>;
 

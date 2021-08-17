@@ -17,9 +17,7 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
     /**
      * Defines the direction of sort column.
      *
-     * @default ''
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @default null
      * @isEnumeration true
      *
      */

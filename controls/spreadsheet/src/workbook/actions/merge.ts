@@ -1,7 +1,7 @@
 import { Workbook, CellModel, getCell, SheetModel, setCell } from '../base/index';
 import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange } from './../common/index';
 import { insertMerge, activeCellChanged, pasteMerge, getCellIndexes, checkIsFormula, setCellFormat } from './../common/index';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * The `WorkbookMerge` module is used to merge the range of cells.
@@ -50,7 +50,7 @@ export class WorkbookMerge {
                 if (cell && (cell.value || cell.formula) && !value) { value = cell.formula || cell.value; }
                 if (args.isAction && args.merge) {
                     args.model[i - args.range[0]].cells[j - args.range[1]] = {};
-                    Object.assign(args.model[i - args.range[0]].cells[j - args.range[1]], cell);
+                    extend(args.model[i - args.range[0]].cells[j - args.range[1]], cell, null, true);
                 }
                 if (sheet.rows[i] && sheet.rows[i].cells && sheet.rows[i].cells[j]) {
                     delete sheet.rows[i].cells[j].rowSpan; delete sheet.rows[i].cells[j].colSpan;

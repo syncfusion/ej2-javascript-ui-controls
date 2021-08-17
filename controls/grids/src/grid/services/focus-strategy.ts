@@ -52,7 +52,7 @@ export class FocusStrategy {
         this.skipFocus = target.classList.contains('e-grid');
     }
 
-    protected onFocus(): void {
+    protected onFocus(e?: FocusEvent): void {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) { return; }
         this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.isFrozenGrid());
         if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
@@ -65,7 +65,7 @@ export class FocusStrategy {
         const current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         if (this.skipFocus) {
-            this.focus();
+            this.focus(e);
             this.skipFocus = false;
         }
     }
@@ -79,11 +79,11 @@ export class FocusStrategy {
     }
 
     protected onBlur(e?: FocusEvent): void {
-        if ((this.parent.isEdit || e && (!e.relatedTarget || closest(<HTMLElement>e.relatedTarget, '.e-grid')))) { return; }
-        this.removeFocus(); this.skipFocus = false; this.currentInfo.skipAction = false;
-        if (this.getContent().getFocusInfo().elementToFocus) {
-            this.getContent().getFocusInfo().elementToFocus.tabIndex = 0;
-        }
+        if ((this.parent.isEdit || e && (!e.relatedTarget || closest(<HTMLElement>e.relatedTarget, '.e-grid')))
+            && !(isNullOrUndefined(e.relatedTarget) && parseInt((e.target as Element).getAttribute('aria-colindex'), 10) === 0 &&
+            parseInt((e.target as Element).getAttribute('index'), 10) === 0)) { return; }
+        this.removeFocus(); this.skipFocus = true; this.currentInfo.skipAction = false;
+        this.parent.element.tabIndex = 0;
     }
 
     public onClick(e: Event | { target: Element }, force?: boolean): void {
@@ -137,7 +137,13 @@ export class FocusStrategy {
         }
         this.setActiveByKey(e.action, this.getContent());
         const returnVal: boolean = this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
-        if (returnVal === false) { this.clearIndicator(); return; }
+        if (returnVal === false) {
+            this.clearIndicator();
+            if (e.action === 'shiftTab' && bValue.toString() === [0, 0].toString()) {
+                this.parent.element.tabIndex = -1;
+            }
+            return;
+        }
         e.preventDefault();
         this.focus(e);
     }
@@ -228,7 +234,7 @@ export class FocusStrategy {
             0);
     }
 
-    public focus(e?: KeyboardEventArgs): void {
+    public focus(e?: KeyboardEventArgs | FocusEvent): void {
         this.parent.notify(event.virtaulCellFocus, e);
         this.removeFocus();
         this.addFocus(this.getContent().getFocusInfo(), e);
@@ -238,7 +244,6 @@ export class FocusStrategy {
     protected removeFocus(e?: FocusEvent): void {
         if (!this.currentInfo.element) { return; }
         removeClass([this.currentInfo.element, this.currentInfo.elementToFocus], ['e-focused', 'e-focus']);
-        this.currentInfo.element.tabIndex = -1;
     }
 
     /**
@@ -273,7 +278,7 @@ export class FocusStrategy {
         this.focus();
     }
 
-    protected addFocus(info: FocusInfo, e?: KeyboardEventArgs): void {
+    protected addFocus(info: FocusInfo, e?: KeyboardEventArgs | FocusEvent): void {
         this.currentInfo = info; this.currentInfo.outline = info.outline && !isNullOrUndefined(e);
         if (this.isInfiniteScroll) { this.currentInfo.outline = true; }
         if (!info.element) { return; }
@@ -285,7 +290,7 @@ export class FocusStrategy {
         addClass([info.elementToFocus], ['e-focus']);
         info.element.tabIndex = 0;
         if (!isFocused) {
-            this.setFocusedElement(info.elementToFocus, e);
+            this.setFocusedElement(info.elementToFocus, e as KeyboardEventArgs);
         }
         this.parent.notify(event.cellFocused, {
             element: info.elementToFocus,
@@ -295,7 +300,7 @@ export class FocusStrategy {
             byClick: isNullOrUndefined(e),
             keyArgs: e,
             isJump: this.swap.swap,
-            container: this.getContent().getInfo(e),
+            container: this.getContent().getInfo(e as KeyboardEventArgs),
             outline: !isNullOrUndefined(e),
             swapInfo: this.swap
         });
@@ -742,7 +747,7 @@ export class ContentFocus implements IFocus {
 
     public nextRowFocusValidate(index: number): number {
         const lastIndex: number = index;
-        for (let i: number = index, len: number = this.matrix.rows; i < len; i++) {
+        for (let i: number = index, len: number = this.matrix.rows; i <= len; i++) {
             if (this.matrix.matrix[index].indexOf(1) === -1) {
                 index = index + 1;
             } else {

@@ -1,6 +1,6 @@
 import { Dialog, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { select, isNullOrUndefined as isNOU, createElement, Internationalization } from '@syncfusion/ej2-base';
-import { getValue, remove, selectAll, isBlazor } from '@syncfusion/ej2-base';
+import { getValue, remove, selectAll } from '@syncfusion/ej2-base';
 import { IFileManager, ReadArgs, DialogOptions, FileDetails, FileDragEventArgs } from '../base/interface';
 import { BeforePopupOpenCloseEventArgs, PopupOpenCloseEventArgs } from '../base/interface';
 import { createFolder } from '../common/operations';
@@ -122,8 +122,6 @@ function triggerPopupBeforeOpen(parent: IFileManager, dlgModule: Dialog, args: B
     const eventArgs: BeforePopupOpenCloseEventArgs = {
         cancel: args.cancel, popupName: dialogName, popupModule: dlgModule
     };
-    /* istanbul ignore next */
-    if (isBlazor()) { delete eventArgs.popupModule; }
     parent.trigger('beforePopupOpen', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
         args.cancel = eventargs.cancel;
     });
@@ -142,8 +140,6 @@ function triggerPopupBeforeClose(parent: IFileManager, dlgModule: Dialog, args: 
     const eventArgs: BeforePopupOpenCloseEventArgs = {
         cancel: args.cancel, popupModule: dlgModule, popupName: dialogName
     };
-    /* istanbul ignore next */
-    if (isBlazor()) { delete eventArgs.popupModule; }
     parent.trigger('beforePopupClose', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
         args.cancel = eventargs.cancel;
         if (!args.cancel && args.isInteracted && ((dialogName === 'Rename') || (dialogName === 'Create Folder'))) {
@@ -162,8 +158,6 @@ function triggerPopupBeforeClose(parent: IFileManager, dlgModule: Dialog, args: 
  */
 function triggerPopupOpen(parent: IFileManager, dlgModule: Dialog, dialogName: string): void {
     const args: PopupOpenCloseEventArgs = { popupModule: dlgModule, element: dlgModule.element, popupName: dialogName };
-    /* istanbul ignore next */
-    if (isBlazor()) { delete args.popupModule; }
     parent.trigger('popupOpen', args);
 }
 
@@ -177,8 +171,6 @@ function triggerPopupOpen(parent: IFileManager, dlgModule: Dialog, dialogName: s
  */
 function triggerPopupClose(parent: IFileManager, dlgModule: Dialog, dialogName: string): void {
     const args: PopupOpenCloseEventArgs = { popupModule: dlgModule, element: dlgModule.element, popupName: dialogName };
-    /* istanbul ignore next */
-    if (isBlazor()) { delete args.popupModule; }
     parent.trigger('popupClose', args);
 }
 

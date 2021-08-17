@@ -1,7 +1,7 @@
 import { TreeView as BaseTreeView, NodeSelectEventArgs, NodeExpandEventArgs, DrawNodeEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeEditEventArgs, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { isNullOrUndefined as isNOU, select, setValue, getValue, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
-import { KeyboardEvents, KeyboardEventArgs, Touch, closest, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, Touch, closest } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
@@ -104,7 +104,7 @@ export class NavigationPane {
                     distance: 5,
                     dragArea: this.parent.element,
                     drag: draggingHandler.bind(this, this.parent),
-                    dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
+                    dragStart: (args: DragEventArgs) => {
                         dragStartHandler(this.parent, args, this.dragObj);
                     },
                     dragStop: dragStopHandler.bind(this, this.parent),

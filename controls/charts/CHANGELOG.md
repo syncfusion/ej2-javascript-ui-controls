@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### Chart
+
+#### Bug Fixes
+
+- `#337487` - Query selector issue fixed for container ID.
+
 ## 19.2.55 (2021-08-11)
 
 ### Chart

@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, isBlazor } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';
 import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -298,7 +298,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * The default value is null, which refers to the File Manager element.
      *
      * @default null
-     * @blazorType string
      */
     @Property(null)
     public popupTarget: HTMLElement | string;
@@ -405,7 +404,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before the file/folder is rendered.
      *
      * @event
-     * @blazorProperty 'OnFileLoad'
      */
     @Event()
     public fileLoad: EmitType<FileLoadEventArgs>;
@@ -414,7 +412,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before the file/folder is opened.
      *
      * @event
-     * @blazorProperty 'OnFileOpen'
      */
     @Event()
     public fileOpen: EmitType<FileOpenEventArgs>;
@@ -423,7 +420,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before sending the download request to the server.
      *
      * @event
-     * @blazorProperty 'BeforeDownload'
      */
     @Event()
     public beforeDownload: EmitType<BeforeDownloadEventArgs>;
@@ -432,7 +428,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before sending the getImage request to the server.
      *
      * @event
-     * @blazorProperty 'BeforeImageLoad'
      */
     @Event()
     public beforeImageLoad: EmitType<BeforeImageLoadEventArgs>;
@@ -441,7 +436,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before the dialog is closed.
      *
      * @event
-     * @blazorProperty 'BeforePopupClose'
      */
     @Event()
     public beforePopupClose: EmitType<BeforePopupOpenCloseEventArgs>;
@@ -450,7 +444,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before the dialog is opened.
      *
      * @event
-     * @blazorProperty 'BeforePopupOpen'
      */
     @Event()
     public beforePopupOpen: EmitType<BeforePopupOpenCloseEventArgs>;
@@ -459,7 +452,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before sending the AJAX request to the server.
      *
      * @event
-     * @blazorProperty 'OnSend'
      */
     @Event()
     public beforeSend: EmitType<BeforeSendEventArgs>;
@@ -468,7 +460,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the file manager component is created.
      *
      * @event
-     * @blazorProperty 'Created'
      */
     /* eslint-disable */
     @Event()
@@ -479,7 +470,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the file manager component is destroyed.
      *
      * @event
-     * @blazorProperty 'Destroyed'
      */
     /* eslint-disable */
     @Event()
@@ -490,7 +480,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the file/folder dragging is started.
      *
      * @event
-     * @blazorProperty 'OnFileDragStart'
      */
     @Event()
     public fileDragStart: EmitType<FileDragEventArgs>;
@@ -499,7 +488,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers while dragging the file/folder.
      *
      * @event
-     * @blazorProperty 'FileDragging'
      */
     @Event()
     public fileDragging: EmitType<FileDragEventArgs>;
@@ -508,7 +496,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the file/folder is about to be dropped at the target.
      *
      * @event
-     * @blazorProperty 'OnFileDragStop'
      */
     @Event()
     public fileDragStop: EmitType<FileDragEventArgs>;
@@ -517,7 +504,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the file/folder is dropped.
      *
      * @event
-     * @blazorProperty 'FileDropped'
      */
     @Event()
     public fileDropped: EmitType<FileDragEventArgs>;
@@ -526,7 +512,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before the file/folder is selected.
      *
      * @event
-     * @blazorProperty 'FileSelection'
      */
     @Event()
     public fileSelection: EmitType<FileSelectionEventArgs>;
@@ -535,7 +520,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the file/folder is selected/unselected.
      *
      * @event
-     * @blazorProperty 'FileSelected'
      */
     @Event()
     public fileSelect: EmitType<FileSelectEventArgs>;
@@ -544,7 +528,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the context menu item is clicked.
      *
      * @event
-     * @blazorProperty 'OnMenuClick'
      */
     @Event()
     public menuClick: EmitType<MenuClickEventArgs>;
@@ -553,7 +536,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before the context menu is opened.
      *
      * @event
-     * @blazorProperty 'MenuOpened'
      */
     @Event()
     public menuOpen: EmitType<MenuOpenEventArgs>;
@@ -562,7 +544,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the AJAX request is failed.
      *
      * @event
-     * @blazorProperty 'OnError'
      */
     @Event()
     public failure: EmitType<FailureEventArgs>;
@@ -571,7 +552,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the dialog is closed.
      *
      * @event
-     * @blazorProperty 'PopupClosed'
      */
     @Event()
     public popupClose: EmitType<PopupOpenCloseEventArgs>;
@@ -580,7 +560,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the dialog is opened.
      *
      * @event
-     * @blazorProperty 'PopupOpened'
      */
     @Event()
     public popupOpen: EmitType<PopupOpenCloseEventArgs>;
@@ -588,7 +567,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the AJAX request is success.
      * @event
-     * @blazorProperty 'OnSuccess'
      */
     @Event()
     public success: EmitType<SuccessEventArgs>;
@@ -597,7 +575,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers when the toolbar item is clicked.
      *
      * @event
-     * @blazorProperty 'ToolbarItemClicked'
      */
     @Event()
     public toolbarClick: EmitType<ToolbarClickEventArgs>;
@@ -606,7 +583,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before creating the toolbar.
      *
      * @event
-     * @blazorProperty 'ToolbarCreated'
      */
     @Event()
     public toolbarCreate: EmitType<ToolbarCreateEventArgs>;
@@ -615,7 +591,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Triggers before rendering each file item in upload dialog box.
      *
      * @event
-     * @blazorProperty 'UploadListCreated'
      */
     @Event()
     public uploadListCreate: EmitType<UploadListCreateArgs>;
@@ -963,8 +938,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         const eventArgs: BeforePopupOpenCloseEventArgs = {
             cancel: args.cancel, popupName: 'Upload', popupModule: this.uploadDialogObj
         };
-        /* istanbul ignore next */
-        if (isBlazor()) { delete eventArgs.popupModule; }
         this.trigger('beforePopupOpen', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
             args.cancel = eventargs.cancel;
         });
@@ -974,8 +947,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         const eventArgs: BeforePopupOpenCloseEventArgs = {
             cancel: args.cancel, popupName: 'Upload', popupModule: this.uploadDialogObj
         };
-        /* istanbul ignore next */
-        if (isBlazor()) { delete eventArgs.popupModule; }
         this.trigger('beforePopupClose', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
             args.cancel = eventargs.cancel;
         });
@@ -988,8 +959,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             popupModule: this.uploadDialogObj, popupName: 'Upload',
             element: this.uploadDialogObj.element
         };
-        /* istanbul ignore next */
-        if (isBlazor()) { delete args.popupModule; }
         this.trigger('popupOpen', args);
     }
 
@@ -1000,8 +969,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             popupModule: this.uploadDialogObj, popupName: 'Upload',
             element: this.uploadDialogObj.element
         };
-        /* istanbul ignore next */
-        if (isBlazor()) { delete args.popupModule; }
         this.trigger('popupClose', args);
     }
     /* istanbul ignore next */

@@ -1174,8 +1174,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             majorSlotTemplate: this.timeScale.majorSlotTemplate,
             minorSlotTemplate: this.timeScale.minorSlotTemplate
         };
+        const isYearView: boolean = this.viewCollections[this.viewIndex].option.indexOf('Year') > -1;
         const group: GroupModel = {
-            byDate: this.group.byDate,
+            byDate: isYearView ? false : this.group.byDate,
             byGroupID: this.group.byGroupID,
             allowGroupEdit: this.group.allowGroupEdit,
             resources: this.group.resources,
@@ -1388,7 +1389,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
                 const navArgs: NavigatingEventArgs = {
-                    action: 'view', cancel: false, previousView: this.currentView, currentView: view, viewIndex: this.viewIndex
+                    action: 'view', cancel: false, currentDate: this.selectedDate, previousView: this.currentView, currentView: view, viewIndex: this.viewIndex
                 };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
@@ -2290,12 +2291,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.changeDate(this.selectedDate);
         } else if (state.isLayout) {
             this.initializeView(this.currentView);
-        } else if (state.isDataManager && this.renderModule) {
+        } else if (state.isDataManager && this.crudModule) {
             if (this.dragAndDropModule) {
                 this.dragAndDropModule.actionObj.action = '';
                 removeClass([this.element], cls.EVENT_ACTION_CLASS);
             }
-            this.renderModule.refreshDataManager();
+            this.crudModule.refreshDataManager();
         }
     }
 
@@ -3055,7 +3056,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.dragAndDropModule.actionObj.action = '';
             removeClass([this.element], cls.EVENT_ACTION_CLASS);
         }
-        this.renderModule.refreshDataManager();
+        this.crudModule.refreshDataManager();
     }
 
     /**

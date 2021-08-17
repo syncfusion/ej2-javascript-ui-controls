@@ -73,6 +73,14 @@ describe('Schedule CRUD', () => {
             schObj.addEvent(eventData);
             expect(schObj.eventsData.length).toEqual(8);
         });
+
+        it('readonly API checking', () => {
+            schObj.eventSettings.allowAdding = true;
+            schObj.readonly = true;
+            schObj.dataBind();
+            schObj.addEvent(eventData);
+            expect(schObj.eventsData.length).toEqual(8);
+        });
     });
 
     describe('Save Actions', () => {
@@ -255,6 +263,13 @@ describe('Schedule CRUD', () => {
             schObj.saveEvent([schObj.eventsData[0]]);
             expect(schObj.eventsData.length).toEqual(3);
         });
+
+        it('readonly API checking', () => {
+            schObj.readonly = true;
+            schObj.dataBind();
+            schObj.saveEvent(schObj.eventsData[0]);
+            expect(schObj.eventsData.length).toEqual(3);
+        });
     });
 
     describe('Delete Actions', () => {
@@ -414,8 +429,16 @@ describe('Schedule CRUD', () => {
             expect(schObj.eventsData.length).toEqual(1);
         });
 
+        it('readonly API checking', () => {
+            schObj.eventSettings.allowDeleting = true;
+            schObj.readonly = true;
+            schObj.dataBind();
+            expect(schObj.eventsData.length).toEqual(1);
+        });
+
         it('enabling allowDeleting API', () => {
             schObj.eventSettings.allowDeleting = true;
+            schObj.readonly = false;
             schObj.dataBind();
             expect(schObj.eventsData.length).toEqual(1);
         });

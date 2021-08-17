@@ -1,5 +1,5 @@
 import { RangeModel, Workbook } from '../base/index';
-import { insert, insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation } from '../../workbook/common/index';
+import { insert, insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange } from '../../workbook/common/index';
 import { ModelType, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard } from '../../workbook/common/index';
 import { SheetModel, RowModel, CellModel } from '../../workbook/base/index';
 
@@ -21,6 +21,25 @@ export class WorkbookInsert {
     }
     // tslint:disable-next-line
     private insertModel(args: InsertDeleteModelArgs): void {
+        if (args.modelType === 'Column') {
+            if (typeof (args.start) === 'number') {
+                for (let i: number = 0; i <= this.parent.getActiveSheet().usedRange.rowIndex + 1; i++) {
+                    const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: [i, args.start], isUnique: false };
+                    this.parent.notify(checkUniqueRange, uniqueArgs);
+                    if (uniqueArgs.isUnique) {
+                        return;
+                    }
+                }
+            }
+        } else if (args.modelType === 'Row') {
+            if (typeof (args.start) === 'number') {
+                for (let j: number = 0; j <= this.parent.getActiveSheet().usedRange.colIndex + 1; j++) {
+                    const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: [args.start, j], isUnique: false };
+                    this.parent.notify(checkUniqueRange, uniqueArgs);
+                    if (uniqueArgs.isUnique) { return; }
+                }
+            }
+        }
         if (!args.model) { return; }
         let index: number; let model: RowModel[] = []; let mergeCollection: MergeArgs[]; let isModel: boolean;
         if (typeof (args.start) === 'number') {
@@ -137,7 +156,7 @@ export class WorkbookInsert {
         const eventArgs: { [key: string]: Object } = {
             action: 'refreshInsDelFormula', insertArgs: {
                 model: model, startIndex: index, endIndex: index + model.length - 1, modelType: args.modelType, name: 'insert',
-                    activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length }
+                    activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, sheet: args.model }
         };
         if (args.modelType !== 'Sheet') {
             this.parent.notify(workbookFormulaOperation, insertArgs); this.parent.notify(workbookFormulaOperation, eventArgs);

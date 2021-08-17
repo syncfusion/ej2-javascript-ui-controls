@@ -299,7 +299,7 @@ describe('Context-', () => {
             }
         });
         beforeEach((done: Function) => {
-            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(8)') as HTMLElement;
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(8) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
             setTimeout(done, 500);
         });
@@ -872,6 +872,58 @@ describe('Context-', () => {
             setTimeout(() => {
                 expect(ganttObj.flatData[4]['TaskID']).toBe(53);
             }, 100);
+        });
+    });
+      describe('Content menu -', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                allowSelection: true,
+                allowResizing: true,
+                allowSorting: true,
+                enableContextMenu: true,
+                contextMenuItems: menuItem,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Delete'],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+            }, done);
+        });
+          it('To milestone', () => {
+            let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)');
+            record.innerText = null;
+            (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[2];
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData[2].ganttProperties.isMilestone).toBeTruthy;
+          });
+          afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
         });
     });
 });

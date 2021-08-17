@@ -203,15 +203,17 @@ export class GanttTreeGrid {
         }
     }
     private collapsed(args: object): void {
-        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart  && !this.parent.isExpandCollapseLevelMethod) {
             const collapsedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     }
     private expanded(args: object): void {
-        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            const expandedArgs: object = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart  && !this.parent.isExpandCollapseLevelMethod) {
+            if(!args['data'].length) {
+                const expandedArgs: object = this.createExpandCollapseArgs(args);
+                this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
+            }
         }
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
@@ -284,8 +286,10 @@ export class GanttTreeGrid {
                 if (!isNullOrUndefined(data) && !isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
                     /* eslint-disable-next-line */
                     this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.duration] = data.taskData[this.parent.taskFields.duration];
-                    /* eslint-disable-next-line */
-                    this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
+                    if (!isNullOrUndefined(data.taskData[this.parent.taskFields.resourceInfo])) {
+                        /* eslint-disable-next-line */
+                        this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
+                    }
                 }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
                 this.currentEditRow = {};
@@ -304,6 +308,9 @@ export class GanttTreeGrid {
             setValue('requestType', 'cancel', updatedArgs);
             setValue('action', 'CellEditing', updatedArgs);
             this.parent.isCancelled = false;
+        }
+         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args))) {
+            this.parent.selectRow(this.parent.selectedRowIndex);
         }
         this.parent.trigger('actionComplete', updatedArgs);
     }

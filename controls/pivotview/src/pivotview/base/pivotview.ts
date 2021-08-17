@@ -3749,7 +3749,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 let colValues: number = this.dataType === 'pivot' ? (this.dataSourceSettings.valueAxis === 'column' ? this.dataSourceSettings.values.length : 1) : 1;
                 let exactSize: number = (this.pageSettings.columnSize * colValues * this.gridSettings.columnWidth);
                 let hScrollPos: number = (ele.scrollWidth - (ele.scrollLeft + ele.offsetWidth));
-                if (this.virtualscrollModule && exactSize > 0 && hScrollPos <= exactSize) {
+                if (this.virtualscrollModule && exactSize > 0 && hScrollPos <= exactSize && ele.scrollLeft > 0) {
                     this.virtualDiv.style.display = 'none';
                     let mCntScrollPos: number = (mCnt.scrollWidth - (mCnt.scrollLeft + mCnt.offsetWidth));
                     this.virtualDiv.style.display = '';
@@ -4172,7 +4172,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     allowReordering: column.allowReordering,
                     allowResizing: column.allowResizing,
                     headerText: levelName,
-                    width: width
+                    width: width,
+                    autoFit: column.autoFit
                 });
                 this.totColWidth = this.totColWidth + Number(width);
                 /* eslint-enable */
@@ -4193,6 +4194,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         (column.customAttributes ? (column.customAttributes as any).cell.valueSort.levelName : '');
                     column.allowReordering = this.pivotColumns[this.posCount].allowReordering;
                     column.allowResizing = this.pivotColumns[this.posCount].allowResizing;
+                    column.autoFit = this.pivotColumns[this.posCount].autoFit;
                     let calcWidth = this.renderModule.setSavedWidth(column.field === '0.formattedText' ? column.field :
                         levelName, Number(this.pivotColumns[this.posCount].width));
                     if (column.width !== 'auto') {

@@ -256,6 +256,28 @@ export function triggerScrollEvent(target: HTMLElement, scrollTop: number, scrol
 }
 
 /**
+ * Method to trigger keydown event
+ *
+ * @param {HTMLElement} target Accepts the DOM element
+ * @param {string} keyName Accepts the key value
+ * @param {number} keyCode Accepts the keyCode value
+ * @returns {void}
+ * @private
+ */
+export function triggerKeyDownEvent(target: HTMLElement, keyName: string, KeyCode: number): void {
+    let event: { [key: string]: string } = {};
+    Object.defineProperties(event, {
+        code: { value: keyName },
+        key: { value: keyName },
+        keyCode: { value: KeyCode },
+        view: { value: window },
+        bubbles: { value: true },
+    });
+    const keyboardEvent: KeyboardEvent = new KeyboardEvent('keydown', event);
+    target.dispatchEvent(keyboardEvent);
+}
+
+/**
  * Method to disable animation
  *
  * @param {Schedule} schObj Accepts the schedule instance

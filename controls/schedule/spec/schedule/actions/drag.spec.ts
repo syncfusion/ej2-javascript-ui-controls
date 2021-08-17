@@ -12,7 +12,7 @@ import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth, DragAndDrop);
 
-xdescribe('Vertical view events dragging', () => {
+describe('Vertical view events dragging', () => {
     describe('Normal events', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -42,7 +42,7 @@ xdescribe('Vertical view events dragging', () => {
             triggerMouseEvent(workCell, 'mousemove', 100, 50);
             triggerMouseEvent(workCell, 'mousemove', 300, 175);
             triggerMouseEvent(workCell, 'mousemove', 300, 175);
-            expect(cloneElement.offsetTop).toEqual(792);
+            expect(cloneElement.offsetTop).toEqual(864);
             expect(cloneElement.offsetHeight).toEqual(108);
             expect(cloneElement.offsetWidth).toEqual(57);
             triggerMouseEvent(dragElement, 'mouseup');
@@ -53,10 +53,10 @@ xdescribe('Vertical view events dragging', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
                 const event: Record<string, any> = schObj.eventsData[0];
-                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 11).getTime());
-                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 12, 30).getTime());
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 12).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 13, 30).getTime());
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-                expect(dragElement.offsetTop).toEqual(792);
+                expect(dragElement.offsetTop).toEqual(864);
                 expect(dragElement.offsetHeight).toEqual(108);
                 expect(dragElement.offsetWidth).toEqual(26);
                 done();
@@ -65,15 +65,14 @@ xdescribe('Vertical view events dragging', () => {
             expect(dragElement.offsetTop).toEqual(720);
             expect(dragElement.offsetHeight).toEqual(108);
             expect(dragElement.offsetWidth).toEqual(53);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 100, 50);
-            triggerMouseEvent(dragElement, 'mousemove', 100, 50);
+            triggerMouseEvent(dragElement, 'mousedown', 106, 250);
+            triggerMouseEvent(dragElement, 'mousemove', 106, 260);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(157) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 300, 175);
-            triggerMouseEvent(workCell, 'mousemove', 300, 175);
-            expect(cloneElement.offsetTop).toEqual(792);
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(171) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 280, 370);
+            triggerMouseEvent(workCell, 'mousemove', 280, 370);
+            expect(cloneElement.offsetTop).toEqual(864);
             expect(cloneElement.offsetHeight).toEqual(108);
             expect(cloneElement.offsetWidth).toEqual(57);
             triggerMouseEvent(dragElement, 'mouseup');
@@ -83,29 +82,28 @@ xdescribe('Vertical view events dragging', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
                 const event: Record<string, any> = schObj.eventsData[10];
-                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 7, 11).getTime());
-                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 7, 12, 15).getTime());
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 11).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 1, 12, 15).getTime());
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(792);
                 expect(dragElement.offsetHeight).toEqual(90);
-                expect(dragElement.offsetWidth).toEqual(26);
+                expect(dragElement.offsetWidth).toEqual(53);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(810);
             expect(dragElement.offsetHeight).toEqual(90);
             expect(dragElement.offsetWidth).toEqual(53);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 100, 150);
-            triggerMouseEvent(dragElement, 'mousemove', 100, 150);
+            triggerMouseEvent(dragElement, 'mousedown', 165, 330);
+            triggerMouseEvent(dragElement, 'mousemove', 165, 340);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(160) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 600, 175);
-            triggerMouseEvent(workCell, 'mousemove', 600, 175);
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(154) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 100, 300);
+            triggerMouseEvent(workCell, 'mousemove', 100, 300);
             expect(cloneElement.offsetTop).toEqual(792);
             expect(cloneElement.offsetHeight).toEqual(90);
-            expect(cloneElement.offsetWidth).toEqual(56);
+            expect(cloneElement.offsetWidth).toEqual(57);
             triggerMouseEvent(dragElement, 'mouseup');
         });
 
@@ -125,16 +123,15 @@ xdescribe('Vertical view events dragging', () => {
             expect(dragElement.offsetTop).toEqual(62);
             expect(dragElement.offsetHeight).toEqual(22);
             expect(dragElement.offsetWidth).toEqual(53);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 130, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 130, 0);
+            triggerMouseEvent(dragElement, 'mousedown', 166, 120);
+            triggerMouseEvent(dragElement, 'mousemove', 170, 120);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-wrap .e-all-day-cells').item(2) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 235, 0);
-            triggerMouseEvent(workCell, 'mousemove', 235, 0);
+            const allDayCell: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells').item(3) as HTMLElement;
+            triggerMouseEvent(allDayCell, 'mousemove', 220, 120);
+            triggerMouseEvent(allDayCell, 'mousemove', 220, 120);
             expect(cloneElement.offsetTop).toEqual(60);
-            expect(cloneElement.offsetHeight).toEqual(22);
+            expect(cloneElement.offsetHeight).toEqual(1728);
             expect(cloneElement.offsetWidth).toEqual(57);
             triggerMouseEvent(dragElement, 'mouseup');
         });
@@ -148,22 +145,22 @@ xdescribe('Vertical view events dragging', () => {
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(62);
                 expect(dragElement.offsetHeight).toEqual(22);
-                expect(dragElement.offsetWidth).toEqual(108);
+                expect(dragElement.style.width).toEqual('193%');
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(62);
             expect(dragElement.offsetHeight).toEqual(22);
             expect(dragElement.offsetWidth).toEqual(110);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+            triggerMouseEvent(dragElement, 'mousedown', 280, 120);
+            triggerMouseEvent(dragElement, 'mousemove', 286, 120);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-wrap .e-all-day-cells').item(4) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 410, 0);
-            triggerMouseEvent(workCell, 'mousemove', 410, 0);
+            const allDayCell: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells').item(5) as HTMLElement;
+            triggerMouseEvent(allDayCell, 'mousemove', 330, 120);
+            triggerMouseEvent(allDayCell, 'mousemove', 330, 120);
             expect(cloneElement.offsetTop).toEqual(60);
-            expect(cloneElement.offsetHeight).toEqual(22);
+            expect(cloneElement.offsetHeight).toEqual(1728);
             expect(cloneElement.offsetWidth).toEqual(57);
             triggerMouseEvent(dragElement, 'mouseup');
         });
@@ -184,21 +181,20 @@ xdescribe('Vertical view events dragging', () => {
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(684);
                 expect(dragElement.offsetHeight).toEqual(144);
-                expect(dragElement.offsetWidth).toEqual(17);
+                expect(dragElement.offsetWidth).toEqual(26);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(648);
             expect(dragElement.offsetHeight).toEqual(144);
             expect(dragElement.offsetWidth).toEqual(53);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 100, 50);
-            triggerMouseEvent(dragElement, 'mousemove', 100, 50);
+            triggerMouseEvent(dragElement, 'mousedown', 100, 180);
+            triggerMouseEvent(dragElement, 'mousemove', 106, 180);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(136) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 300, 175);
-            triggerMouseEvent(workCell, 'mousemove', 300, 175);
+            triggerMouseEvent(workCell, 'mousemove', 280, 190);
+            triggerMouseEvent(workCell, 'mousemove', 280, 190);
             expect(cloneElement.offsetTop).toEqual(684);
             expect(cloneElement.offsetHeight).toEqual(144);
             expect(cloneElement.offsetWidth).toEqual(57);
@@ -216,29 +212,28 @@ xdescribe('Vertical view events dragging', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
                 const event: Record<string, any> = schObj.eventsData[6] as Record<string, any>;
-                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2).getTime());
-                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 1, 30).getTime());
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 11).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 2, 12, 30).getTime());
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_7"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(0);
                 expect(dragElement.offsetHeight).toEqual(54);
-                expect(dragElement.offsetWidth).toEqual(70);
+                expect(dragElement.offsetWidth).toEqual(66);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_7"]') as HTMLElement;
-            expect(dragElement.offsetTop).toEqual(112);
+            expect(dragElement.offsetTop).toEqual(108);
             expect(dragElement.offsetHeight).toEqual(54);
-            expect(dragElement.offsetWidth).toEqual(70);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 600, 0);
-            triggerMouseEvent(dragElement, 'mousemove', -300, 0);
+            expect(dragElement.offsetWidth).toEqual(66);
+            triggerMouseEvent(dragElement, 'mousedown', 460, 236);
+            triggerMouseEvent(dragElement, 'mousemove', 450, 236);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(1) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', -300, 0);
-            triggerMouseEvent(workCell, 'mousemove', -300, 0);
-            expect(cloneElement.offsetTop).toEqual(0);
+            triggerMouseEvent(workCell, 'mousemove', 110, 236);
+            triggerMouseEvent(workCell, 'mousemove', 110, 236);
+            expect(cloneElement.offsetTop).toEqual(108);
             expect(cloneElement.offsetHeight).toEqual(54);
-            expect(cloneElement.offsetWidth).toEqual(70);
+            expect(cloneElement.offsetWidth).toEqual(72);
             triggerMouseEvent(dragElement, 'mouseup');
         });
 
@@ -262,16 +257,16 @@ xdescribe('Vertical view events dragging', () => {
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            expect(dragElement.offsetTop).toEqual(792);
+            expect(dragElement.offsetTop).toEqual(864);
             expect(dragElement.offsetHeight).toEqual(108);
             expect(dragElement.offsetWidth).toEqual(26);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 100, 50);
-            triggerMouseEvent(dragElement, 'mousemove', 100, 50);
+            triggerMouseEvent(dragElement, 'mousedown', 200, 360);
+            triggerMouseEvent(dragElement, 'mousemove', 200, 355);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            triggerMouseEvent(dragElement, 'mousemove', 300, 175);
-            triggerMouseEvent(dragElement, 'mousemove', 300, 175);
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(164) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 200, 310);
+            triggerMouseEvent(workCell, 'mousemove', 200, 310);
             expect(cloneElement.offsetTop).toEqual(828);
             expect(cloneElement.offsetHeight).toEqual(108);
             expect(cloneElement.offsetWidth).toEqual(57);
@@ -293,17 +288,16 @@ xdescribe('Vertical view events dragging', () => {
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(62);
             expect(dragElement.offsetHeight).toEqual(22);
-            expect(dragElement.offsetWidth).toEqual(108);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 50, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 50, 0);
+            expect(dragElement.style.width).toEqual('193%');
+            triggerMouseEvent(dragElement, 'mousedown', 160, 116);
+            triggerMouseEvent(dragElement, 'mousemove', 165, 116);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-wrap .e-all-day-cells').item(0) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 300, 0);
-            triggerMouseEvent(workCell, 'mousemove', 300, 0);
+            triggerMouseEvent(cloneElement, 'mousemove', 100, 116);
+            triggerMouseEvent(cloneElement, 'mousemove', 400, 116);
+            triggerMouseEvent(cloneElement, 'mousemove', 400, 116);
             expect(cloneElement.offsetTop).toEqual(60);
-            expect(cloneElement.offsetHeight).toEqual(22);
+            expect(cloneElement.offsetHeight).toEqual(1728);
             expect(cloneElement.offsetWidth).toEqual(57);
             triggerMouseEvent(dragElement, 'mouseup');
         });
@@ -312,8 +306,8 @@ xdescribe('Vertical view events dragging', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
                 const event: Record<string, any> = schObj.eventsData[9] as Record<string, any>;
-                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4).getTime());
-                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 6, 1).getTime());
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 4, 10).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 6, 11).getTime());
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_10"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(62);
                 expect(dragElement.offsetHeight).toEqual(22);
@@ -323,19 +317,47 @@ xdescribe('Vertical view events dragging', () => {
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_10"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(62);
             expect(dragElement.offsetHeight).toEqual(22);
-            expect(dragElement.offsetWidth).toEqual(112);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 50, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 50, 0);
+            expect(dragElement.style.width).toEqual('200%');
+            triggerMouseEvent(dragElement, 'mousedown', 100, 116);
+            triggerMouseEvent(dragElement, 'mousemove', 106, 116);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-wrap .e-all-day-cells').item(3) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 240, 0);
-            triggerMouseEvent(workCell, 'mousemove', 240, 0);
+            triggerMouseEvent(cloneElement, 'mousemove', 100, 116);
+            triggerMouseEvent(cloneElement, 'mousemove', 220, 116);
+            triggerMouseEvent(cloneElement, 'mousemove', 220, 116);
             expect(cloneElement.offsetTop).toEqual(60);
-            expect(cloneElement.offsetHeight).toEqual(22);
+            expect(cloneElement.offsetHeight).toEqual(1008);
             expect(cloneElement.offsetWidth).toEqual(57);
             triggerMouseEvent(dragElement, 'mouseup');
+        });
+
+        it('Prevent drag and drop on all day row', (done: DoneFn) => {
+            schObj.dragStart = (args) => {
+                args.excludeSelectors = 'e-all-day-cells,e-all-day-appointment';
+            }
+            let dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+            expect(dragElement.offsetTop).toEqual(62);
+            expect(dragElement.offsetHeight).toEqual(22);
+            expect(dragElement.offsetWidth).toEqual(110);
+            triggerMouseEvent(dragElement, 'mousedown', 400, 116);
+            triggerMouseEvent(dragElement, 'mousemove', 390, 116);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            triggerMouseEvent(cloneElement, 'mousedown', 390, 116);
+            triggerMouseEvent(cloneElement, 'mousemove', 160, 116);
+            triggerMouseEvent(cloneElement, 'mousemove', 160, 116);
+            expect(cloneElement.offsetTop).toEqual(60);
+            expect(cloneElement.offsetHeight).toEqual(1728);
+            expect(cloneElement.offsetWidth).toEqual(57);
+            triggerMouseEvent(dragElement, 'mouseup');
+            const event: Record<string, any> = schObj.eventsData[8] as Record<string, any>;
+            expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 1).getTime());
+            expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 3).getTime());
+            dragElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+            expect(dragElement.offsetTop).toEqual(62);
+            expect(dragElement.offsetHeight).toEqual(22);
+            expect(dragElement.offsetWidth).toEqual(110);
+            done();
         });
 
         it('Month view changing', (done: DoneFn) => {
@@ -353,23 +375,24 @@ xdescribe('Vertical view events dragging', () => {
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(0);
                 expect(dragElement.offsetHeight).toEqual(22);
-                expect(dragElement.offsetWidth).toEqual(70);
+                expect(dragElement.offsetWidth).toEqual(66);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(0);
             expect(dragElement.offsetHeight).toEqual(22);
-            expect(dragElement.offsetWidth).toEqual(70);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 0, 110);
-            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(dragElement.offsetWidth).toEqual(66);
+            triggerMouseEvent(dragElement, 'mousedown', 36, 106);
+            triggerMouseEvent(dragElement, 'mousemove', 36, 112);
+            let cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(19) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 0, 225);
-            triggerMouseEvent(workCell, 'mousemove', 0, 225);
+            triggerMouseEvent(workCell, 'mousemove', 112, 280);
+            triggerMouseEvent(workCell, 'mousemove', 112, 280);
+            cloneElement = schObj.element.querySelector('.e-schedule-event-clone') as HTMLElement;
             expect(cloneElement.offsetTop).toEqual(0);
             expect(cloneElement.offsetHeight).toEqual(22);
-            expect(cloneElement.offsetWidth).toEqual(72);
+            expect(cloneElement.offsetWidth).toEqual(65);
             triggerMouseEvent(dragElement, 'mouseup');
         });
 
@@ -388,29 +411,64 @@ xdescribe('Vertical view events dragging', () => {
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(0);
                 expect(dragElement.offsetHeight).toEqual(22);
-                expect(dragElement.offsetWidth).toEqual(70);
+                expect(dragElement.offsetWidth).toEqual(66);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(0);
             expect(dragElement.offsetHeight).toEqual(22);
-            expect(dragElement.offsetWidth).toEqual(70);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 500, 110);
-            triggerMouseEvent(dragElement, 'mousemove', 500, 110);
-            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(dragElement.offsetWidth).toEqual(66);
+            triggerMouseEvent(dragElement, 'mousedown', 388, 280);
+            triggerMouseEvent(dragElement, 'mousemove', 388, 290);
+            let cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(23) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 500, 325);
-            triggerMouseEvent(workCell, 'mousemove', 500, 325);
+            triggerMouseEvent(workCell, 'mousemove', 172, 362);
+            triggerMouseEvent(workCell, 'mousemove', 172, 362);
+            cloneElement = schObj.element.querySelector('.e-schedule-event-clone') as HTMLElement;
             expect(cloneElement.offsetTop).toEqual(0);
-            expect(dragElement.offsetHeight).toEqual(22);
-            expect(dragElement.offsetWidth).toEqual(70);
+            expect(cloneElement.offsetHeight).toEqual(22);
+            expect(cloneElement.offsetWidth).toEqual(65);
             triggerMouseEvent(dragElement, 'mouseup');
+        });
+
+        it('More indicator event dragging', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
+                const event: Record<string, any> = schObj.eventsData[8] as Record<string, any>;
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 6, 12).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 6, 14).getTime());
+                const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]') as HTMLElement;
+                expect(dragElement.offsetTop).toEqual(0);
+                expect(dragElement.offsetHeight).toEqual(22);
+                expect(dragElement.offsetWidth).toEqual(137);
+                done();
+            };
+            const indicator = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            indicator.click();
+            setTimeout(() => {
+                const dragElement: HTMLElement = document.querySelector('.e-more-appointment-wrapper .e-appointment') as HTMLElement;
+                expect(dragElement.offsetTop).toEqual(39);
+                expect(dragElement.offsetHeight).toEqual(22);
+                expect(dragElement.offsetWidth).toEqual(195);
+                triggerMouseEvent(dragElement, 'mousedown', 102, 130);
+                triggerMouseEvent(dragElement, 'mousemove', 102, 140);
+                let cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+                expect(cloneElement).toBeTruthy();
+                const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(11) as HTMLElement;
+                triggerMouseEvent(workCell, 'mousemove', 320, 200);
+                triggerMouseEvent(workCell, 'mousemove', 320, 200);
+                cloneElement = schObj.element.querySelector('.e-schedule-event-clone') as HTMLElement;
+                expect(cloneElement.offsetTop).toEqual(0);
+                expect(cloneElement.offsetHeight).toEqual(22);
+                expect(cloneElement.offsetWidth).toEqual(137);
+                triggerMouseEvent(dragElement, 'mouseup');
+                (document.querySelector('.e-more-event-close') as HTMLElement).click();
+            }, 100);
         });
     });
 
-    describe('Vertical view events dragging for resourcs', () => {
+    xdescribe('Vertical view events dragging for resources', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const schOptions: ScheduleModel = {
@@ -967,7 +1025,7 @@ xdescribe('Vertical view events dragging', () => {
         });
     });
 
-    describe('Resource grouping - allowGroupEdit schedule events', () => {
+    xdescribe('Resource grouping - allowGroupEdit schedule events', () => {
         let schObj: Schedule;
         const getResourceIndex: CallbackFunction = (element: HTMLElement) => {
             return parseInt(element.getAttribute('data-group-index'), 10);
@@ -1185,7 +1243,133 @@ xdescribe('Vertical view events dragging', () => {
         });
     });
 
-    describe('Adaptive mode event dragging', () => {
+    describe('Multiple events dragging with resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '500px', height: '500px', selectedDate: new Date(2018, 3, 1),
+                allowMultiDrag: true,
+                eventSettings: { dataSource: [{
+                    Id: 1,
+                    Subject: 'Multi-drag-one',
+                    StartTime: new Date(2018, 3, 1, 9),
+                    EndTime: new Date(2018, 3, 1, 10),
+                    OwnerId: [1]
+                }, {
+                    Id: 2,
+                    Subject: 'Multi-drag-two',
+                    StartTime: new Date(2018, 3, 1, 11),
+                    EndTime: new Date(2018, 3, 1, 12),
+                    OwnerId: [1]
+                }, {
+                    Id: 3,
+                    Subject: 'Multi-drag-three',
+                    StartTime: new Date(2018, 3, 2, 11),
+                    EndTime: new Date(2018, 3, 2, 12),
+                    OwnerId: [1]
+                }, {
+                    Id: 4,
+                    Subject: 'Multi-drag-four',
+                    StartTime: new Date(2018, 3, 1, 11),
+                    EndTime: new Date(2018, 3, 1, 12),
+                    OwnerId: [1]
+                }]},
+                group: { allowGroupEdit: true, resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Vertical view events drag', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('[data-id="Appointment_1"]')).toBeTruthy();
+                expect(schObj.element.querySelector('[data-id="Appointment_2"]')).toBeTruthy();
+                const apps = schObj.eventSettings.dataSource as Record<string, any>[];
+                expect(apps[0].StartTime.getTime()).toEqual(new Date(2018, 3, 6, 13, 30).getTime());
+                expect(apps[0].EndTime.getTime()).toEqual(new Date(2018, 3, 6, 14, 30).getTime());
+                expect(apps[0].OwnerId[0]).toEqual(2);
+                expect(apps[1].StartTime.getTime()).toEqual(new Date(2018, 3, 6, 15, 30).getTime());
+                expect(apps[1].EndTime.getTime()).toEqual(new Date(2018, 3, 6, 16, 30).getTime());
+                expect(apps[1].OwnerId[0]).toEqual(2);
+                done();
+            };
+            const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appointments[0], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
+            util.triggerMouseEvent(appointments[1], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
+            const apps = schObj.eventSettings.dataSource as Record<string, any>[];
+            expect(apps[0].StartTime.getTime()).toEqual(new Date(2018, 3, 1, 9).getTime());
+            expect(apps[0].EndTime.getTime()).toEqual(new Date(2018, 3, 1, 10).getTime());
+            expect(apps[0].OwnerId[0]).toEqual(1);
+            expect(apps[1].StartTime.getTime()).toEqual(new Date(2018, 3, 1, 11).getTime());
+            expect(apps[1].EndTime.getTime()).toEqual(new Date(2018, 3, 1, 12).getTime());
+            expect(apps[1].OwnerId[0]).toEqual(1);
+            triggerMouseEvent(appointments[0], 'mousedown');
+            triggerMouseEvent(appointments[0], 'mousemove', 100, 250);
+            triggerMouseEvent(appointments[0], 'mousemove', 100, 250);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(446) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 300, 550);
+            triggerMouseEvent(workCell, 'mousemove', 300, 550);
+            triggerMouseEvent(appointments[0], 'mouseup');
+        });
+
+        it('Month view change', (done: DoneFn) => {
+            schObj.dataBound = () => done();
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+
+        it('Month view events drag', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('[data-id="Appointment_3"]')).toBeTruthy();
+                expect(schObj.element.querySelector('[data-id="Appointment_4"]')).toBeTruthy();
+                const apps = schObj.eventSettings.dataSource as Record<string, any>[];
+                expect(apps[3].StartTime.getTime()).toEqual(new Date(2018, 3, 5, 11).getTime());
+                expect(apps[3].EndTime.getTime()).toEqual(new Date(2018, 3, 5, 12).getTime());
+                expect(apps[3].OwnerId[0]).toEqual(1);
+                expect(apps[2].StartTime.getTime()).toEqual(new Date(2018, 3, 6, 11).getTime());
+                expect(apps[2].EndTime.getTime()).toEqual(new Date(2018, 3, 6, 12).getTime());
+                expect(apps[2].OwnerId[0]).toEqual(1);
+                done();
+            };
+            const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appointments[0], 'click', 14, 152, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
+            util.triggerMouseEvent(appointments[1], 'click', 50, 150, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
+            const apps = schObj.eventSettings.dataSource as Record<string, any>[];
+            expect(apps[3].StartTime.getTime()).toEqual(new Date(2018, 3, 1, 11).getTime());
+            expect(apps[3].EndTime.getTime()).toEqual(new Date(2018, 3, 1, 12).getTime());
+            expect(apps[3].OwnerId[0]).toEqual(1);
+            expect(apps[2].StartTime.getTime()).toEqual(new Date(2018, 3, 2, 11).getTime());
+            expect(apps[2].EndTime.getTime()).toEqual(new Date(2018, 3, 2, 12).getTime());
+            expect(apps[2].OwnerId[0]).toEqual(1);
+            triggerMouseEvent(appointments[1], 'mousedown');
+            triggerMouseEvent(appointments[1], 'mousemove', 60, 152);
+            triggerMouseEvent(appointments[1], 'mousemove', 60, 152);
+            let cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(5) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 200, 152);
+            triggerMouseEvent(appointments[1], 'mouseup');
+        });
+
+    });
+
+    xdescribe('Adaptive mode event dragging', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const schOptions: ScheduleModel = { width: 300, height: 500, selectedDate: new Date(2018, 6, 5) };
@@ -1235,7 +1419,7 @@ xdescribe('Vertical view events dragging', () => {
     });
 });
 
-xdescribe('Timeline view events dragging', () => {
+describe('Timeline view events dragging', () => {
     describe('Default schedule events', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -1252,19 +1436,19 @@ xdescribe('Timeline view events dragging', () => {
         it('dragStart event', () => {
             schObj.dragStart = (args: DragEventArgs) => args.cancel = true;
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown');
+            triggerMouseEvent(dragElement, 'mousedown', 120, 330);
+            triggerMouseEvent(dragElement, 'mousemove', 130, 330);
         });
 
         it('dragStop event', () => {
             schObj.dragStart = (args: DragEventArgs) => args.cancel = false;
             schObj.dragStop = (args: DragEventArgs) => args.cancel = true;
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 100, 0);
-            expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(1);
-            triggerMouseEvent(dragElement, 'mousemove', 100, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+            triggerMouseEvent(dragElement, 'mousedown', 120, 330);
+            triggerMouseEvent(dragElement, 'mousemove', 130, 330);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone');
+            expect(cloneElement).toBeTruthy();
+            triggerMouseEvent(dragElement, 'mousemove', 280, 330);
             triggerMouseEvent(dragElement, 'mouseup');
         });
 
@@ -1285,13 +1469,11 @@ xdescribe('Timeline view events dragging', () => {
             expect(dragElement.offsetTop).toEqual(202);
             expect(dragElement.offsetHeight).toEqual(38);
             expect(dragElement.offsetWidth).toEqual(250);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+            triggerMouseEvent(dragElement, 'mousedown', 120, 330);
+            triggerMouseEvent(dragElement, 'mousemove', 130, 330);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            triggerMouseEvent(dragElement, 'mousemove', 100, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+            triggerMouseEvent(dragElement, 'mousemove', 220, 330);
             expect(cloneElement.offsetTop).toEqual(202);
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetWidth).toEqual(250);
@@ -1313,19 +1495,18 @@ xdescribe('Timeline view events dragging', () => {
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(82);
                 expect(dragElement.offsetHeight).toEqual(38);
-                expect(dragElement.offsetWidth).toEqual(70);
+                expect(dragElement.offsetWidth).toEqual(68);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(242);
             expect(dragElement.offsetHeight).toEqual(38);
-            expect(dragElement.offsetWidth).toEqual(70);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 50, 0);
+            expect(dragElement.offsetWidth).toEqual(68);
+            triggerMouseEvent(dragElement, 'mousedown', 12, 342);
+            triggerMouseEvent(dragElement, 'mousemove', 16, 342);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            triggerMouseEvent(dragElement, 'mousemove', 200, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 200, 0);
+            triggerMouseEvent(dragElement, 'mousemove', 160, 342);
             expect(cloneElement.offsetTop).toEqual(242);
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetWidth).toEqual(70);
@@ -1346,25 +1527,45 @@ xdescribe('Timeline view events dragging', () => {
             util.destroy(schObj);
         });
 
+        it('dragStart event', () => {
+            schObj.dragStart = (args: DragEventArgs) => args.cancel = true;
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', 160, 336);
+            triggerMouseEvent(dragElement, 'mousemove', 170, 336);
+        });
+
+        it('dragStop event', () => {
+            schObj.dragStart = (args: DragEventArgs) => args.cancel = false;
+            schObj.dragStop = (args: DragEventArgs) => args.cancel = true;
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', 160, 336);
+            triggerMouseEvent(dragElement, 'mousemove', 170, 336);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone');
+            expect(cloneElement).toBeTruthy();
+            triggerMouseEvent(dragElement, 'mousemove', 460, 336);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+
         it('Normal event dragging', (done: DoneFn) => {
+            schObj.dragStart = (args: DragEventArgs) => args.cancel = false;
+            schObj.dragStop = (args: DragEventArgs) => args.cancel = false;
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
                 const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
-                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 7, 0).getTime());
-                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 9, 30).getTime());
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 9, 0).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 11, 30).getTime());
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(202);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(202);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+            triggerMouseEvent(dragElement, 'mousedown', 160, 336);
+            triggerMouseEvent(dragElement, 'mousemove', 170, 336);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            triggerMouseEvent(dragElement, 'mousemove', 100, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
-            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+            triggerMouseEvent(dragElement, 'mousemove', 440, 336);
+            triggerMouseEvent(dragElement, 'mousemove', 460, 336);
             expect(cloneElement.offsetTop).toEqual(202);
             triggerMouseEvent(dragElement, 'mouseup');
         });
@@ -1378,27 +1579,25 @@ xdescribe('Timeline view events dragging', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
                 const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
-                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 7, 7, 0).getTime());
-                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 7, 9, 30).getTime());
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 7, 9, 0).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 7, 11, 30).getTime());
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(162);
                 done();
             };
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(202);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', -70, 0);
+            triggerMouseEvent(dragElement, 'mousedown', 460, 300);
+            triggerMouseEvent(dragElement, 'mousemove', 450, 300);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
-            triggerMouseEvent(dragElement, 'mousemove', -700, 0);
-            triggerMouseEvent(dragElement, 'mousemove', -700, 0);
-            triggerMouseEvent(dragElement, 'mousemove', -700, 0);
+            triggerMouseEvent(dragElement, 'mousemove', 50, 300);
             expect(cloneElement.offsetTop).toEqual(202);
             triggerMouseEvent(dragElement, 'mouseup');
         });
     });
 
-    describe('Timeline view events dragging for resourcs', () => {
+    describe('Timeline view events dragging for resources', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const schOptions: ScheduleModel = {
@@ -1466,13 +1665,12 @@ xdescribe('Timeline view events dragging', () => {
             expect(dragElement.offsetTop).toEqual(122);
             expect(dragElement.offsetHeight).toEqual(38);
             expect(dragElement.offsetWidth).toEqual(250);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 0, 100);
+            triggerMouseEvent(dragElement, 'mousedown', 380, 260);
+            triggerMouseEvent(dragElement, 'mousemove', 380, 270);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(210) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 0, 400);
-            triggerMouseEvent(workCell, 'mousemove', 0, 400);
+            triggerMouseEvent(workCell, 'mousemove', 240, 380);
             expect(cloneElement.offsetTop).toEqual(240);
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetWidth).toEqual(250);
@@ -1496,7 +1694,7 @@ xdescribe('Timeline view events dragging', () => {
                 const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
                 expect(dragElement.offsetTop).toEqual(362);
                 expect(dragElement.offsetHeight).toEqual(38);
-                expect(dragElement.offsetWidth).toEqual(70);
+                expect(dragElement.offsetWidth).toEqual(68);
                 done();
             };
             const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
@@ -1505,14 +1703,13 @@ xdescribe('Timeline view events dragging', () => {
             const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(dragElement.offsetTop).toEqual(242);
             expect(dragElement.offsetHeight).toEqual(38);
-            expect(dragElement.offsetWidth).toEqual(70);
-            triggerMouseEvent(dragElement, 'mousedown');
-            triggerMouseEvent(dragElement, 'mousemove', 0, 400);
+            expect(dragElement.offsetWidth).toEqual(68);
+            triggerMouseEvent(dragElement, 'mousedown', 224, 340);
+            triggerMouseEvent(dragElement, 'mousemove', 224, 350);
             const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
             expect(cloneElement).toBeTruthy();
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(188) as HTMLElement;
-            triggerMouseEvent(workCell, 'mousemove', 150, 450);
-            triggerMouseEvent(workCell, 'mousemove', 150, 450);
+            triggerMouseEvent(workCell, 'mousemove', 360, 480);
             expect(cloneElement.offsetTop).toEqual(360);
             expect(cloneElement.offsetHeight).toEqual(38);
             expect(cloneElement.offsetWidth).toEqual(70);

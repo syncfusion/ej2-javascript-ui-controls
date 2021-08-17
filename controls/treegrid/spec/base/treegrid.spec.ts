@@ -1426,6 +1426,48 @@ describe('TreeGrid base module', () => {
     });
   });
 
+  describe('EJ2-51954-Expand/Collapse At level method', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: [{ "ID": "projectXYZ", "GUID": "A66B74DE-97B2-4A77-B6D5-7B9D5353C458", "Description": "Description 1", "NodeType": "Project", "Name": "Project XYW", "hasChild": true },
+            { "ID": "2361861", "GUID": "A66B74DE-97B2-4A77-B6D5-7B9D5353C458", "Description": "Description 2", "NodeType": "Type1", "Name": "0000", "PID": "projectXYZ" },
+            { "ID": "2361848", "GUID": "8C1B0509-B50C-4DEA-A2DC-9049F6FA0D99", "Description": "Description 3", "NodeType": "Type1", "Name": "3", "PID": "2361861" },
+            { "ID": "2361827", "GUID": "677DE6EA-FACF-4B4F-BBCF-E2003B7AC98F", "Description": "Description 13", "NodeType": "Type1", "Name": "1", "PID": "2361861" },
+            { "ID": "2361857", "GUID": "9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0", "Description": "Description 14", "NodeType": "Type1", "Name": "13", "PID": "2361848" },
+            { "ID": "2361858", "GUID": "9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0", "Description": "Description 15", "NodeType": "Type1", "Name": "14", "PID": "2361827" },
+            { "ID": "2361850", "GUID": "9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0", "Description": "Description 16", "NodeType": "Type1", "Name": "15", "PID": "2361857" },
+            { "ID": "236185809", "GUID": "9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0", "Description": "Description 15", "NodeType": "Type1", "Name": "16", "PID": "2361858" },
+            ],
+            idMapping: 'ID',
+            parentIdMapping: 'PID',
+            enableCollapseAll: true,
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'ID', headerText: 'Task ID', width: 90, visible: false, textAlign: 'Right' },
+                { field: 'Name', headerText: 'Task Name', width: 180 },
+            ]
+        },
+        done
+      );
+    });
+
+    it('ExpandAtLevel testing', () => {
+      rows = gridObj.getRows();
+      (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+      (rows[1].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+      (rows[2].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+      gridObj.selectRow(3);
+      gridObj.expandAtLevel(3);
+      expect((rows[6] as HTMLTableRowElement).style.display).toBe('table-row');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

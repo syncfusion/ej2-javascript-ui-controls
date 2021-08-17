@@ -380,7 +380,7 @@ describe('Editing ->', () => {
                     expect(helper.invoke('getCell', [0, 0]).textContent).toBe('7:00:00 AM');
                     helper.invoke('startEdit', []);
                     setTimeout((): void => {
-                        expect(helper.getElement('#' + helper.id + '_edit').textContent).toBe('1/1/1900 7:00:00 AM');
+                        expect(helper.getElement('#' + helper.id + '_edit').textContent).toBe('7:00:00 AM');
                         helper.invoke('endEdit', []);
                         done();
                     });

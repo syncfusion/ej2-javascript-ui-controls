@@ -472,6 +472,43 @@ describe('Checkbox Column', () => {
   });
 });
 
+describe('Columns refresh issue with getColumnByUid method - EJ2-51804', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },
+          { field: 'taskName', headerText: 'Task Name', width: 150, uid: 'taskName', showCheckbox: true },
+          { field: 'duration', headerText: 'Duration', type: "number", width: 150 },
+          { field: 'progress', headerText: 'Progress', width: 150 },
+          { field: 'startDate', headerText: 'Start Date', type: "date", format: 'yMd', width: 150 }
+        ]
+      },
+      done
+    );
+  });
+  it('column width checking ', () => {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "refresh" ) {
+        expect((gridObj.columns[1] as any).width == 500).toBe(true);
+      }
+    }
+    gridObj.grid.actionComplete = actionComplete;
+    let column: any = gridObj.getColumnByUid('taskName');
+    column.width = 500;
+    gridObj.refreshColumns();
+  }); 
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+
 describe('stacked header with template tree column- EJ2-48776', () => {
   let gridObj: TreeGrid;
   beforeAll((done: Function) => {

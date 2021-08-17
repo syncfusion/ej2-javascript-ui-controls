@@ -2,7 +2,7 @@ import { NodeSelection } from './../../selection/index';
 
 import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
-import { detach, Browser, isNullOrUndefined as isNOU, createElement } from '@syncfusion/ej2-base';
+import { detach, Browser, isNullOrUndefined as isNOU, createElement, closest } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
 import { updateTextNode } from './../../common/util';
 
@@ -193,7 +193,17 @@ export class InsertHtml {
                 }
             } else {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
-                range.insertNode(tempSpan);
+                const nearestAnchor: Node = closest(range.startContainer.parentElement, 'a');
+                if (range.startContainer.nodeType === 3 && nearestAnchor) {
+                    const immediateBlockNode: Node = this.getImmediateBlockNode(range.startContainer, editNode);
+                    if ((immediateBlockNode as HTMLElement).querySelectorAll('br').length > 0) {
+                        detach((immediateBlockNode as HTMLElement).querySelector('br'));
+                    }
+                    const rangeElement: Node = closest(nearestAnchor, 'span');
+                    rangeElement.appendChild(tempSpan);
+                } else {
+                    range.insertNode(tempSpan);
+                }
                 while (node.firstChild) {
                     lastSelectionNode = node.firstChild;
                     fragment.appendChild(node.firstChild);

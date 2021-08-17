@@ -725,7 +725,10 @@ export class GanttChart {
             this.parent.treeGrid.expandRow(getValue('gridRow', args), record);
             this.isExpandCollapseFromChart = false;
         } else {
-            this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
+            if (!this.parent.isExpandCollapseLevelMethod) {
+                this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
+            }
+            this.parent.isExpandCollapseLevelMethod = false;
         }
         // To render the child record on parent row after expanding.
         if (this.parent.viewType === 'ResourceView') {
@@ -836,6 +839,9 @@ export class GanttChart {
      * @private
      */
     public collapseAtLevel(level: number): void {
+        if (this.parent.enableVirtualization) {
+            this.parent.isExpandCollapseLevelMethod = true;
+        }
         this.parent.treeGrid.collapseAtLevel(level);
     }
 

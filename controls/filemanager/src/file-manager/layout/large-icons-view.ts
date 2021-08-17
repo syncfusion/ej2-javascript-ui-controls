@@ -1,7 +1,7 @@
 import { ListBase, ListBaseOptions, ItemCreatedArgs } from '@syncfusion/ej2-lists';
 import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs, isVisible } from '@syncfusion/ej2-base';
-import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove } from '@syncfusion/ej2-base';
 import { IFileManager, FileOpenEventArgs, FileLoadEventArgs } from '../base/interface';
 import { FileSelectEventArgs, NotifyArgs, FileSelectionEventArgs } from '../base/interface';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -207,7 +207,7 @@ export class LargeIconsView {
                     dragStop: dragStopHandler.bind(this, this.parent),
                     drag: draggingHandler.bind(this, this.parent),
                     clone: true,
-                    dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
+                    dragStart: (args: DragEventArgs) => {
                         dragStartHandler(this.parent, args, this.dragObj);
                     }
                 });

@@ -1,6 +1,6 @@
 import { ContextMenu as Menu, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { IFileManager, MenuClickEventArgs, MenuOpenEventArgs, NotifyArgs } from '../base/interface';
-import { isNullOrUndefined as isNOU, KeyboardEventArgs, createElement, closest, KeyboardEvents, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, KeyboardEventArgs, createElement, closest, KeyboardEvents } from '@syncfusion/ej2-base';
 import { getValue, select } from '@syncfusion/ej2-base';
 import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Download, GetDetails } from './../common/operations';
@@ -187,10 +187,6 @@ export class ContextMenu {
             menuType: this.menuType,
             isSubMenu: isSubMenu
         };
-        if (isBlazor()) {
-            this.enableItems(this.disabledItems, false, true);
-            delete eventArgs.menuModule;
-        }
         this.currentItems = eventArgs.items;
         this.parent.trigger('menuOpen', eventArgs, (menuOpenArgs: MenuOpenEventArgs) => {
             if (!isSubMenu) {

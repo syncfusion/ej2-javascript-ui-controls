@@ -549,7 +549,7 @@ export class GroupingBar implements IAction {
             this.gridPanel.destroy();
             this.gridPanel = null;
         }
-        if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
+        if (this.groupingChartTable && this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
             this.chartPanel.destroy();
             this.chartPanel = null;
         }

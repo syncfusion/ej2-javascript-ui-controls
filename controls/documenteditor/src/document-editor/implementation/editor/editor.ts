@@ -12507,7 +12507,9 @@ export class Editor {
     public onEnter(isInsertPageBreak?: boolean): void {
         let selection: Selection = this.documentHelper.selection;
         var format: SelectionCharacterFormat = new SelectionCharacterFormat(this.selection);
-        format.cloneFormat(this.selection.characterFormat);
+        if (selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal') {
+            format.cloneFormat(this.selection.characterFormat);
+        }
         if (this.isXmlMapped) {
             return;
         }

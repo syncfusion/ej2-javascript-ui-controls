@@ -80,6 +80,15 @@ export class TextSearch {
     public createTextSearchBox(): void {
         // eslint-disable-next-line max-len
         this.searchBox = createElement('div', { id: this.pdfViewer.element.id + '_search_box', className: 'e-pv-search-bar' });
+        let toolbarElement: HTMLElement;
+        if (isBlazor()) {
+            toolbarElement = document.getElementById('toolbarContainer');
+        } else {
+            toolbarElement = this.pdfViewerBase.getElement('_toolbarContainer');
+        }
+        if (toolbarElement) {
+            this.searchBox.style.top = toolbarElement.clientHeight + 'px';
+        }
         const searchElementsContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_search_box_elements', className: 'e-pv-search-bar-elements' });
         // eslint-disable-next-line max-len
         const searchInputContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_search_input_container', className: 'e-input-group e-pv-search-input' });

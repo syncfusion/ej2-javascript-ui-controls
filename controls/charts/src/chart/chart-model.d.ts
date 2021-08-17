@@ -67,13 +67,13 @@ export interface CrosshairSettingsModel {
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
      * @default ''
      */
-    verticalColor?: string;
+    verticalLineColor?: string;
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
      * @default ''
      */
-    horizontalColor?: string;
+    horizontalLineColor?: string;
 
     /**
      * The opacity for background.

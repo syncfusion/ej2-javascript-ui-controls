@@ -99,8 +99,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         header.style[<any>args.cssProperties.rtlPadding] = '';
-        const isDateHeaderScroll: boolean = this.parent.enableAllDayScroll ?
-            (dateHeader.offsetWidth - dateHeader.clientWidth <= 1) : true;
+        const isDateHeaderScroll: boolean = this.parent.enableAllDayScroll ? !((content.offsetWidth - content.clientWidth) <=
+            (dateHeader.offsetWidth - dateHeader.clientWidth) && dateHeader.classList.contains('e-all-day-scroll')) : true;
         if (content.offsetWidth - content.clientWidth > 0 && isDateHeaderScroll) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
@@ -217,12 +217,13 @@ export class VerticalView extends ViewBase implements IRenderer {
                 if (isNullOrUndefined(this.currentTimeIndicatorTimer)) {
                     const currentDate: Date = this.parent.getCurrentTime();
                     const interval: number = util.MS_PER_MINUTE - ((currentDate.getSeconds() * 1000) + currentDate.getMilliseconds());
-                    if(interval <= (util.MS_PER_MINUTE - 1000)) {
+                    if (interval <= (util.MS_PER_MINUTE - 1000)) {
                         window.setTimeout(() => {
-                            if(!isNullOrUndefined(this.currentTimeIndicatorTimer)) {
+                            if (!isNullOrUndefined(this.currentTimeIndicatorTimer)) {
                                 this.clearCurrentTimeIndicatorTimer();
                                 this.changeCurrentTimePosition();
-                                this.currentTimeIndicatorTimer = window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
+                                this.currentTimeIndicatorTimer =
+                                    window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
                             }
                         }, interval);
                     }
@@ -514,6 +515,8 @@ export class VerticalView extends ViewBase implements IRenderer {
             ntd.setAttribute('data-date', td.date.getTime().toString());
             if (!isNullOrUndefined(td.groupIndex)) {
                 ntd.setAttribute('data-group-index', '' + td.groupIndex);
+            } else if (this.parent.uiStateValues.isGroupAdaptive) {
+                ntd.setAttribute('data-group-index', '' + this.parent.uiStateValues.groupIndex);
             }
             this.wireCellEvents(ntd);
             ntr.appendChild(ntd);

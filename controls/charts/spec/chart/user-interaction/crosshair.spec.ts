@@ -681,8 +681,8 @@ describe('Chart Crosshair', () => {
                 expect(element2.getAttribute('fill') == 'green' || element2.getAttribute('fill') == null ).toBe(true); 
                 done();
             };
-            chartObj.crosshair.horizontalColor= 'red';
-            chartObj.crosshair.verticalColor = 'green'; 
+            chartObj.crosshair.horizontalLineColor = 'red';
+            chartObj.crosshair.verticalLineColor = 'green';
             chartObj.loaded = loaded;
             chartObj.refresh();
         });

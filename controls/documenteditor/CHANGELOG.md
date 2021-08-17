@@ -2,14 +2,55 @@
 
 ## [Unreleased]
 
-## 19.2.55 (2021-08-11)
+## 19.2.56 (2021-08-17)
 
 ### Document Editor
 
 #### Bug Fixes
 
-- `#I334754, #F167429` - Resolved the localization issue.
+- `#I337569` - Resolved the table relayout issue for the document with compatibility mode.
+- `#I331349` - Resolved the text content clipping issue.
+- `#I336632` - Resolved the next style hierarchy issue .
+
+## 19.2.55 (2021-08-11)
+
+### Document Editor
+
+#### New Features
+
+- `#I256210`,`#F150773`,`#I295055`,`#I295551`,`#I324037`,`#I326715` - Added support for keep with next and keep lines together.
+
+#### Bug Fixes
+
+- `#I334754`, `#F167429` - Resolved the localization issue.
 - `#I333264` - Resolved the before spacing issue for the paragraph starting in new page.
+- `#I333226` - Resolved the underline issue.
+- `#I332508` - Resolved the tracking of multiline tracking and empty paragraph revision.
+- `#I335858`, `#F148494` - Resolved the script error in component destroy.
+- `#F166420` - Resolved the SFDT exporting issue with shape.
+- `#I332253` - Resolved the cut paste hyperlink with track changes enabled.
+- `#I335409` - Resolved user list updating issue in restrict editing pane.
+- `#I328976` - Table and document content is not layouted properly.
+- `#I331333` - Resolved the page unresponsive issue in splitting the nested tables.
+- `#I331763` - Resolve the shifting issue in the table with table positioning property on relayouting
+- `#I330233` - Resolved the extra page adding issue when using update field.
+- `#I329790`, `#I331351` - Table is now layouted based on compatibility mode.
+- `#I332483` - Resolved the issue on bookmark shifting while removing document content.
+- `#I331762` - Table with merged cell is now layouted properly.
+- `#I330485` - OlePicture is now preserved as normal picture.
+- `#I330776` - Resolved the casing issue in the generated suggestions.
+- `#I330982` - Resolved the unexpected characters when pasting using Java server-side library.
+- `#I325741` - Resolved the footnote layouting issue when opening a document.
+- `#I331634` - Resolved the issue on updating the table cell width.
+- `#I331274` - Table positioning property is now preserved properly.
+- `#I331667` - Document with BuildingBlockGallery content control type is now exported properly.
+- `#I331452` - Resolved the layout issue on footnote inside the table.
+- `#I331606` - Document with content control block saving issue is now exported properly.
+- `#I331667`, `#I332223` - Shape in footer is now preserved properly.
+- `#I330686`, `#I331349`, `#I310463` - Shape fill is now preserved properly.
+- `#I332333` - Zoom value is now updated properly in status bar.
+- `#I330165`, `#I327647`, `#I324515` - Resolved the worst case scenario issues in comment editing and deleting.
+- `#I319210` - The changes and comment tab in the review pane will be visible only if at least one tracked change or comment is present respectively in the document.
 
 ## 19.2.49 (2021-07-27)
 
@@ -80,7 +121,7 @@
 
 - `#I278021`, `#I301809` - Added table paste options.
 - `#I165071`, `#I226674`, `#I229069`, `#I231373`, `#I241445`, `#I251719`, `#I251720`, `#I267474`, `#I284190`, `#I287633`, `#I291766`, `#I295055`, `#I295549`, `#I298036`, `#I297705`, `#I301313`, `#I291964`, `#I306274`, `#I305349`, `#I308409`, `#I310463`, `#I311260`, `#I312302`, `#I313526`, `#I314192`, `#I317340`, `#I319563` - Added support to preserve image position with square, in-front of text, behind text, top and bottom wrapping styles.
-- `#I165071`, `#I226674`, `#I229069`, `#I231373`, `#I241445`, `#I251719`, `#I251720`, `#I267474`, `#I284190`, `#I287633`, `#I291766`, `#I295055`, `#I295549`, `#I298036`, `#I297705`, `#I301313`, `#I291964`, `#I306274`, `#I305349`, `#I308409`, `#I310463`, `#I311260`, `#I312302`, `#I313526`, `#I314192`, `#I317340`, `#I319563` - Textbox shape with square, in-front of text, behind text, top and bottom wrapping styles.
+- `#I137901`,`#I158324`,`#I208312`,`#I219539`,`#I226018`,`#I226019`,`#I227643`,`#I238552`,`#I243495`,`#I246168`,`#I247514`,`#I248720`,`#I252754`,`#I253251`,`#I280213`,`#I280379`,`#I285871`,`#I290372`,`#I297705`,`#I298334`,`#I306415`,`#I306466`,`#I308411`,`#I310537`,`#I312846`,`#I314262`,`#I317497`,`#I319206`,`#I320434`,`#I324903`,`#I333100` - Textbox shape with square, in-front of text, behind text, top and bottom wrapping styles.
 - `#I307321` - Added support to preserve table positioning properties.
 - `#I298019` - Added support for exporting the document pages as image.
 - `#I324911` - Provided support for inserting non-breaking space character on Ctrl + Shift + Space key combination.

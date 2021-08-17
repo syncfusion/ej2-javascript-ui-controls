@@ -664,6 +664,7 @@ export interface IGrid extends Component<HTMLElement> {
     ensureModuleInjected(module: Function): boolean;
     isContextMenuOpen(): boolean;
     goToPage(pageNo: number): void;
+    updateVisibleExpandCollapseRows?(): void;
     getFrozenColumns(): number;
     getFrozenRightColumnsCount?(): number;
     getFrozenLeftColumnsCount?(): number;

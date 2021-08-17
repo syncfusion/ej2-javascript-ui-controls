@@ -2160,6 +2160,8 @@ export class FormFields {
     public destroy(): void {
         this.currentTarget = null;
         this.readOnlyCollection = [];
+        if (this.pdfViewerBase && this.pdfViewerBase.signatureModule)
+            this.pdfViewerBase.signatureModule.destroy();
     }
 
     /**

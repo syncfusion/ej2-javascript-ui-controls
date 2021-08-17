@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Browser } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, TimelineViews, TimelineYear } from '../../../src/schedule/index';
-import { yearDataGenerator, timelineResourceData } from '../base/datasource.spec';
+import { yearDataGenerator, timelineResourceData, defaultData, timelineData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -22,19 +22,14 @@ describe('Year and TimelineYear View Event Render Module', () => {
         }
     });
 
-    xdescribe('Testing the year view rendering', () => {
+    describe('Testing the year view rendering', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
-            const yearData: Record<string, any>[] = yearDataGenerator(500);
             const model: ScheduleModel = {
-                width: '500px', selectedDate: new Date(2019, 0, 1),
-                views: [
-                    // { option: 'Day' }, { option: 'Year', isSelected: true },
-                    { option: 'TimelineYear', displayName: 'Horizontal' },
-                    { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }
-                ]
+                width: '500px', selectedDate: new Date(2016, 0, 1),
+                views: [{ option: 'Year' }]
             };
-            schObj = util.createSchedule(model, yearData, done);
+            schObj = util.createSchedule(model, defaultData, done);
         });
 
         afterAll(() => {
@@ -45,7 +40,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             const monthCalendar: NodeListOf<Element> = schObj.element.querySelectorAll('.e-month-calendar');
             expect(monthCalendar.length).toEqual(12);
             const eventElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
-            expect(eventElements.length).toBeGreaterThan(0);
+            expect(eventElements.length).toEqual(0);
             expect(schObj.element.offsetHeight).toEqual(580);
         });
 
@@ -67,14 +62,19 @@ describe('Year and TimelineYear View Event Render Module', () => {
 
         it('year range checking', (done: DoneFn) => {
             schObj.dataBound = () => {
-                expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2020');
+                expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2017');
                 done();
             };
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2019');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2016');
             util.triggerMouseEvent(schObj.element.querySelector('.e-schedule-toolbar .e-next'), 'click');
         });
 
-        it('morepopup events checking', () => {
+        it('year view appointments checking', () => {
+            const eventElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+            expect(eventElements.length).toEqual(28);
+        });
+
+        it('more popup events checking', () => {
             expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toEqual(true);
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells:not(.e-other-month)'), 'click');
             expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toEqual(false);
@@ -85,7 +85,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
-    xdescribe('Testing the year view rendering in mobile with resources', () => {
+    describe('Testing the year view rendering in mobile with resources', () => {
         let schObj: Schedule;
         const uA: string = Browser.userAgent;
         const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel 2 Build/PPR1.180610.009)' +
@@ -93,8 +93,8 @@ describe('Year and TimelineYear View Event Render Module', () => {
         beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUserAgent;
             const model: ScheduleModel = {
-                height: '500px', width: '300px', selectedDate: new Date(2018, 0, 1)
-                // views: [{ option: 'Year', isSelected: true }, { option: 'TimelineYear' }]
+                height: '500px', width: '300px', selectedDate: new Date(2018, 0, 1),
+                views: [{ option: 'TimelineYear' }]
             };
             schObj = util.createGroupSchedule(1, model, timelineResourceData, done);
         });
@@ -105,8 +105,6 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
 
         it('DOM elements checking', () => {
-            const monthCalendar: NodeListOf<Element> = schObj.element.querySelectorAll('.e-month-calendar');
-            expect(monthCalendar.length).toEqual(12);
             const eventElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
             expect(eventElements.length).toBeGreaterThan(0);
             const resourceToolbar: NodeListOf<Element> = schObj.element.querySelectorAll('.e-schedule-resource-toolbar-container');
@@ -114,17 +112,74 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
-    describe('Testing the timelineyear view rendering with default orientation', () => {
+    describe('Testing the timeline year view appointments rendering without resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2018, 0, 1),
+                views: [{ option: 'TimelineYear' }]
+            };
+            schObj = util.createSchedule(model, timelineData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Rendered appointments elements checking', () => {
+            const appointments: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+            expect(appointments.length).toEqual(8);
+            const recurrenceApps: NodeListOf<Element> = schObj.element.querySelectorAll('[data-id="Appointment_18"]');
+            expect(recurrenceApps.length).toEqual(2);
+        });
+
+        it('Enabling rowAutoHeight in timeline year horizontal view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const appointments: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointments.length).toEqual(35);
+                const allDayApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]');
+                expect(allDayApp.offsetWidth).toEqual(100);
+                expect(allDayApp.offsetTop).toEqual(459);
+                const allDayAppWithNonEqualDates: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]');
+                expect(allDayAppWithNonEqualDates.offsetWidth).toEqual(500);
+                expect(allDayAppWithNonEqualDates.offsetTop).toEqual(237);
+                const spannedApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_6"]');
+                expect(spannedApp.offsetWidth).toEqual(700);
+                expect(spannedApp.offsetTop).toEqual(415);
+                done();
+            }
+            schObj.rowAutoHeight = true;
+            schObj.dataBind();            
+        });
+    });
+
+    describe('Testing the timeline year view appointments rendering with resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2018, 0, 1),
+                views: [{ option: 'TimelineYear' }]
+            };
+            schObj = util.createGroupSchedule(1, model, timelineResourceData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Rendered appointments elements checking', () => {
+            const appointments: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+            expect(appointments.length).toEqual(20);
+        });
+    });
+
+    describe('Testing the timeline year view rendering with default orientation', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const yearData: Record<string, any>[] = yearDataGenerator(500);
             const model: ScheduleModel = {
                 width: '500px', height: '550px', selectedDate: new Date(2019, 0, 1),
-                views: [
-                    { option: 'TimelineDay' },
-                    { option: 'TimelineYear', isSelected: true },
-                    { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }
-                ]
+                views: [{ option: 'TimelineYear' }]
             };
             schObj = util.createSchedule(model, yearData, done);
         });
@@ -175,16 +230,12 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
-    describe('Testing the timelineyear view rendering with resource in default orientation', () => {
+    describe('Testing the timeline year view rendering with resource in default orientation', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 width: '500px', height: '550px', selectedDate: new Date(2019, 0, 1),
-                views: [
-                    { option: 'TimelineDay' },
-                    { option: 'TimelineYear', isSelected: true },
-                    { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }
-                ]
+                views: [{ option: 'TimelineYear' }]
             };
             schObj = util.createGroupSchedule(2, model, timelineResourceData, done);
         });
@@ -207,17 +258,13 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
-    describe('Testing the timelineyear view rendering with vertical orientation', () => {
+    describe('Testing the timeline year view rendering with vertical orientation', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const yearData: Record<string, any>[] = yearDataGenerator(500);
             const model: ScheduleModel = {
                 width: '500px', height: '550px', selectedDate: new Date(2019, 0, 1),
-                views: [
-                    { option: 'TimelineDay' },
-                    { option: 'TimelineYear', displayName: 'Horizontal' },
-                    { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical', isSelected: true }
-                ]
+                views: [{ option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
             };
             schObj = util.createSchedule(model, yearData, done);
         });
@@ -268,16 +315,12 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
-    describe('Testing the timelineyear view rendering with resource in vertical orientation', () => {
+    describe('Testing the timeline year view rendering with resource in vertical orientation', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 width: '500px', height: '550px', selectedDate: new Date(2019, 0, 1),
-                views: [
-                    { option: 'TimelineDay' },
-                    { option: 'TimelineYear', displayName: 'Horizontal' },
-                    { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical', isSelected: true }
-                ]
+                views: [{ option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
             };
             schObj = util.createGroupSchedule(2, model, timelineResourceData, done);
         });
@@ -311,10 +354,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             }];
             const model: ScheduleModel = {
                 width: '500px', selectedDate: new Date(2019, 0, 1),
-                views: [
-                    // { option: 'Day' }, { option: 'Year', isSelected: true },
-                    { option: 'TimelineYear', displayName: 'Horizontal' }
-                ]
+                views: [{ option: 'TimelineYear', displayName: 'Horizontal' }]
             };
             schObj = util.createSchedule(model, yearData, done);
         });
@@ -352,9 +392,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             }];
             const model: ScheduleModel = {
                 width: '500px', selectedDate: new Date(2019, 0, 1),
-                views: [
-                    { option: 'TimelineYear', displayName: 'Horizontal' }
-                ]
+                views: [{ option: 'TimelineYear', displayName: 'Horizontal' }]
             };
             schObj = util.createSchedule(model, yearData, done);
         });
@@ -367,7 +405,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(0);
         });
 
-        it('After rendering longer appointemnt checking', (done: DoneFn) => {
+        it('After rendering longer appointment checking', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(9);
                 done();

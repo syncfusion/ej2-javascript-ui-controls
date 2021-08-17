@@ -178,7 +178,7 @@ export class ScheduleTouch {
                     this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
                 }
                 this.parent.renderTemplates();
-                this.parent.renderModule.refreshDataManager();
+                this.parent.crudModule.refreshDataManager();
             }
         });
     }

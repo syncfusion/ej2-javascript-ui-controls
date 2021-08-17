@@ -3,7 +3,7 @@ import * as CLS from '../base/classes';
 import * as events from '../base/constant';
 import { read, paste, Search, filter, Download, Delete } from '../common/operations';
 import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement, Draggable } from '@syncfusion/ej2-base';
-import { closest, DragEventArgs, detach, BlazorDragEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { closest, DragEventArgs, detach } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { createDialog } from '../pop-up/dialog';
@@ -1088,12 +1088,12 @@ export function dragStopHandler(parent: IFileManager, args: DragEventArgs): void
  * Drag the start handler
  *
  * @param {IFileManager} parent - specifies the parent.
- * @param {'DragEventArgs & BlazorDragEventArgs'} args - specifies the drag event arguements.
+ * @param {'DragEventArgs'} args - specifies the drag event arguements.
  * @param {Draggable} dragObj - specifies the drag event arguements.
  * @returns {void}
  * @private
  */
-export function dragStartHandler(parent: IFileManager, args: DragEventArgs & BlazorDragEventArgs, dragObj: Draggable): void {
+export function dragStartHandler(parent: IFileManager, args: DragEventArgs, dragObj: Draggable): void {
     const dragArgs: FileDragEventArgs = args;
     dragArgs.cancel = false;
     dragArgs.fileDetails = parent.dragData;
@@ -1119,15 +1119,12 @@ export function dragStartHandler(parent: IFileManager, args: DragEventArgs & Bla
             addBlur(parent.activeElements[i]);
             i++;
         }
-        parent.trigger('fileDragStart', dragArgs, (dragArgs: FileDragEventArgs & BlazorDragEventArgs) => {
+        parent.trigger('fileDragStart', dragArgs, (dragArgs: FileDragEventArgs) => {
             if (dragArgs.cancel) {
                 dragObj.intDestroy(args.event);
                 dragCancel(parent);
             } else {
                 parent.uploadObj.dropArea = null;
-                if (isBlazor()) {
-                    dragArgs.bindEvents(dragArgs.dragElement);
-                }
             }
         });
     }

@@ -11,7 +11,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { setRow } from '../../workbook/base/row';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../workbook/common/address';
-import { CellFormatArgs } from '../../workbook/common/interface';
+import { CellFormatArgs, ExtendedRange, getData } from '../../workbook/index';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, ColumnModel, Workbook } from '../../workbook/index';
@@ -205,6 +205,25 @@ export class DataValidation {
             const sheet: SheetModel = value.indexOf('!') > -1 ?
                 getSheet(this.parent as Workbook, getSheetIndex(this.parent as Workbook, value.split('=')[1].split('!')[0])) : this.parent.getActiveSheet();
             const address: string = value.indexOf('!') > -1 ? value.split('!')[1] : value.split('=')[1];
+            const activeSheet: SheetModel = this.parent.getActiveSheet();
+            if (sheet.name !== activeSheet.name) {
+                let isNotLoaded: boolean; const selectedRange: number[] = getRangeIndexes(activeSheet.selectedRange);
+                sheet.ranges.forEach((range: ExtendedRange): void => {
+                    if (!range.info || !range.info.loadedRange || !range.info.loadedRange.length) { isNotLoaded = true; return; }
+                });
+                if (isNotLoaded) {
+                    this.parent.showSpinner();
+                    getData(this.parent, `${sheet.name}!${address}`).then((): void => {
+                        this.parent.hideSpinner();
+                        if (activeSheet.name === this.parent.getActiveSheet().name) {
+                            const curRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                            if (curRange[0] === selectedRange[0] && curRange[1] === selectedRange[1]) {
+                                this.listObj.dataSource = this.updateDataSource(cell, validation); this.listObj.dataBind();
+                            }
+                        }
+                    });
+                }
+            }
             let indexes: number[];
             const range: string[] = address.split(':');
             if ((range[0].match(/[a-z]+$/ig) && range[1].match(/[a-z]+$/ig)) || (range[0].match(/^[0-9]/g) && range[1].match(/^[0-9]/g))) {
@@ -741,9 +760,9 @@ export class DataValidation {
             let value: string | number = args.value;
             let value1: string | number = validation.value1;
             let value2: string | number = validation.value2;
-            const opt: string = validation.operator;
-            const type: string = validation.type;
-            const ignoreBlank: boolean = !isNullOrUndefined(validation.ignoreBlank) ? validation.ignoreBlank : true;
+            const opt: string = validation.operator || 'Between';
+            const type: string = validation.type || 'WholeNumber';
+            const ignoreBlank: boolean = isNullOrUndefined(validation.ignoreBlank) ? true : validation.ignoreBlank;
             const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
             isValidate = formValidation.isValidate;
             errorMsg = formValidation.errorMsg;

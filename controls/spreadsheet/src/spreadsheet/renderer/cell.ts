@@ -90,7 +90,9 @@ export class CellRenderer implements ICellRenderer {
             lastCell: args.lastCell,
             rowHgt: 20,
             row: args.row,
-            hRow: args.hRow
+            hRow: args.hRow,
+            colIdx: args.colIdx,
+            sheet: sheet
         });
         this.setWrapByValue(sheet, args);
         return evtArgs.element;
@@ -136,7 +138,7 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.cell && args.cell.formula && (!args.cell.value || args.isRefreshing)) {
-            if (args.cell.formula.indexOf('UNIQUE') === - 1 && args.cell.value !== '') {
+            if (args.cell.formula.indexOf('UNIQUE') === - 1) {
                 this.calculateFormula(args);
             }
         }
@@ -501,23 +503,23 @@ export class CellRenderer implements ICellRenderer {
         }
     }
 
-    private updateRowHeight(args: {
-        row: HTMLElement, rowIdx: number, hRow: HTMLElement, cell: HTMLElement, rowHgt: number, lastCell: boolean
-    }): void {
+    private updateRowHeight(
+        args: { row: HTMLElement, rowIdx: number, hRow: HTMLElement, cell: HTMLElement, rowHgt: number, lastCell: boolean, colIdx: number,
+        sheet: SheetModel }): void {
         if (args.cell && args.cell.children.length) {
             const clonedCell: HTMLElement = args.cell.cloneNode(true) as HTMLElement;
+            clonedCell.style.width = getColumnWidth(args.sheet, args.colIdx, true) + 'px';
             this.tableRow.appendChild(clonedCell);
         }
         if (args.lastCell && this.tableRow.childElementCount) {
-            const sheet: SheetModel = this.parent.getActiveSheet();
             const tableRow: HTMLElement = args.row || this.parent.getRow(args.rowIdx);
-            const previouseHeight: number = getRowHeight(sheet, args.rowIdx);
+            const previouseHeight: number = getRowHeight(args.sheet, args.rowIdx);
             const rowHeight: number = this.getRowHeightOnInit();
             if (rowHeight > previouseHeight) {
                 const dprHgt: number = getDPRValue(rowHeight);
                 tableRow.style.height = `${dprHgt}px`;
                 (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height = `${dprHgt}px`;
-                setRowHeight(sheet, args.rowIdx, rowHeight);
+                setRowHeight(args.sheet, args.rowIdx, rowHeight);
             }
             this.tableRow.innerHTML = '';
         }
@@ -542,7 +544,11 @@ export class CellRenderer implements ICellRenderer {
             const bottomBorder: string = cellStyle.borderTop || cellStyle.border;
             if (rightBorder || bottomBorder) {
                 [].slice.call(element.style).forEach((style: string) => {
-                    if ((rightBorder && !(style.indexOf('border-right') > -1) && (!bottomBorder || bottomBorder === 'none')) ||
+                    if (rightBorder && bottomBorder) {
+                        if (!style.includes('border-right') && !style.includes('border-bottom')) {
+                            element.style.removeProperty(style);
+                        }
+                    } else if ((rightBorder && !(style.indexOf('border-right') > -1) && (!bottomBorder || bottomBorder === 'none')) ||
                         (bottomBorder && !(style.indexOf('border-bottom') > -1) && (!rightBorder || rightBorder === 'none'))) {
                         element.style.removeProperty(style);
                     }

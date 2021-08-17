@@ -3118,7 +3118,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Column} - Returns tree grid column
      */
     public getColumnByUid(uid: string): Column {
-        return iterateArrayOrObject<Column, Column>(<Column[]>this.grid.columns, (item: Column) => {
+        let Columns: Column[] = this.initialRender ? <Column[]>this.grid.columns : <Column[]>this.columns;
+        return iterateArrayOrObject<Column, Column>(<Column[]>Columns, (item: Column) => {
             if (item.uid === uid) {
                 return item;
             }
@@ -3636,6 +3637,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             const row: HTMLTableRowElement[] = getObject('rows', rec);
             const record: HTMLTableRowElement[] = getObject('records', rec);
             for (let i: number = 0; i < record.length; i++) {
+                const pindex: number = (this.flatData[(record[i] as ITreeData).parentItem.index] as ITreeData).index;
+                if ((this.flatData[pindex] as ITreeData).expanded === false) {
+                    record.push((this.flatData[pindex] as HTMLTableRowElement));
+                    (this.flatData[pindex] as ITreeData).expanded = true;
+                }
                 this.expandRow(row[i], record[i]);
             }
         }

@@ -425,7 +425,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.kanbanData.map((obj: { [key: string]: string }): void => {
                 if (!this.parent.swimlaneSettings.showEmptyRow) {
-                    if (this.columnKeys.indexOf(obj[this.parent.keyField].toString()) === -1) {
+                    if (!obj[this.parent.keyField] || (obj[this.parent.keyField] && this.columnKeys.indexOf(obj[this.parent.keyField].toString()) === -1)) {
                         return;
                     }
                 }
@@ -828,7 +828,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.kanbanRows.forEach((row: HeaderArgs) =>
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: Record<string, any>) =>
-                    this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
+                    obj[this.parent.keyField] && this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
                     ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
                         '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }

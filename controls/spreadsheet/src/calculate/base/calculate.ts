@@ -2363,7 +2363,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         row: number, col: number, grd: Object, fromCell: string, fromCellGrd: Object, refresh: boolean): number | string {
         // formulainfotable
         let cValue: number | string;
-        const gridId: number = grd && typeof grd === 'string' && Number(grd) > -1 ? Number(grd) : this.getSheetID(grd);
+        const gridId: number = this.getSheetId(grd);
         if ((this.parentObject as any).getValueRowCol === undefined) {
             cValue = this.getValueRowCol(gridId, row, col);
         } else {
@@ -2379,6 +2379,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         //     cValue = (Number(d) / 100).toString();
         // }
         return cValue;
+    }
+
+    private getSheetId(grd: Object): number {
+        return grd && typeof grd === 'string' && Number(grd) > -1 ? Number(grd) : this.getSheetID(grd) + 1;
     }
 
     /**
@@ -2516,7 +2520,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if ((this.parentObject as any).setValueRowCol === undefined) {
                     this.setValueRowCol(this.getSheetID(pgrid) + 1, formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex());
                 } else {
-                    (this.parentObject as any).setValueRowCol(this.getSheetID(pgrid) + 1, formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex());
+                    (this.parentObject as any).setValueRowCol(this.getSheetId(pgrid), formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex());
                 }
                 /* eslint-enable */
             }
@@ -2843,7 +2847,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 this.setValueRowCol(this.getSheetID(this.grid) + 1, value, rowIdx, colIdx);
             } else {
                 (<{ setValueRowCol: Function }>this.parentObject).setValueRowCol(
-                    this.getSheetID(this.grid) + 1, value, rowIdx, colIdx);
+                    this.getSheetId(this.grid), value, rowIdx, colIdx);
             }
         }
     }
@@ -2885,7 +2889,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             this.setValueRowCol(this.getSheetID(this.grid) + 1, formulaInfo.getFormulaValue(), rowIdx, colIdx);
                         } else {
                             (<{ setValueRowCol: Function }>this.parentObject).setValueRowCol(
-                                this.getSheetID(this.grid) + 1, formulaInfo.getFormulaValue(), rowIdx, colIdx);
+                                this.getSheetId(this.grid), formulaInfo.getFormulaValue(), rowIdx, colIdx);
                         }
                         if (!this.refreshedCells.has(dCell)) {
                             this.refreshedCells.set(dCell, []);

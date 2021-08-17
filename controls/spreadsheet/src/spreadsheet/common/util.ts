@@ -1083,7 +1083,15 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
         break;
     case 'filter':
-        spreadsheet.notify(initiateFilterUI, { predicates: null, range: eventArgs.range, sIdx: eventArgs.index, isCut: true });
+        if (isRedo === false) {
+            spreadsheet.notify(
+                initiateFilterUI, { predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.index,
+                isCut: true, isUndoRedo: true });
+        } else {
+            spreadsheet.notify(
+                initiateFilterUI, { predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.index, isCut: true,
+                isUndoRedo: true });
+        }
         break;
     case 'insert':
         if (isRedo === false) {

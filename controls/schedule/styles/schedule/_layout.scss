@@ -662,6 +662,11 @@
           height: 100%;
         }
 
+        .e-all-day-row,
+        .e-all-day-cells {
+          height: 0 !important; // sass-lint:disable-line no-important
+        }
+
         .e-appointment {
           background: $schedule-appointment-bg-color;
           border: 1px solid $schedule-appointment-border-color;
@@ -3579,7 +3584,6 @@
       }
 
       .e-recurrence-edit-button {
-        background: none;
         border: 0;
         box-shadow: none;
         margin: -3px 5px;

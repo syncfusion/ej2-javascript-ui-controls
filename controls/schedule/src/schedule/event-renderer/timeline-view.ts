@@ -38,8 +38,8 @@ export class TimelineEvent extends MonthEvent {
     public getSlotDates(): void {
         this.slots = [];
         this.slots.push(this.parent.activeView.renderDates.map((date: Date) => { return +date; }) as any);
-        if (this.parent.headerRows.length > 0 &&
-            this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Hour') {
+        if (this.parent.activeViewOptions.headerRows.length > 0 &&
+            this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             this.renderType = 'day';
             this.cellWidth = this.content.offsetWidth / this.dateRender.length;
             this.slotsPerDay = 1;

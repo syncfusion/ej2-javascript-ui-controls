@@ -35,6 +35,7 @@ export class ICalendarImport {
         const calArray: string[] = iCalString.replace(new RegExp('\\r', 'g'), '').split('\n');
         let isEvent: boolean = false;
         let curEvent: Record<string, any>;
+        // eslint-disable-next-line prefer-const
         let id: number | string = this.parent.eventBase.getEventMaxID();
         let count: number = 0;
         calArray.forEach((element: string) => {
@@ -77,7 +78,7 @@ export class ICalendarImport {
                         break;
                     case 'UID':
                         curEvent[uId] = value;
-                        curEvent[fields.id] = typeof(id) === 'string'? id + count.toString() : id + count;
+                        curEvent[fields.id] = typeof(id) === 'string' ? id + count.toString() : id + count;
                         count++;
                         break;
                     case 'SUMMARY':

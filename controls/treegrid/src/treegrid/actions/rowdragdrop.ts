@@ -1014,8 +1014,10 @@ export class RowDD {
                         idz = i;
                     }
                 }
-                if (idx !== -1 && !isNullOrUndefined(idx) || idz !== -1 && !isNullOrUndefined(idz)) {
+                if (idx !== -1 && !isNullOrUndefined(idx)) {
                     (dataSource as ITreeData[]).splice(idx, 1);
+                }
+                if (idz !== -1 && !isNullOrUndefined(idz)) {
                     this.treeGridData.splice(idz, 1);
                 }
             }
@@ -1058,6 +1060,9 @@ export class RowDD {
         }
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[i];
+            if (!isNullOrUndefined(currentRecord.childRecords) && currentRecord.childRecords.length) {
+                currentRecord.hasChildRecords = true;
+            }
             let treeGridData: Object;
             if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
                 treeGridData = (<DataManager>this.parent.dataSource).dataSource.json;
@@ -1075,8 +1080,10 @@ export class RowDD {
                     break;
                 }
             }
-            if (idx !== -1 && !isNullOrUndefined(idx) || idz !== -1 && !isNullOrUndefined(idz)) {
+            if (idx !== -1 && !isNullOrUndefined(idx)) {
                 (dataSource as ITreeData[]).splice(idx, 1);
+            }
+            if (idz !== -1 && !isNullOrUndefined(idz)) {
                 this.treeGridData.splice(idz, 1);
             }
             if (currentRecord.hasChildRecords) {

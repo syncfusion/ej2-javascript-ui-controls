@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I337766` - expandAtLevel and collapseAtLevel methods works fine when enableCollapseAll is true.
+- `#I334273` - Resolved white space issue while using single root node with Virtualization and enableCollapseAll.
+- `#I335120` - Drag and drop of newly added records works fine.
+- `#I336436` - RefreshColumns method works properly when we access the column from the getColumnByUid method.
+
 ## 19.2.51 (2021-08-03)
 
 ### Tree Grid

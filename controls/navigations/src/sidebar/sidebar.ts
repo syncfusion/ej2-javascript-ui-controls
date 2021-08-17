@@ -18,6 +18,7 @@ const OVER: string = 'e-over';
 const PUSH: string = 'e-push';
 const SLIDE: string = 'e-slide';
 const VISIBILITY: string = 'e-visibility';
+const DISPLAY: string = 'e-sidebar-display';
 const MAINCONTENTANIMATION: string = 'e-content-animation';
 const DISABLEANIMATION: string = 'e-disable-animation';
 const CONTEXT: string = 'e-sidebar-context';
@@ -348,6 +349,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private addClass(): void {
+        if (this.element.tagName === "EJS-SIDEBAR") {
+            addClass([this.element], DISPLAY);
+        }
         const classELement: HTMLElement = <HTMLElement>document.querySelector('.e-main-content');
         if (!isNullOrUndefined(classELement || this.targetEle)) {
             addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);

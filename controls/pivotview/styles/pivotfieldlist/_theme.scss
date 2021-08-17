@@ -166,7 +166,12 @@
 
       .e-title-content {
         font-size: $field-list-title-font-size;
-        line-height: $field-list-title-line-height;
+        @if ($field-list-skin == 'tailwind') {
+          line-height: $field-list-title-line-height;
+        }
+        @if ($field-list-skin == 'tailwind-dark') {
+          line-height: $field-list-title-line-height;
+        }
         flex: auto;
       }
     }

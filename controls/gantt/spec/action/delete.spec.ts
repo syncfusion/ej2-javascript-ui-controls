@@ -116,4 +116,47 @@ describe('Gantt delete support', () => {
         //     ganttObj.refresh();
         // }, 3000);
     });
+         describe('Selection maintaining after Gantt delete action', () => {
+        Gantt.Inject(Edit, Toolbar, Selection);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    allowSelection: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Delete a record', () => {
+            ganttObj.editModule.deleteRecord(6);
+            expect(getValue('TaskID', ganttObj.flatData[5])).toBe(51);
+            expect(ganttObj.selectedRowIndex).toBe(5);
+        });
+    });
+
 });

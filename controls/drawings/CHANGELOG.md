@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.55 (2021-08-11)
+## 19.2.56 (2021-08-17)
+
+### Drawings
+
+#### Bug Fixes
+
+- `#337257` – Now, the annotation resize is working properly if the resize shape is Circle.
+
+## 19.2.46 (2021-07-06)
 
 ### Drawings
 

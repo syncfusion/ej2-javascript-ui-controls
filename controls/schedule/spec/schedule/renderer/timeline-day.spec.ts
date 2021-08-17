@@ -3655,6 +3655,34 @@ describe('Schedule timeline day view', () => {
         });
     });
 
+    describe('EJ2-50635 - Rendering timeline day view with header rows breaks the layout', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1), width: '100%', height: '550px',
+                views: [
+                    { option: 'TimelineDay',        
+                     headerRows: [
+                        { option: 'Year' },
+                        { option: 'Month' },
+                        { option: 'Week' },
+                        { option: 'Date' }
+                    ] }
+                ],
+            };
+            schObj = util.createSchedule(options, timelineData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointment and more indicator count', () => {
+            expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(8);
+            expect((schObj.element.querySelector('.e-more-indicator') as HTMLElement).innerText).toEqual('+7 more');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

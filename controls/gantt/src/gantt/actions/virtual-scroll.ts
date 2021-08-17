@@ -37,7 +37,14 @@ export class VirtualScroll {
      */
     public getTopPosition(): number {
         const virtualTable: HTMLElement = this.parent.ganttChartModule.scrollElement.querySelector('.e-virtualtable');
-        const top: string = virtualTable.style.transform.split(',')[1].trim().split(')')[0];
+        const translates: string[] = virtualTable.style.transform.split(',');
+        let top: string;
+        if (translates.length > 1) {
+            top = translates[1].trim().split(')')[0];
+        } else { 
+            let transformString: string = virtualTable.style.transform;
+            top = transformString.substring(transformString.lastIndexOf("(") + 1, transformString.lastIndexOf(")"))
+        }
         return parseFloat(top);
     }
     /**

@@ -1026,19 +1026,18 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden
-     * @param {number} sheetIndex - Specifies the sheetIndex.
+     * @param {number} sheetIndex - Specifies the sheet id.
      * @param {string | number} value - Specifies the value.
      * @param {number} rowIndex - Specifies the rowIndex.
      * @param {number} colIndex - Specifies the colIndex.
      * @returns {void} - To set the value for row and col.
      */
-    public setValueRowCol(sheetIndex: number, value: string | number, rowIndex: number, colIndex: number): void {
-        sheetIndex = getSheetIndexFromId(this, sheetIndex);
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number): void {
         this.notify(
             events.workbookEditOperation,
             {
                 action: 'updateCellValue', address: [rowIndex - 1, colIndex - 1], value: value,
-                sheetIndex: sheetIndex, isValueOnly: true
+                sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true
             });
     }
 

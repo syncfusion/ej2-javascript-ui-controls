@@ -200,6 +200,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public ganttColumns: ColumnModel[];
     /** @hidden */
+    public isExpandCollapseLevelMethod: boolean = false;
+    /** @hidden */
     public contentHeight: number;
     /** @hidden */
     // eslint-disable-next-line
@@ -1711,7 +1713,7 @@ export class Gantt extends Component<HTMLElement>
                 const count: number = getValue('count', this.dataSource);
                 this.treeGrid.dataSource = {result: this.flatData, count: count};
             } else {
-                this.treeGrid.dataSource = this.flatData.length > 0 ? this.flatData : null;
+                this.treeGrid.dataSource = this.flatData.length > 0 ? this.flatData : [];
             }
         } else {
             if (this.enableValidation) {
@@ -3387,6 +3389,9 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public expandAtLevel(level: number): void {
+        if (this.enableVirtualization) {
+            this.isExpandCollapseLevelMethod = true;
+        }
         this.ganttChartModule.expandAtLevel(level);
     }
     /**
