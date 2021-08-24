@@ -420,7 +420,7 @@ describe('MultiSelect', () => {
             expect((<HTMLElement>elem.lastElementChild).style.display).toBe('');
             mouseEventArgs.type = 'click';
             mouseEventArgs.target = elem;
-            (<any>listObj).onBlur(mouseEventArgs);
+            (<any>listObj).onBlurHandler(mouseEventArgs);
             expect((<HTMLElement>elem.lastElementChild).style.display).toBe('none');
             (<any>listObj).value = ["JAVA"];
             (<any>listObj).dataBind();
@@ -430,7 +430,7 @@ describe('MultiSelect', () => {
             (<any>listObj).onListMouseDown({ preventDefault: function () { } });
             (<any>listObj).showPopup();
             (<any>listObj).scrollFocusStatus = false;
-            (<any>listObj).onBlur(mouseEventArgs);
+            (<any>listObj).onBlurHandler(mouseEventArgs);
             listObj.destroy();
             Browser.userAgent = temp;
         });
@@ -1151,7 +1151,7 @@ describe('MultiSelect', () => {
             expect(wrapper.firstElementChild.childNodes.length).toEqual(1);//48
             listObj.maximumSelectionLength = 2;
             (<any>listObj).onMouseClick(mouseEventArgs);
-            (<any>listObj).onBlur();
+            (<any>listObj).onBlurHandler();
             listObj.dataBind();
             expect(wrapper.firstElementChild.childNodes.length).toEqual(2);//49
             listObj.enabled = false;
@@ -1317,7 +1317,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.target = elements[index];
                 (<any>listObj).onMouseClick(mouseEventArgs);
             }
-            (<any>listObj).onBlur();
+            (<any>listObj).onBlurHandler();
             (<any>listObj).windowResize();
             (<any>listObj).removeFocus();
             (<any>listObj).selectListByKey();
@@ -1399,7 +1399,7 @@ describe('MultiSelect', () => {
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
             (<any>listObj).keyUp(keyboardEventArgs);
-            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(true);
+            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
             listObj.destroy();
         });
         it('filtering with same selected value in Grouping', () => {
@@ -1427,7 +1427,7 @@ describe('MultiSelect', () => {
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
             (<any>listObj).keyUp(keyboardEventArgs);
-            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(true);
+            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
             (<any>listObj).inputElement.value = "";
             //open action validation
             keyboardEventArgs.altKey = false;
@@ -2771,11 +2771,11 @@ describe('MultiSelect', () => {
                 (<any>listObj).focusInHandler();
                 expect(checker).toBe(true);//64
                 checker = false;
-                (<any>listObj).onBlur();
+                (<any>listObj).onBlurHandler();
                 (<any>listObj).focusAtLastListItem(null);
                 expect(checker).toBe(true);//65
                 (<any>listObj).onListMouseDown({ preventDefault: function () { } });
-                (<any>listObj).onBlur({ preventDefault: function () { } });
+                (<any>listObj).onBlurHandler({ preventDefault: function () { } });
                 expect((<any>listObj).scrollFocusStatus).toBe(false);
                 listObj.destroy();
                 done();
@@ -2794,7 +2794,7 @@ describe('MultiSelect', () => {
             (<any>listObj).focus();
             expect(checker).toBe(true);//64
             checker = false;
-            (<any>listObj).onBlur();
+            (<any>listObj).onBlurHandler();
             expect(checker).toBe(true);//65
             listObj.destroy();
         });
@@ -2807,7 +2807,7 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             listObj.open = function (args) {
                 let mouseEventArgs: any = { preventDefault: function () { }, target: null, relatedTarget: (<any>listObj).popupObj.element };
-                (<any>listObj).onBlur(mouseEventArgs);
+                (<any>listObj).onBlurHandler(mouseEventArgs);
                 expect((<any>listObj).isPopupOpen()).toBe(false);
                 listObj.open = null;
                 args.cancel = true;
@@ -2829,7 +2829,7 @@ describe('MultiSelect', () => {
             (<any>listObj).focusInHandler();
             expect(checker).toBe(true);//64
             checker = false;
-            (<any>listObj).onBlur();
+            (<any>listObj).onBlurHandler();
             expect(checker).toBe(true);//65
             listObj.destroy();
         });
@@ -2945,7 +2945,7 @@ describe('MultiSelect', () => {
             mouseEventArgs.type = 'click';
             mouseEventArgs.target = document.body;
             (listObj as any).onDocumentClick(mouseEventArgs);
-            (listObj as any).onBlur(mouseEventArgs);
+            (listObj as any).onBlurHandler(mouseEventArgs);
             let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
             expect(floatElement.classList.contains('e-label-bottom')).toBe(true);
         });
@@ -2955,7 +2955,7 @@ describe('MultiSelect', () => {
             listObj.dataBind();
             mouseEventArgs.target = document.body;
             let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
-            (listObj as any).onBlur(mouseEventArgs);
+            (listObj as any).onBlurHandler(mouseEventArgs);
             expect(floatElement.classList.contains('e-label-top')).toBe(true);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
@@ -3143,7 +3143,7 @@ describe('MultiSelect', () => {
                 listObj.dataBind();
                 mouseEventArgs.target = document.body;
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
-                (listObj as any).onBlur(mouseEventArgs);
+                (listObj as any).onBlurHandler(mouseEventArgs);
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
                 let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
                 if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
@@ -3170,7 +3170,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.type = 'click';
                 mouseEventArgs.target = document.body;
                 (listObj as any).onDocumentClick(mouseEventArgs);
-                (listObj as any).onBlur(mouseEventArgs);
+                (listObj as any).onBlurHandler(mouseEventArgs);
             });
             it('floating-Auto: with value', () => {
                 listObj.value = ['HTML'];
@@ -3185,7 +3185,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.type = 'click';
                 mouseEventArgs.target = document.body;
                 (listObj as any).onDocumentClick(mouseEventArgs);
-                (listObj as any).onBlur(mouseEventArgs);
+                (listObj as any).onBlurHandler(mouseEventArgs);
             });
             it('floating-Auto: without value', () => {
                 listObj.value = <string[]>[];
@@ -3207,7 +3207,7 @@ describe('MultiSelect', () => {
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
                 floatElement.classList.add('e-label-top');
                 (listObj as any).onDocumentClick(mouseEventArgs);
-                (listObj as any).onBlur(mouseEventArgs);
+                (listObj as any).onBlurHandler(mouseEventArgs);
                 floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
                 expect(floatElement.classList.contains('e-label-bottom')).toBe(true);
                 expect(floatElement.classList.contains('e-label-top')).toBe(false);
@@ -3683,11 +3683,11 @@ describe('MultiSelect', () => {
         it('change event trigger', () => {
             let which: any = null;
             let button: any = null;
-            multiObj.onBlur(mouseEventArgs);
+            multiObj.onBlurHandler(mouseEventArgs);
             let elem: HTMLElement = (<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="JAVA"]');
             (<any>multiObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
             expect(elem.parentElement).toBe(null);
-            multiObj.onBlur(mouseEventArgs);
+            multiObj.onBlurHandler(mouseEventArgs);
         });
     });
 
@@ -4698,7 +4698,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.target = document.body;
                 dropDowns.inputElement.focus();
                 dropDowns.onDocumentClick(mouseEventArgs);
-                dropDowns.onBlur(mouseEventArgs);
+                dropDowns.onBlurHandler(mouseEventArgs);
                 setTimeout(() => {
                     expect(dropDowns.isPopupOpen()).toBe(false);
                     dropDowns.destroy();
@@ -4723,7 +4723,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.target = dropDowns.list;
                 dropDowns.inputElement.focus();
                 dropDowns.onDocumentClick(mouseEventArgs);
-                dropDowns.onBlur(mouseEventArgs);
+                dropDowns.onBlurHandler(mouseEventArgs);
                 setTimeout(() => {
                     expect(dropDowns.isPopupOpen()).toBe(true);
                     dropDowns.destroy();
@@ -5623,7 +5623,7 @@ describe('MultiSelect', () => {
                     let clickEvent: MouseEvent = document.createEvent('MouseEvents');
                     clickEvent.initEvent('mouseup', true, true);
                     liELe.dispatchEvent(clickEvent);
-                    (<any>listObj).onBlur();
+                    (<any>listObj).onBlurHandler();
                 }, 200)
             }
             listObj.showPopup();
@@ -5638,7 +5638,7 @@ describe('MultiSelect', () => {
                 let clickEvent: MouseEvent = document.createEvent('MouseEvents');
                 clickEvent.initEvent('mousedown', true, true);
                 closeELe.dispatchEvent(clickEvent);
-                (<any>listObj).onBlur();
+                (<any>listObj).onBlurHandler();
             }
 
             (<any>listObj).focusInHandler();
@@ -5771,7 +5771,7 @@ describe('MultiSelect', () => {
                 let clickEvent: MouseEvent = document.createEvent('MouseEvents');
                 clickEvent.initEvent('mousedown', true, true);
                 closeELe.dispatchEvent(clickEvent);
-                (<any>listObj).onBlur();
+                (<any>listObj).onBlurHandler();
             }
 
             (<any>listObj).focusInHandler();
@@ -5832,7 +5832,7 @@ describe('MultiSelect', () => {
             mouseEventArgs.type = 'click';
             mouseEventArgs.target = document.body;
             (listObj as any).onDocumentClick(mouseEventArgs);
-            (listObj as any).onBlur(mouseEventArgs);
+            (listObj as any).onBlurHandler(mouseEventArgs);
             listObj.showPopup();
             expect((<any>listObj).isPopupOpen()).toBe(true);
             expect(listElement.classList.contains('e-active')).toBe(true);
@@ -5866,7 +5866,7 @@ describe('MultiSelect', () => {
             mouseEventArgs.type = 'click';
             mouseEventArgs.target = document.body;
             (listObj as any).onDocumentClick(mouseEventArgs);
-            (listObj as any).onBlur(mouseEventArgs);
+            (listObj as any).onBlurHandler(mouseEventArgs);
             listObj.showPopup();
             expect((<any>listObj).isPopupOpen()).toBe(true);
             expect(listElement.classList.contains('e-active')).toBe(true);
@@ -8066,8 +8066,8 @@ describe('MultiSelect', () => {
                     (<any>listObj).keyUp(keyboardEventArgs);
                     expect(listObj.ulElement.querySelectorAll("li.e-list-item").length).toBe(3);
                     done();
-                }, 2000);
-            }, 800);        
+                }, 2400);
+            }, 1000);        
         });
     });
     describe('EJ2-48286 - When we paste the content in the MultiSelect, the pasted content gets hidden in the input', () => {

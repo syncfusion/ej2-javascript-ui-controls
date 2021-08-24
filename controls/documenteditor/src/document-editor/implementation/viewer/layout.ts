@@ -50,6 +50,10 @@ export class Layout {
      * @private
      */
     public isRelayout: boolean = false;
+    /**
+     * @private
+     */
+    public isOverlapFloatTable: boolean = false;
     public isInitialLoad: boolean = true;
     private fieldBegin: FieldElementBox = undefined;
     private maxTextHeight: number = 0;
@@ -694,6 +698,11 @@ export class Layout {
             }
             if (element.paragraph.floatingElements.indexOf(element) === -1) {
                 element.paragraph.floatingElements.push(element);
+            }
+        } else {
+            if (element.width === 0 && element.widthScale !== 0) {
+                let containerWidth: number = HelperMethods.convertPointToPixel(element.line.paragraph.getContainerWidth());
+                element.width = (containerWidth / 100) * element.widthScale;
             }
         }
         const clientArea: Rect = this.viewer.clientArea;
@@ -1614,7 +1623,7 @@ export class Layout {
                                 }
                             } else {
                                 let xposition: number = rect.x;
-                                rect.x = wrappingBounds.right;
+                                rect.x = wrappingBounds.right + ((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin;
                                 rect.width = this.viewer.clientArea.right - wrappingBounds.right;
                                 //When there is no space to fit the content in right, then update the y position.
                                 if (textWrappingStyle === 'Square' && rect.width < 0 && tableWidth > 0) {
@@ -1814,6 +1823,16 @@ export class Layout {
         if (line !== element.line || element.line === line && isNullOrUndefined(element.nextElement)
             && !element.line.isLastLine()) {
             this.moveToNextLine(line);
+            if (this.documentHelper.compatibilityMode !== 'Word2013' && this.isOverlapFloatTable) {
+                let table: TableWidget;
+                if (element.line.paragraph.previousRenderedWidget instanceof TableWidget && element.line.paragraph.previousRenderedWidget.wrapTextAround) {
+                    table = element.line.paragraph.previousRenderedWidget;
+                    this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -
+                        HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
+                }
+                this.viewer.clientActiveArea.x += line.paragraph.leftIndent;
+                this.isOverlapFloatTable = false;
+            }
             if (line !== element.line) {
                 this.isRTLLayout = false;
             }
@@ -2514,8 +2533,8 @@ export class Layout {
                 this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
                 splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
             }
-            this.addSplittedLineWidget(lineWidget, indexOf);
             this.addElementToLine(paragraph, textElement);
+            this.addSplittedLineWidget(lineWidget, indexOf);
             if (textElement.width === 0) {
                 lineWidget.children.splice(indexOf, 1);
             }
@@ -3178,15 +3197,18 @@ export class Layout {
     }
     private layoutStartEndBlocks(startBlock: BlockWidget, endBlock: BlockWidget): void {
         let block: BlockWidget = startBlock;
+        this.isOverlapFloatTable = true;
         this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - startBlock.y;
         this.viewer.clientActiveArea.y = startBlock.y;
         while (block) {
+            this.viewer.updateClientAreaForBlock(block, true);
             if (block instanceof ParagraphWidget) {
                 this.layoutParagraph(block as ParagraphWidget, 0);
             } else {
                 this.clearTableWidget(block as TableWidget, true, true, true);
                 this.layoutTable(block as TableWidget, 0);
             }
+            this.viewer.updateClientAreaForBlock(block, false);
             block = block !== endBlock ? block.nextWidget as BlockWidget : undefined;
         }
     }
@@ -4067,7 +4089,7 @@ export class Layout {
         }
         cell.margin = new Margin(left, top, right, bottom);
         let cellWidth: number = cell.cellFormat.cellWidth;
-        if (cellWidth > cell.cellFormat.preferredWidth && cell.cellFormat.preferredWidth !== 0 && cell.cellFormat.preferredWidthType !== 'Percent' && cell.ownerTable.tableFormat.preferredWidthType !== 'Percent') {
+        if (cellWidth > cell.cellFormat.preferredWidth && cell.cellFormat.preferredWidth !== 0 && cell.cellFormat.preferredWidthType !== 'Percent' && cell.ownerTable.tableFormat.preferredWidthType !== 'Percent' && isNullOrUndefined(cell.ownerTable.positioning)) {
             cellWidth = cell.cellFormat.preferredWidth;
         }
         cell.width = HelperMethods.convertPointToPixel(cellWidth);
@@ -5964,6 +5986,11 @@ export class Layout {
             clientActiveAreaForTableWrap = this.viewer.clientActiveArea.clone();
             clientAreaForTableWrap = this.viewer.clientArea.clone();
             this.updateTableFloatPoints(table);
+            let clienactare: Rect = this.viewer.clientActiveArea.clone();
+            let rect: Rect = this.adjustClientAreaBasedOnTextWrapForTable(table, this.viewer.clientActiveArea);
+            if (clienactare.x !== rect.x) {
+            table.x = this.viewer.clientActiveArea.x;
+            }
         } else {
             this.adjustClientAreaBasedOnTextWrapForTable(table, this.viewer.clientActiveArea);
             if (this.isWrapText) {

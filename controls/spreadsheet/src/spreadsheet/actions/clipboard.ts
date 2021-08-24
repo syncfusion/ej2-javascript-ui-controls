@@ -331,6 +331,7 @@ export class Clipboard {
                                     }
                                     this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ? true
                                         : y === selIdx[3], isExternal as boolean);
+                                    
                                     const sId: number = this.parent.activeSheetIndex;
                                     const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
                                     const address: string = getCellAddress(x + l, colInd);
@@ -374,7 +375,7 @@ export class Clipboard {
                     rowIdx++;
                 }
                 this.parent.notify(refreshRibbonIcons, null);
-                this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
+                this.parent.setUsedRange(rfshRange[2], rfshRange[3]);
                 if (cSIdx === this.parent.activeSheetIndex) {
                     this.parent.notify(selectRange, { address: getRangeAddress(rfshRange) });
                 }
@@ -797,53 +798,99 @@ export class Clipboard {
             if (ele.querySelector('.e-spreadsheet') && this.copiedInfo) {
                 rows = { internal: true };
             } else {
-                ele.querySelectorAll('tr').forEach((tr: Element) => {
-                    tr.querySelectorAll('td').forEach((td: Element, j: number) => {
+                let i: number = 0; let j: number;
+                [].slice.call(ele.querySelectorAll('tr')).forEach((tr: Element) => {
+                    if (!(rows as RowModel[])[i]) { (rows as RowModel[])[i] = { cells: [] }; }
+                    cells = (rows as RowModel[])[i].cells;
+                    j = 0;
+                    [].slice.call(tr.querySelectorAll('td')).forEach((td: Element) => {
+                        if (cells[j]) { j = this.getNewIndex(cells, j); }
+                        cells[j] = {};
                         cellStyle = this.getStyle(td, ele);
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                         td.textContent = td.textContent.replace(/\s+/g, ' ');
-                        const cSpan: number = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
-                        const rSpan: number = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
-                        let wrap: boolean;
                         if ((cellStyle as { whiteSpace: string }).whiteSpace) {
-                            wrap = true;
-                            delete cellStyle['whiteSpace'];
+                            cells[j].wrap = true; delete cellStyle['whiteSpace'];
                         }
-                        cells[j] = {
-                            value: td.textContent ? <string>parseIntValue(td.textContent.trim()) : null, style: cellStyle, colSpan: cSpan,
-                            rowSpan: rSpan, wrap: wrap
-                        };
+                        if (Object.keys(cellStyle).length) {
+                            if (cellStyle.border) {
+                                ['borderBottom', 'borderTop', 'borderLeft', 'borderRight'].forEach((prop: string): void => {
+                                    cellStyle[prop] = cellStyle.border;
+                                });
+                                delete cellStyle.border;
+                            }
+                            cells[j].style = cellStyle;
+                        }
+                        if (td.textContent) { cells[j].value = <string>parseIntValue(td.textContent.trim()); }
                         if (td.getAttribute('number-format')) {
                             cells[j].format = td.getAttribute('number-format');
                             if (cells[j].value && td.getAttribute('cell-value')) {
                                 cells[j].value = <string>parseIntValue(td.getAttribute('cell-value').trim());
                             }
                         }
+                        if (td.getAttribute('colspan') && parseInt(td.getAttribute('colspan'), 10) > 1) {
+                            cells[j].colSpan = parseInt(td.getAttribute('colspan'), 10);
+                        }
+                        if (td.getAttribute('rowspan') && parseInt(td.getAttribute('rowspan'), 10) > 1) {
+                            cells[j].rowSpan = parseInt(td.getAttribute('rowspan'), 10);
+                        }
+                        if (cells[j].colSpan > 1 && cells[j].rowSpan > 1) {
+                            let cell: CellModel;
+                            for (let k: number = i, len: number = i + cells[j].rowSpan; k < len; k++) {
+                                for (let l: number = j, len: number = j + cells[j].colSpan; l < len; l++) {
+                                    if (k === i && l === j) { continue; }
+                                    cell = cells[j].style ? { style: extend({}, cells[j].style) } : {};
+                                    if (k !== i) { cell.rowSpan = i - k; }
+                                    if (l !== j) { cell.colSpan = j - l; }
+                                    if (!(rows as RowModel[])[k]) { (rows as RowModel[])[k] = { cells: [] } }
+                                    (rows as RowModel[])[k].cells[l] = cell;
+                                }
+                            }
+                        } else if (cells[j].colSpan > 1) {
+                            for (let k: number = j + 1, len: number = j + cells[j].colSpan; k < len; k++) {
+                                cells[k] =  { colSpan: j - k, style: extend({}, cellStyle) };
+                            }
+                        } else if (cells[j].rowSpan > 1) {
+                            for (let k: number = i + 1, len: number = i + cells[j].rowSpan; k < len; k++) {
+                                if (!(rows as RowModel[])[k]) { (rows as RowModel[])[k] = { cells: [] } }
+                                (rows as RowModel[])[k].cells[j] = { rowSpan: i - k, style: extend({}, cellStyle) };
+                            }
+                        }
+                        j++;
                     });
-                    (rows as RowModel[]).push({ cells: cells });
-                    cells = [];
+                    i++;
                 });
-                this.updateMergeCells(rows);
             }
         } else if (text) {
-            if (html) {
-                [].slice.call(ele.children).forEach((child: Element) => {
-                    cellStyle = this.getStyle(child, ele);
-                });
-            }
-            text.trim().split('\n').forEach((row: string) => {
-                row.split('\t').forEach((col: string, j: number) => {
-                    if (col) {
-                        let wrap: boolean;
-                        if (cellStyle && (cellStyle as { whiteSpace: string }).whiteSpace) {
-                            wrap = true;
-                            delete cellStyle['whiteSpace'];
+            let childArr: Element[]; let filteredChild: Element;
+            if (html) { childArr = [].slice.call(ele.children); }
+            text.split('\n').forEach((row: string, i: number) => {
+                cellStyle = null;
+                if (html) {
+                    filteredChild = childArr.filter(
+                        (elem: Element) => elem.textContent && elem.textContent.replace(/(\r\n|\n|\r|\s)/gm, ' ').trim() === row.trim())[0];
+                    if (filteredChild) {
+                        cellStyle = this.getStyle(filteredChild, ele); childArr.splice(childArr.indexOf(filteredChild), 1);
+                    }
+                }
+                row.trim().split('\t').forEach((col: string, j: number) => {
+                    if (col || cellStyle) {
+                        cells[j] = {};
+                        if (cellStyle) {
+                            if ((cellStyle as { whiteSpace: string }).whiteSpace) {
+                                cells[j].wrap = true;
+                                delete cellStyle['whiteSpace'];
+                                if (Object.keys(cellStyle).length) { cells[j].style = cellStyle; }
+                            } else {
+                                cells[j].style = cellStyle;
+                            }
                         }
-                        cells[j] = { style: cellStyle, wrap: wrap };
-                        if (checkIsFormula(col)) {
-                            cells[j].formula = col;
-                        } else {
-                            cells[j].value = <string>parseIntValue(col.trim());
+                        if (col) {
+                            if (checkIsFormula(col)) {
+                                cells[j].formula = col;
+                            } else {
+                                cells[j].value = <string>parseIntValue(col.trim());
+                            }
                         }
                     }
                 });
@@ -855,29 +902,12 @@ export class Clipboard {
         return rows;
     }
 
-    private updateMergeCells(rows: RowModel[]): void {
-        let rowSpan: number;
-        let colSpan: number;
-        for (let i: number = 0; i < rows.length; i++) {
-            for (let j: number = 0; j < rows[i].cells.length; j++) {
-                if (rows[i].cells[j]) {
-                    colSpan = rows[i].cells[j].colSpan;
-                    rowSpan = rows[i].cells[j].rowSpan;
-                    if (colSpan > 1) {
-                        for (let k: number = 1; k < colSpan; k++) {
-                            rows[i].cells.splice(j + 1, 0, { colSpan: k - colSpan });
-                        }
-                    }
-                    if (rowSpan > 1) {
-                        for (let k: number = rowSpan - 1; k > 0; k--) {
-                            for (let l: number = 0; l < colSpan; l++) {
-                                rows[i + k].cells.splice(l === 0 ? j : j + 1, 0, { rowSpan: -k, colSpan: -l });
-                            }
-                        }
-                    }
-                }
-            }
+    private getNewIndex(cells: CellModel[], index: number): number {
+        if (cells[index]) {
+            index++;
+            index = this.getNewIndex(cells, index);
         }
+        return index;
     }
 
     private getStyle(td: Element, ele: Element): CellStyleModel {

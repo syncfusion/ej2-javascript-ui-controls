@@ -34,6 +34,10 @@ export interface ChangeEventArgs extends SelectEventArgs {
      * Returns the root element of the component.
      */
     element: HTMLElement
+    /**
+     * Specifies the original event arguments.
+     */
+    event: MouseEvent | KeyboardEvent | TouchEvent
 }
 // don't use space in classnames
 export const dropDownListClasses: DropDownListClassList = {
@@ -710,7 +714,7 @@ export class DropDownList extends DropDownBase implements IInput {
         Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
     }
 
-    protected onBlur(e: MouseEvent): void {
+    protected onBlurHandler(e: MouseEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -802,7 +806,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected bindCommonEvent(): void {
-        EventHandler.add(this.targetElement(), 'blur', this.onBlur, this);
+        EventHandler.add(this.targetElement(), 'blur', this.onBlurHandler, this);
         const formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
         if (formElement) {
             EventHandler.add(formElement, 'reset', this.resetValueHandler, this);
@@ -829,7 +833,7 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected unBindCommonEvent(): void {
         if (this.targetElement()) {
-            EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
+            EventHandler.remove(this.targetElement(), 'blur', this.onBlurHandler);
         }
         const formElement: HTMLFormElement = this.inputElement && closest(this.inputElement, 'form') as HTMLFormElement;
         if (formElement) {
@@ -1576,7 +1580,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 previousItemData: preItems,
                 isInteracted: eve ? true : false,
                 value: this.value,
-                element: this.element
+                element: this.element,
+                event: eve
             };
             if (this.isAngular && this.preventChange) {
                 this.preventChange = false;
@@ -1867,7 +1872,7 @@ export class DropDownList extends DropDownBase implements IInput {
             EventHandler.add(this.filterInput, 'input', this.onInput, this);
             EventHandler.add(this.filterInput, 'keyup', this.onFilterUp, this);
             EventHandler.add(this.filterInput, 'keydown', this.onFilterDown, this);
-            EventHandler.add(this.filterInput, 'blur', this.onBlur, this);
+            EventHandler.add(this.filterInput, 'blur', this.onBlurHandler, this);
             EventHandler.add(this.filterInput, 'paste', this.pasteHandler, this);
             return this.filterInputObj;
         } else {
@@ -2453,7 +2458,7 @@ export class DropDownList extends DropDownBase implements IInput {
             EventHandler.remove(this.filterInput, 'input', this.onInput);
             EventHandler.remove(this.filterInput, 'keyup', this.onFilterUp);
             EventHandler.remove(this.filterInput, 'keydown', this.onFilterDown);
-            EventHandler.remove(this.filterInput, 'blur', this.onBlur);
+            EventHandler.remove(this.filterInput, 'blur', this.onBlurHandler);
             EventHandler.remove(this.filterInput, 'paste', this.pasteHandler);
             this.filterInput = null;
         }

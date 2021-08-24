@@ -38,6 +38,8 @@ import { RevisionCollection } from './implementation/track-changes/track-changes
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from './base/constants';
+import { Optimized } from './implementation/text-helper/optimized';
+import { Regular } from './implementation/text-helper/regular';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -78,6 +80,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(1)
     public printDevicePixelRatio: number;
+    /**
+     * Gets or sets a value indicating whether to use optimized text measuring approach to match Microsoft Word pagination.
+     *
+     * @default false
+     * @aspType bool
+     * @returns {boolean} - `true` use optimized text measuring approach to match Microsoft Word pagination; otherwise, `false`
+     */
+     @Property(false)
+     public enableOptimizedTextMeasuring: boolean
 
 }
 
@@ -248,11 +259,24 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public searchModule: Search;
+     /**
+      * @private
+      */
+    public optimizedModule: Optimized;
+      /**
+       * @private
+       */
+    public regularModule: Regular;
     private createdTriggered: boolean = false;
     /**
      * Collaborative editing module
      */
     public collaborativeEditingModule: CollaborativeEditing;
+    /**
+     * Holds regular or optimized module based on DocumentEditorSettting `enableOptimizedTextMeasuring` property.
+     * @private
+     */
+    public textMeasureHelper: Regular | Optimized
     /**
      * Default Paste Formatting Options
      *
@@ -1018,6 +1042,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.element.style.width = formatUnit(this.width);
             }
         }
+        this.textMeasureHelper = (this.optimizedModule) ? this.optimizedModule : this.regularModule
         this.documentHelper.initializeComponents();
         this.openBlank();
         this.renderComplete();
@@ -1129,6 +1154,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.viewer.updateScrollBars();
                 break;
             case 'documentEditorSettings':
+                if(!isNullOrUndefined(model.documentEditorSettings.enableOptimizedTextMeasuring)) {
+                    //Clears previously cached height information.
+                    this.documentHelper.heightInfoCollection = {}
+                    if(model.documentEditorSettings.enableOptimizedTextMeasuring) {
+                        this.textMeasureHelper = this.optimizedModule;
+                    } else {
+                        this.textMeasureHelper = this.regularModule;
+                    }
+                }
                 this.viewer.updateScrollBars();
                 break;
             case 'height':
@@ -1575,6 +1609,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     member: 'OptionsPane', args: [this.documentHelper]
                 });
             }
+        }
+        if (this.documentEditorSettings && this.documentEditorSettings.enableOptimizedTextMeasuring) {
+            DocumentEditor.Inject(Optimized);
+            modules.push({member: 'Optimized', args : [this.documentHelper]});
+        } else {
+            DocumentEditor.Inject(Regular);
+            modules.push({member: 'Regular', args : [this.documentHelper]});
         }
         if (this.enableEditor) {
             modules.push({
@@ -2072,8 +2113,32 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Keep Lines Together': 'Keep lines together',
         'Indents and Spacing': 'Indents and Spacing',
         'Line and Page breaks': 'Line and Page breaks',
-        'Pagination': 'Pagination'
-
+        'Pagination': 'Pagination',
+        'Single': 'Single',
+        'DashSmallGap': 'DashSmallGap',
+        'DashDot':'DashDot',
+        'Double':'Double',
+        'ThinThickSmallGap':'ThinThickSmallGap',
+        'ThickThinSmallGap':'ThickThinSmallGap',
+        'ThickThinMediumGap':'ThickThinMediumGap',
+        'ThickThinLargeGap':'ThickThinLargeGap',
+        'SingleWavy':'SingleWavy',
+        'DoubleWavy':'DoubleWavy',
+        'Inset':'Inset',
+        'DashLargeGap':'DashLargeGap',
+        'Dot':'Dot',
+        'DashDotDot':'DashDotDot',
+        'Triple':'Triple',
+        'ThinThickThinSmallGap':'ThinThickThinSmallGap',
+        'ThinThickThinMediumGap':'ThinThickThinMediumGap',
+        'ThinThickThinLargeGap':'ThinThickThinLargeGap',
+        'DashDotStroked':'DashDotStroked',
+        'Engrave3D':'Engrave3D',
+        'Thick':'Thick',
+        'Outset':'Outset',
+        'Emboss3D':'Emboss3D',
+        'ThinThickLargeGap':'ThinThickLargeGap',
+        'ThinThickMediumGap':'ThinThickMediumGap'
     };
     /* eslint-enable */
     // Public Implementation Starts

@@ -92,7 +92,20 @@ export class AxisLayoutPanel {
             height = axis.line.width;
             width = (isNullOrUndefined(lineHeight)) ? containerRect.width : lineHeight;
         }
-        const index: number = this.checkPreviousAxes(axis, axisIndex);
+        let index: number = this.checkPreviousAxes(axis, axisIndex);
+        let count: number = 0;
+        if (!isNullOrUndefined(index)) {
+            for (let i = index; i >= 0; i--) {
+                if (this.gauge.axes[i].minimum !== this.gauge.axes[i].maximum) {
+                    index = i;
+                    count++;
+                    break;
+                }
+            }
+            if (count === 0) {
+                index = null;
+            }
+        }
         if (isNullOrUndefined(index)) {
             if (orientation === 'Vertical') {
                 x = (!axis.opposedPosition ? containerRect.x : containerRect.x + containerRect.width) + axis.line.offset;
@@ -108,6 +121,9 @@ export class AxisLayoutPanel {
             }
         }
         axis.lineBounds = new Rect(x, y, width, height);
+        if (axis.minimum === axis.maximum) {
+            axis.lineBounds = new Rect(0, 0, 0, 0);
+        }
     }
 
     /**
@@ -141,6 +157,9 @@ export class AxisLayoutPanel {
                     (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - major.height - major.offset)
                     : (bounds.x + lineSize + major.offset)) : x;
             axis.majorTickBounds = new Rect(x, bounds.y, major.height, bounds.height);
+            if (axis.minimum === axis.maximum) {
+                axis.majorTickBounds = new Rect(0, 0, 0, 0);
+            }
             x = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - lineSize - minor.height) : bounds.x + lineSize)
                 + minor.offset) : x;
             x = axis.minorTicks.position !== 'Auto' ? (axis.minorTicks.position === 'Cross' ? bounds.x - minor.height / 2 - minor.offset :
@@ -148,6 +167,9 @@ export class AxisLayoutPanel {
                     (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - minor.height - minor.offset)
                     : (bounds.x + lineSize + minor.offset)) : x;
             axis.minorTickBounds = new Rect(x, bounds.y, minor.height, bounds.height);
+            if (axis.minimum === axis.maximum) {
+                axis.minorTickBounds = new Rect(0, 0, 0, 0);
+            }
         } else {
             y = axis.majorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - major.height) : bounds.y + lineSize)
                 + major.offset) : y;
@@ -156,6 +178,9 @@ export class AxisLayoutPanel {
                     (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ?
                     (bounds.y - lineSize - major.height) - major.offset : bounds.y + lineSize + major.offset)) : y;
             axis.majorTickBounds = new Rect(bounds.x, y, bounds.width, major.height);
+            if (axis.minimum === axis.maximum) {
+                axis.majorTickBounds = new Rect(0, 0, 0, 0);
+            }
             y = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - minor.height) : bounds.y + lineSize)
                 + minor.offset) : y;
             y = axis.minorTicks.position !== 'Auto' ? ((axis.minorTicks.position === 'Cross' ? bounds.y - minor.height / 2 - major.offset :
@@ -163,6 +188,9 @@ export class AxisLayoutPanel {
                     (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ?
                     (bounds.y - lineSize - minor.height) - minor.offset : bounds.y + lineSize + minor.offset)) : y;
             axis.minorTickBounds = new Rect(bounds.x, y, bounds.width, minor.height);
+            if (axis.minimum === axis.maximum) {
+                axis.minorTickBounds = new Rect(0, 0, 0, 0);
+            }
         }
     }
 
@@ -182,46 +210,50 @@ export class AxisLayoutPanel {
             axis.majorTickBounds;
         const offset: number = axis.labelStyle.offset;
         this.calculateVisibleLabels(axis);
-        const width: number = axis.maxLabelSize.width;
-        const height: number = axis.maxLabelSize.height / 2;
-        if (this.gauge.orientation === 'Vertical') {
-            x = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - width - padding) :
-                (bounds.x + bounds.width + padding)) + offset) : x;
-            let boundx: number = bounds.x;
-            const offsetForCross: number = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
-                (bounds.width > axis.lineBounds.width ? bounds.width / 2 : axis.lineBounds.width / 2) : axis.lineBounds.width / 2;
-            boundx = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
-                axis.labelStyle.position !== axis.majorTicks.position) ?
-                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ? (axis.labelStyle.position === 'Inside' ?
-                    bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
-                        bounds.x + axis.lineBounds.width : bounds.x) : (axis.labelStyle.position === 'Inside' ?
-                    axis.lineBounds.x - offsetForCross : axis.labelStyle.position === 'Outside' ?
-                        axis.lineBounds.x - bounds.width + offsetForCross : bounds.x)) : bounds.x) : bounds.x;
-            x = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.x -
-                axis.maxLabelSize.width / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
-                    (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
-                ((boundx - width - padding) - offset) : ((boundx + bounds.width + padding) + offset)) : x;
-            y = axis.lineBounds.y;
+        if (axis.minimum === axis.maximum) {
+            axis.labelBounds = new Rect(0, 0, 0, 0);
         } else {
-            y = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ?
-                (bounds.y - padding) : ((bounds.y + bounds.height + padding) + height)) + offset) : y;
-            let boundy: number = bounds.y;
-            const offsetForCross: number = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
-                (bounds.height > axis.lineBounds.height ? bounds.height / 2 : axis.lineBounds.height / 2) : axis.lineBounds.height / 2;
-            boundy = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
-                axis.labelStyle.position !== axis.majorTicks.position) ?
-                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ?
-                    (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
-                        bounds.y + axis.lineBounds.height : bounds.y) : (axis.labelStyle.position === 'Inside' ?
-                        axis.lineBounds.y - offsetForCross : axis.labelStyle.position === 'Outside' ?
-                            axis.lineBounds.y - bounds.height + offsetForCross : bounds.y)) : bounds.y) : bounds.y;
-            y = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.y +
-                axis.maxLabelSize.height / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
-                    (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
-                (boundy - padding) - offset : ((boundy + bounds.height + padding) + height) + offset) : y;
-            x = axis.lineBounds.x;
+            const width: number = axis.maxLabelSize.width;
+            const height: number = axis.maxLabelSize.height / 2;
+            if (this.gauge.orientation === 'Vertical') {
+                x = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - width - padding) :
+                    (bounds.x + bounds.width + padding)) + offset) : x;
+                let boundx: number = bounds.x;
+                const offsetForCross: number = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
+                    (bounds.width > axis.lineBounds.width ? bounds.width / 2 : axis.lineBounds.width / 2) : axis.lineBounds.width / 2;
+                boundx = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
+                    axis.labelStyle.position !== axis.majorTicks.position) ?
+                    (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ? (axis.labelStyle.position === 'Inside' ?
+                        bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
+                            bounds.x + axis.lineBounds.width : bounds.x) : (axis.labelStyle.position === 'Inside' ?
+                                axis.lineBounds.x - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                                    axis.lineBounds.x - bounds.width + offsetForCross : bounds.x)) : bounds.x) : bounds.x;
+                x = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.x -
+                    axis.maxLabelSize.width / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
+                        (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
+                    ((boundx - width - padding) - offset) : ((boundx + bounds.width + padding) + offset)) : x;
+                y = axis.lineBounds.y;
+            } else {
+                y = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ?
+                    (bounds.y - padding) : ((bounds.y + bounds.height + padding) + height)) + offset) : y;
+                let boundy: number = bounds.y;
+                const offsetForCross: number = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
+                    (bounds.height > axis.lineBounds.height ? bounds.height / 2 : axis.lineBounds.height / 2) : axis.lineBounds.height / 2;
+                boundy = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
+                    axis.labelStyle.position !== axis.majorTicks.position) ?
+                    (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ?
+                        (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
+                            bounds.y + axis.lineBounds.height : bounds.y) : (axis.labelStyle.position === 'Inside' ?
+                                axis.lineBounds.y - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                                    axis.lineBounds.y - bounds.height + offsetForCross : bounds.y)) : bounds.y) : bounds.y;
+                y = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.y +
+                    axis.maxLabelSize.height / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
+                        (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
+                    (boundy - padding) - offset : ((boundy + bounds.height + padding) + height) + offset) : y;
+                x = axis.lineBounds.x;
+            }
+            axis.labelBounds = new Rect(x, y, width, height);
         }
-        axis.labelBounds = new Rect(x, y, width, height);
     }
 
     /**
@@ -308,6 +340,11 @@ export class AxisLayoutPanel {
             x = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.width) + line.x);
         }
         pointer.bounds = new Rect(x, y, pointer.width, pointer.height);
+        if (axis.minimum === axis.maximum) {
+            pointer.bounds = new Rect(0, 0, 0, 0);
+            pointer.width = 0;
+            pointer.height = 0;
+        }
     }
 
     /**
@@ -361,6 +398,11 @@ export class AxisLayoutPanel {
             x1 = (!axis.isInversed) ? x1 : x2;
         }
         pointer.bounds = new Rect(x1, y1, width, height);
+        if (axis.minimum === axis.maximum) {
+            pointer.bounds = new Rect(0, 0, 0, 0);
+            pointer.width = 0;
+            pointer.height = 0;
+        }
     }
 
     /**
@@ -459,96 +501,98 @@ export class AxisLayoutPanel {
      */
     public calculateVisibleLabels(axis: Axis): void {
         axis.visibleLabels = [];
-        const min: number = axis.visibleRange.min;
-        const max: number = axis.visibleRange.max;
-        const interval: number = axis.visibleRange.interval;
-        let argsData: IAxisLabelRenderEventArgs;
-        let blazorArgsData : IAxisLabelRenderEventArgs;
-        const style: Label = <Label>axis.labelStyle;
-        let text: string; let labelSize: Size;
-        const customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
-        for (let i: number = min; (i <= max && interval > 0); i += interval) {
-            argsData = {
-                cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
-                    formatValue(i, this.gauge).toString(),
-                value: i
-            };
-            blazorArgsData = {
-                cancel: false, name: axisLabelRender, axis: null,
-                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
-                    formatValue(i, this.gauge).toString(),
-                value: i
-            };
-            if (this.gauge.isBlazor) {
-                const {cancel, name, text, value, axis} : IAxisLabelRenderEventArgs = blazorArgsData;
-                blazorArgsData = {cancel, name, text, value, axis};
-                argsData = blazorArgsData;
+        if (axis.minimum !== axis.maximum) {
+            const min: number = axis.visibleRange.min;
+            const max: number = axis.visibleRange.max;
+            const interval: number = axis.visibleRange.interval;
+            let argsData: IAxisLabelRenderEventArgs;
+            let blazorArgsData: IAxisLabelRenderEventArgs;
+            const style: Label = <Label>axis.labelStyle;
+            let text: string; let labelSize: Size;
+            const customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
+            for (let i: number = min; (i <= max && interval > 0); i += interval) {
+                argsData = {
+                    cancel: false, name: axisLabelRender, axis: axis,
+                    text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                        formatValue(i, this.gauge).toString(),
+                    value: i
+                };
+                blazorArgsData = {
+                    cancel: false, name: axisLabelRender, axis: null,
+                    text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                        formatValue(i, this.gauge).toString(),
+                    value: i
+                };
+                if (this.gauge.isBlazor) {
+                    const { cancel, name, text, value, axis }: IAxisLabelRenderEventArgs = blazorArgsData;
+                    blazorArgsData = { cancel, name, text, value, axis };
+                    argsData = blazorArgsData;
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
+                    if (!argsData.cancel) {
+                        axis.visibleLabels.push(new VisibleLabels(
+                            argsData.text, i, labelSize
+                        ));
+                        if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
+                            const currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
+                                : null;
+                            if (currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
+                                this.getMaxLabelWidth(this.gauge, axis);
+                                this.axisRenderer.drawAxisLabels(
+                                    axis,
+                                    (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
+                                );
+                            }
+                        }
+                    }
+                };
+                axisLabelRenderSuccess.bind(this);
+                this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
+
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
-                if (!argsData.cancel) {
-                    axis.visibleLabels.push(new VisibleLabels(
-                        argsData.text, i, labelSize
-                    ));
-                    if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
-                        const currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
-                            : null;
-                        if ( currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
+            const lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
+            const maxVal: number = axis.visibleRange.max;
+            if (lastLabel !== maxVal && axis.showLastLabel === true) {
+                argsData = {
+                    cancel: false, name: axisLabelRender, axis: axis,
+                    text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge) :
+                        formatValue(maxVal, this.gauge).toString(),
+                    value: maxVal
+                };
+                blazorArgsData = {
+                    cancel: false, name: axisLabelRender, axis: null,
+                    text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge) :
+                        formatValue(maxVal, this.gauge).toString(),
+                    value: maxVal
+                };
+                if (this.gauge.isBlazor) {
+                    const { cancel, name, text, value, axis }: IAxisLabelRenderEventArgs = blazorArgsData;
+                    blazorArgsData = { cancel, name, text, value, axis };
+                    argsData = blazorArgsData;
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
+                    labelSize = measureText(argsData.text, axis.labelStyle.font);
+                    if (!argsData.cancel) {
+                        axis.visibleLabels.push(new VisibleLabels(
+                            argsData.text, maxVal, labelSize
+                        ));
+                        if (this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
                             this.getMaxLabelWidth(this.gauge, axis);
                             this.axisRenderer.drawAxisLabels(
                                 axis,
-                                (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
+                                (
+                                    document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
                             );
                         }
                     }
-                }
-            };
-            axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
-
-        }
-        const lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
-        const maxVal: number = axis.visibleRange.max;
-        if (lastLabel !== maxVal && axis.showLastLabel === true) {
-            argsData = {
-                cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge)  :
-                    formatValue(maxVal, this.gauge).toString(),
-                value: maxVal
-            };
-            blazorArgsData = {
-                cancel: false, name: axisLabelRender, axis : null,
-                text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge)  :
-                    formatValue(maxVal, this.gauge).toString(),
-                value: maxVal
-            };
-            if (this.gauge.isBlazor) {
-                const {cancel, name, text, value, axis} : IAxisLabelRenderEventArgs = blazorArgsData;
-                blazorArgsData = {cancel, name, text, value, axis};
-                argsData = blazorArgsData;
+                };
+                axisLabelRenderSuccess.bind(this);
+                this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
-                labelSize = measureText(argsData.text, axis.labelStyle.font);
-                if (!argsData.cancel) {
-                    axis.visibleLabels.push(new VisibleLabels(
-                        argsData.text, maxVal, labelSize
-                    ));
-                    if (this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
-                        this.getMaxLabelWidth(this.gauge, axis);
-                        this.axisRenderer.drawAxisLabels(
-                            axis,
-                            (
-                                document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
-                        );
-                    }
-                }
-            };
-            axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
+            this.getMaxLabelWidth(this.gauge, axis);
         }
-        this.getMaxLabelWidth(this.gauge, axis);
     }
 
     /**

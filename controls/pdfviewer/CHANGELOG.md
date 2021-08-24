@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 19.2.57 (2021-08-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#F168163` - The download file name is now set properly in the PDF Viewer.
+
+## 19.2.56 (2021-08-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#338238` - The Form Field text position is proper in the printed landscape document.
+- `#336415` - Now, the isLock property works for the sticky notes annotation.
+- `#336843` - Now, the search notification dialog is displaying in the correct position while disabling the toolbar.
+- `#337234`, `#337796` - Now, the stamp annotation will not be removed from the PDF document while removing the annotation comments.
+
 ## 19.2.51 (2021-08-03)
 
 ### PDF Viewer

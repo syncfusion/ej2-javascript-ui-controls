@@ -217,7 +217,10 @@ export class AxisLayoutPanel {
      */
 
     private calculateNumericInterval(axis: Axis, rect: Rect): number {
-        if (axis.majorTicks.interval !== null) {
+        const allowComponentRender: boolean = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
+        if (!allowComponentRender) {
+            return 0;
+        } else if (axis.majorTicks.interval !== null) {
             return axis.majorTicks.interval;
         }
         let totalAngle: number = axis.endAngle - axis.startAngle;
@@ -271,41 +274,43 @@ export class AxisLayoutPanel {
         let roundValue: number;
         const interval: number = axis.visibleRange.interval;
         const max: number = axis.visibleRange.max;
-        for (let i: number = axis.visibleRange.min; (i <= max && interval); i += interval) {
-            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
-            argsData = {
-                cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(roundValue)) :
-                    format(roundValue),
-                value: roundValue
-            };
-            if (this.gauge.isBlazor) {
-                const { axis, ...blazorArgsData } : IAxisLabelRenderEventArgs = argsData;
-                argsData = blazorArgsData;
-            }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
-                if (!argsData.cancel) {
-                    axis.visibleLabels.push(new VisibleLabels(
-                        argsData.text, i
-                    ));
-                    if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
-                        const currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
-                            : null;
-                        if ( currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
-                            this.getMaxLabelWidth(this.gauge, axis);
-                            axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
-                            axis.farSize = axis.farSize + axis.maxLabelSize.height;
-                            this.axisRenderer.drawAxisLabels(
-                                axis, this.gauge.axes.length - 1,
-                                (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))),
-                                this.gauge);
+        if ((isNullOrUndefined(axis.minimum) && isNullOrUndefined(axis.maximum)) || axis.minimum !== axis.maximum) {
+            for (let i: number = axis.visibleRange.min; (i <= max && interval); i += interval) {
+                roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
+                argsData = {
+                    cancel: false, name: axisLabelRender, axis: axis,
+                    text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(roundValue)) :
+                        format(roundValue),
+                    value: roundValue
+                };
+                if (this.gauge.isBlazor) {
+                    const { axis, ...blazorArgsData }: IAxisLabelRenderEventArgs = argsData;
+                    argsData = blazorArgsData;
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
+                    if (!argsData.cancel) {
+                        axis.visibleLabels.push(new VisibleLabels(
+                            argsData.text, i
+                        ));
+                        if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
+                            const currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
+                                : null;
+                            if (currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
+                                this.getMaxLabelWidth(this.gauge, axis);
+                                axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
+                                axis.farSize = axis.farSize + axis.maxLabelSize.height;
+                                this.axisRenderer.drawAxisLabels(
+                                    axis, this.gauge.axes.length - 1,
+                                    (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))),
+                                    this.gauge);
+                            }
                         }
                     }
-                }
-            };
-            axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
+                };
+                axisLabelRenderSuccess.bind(this);
+                this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
+            }
         }
         const lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         const maxVal: number = axis.visibleRange.max;
@@ -426,6 +431,7 @@ export class AxisLayoutPanel {
             element = gauge.renderer.createGroup({
                 id: gauge.element.id + '_Axis_Group_' + index
             });
+            this.gauge.allowComponentRender = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
             renderer.checkAngles(axis);
             renderer.drawAxisOuterLine(axis, index, element, gauge);
             renderer.drawAxisRange(axis, index, element);

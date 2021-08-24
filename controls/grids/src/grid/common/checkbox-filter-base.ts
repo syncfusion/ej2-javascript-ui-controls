@@ -1,6 +1,6 @@
 /* tslint:disable-next-line:max-line-length */
 import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue } from '@syncfusion/ej2-base';
-import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked } from '../base/util';
+import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked, clearReactVueTemplates } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions } from '@syncfusion/ej2-data';
@@ -356,9 +356,8 @@ export class CheckBoxFilterBase {
             if (filterTemplateCol.length && !isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
-            if (this.parent.isReact && this.parent.destroyTemplate !== undefined) {
-                this.parent.destroyTemplate(['filterItemTemplate']);
-                this.parent.renderTemplates();
+            if ((this.parent.isReact || this.parent.isVue) && this.parent.destroyTemplate !== undefined) {
+                clearReactVueTemplates(this.parent, ['filterItemTemplate']);
             }
             this.parent.notify(events.filterMenuClose, { field: this.options.field });
             this.dialogObj.destroy();

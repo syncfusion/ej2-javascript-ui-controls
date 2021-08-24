@@ -291,7 +291,7 @@ describe('AutoComplete', () => {
                 done();
             };
             mouseEventArgs.target = document.body;
-            atcObj.onBlur(mouseEventArgs);
+            atcObj.onBlurHandler(mouseEventArgs);
         });
         describe('ignoreAccent set as false ', () => {
             let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
@@ -344,7 +344,7 @@ describe('AutoComplete', () => {
                     done();
                 };
                 mouseEventArgs.target = document.body;
-                atcObj.onBlur(mouseEventArgs);
+                atcObj.onBlurHandler(mouseEventArgs);
             });
         });
         describe('ignoreCase set as false ', () => {
@@ -399,7 +399,7 @@ describe('AutoComplete', () => {
                     done();
                 };
                 mouseEventArgs.target = document.body;
-                atcObj.onBlur(mouseEventArgs);
+                atcObj.onBlurHandler(mouseEventArgs);
             });
         });
         describe('ignoreCase set as false ', () => {
@@ -455,7 +455,7 @@ describe('AutoComplete', () => {
                     done();
                 };
                 mouseEventArgs.target = document.body;
-                atcObj.onBlur(mouseEventArgs);
+                atcObj.onBlurHandler(mouseEventArgs);
             });
         });
     });

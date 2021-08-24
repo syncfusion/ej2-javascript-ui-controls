@@ -472,6 +472,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public endValue: number;
     /** @private */
     private isRangeUpdate: boolean = false;
+    /** @private */
+    public allowComponentRender: boolean;
     /**
      * Render axis panel for gauge.
      *

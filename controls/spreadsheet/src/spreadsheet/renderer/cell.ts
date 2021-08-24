@@ -202,12 +202,7 @@ export class CellRenderer implements ICellRenderer {
                 cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex
             });
         }
-        if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
-            this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
-                first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded:
-                args.isHeightCheckNeeded, manualUpdate: args.manualUpdate});
-        }
+        this.applyStyle(args, style);
         if (this.parent.allowConditionalFormat && args.lastCell) {
             this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell, td: args.td });
         }
@@ -249,6 +244,14 @@ export class CellRenderer implements ICellRenderer {
             });
         }
     }
+    private applyStyle(args: CellRenderArgs, style: CellStyleModel): void {
+        if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
+            this.parent.notify(applyCellFormat, <CellFormatArgs>{
+                style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
+                first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded:
+                args.isHeightCheckNeeded, manualUpdate: args.manualUpdate});
+        }
+    }
     private calculateFormula(args: CellRenderArgs): void {
         const isFormula: boolean = checkIsFormula(args.cell.formula);
         const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
@@ -284,17 +287,13 @@ export class CellRenderer implements ICellRenderer {
             } else {
                 args.td.style.display = 'none';
             }
-            if (args.cell.colSpan < 0) { this.parent.notify(checkPrevMerge, args); }
+            if (args.cell.colSpan < 0) {
+                this.parent.notify(checkPrevMerge, args);
+                if (args.cell.style && args.cell.style.borderTop) { this.applyStyle(args, { borderTop: args.cell.style.borderTop }); }
+            }
             if (args.cell.rowSpan < 0) {
                 args.isRow = true; this.parent.notify(checkPrevMerge, args);
-                if (args.cell && args.cell.rowSpan && args.cell.rowSpan < 0) {
-                    const prevCell: HTMLElement = this.parent.getCell(args.rowIdx, args.colIdx - 1, <HTMLTableRowElement>args.row);
-                    let border: string = 'none';
-                    border = args.cell && args.cell.style && args.cell.style.borderLeft ? args.cell.style.borderLeft : 'none';
-                    if (prevCell && border) {
-                        prevCell.style.borderRight = (border === 'none') ? prevCell.style.borderRight : border;
-                    }
-                }
+                if (args.cell.style && args.cell.style.borderLeft) { this.applyStyle(args, { borderLeft: args.cell.style.borderLeft }); }
             }
             return true;
         }

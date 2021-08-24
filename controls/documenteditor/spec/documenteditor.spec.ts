@@ -18,6 +18,7 @@ import {
 import { EditorHistory } from '../src/document-editor/implementation/editor-history/index';
 import { profile, inMB, getMemoryProfile } from './common.spec';
 import { XmlHttpRequestHandler } from '../src/document-editor/base/ajax-helper';
+import { Regular } from '../src/document-editor/implementation/text-helper/regular';
 
 /**
  * Document Editor spec
@@ -39,6 +40,7 @@ describe('DocumentEditor', () => {
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             editor = new DocumentEditor({});
+            DocumentEditor.Inject(Regular);
             (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
             (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
             (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -88,6 +90,7 @@ console.log('page background color');
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             editor = new DocumentEditor({});
+            DocumentEditor.Inject(Regular);
             (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
             (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
             (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -228,6 +231,7 @@ console.log('Table widget validation');
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             editor = new DocumentEditor({});
+            DocumentEditor.Inject(Regular);
             (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
             (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
             (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -1456,6 +1460,7 @@ console.log('Prevent bold operation');
 
     describe('Component created and destroy event validation', () => {
         let documentEditor = new DocumentEditor();
+        DocumentEditor.Inject(Regular);
         it('Created event validation', () => {
 console.log('Created event validation');
             let createSpy = jasmine.createSpy('created');
@@ -1495,6 +1500,7 @@ describe("Initilize document editor", function () {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({});
+        DocumentEditor.Inject(Regular);
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -1527,6 +1533,7 @@ describe('Header Ajax value checking', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({});
+        DocumentEditor.Inject(Regular);
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;

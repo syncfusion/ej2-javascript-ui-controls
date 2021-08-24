@@ -341,16 +341,24 @@ export class Annotation {
             this.textMarkupAnnotationModule.deleteTextMarkupAnnotation();
         }
         let isLock: boolean = false;
+        let isReadOnly: boolean = false;
         if (this.pdfViewer.selectedItems.annotations.length > 0) {
             // eslint-disable-next-line
             let annotation: any = this.pdfViewer.selectedItems.annotations[0];
+            let type: any = annotation.shapeAnnotationType;
+            if (type === 'Path' || annotation.formFieldAnnotationType === 'SignatureField' || annotation.formFieldAnnotationType === 'InitialField' || type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') {
+                let inputFields: any = document.getElementById(annotation.id);
+                if (inputFields && inputFields.disabled) {
+                    isReadOnly = true;
+                }
+            }
             if (annotation.annotationSettings) {
                 isLock = annotation.annotationSettings.isLock;
                 if (isLock && this.checkAllowedInteractions('Delete', annotation)) {
                     isLock = false;
                 }
             }
-            if (!isLock) {
+            if (!isLock && !isReadOnly) {
                 const pageNumber: number = annotation.pageIndex;
                 // eslint-disable-next-line
                 let shapeType: any = annotation.shapeAnnotationType;
@@ -514,6 +522,9 @@ export class Annotation {
         if (annotation.shapeAnnotationType === 'stamp') {
             selectAnnotation.uniqueKey = annotation.randomId;
             delete selectAnnotation.randomId;
+        }
+        if (annotation.shapeAnnotationType === 'sticky') {
+            selectAnnotation.uniqueKey = annotation.annotName;
         }
         if (annotation.id) {
             selectAnnotation.uniqueKey = annotation.id;
@@ -1561,7 +1572,10 @@ for (let i: number = 0; i < collections.length; i++) {
                 this.modifyInCollections(actionObject.annotation.annotations[0], 'bounds');
                 this.pdfViewer.renderDrawing();
                 break;
-            case 'FormDesigner Properties Change':
+            case 'FormDesigner Properties Change': 
+                if(actionObject.undoElement && actionObject.undoElement.isMultiline !== actionObject.redoElement.isMultiline) {
+                    this.undoRedoMultiline(actionObject.undoElement);
+                }
                 this.updateFormFieldPropertiesChanges(actionObject.undoElement.formFieldAnnotationType, actionObject.undoElement);    
                 break;
             case 'FormField Value Change':
@@ -1881,7 +1895,10 @@ for (let i: number = 0; i < collections.length; i++) {
                 this.modifyInCollections(actionObject.annotation.annotations[0], 'bounds');
                 this.pdfViewer.renderDrawing();
                 break;
-            case 'FormDesigner Properties Change':
+            case 'FormDesigner Properties Change': 
+                if(actionObject.redoElement && actionObject.undoElement.isMultiline !== actionObject.redoElement.isMultiline) {
+                    this.undoRedoMultiline(actionObject.redoElement)
+                } 
                 this.updateFormFieldPropertiesChanges(actionObject.redoElement.formFieldAnnotationType, actionObject.redoElement);    
                 break;
             case 'FormField Value Change':
@@ -1943,6 +1960,14 @@ for (let i: number = 0; i < collections.length; i++) {
             this.actionCollection.push(actionObject);
             this.updateToolbar();
             this.isUndoRedoAction = false;
+        }
+    }
+
+    private undoRedoMultiline(element: any): void {
+        if (element.isMultiline && element.formFieldAnnotationType === 'Textbox') {
+            this.pdfViewer.formDesignerModule.renderMultilineText(element, true);
+        } else if(element.formFieldAnnotationType === 'Textbox') {
+           this.pdfViewer.formDesignerModule.renderTextbox(element,true);
         }
     }
 
@@ -2034,6 +2059,11 @@ for (let i: number = 0; i < collections.length; i++) {
     private updateToolbar(): void {
         if (this.pdfViewer.toolbarModule) {
             this.pdfViewer.toolbarModule.updateUndoRedoButtons();
+        }
+        if (this.actionCollection && this.actionCollection.length == 0) {
+            this.pdfViewer.isDocumentEdited = false;
+        } else {
+            this.pdfViewer.isDocumentEdited = true;
         }
     }
 

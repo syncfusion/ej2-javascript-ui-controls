@@ -470,6 +470,96 @@ describe('Linear gauge control', () => {
             ];
             gauge.refresh();
         });
+
+        it('checking with axes same minimum and maximum - horizontal', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg1: HTMLElement = <HTMLElement>document.getElementById('container_AxisLine_0');
+                let path = svg1.getAttribute('d');
+                let split = path.split(" ");
+                expect(split[0].slice(-1) == split[3] ).toBe(true);
+                expect(split[1] == split[4].match(/\d/g)[0]).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 0
+                }
+            ];
+            gauge.refresh();
+        });
+
+        it('checking with axes same minimum and maximum - Vertical', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg1: HTMLElement = <HTMLElement>document.getElementById('container_AxisLine_0');
+                let path = svg1.getAttribute('d');
+                let split = path.split(" ");
+                expect(split[0].slice(-1) == split[3] ).toBe(true);
+                expect(split[1] == split[4].match(/\d/g)[0]).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 0
+                }
+            ];
+            gauge.refresh();
+        });
+
+        it('checking with multiple axes - horizontal with same minimum and maximum', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg1: HTMLElement = <HTMLElement>document.getElementById('container_Axis_Group_0').childNodes[4];
+                let svg2: HTMLElement = <HTMLElement>document.getElementById('container_Axis_Group_1').childNodes[4];
+                let svg3: HTMLElement = <HTMLElement>document.getElementById('container_Axis_Group_2').childNodes[4];
+                expect(svg1.childElementCount == 0).toBe(true);
+                expect(svg2.childElementCount != 0).toBe(true);
+                expect(svg3.childElementCount == 0).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 0
+                },
+                {
+                    minimum: 10,
+                    maximum: 20
+                },
+                {
+                    minimum: 50,
+                    maximum: 50
+                }
+            ];
+            gauge.refresh();
+        });
+
+        it('checking with multiple axes - Vertical with same minimum and maximum', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg1: HTMLElement = <HTMLElement>document.getElementById('container_Axis_Group_0').childNodes[4];
+                let svg2: HTMLElement = <HTMLElement>document.getElementById('container_Axis_Group_1').childNodes[4];
+                let svg3: HTMLElement = <HTMLElement>document.getElementById('container_Axis_Group_2').childNodes[4];
+                expect(svg1.childElementCount == 0).toBe(true);
+                expect(svg2.childElementCount != 0).toBe(true);
+                expect(svg3.childElementCount == 0).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 0
+                },
+                {
+                    minimum: 10,
+                    maximum: 20
+                },
+                {
+                    minimum: 50,
+                    maximum: 50
+                }
+            ];
+            gauge.refresh();
+        });
     });
     it('memory leak', () => {     
         profile.sample();

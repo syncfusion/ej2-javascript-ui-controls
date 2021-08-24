@@ -791,6 +791,11 @@ export interface PdfFormFieldBaseModel {
     isRequired?: boolean;
 
     /**
+     * Enable or disable the Multiline Textbox.
+     */
+    isMultiline?: boolean;
+
+    /**
      * Gets or sets the items to be displayed for drop down/ listbox.
      */
     options?: ItemModel[];

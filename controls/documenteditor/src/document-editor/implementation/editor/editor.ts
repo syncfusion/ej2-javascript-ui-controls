@@ -99,6 +99,10 @@ export class Editor {
     /**
      * @private
      */
+     public triggerPageSpellCheck: boolean = true;
+    /**
+     * @private
+     */
     public chartType: boolean = false;
 
     private refListNumber: number = undefined;
@@ -967,6 +971,9 @@ export class Editor {
         }
         if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.isShiftingEnabled) {
             this.documentHelper.owner.fireContentChange();
+        }
+        if (!isNullOrUndefined(this.selection.editPosition)) {
+            this.triggerPageSpellCheck = false;
         }
     }
     /**
@@ -10634,7 +10641,7 @@ export class Editor {
             this.editorHistory.currentBaseHistoryInfo.action = 'InsertTextParaReplace';
         }
         if (end.paragraph === paragraph && end.currentWidget !== paragraph.lastChild ||
-            (end.currentWidget === paragraph.lastChild && end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget)) ||
+            (end.currentWidget === paragraph.lastChild && (end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget) && (!((paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof CommentCharacterElementBox) && end.offset + 1 <= selection.getLineLength(paragraph.lastChild as LineWidget)))) ||
             paraReplace) {
             let isStartParagraph: boolean = start.paragraph === paragraph;
             if (end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
@@ -12063,7 +12070,10 @@ export class Editor {
      * Skips comment start marker, if its end marker is not in selection.
      */
     private skipCommentCharacter(inline: CommentCharacterElementBox) {
-        let curentHistoryInfo = this.editorHistory.currentBaseHistoryInfo;
+        let curentHistoryInfo: BaseHistoryInfo = this.editorHistory.currentBaseHistoryInfo;
+        let insertPosition: string = curentHistoryInfo.insertPosition;
+        let startPos: string = curentHistoryInfo.selectionStart;
+        let endPos: string = curentHistoryInfo.selectionEnd;
         // Initialized a complex history and skipped comment start marker position is recorded as a new action, 
         // since its comment end mark is not in selection.
         if (this.editorHistory.currentBaseHistoryInfo && !this.editorHistory.currentHistoryInfo
@@ -12094,6 +12104,9 @@ export class Editor {
                 baseHstry.insertPosition = this.selection.isForward ? baseHstry.selectionStart : baseHstry.selectionEnd;
                 baseHstry.endPosition = baseHstry.insertPosition;
                 this.editorHistory.currentHistoryInfo.addModifiedAction(baseHstry);
+                this.editorHistory.currentBaseHistoryInfo.insertPosition = insertPosition;
+                this.editorHistory.currentBaseHistoryInfo.selectionStart = startPos;
+                this.editorHistory.currentBaseHistoryInfo.selectionEnd = endPos;
             }
         }
     }
@@ -12506,10 +12519,13 @@ export class Editor {
      */
     public onEnter(isInsertPageBreak?: boolean): void {
         let selection: Selection = this.documentHelper.selection;
-        var format: SelectionCharacterFormat = new SelectionCharacterFormat(this.selection);
-        if (selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal') {
+        let format: SelectionCharacterFormat;
+        if (isNullOrUndefined(selection.start.paragraph.paragraphFormat.baseStyle) ||
+            selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal') {
+            format = new SelectionCharacterFormat(undefined)
             format.cloneFormat(this.selection.characterFormat);
         }
+
         if (this.isXmlMapped) {
             return;
         }
@@ -12594,8 +12610,10 @@ export class Editor {
                 this.checkAndConvertToHyperlink(selection, true, paragraph);
             }
         }
-        if (!isNullOrUndefined(selection.start.paragraph) && selection.start.paragraph.isEmpty()) {
+        if (!isNullOrUndefined(format) && !isNullOrUndefined(selection.start.paragraph) && selection.start.paragraph.isEmpty()) {
+            this.selection.isRetrieveFormatting = true;
             this.selection.characterFormat.cloneFormat(format);
+            this.selection.isRetrieveFormatting = false;
         }
     }
     private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number): void {

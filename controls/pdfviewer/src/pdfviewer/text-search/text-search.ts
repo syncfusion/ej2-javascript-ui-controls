@@ -353,7 +353,7 @@ export class TextSearch {
 
     private initSearch(pageIndex: number, isSinglePageSearch: boolean, isCount?: boolean ): void {
         // eslint-disable-next-line
-        let storedData: any = this.pdfViewerBase.getStoredData(pageIndex);
+        let storedData: any = this.pdfViewerBase.getStoredData(pageIndex, true);
         let pageText: string = null;
         let textContents: string[] = null;
         // eslint-disable-next-line
@@ -900,16 +900,20 @@ export class TextSearch {
         const tileCount: number = this.pdfViewerBase.getTileCount(pageWidth);
         let noTileX: number = viewPortWidth >= pageWidth ? 1 : tileCount;
         let noTileY: number = viewPortWidth >= pageWidth ? 1 : tileCount;
+        let isTileRendering: boolean = false;
         const tileSettings: TileRenderingSettingsModel = this.pdfViewer.tileRenderingSettings;
         if (tileSettings.enableTileRendering && tileSettings.x > 0 && tileSettings.y > 0) {
             noTileX = viewPortWidth >= pageWidth ? 1 : tileSettings.x;
             noTileY = viewPortWidth >= pageWidth ? 1 : tileSettings.y;
         }
+        if (noTileX > 1 && noTileY > 1) {
+            isTileRendering = true;
+        }
         for (let x: number = 0; x < noTileX; x++) {
             for (let y: number = 0; y < noTileY; y++) {
                 let jsonObject: object;
                 // eslint-disable-next-line max-len
-                jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viewPortWidth: viewPortWidth, viewPortHeight: viewPortHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'Search', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId
+                jsonObject = { xCoordinate: x, yCoordinate: y, pageNumber: pageIndex, viewPortWidth: viewPortWidth, viewPortHeight: viewPortHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'Search', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId
                     , tileXCount: noTileX, tileYCount: noTileY };
                 if (this.pdfViewerBase.jsonDocumentId) {
                     // eslint-disable-next-line
@@ -941,7 +945,20 @@ export class TextSearch {
                                 } else {
                                     proxy.pdfViewerBase.storeWinData(data, pageNumber, data.tileX, data.tileY);
                                 }
-                                proxy.initSearch(pageIndex, false);
+                                if (!isTileRendering) {
+                                    proxy.initSearch(pageIndex, false);
+                                } else {
+                                    if (x === (noTileX - 1) && y === (noTileY - 1)) {
+                                       proxy.initSearch(pageIndex, false);
+                                    }
+                                }
+                            } else if (isTileRendering && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                                proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderPages, data);
+                                const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
+                                proxy.pdfViewerBase.storeWinData(data, pageNumber, data.tileX, data.tileY);
+                                if (x === (noTileX - 1) && y === (noTileY - 1)) {
+                                    proxy.initSearch(pageIndex, false);
+                                }
                             }
                         }
                     }

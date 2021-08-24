@@ -56,7 +56,7 @@ export interface IMulitSelect extends Component<HTMLElement> {
     showSelectAll: boolean
     scrollFocusStatus: boolean
     focused: boolean
-    onBlur(eve?: MouseEvent, isDocClickFromCheck?: boolean): void
+    onBlurHandler(eve?: MouseEvent, isDocClickFromCheck?: boolean): void
     keyAction?: boolean
     removeFocus?(): void
     getLocaleName?(): string

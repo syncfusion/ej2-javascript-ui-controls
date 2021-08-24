@@ -2478,7 +2478,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (this.height === 'auto' && !(this.element.classList.contains('e-rte-full-screen')) && !this.isResizeInitialized) {
                 heightValue = 'auto';
             } else {
-                heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
+                heightValue = heightPercent && rteHeightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
             }
         }
         if (target !== 'windowResize') {
@@ -2542,7 +2542,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public getCharCount(): number {
         const htmlText : string = this.editorMode === 'Markdown' ? (this.inputElement as HTMLTextAreaElement).value.trim() :
             (this.inputElement as HTMLTextAreaElement).textContent.trim();
-        return htmlText.length;
+        let htmlLength: number;
+        if (this.editorMode !== 'Markdown' && htmlText.indexOf('\u200B') !== -1) {
+            htmlLength = htmlText.replace(/\u200B/g, '').length;
+        } else {
+            htmlLength = htmlText.length;
+        }
+        return htmlLength;
     }
 
     /**

@@ -299,3 +299,34 @@ describe('Testing the insert method for html content paste', function () {
         expect((divElement as any).childElementCount).toBe(4);
     });
 });
+
+describe('EJ2-52017-RichTextEditor hangs when pasting the word content after the cleared the value', function () {
+    let innervalue: string = '<p><br></p>';
+    let rangeNodes: Node[] = [];
+    let range: Range;
+    let nodeCutter: NodeCutter = new NodeCutter();
+    let divElement: HTMLElement = document.createElement('div');
+    let wrapperDivElement: HTMLElement = document.createElement('div');
+    let pasteElement: HTMLElement = document.createElement('div');
+    divElement.id = 'divElement';
+    pasteElement.classList.add('pasteContent');
+    pasteElement.style.display = 'inline';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    pasteElement.innerHTML = innervalue;
+    beforeAll(function () {
+        wrapperDivElement.appendChild(divElement);
+        document.body.appendChild(wrapperDivElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Inserting pasted element without replacing nearest e-content element', function () {
+        range = document.createRange();
+        range.setStart(divElement, 0);
+        range.setEnd(divElement, 0);
+        rangeNodes.push(divElement.firstElementChild);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect((divElement as any).childNodes[0].parentElement.hasAttribute("contenteditable")).toBe(true);
+    });
+});

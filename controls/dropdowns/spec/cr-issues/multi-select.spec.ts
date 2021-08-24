@@ -468,7 +468,7 @@ describe('MultiSelect', () => {
                 done();
             };
             (<any>atcObj).focusIn();
-            (<any>atcObj).onBlur();
+            (<any>atcObj).onBlurHandler();
             atcObj.destroy();
         });
     });
@@ -1302,7 +1302,7 @@ describe('MultiSelect', () => {
             (<any>listObj).onMouseClick(mouseEventArgs);
             window.scrollTo(0, document.body.scrollHeight);
             mouseEventArgs.target = document.body;
-            listObj.onBlur(mouseEventArgs);
+            listObj.onBlurHandler(mouseEventArgs);
             mouseEventArgs.target = listObj.componentWrapper;
             mouseEventArgs.type = 'mousedown';
             (<any>listObj).wrapperClick(mouseEventArgs);
@@ -1530,7 +1530,7 @@ describe('MultiSelect', () => {
             (<any>dropDowns).wrapperClick(mouseEventArgs);
             expect(ischanged).not.toBe(true);
             mouseEventArgs.target = document.body;
-            dropDowns.onBlur(mouseEventArgs);
+            dropDowns.onBlurHandler(mouseEventArgs);
             expect(dropDowns.isPopupOpen()).not.toBe(true);
             expect(ischanged).toBe(true);
             mouseEventArgs.target = dropDowns.componentWrapper;
@@ -1540,7 +1540,7 @@ describe('MultiSelect', () => {
             mouseEventArgs.type = 'mouseup';
             dropDowns.clearAll(mouseEventArgs);
             mouseEventArgs.target = document.body;
-            dropDowns.onBlur(mouseEventArgs);
+            dropDowns.onBlurHandler(mouseEventArgs);
             expect(ischanged).toBe(true);
         });
     });
@@ -1849,7 +1849,7 @@ describe('MultiSelect', () => {
             (<any>listObj).onKeyDown(keyboardEventArgs);
             // COntrol Focus out
             (<any>listObj).inputElement.blur();
-            (<any>listObj).onBlur();
+            (<any>listObj).onBlurHandler();
         });
     });
     describe('EJ2-39000', () => {
@@ -2114,7 +2114,7 @@ describe('MultiSelect', () => {
             (<any>listObj).onInput();
             (<any>listObj).keyUp(keyboardEventArgs);
             expect((<any>listObj).ulElement.querySelectorAll('li').length).toBe(1);
-            listObj.onBlur();
+            listObj.onBlurHandler();
             (<any>listObj).wrapperClick(mouseEventArgs);
             expect((<any>listObj).ulElement.querySelectorAll('li').length).toBe(9);
         });
@@ -2159,7 +2159,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 9;
             listObj.onKeyDown(keyboardEventArgs);
             (<any>listObj).inputElement.blur();
-            (<any>listObj).onBlur();
+            (<any>listObj).onBlurHandler();
             listObj.showPopup();
             keyboardEventArgs.keyCode = 40;
             listObj.onKeyDown(keyboardEventArgs);
@@ -2294,7 +2294,7 @@ describe('MultiSelect', () => {
             mouseEventArgs.type = 'click';
             listObj.onMouseClick(mouseEventArgs);
             listObj.inputElement.blur();
-            listObj.onBlur();
+            listObj.onBlurHandler();
             setTimeout(() => {
                 expect(listObj.viewWrapper.innerText).toBe('Empty');
                 expect((listObj.value)[0]).toBe('');

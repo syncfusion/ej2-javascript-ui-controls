@@ -15,8 +15,21 @@ export interface TextSizeInfo {
 /**
  * @private
  */
+ export interface FontSizeInfo {
+    HeightFactor?: number
+    BaselineFactor?: number
+}
+/**
+ * @private
+ */
 export interface TextHeightInfo {
     [key: string]: TextSizeInfo
+}
+/**
+ * @private
+ */
+ export interface FontHeightInfo {
+    [key: string]: FontSizeInfo
 }
 /**
  * @private
@@ -88,7 +101,7 @@ export class TextHelper {
         if (!isNullOrUndefined(this.documentHelper.heightInfoCollection[key])) {
             return this.documentHelper.heightInfoCollection[key];
         }
-        const sizeInfo: TextSizeInfo = this.getHeightInternal(characterFormat);
+        const sizeInfo: TextSizeInfo = this.documentHelper.owner.textMeasureHelper.getHeightInternal(characterFormat);
         this.documentHelper.heightInfoCollection[key] = sizeInfo;
         return sizeInfo;
     }
@@ -102,32 +115,6 @@ export class TextHelper {
             formatText += ';' + 'italic';
         }
         return formatText;
-    }
-    public getHeightInternal(characterFormat: WCharacterFormat): TextSizeInfo {
-        let textHeight: number = 0;
-        let baselineOffset: number = 0;
-        const spanElement: HTMLSpanElement = document.createElement('span');
-        spanElement.innerText = 'm';
-        this.applyStyle(spanElement, characterFormat);
-        const parentDiv: HTMLDivElement = document.createElement('div');
-        parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
-        const tempDiv: HTMLDivElement = document.createElement('div');
-        tempDiv.setAttribute('style', 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;');
-        parentDiv.appendChild(spanElement);
-        parentDiv.appendChild(tempDiv);
-        document.body.appendChild(parentDiv);
-        // Sets the text element's height.
-        textHeight = spanElement.offsetHeight;
-        // Calculate the text element's baseline offset.
-        const textTopVal: number = spanElement.offsetTop;
-        const tempDivTopVal: number = tempDiv.offsetTop;
-        // let width: number = (parentDiv.offsetWidth - spanElement.offsetWidth);
-        // if ((textTopVal - width) === 1) {
-        //     tempDivTopVal += width;
-        // }
-        baselineOffset = tempDivTopVal - textTopVal;
-        document.body.removeChild(parentDiv);
-        return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
     }
     public measureTextExcludingSpaceAtEnd(text: string, characterFormat: WCharacterFormat): number {
         return this.getWidth(HelperMethods.trimEnd(text), characterFormat);
@@ -167,26 +154,7 @@ export class TextHelper {
         }
         return textToRender;
     }
-    public applyStyle(spanElement: HTMLSpanElement, characterFormat: WCharacterFormat): void {
-        if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
-            let style: string = 'white-space:nowrap;';
-            if (characterFormat.fontFamily !== '') {
-                style += 'font-family:' + characterFormat.fontFamily + ';';
-            }
-            let fontSize: number = characterFormat.fontSize;
-            if (fontSize <= 0.5) {
-                fontSize = 0.5;
-            }
-            style += 'font-size:' + fontSize.toString() + 'pt;';
-            if (characterFormat.bold) {
-                style += 'font-weight:bold;';
-            }
-            if (characterFormat.italic) {
-                style += 'font-style:italic;';
-            }
-            spanElement.setAttribute('style', style);
-        }
-    }
+
     public measureText(text: string, characterFormat: WCharacterFormat): TextSizeInfo {
         // Gets the text element's width;
         const width: number = this.getWidth(text, characterFormat);

@@ -11,7 +11,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
-import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor } from '@syncfusion/ej2-base';
+import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Browser, ModuleDeclaration, Event, EmitType } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
@@ -1908,8 +1908,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
             }
-
-            this.resetTemplate();
         }
     }
     /* tslint:enable */
@@ -2290,7 +2288,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let path: PathAnnotationModel;
         for (let i: number = 0; i < this.nodes.length; i++) {
             htmlNode = this.nodes[i];
-            if (htmlNode.shape.type === 'HTML' && (htmlNode.shape as HtmlModel).content instanceof HTMLElement) {
+            if (htmlNode.shape.type === 'HTML' && (htmlNode.shape as HtmlModel).content === '') {
                 resetBlazorTemplate('diagramsf_node_template', 'NodeTemplate');
                 break;
             }
@@ -5046,6 +5044,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             objects = collection;
         }
         this.diagramActions = this.diagramActions | DiagramAction.Clear;
+        if (isBlazor()) {
+            this.resetTemplate();
+            let length: number = blazorTemplates["diagramsf_node_template"].length
+            if (length > 0) {
+                blazorTemplates["diagramsf_node_template"].splice(0, length - 1);
+            }
+        }
         for (const obj of objects) {
             if (this.nameTable[obj.id]) {
                 this.remove(obj);
@@ -5391,7 +5396,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     children = getChild(child as Canvas, children);
                 }
                 for (let i: number = 0; i < children.length; i++) {
-                    this.swimlaneChildTable[children[i]] = this.nameTable[children[i]].zIndex;
+                    if (this.nameTable[children[i]]) {
+                        this.swimlaneChildTable[children[i]] = this.nameTable[children[i]].zIndex;
+                    }
                 }
                 this.swimlaneZIndexTable[node.id] = node.zIndex;
             }
@@ -6291,9 +6298,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         if (connector.sourceID && connector.targetID) {
                             const sourceNode: NodeModel = tempTabel[connector.sourceID];
                             const targetNode: NodeModel = tempTabel[connector.targetID];
-                            if (sourceNode && sourceNode.wrapper && targetNode && targetNode.wrapper) {
+                            let flag: boolean = true;
+                            if (this.isLoading && ((sourceNode && sourceNode.children && sourceNode.children.length > 0) ||
+                                (targetNode && targetNode.children && targetNode.children.length > 0))) {
+                                flag = false;
+                            }
+                            if ((sourceNode && sourceNode.wrapper && targetNode && targetNode.wrapper) && flag) {
                                 this.initConnectors(tempTabel[obj], layer);
-
                             } else {
                                 connectors.push(tempTabel[obj]);
                             }
@@ -6369,6 +6380,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
         let layer: LayerModel;
+        let isSourceId: boolean = false;
+        let isTargetId: boolean = false;
         if (hasLayers) {
             layer = this.commandHandler.getObjectLayer(obj.id);
         }
@@ -6385,7 +6398,50 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     obj.zIndex = this.swimlaneChildTable[obj.id];
                 }
             }
-            this.setZIndex(layer || this.activeLayer, obj);
+            if (obj instanceof Connector && (obj.sourceID && obj.targetID)) {
+                if (this.findNodeInLane(obj.sourceID) && this.findNodeInLane(obj.targetID)) {
+                    if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
+                        this.activeLayer.objects.indexOf(obj.targetID) !== -1) {
+                        this.setZIndex(layer || this.activeLayer, obj);
+                    }
+                } else {
+                    this.setZIndex(layer || this.activeLayer, obj);
+                }
+            } else {
+                this.setZIndex(layer || this.activeLayer, obj);
+            }
+        }
+    }
+
+    /** Check whether node is in lane or not */
+    private findNodeInLane(nodeId: string): boolean {
+        let temp: boolean = false;
+        for (let i: number = 0; i < this.nodes.length; i++) {
+            if (this.nodes[i].shape.type !== 'SwimLane') {
+                if (this.nodes[i].id === nodeId) {
+                    temp = true;
+                    break;
+                }
+            } else {
+                let node: SwimLaneModel = this.nodes[i].shape as SwimLaneModel;
+                if (node.lanes && node.lanes.length > 0) {
+                    for (let j: number = 0; j < node.lanes.length; j++) {
+                        if (node.lanes[j].children && node.lanes[j].children.length > 0) {
+                            for (let k: number = 0; k < node.lanes[j].children.length; k++) {
+                                if (node.lanes[j].children[k].id === nodeId) {
+                                    temp = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (temp) {
+            return true;
+        } else {
+            return false;
         }
     }
     private updateLayer(newProp: DiagramModel): void {
@@ -6820,7 +6876,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     node1.offsetX = node.wrapper.offsetX;
                     const diffY: number = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
-                    if ((node as Node).flip === 'None') {
+                    if ((node as Node).flip === 'None' && (diffX + diffY) !== 0) {
                         this.drag(node1, diffX, diffY);
                     }
                     this.realActions &= ~RealAction.PreventScale;
@@ -6949,6 +7005,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj.shape.type === 'SwimLane' && obj.wrapper && obj.wrapper.children.length > 0 &&
             obj.wrapper.children[0] instanceof GridPanel) {
             this.setZIndex(this.activeLayer, obj);
+            if (this.connectors.length > 0) {
+                for (let i: number = 0; i < this.connectors.length; i++) {
+                    let obj: ConnectorModel = this.connectors[i];
+                    if ((obj.sourceID && obj.targetID) && (this.activeLayer.objects.indexOf(obj.sourceID) === -1 &&
+                        this.activeLayer.objects.indexOf(obj.targetID) === -1)) {
+                        this.setZIndex(this.activeLayer, obj);
+                    }
+                }
+            }
             swimLaneMeasureAndArrange(obj);
             arrangeChildNodesInSwimLane(this, obj);
             this.updateDiagramElementQuad();

@@ -45,26 +45,28 @@ export class PointerRenderer {
         });
         let childElement: Element;
         let range: VisibleRangeModel;
-        axis.pointers.map((pointer: Pointer, pointerIndex: number) => {
-            if (!isNullOrUndefined(pointer.offset) && (<string>pointer.offset).length > 0) {
-                pointer.currentDistanceFromScale = stringToNumber(<string>pointer.offset, axis.currentRadius);
-            } else {
-                pointer.currentDistanceFromScale = <number>pointer.offset;
-            }
-            range = axis.visibleRange;
-            pointer.pathElement = [];
-            this.calculatePointerRadius(axis, pointer);
-            childElement = gauge.renderer.createGroup({
-                id: gauge.element.id + '_Axis_' + axisIndex + '_Pointer_' + pointerIndex
+        if (this.gauge.allowComponentRender) {
+            axis.pointers.map((pointer: Pointer, pointerIndex: number) => {
+                if (!isNullOrUndefined(pointer.offset) && (<string>pointer.offset).length > 0) {
+                    pointer.currentDistanceFromScale = stringToNumber(<string>pointer.offset, axis.currentRadius);
+                } else {
+                    pointer.currentDistanceFromScale = <number>pointer.offset;
+                }
+                range = axis.visibleRange;
+                pointer.pathElement = [];
+                this.calculatePointerRadius(axis, pointer);
+                childElement = gauge.renderer.createGroup({
+                    id: gauge.element.id + '_Axis_' + axisIndex + '_Pointer_' + pointerIndex
+                });
+                this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointerIndex, childElement, gauge);
+                this.setPointerValue(axis, pointer, pointer.currentValue);
+                pointerElement.appendChild(childElement);
+                if (animate || pointer.animation.enable) {
+                    this.doPointerAnimation(pointer, axis);
+                }
             });
-            this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointerIndex, childElement, gauge);
-            this.setPointerValue(axis, pointer, pointer.currentValue);
-            pointerElement.appendChild(childElement);
-            if (animate || pointer.animation.enable) {
-                this.doPointerAnimation(pointer, axis);
-            }
-        });
-        element.appendChild(pointerElement);
+            element.appendChild(pointerElement);
+        }
     }
 
     /**

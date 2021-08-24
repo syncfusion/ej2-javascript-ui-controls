@@ -1117,8 +1117,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                             addClass([listEle[0]], dropDownBaseClasses.focus);
                         } else {
                             this.ulElement = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;
-                            this.l10nUpdate();
-                            addClass([this.list], dropDownBaseClasses.noData);
+                            if (!(this.list && this.list.querySelectorAll('.' + dropDownBaseClasses.li).length > 0)) {
+                                this.l10nUpdate();
+                                addClass([this.list], dropDownBaseClasses.noData);
+                            }
                         }
                     }
                     element.setAttribute('aria-selected', 'true');
@@ -1410,7 +1412,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private scrollFocusStatus: boolean = false;
     private keyDownStatus: boolean = false;
-    private onBlur(eve?: MouseEvent, isDocClickFromCheck?: boolean): void {
+    private onBlurHandler(eve?: MouseEvent, isDocClickFromCheck?: boolean): void {
         let target: HTMLElement;
         if (!isNullOrUndefined(eve)) {
             target = <HTMLElement>eve.relatedTarget;
@@ -1524,7 +1526,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                 oldValue: <string[]>oldVal,
                 value: <string[]>newVal,
                 isInteracted: event ? true : false,
-                element: this.element
+                element: this.element,
+                event: event
             };
             if (this.isAngular && this.preventChange) {
                 this.preventChange = false;
@@ -2787,7 +2790,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode !== 'CheckBox') {
             EventHandler.add(this.inputElement, 'input', this.onInput, this);
         }
-        EventHandler.add(this.inputElement, 'blur', this.onBlur, this);
+        EventHandler.add(this.inputElement, 'blur', this.onBlurHandler, this);
         EventHandler.add(this.componentWrapper, 'mousemove', this.mouseIn, this);
         const formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
         if (formElement) {
@@ -3692,7 +3695,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetValueHandler);
         }
-        EventHandler.remove(this.inputElement, 'blur', this.onBlur);
+        EventHandler.remove(this.inputElement, 'blur', this.onBlurHandler);
         EventHandler.remove(this.componentWrapper, 'mousemove', this.mouseIn);
         EventHandler.remove(this.componentWrapper, 'mouseout', this.mouseOut);
         EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
@@ -4352,7 +4355,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
-            this.renderPopup();
+            if (!this.list) {
+                super.render();
+            }
         }
         if (!isNullOrUndefined(this.text) && (isNullOrUndefined(this.value) || this.value.length === 0)) {
             this.initialTextUpdate();
@@ -4542,6 +4547,10 @@ export interface MultiSelectChangeEventArgs {
      * Returns the root element of the component.
      */
     element: HTMLElement
+    /**
+     * Specifies the original event arguments.
+     */
+    event: MouseEvent | KeyboardEvent | TouchEvent
 }
 export type visualMode = 'Default' | 'Delimiter' | 'Box' | 'CheckBox';
 

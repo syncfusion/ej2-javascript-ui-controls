@@ -2549,6 +2549,11 @@ export interface FormFieldModel {
      */
     borderColor?: string;
 
+    /**
+     * Allows multiline input in the text field. FALSE, by default.
+     */
+    isMultiline?: boolean;
+
 }
 
 /**
@@ -2666,6 +2671,11 @@ export interface TextFieldSettingsModel {
      * Get or set the border color of the textbox field.
      */
     borderColor?: string;
+
+    /**
+     * Allows multiline input in the text field. FALSE, by default.
+     */
+    isMultiline?: boolean;
 
 }
 

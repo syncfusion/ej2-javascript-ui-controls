@@ -3385,6 +3385,9 @@ export class StickyNotesAnnotation {
                                     titleContainer.textContent = author + ' - ' + this.setModifiedDate();
                                 }
                             }
+                            if (pageAnnotations[i].shapeAnnotationType === 'sticky') { 
+                                this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], annotation.pageIndex); 
+                            }
                         }
                     }
                 }

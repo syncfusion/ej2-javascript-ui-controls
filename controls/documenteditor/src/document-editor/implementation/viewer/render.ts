@@ -330,7 +330,7 @@ export class Renderer {
         let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
         let shapeType: any = shape.autoShapeType;
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
-        
+
         this.pageContext.beginPath();
         if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill) {
             this.pageContext.fillStyle = shape.fillFormat.color;
@@ -653,7 +653,7 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(left, 1);
                 let shapeTop: number = this.getScaledValue(top, 2);
                 this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
-            }  else {
+            } else {
                 elementBox.isVisible = true;
                 left += elementBox.padding.left;
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);
@@ -901,16 +901,18 @@ export class Renderer {
 
                             this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
                         } else {
-                            /* eslint-disable @typescript-eslint/no-explicit-any */
-
-                            this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                            if (!this.documentHelper.owner.editor.triggerPageSpellCheck) {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
-                                let jsonObject: any = JSON.parse(data);
 
-                                let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+                                this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                                    /* eslint-disable @typescript-eslint/no-explicit-any */
+                                    let jsonObject: any = JSON.parse(data);
 
-                                this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
-                            });
+                                    let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+
+                                    this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                                });
+                            }
                         }
                     }
                 }
@@ -929,16 +931,18 @@ export class Renderer {
 
                 this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markIndex, isLastItem);
             } else {
-                /* eslint-disable @typescript-eslint/no-explicit-any */
-
-                this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                if (!this.documentHelper.owner.editor.triggerPageSpellCheck) {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
-                    let jsonObject: any = JSON.parse(data);
 
-                    let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+                    this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                        /* eslint-disable @typescript-eslint/no-explicit-any */
+                        let jsonObject: any = JSON.parse(data);
 
-                    this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                });
+                        let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+
+                        this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
+                    });
+                }
             }
         }
     }
@@ -1070,7 +1074,7 @@ export class Renderer {
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
             let width: number = elementBox.width;
-            if (elementBox instanceof TextElementBox && !(elementBox instanceof TabElementBox) && isNullOrUndefined(elementBox.nextNode)) {              
+            if (elementBox instanceof TextElementBox && !(elementBox instanceof TabElementBox) && isNullOrUndefined(elementBox.nextNode)) {
                 width = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat);
             }
             this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(width), this.getScaledValue(underlineHeight));
@@ -1257,12 +1261,12 @@ export class Renderer {
         let leftBorderWidth: number = lineWidth;
         if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
-        } else { 
+        } else {
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
                 let row: TableRowWidget = tableCell.ownerTable.childWidgets[i] as TableRowWidget;
                 let cell: TableCellWidget
                 for (let j: number = 0; j < row.childWidgets.length; j++) {
-                    let currentCell :TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    let currentCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                     if ((currentCell.columnIndex + currentCell.cellFormat.columnSpan - 1) === tableCell.columnIndex - 1) {
                         cell = currentCell as TableCellWidget;
                         break;

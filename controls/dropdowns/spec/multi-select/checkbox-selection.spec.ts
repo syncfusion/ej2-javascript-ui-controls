@@ -253,9 +253,9 @@ describe('MultiSelect', () => {
                 listObj.checkBoxSelectionModule.clickHandler({
                     preventDefault: () => { }, currentTarget: listObj.checkBoxSelectionModule.checkAllParent.firstElementChild.lastElementChild
                 });
-                listObj.checkBoxSelectionModule.onBlur(mouseEventArgs);
+                listObj.checkBoxSelectionModule.onBlurHandler(mouseEventArgs);
                 listObj.showPopup();
-                listObj.checkBoxSelectionModule.onBlur({
+                listObj.checkBoxSelectionModule.onBlurHandler({
                     mouseEventArgs, relatedTarget: listObj.checkBoxSelectionModule.filterInput
                 });
                 listObj.destroy();
@@ -387,7 +387,7 @@ describe('MultiSelect', () => {
             listObj.wrapperClick(mouseEvenArg);
             expect(document.querySelectorAll('.e-ddl.e-popup')).not.toBe(null);
             mouseEventArgs.target = document.getElementById('header');
-            listObj.checkBoxSelectionModule.onBlur(mouseEventArgs);
+            listObj.checkBoxSelectionModule.onBlurHandler(mouseEventArgs);
             let mouseEven: any = { preventDefault: function () { }, target: null };
             mouseEven.target = document.body;
             listObj.checkBoxSelectionModule.onDocumentClick(mouseEven);
@@ -1250,7 +1250,7 @@ describe('MultiSelect', () => {
             (<any>listObj).onMouseClick(mouseEventArgs);
             mouseEventArgs.target = list[5];
             (<any>listObj).onMouseClick(mouseEventArgs);
-            (<any>listObj).onBlur(mouseEventArgs);
+            (<any>listObj).onBlurHandler(mouseEventArgs);
             listObj.dataBind();
             expect(listObj.value.length).toEqual(6);//49
             listObj.enabled = false;
@@ -1352,7 +1352,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.target = elements[index];
                 (<any>listObj).onMouseClick(mouseEventArgs);
             }
-            (<any>listObj).onBlur(mouseEventArgs);
+            (<any>listObj).onBlurHandler(mouseEventArgs);
             (<any>listObj).windowResize();
             (<any>listObj).removeFocus();
             (<any>listObj).selectListByKey();
@@ -2002,7 +2002,7 @@ describe('MultiSelect', () => {
             (<any>multiObj).value = ['JAVA'];
             (<any>multiObj).dataBind();
             expect((<any>multiObj.value.length)).toBe(1);
-            (<any>multiObj).onBlur(mouseEventArgs);
+            (<any>multiObj).onBlurHandler(mouseEventArgs);
             Browser.userAgent = navigator.userAgent;
             multiObj.destroy();
         });
@@ -2091,11 +2091,11 @@ describe('MultiSelect', () => {
                 (<any>listObj).focus();
                 expect(checker).toBe(true);//64
                 checker = false;
-                (<any>listObj).onBlur();
+                (<any>listObj).onBlurHandler();
                 (<any>listObj).focusAtLastListItem('null');
                 expect(checker).toBe(true);//65
                 (<any>listObj).onListMouseDown({ preventDefault: function () { } });
-                (<any>listObj).checkBoxSelectionModule.onBlur({ preventDefault: function () { } });
+                (<any>listObj).checkBoxSelectionModule.onBlurHandler({ preventDefault: function () { } });
                 expect((<any>listObj).scrollFocusStatus).toBe(false);
                 listObj.destroy();
                 done();
@@ -2390,7 +2390,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.type = 'click';
                 mouseEventArgs.target = document.body;
                 dropDowns.checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
-                dropDowns.checkBoxSelectionModule.onBlur(mouseEventArgs);
+                dropDowns.checkBoxSelectionModule.onBlurHandler(mouseEventArgs);
                 setTimeout(() => {
                     expect(dropDowns.isPopupOpen()).toBe(false);
                     dropDowns.destroy();
@@ -2413,7 +2413,7 @@ describe('MultiSelect', () => {
                 mouseEventArgs.type = 'click';
                 mouseEventArgs.target = dropDowns.list;
                 dropDowns.checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
-                dropDowns.checkBoxSelectionModule.onBlur(mouseEventArgs);
+                dropDowns.checkBoxSelectionModule.onBlurHandler(mouseEventArgs);
                 setTimeout(() => {
                     expect(dropDowns.isPopupOpen()).toBe(true);
                     dropDowns.destroy();
@@ -2670,7 +2670,7 @@ describe('MultiSelect', () => {
                 open: () => {
                     var mouseEventArgs = {preventDefault: function(){}, currentTarget: (<any>listObj).checkBoxSelectionModule.checkAllParent };
                     (<any>listObj).checkBoxSelectionModule.clickHandler(mouseEventArgs);
-                    (<any>listObj).onBlur();
+                    (<any>listObj).onBlurHandler();
                 },
                 change: () => {
                     expect(true).toBe(true);

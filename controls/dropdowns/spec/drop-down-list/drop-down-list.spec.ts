@@ -1508,7 +1508,7 @@ describe('DDList', () => {
                 mouseEventArgs.target = document.body;
                 listObj.showPopup();
                 setTimeout(() => {
-                    listObj.onBlur(mouseEventArgs);
+                    listObj.onBlurHandler(mouseEventArgs);
                     setTimeout(() => {
                         expect(listObj.isPopupOpen).toBe(false);
                         done()
@@ -3228,7 +3228,7 @@ describe('DDList', () => {
                     Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
                     mouseEventArgs.target = document.getElementById('header');
                     listObj1.onDocumentClick(mouseEventArgs);
-                    listObj1.onBlur(mouseEventArgs);
+                    listObj1.onBlurHandler(mouseEventArgs);
                     expect(listObj1.inputWrapper.container === document.activeElement).toBe(true);
                     expect(listObj1.inputWrapper.container.classList.contains('e-input-focus')).toBe(true);
                     done();
@@ -3245,7 +3245,7 @@ describe('DDList', () => {
                     setTimeout(() => {
                         mouseEventArgs.target = document.getElementById('header');
                         listObj1.onDocumentClick(mouseEventArgs);
-                        listObj1.onBlur(mouseEventArgs);
+                        listObj1.onBlurHandler(mouseEventArgs);
                         expect(listObj1.filterInput === document.activeElement).toBe(true);
                         let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
                             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
@@ -5447,7 +5447,7 @@ describe('DDList', () => {
             listObj.appendTo(element);
             listObj.showPopup();
             mouseEventArgs.target = document.body;
-            listObj.onBlur(mouseEventArgs);
+            listObj.onBlurHandler(mouseEventArgs);
             expect(listObj.isPopupOpen).toBe(false);
             listObj.showPopup();
             setTimeout(function () {

@@ -117,6 +117,7 @@ export class AxisRenderer extends Animations {
         const minorTickColor: string = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
         const tickColor: string = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
         const interval: number = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
+        const tickHeight: number = (axis.minimum !== axis.maximum) ? ticks.height : 0;
         // let position: string = (tickID === 'MajorTicks') ? axis.majorTicks.position : axis.minorTicks.position;
         for (let i: number = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks')) {
@@ -124,12 +125,12 @@ export class AxisRenderer extends Animations {
                     // pointX =  position === "Inside" ? tickBounds.x : tickBounds.x + ticks.height;
                     pointX = tickBounds.x;
                     pointY = (valueToCoefficient(i, axis, this.gauge.orientation, range) * line.height) + line.y;
-                    tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + (pointX + ticks.height) + ' ' + pointY + ' ');
+                    tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + (pointX + tickHeight) + ' ' + pointY + ' ');
                 } else {
                     pointX = (valueToCoefficient(i, axis, this.gauge.orientation, range) * line.width) + line.x;
                     // pointY = position === "Inside" ? tickBounds.y : (tickBounds.y + ticks.height);
                     pointY = tickBounds.y;
-                    tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + pointX + ' ' + (pointY + ticks.height) + ' ');
+                    tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + pointX + ' ' + (pointY + tickHeight) + ' ');
                 }
             }
         }

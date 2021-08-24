@@ -916,6 +916,12 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
     public isRequired: boolean;
 
     /**
+     * Enable or disable the Multiline Textbox.
+     */
+    @Property(false)
+    public isMultiline: boolean;
+
+    /**
      * Gets or sets the items to be displayed for drop down/ listbox.
      */
     @Property('')

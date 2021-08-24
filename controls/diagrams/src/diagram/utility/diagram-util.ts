@@ -204,65 +204,65 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
         const shape: UmlActivityShapes = (isBlazor() ? (child.shape as DiagramShape).umlActivityShape :
             (child.shape as UmlActivityShape).shape);
         switch (shape) {
-        case 'JoinNode':
-            if (!(child as NodeModel).width) {
-                node.width = 20;
-            }
-            if (!(child as NodeModel).height) {
-                node.height = 90;
-            }
-            if (!child.style || !child.style.fill) {
-                node.style.fill = 'black';
-            }
-            break;
-        case 'ForkNode':
-            if (!(child as NodeModel).width) {
-                node.width = 90;
-            }
-            if (!(child as NodeModel).height) {
-                node.height = 20;
-            }
-            if (!child.style || !child.style.fill) {
-                node.style.fill = 'black';
-            }
-            break;
-        case 'InitialNode':
-            if (!child.style || !child.style.fill) {
-                node.style.fill = 'black';
-            }
-            break;
-        case 'FinalNode':
-            if (!child.style || !child.style.fill) {
-                node.style.fill = 'black';
-            }
-            break;
+            case 'JoinNode':
+                if (!(child as NodeModel).width) {
+                    node.width = 20;
+                }
+                if (!(child as NodeModel).height) {
+                    node.height = 90;
+                }
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'ForkNode':
+                if (!(child as NodeModel).width) {
+                    node.width = 90;
+                }
+                if (!(child as NodeModel).height) {
+                    node.height = 20;
+                }
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'InitialNode':
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'FinalNode':
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
         }
     } else {
         const flow: UmlActivityFlows = (isBlazor() ?
             (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
         switch (flow) {
-        case 'Object':
-            if (!child.style || !child.style.strokeDashArray) {
-                node.style.strokeDashArray = '8 4';
-            }
-            if (!child.style || !child.style.strokeWidth) {
-                node.style.strokeWidth = 2;
-            }
-            if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
-                (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
-            }
-            break;
-        case 'Control':
-            if (!child.style || !child.style.strokeWidth) {
-                node.style.strokeWidth = 2;
-            }
-            if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
-                (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
-            }
-            if (!(child as ConnectorModel).sourceDecorator || !(child as ConnectorModel).sourceDecorator.shape) {
-                (node as ConnectorModel).sourceDecorator.shape = 'None';
-            }
-            break;
+            case 'Object':
+                if (!child.style || !child.style.strokeDashArray) {
+                    node.style.strokeDashArray = '8 4';
+                }
+                if (!child.style || !child.style.strokeWidth) {
+                    node.style.strokeWidth = 2;
+                }
+                if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
+                    (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
+                }
+                break;
+            case 'Control':
+                if (!child.style || !child.style.strokeWidth) {
+                    node.style.strokeWidth = 2;
+                }
+                if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
+                    (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
+                }
+                if (!(child as ConnectorModel).sourceDecorator || !(child as ConnectorModel).sourceDecorator.shape) {
+                    (node as ConnectorModel).sourceDecorator.shape = 'None';
+                }
+                break;
         }
     }
 }
@@ -277,104 +277,104 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
  */
 export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel): void {
     switch ((child.shape).type) {
-    case 'Bpmn':
-        const bpmnFlow: BpmnFlows = (isBlazor() ? (child.shape as DiagramConnectorShape).bpmnFlow : (child.shape as BpmnFlow).flow);
-        switch (bpmnFlow) {
-        case 'Sequence':
-            if (((((child.shape as BpmnFlow).sequence) === 'Normal' && child.type !== 'Bezier')) ||
+        case 'Bpmn':
+            const bpmnFlow: BpmnFlows = (isBlazor() ? (child.shape as DiagramConnectorShape).bpmnFlow : (child.shape as BpmnFlow).flow);
+            switch (bpmnFlow) {
+                case 'Sequence':
+                    if (((((child.shape as BpmnFlow).sequence) === 'Normal' && child.type !== 'Bezier')) ||
                         (((child.shape as BpmnFlow).sequence) === 'Default') || (((child.shape as BpmnFlow).sequence) === 'Conditional')) {
-            if (node.targetDecorator && node.targetDecorator.style) {
-                    node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style
                                 && child.targetDecorator.style.fill) || 'black';
-                }
-            if (((child.shape as BpmnFlow).sequence) === 'Conditional' && node.sourceDecorator) {
-                    if (node.sourceDecorator.style) {
-                        node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        }
+                        if (((child.shape as BpmnFlow).sequence) === 'Conditional' && node.sourceDecorator) {
+                            if (node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                                     child.sourceDecorator.style.fill) || 'white';
+                            }
+                            node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 20;
+                            node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.width) || 10;
+                        }
                     }
-                    node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 20;
-                    node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.width) || 10;
-                }
-            }
-            break;
-        case 'Association':
-            if ((((child.shape as BpmnFlow).association) === 'Default') ||
+                    break;
+                case 'Association':
+                    if ((((child.shape as BpmnFlow).association) === 'Default') ||
                         (((child.shape as BpmnFlow).association) === 'Directional') ||
                         (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                                child.targetDecorator.style.fill) || 'black';
+                        }
+                        if (((child.shape as BpmnFlow).association) === 'BiDirectional') {
+                            if (node.sourceDecorator && node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                                    child.sourceDecorator.style.fill) || 'white';
+                                node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 5;
+                                node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.height) || 10;
+                            }
+                        }
+                    }
+                    break;
+                case 'Message':
+                    if (node.style && !node.style.strokeDashArray) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlActivity':
+            let flow: UmlActivityFlows = (isBlazor() ?
+                (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
+            switch (flow) {
+                case 'Exception':
+                    if ((((child.shape as BpmnFlow).association) === 'Directional') ||
+                        (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '2 2';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlClassifier':
+            let hasRelation: boolean = false;
+            if ((child.shape as RelationShip).relationship === 'Association') {
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Inheritance') {
                 if (node.targetDecorator && node.targetDecorator.style) {
                     node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
-                                child.targetDecorator.style.fill) || 'black';
-                }
-                if (((child.shape as BpmnFlow).association) === 'BiDirectional') {
-                    if (node.sourceDecorator && node.sourceDecorator.style) {
-                        node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
-                                    child.sourceDecorator.style.fill) || 'white';
-                        node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 5;
-                        node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.height) || 10;
-                    }
-                }
-            }
-            break;
-            case 'Message':
-            if (node.style && !node.style.strokeDashArray) {
-                node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
-            }
-            break;
-            }
-            break;
-    case 'UmlActivity':
-        let flow: UmlActivityFlows = (isBlazor() ?
-                (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
-        switch (flow) {
-            case 'Exception':
-            if ((((child.shape as BpmnFlow).association) === 'Directional') ||
-                        (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
-                node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '2 2';
-            }
-            break;
-        }
-        break;
-    case 'UmlClassifier':
-        let hasRelation: boolean = false;
-        if ((child.shape as RelationShip).relationship === 'Association') {
-            hasRelation = true;
-        } else if ((child.shape as RelationShip).relationship === 'Inheritance') {
-            if (node.targetDecorator && node.targetDecorator.style) {
-                node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
                         child.targetDecorator.style.fill) || 'white';
-            }
-            if (node.style) {
-                hasRelation = true;
-                node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
-            }
-        } else if ((child.shape as RelationShip).relationship === 'Composition') {
-            if (node.sourceDecorator && node.sourceDecorator.style) {
-                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                }
+                if (node.style) {
+                    hasRelation = true;
+                    node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                }
+            } else if ((child.shape as RelationShip).relationship === 'Composition') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'black';
-            }
-            hasRelation = true;
-        } else if ((child.shape as RelationShip).relationship === 'Aggregation' ||
-            (child.shape as RelationShip).relationship === undefined) {
-            if (node.sourceDecorator && node.sourceDecorator.style) {
-                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                }
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Aggregation' ||
+                (child.shape as RelationShip).relationship === undefined) {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'white';
-            }
-            hasRelation = true;
-        } else if ((child.shape as RelationShip).relationship === 'Dependency') {
-            if (node.sourceDecorator && node.sourceDecorator.style) {
-                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                }
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Dependency') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'white';
-            }
-            hasRelation = true; node.style.strokeDashArray = '4 4';
-        } else if ((child.shape as RelationShip).relationship === 'Realization') {
-            if (node.sourceDecorator && node.sourceDecorator.style) {
-                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                }
+                hasRelation = true; node.style.strokeDashArray = '4 4';
+            } else if ((child.shape as RelationShip).relationship === 'Realization') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
             }
-            hasRelation = true;
-        }
-        if (hasRelation) { node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2; }
-        break;
+            if (hasRelation) { node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2; }
+            break;
     }
 }
 /* eslint-enable */
@@ -574,15 +574,25 @@ export function updateDefaultValues(
 export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, nodes?: INode[], node?: INode): void {
     // eslint-disable-next-line @typescript-eslint/ban-types
     let keyObj: object;
+    let assistantKey: string = "Role";
     if (defaultValue) {
         for (const key of Object.keys(defaultValue)) {
             keyObj = defaultValue[key];
             if (key === 'getAssistantDetails') {
-                if (node.data['Role'] === defaultValue[key]['root']) {
+                if (isBlazor()) {
+                    // Iterate the node data and get the assistant.
+                    for (const dataValue of Object.keys(node.data)) {
+                        assistantKey = node.data[dataValue];
+                        if(node.data[assistantKey] === defaultValue[key]['root']) {
+                            break;
+                        }
+                    }
+                }
+                if (node.data[assistantKey] === defaultValue[key]['root']) {
                     const assitants: string[] = defaultValue[key]['assistants'];
                     for (let i: number = 0; i < assitants.length; i++) {
                         for (let j: number = 0; j < nodes.length; j++) {
-                            if (nodes[j].data['Role'] === assitants[i]) {
+                            if (nodes[j].data[assistantKey] === assitants[i]) {
                                 actualNode.assistants.push(nodes[j].id);
                                 actualNode.children.splice(0, 1);
                             }
@@ -797,34 +807,34 @@ function tooltipOffset(node: NodeModel | ConnectorModel, mousePosition: PointMod
     //let horizontalOffset: number = diagram.scroller.horizontalOffset;
     //let verticalOffset: number = diagram.scroller.verticalOffset;
     switch (diagram.tooltipObject.position) {
-    case 'BottomCenter':
-        point = offsetPoint(mousePosition, bounds.bottomCenter, diagram, isMouseBased, (rect.width / 2), rect.height);
-        break;
-    case 'BottomLeft':
-    case 'LeftBottom':
-        point = offsetPoint(mousePosition, bounds.bottomLeft, diagram, isMouseBased, 0, rect.height);
-        break;
-    case 'BottomRight':
-    case 'RightBottom':
-        point = offsetPoint(mousePosition, bounds.bottomRight, diagram, isMouseBased, rect.width, rect.height);
-        break;
-    case 'LeftCenter':
-        point = offsetPoint(mousePosition, bounds.middleLeft, diagram, isMouseBased, 0, (rect.height / 2));
-        break;
-    case 'LeftTop':
-    case 'TopLeft':
-        point = offsetPoint(mousePosition, bounds.topLeft, diagram, isMouseBased, 0, 0);
-        break;
-    case 'RightCenter':
-        point = offsetPoint(mousePosition, bounds.middleRight, diagram, isMouseBased, rect.width, (rect.height / 2));
-        break;
-    case 'RightTop':
-    case 'TopRight':
-        point = offsetPoint(mousePosition, bounds.topRight, diagram, isMouseBased, rect.width, 0);
-        break;
-    case 'TopCenter':
-        point = offsetPoint(mousePosition, bounds.topCenter, diagram, isMouseBased, (rect.width / 2), 0);
-        break;
+        case 'BottomCenter':
+            point = offsetPoint(mousePosition, bounds.bottomCenter, diagram, isMouseBased, (rect.width / 2), rect.height);
+            break;
+        case 'BottomLeft':
+        case 'LeftBottom':
+            point = offsetPoint(mousePosition, bounds.bottomLeft, diagram, isMouseBased, 0, rect.height);
+            break;
+        case 'BottomRight':
+        case 'RightBottom':
+            point = offsetPoint(mousePosition, bounds.bottomRight, diagram, isMouseBased, rect.width, rect.height);
+            break;
+        case 'LeftCenter':
+            point = offsetPoint(mousePosition, bounds.middleLeft, diagram, isMouseBased, 0, (rect.height / 2));
+            break;
+        case 'LeftTop':
+        case 'TopLeft':
+            point = offsetPoint(mousePosition, bounds.topLeft, diagram, isMouseBased, 0, 0);
+            break;
+        case 'RightCenter':
+            point = offsetPoint(mousePosition, bounds.middleRight, diagram, isMouseBased, rect.width, (rect.height / 2));
+            break;
+        case 'RightTop':
+        case 'TopRight':
+            point = offsetPoint(mousePosition, bounds.topRight, diagram, isMouseBased, rect.width, 0);
+            break;
+        case 'TopCenter':
+            point = offsetPoint(mousePosition, bounds.topCenter, diagram, isMouseBased, (rect.width / 2), 0);
+            break;
     }
     return point;
 }
@@ -984,15 +994,15 @@ export function getAlignedPosition(annotation: PathAnnotation | ConnectorFixedUs
 
     let state: number = 0;
     switch (annotation.alignment) {
-    case 'Center':
-        state = 0;
-        break;
-    case 'Before':
-        state = -((0) / 2 + cnst);
-        break;
-    case 'After':
-        state = ((0) / 2 + cnst);
-        break;
+        case 'Center':
+            state = 0;
+            break;
+        case 'Before':
+            state = -((0) / 2 + cnst);
+            break;
+        case 'After':
+            state = ((0) / 2 + cnst);
+            break;
     }
     return state;
 }
@@ -1011,47 +1021,47 @@ export function alignLabelOnSegments(obj: PathAnnotation | ConnectorFixedUserHan
     const fourty5: number = 45; const one35: number = 135; const two25: number = 225; const three15: number = 315;
     let vAlign: string; let hAlign: string;
     switch (obj.alignment) {
-    case 'Before':
-        if (ang >= fourty5 && ang <= one35) {
-            hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
-        } else if (ang >= two25 && ang <= three15) {
-            hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
-        } else if (ang > fourty5 && ang < two25) {
-            vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
-        } else { vAlign = 'bottom'; hAlign = (obj.offset === 0.5) ? 'center' : 'left'; }
-        break;
-    case 'After':
-        if (ang >= fourty5 && ang <= one35) {
-            hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
-        } else if (
-            ang >= two25 && ang <= three15) {
-            hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
-        } else if (
-            ang > fourty5 && ang < two25) {
-            vAlign = 'bottom'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
-        } else { vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'left'; }
-        break;
-    case 'Center':
-        hAlign = !isNullOrUndefined((obj as PathAnnotation).horizontalAlignment) ? ((obj as PathAnnotation).horizontalAlignment as string).toLowerCase() : "center";;
-        vAlign = !isNullOrUndefined((obj as PathAnnotation).verticalAlignment) ? ((obj as PathAnnotation).verticalAlignment as string).toLowerCase() : "center";
-        break;
+        case 'Before':
+            if (ang >= fourty5 && ang <= one35) {
+                hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
+            } else if (ang >= two25 && ang <= three15) {
+                hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
+            } else if (ang > fourty5 && ang < two25) {
+                vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
+            } else { vAlign = 'bottom'; hAlign = (obj.offset === 0.5) ? 'center' : 'left'; }
+            break;
+        case 'After':
+            if (ang >= fourty5 && ang <= one35) {
+                hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
+            } else if (
+                ang >= two25 && ang <= three15) {
+                hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
+            } else if (
+                ang > fourty5 && ang < two25) {
+                vAlign = 'bottom'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
+            } else { vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'left'; }
+            break;
+        case 'Center':
+            hAlign = !isNullOrUndefined((obj as PathAnnotation).horizontalAlignment) ? ((obj as PathAnnotation).horizontalAlignment as string).toLowerCase() : "center";;
+            vAlign = !isNullOrUndefined((obj as PathAnnotation).verticalAlignment) ? ((obj as PathAnnotation).verticalAlignment as string).toLowerCase() : "center";
+            break;
     }
     if (obj.offset === 0 || obj.offset === 1) {
         //let direction: string;
         const direction: string = getBezierDirection(pts[0], pts[1]);
         switch (direction) {
-        case 'left':
-            hAlign = obj.offset === 0 ? 'right' : 'left';
-            break;
-        case 'right':
-            hAlign = obj.offset === 0 ? 'left' : 'right';
-            break;
-        case 'bottom':
-            vAlign = obj.offset === 0 ? 'top' : 'bottom';
-            break;
-        case 'top':
-            vAlign = obj.offset === 0 ? 'bottom' : 'top';
-            break;
+            case 'left':
+                hAlign = obj.offset === 0 ? 'right' : 'left';
+                break;
+            case 'right':
+                hAlign = obj.offset === 0 ? 'left' : 'right';
+                break;
+            case 'bottom':
+                vAlign = obj.offset === 0 ? 'top' : 'bottom';
+                break;
+            case 'top':
+                vAlign = obj.offset === 0 ? 'bottom' : 'top';
+                break;
         }
     }
     return { hAlign: hAlign, vAlign: vAlign };
@@ -1292,96 +1302,96 @@ function getConstructor(model: object, defaultObject: object): object {
     const getClassName: string = 'getClassName';
     if (model[getClassName]) {
         switch (model[getClassName]()) {
-        case 'Diagram':
-            constructor = new Diagram(); break;
-        case 'Node':
-            constructor = new Node(parent, '', obj); break;
-        case 'Path':
-            constructor = new Path(parent as Shape, '', obj); break;
-        case 'Native':
-            constructor = new Native(parent as Shape, '', obj); break;
-        case 'Html':
-            constructor = new Html(parent as Shape, '', obj); break;
-        case 'Image':
-            constructor = new Image(parent as Shape, '', obj); break;
-        case 'Text':
-            constructor = new Text(parent as Shape, '', obj); break;
-        case 'BasicShape':
-            constructor = new BasicShape(parent as Shape, '', obj); break;
-        case 'FlowShape':
-            constructor = new FlowShape(parent as Shape, '', obj); break;
-        case 'BpmnShape':
-            constructor = new BpmnShape(parent as Shape, '', obj); break;
-        case 'UmlActivityShape':
-            constructor = new UmlActivityShape(parent as Shape, '', obj); break;
-        case 'UmlClassifierShape':
-            constructor = new UmlClassifierShape(parent as Shape, '', obj); break;
-        case 'SwimLane':
-            constructor = new SwimLane(parent as Shape, '', obj);
-            if ((model as SwimLane).header) {
-                (constructor as SwimLane).header = new Header(parent as Shape, '', obj);
-                (constructor as SwimLane).header.style.fill = '';
-            }
-            break;
-        case 'ShapeAnnotation':
-            constructor = new ShapeAnnotation(parent, '', obj); break;
-        case 'PointPort':
-            constructor = new PointPort(parent, '', obj); break;
-        case 'BpmnGateway':
-            constructor = new BpmnGateway(parent as BpmnGateway, '', obj); break;
-        case 'BpmnDataObject':
-            constructor = new BpmnDataObject(parent as BpmnDataObject, '', obj); break;
-        case 'BpmnEvent':
-            constructor = new BpmnEvent(parent as BpmnEvent, '', obj); break;
-        case 'BpmnSubEvent':
-            constructor = new BpmnSubEvent(parent as BpmnSubEvent, '', obj); break;
-        case 'BpmnActivity':
-            constructor = new BpmnActivity(parent as BpmnActivity, '', obj); break;
-        case 'BpmnAnnotation':
-            constructor = new BpmnAnnotation(parent, '', obj); break;
-        case 'MethodArguments':
-            constructor = new MethodArguments(parent as MethodArguments, '', obj); break;
-        case 'UmlClassAttribute':
-            constructor = new UmlClassAttribute(parent as MethodArguments, '', obj); break;
-        case 'UmlClassMethod':
-            constructor = new UmlClassMethod(parent as MethodArguments, '', obj); break;
-        case 'UmlClass':
-            constructor = new UmlClass(parent as UmlClass, '', obj); break;
-        case 'UmlInterface':
-            constructor = new UmlInterface(parent as UmlClass, '', obj); break;
-        case 'UmlEnumerationMember':
-            constructor = new UmlEnumerationMember(parent as UmlEnumerationMember, '', obj); break;
-        case 'UmlEnumeration':
-            constructor = new UmlEnumeration(parent as UmlEnumeration, '', obj); break;
-        case 'Lane':
-            constructor = new Lane(parent as Shape, '', obj); break;
-        case 'Phase':
-            constructor = new Phase(parent as Shape, '', obj); break;
-        case 'ChildContainer':
-            constructor = new ChildContainer(); break;
-        case 'Connector':
-            constructor = new Connector(parent, '', obj); break;
-        case 'StraightSegment':
-            constructor = new StraightSegment(parent, '', obj); break;
-        case 'BezierSegment':
-            constructor = new BezierSegment(parent, '', obj); break;
-        case 'OrthogonalSegment':
-            constructor = new OrthogonalSegment(parent, '', obj); break;
-        case 'PathAnnotation':
-            constructor = new PathAnnotation(parent, '', obj); break;
-        case 'Stop':
-            constructor = new Stop(parent as Stop, '', obj); break;
-        case 'Point':
-            if (!defaultObject) {
-                constructor = new Point(parent as Point, '', obj);
-            } else {
-                constructor = defaultObject;
-            }
-            break;
-        case 'UserHandle':
-            constructor = new UserHandle(parent as UserHandle, '', obj); break;
-        case 'Command':
-            constructor = new Command(parent as Command, '', obj); break;
+            case 'Diagram':
+                constructor = new Diagram(); break;
+            case 'Node':
+                constructor = new Node(parent, '', obj); break;
+            case 'Path':
+                constructor = new Path(parent as Shape, '', obj); break;
+            case 'Native':
+                constructor = new Native(parent as Shape, '', obj); break;
+            case 'Html':
+                constructor = new Html(parent as Shape, '', obj); break;
+            case 'Image':
+                constructor = new Image(parent as Shape, '', obj); break;
+            case 'Text':
+                constructor = new Text(parent as Shape, '', obj); break;
+            case 'BasicShape':
+                constructor = new BasicShape(parent as Shape, '', obj); break;
+            case 'FlowShape':
+                constructor = new FlowShape(parent as Shape, '', obj); break;
+            case 'BpmnShape':
+                constructor = new BpmnShape(parent as Shape, '', obj); break;
+            case 'UmlActivityShape':
+                constructor = new UmlActivityShape(parent as Shape, '', obj); break;
+            case 'UmlClassifierShape':
+                constructor = new UmlClassifierShape(parent as Shape, '', obj); break;
+            case 'SwimLane':
+                constructor = new SwimLane(parent as Shape, '', obj);
+                if ((model as SwimLane).header) {
+                    (constructor as SwimLane).header = new Header(parent as Shape, '', obj);
+                    (constructor as SwimLane).header.style.fill = '';
+                }
+                break;
+            case 'ShapeAnnotation':
+                constructor = new ShapeAnnotation(parent, '', obj); break;
+            case 'PointPort':
+                constructor = new PointPort(parent, '', obj); break;
+            case 'BpmnGateway':
+                constructor = new BpmnGateway(parent as BpmnGateway, '', obj); break;
+            case 'BpmnDataObject':
+                constructor = new BpmnDataObject(parent as BpmnDataObject, '', obj); break;
+            case 'BpmnEvent':
+                constructor = new BpmnEvent(parent as BpmnEvent, '', obj); break;
+            case 'BpmnSubEvent':
+                constructor = new BpmnSubEvent(parent as BpmnSubEvent, '', obj); break;
+            case 'BpmnActivity':
+                constructor = new BpmnActivity(parent as BpmnActivity, '', obj); break;
+            case 'BpmnAnnotation':
+                constructor = new BpmnAnnotation(parent, '', obj); break;
+            case 'MethodArguments':
+                constructor = new MethodArguments(parent as MethodArguments, '', obj); break;
+            case 'UmlClassAttribute':
+                constructor = new UmlClassAttribute(parent as MethodArguments, '', obj); break;
+            case 'UmlClassMethod':
+                constructor = new UmlClassMethod(parent as MethodArguments, '', obj); break;
+            case 'UmlClass':
+                constructor = new UmlClass(parent as UmlClass, '', obj); break;
+            case 'UmlInterface':
+                constructor = new UmlInterface(parent as UmlClass, '', obj); break;
+            case 'UmlEnumerationMember':
+                constructor = new UmlEnumerationMember(parent as UmlEnumerationMember, '', obj); break;
+            case 'UmlEnumeration':
+                constructor = new UmlEnumeration(parent as UmlEnumeration, '', obj); break;
+            case 'Lane':
+                constructor = new Lane(parent as Shape, '', obj); break;
+            case 'Phase':
+                constructor = new Phase(parent as Shape, '', obj); break;
+            case 'ChildContainer':
+                constructor = new ChildContainer(); break;
+            case 'Connector':
+                constructor = new Connector(parent, '', obj); break;
+            case 'StraightSegment':
+                constructor = new StraightSegment(parent, '', obj); break;
+            case 'BezierSegment':
+                constructor = new BezierSegment(parent, '', obj); break;
+            case 'OrthogonalSegment':
+                constructor = new OrthogonalSegment(parent, '', obj); break;
+            case 'PathAnnotation':
+                constructor = new PathAnnotation(parent, '', obj); break;
+            case 'Stop':
+                constructor = new Stop(parent as Stop, '', obj); break;
+            case 'Point':
+                if (!defaultObject) {
+                    constructor = new Point(parent as Point, '', obj);
+                } else {
+                    constructor = defaultObject;
+                }
+                break;
+            case 'UserHandle':
+                constructor = new UserHandle(parent as UserHandle, '', obj); break;
+            case 'Command':
+                constructor = new Command(parent as Command, '', obj); break;
         }
     } else {
         constructor = defaultObject;
@@ -1393,7 +1403,7 @@ function getConstructor(model: object, defaultObject: object): object {
 /** @private */
 export function deserialize(model: string, diagram: Diagram): Object {
     diagram.enableServerDataBinding(false);
-    const blazorAction : BlazorAction = diagram.blazorActions;
+    const blazorAction: BlazorAction = diagram.blazorActions;
     diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
     diagram.clear();
     diagram.blazorActions = diagram.removeConstraints(blazorAction, BlazorAction.ClearObject);
@@ -1467,7 +1477,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.snapSettings = dataObj.snapSettings || {};
     diagram.width = dataObj.width || '100%';
     diagram.layout = dataObj.layout || {};
-    if(dataObj.layout.type !== "None") {
+    if (dataObj.layout && dataObj.layout.type !== "None") {
         diagram.canLayout = false;
     }
     diagram.layout.getLayoutInfo = getFunction(getLayoutInfo);
@@ -1537,60 +1547,60 @@ export function updateStyle(changedObject: TextStyleModel, target: DiagramElemen
     target.canApplyStyle = true;
     for (const key of Object.keys(changedObject)) {
         switch (key) {
-        case 'fill':
-            style.fill = changedObject.fill;
-            if (style instanceof StrokeStyle) {
-                /* tslint:disable:no-string-literal */
-                style['fill'] = 'transparent';
-            }
-            break;
-        case 'textOverflow':
-            style.textOverflow = changedObject.textOverflow;
-            break;
-        case 'opacity':
-            style.opacity = changedObject.opacity;
-            break;
-        case 'strokeColor':
-            style.strokeColor = changedObject.strokeColor;
-            break;
-        case 'strokeDashArray':
-            style.strokeDashArray = changedObject.strokeDashArray;
-            break;
-        case 'strokeWidth':
-            style.strokeWidth = changedObject.strokeWidth;
-            break;
-        case 'bold':
-            style.bold = changedObject.bold;
-            break;
-        case 'color':
-            style.color = changedObject.color;
-            break;
-        case 'textWrapping':
-            style.textWrapping = changedObject.textWrapping;
-            break;
-        case 'fontFamily':
-            style.fontFamily = changedObject.fontFamily;
-            break;
-        case 'fontSize':
-            style.fontSize = changedObject.fontSize;
-            break;
-        case 'italic':
-            style.italic = changedObject.italic;
-            break;
-        case 'textAlign':
-            style.textAlign = changedObject.textAlign;
-            break;
-        case 'whiteSpace':
-            style.whiteSpace = changedObject.whiteSpace;
-            break;
-        case 'textDecoration':
-            style.textDecoration = changedObject.textDecoration;
-            break;
-        case 'gradient':
-            if (style.gradient) {
-                updateGradient(changedObject.gradient, style.gradient);
+            case 'fill':
+                style.fill = changedObject.fill;
+                if (style instanceof StrokeStyle) {
+                    /* tslint:disable:no-string-literal */
+                    style['fill'] = 'transparent';
+                }
                 break;
-            }
+            case 'textOverflow':
+                style.textOverflow = changedObject.textOverflow;
+                break;
+            case 'opacity':
+                style.opacity = changedObject.opacity;
+                break;
+            case 'strokeColor':
+                style.strokeColor = changedObject.strokeColor;
+                break;
+            case 'strokeDashArray':
+                style.strokeDashArray = changedObject.strokeDashArray;
+                break;
+            case 'strokeWidth':
+                style.strokeWidth = changedObject.strokeWidth;
+                break;
+            case 'bold':
+                style.bold = changedObject.bold;
+                break;
+            case 'color':
+                style.color = changedObject.color;
+                break;
+            case 'textWrapping':
+                style.textWrapping = changedObject.textWrapping;
+                break;
+            case 'fontFamily':
+                style.fontFamily = changedObject.fontFamily;
+                break;
+            case 'fontSize':
+                style.fontSize = changedObject.fontSize;
+                break;
+            case 'italic':
+                style.italic = changedObject.italic;
+                break;
+            case 'textAlign':
+                style.textAlign = changedObject.textAlign;
+                break;
+            case 'whiteSpace':
+                style.whiteSpace = changedObject.whiteSpace;
+                break;
+            case 'textDecoration':
+                style.textDecoration = changedObject.textDecoration;
+                break;
+            case 'gradient':
+                if (style.gradient) {
+                    updateGradient(changedObject.gradient, style.gradient);
+                    break;
+                }
         }
     }
     if (target instanceof TextElement) {
@@ -1611,39 +1621,39 @@ function updateGradient(
 ): void {
     for (const key of Object.keys(changedGradient)) {
         switch (key) {
-        case 'type':
-            targetGradient.type = changedGradient.type;
-            break;
-        case 'x1':
-            (targetGradient as LinearGradient).x1 = (changedGradient as LinearGradient).x1;
-            break;
-        case 'x2':
-            (targetGradient as LinearGradient).x2 = (changedGradient as LinearGradient).x2;
-            break;
-        case 'y1':
-            (targetGradient as LinearGradient).y1 = (changedGradient as LinearGradient).y1;
-            break;
-        case 'y2':
-            (targetGradient as LinearGradient).y2 = (changedGradient as LinearGradient).y2;
-            break;
-        case 'cx':
-            (targetGradient as RadialGradient).cx = (changedGradient as RadialGradient).cx;
-            break;
-        case 'cy':
-            (targetGradient as RadialGradient).cy = (changedGradient as RadialGradient).cy;
-            break;
-        case 'fx':
-            (targetGradient as RadialGradient).fx = (changedGradient as RadialGradient).fx;
-            break;
-        case 'fy':
-            (targetGradient as RadialGradient).fy = (changedGradient as RadialGradient).fy;
-            break;
-        case 'r':
-            (targetGradient as RadialGradient).r = (changedGradient as RadialGradient).r;
-            break;
-        case 'stops':
-            targetGradient.stops = changedGradient.stops;
-            break;
+            case 'type':
+                targetGradient.type = changedGradient.type;
+                break;
+            case 'x1':
+                (targetGradient as LinearGradient).x1 = (changedGradient as LinearGradient).x1;
+                break;
+            case 'x2':
+                (targetGradient as LinearGradient).x2 = (changedGradient as LinearGradient).x2;
+                break;
+            case 'y1':
+                (targetGradient as LinearGradient).y1 = (changedGradient as LinearGradient).y1;
+                break;
+            case 'y2':
+                (targetGradient as LinearGradient).y2 = (changedGradient as LinearGradient).y2;
+                break;
+            case 'cx':
+                (targetGradient as RadialGradient).cx = (changedGradient as RadialGradient).cx;
+                break;
+            case 'cy':
+                (targetGradient as RadialGradient).cy = (changedGradient as RadialGradient).cy;
+                break;
+            case 'fx':
+                (targetGradient as RadialGradient).fx = (changedGradient as RadialGradient).fx;
+                break;
+            case 'fy':
+                (targetGradient as RadialGradient).fy = (changedGradient as RadialGradient).fy;
+                break;
+            case 'r':
+                (targetGradient as RadialGradient).r = (changedGradient as RadialGradient).r;
+                break;
+            case 'stops':
+                targetGradient.stops = changedGradient.stops;
+                break;
         }
     }
 }
@@ -1663,22 +1673,22 @@ export function updateHyperlink(changedObject: HyperlinkModel, target: DiagramEl
     const hyperlink: HyperlinkModel = textElement.hyperlink;
     for (const key of Object.keys(changedObject)) {
         switch (key) {
-        case 'color':
-            textElement.style.color = hyperlink.color = changedObject.color;
-            break;
-        case 'content':
-            textElement.content = hyperlink.content = changedObject.content || hyperlink.link;
-            break;
-        case 'link':
-            const labelStyle: TextStyleModel = actualAnnotation.style;
-            textElement.style.color = changedObject.link ? hyperlink.color : labelStyle.color;
-            textElement.style.textDecoration = changedObject.link ? hyperlink.textDecoration : actualAnnotation.style.textDecoration;
-            textElement.content = changedObject.link ? hyperlink.content || changedObject.link : actualAnnotation.content;
-            hyperlink.link = changedObject.link;
-            break;
-        case 'textDecoration':
-            textElement.style.textDecoration = hyperlink.textDecoration = changedObject.textDecoration;
-            break;
+            case 'color':
+                textElement.style.color = hyperlink.color = changedObject.color;
+                break;
+            case 'content':
+                textElement.content = hyperlink.content = changedObject.content || hyperlink.link;
+                break;
+            case 'link':
+                const labelStyle: TextStyleModel = actualAnnotation.style;
+                textElement.style.color = changedObject.link ? hyperlink.color : labelStyle.color;
+                textElement.style.textDecoration = changedObject.link ? hyperlink.textDecoration : actualAnnotation.style.textDecoration;
+                textElement.content = changedObject.link ? hyperlink.content || changedObject.link : actualAnnotation.content;
+                hyperlink.link = changedObject.link;
+                break;
+            case 'textDecoration':
+                textElement.style.textDecoration = hyperlink.textDecoration = changedObject.textDecoration;
+                break;
         }
     }
 }
@@ -1736,66 +1746,66 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
     let content: DiagramElement = new DiagramElement(); let i: number;
     //let textStyle: TextStyleModel; let nodeStyle: TextStyleModel;
     switch (node.shape.type) {
-    case 'Path':
-        const pathContent: PathElement = new PathElement();
-        pathContent.data = (actualObject.shape as PathModel).data;
-        content = pathContent;
-        updateShapeContent(content, actualObject, diagram);
-        break;
-    case 'Image':
-        const imageContent: ImageElement = new ImageElement();
-        imageContent.source = (actualObject.shape as ImageModel).source;
-        imageContent.imageAlign = (actualObject.shape as ImageModel).align;
-        imageContent.imageScale = (actualObject.shape as ImageModel).scale;
-        content = imageContent;
-        updateShapeContent(content, actualObject, diagram);
-        break;
-    case 'Text':
+        case 'Path':
+            const pathContent: PathElement = new PathElement();
+            pathContent.data = (actualObject.shape as PathModel).data;
+            content = pathContent;
+            updateShapeContent(content, actualObject, diagram);
+            break;
+        case 'Image':
+            const imageContent: ImageElement = new ImageElement();
+            imageContent.source = (actualObject.shape as ImageModel).source;
+            imageContent.imageAlign = (actualObject.shape as ImageModel).align;
+            imageContent.imageScale = (actualObject.shape as ImageModel).scale;
+            content = imageContent;
+            updateShapeContent(content, actualObject, diagram);
+            break;
+        case 'Text':
             //issue
-        const textContent: DiagramElement = new TextElement();
-        //  (textContent as TextElement).content = (node.shape as TextModel).content;
-        content = textContent;
-        updateShapeContent(content, actualObject, diagram);
-        break;
-    case 'Basic':
-        
+            const textContent: DiagramElement = new TextElement();
+            //  (textContent as TextElement).content = (node.shape as TextModel).content;
+            content = textContent;
+            updateShapeContent(content, actualObject, diagram);
+            break;
+        case 'Basic':
 
-        const element: DiagramElement = ((isBlazor() ? (actualObject.shape as DiagramShape).basicShape === 'Rectangle' :
-            (actualObject.shape as BasicShape).shape === 'Rectangle')) ? new DiagramElement() : new PathElement();
-        if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Polygon') ||
+
+            const element: DiagramElement = ((isBlazor() ? (actualObject.shape as DiagramShape).basicShape === 'Rectangle' :
+                (actualObject.shape as BasicShape).shape === 'Rectangle')) ? new DiagramElement() : new PathElement();
+            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Polygon') ||
                 (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Polygon')) {
-            (element as PathElement).data = getPolygonPath((actualObject.shape as BasicShape).points) as string;
-        } else {
-            (element as PathElement).data = getBasicShape((isBlazor() ? (actualObject.shape as DiagramShape).basicShape :
-            (actualObject.shape as BasicShape).shape));
-        }
-        updateShapeContent(content, actualObject, diagram);
-        if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Rectangle') ||
+                (element as PathElement).data = getPolygonPath((actualObject.shape as BasicShape).points) as string;
+            } else {
+                (element as PathElement).data = getBasicShape((isBlazor() ? (actualObject.shape as DiagramShape).basicShape :
+                    (actualObject.shape as BasicShape).shape));
+            }
+            updateShapeContent(content, actualObject, diagram);
+            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Rectangle') ||
                 (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Rectangle')) {
-            element.cornerRadius = (actualObject.shape as BasicShape).cornerRadius;
-        }
-        content = element;
-        break;
+                element.cornerRadius = (actualObject.shape as BasicShape).cornerRadius;
+            }
+            content = element;
+            break;
         case 'Flow':
-        /* eslint-disable */
-        const flowShapeElement: PathElement = new PathElement();
-        const shape: string = (isBlazor()) ? (actualObject.shape as DiagramShape).flowShape : (actualObject.shape as FlowShape).shape;
-        flowShapeElement.data = getFlowShape(shape);
-        content = flowShapeElement;
-        updateShapeContent(content, actualObject, diagram);
-        break;
-    case 'Native':
-        const nativeContent: DiagramNativeElement = new DiagramNativeElement(node.id, diagram.element.id);
-        nativeContent.content = (actualObject.shape as Native).content;
-        nativeContent.scale = (actualObject.shape as Native).scale;
+            /* eslint-disable */
+            const flowShapeElement: PathElement = new PathElement();
+            const shape: string = (isBlazor()) ? (actualObject.shape as DiagramShape).flowShape : (actualObject.shape as FlowShape).shape;
+            flowShapeElement.data = getFlowShape(shape);
+            content = flowShapeElement;
+            updateShapeContent(content, actualObject, diagram);
+            break;
+        case 'Native':
+            const nativeContent: DiagramNativeElement = new DiagramNativeElement(node.id, diagram.element.id);
+            nativeContent.content = (actualObject.shape as Native).content;
+            nativeContent.scale = (actualObject.shape as Native).scale;
             content = nativeContent;
-        updateShapeContent(content, actualObject, diagram);
-        break;
-    case 'HTML':
-        let htmlContent: DiagramHtmlElement = new DiagramHtmlElement(actualObject.id, diagram.element.id);
-        htmlContent.content = (actualObject.shape as Html).content;
-        content = htmlContent;
-        updateShapeContent(content, actualObject, diagram);
+            updateShapeContent(content, actualObject, diagram);
+            break;
+        case 'HTML':
+            let htmlContent: DiagramHtmlElement = new DiagramHtmlElement(actualObject.id, diagram.element.id);
+            htmlContent.content = (actualObject.shape as Html).content;
+            content = htmlContent;
+            updateShapeContent(content, actualObject, diagram);
     }
     if (node.shape.type === undefined || node.shape.type === oldObject.shape.type || (isBlazor() && node.shape.type === 'UmlActivity')) {
         updateContent(node, actualObject, diagram, oldObject);
@@ -1974,17 +1984,17 @@ export function getUMLActivityShapes(umlActivityShape: PathElement, content: Dia
     umlActivityShape.data = umlActivityShapeData;
     content = umlActivityShape;
     switch (shape) {
-    case 'StructuredNode':
-        if (node.annotations) {
-            for (let i: number = 0; i < node.annotations.length; i++) {
-                node.annotations[i].content = '<<' + node.annotations[i].content + '>>';
+        case 'StructuredNode':
+            if (node.annotations) {
+                for (let i: number = 0; i < node.annotations.length; i++) {
+                    node.annotations[i].content = '<<' + node.annotations[i].content + '>>';
+                }
             }
-        }
-        content = umlActivityShape;
-        break;
-    case 'FinalNode':
-        content = getUMLFinalNode(node);
-        break;
+            content = umlActivityShape;
+            break;
+        case 'FinalNode':
+            content = getUMLFinalNode(node);
+            break;
     }
     return content;
 }
@@ -2034,7 +2044,7 @@ export function updateConnector(connector: Connector, points: PointModel[], diag
         const firstSegment: BezierSegment = (connector.segments[0] as BezierSegment);
         const lastSegment: BezierSegment = (connector.segments[connector.segments.length - 1] as BezierSegment);
         anglePoint = [!Point.isEmptyPoint(lastSegment.point2) ? lastSegment.point2 : lastSegment.bezierPoint2,
-            !Point.isEmptyPoint(firstSegment.point1) ? firstSegment.point1 : firstSegment.bezierPoint1];
+        !Point.isEmptyPoint(firstSegment.point1) ? firstSegment.point1 : firstSegment.bezierPoint1];
     } else {
         anglePoint = connector.intermediatePoints;
     }
@@ -2072,22 +2082,22 @@ export function getUserHandlePosition(selectorItem: SelectorModel, handle: UserH
 
     if (selectorItem.nodes.length > 0) {
         switch (handle.side) {
-        case 'Top':
-            point.x += left + bounds.width * offset;
-            point.y += top - (size / 2 + 12.5);
-            break;
-        case 'Bottom':
-            point.x += left + offset * bounds.width;
-            point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
-            break;
-        case 'Left':
-            point.x += left - (size / 2 + 12.5);
-            point.y += top + offset * bounds.height;
-            break;
-        case 'Right':
-            point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
-            point.y += top + offset * bounds.height;
-            break;
+            case 'Top':
+                point.x += left + bounds.width * offset;
+                point.y += top - (size / 2 + 12.5);
+                break;
+            case 'Bottom':
+                point.x += left + offset * bounds.width;
+                point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
+                break;
+            case 'Left':
+                point.x += left - (size / 2 + 12.5);
+                point.y += top + offset * bounds.height;
+                break;
+            case 'Right':
+                point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
+                point.y += top + offset * bounds.height;
+                break;
         }
         point.x += ((margin.left - margin.right) / transform.scale) +
             (size / 2) * (handle.horizontalAlignment === 'Center' ? 0 : (handle.horizontalAlignment === 'Right' ? -1 : 1));
@@ -2557,45 +2567,45 @@ export function getPoint(
     const trans: Matrix = identityMatrix();
     rotateMatrix(trans, angle, offsetX, offsetY);
     switch (cornerPoint.x) {
-    case 0:
-        switch (cornerPoint.y) {
         case 0:
-            pivot = transformPointByMatrix(trans, ({ x: x, y: y }));
+            switch (cornerPoint.y) {
+                case 0:
+                    pivot = transformPointByMatrix(trans, ({ x: x, y: y }));
+                    break;
+                case 0.5:
+                    pivot = transformPointByMatrix(trans, ({ x: x, y: y + h / 2 }));
+                    break;
+                case 1:
+                    pivot = transformPointByMatrix(trans, ({ x: x, y: y + h }));
+                    break;
+            }
             break;
         case 0.5:
-            pivot = transformPointByMatrix(trans, ({ x: x, y: y + h / 2 }));
+            switch (cornerPoint.y) {
+                case 0:
+                    pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y }));
+                    break;
+                case 0.5:
+                    pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h / 2 }));
+                    break;
+                case 1:
+                    pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h }));
+                    break;
+            }
             break;
         case 1:
-            pivot = transformPointByMatrix(trans, ({ x: x, y: y + h }));
+            switch (cornerPoint.y) {
+                case 0:
+                    pivot = transformPointByMatrix(trans, ({ x: x + w, y: y }));
+                    break;
+                case 0.5:
+                    pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h / 2 }));
+                    break;
+                case 1:
+                    pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h }));
+                    break;
+            }
             break;
-        }
-        break;
-    case 0.5:
-        switch (cornerPoint.y) {
-        case 0:
-            pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y }));
-            break;
-        case 0.5:
-            pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h / 2 }));
-            break;
-        case 1:
-            pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h }));
-            break;
-        }
-        break;
-    case 1:
-        switch (cornerPoint.y) {
-        case 0:
-            pivot = transformPointByMatrix(trans, ({ x: x + w, y: y }));
-            break;
-        case 0.5:
-            pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h / 2 }));
-            break;
-        case 1:
-            pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h }));
-            break;
-        }
-        break;
     }
     return { x: pivot.x, y: pivot.y };
 }

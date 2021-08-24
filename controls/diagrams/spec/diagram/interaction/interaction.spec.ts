@@ -1724,6 +1724,7 @@ describe('Diagram Control', () => {
             diagram.drawingObject = null;
             done();
         });
+
         it('Draw Basic Shapes - Polygon with points', (done: Function) => {
             diagram.tool = DiagramTools.DrawOnce;
             diagram.drawingObject = {
@@ -3808,4 +3809,47 @@ describe('Context menu Cr issue fix', () => {
        
         done();
     })
+});
+
+
+describe('Drawing Shapes', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramdraw' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: '1000px', height: '1000px', snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+        diagram.appendTo('#diagramdraw');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    
+    it('By Left and Right Click Simultaneously', (done: Function) => {
+        diagram.tool = DiagramTools.ContinuousDraw
+        diagram.drawingObject = { id: 'node2', shape: { type: 'Basic', shape: 'Rectangle' } };
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 150, 150);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250, 400);
+        mouseEvents.mouseDownEvent(diagramCanvas, 250, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 492, 700);
+        mouseEvents.mouseUpEvent(diagramCanvas, 492, 700);
+        console.log(Object.keys(diagram.nameTable).length);
+        expect(Object.keys(diagram.nameTable).length).toBe(1);
+        done();
+    });
+
 });

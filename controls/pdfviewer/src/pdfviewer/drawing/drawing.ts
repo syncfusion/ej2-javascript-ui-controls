@@ -2280,19 +2280,17 @@ export class Drawing {
                                 let annotationSettings: any = this.pdfViewer.stampSettings ? this.pdfViewer.stampSettings : this.pdfViewer.annotationSettings;
                                 // eslint-disable-next-line max-len
                                 if (annotationSettings && (annotationSettings.maxHeight || annotationSettings.maxWidth) && (actualObject.bounds.height > 60)) {
-                                    if ((actualObject.bounds.height * 3)  < actualObject.bounds.width) {
-                                        element.style.fontSize = ((actualObject.bounds.height / 2) / heightRatio);
+                                    if (ratio != 0) {
+                                        element.style.fontSize = (actualObject.bounds.width / ratio);
                                     } else {
-                                        if (actualObject.bounds.height > actualObject.bounds.width) {
-                                            element.style.fontSize = ((actualObject.bounds.width / 8) / heightRatio);
-                                        } else if ((actualObject.bounds.height * 2) < actualObject.bounds.width) {
-                                            element.style.fontSize = ((actualObject.bounds.height / 4) / heightRatio);
-                                        } else {
-                                            element.style.fontSize = ((actualObject.bounds.height / 6) / heightRatio);
-                                        }
+                                        element.style.fontSize = (actualObject.wrapper.bounds.width / 20);
                                     }
                                 } else {
-                                    element.style.fontSize = ((actualObject.bounds.height / 2) / heightRatio);
+                                    if (ratio != 0) {
+                                        element.style.fontSize = (actualObject.bounds.width / ratio);
+                                    } else {
+                                        element.style.fontSize = (actualObject.wrapper.bounds.width / 20);
+                                    }
                                 }
                                 if (ratio !== 0) {
                                     element.margin.bottom = -(children[i].height / 2);

@@ -794,6 +794,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const radius: number = this.container.width;
         const bottomRadius: number = radius + ((radius / 2) / Math.PI);
         const topRadius: number = radius / 2;
+        let allowContainerRender: boolean = false;
+        for (let i = 0; i < this.axes.length; i++) {
+            if (this.axes[i].minimum !== this.axes[i].maximum) {
+                allowContainerRender = true;
+                break;
+            }
+        }
         if (this.orientation === 'Vertical') {
             height = this.actualRect.height;
             height = (this.container.height > 0 ? this.container.height : ((height / 2) - ((height / 2) / 4)) * 2);
@@ -816,7 +823,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             y = (this.actualRect.y + ((this.actualRect.height / 2) - (this.container.width / 2))) + this.container.offset;
             height = this.container.width;
         }
-        this.containerBounds = { x: x, y: y, width: width, height: height };
+        this.containerBounds = (!allowContainerRender) ? { x: 0, y: 0, width: 0, height: 0 } : { x: x, y: y, width: width, height: height };
         if (this.containerBounds.width > 0) {
             this.containerObject = this.renderer.createGroup({ id: this.element.id + '_Container_Group', transform: 'translate( 0, 0)' });
             if (this.container.type === 'Normal') {

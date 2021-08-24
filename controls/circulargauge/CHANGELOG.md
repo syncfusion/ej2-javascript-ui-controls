@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## 19.2.57 (2021-08-24)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#F168138` - When the axis' maximum and minimum values are the same, the axis will not be rendered.
+
+## 19.2.49 (2021-07-27)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I334929` - When the `moveToCenter` property is enabled, the Circular Gauge will now be in the centre, with a `startAngle` of **241** to **269** and an `endAngle` of **150**.
+
 ## 19.2.47 (2021-07-13)
 
 ### CircularGauge

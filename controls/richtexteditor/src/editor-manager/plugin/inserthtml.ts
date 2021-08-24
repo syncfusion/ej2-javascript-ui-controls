@@ -307,6 +307,12 @@ export class InsertHtml {
                 blockNode = range.endContainer;
                 range.setEnd(blockNode, range.endContainer.textContent.length);
             }
+            if (!isNOU(blockNode) && editNode === blockNode &&
+                range.startContainer === editNode && range.endContainer === editNode) {
+                blockNode = editNode.firstElementChild;
+                range.setStart(editNode.firstElementChild, editNode.firstElementChild.textContent.length);
+                range.setEnd(editNode.firstElementChild, editNode.firstElementChild.textContent.length);
+            }
             if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
                 range.insertNode(tempSpan);

@@ -35,6 +35,7 @@ export class FormDesigner {
     private formFieldChecked: CheckBox;
     private formFieldRequired: CheckBox;
     private formFieldPrinting: CheckBox;
+    private formFieldMultiline: CheckBox;
     private formFieldFontFamily: DropDownList;
     private formFieldFontSize: DropDownList;
     private maxLengthItem: NumericTextBox;
@@ -70,6 +71,7 @@ export class FormDesigner {
     private borderColorValue: string;
     private formFieldBorderWidth: string;
     private checkboxCheckedState: boolean;
+    private multilineCheckboxCheckedState: boolean = false;
     private formFieldListItemCollection: string[] = [];
     private formFieldListItemDataSource: object[] = [];
     private isInitialField: boolean = false;
@@ -227,7 +229,7 @@ export class FormDesigner {
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
         let formDesignObj: IFormField = {
             id: element.id, lineBound: { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue },
-            name: drawingObject.name, zoomValue: zoomValue, pageNumber: drawingObject.pageNumber, value: drawingObject.value, formFieldAnnotationType: formFieldType,
+            name: drawingObject.name, zoomValue: zoomValue, pageNumber: drawingObject.pageNumber, value: drawingObject.value, formFieldAnnotationType: formFieldType, isMultiline: drawingObject.isMultiline,
             signatureType: (drawingObject as any).signatureType, signatureBound: (drawingObject as any).signatureBound,
             fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle, fontColor: this.getRgbCode(drawingObject.color) as unknown as string,
             borderColor: this.getRgbCode(drawingObject.borderColor), thickness: drawingObject.thickness, backgroundColor: this.getRgbCode(drawingObject.backgroundColor) as unknown as string,
@@ -960,7 +962,6 @@ export class FormDesigner {
             divElement.style.pointerEvents = '';
         }
         divElement.id = signatureField.id;
-        divElement.addEventListener('click', this.openSignatureDialog.bind(this, commandHandler));
         element.appendChild(divElement);
         //check whether the width for sign indicator has default value or not and then set the default width value for initial field.
         let defaultWidth = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width === 19 ? (signatureField.isInitialField ? 30 : 25) : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width;
@@ -1011,26 +1012,11 @@ export class FormDesigner {
         if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip != "") {
             this.setToolTip(signatureField.tooltip, element);
         }
-        return element;
-    }
-
-    private openSignatureDialog(commandHandler: PdfViewer, event: any): void {
-        commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-        this.pdfViewerBase.currentTarget = event.target;
-        let currentFieldID: string = '';
-        if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
-            currentFieldID = this.pdfViewerBase.currentTarget.id;
-        } else {
-            currentFieldID = isNullOrUndefined(event.path) ? event.composedPath()[2].id.split("_")[0] : event.path[2].id.split("_")[0];
+        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.signatureFieldSettings.isReadOnly) {
+            signatureField.isReadonly = true;
         }
-        let currentFormfield: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentFieldID] as PdfAnnotationBaseModel;
-        if (currentFormfield.formFieldAnnotationType === 'InitialField')
-            this.isInitialField = true;
-        else
-            this.isInitialField = false;
-        this.pdfViewerBase.isToolbarSignClicked = false;
-        this.pdfViewerBase.isInitialField = this.isInitialField;
-        this.pdfViewerBase.signatureModule.showSignatureDialog(true);
+        this.updateSignatureFieldProperties(signatureField, element);
+        return element;
     }
 
     /**
@@ -1050,6 +1036,9 @@ export class FormDesigner {
         select.className = "e-pv-formfield-dropdown";
         select.style.width = "100%";
         select.style.height = "100%";
+        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.DropdownFieldSettings.isReadOnly) {
+            drawingObject.isReadonly = true;
+        }
         this.updateDropdownListProperties(drawingObject, select);
         for (let j: number = 0; j < dropDownChildren.length; j++) {
             var option = document.createElement("option");
@@ -1085,6 +1074,9 @@ export class FormDesigner {
         select.style.width = "100%";
         select.style.height = "100%";
         select.multiple = true;
+        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.listBoxFieldSettings.isReadOnly) {
+            drawingObject.isReadonly = true;
+        }
         this.updateListBoxProperties(drawingObject, select);
         for (let j: number = 0; j < dropDownChildren.length; j++) {
             var option = document.createElement("option");
@@ -1122,15 +1114,23 @@ export class FormDesigner {
         let labelElement: HTMLElement;
         let checkboxDiv: HTMLElement;
         let innerSpan: HTMLElement;
-        const inputElement: HTMLElement = createElement("input");
+        let inputElement: HTMLElement = createElement("input");
+        let textArea: HTMLElement = createElement('textarea');
         inputElement.id = drawingObject.id + "_" + drawingObject.pageIndex + "_" + this.setFormFieldIdIndex();
         if (formFieldAnnotationType === "Textbox") {
-            (inputElement as IElement).type = "text";
-            inputElement.className = "e-pv-formfield-input";
-            (inputElement as IElement).autocomplete = "off";
-            inputElement.addEventListener('change', this.getTextboxValue.bind(this));
-            inputElement.addEventListener('click', this.inputElementClick.bind(this));
-            this.updateTextboxProperties(drawingObject, inputElement);
+            if(drawingObject.isMultiline) { 
+                textArea = this.createTextAreaElement(inputElement.id);
+                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.textFieldSettings.isReadOnly) {
+                    drawingObject.isReadonly = true;
+                }
+                this.updateTextboxProperties(drawingObject, textArea);
+            } else {
+                inputElement = this.createTextboxElement(inputElement.id); 
+                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.textFieldSettings.isReadOnly) {
+                    drawingObject.isReadonly = true;
+                }
+                this.updateTextboxProperties(drawingObject, inputElement);
+            }
         } else if (formFieldAnnotationType == "Checkbox") {
             let minCheckboxWidth: number = 20;
             element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
@@ -1176,6 +1176,9 @@ export class FormDesigner {
             if (isPrint) {
                 this.updateCheckboxProperties(drawingObject, inputElement);
             } else {
+                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.checkBoxFieldSettings.isReadOnly) {
+                    drawingObject.isReadonly = true;
+                }
                 this.updateCheckboxProperties(drawingObject, checkboxDiv);
             }
             labelElement.appendChild(inputElement);
@@ -1190,8 +1193,13 @@ export class FormDesigner {
         } else if (formFieldAnnotationType == "PasswordField") {
             (inputElement as IElement).type = "password";
             inputElement.className = "e-pv-formfield-input";
+            inputElement.style.width = '100%';
+            inputElement.style.height = '100%';
             inputElement.addEventListener('click', this.inputElementClick.bind(this));
             inputElement.addEventListener('change', this.getTextboxValue.bind(this));
+            if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.passwordFieldSettings.isReadOnly) {
+                drawingObject.isReadonly = true;
+            }
             this.updatePasswordFieldProperties(drawingObject, inputElement);
         } else {
             element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
@@ -1231,6 +1239,9 @@ export class FormDesigner {
             });
             inputElement.style.width = bounds.width + "px";
             inputElement.style.height = bounds.height + "px";
+            if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.radioButtonFieldSettings.isReadOnly) {
+                drawingObject.isReadonly = true;
+            }
             this.updateRadioButtonProperties(drawingObject, inputElement);
 
             labelElement.appendChild(inputElement);
@@ -1245,9 +1256,11 @@ export class FormDesigner {
         if ((formFieldAnnotationType === "Checkbox" || formFieldAnnotationType === "RadioButton") && !isPrint) {
             element.appendChild(labelElement);
         } else {
-            inputElement.style.width = "100%";
-            inputElement.style.height = "100%";
+            if(drawingObject.isMultiline) { 
+                element.appendChild(textArea);
+            } else {
             element.appendChild(inputElement);
+            }
         }
         if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
             if (formFieldAnnotationType === 'RadioButton')
@@ -1499,6 +1512,7 @@ export class FormDesigner {
         switch (formFieldType) {
             case 'Textbox':
                 obj.formFieldAnnotationType = formFieldType;
+                obj.isMultiline = (options as TextFieldSettings).isMultiline;
                 obj.name = !isNullOrUndefined(options.name) ? options.name : 'Textbox' + this.setFormFieldIndex();
                 obj.maxLength = (options as any).maxLength;
                 obj.thickness = !isNullOrUndefined((options as TextFieldSettings).thickness) ? (options as TextFieldSettings).thickness : 1;
@@ -1609,7 +1623,7 @@ export class FormDesigner {
         this.pdfViewer.formFieldCollection.push(node);
         let formField: FormFieldModel = {id: node.id, name: (node as PdfFormFieldBaseModel).name, value: (node as PdfFormFieldBaseModel).value,
             type: node.formFieldAnnotationType as FormFieldType, isReadOnly: node.isReadonly, fontFamily: node.fontFamily,
-            fontSize: node.fontSize, fontStyle: node.fontStyle as unknown as FontStyle, color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor,
+            fontSize: node.fontSize, fontStyle: node.fontStyle as unknown as FontStyle, color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, isMultiline: (node as PdfFormFieldBaseModel).isMultiline,
             alignment: (node as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (node as PdfFormFieldBaseModel).visibility, maxLength: (node as PdfFormFieldBaseModel).maxLength, isRequired: (node as PdfFormFieldBaseModel).isRequired,
             isPrint: node.isPrint, isSelected: (node as PdfFormFieldBaseModel).isSelected, isChecked: (node as PdfFormFieldBaseModel).isChecked, tooltip:  (node as PdfFormFieldBaseModel).tooltip, bounds: node.bounds as IFormFieldBound, thickness: node.thickness, borderColor: (node as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (node as PdfFormFieldBaseModel).signatureIndicatorSettings };
         this.pdfViewer.formFieldCollections.push(formField);
@@ -2766,6 +2780,7 @@ export class FormDesigner {
             let formFieldsData: any = JSON.parse(data);
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 let currentData: any = formFieldsData[i].FormField;
+                currentData.Multiline = currentData.isMultiline;
                 if (currentData.formFieldAnnotationType === 'Textbox' || currentData.formFieldAnnotationType === 'PasswordField' || currentData.Multiline) {
                     if (currentData.value === null || currentData.value === '') {
                         this.pdfViewerBase.validateForm = true;
@@ -2937,7 +2952,27 @@ export class FormDesigner {
             switch (selectedItem.formFieldAnnotationType) {
                 case 'Textbox':
                 case 'PasswordField':
+                    if (this.formFieldMultiline && this.formFieldMultiline.checked && selectedItem.formFieldAnnotationType === 'Textbox' && this.multilineCheckboxCheckedState) {
+                        this.renderMultilineText(selectedItem);
+                    } else if(selectedItem.formFieldAnnotationType === 'Textbox' && this.multilineCheckboxCheckedState) {
+                       this.renderTextbox(selectedItem);
+                    }
                     this.updateTextboxFormDesignerProperties(selectedItem);
+                    if(selectedItem.formFieldAnnotationType === 'Textbox') {
+                    let textboxCollection: any = this.checkTextboxName(selectedItem);
+                    if (textboxCollection && textboxCollection.length > 0) {
+                         for (let i: number =0; i < textboxCollection.length; i++) {
+                              let item: any = textboxCollection[i];
+                              if(selectedItem.isMultiline) {
+                                this.renderMultilineText(item);
+                              } else {
+                                this.renderTextbox(item);
+                              }
+                              this.updateTextboxFormDesignerProperties(item);
+                         }
+                      }
+                    }
+                    this.multilineCheckboxCheckedState = false;
                     let point: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
                     this.updateFormDesignerFieldInSessionStorage(point, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
                     break;
@@ -2974,12 +3009,98 @@ export class FormDesigner {
         }
         this.propertiesDialog.hide();
     }
+
+    private checkTextboxName(selectedItem: PdfFormFieldBaseModel): any {
+        let textboxObjectCollection: any = [];
+        for (let i: number =0; i < this.pdfViewer.formFieldCollection.length; i++) {
+             let item = this.pdfViewer.formFieldCollection[i];
+             if(item.name === selectedItem.name) {
+                textboxObjectCollection.push(item); 
+             }
+        }
+        return textboxObjectCollection;
+    }
+
+    public renderMultilineText(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        if(isUndoRedo) {
+            this.reRenderMultilineTextbox(selectedItem, "e-pv-formfield-input");
+        } else {
+            this.addMultilineTextbox(selectedItem, "e-pv-formfield-input", true);
+       }   
+    }
+
+    public renderTextbox(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        if(isUndoRedo) {
+            this.reRenderMultilineTextbox(selectedItem, "e-pv-formfield-textarea");
+         } else {
+            this.addMultilineTextbox(selectedItem, "e-pv-formfield-textarea", false);
+         }
+    }
+
+    private addMultilineTextbox(selectedItem: PdfFormFieldBaseModel, className: string, isMultiline: boolean): void {
+        let wrapperElement: DiagramHtmlElement = selectedItem.wrapper.children[0] as DiagramHtmlElement;
+        selectedItem.isMultiline = isMultiline;
+        let htmlElement = document.getElementById(wrapperElement.id + '_html_element').children[0];
+        let textAreaId: string = htmlElement.children[0].id;
+        document.getElementById(htmlElement.children[0].id).remove();
+        if(className.indexOf("e-pv-formfield-textarea") !== -1) {
+            let inputElement: any = this.createTextboxElement(textAreaId);
+            wrapperElement.template = htmlElement.appendChild(inputElement);
+        } else {
+            let textArea = this.createTextAreaElement(textAreaId);
+            wrapperElement.template = htmlElement.appendChild(textArea); 
+        }
+        let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
+        this.pdfViewerBase.formFieldCollection[index].FormField.isMultiline = selectedItem.isMultiline;
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isMultiline = selectedItem.isMultiline; 
+    }
+
+    private reRenderMultilineTextbox(selectedItem: PdfFormFieldBaseModel, className: string): void {
+        let wrapperElement = document.getElementById(selectedItem.id + "_content_html_element");
+        if(wrapperElement) {
+            let textareaElement = wrapperElement.firstElementChild.firstElementChild;
+            let textareaId = textareaElement.id; 
+            textareaElement.remove();
+            if(className.indexOf('e-pv-formfield-textarea')!== -1) {
+                let textboxElement = this.createTextboxElement(textareaId);
+                wrapperElement.firstElementChild.appendChild(textboxElement);
+            } else {
+                let textboxElement = this.createTextAreaElement(textareaId);
+                wrapperElement.firstElementChild.appendChild(textboxElement);
+            }
+        }
+    }
+
+    private createTextAreaElement(id: string): any {
+        let textArea: HTMLElement = createElement('textarea');
+        textArea.id = id;
+        textArea.className = 'e-pv-formfield-textarea';
+        textArea.style.width = '100%';
+        textArea.style.height = '100%';
+        textArea.addEventListener('click', this.inputElementClick.bind(this));
+        textArea.addEventListener('change', this.getTextboxValue.bind(this));
+        return textArea;
+    }
+
+    private createTextboxElement(id: string): any {
+        let inputElement: HTMLElement = createElement('input');
+        inputElement.id = id;
+        (inputElement as IElement).type = "text";
+        inputElement.className = "e-pv-formfield-input";
+        (inputElement as IElement).autocomplete = "off";
+        inputElement.style.width = '100%';
+        inputElement.style.height = '100%';
+        inputElement.addEventListener('click', this.inputElementClick.bind(this));
+        inputElement.addEventListener('change', this.getTextboxValue.bind(this));
+        return inputElement;
+    }
+
     /**
      * @private
      */
     public updateFormFieldCollections(formFieldObject: PdfFormFieldBaseModel): void {
         let formField: FormFieldModel = {id: formFieldObject.id.split('_')[0], name: (formFieldObject as PdfFormFieldBaseModel).name, value: (formFieldObject as PdfFormFieldBaseModel).value,
-            type: formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily,
+            type: formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily, isMultiline: formFieldObject.isMultiline,
             fontSize: formFieldObject.fontSize, fontStyle: formFieldObject.fontStyle as unknown as FontStyle, color: (formFieldObject as PdfFormFieldBaseModel).color, backgroundColor: (formFieldObject as PdfFormFieldBaseModel).backgroundColor,
             alignment: (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired,
             isPrint: formFieldObject.isPrint, isSelected: formFieldObject.isSelected, isChecked: formFieldObject.isChecked, tooltip:  (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound, thickness: formFieldObject.thickness, borderColor: (formFieldObject as PdfFormFieldBaseModel).borderColor };
@@ -3306,7 +3427,7 @@ export class FormDesigner {
             
             this.updateFontStylePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
     
-            if (this.formFieldAlign || isUndoRedo) {
+            if (this.formFieldAlign || isUndoRedo || this.multilineCheckboxCheckedState) {
                 this.updateAlignmentPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if (this.maxLengthItem || isUndoRedo) {
@@ -3332,13 +3453,13 @@ export class FormDesigner {
                         false, false, false, false, false, false, false, false, isMaxLengthChanged, false, false, false, oldValue, newValue);
                 }
             }
-            if (this.fontColorValue || isUndoRedo) {
+            if (this.fontColorValue || isUndoRedo || this.multilineCheckboxCheckedState) {
                 this.updateColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.backgroundColorValue || isUndoRedo) {
+            if (this.backgroundColorValue || isUndoRedo || this.multilineCheckboxCheckedState) {
                 this.updateBackgroundColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.borderColorValue || isUndoRedo) {
+            if (this.borderColorValue || isUndoRedo || this.multilineCheckboxCheckedState) {
                 this.updateBorderColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldBorderWidth || isUndoRedo) {
@@ -3506,12 +3627,12 @@ export class FormDesigner {
         if (selectedItem.thickness !== borderWidth) {
             isBorderWidthChanged = true;
             oldValue = selectedItem.thickness;
-            newValue = borderWidth;
+            newValue = borderWidth ? borderWidth: selectedItem.thickness;
         }
         if(isUndoRedo) {
             element.style.borderWidth = selectedItem.thickness.toString();
         } else {
-            element.style.borderWidth = this.formFieldBorderWidth;
+            element.style.borderWidth = this.formFieldBorderWidth? this.formFieldBorderWidth: selectedItem.thickness;
             selectedItem.thickness = borderWidth;
         }
         if (index > -1) {
@@ -3531,13 +3652,13 @@ export class FormDesigner {
         if (selectedItem.borderColor !== this.borderColorValue) {
             isBorderColorChanged = true;
             oldValue = selectedItem.borderColor;
-            newValue = this.borderColorValue;
+            newValue = this.borderColorValue ? this.borderColorValue: selectedItem.borderColor;
         }
         if (isUndoRedo) {
             element.style.borderColor = selectedItem.borderColor;
         } else {
-            element.style.borderColor = this.borderColorValue;
-            selectedItem.borderColor = this.borderColorValue;
+            element.style.borderColor = this.borderColorValue ? this.borderColorValue: selectedItem.borderColor;
+            selectedItem.borderColor = this.borderColorValue ? this.borderColorValue: selectedItem.borderColor;
         }
         if (selectedItem.formFieldAnnotationType == "RadioButton") 
             (element as any).parentElement.style.boxShadow = this.borderColorValue + ' 0px 0px 0px ' + selectedItem.thickness + 'px';
@@ -3558,7 +3679,7 @@ export class FormDesigner {
         if (selectedItem.backgroundColor !== this.backgroundColorValue) {
             isBackgroundColorChanged = true;
             oldValue = selectedItem.backgroundColor;
-            newValue = this.backgroundColorValue;
+            newValue = this.backgroundColorValue ? this.backgroundColorValue: selectedItem.backgroundColor;
         }
         if (isUndoRedo) {
             if (selectedItem.formFieldAnnotationType == "RadioButton") 
@@ -3567,10 +3688,10 @@ export class FormDesigner {
                 element.style.background = selectedItem.backgroundColor;
         } else {
             if (selectedItem.formFieldAnnotationType == "RadioButton") 
-                (element as any).parentElement.style.background = this.backgroundColorValue;
+                (element as any).parentElement.style.background = this.backgroundColorValue ? this.backgroundColorValue: selectedItem.backgroundColor;
             else
-                element.style.background = this.backgroundColorValue;
-            selectedItem.backgroundColor = this.backgroundColorValue;
+                element.style.background = this.backgroundColorValue ? this.backgroundColorValue: selectedItem.backgroundColor;
+            selectedItem.backgroundColor = this.backgroundColorValue ? this.backgroundColorValue: selectedItem.backgroundColor;
         }
         if (index > -1) {
             formFieldsData[index].FormField.backgroundColor = this.getRgbCode(selectedItem.backgroundColor);
@@ -3589,13 +3710,13 @@ export class FormDesigner {
         if (selectedItem.color !== this.fontColorValue) {
             isColorChanged = true;
             oldValue = selectedItem.color;
-            newValue = this.fontColorValue;
+            newValue = this.fontColorValue ? this.fontColorValue: selectedItem.color;
         }
         if (isUndoRedo) {
             element.style.color = selectedItem.color;
         } else {
-            element.style.color = this.fontColorValue;
-            selectedItem.color = this.fontColorValue;
+            element.style.color = this.fontColorValue ? this.fontColorValue: selectedItem.color;
+            selectedItem.color = this.fontColorValue ? this.fontColorValue: selectedItem.color;
         }
         if (index > -1) {
             formFieldsData[index].FormField.color = this.getRgbCode(selectedItem.color);
@@ -3614,7 +3735,7 @@ export class FormDesigner {
         if (selectedItem.alignment !== this.formFieldAlign) {
             isAlignmentChanged = true;
             oldValue = selectedItem.alignment;
-            newValue = this.formFieldAlign;
+            newValue = this.formFieldAlign? this.formFieldAlign: selectedItem.alignment;
         }
         if (isUndoRedo) {
             element.style.textAlign = selectedItem.alignment;
@@ -3627,14 +3748,14 @@ export class FormDesigner {
                 }
             }
         } else {
-            element.style.textAlign = this.formFieldAlign;
-            selectedItem.alignment = this.formFieldAlign;
+            element.style.textAlign = this.formFieldAlign ? this.formFieldAlign: selectedItem.alignment;
+            selectedItem.alignment = this.formFieldAlign? this.formFieldAlign: selectedItem.alignment;
             if ((selectedItem.formFieldAnnotationType == "ListBox" || selectedItem.formFieldAnnotationType == "DropdownList" ) && element.children.length > 0) {
-                element.style.textAlignLast = this.formFieldAlign;
+                element.style.textAlignLast = this.formFieldAlign? this.formFieldAlign: selectedItem.alignment;
                 for (let i: number = 0; i < element.children.length; i++) {
                     let dropDownChild: any = element.children[i];
-                    dropDownChild.style.textAlignLast = this.formFieldAlign;    
-                    dropDownChild.style.textAlign = this.formFieldAlign;
+                    dropDownChild.style.textAlignLast = this.formFieldAlign? this.formFieldAlign: selectedItem.alignment;    
+                    dropDownChild.style.textAlign = this.formFieldAlign? this.formFieldAlign: selectedItem.alignment;
                 }
             }
         }
@@ -3791,7 +3912,7 @@ export class FormDesigner {
             this.formFieldTooltip = new TextBox();
             this.formFieldTooltip.value = selectedItem.tooltip;
         } else {
-            selectedItem.tooltip = this.formFieldTooltip.value;
+            selectedItem.tooltip = this.formFieldTooltip ? this.formFieldTooltip.value: selectedItem.tooltip;
         }
         if (index > -1) {
             formFieldsData[index].FormField.tooltip =selectedItem.tooltip;
@@ -3814,7 +3935,7 @@ export class FormDesigner {
         if (isUndoRedo) {
             designerName.innerHTML = selectedItem.name;
         } else {
-            selectedItem.name = this.formFieldName.value;
+            selectedItem.name = this.formFieldName ? this.formFieldName.value: selectedItem.name;
             designerName.innerHTML = selectedItem.name;
         }
         if (index > -1) {
@@ -4238,6 +4359,11 @@ export class FormDesigner {
         const showPrinting: HTMLElement = createElement('input', { className: 'e-pv-properties-checkbox-printing-input e-input' });
         checkboxMainDiv.appendChild(showPrinting);
         this.formFieldPrinting = new CheckBox({ label: this.pdfViewer.localeObj.getConstant('Show Printing'), checked: selectedItem.isPrint, cssClass: 'e-pv-properties-form-field-checkbox' }, showPrinting as HTMLInputElement);
+        if (selectedItem.formFieldAnnotationType === 'Textbox') {
+            const multilineTextbox: HTMLElement = createElement('input', { className: 'e-pv-properties-checkbox-multiline-input e-input' });
+            checkboxMainDiv.appendChild(multilineTextbox);
+            this.formFieldMultiline = new CheckBox({ label: this.pdfViewer.localeObj.getConstant('Multiline'), checked: selectedItem.isMultiline, cssClass: 'e-pv-properties-form-field-checkbox', change: this.multilineCheckboxChange.bind(this) }, multilineTextbox as HTMLInputElement );
+        }
         generalPropertiesDiv.appendChild(checkboxMainDiv);
         return generalPropertiesDiv;
     }
@@ -4245,6 +4371,11 @@ export class FormDesigner {
     private checkBoxChange(args: any): void {
         this.checkboxCheckedState = args.checked;
     }
+
+    private multilineCheckboxChange(args: any): void {
+        this.multilineCheckboxCheckedState = true;
+    }
+
     private setToolTip(tooltipContent: string, targetElement: any): void {
         //initialize tooltip component
         let tooltip: Tooltip = new Tooltip({
@@ -4986,6 +5117,7 @@ export class FormDesigner {
         this.formFieldRequired = null;
         this.formFieldTooltip = null;
         this.formFieldPrinting = null;
+        this.formFieldMultiline = null;
         this.formFieldVisibility = null;
         const dialogElement: HTMLElement = this.pdfViewerBase.getElement('_properties_window');
         if (dialogElement) {
@@ -5078,6 +5210,7 @@ export interface IFormField {
     visibility?: string;
     maxLength?: number;
     isRequired?: boolean;
+    isMultiline?: boolean;
     isPrint?: boolean;
     rotation?: number;
     tooltip?: string;

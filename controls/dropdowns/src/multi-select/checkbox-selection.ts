@@ -57,7 +57,7 @@ export class CheckBoxSelection {
         this.parent.on('selectAll', this.setSelectAll, this);
         this.parent.on('checkSelectAll', this.checkSelectAll, this);
         this.parent.on('searchBox', this.setSearchBox, this);
-        this.parent.on('blur', this.onBlur, this);
+        this.parent.on('blur', this.onBlurHandler, this);
         this.parent.on('targetElement', this.targetElement, this);
         this.parent.on('deviceSearchBox', this.setDeviceSearchBox, this);
         this.parent.on('inputFocus', this.getFocus, this);
@@ -78,7 +78,7 @@ export class CheckBoxSelection {
         this.parent.off('selectAll', this.setSelectAll);
         this.parent.off('checkSelectAll', this.checkSelectAll);
         this.parent.off('searchBox', this.setSearchBox);
-        this.parent.off('blur', this.onBlur);
+        this.parent.off('blur', this.onBlurHandler);
         this.parent.off('targetElement', this.targetElement);
         this.parent.off('deviceSearchBox', this.setDeviceSearchBox);
         this.parent.off('inputFocus', this.getFocus);
@@ -308,7 +308,7 @@ export class CheckBoxSelection {
             EventHandler.add(this.filterInput, 'input', this.parent.onInput, this.parent);
             EventHandler.add(this.filterInput, 'keyup', this.parent.keyUp, this.parent);
             EventHandler.add(this.filterInput, 'keydown', this.parent.onKeyDown, this.parent);
-            EventHandler.add(this.filterInput, 'blur', this.onBlur, this);
+            EventHandler.add(this.filterInput, 'blur', this.onBlurHandler, this);
             EventHandler.add(this.filterInput, 'paste', this.parent.pasteHandler, this.parent);
             this.parent.searchBoxHeight = (this.filterInputObj.container.parentElement).getBoundingClientRect().height;
             return this.filterInputObj;
@@ -377,7 +377,7 @@ export class CheckBoxSelection {
         return (this.parent.targetInputElement as HTMLInputElement).value;
     }
 
-    private onBlur(e: MouseEvent): void {
+    private onBlurHandler(e: MouseEvent): void {
         if (!this.parent.element.classList.contains('e-listbox')) {
             let target: HTMLElement;
             if (this.parent.keyAction) {
@@ -434,7 +434,7 @@ export class CheckBoxSelection {
                     this.parent.inputFocus = false;
                     this.parent.scrollFocusStatus = false;
                     this.parent.hidePopup();
-                    this.parent.onBlur(e, true);
+                    this.parent.onBlurHandler(e, true);
                     this.parent.focused = true;
                 }
             } else {
@@ -444,9 +444,9 @@ export class CheckBoxSelection {
             if (!this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
                 if (Browser.isIE) {
-                    this.parent.onBlur();
+                    this.parent.onBlurHandler();
                 } else {
-                    this.parent.onBlur(e);
+                    this.parent.onBlurHandler(e);
                 }
             }
             if (this.filterInput === target) {

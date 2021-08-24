@@ -80,7 +80,7 @@ export class AxisRenderer {
         let startAngle: number = axis.startAngle;
         let endAngle: number = axis.endAngle;
         const color: string = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
-        if (axis.lineStyle.width > 0) {
+        if (axis.lineStyle.width > 0 && this.gauge.allowComponentRender) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
             appendPath(
                 new PathOption(
@@ -458,138 +458,140 @@ export class AxisRenderer {
                         endAngle - (axis.rangeGap / Math.PI) : !range.isLinearCircularGradient ?
                         endAngle - (axis.rangeGap / Math.PI) : endAngle;
         }
-        if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle))) {
-            endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
-            endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
-            const radius: number = range.roundedCornerRadius;
-            const process: number = (radius * 0.25);
-            const degreeValue: number = getDegree(startAngle, endAngle);
-            oldStart = ((((range.currentRadius - (startWidth / 2)) * ((startAngle * Math.PI) / 180) -
-                (radius / process)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
-            oldEnd = ((((range.currentRadius - (endWidth / 2)) * ((endAngle * Math.PI) / 180) +
-                (radius / process)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
-            roundedStartAngle = ((((range.currentRadius) * ((startAngle * Math.PI) / 180) +
-                (degreeValue < (range.roundedCornerRadius / 2) && range.isLinearCircularGradient
-                    ? degreeValue <= 1 ? 0 : (radius / 4) : radius)) / (range.currentRadius)) * 180) / Math.PI;
-            roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
-                (degreeValue < (range.roundedCornerRadius / 2) && range.isLinearCircularGradient
-                    ? degreeValue <= 1 ? 0 : (radius / 4) : radius)) / (range.currentRadius)) * 180) / Math.PI;
-            if (this.gauge.gradientModule && ((!isNullOrUndefined(range.linearGradient)
-                && !isNullOrUndefined(range.linearGradient.colorStop)) || (!isNullOrUndefined(range.radialGradient)
-                    && !isNullOrUndefined(range.radialGradient.colorStop)))) {
-                if (range.isLinearCircularGradient) {
-                    endAngle -= isCompleteAngle(startAngle, endAngle) ? 0.0001 : 0;
-                    const degree: number = getDegree(startAngle, endAngle);
-                    const rangeColorLength: number = range.linearGradient.colorStop.length;
-                    const degreeRange: number = ((axis.startAngle === axis.endAngle ?
-                        (axis.startAngle === 0 && axis.endAngle === 0 ? 360 : axis.startAngle) :
-                        (axis.endAngle - axis.startAngle)) - degree * (rangeColorLength - 1));
-                    let degreeRangeValue: number;
-                    if (degreeRange <= 360 && degreeRange >= 270) {
-                        degreeRangeValue = 270;
-                    } else if (degreeRange <= 270 && degreeRange >= 180) {
-                        degreeRangeValue = 180;
-                    } else if (degreeRange <= 180 && degreeRange >= 90) {
-                        degreeRangeValue = 90;
-                    } else if (degreeRange <= 90 && degreeRange >= 0) {
-                        degreeRangeValue = 0;
-                    }
-                    const gradientDegree: number = axis.direction === 'AntiClockWise' ?
-                        (axis.startAngle === axis.endAngle ? 0 : axis.startAngle) + degree * ((rangeColorLength - 1) - colorIndex)
-                        : axis.startAngle + degree * (colorIndex);
-                    let gradientAngle: number = axis.startAngle < axis.endAngle ? axis.direction === 'AntiClockWise'
-                        ? axis.ranges.length > 1 ? rangeIndex === 0 ? (360 - (axis.startAngle
-                        + (degree * (colorIndex)))) : (axis.startAngle + (degree * (colorIndex + 1))) :
-                            axis.startAngle + (degreeRangeValue + degree * ((rangeColorLength - 1) - colorIndex)) : axis.startAngle
-                        + (degree * (colorIndex)) : axis.endAngle === 360 || axis.startAngle === axis.endAngle
-                        ? axis.direction === 'AntiClockWise' ? axis.startAngle === axis.endAngle ?
-                            (axis.startAngle === 0 && axis.endAngle === 0 ? 0 : 360) - axis.startAngle +
-                        degreeRangeValue + (degree * ((rangeColorLength - 1) - colorIndex))
-                            : degree * ((rangeColorLength - 1) - colorIndex) : degree * (colorIndex) :
-                        gradientDegree < 360 ? gradientDegree : gradientDegree - 360;
-                    range.gradientAngle = rangeIndex === 0 ? axis.rangeGap ? gradientAngle + axis.rangeGap
-                        : gradientAngle : axis.rangeGap > 0 ? axis.ranges[rangeIndex - 1]['gradientAngle'] + axis.rangeGap
-                        : axis.ranges[rangeIndex - 1]['gradientAngle'];
-                    if (axis.direction === 'AntiClockWise' && (axis.ranges.length > 1
-                        ? colorIndex === rangeColorLength - 1 : colorIndex === 0)) {
-                        range.gradientAntiAngle = gradientAngle;
-                    }
-                    if (rangeIndex !== 0) {
-                        gradientAngle = axis.direction === 'AntiClockWise' ? axis.ranges.length > 1 ?
-                            axis.ranges[rangeIndex - 1]['gradientAntiAngle'] - gradientAngle + axis.startAngle :
-                            axis.ranges[rangeIndex - 1]['gradientAntiAngle'] + gradientAngle :
-                            range.gradientAngle + gradientAngle - axis.startAngle;
-                        range.gradientAngle = axis.rangeGap != null && axis.rangeGap > 0 ? colorIndex === rangeColorLength - 1 ?
-                            gradientAngle + axis.ranges[rangeIndex - 1]['gradientAngle'] : gradientAngle : gradientAngle;
+        if (this.gauge.allowComponentRender) {
+            if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle)) && ((range.start >= min && range.end <= max) || (range.end >= min && range.start <= max))) {
+                endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
+                endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
+                const radius: number = range.roundedCornerRadius;
+                const process: number = (radius * 0.25);
+                const degreeValue: number = getDegree(startAngle, endAngle);
+                oldStart = ((((range.currentRadius - (startWidth / 2)) * ((startAngle * Math.PI) / 180) -
+                    (radius / process)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
+                oldEnd = ((((range.currentRadius - (endWidth / 2)) * ((endAngle * Math.PI) / 180) +
+                    (radius / process)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
+                roundedStartAngle = ((((range.currentRadius) * ((startAngle * Math.PI) / 180) +
+                    (degreeValue < (range.roundedCornerRadius / 2) && range.isLinearCircularGradient
+                        ? degreeValue <= 1 ? 0 : (radius / 4) : radius)) / (range.currentRadius)) * 180) / Math.PI;
+                roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
+                    (degreeValue < (range.roundedCornerRadius / 2) && range.isLinearCircularGradient
+                        ? degreeValue <= 1 ? 0 : (radius / 4) : radius)) / (range.currentRadius)) * 180) / Math.PI;
+                if (this.gauge.gradientModule && ((!isNullOrUndefined(range.linearGradient)
+                    && !isNullOrUndefined(range.linearGradient.colorStop)) || (!isNullOrUndefined(range.radialGradient)
+                        && !isNullOrUndefined(range.radialGradient.colorStop)))) {
+                    if (range.isLinearCircularGradient) {
+                        endAngle -= isCompleteAngle(startAngle, endAngle) ? 0.0001 : 0;
+                        const degree: number = getDegree(startAngle, endAngle);
+                        const rangeColorLength: number = range.linearGradient.colorStop.length;
+                        const degreeRange: number = ((axis.startAngle === axis.endAngle ?
+                            (axis.startAngle === 0 && axis.endAngle === 0 ? 360 : axis.startAngle) :
+                            (axis.endAngle - axis.startAngle)) - degree * (rangeColorLength - 1));
+                        let degreeRangeValue: number;
+                        if (degreeRange <= 360 && degreeRange >= 270) {
+                            degreeRangeValue = 270;
+                        } else if (degreeRange <= 270 && degreeRange >= 180) {
+                            degreeRangeValue = 180;
+                        } else if (degreeRange <= 180 && degreeRange >= 90) {
+                            degreeRangeValue = 90;
+                        } else if (degreeRange <= 90 && degreeRange >= 0) {
+                            degreeRangeValue = 0;
+                        }
+                        const gradientDegree: number = axis.direction === 'AntiClockWise' ?
+                            (axis.startAngle === axis.endAngle ? 0 : axis.startAngle) + degree * ((rangeColorLength - 1) - colorIndex)
+                            : axis.startAngle + degree * (colorIndex);
+                        let gradientAngle: number = axis.startAngle < axis.endAngle ? axis.direction === 'AntiClockWise'
+                            ? axis.ranges.length > 1 ? rangeIndex === 0 ? (360 - (axis.startAngle
+                                + (degree * (colorIndex)))) : (axis.startAngle + (degree * (colorIndex + 1))) :
+                                axis.startAngle + (degreeRangeValue + degree * ((rangeColorLength - 1) - colorIndex)) : axis.startAngle
+                            + (degree * (colorIndex)) : axis.endAngle === 360 || axis.startAngle === axis.endAngle
+                            ? axis.direction === 'AntiClockWise' ? axis.startAngle === axis.endAngle ?
+                                (axis.startAngle === 0 && axis.endAngle === 0 ? 0 : 360) - axis.startAngle +
+                                degreeRangeValue + (degree * ((rangeColorLength - 1) - colorIndex))
+                                : degree * ((rangeColorLength - 1) - colorIndex) : degree * (colorIndex) :
+                            gradientDegree < 360 ? gradientDegree : gradientDegree - 360;
+                        range.gradientAngle = rangeIndex === 0 ? axis.rangeGap ? gradientAngle + axis.rangeGap
+                            : gradientAngle : axis.rangeGap > 0 ? axis.ranges[rangeIndex - 1]['gradientAngle'] + axis.rangeGap
+                            : axis.ranges[rangeIndex - 1]['gradientAngle'];
                         if (axis.direction === 'AntiClockWise' && (axis.ranges.length > 1
                             ? colorIndex === rangeColorLength - 1 : colorIndex === 0)) {
                             range.gradientAntiAngle = gradientAngle;
                         }
+                        if (rangeIndex !== 0) {
+                            gradientAngle = axis.direction === 'AntiClockWise' ? axis.ranges.length > 1 ?
+                                axis.ranges[rangeIndex - 1]['gradientAntiAngle'] - gradientAngle + axis.startAngle :
+                                axis.ranges[rangeIndex - 1]['gradientAntiAngle'] + gradientAngle :
+                                range.gradientAngle + gradientAngle - axis.startAngle;
+                            range.gradientAngle = axis.rangeGap != null && axis.rangeGap > 0 ? colorIndex === rangeColorLength - 1 ?
+                                gradientAngle + axis.ranges[rangeIndex - 1]['gradientAngle'] : gradientAngle : gradientAngle;
+                            if (axis.direction === 'AntiClockWise' && (axis.ranges.length > 1
+                                ? colorIndex === rangeColorLength - 1 : colorIndex === 0)) {
+                                range.gradientAntiAngle = gradientAngle;
+                            }
+                        }
+                        if (gradientAngle > 45 && gradientAngle <= 115
+                            || (gradientAngle >= 0 && gradientAngle <= 45 && (rangeColorLength - 1) <= 2)) {
+                            direction = axis.direction === 'AntiClockWise' ? 'bottom' : 'top';
+                        } else if (gradientAngle > 115 && gradientAngle < 170) {
+                            direction = axis.direction === 'AntiClockWise' ? 'left' : 'right';
+                        } else if (gradientAngle >= 170 && gradientAngle <= 280) {
+                            direction = axis.direction === 'AntiClockWise' ? 'top' : 'bottom';
+                        } else if (gradientAngle > 280 && gradientAngle <= 360
+                            || (gradientAngle >= 0 && gradientAngle <= 45 && (rangeColorLength - 1) >= 2)) {
+                            direction = axis.direction === 'AntiClockWise' ? 'right' : 'left';
+                        }
                     }
-                    if (gradientAngle > 45 && gradientAngle <= 115
-                        || (gradientAngle >= 0 && gradientAngle <= 45 && (rangeColorLength - 1) <= 2)) {
-                        direction = axis.direction === 'AntiClockWise' ? 'bottom' : 'top';
-                    } else if (gradientAngle > 115 && gradientAngle < 170) {
-                        direction = axis.direction === 'AntiClockWise' ? 'left' : 'right';
-                    } else if (gradientAngle >= 170 && gradientAngle <= 280) {
-                        direction = axis.direction === 'AntiClockWise' ? 'top' : 'bottom';
-                    } else if (gradientAngle > 280 && gradientAngle <= 360
-                        || (gradientAngle >= 0 && gradientAngle <= 45 && (rangeColorLength - 1) >= 2)) {
-                        direction = axis.direction === 'AntiClockWise' ? 'right' : 'left';
-                    }
+                    gradientRangeColor = this.gauge.gradientModule.getGradientColorString(
+                        range, colorIndex, direction, rangeIndex
+                    );
                 }
-                gradientRangeColor = this.gauge.gradientModule.getGradientColorString(
-                    range, colorIndex, direction, rangeIndex
-                );
-            }
-            range.rangeColor = gradientRangeColor ? gradientRangeColor : range.rangeColor;
-            if (range.roundedCornerRadius) {
-                if (range.isLinearCircularGradient && range.linearGradient.colorStop.length > 1) {
-                    if (colorIndex === 0 || colorIndex === range.linearGradient.colorStop.length - 1) {
-                        if (axis.direction === 'ClockWise') {
-                            this.roundedRangeAppendPathCalculation(
-                                range, rangeIndex, index, startWidth, endWidth, rangeElement,
-                                (colorIndex === range.linearGradient.colorStop.length - 1
-                                    ? Math.floor(startAngle) : Math.floor(roundedStartAngle)),
-                                (colorIndex !== 0 ? Math.ceil(roundedEndAngle) : Math.ceil(endAngle)),
-                                ((colorIndex === range.linearGradient.colorStop.length - 1) ? startAngle : oldStart),
-                                (colorIndex !== 0 ? oldEnd : endAngle), location, colorIndex
-                            );
+                range.rangeColor = gradientRangeColor ? gradientRangeColor : range.rangeColor;
+                if (range.roundedCornerRadius) {
+                    if (range.isLinearCircularGradient && range.linearGradient.colorStop.length > 1) {
+                        if (colorIndex === 0 || colorIndex === range.linearGradient.colorStop.length - 1) {
+                            if (axis.direction === 'ClockWise') {
+                                this.roundedRangeAppendPathCalculation(
+                                    range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                                    (colorIndex === range.linearGradient.colorStop.length - 1
+                                        ? Math.floor(startAngle) : Math.floor(roundedStartAngle)),
+                                    (colorIndex !== 0 ? Math.ceil(roundedEndAngle) : Math.ceil(endAngle)),
+                                    ((colorIndex === range.linearGradient.colorStop.length - 1) ? startAngle : oldStart),
+                                    (colorIndex !== 0 ? oldEnd : endAngle), location, colorIndex
+                                );
+                            } else {
+                                this.roundedRangeAppendPathCalculation(
+                                    range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                                    (colorIndex === 0 ? Math.floor(startAngle) : Math.floor(roundedStartAngle)),
+                                    (colorIndex === range.linearGradient.colorStop.length - 1
+                                        ? Math.ceil(endAngle) : Math.ceil(roundedEndAngle)),
+                                    ((colorIndex === 0) ? startAngle : oldStart),
+                                    (colorIndex === range.linearGradient.colorStop.length - 1 ? endAngle : oldEnd),
+                                    location, colorIndex
+                                );
+                            }
                         } else {
-                            this.roundedRangeAppendPathCalculation(
+                            this.rangeAppendPathCalculation(
                                 range, rangeIndex, index, startWidth, endWidth, rangeElement,
-                                (colorIndex === 0 ? Math.floor(startAngle) : Math.floor(roundedStartAngle)),
-                                (colorIndex === range.linearGradient.colorStop.length - 1
-                                    ? Math.ceil(endAngle) : Math.ceil(roundedEndAngle)),
-                                ((colorIndex === 0) ? startAngle : oldStart),
-                                (colorIndex === range.linearGradient.colorStop.length - 1 ? endAngle : oldEnd),
-                                location, colorIndex
+                                Math.floor(startAngle), Math.ceil(endAngle), colorIndex
                             );
                         }
                     } else {
-                        this.rangeAppendPathCalculation(
+                        this.roundedRangeAppendPathCalculation(
                             range, rangeIndex, index, startWidth, endWidth, rangeElement,
-                            Math.floor(startAngle), Math.ceil(endAngle), colorIndex
+                            Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart,
+                            oldEnd, location, colorIndex
                         );
                     }
                 } else {
-                    this.roundedRangeAppendPathCalculation(
+                    this.rangeAppendPathCalculation(
                         range, rangeIndex, index, startWidth, endWidth, rangeElement,
-                        Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart,
-                        oldEnd, location, colorIndex
+                        Math.floor(startAngle), Math.ceil(endAngle), colorIndex
                     );
                 }
-            } else {
+            } else if ((range.start === range.end) && ((range.start >= min && range.end <= max) || (range.end >= min && range.start <= max))) {
                 this.rangeAppendPathCalculation(
                     range, rangeIndex, index, startWidth, endWidth, rangeElement,
                     Math.floor(startAngle), Math.ceil(endAngle), colorIndex
                 );
             }
-        } else if ((range.start === range.end) && ((range.start >= min && range.end <= max) || (range.end >= min && range.start <= max))) {
-            this.rangeAppendPathCalculation(
-                range, rangeIndex, index, startWidth, endWidth, rangeElement,
-                Math.floor(startAngle), Math.ceil(endAngle), colorIndex
-            );
         }
     }
 

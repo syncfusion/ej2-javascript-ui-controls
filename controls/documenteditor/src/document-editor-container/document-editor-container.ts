@@ -544,7 +544,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'AllCaps': 'AllCaps',
         'Change case Tooltip': 'Change case',
         'UPPERCASE': 'UPPERCASE',
-        'No color': 'No color'
+        'No color': 'No color',
+        'Top margin': 'Top margin',
+        'Bottom margin': 'Bottom margin',
+        'Left margin': 'Left margin',
+        'Right margin': 'Right margin',
+        'Normal': 'Normal'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -709,7 +714,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
-        this.customizeDocumentEditorSettings();
         this.renderComplete();
     }
     private restrictEditingToggleHelper(restrictEditing: boolean): void {
@@ -782,6 +786,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         if(this.documentEditorSettings.printDevicePixelRatio) {
             this.documentEditor.documentEditorSettings.printDevicePixelRatio = this.documentEditorSettings.printDevicePixelRatio;
+        }
+        if(!isNullOrUndefined(this.documentEditorSettings.enableOptimizedTextMeasuring)) {
+            this.documentEditor.documentEditorSettings.enableOptimizedTextMeasuring = this.documentEditorSettings.enableOptimizedTextMeasuring;
         }
     }
     /**
@@ -875,6 +882,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             enableLockAndEdit: this.enableLockAndEdit
         });
         this.wireEvents();
+        this.customizeDocumentEditorSettings();
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);

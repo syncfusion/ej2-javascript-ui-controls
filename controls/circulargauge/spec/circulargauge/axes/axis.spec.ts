@@ -138,7 +138,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking Axis minimum and maximum value as same with default interval', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
-                expect(svg.textContent == '-11').toBe(true);
+                expect(svg == null).toBe(true);
                 done();
             };
             gauge.axes[0].minimum = -10;
@@ -149,7 +149,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking Axis minimum and maximum value as same with given interval', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
-                expect(svg.textContent == '-20').toBe(true);
+                expect(svg == null).toBe(true);
                 done();
             };
             gauge.axes[0].minimum = -10;

@@ -126,22 +126,22 @@ export class BordersAndShadingDialog {
         const dropDownList: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
             id: this.target.id + '_border_style_dropDown'
         });
-        dropDownList.innerHTML = '<option>' + 'None' + '</option><option>'
-            + 'Single' + '</option><option>' + 'Dot' + '</option><option>'
-            + 'DashSmallGap' + '</option><option>' + 'DashLargeGap' + '</option><option>'
-            + 'DashDot' + '</option><option>' + 'DashDotDot' + '</option><option>'
-            + 'Double' + '</option><option>' + 'Triple' + '</option><option>'
-            + 'ThinThickSmallGap' + '</option><option>'
-            + 'ThickThinSmallGap' + '</option><option>' + 'ThinThickThinSmallGap'
-            + '</option><option>' + 'ThinThickMediumGap' + '</option><option>'
-            + 'ThickThinMediumGap' + '</option><option>' + 'ThinThickThinMediumGap'
-            + '</option><option>' + 'ThinThickLargeGap' + '</option><option>'
-            + 'ThickThinLargeGap' + '</option><option>' + 'ThinThickThinLargeGap'
-            + '</option><option>' + 'SingleWavy' + '</option><option>'
-            + 'DoubleWavy' + '</option><option>' + 'DashDotStroked'
-            + '</option><option>' + 'Emboss3D' + '</option><option>' + 'Engrave3D'
-            + '</option><option>' + 'Outset' + '</option><option>'
-            + 'Inset' + '</option><option>' + 'Thick' + '</option>';
+        dropDownList.innerHTML = '<option value="None">' + localeValue.getConstant('None') + '</option><option value="Single">'
+            + localeValue.getConstant('Single') + '</option><option value="Dot">' + localeValue.getConstant('Dot') + '</option><option value="DashSmallGap">'
+            + localeValue.getConstant('DashSmallGap') + '</option><option value="DashLargeGap">' + localeValue.getConstant('DashLargeGap') + '</option><option value="DashDot">'
+            + localeValue.getConstant('DashDot') + '</option><option value="DashDotDot">' + localeValue.getConstant('DashDotDot') + '</option><option value="Double">'
+            + localeValue.getConstant('Double') + '</option><option value="Triple">' + localeValue.getConstant('Triple') + '</option><option value="ThinThickSmallGap">'
+            + localeValue.getConstant('ThinThickSmallGap') + '</option><option value="ThickThinSmallGap">'
+            + localeValue.getConstant('ThickThinSmallGap') + '</option><option value="ThinThickThinSmallGap">' + localeValue.getConstant('ThinThickThinSmallGap')
+            + '</option><option value="ThinThickMediumGap">' + localeValue.getConstant('ThinThickMediumGap') + '</option><option value="ThickThinMediumGap">'
+            + localeValue.getConstant('ThickThinMediumGap') + '</option><option value="ThinThickThinMediumGap">' + localeValue.getConstant('ThinThickThinMediumGap')
+            + '</option><option value="ThinThickLargeGap">' + localeValue.getConstant('ThinThickLargeGap') + '</option><option value="ThickThinLargeGap">'
+            + localeValue.getConstant('ThickThinLargeGap') + '</option><option value="ThinThickThinLargeGap">' + localeValue.getConstant('ThinThickThinLargeGap')
+            + '</option><option value="SingleWavy">' + localeValue.getConstant('SingleWavy') + '</option><option value="DoubleWavy">'
+            + localeValue.getConstant('DoubleWavy') + '</option><option value="DashDotStroked">' + localeValue.getConstant('DashDotStroked')
+            + '</option><option value="Emboss3D">' + localeValue.getConstant('Emboss3D') + '</option><option value="Engrave3D">' + localeValue.getConstant('Engrave3D')
+            + '</option><option value="Outset">' + localeValue.getConstant('Outset') + '</option><option value="Inset">'
+            + localeValue.getConstant('Inset') + '</option><option value="Thick">' + localeValue.getConstant('Thick') + '</option>';
         const widthText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Width'), styles: 'width:100%;padding-top: 20px;padding-bottom: 10px;',
             className: 'e-de-table-element-subheading'

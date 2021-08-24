@@ -1516,9 +1516,18 @@ export class ResizeTool extends ToolBase {
         } else {
             if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Perimeter' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Radius'
                 || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
-                if (!annotationMaxHeight || !annotationMaxWidth) {
-                    if (!(deltaHeight === 1 && deltaWidth === 1)) {
-                        deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
+                if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
+                    if (!annotationMaxHeight && !deltaHeight) {
+                        deltaHeight = Math.max(deltaHeight === 1 ? 0 : deltaHeight);
+                    }
+                    if (!annotationMaxWidth && !deltaWidth) {
+                        deltaWidth = Math.max(deltaWidth === 1 ? 0 : deltaWidth);
+                    }
+                } else {
+                    if (!annotationMaxHeight || !annotationMaxWidth) {
+                        if (!(deltaHeight === 1 && deltaWidth === 1)) {
+                            deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
+                        }
                     }
                 }
             }

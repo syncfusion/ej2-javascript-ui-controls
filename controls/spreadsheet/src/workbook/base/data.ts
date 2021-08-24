@@ -54,9 +54,12 @@ export function getData(
                             if (valueOnly) {
                                 cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
                             } else {
-                                cells[key] = row ? getCell(sRow, i, sheet) : null;
+                                const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
+                                if ((cell && (cell.formula || cell.value)) || Object.keys(cells).length) {
+                                    cells[key] = cell;
+                                }
                             }
-                            if (indexes[3] < i + 1) { cells[rowKey] = (sRow + 1).toString(); }
+                            if (indexes[3] < i + 1 && Object.keys(cells).length) { cells[rowKey] = (sRow + 1).toString(); }
                             data[index.toString()] = cells;
                         } else {
                             const eventArgs: CellInfoEventArgs = { cell: getCell(sRow, i, sheet), address: getCellAddress(sRow, i),
@@ -106,6 +109,10 @@ export function getData(
                         i++;
                     }
                     sRow++; index++;
+                    if (columnWiseData && !Object.keys(cells).length) {
+                        index--;
+                        (data as { [key: string]: CellModel }[]).pop();
+                    }
                 }
                 return data;
             });

@@ -244,7 +244,7 @@ export class Print {
                             let currentTop: number = parseFloat(inputField.style.top);
                             let currentHeight: number = parseFloat(inputField.style.height);
                             inputField.style.left = (currentHeightPosition - currentWidthPosition + currentTop) + 'px';
-                            inputField.style.top = (pageDetails.width - currentHeight - (currentWidthPosition - currentHeightPosition + previousLeft)) + 'px';
+                            inputField.style.top = (pageDetails.width / widthRatio) - (currentHeight / heightRatio) - ((currentWidthPosition/heightRatio) - (currentHeightPosition/heightRatio) + previousLeft) + 'px';
                         }
                         inputField.style.backgroundColor = 'transparent';
                         if (!currentData.IsSignatureField) {

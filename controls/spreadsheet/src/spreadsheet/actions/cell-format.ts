@@ -185,15 +185,15 @@ export class CellFormat {
         let prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
         if (prevCell) {
             let model: CellModel = getCell(rowIdx, colIdx - 1, sheet, false, true);
-            if (!!model.rowSpan || !!model.colSpan) {
+            if ((!!model.rowSpan && model.rowSpan !== 1) || (!!model.colSpan && model.colSpan !== 1)) {
                 const mergeArgs: { range: number[] } = { range: [rowIdx, colIdx - 1, rowIdx, colIdx - 1] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);
                 model = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
-                if (model.style && model.style.borderRight) {
+                if (model.style && model.style.borderRight && model.style.borderRight !== 'none') {
                     return;
                 } else {
                     model = getCell(mergeArgs.range[0], mergeArgs.range[3], sheet, null, true);
-                    if (model.style && model.style.borderRight) { return; }
+                    if (model.style && model.style.borderRight && model.style.borderRight !== 'none') { return; }
                     cell.style.borderLeft = border;
                 }
             } else {
@@ -213,15 +213,15 @@ export class CellFormat {
         const prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx, <HTMLTableRowElement>pRow);
         if (prevCell) {
             let model: CellModel = getCell(rowIdx - 1, colIdx, sheet, false, true);
-            if (!!model.rowSpan || !!model.colSpan) {
+            if ((!!model.rowSpan && model.rowSpan !== 1) || (!!model.colSpan && model.colSpan !== 1)) {
                 const mergeArgs: { range: number[] } = { range: [rowIdx - 1, colIdx, rowIdx - 1, colIdx] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);
                 model = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
-                if (model.style && model.style.borderBottom) {
+                if (model.style && model.style.borderBottom && model.style.borderBottom !== 'none') {
                     return;
                 } else {
                     model = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
-                    if (model.style && model.style.borderBottom) { return; }
+                    if (model.style && model.style.borderBottom && model.style.borderBottom !== 'none') { return; }
                     cell.style.borderTop = border;
                 }
             } else {

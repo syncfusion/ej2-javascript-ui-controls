@@ -298,7 +298,7 @@ export class ComboBox extends DropDownList {
     protected wireEvent(): void {
         if (this.getModuleName() === 'combobox') {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.preventBlur, this);
-            EventHandler.add(this.inputWrapper.container, 'blur', this.onBlur, this);
+            EventHandler.add(this.inputWrapper.container, 'blur', this.onBlurHandler, this);
         }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0])) {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.dropDownClick, this);
@@ -320,13 +320,13 @@ export class ComboBox extends DropDownList {
         }
     }
 
-    protected onBlur(e: MouseEvent): void {
+    protected onBlurHandler(e: MouseEvent): void {
         const inputValue: string = this.inputElement && this.inputElement.value === '' ?
             null : this.inputElement && this.inputElement.value;
         if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
             this.customValue(e);
         }
-        super.onBlur(e);
+        super.onBlurHandler(e);
     }
 
     protected targetElement(): HTMLElement | HTMLInputElement {
@@ -658,7 +658,7 @@ export class ComboBox extends DropDownList {
     protected unWireEvent(): void {
         if (this.getModuleName() === 'combobox') {
             EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.preventBlur);
-            EventHandler.remove(this.inputWrapper.container, 'blur', this.onBlur);
+            EventHandler.remove(this.inputWrapper.container, 'blur', this.onBlurHandler);
         }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0])) {
             EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.dropDownClick);

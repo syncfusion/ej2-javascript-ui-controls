@@ -127,7 +127,7 @@ export class FormFields {
                         this.selectedIndex = [];
                         let fieldProperties: any = {
                             bounds: { X: left, Y: top, Width: width, Height: height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
-                            value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize,
+                            value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline,
                             isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
                         };
                         if (currentData.Name === 'DropDown') {
@@ -484,7 +484,7 @@ export class FormFields {
         let type: FormFieldType = formField['Name'];
         let formFieldCollection: FormFieldModel = {
             name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly, isRequired: formField.IsRequired, isSelected: type === 'CheckBox' ? false : formField.Selected,
-            isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.Font ? formField.Font.Name : ''
+            isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : ''
         };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formFieldCollection.id)] = formFieldCollection;
     }
@@ -507,6 +507,7 @@ export class FormFields {
                     currentElement.style.cursor = '';
                 }
             }
+            this.updateDataInSession(currentElement);
         }
     }
     /**
@@ -596,6 +597,8 @@ export class FormFields {
             let formFieldsData: any = JSON.parse(data);
             // eslint-disable-next-line
             let datas: any = {};
+            // eslint-disable-next-line
+            let fieldDatas: any = [];
             for (let m: number = 0; m < formFieldsData.length; m++) {
                 // eslint-disable-next-line
                 let currentData: any = formFieldsData[m];
@@ -606,7 +609,8 @@ export class FormFields {
                     } else {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.FieldName]);
                     }
-                    datas[currentData.FieldName] = currentData.Text;
+                    fieldDatas = {fieldValue: currentData.Text, isReadOnly: currentData.IsReadonly};
+                    datas[currentData.FieldName] = fieldDatas;
                 } else if (currentData.Name === 'RadioButton' && currentData.Selected) {
                     if (currentData.Selected === false) {
                         this.pdfViewerBase.validateForm = true;
@@ -614,7 +618,8 @@ export class FormFields {
                     } else {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.GroupName]);
                     }
-                    datas[currentData.GroupName] = currentData.Value;
+                    fieldDatas = {fieldValue: currentData.Value, isReadOnly: currentData.IsReadonly};
+                    datas[currentData.GroupName] = fieldDatas;
                 } else if (currentData.Name === 'CheckBox') {
                     if (currentData.Selected === false) {
                         this.pdfViewerBase.validateForm = true;
@@ -623,9 +628,11 @@ export class FormFields {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.GroupName]);
                     }
                     if (currentData.CheckboxIndex && currentData.Selected) {
-                        datas[currentData.GroupName] = currentData.CheckboxIndex;
+                        fieldDatas={fieldValue: currentData.CheckboxIndex, isReadOnly: currentData.IsReadonly};
+                        datas[currentData.GroupName] = fieldDatas;
                     } else if (datas[currentData.GroupName] === undefined || datas[currentData.GroupName] === null) {
-                        datas[currentData.GroupName] = currentData.Selected;
+                        fieldDatas={fieldValue: currentData.Selected, isReadOnly: currentData.IsReadonly};
+                        datas[currentData.GroupName] = fieldDatas;
                     }
                 } else if (currentData.Name === 'DropDown') {
                     if (currentData.SelectedValue === '') {
@@ -634,7 +641,8 @@ export class FormFields {
                     } else {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.Text]);
                     }
-                    datas[currentData.Text] = currentData.SelectedValue;
+                    fieldDatas = {fieldValue: currentData.SelectedValue, isReadOnly: currentData.IsReadonly};
+                    datas[currentData.Text] = fieldDatas;
                 } else if (currentData.Name === 'ListBox') {
                     // eslint-disable-next-line
                     let childItems: any = currentData['TextList'];
@@ -644,7 +652,8 @@ export class FormFields {
                         let currentElement: any = currentData.SelectedList[m];
                         childItemsText.push(childItems[currentElement]);
                     }
-                    datas[currentData.Text] = JSON.stringify(childItemsText);
+                    fieldDatas = { fieldValue: JSON.stringify(childItemsText), isReadOnly: currentData.IsReadonly};
+                    datas[currentData.Text] = fieldDatas;
                 } else if (currentData.Name === 'SignatureField') {
                     // eslint-disable-next-line
                     let csData: any;
@@ -685,6 +694,7 @@ export class FormFields {
                         let bounds: any = { x: this.ConvertPointToPixel(lineBounds.X), y: this.ConvertPointToPixel(lineBounds.Y), width: this.ConvertPointToPixel(lineBounds.Width), height: this.ConvertPointToPixel(lineBounds.Height) };
                         datas[currentData.FieldName + 'bounds'] = JSON.stringify(bounds);
                     }
+                    datas[currentData.FieldName + 'isReadOnly'] = currentData.IsReadonly;
                 }
             }
             return (JSON.stringify(datas));
@@ -1230,15 +1240,15 @@ export class FormFields {
                     if (target && target.type === 'text' || target.type === 'password' || target.type === 'textarea') {
                         const signField: HTMLElement = target as HTMLElement;
                         if (signField.classList.contains('e-pdfviewer-signatureformfields') || signField.classList.contains('e-pdfviewer-signatureformfields-signature')) {
-                            currentData.Value = signaturePath;
+                            if (signaturePath) {
+                                currentData.Value = signaturePath;
+                            } 
                             if (signatureBounds) {
                                 currentData.Bounds = signatureBounds;
                             }
                             if (signatureFontFamily) {
-                                currentData.fontFamily = signatureFontFamily;
-                                currentData.fontSize = signatureFontSize;
-                            } else {
-                                currentData.fontFamily = null;
+                                currentData.FontFamily = signatureFontFamily;
+                                currentData.FontSize = signatureFontSize;
                             }
                         } else {
                             currentData.Text = target.value;
@@ -1300,6 +1310,9 @@ export class FormFields {
                             }
                         }
                     }
+                    if (target.disabled) {
+                        currentData.IsReadonly = true;
+                    }
                     this.updateFormFieldsCollection(currentData);
                     break;
                 } else if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
@@ -1333,6 +1346,10 @@ export class FormFields {
         // eslint-disable-next-line
         let inputField: any = document.getElementById(this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index);
         if (inputField) {
+            let textLayer: any = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
+            if (inputdiv.type === 'text' && inputField.parentElement !== textLayer) {
+                inputField.parentElement.remove(); 
+            }
             inputField.remove();
         }
         // eslint-disable-next-line

@@ -512,5 +512,41 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
 
-    })
- });
+    });
+
+    describe('Image preserveAspectRatio ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram25' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [{
+                id: 'nativenode', width: 150, height: 100, offsetX: 700, offsetY: 300, style: { fill: 'none', strokeWidth: 0 },
+                shape: { type: "Image", source: "https://www.w3schools.com/images/w3schools_green.jpg", scale: "Stretch" },
+            },]
+            diagram = new Diagram({
+                width: '1000px', height: '1000px', nodes: nodes
+            });
+
+            diagram.appendTo('#diagram25');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking preserveAspectRatio for Image Node if Scale is stretch', (done: Function) => {
+            let getElement: HTMLElement = document.getElementById('nativenode_contentimage');
+            let attribute: any = getElement.attributes;
+            expect((attribute[7].nodeValue).toString()).toEqual('none');
+            done();
+        });
+    });
+});

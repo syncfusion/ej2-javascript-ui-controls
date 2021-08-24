@@ -5,10 +5,10 @@ import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { DropDownList, AutoComplete, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { RadioButton, CheckBox } from '@syncfusion/ej2-buttons';
-import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme,
-    performComplexDataOperation,
-    registerEventHandlers,
-    removeEventHandlers} from '../base/util';
+import {
+    distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme,
+    performComplexDataOperation, registerEventHandlers, removeEventHandlers, clearReactVueTemplates
+} from '../base/util';
 import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
@@ -417,9 +417,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
      */
     public removeDialog(): void {
         this.parent.notify(events.customFilterClose, {});
-        if (this.parent.isReact && this.parent.destroyTemplate !== undefined) {
-            this.parent.destroyTemplate(['filterTemplate']);
-            this.parent.renderTemplates();
+        if ((this.parent.isReact || this.parent.isVue) && this.parent.destroyTemplate !== undefined) {
+            clearReactVueTemplates(this.parent, ['filterTemplate']);
         }
         this.removeObjects(this.childRefs);
         remove(this.dlgDiv);

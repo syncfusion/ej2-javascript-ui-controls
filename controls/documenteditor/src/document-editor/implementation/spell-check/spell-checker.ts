@@ -46,7 +46,7 @@ export class SpellChecker {
     /**
      * @default 1000
      */
-    private uniqueWordsCountInternal: number = 10000;
+    private uniqueWordsCountInternal: number = 15000;
     /**
      * @private
      */

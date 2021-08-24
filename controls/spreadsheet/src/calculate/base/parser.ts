@@ -204,12 +204,10 @@ export class Parser {
             while (i < formula.length) {
                 formula = formula.split('-*').join('-').split('/*').join('/').split('*/').join('*').split('-/').join('-').
                     split('*+').join('*').split('+*').join('+');
-                if (formula.indexOf('*-') > - 1 || formula.indexOf('/-') > - 1) {
-                    formula = '-' + formula.split('*-').join('*').split('/-').join('/');
-                }
                 if ((this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
-                        && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1)))) {
+                    && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1))) &&
+                    (formula[i + 2] !== '-' || (formula[i + 1] !== '*' && formula[i + 1] !== '/'))) {
                     if (isNullOrUndefined(args)) {
                         throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], true);
                     }

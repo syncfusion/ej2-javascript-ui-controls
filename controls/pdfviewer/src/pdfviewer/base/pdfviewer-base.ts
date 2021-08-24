@@ -598,6 +598,7 @@ export class PdfViewerBase {
      * @private
      */
     public isPrint: boolean = false;
+    private downloadFileName: string = '';
 
     /**
      * Initialize the constructor of PDFViewerBase
@@ -774,8 +775,10 @@ export class PdfViewerBase {
         }
         documentData = this.checkDocumentData(documentData);
         this.setFileName();
-        if (!this.pdfViewer.downloadFileName) {
-            this.pdfViewer.downloadFileName = this.pdfViewer.fileName;
+        if (this.pdfViewer.downloadFileName) {
+            this.downloadFileName = this.pdfViewer.downloadFileName;
+        } else {
+            this.downloadFileName = this.pdfViewer.fileName;
         }
         const jsonObject: object = this.constructJsonObject(documentData, password);
         this.createAjaxRequest(jsonObject, documentData, password);
@@ -1690,7 +1693,6 @@ export class PdfViewerBase {
             this.pdfViewer.fireDocumentUnload(this.pdfViewer.fileName);
         }
         this.pdfViewer.fileName = null;
-        this.pdfViewer.downloadFileName = null;
     }
     /**
      * @private
@@ -3156,14 +3158,24 @@ export class PdfViewerBase {
             if (this.pdfViewer.selectedItems.annotations.length > 0) {
                 // eslint-disable-next-line
                 let annotation: any = this.pdfViewer.selectedItems.annotations[0];
-                if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
-                    if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
+                let isReadOnly: Boolean = true;
+                let type: any = annotation.shapeAnnotationType;
+                if (type === 'Path' || annotation.formFieldAnnotationType === 'SignatureField' || annotation.formFieldAnnotationType === 'InitialField' || type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') {
+                    let inputFields: any = document.getElementById(annotation.id);
+                    if (inputFields && inputFields.disabled) {
+                        isReadOnly = true;
+                    }
+                }
+                if (!isReadOnly) {
+                    if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
+                            this.pdfViewer.remove(annotation);
+                            this.pdfViewer.renderSelector(this.pdfViewer.annotation.getEventPageNumber(event));
+                        }
+                    } else {
                         this.pdfViewer.remove(annotation);
                         this.pdfViewer.renderSelector(this.pdfViewer.annotation.getEventPageNumber(event));
                     }
-                } else {
-                    this.pdfViewer.remove(annotation);
-                    this.pdfViewer.renderSelector(this.pdfViewer.annotation.getEventPageNumber(event));
                 }
             }
         }
@@ -5177,7 +5189,7 @@ export class PdfViewerBase {
             (anchorElement as HTMLAnchorElement).href = blobUrl;
             (anchorElement as HTMLAnchorElement).target = '_parent';
             if ('download' in anchorElement) {
-                (anchorElement as HTMLAnchorElement).download = this.pdfViewer.downloadFileName;
+                (anchorElement as HTMLAnchorElement).download = this.downloadFileName;
             }
             (document.body || document.documentElement).appendChild(anchorElement);
             anchorElement.click();
@@ -5576,7 +5588,7 @@ export class PdfViewerBase {
     private createRequestForDownload(): void {
         let proxy: PdfViewerBase = null;
         proxy = this;
-        proxy.pdfViewer.fireDownloadStart(proxy.pdfViewer.downloadFileName);
+        proxy.pdfViewer.fireDownloadStart(proxy.downloadFileName);
         // eslint-disable-next-line
         const jsonObject: any = this.constructJsonDownload();
         this.dowonloadRequestHandler = new AjaxHandler(this.pdfViewer);
@@ -5601,18 +5613,21 @@ export class PdfViewerBase {
                     data = JSON.parse(data);
                 }
                 if (data) {
+                    if (proxy.pdfViewer.downloadFileName && (proxy.pdfViewer.downloadFileName !== proxy.downloadFileName)) {
+                        proxy.downloadFileName = proxy.pdfViewer.downloadFileName;
+                    }
                     proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
                     const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
                     if (Browser.isIE || Browser.info.name === 'edge') {
-                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.downloadFileName);
+                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.downloadFileName);
                     } else {
                         proxy.downloadDocument(blobUrl);
                     }
-                    proxy.pdfViewer.fireDownloadEnd(proxy.pdfViewer.downloadFileName, data);
+                    proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, data);
                 }
                 proxy.updateDocumentAnnotationCollections();
             } else {
-                proxy.pdfViewer.fireDownloadEnd(proxy.pdfViewer.downloadFileName, 'PDF Document saved in server side successfully');
+                proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, 'PDF Document saved in server side successfully');
             }
         };
         // eslint-disable-next-line
@@ -5870,13 +5885,20 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
-    public getStoredData(pageIndex: number): any {
+    public getStoredData(pageIndex: number, isTextSearch?: boolean): any {
         let zoomFactor: number = this.retrieveCurrentZoomFactor();
         if (this.pdfViewer.restrictZoomRequest && !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
             zoomFactor = 1;
         }
         // eslint-disable-next-line
         let storedData: any = this.getWindowSessionStorage(pageIndex, zoomFactor) ? this.getWindowSessionStorage(pageIndex, zoomFactor) : this.getPinchZoomPage(pageIndex);
+        if (!storedData && isTextSearch) {
+            // eslint-disable-next-line
+            let storedTileData: any = this.getWindowSessionStorageTile(pageIndex, 0, 0, zoomFactor);
+            if (storedTileData) {
+                storedData = storedTileData;
+            }
+        }
         // eslint-disable-next-line
         let data: any = null;
         if (storedData) {

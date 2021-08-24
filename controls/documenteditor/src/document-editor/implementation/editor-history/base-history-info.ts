@@ -251,6 +251,9 @@ export class BaseHistoryInfo {
             let sel: Selection = this.owner.selection;
             let deletedNodes: IWidget[] = this.removedNodes;
             this.removedNodesIn = [];
+            if (isNullOrUndefined(this.endPosition)) {
+                this.endPosition = this.insertPosition;
+            }
             let isForward: boolean = TextPosition.isForwardSelection(this.insertPosition, this.endPosition);
             let insertTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.insertPosition : this.endPosition);
             let endTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.endPosition : this.insertPosition);

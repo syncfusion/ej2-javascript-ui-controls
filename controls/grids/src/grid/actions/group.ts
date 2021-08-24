@@ -1049,7 +1049,7 @@ export class Group implements IAction {
         const rowData: Object[] = this.groupGenerator.generateRows(aggregates, {});
         const summaryRows: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => !row.isDataRow);
         const updateSummaryRows: Object[] = rowData.filter((data: Row<Column>) => !data.isDataRow);
-        if (this.parent.isReact) {
+        if (this.parent.isReact || this.parent.isVue) {
             this.parent.destroyTemplate(['groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate']);
         }
         for (let i: number = 0; i < updateSummaryRows.length; i++) {

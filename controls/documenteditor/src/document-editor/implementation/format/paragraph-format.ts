@@ -265,7 +265,10 @@ export class WParagraphFormat {
             isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget ||
                 this.ownerBase.containerWidget instanceof TableCellWidget;
         }
-        if (isInsideBodyWidget && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
+        let isPaste: boolean = !isNullOrUndefined(this.ownerBase) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)
+            && (this.ownerBase as ParagraphWidget).bodyWidget.page && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor.isPaste;
+        if (isInsideBodyWidget && !isPaste
+            && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
             const propValue: Object = docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
             if (!isNullOrUndefined(propValue)) {
                 return propValue;

@@ -1,7 +1,7 @@
 import { Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { getUpdateUsingRaf, appendChildren, setDisplayValue } from '../base/util';
+import { getUpdateUsingRaf, appendChildren, setDisplayValue, clearReactVueTemplates } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
 import { VirtualInfo } from '../base/interface';
@@ -90,7 +90,7 @@ export class ContentRender implements IRenderer {
                     const maxBlock: number = this.parent.infiniteScrollSettings.maxBlocks; rows = [];
                     const rowIdx: number = (parseInt(this.rowElements[0].getAttribute('aria-rowindex'), 10) + 1);
                     const startIdx: number = Math.ceil(rowIdx / this.parent.pageSettings.pageSize);
-                    for (let i: number = 0, count = startIdx; i < maxBlock; i++, count++) {
+                    for (let i: number = 0, count: number = startIdx; i < maxBlock; i++, count++) {
                         if (this.infiniteCache[count]) {
                             rows = [...rows, ...this.infiniteCache[count]] as Row<Column>[];
                         }
@@ -309,9 +309,12 @@ export class ContentRender implements IRenderer {
             }
             this.parent.destroyTemplate(['template'], templatetoclear);
         }
-        if (this.parent.isReact && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
-            this.parent.destroyTemplate(['columnTemplate', 'rowTemplate', 'detailTemplate', 'captionTemplate', 'commandsTemplate']);
-            this.parent.renderTemplates();
+        if ((this.parent.isReact || this.parent.isVue) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
+            const templates: string[] = [
+                this.parent.isVue ? 'template' : 'columnTemplate', 'rowTemplate', 'detailTemplate',
+                'captionTemplate', 'commandsTemplate', 'groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate'
+            ];
+            clearReactVueTemplates(this.parent, templates);
         }
         if (this.parent.enableColumnVirtualization) {
             const cellMerge: CellMergeRender<Column> = new CellMergeRender(this.serviceLocator, this.parent);
@@ -477,6 +480,7 @@ export class ContentRender implements IRenderer {
                         remove(contentModule.getTbody(tableName));
                         tbdy = this.parent.createElement( literals.tbody);
                     } else {
+                        this.tbody.innerHTML = '';
                         remove(this.tbody);
                         this.tbody = this.parent.createElement( literals.tbody);
                     }

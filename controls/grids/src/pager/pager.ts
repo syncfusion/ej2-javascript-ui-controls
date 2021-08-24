@@ -643,6 +643,6 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private isReactTemplate(): boolean {
-        return this.isReact && this.template && typeof (this.template) !== 'string';
+        return (this.isReact || this.isVue) && this.template && typeof (this.template) !== 'string';
     }
 }

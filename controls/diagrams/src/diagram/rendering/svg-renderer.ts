@@ -523,7 +523,7 @@ export class SvgRenderer implements IRenderer {
         }
         const imgAlign: string = obj.alignment;
         let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
-        if (scale) {
+        if (scale !== 'Stretch') {
             aspectRatio += ' ' + scale.charAt(0).toLowerCase() + scale.slice(1);
         }
         const attr: Object = {

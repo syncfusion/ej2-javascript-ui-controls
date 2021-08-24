@@ -131,6 +131,13 @@ describe('Diagram Control', () => {
                 //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
                 expect(memory).toBeLessThan(profile.samples[0] + 0.25);
             });
+            it('Save and load the diagram using prevent default', (done: Function) => {
+                let savedDiagram: string = diagram.saveDiagram();
+                expect(function () {
+                    diagram.loadDiagram(savedDiagram);
+                }).not.toThrow();
+                done();
+            });
         });
 
         describe('Nodes shapes image', () => {

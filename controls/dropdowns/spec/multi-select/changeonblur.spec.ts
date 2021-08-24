@@ -199,7 +199,7 @@ describe('MultiSelect - changeonblur', () => {
                 open: () => {
                     var mouseEventArgs = {preventDefault: function(){}, currentTarget: (<any>listObj).checkBoxSelectionModule.checkAllParent };
                     (<any>listObj).checkBoxSelectionModule.clickHandler(mouseEventArgs);
-                    (<any>listObj).onBlur();
+                    (<any>listObj).onBlurHandler();
                 },
                 change: () => {
                     expect(true).toBe(true);
@@ -319,11 +319,11 @@ describe('MultiSelect - changeonblur', () => {
         it('change event trigger', () => {
             let which: any = null;
             let button: any = null;
-            multiObj.onBlur(mouseEventArgs);
+            multiObj.onBlurHandler(mouseEventArgs);
             let elem: HTMLElement = (<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="JAVA"]');
             (<any>multiObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
             expect(elem.parentElement).toBe(null);
-            multiObj.onBlur(mouseEventArgs);
+            multiObj.onBlurHandler(mouseEventArgs);
         });
     });
     describe('EJ2-13148 - Multiselect key navigation is not working with Home , Endkeys', () => {

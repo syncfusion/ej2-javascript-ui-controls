@@ -379,6 +379,9 @@ export class DiagramEventHandler {
     }
 
     public mouseDown(evt: PointerEvent): void {
+        if (this.inAction === true && (this.tool) instanceof NodeDrawingTool) {
+            return;
+        }
         this.focus = true;
         //let touches: TouchList;
         const touches: TouchList = (<TouchEvent & PointerEvent>evt).touches;

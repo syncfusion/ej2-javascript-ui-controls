@@ -15,7 +15,7 @@ import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode } from '
 import { Dialog, calculateRelativeBasedPosition, Popup } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
-import { FilterStateObj } from '../common/filter-interface';
+import { FilterStateObj, IXLFilter } from '../common/filter-interface';
 import { Cell } from '../models/cell';
 import * as literals from '../base/string-literals';
 
@@ -1867,3 +1867,15 @@ export function removeEventHandlers(component: any, evts: string[], instance: an
     }
 }
 
+/**
+ * @param {IGrid | IXLFilter} parent - Defines parent instance
+ * @param {string[]} templates - Defines the templates name which are needs to clear
+ * @returns {void}
+ * @hidden
+ */
+ export function clearReactVueTemplates(parent: IGrid | IXLFilter, templates: string[]): void {
+    parent.destroyTemplate(templates);
+    if (parent.isReact) {
+        parent.renderTemplates();
+    }
+}

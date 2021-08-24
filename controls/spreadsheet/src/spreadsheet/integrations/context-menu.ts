@@ -220,10 +220,10 @@ export class ContextMenu {
      */
     private beforeOpenHandler(args: BeforeOpenCloseMenuEventArgs): void {
         const trgt: Element = args.event.target as Element;
-        const target: string = this.getTarget(trgt); let items: MenuItemModel[];
+        let target: string = this.getTarget(trgt); let items: MenuItemModel[];
         if (args.element.classList.contains('e-contextmenu')) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
             if (args.event.target && (trgt.classList.contains('e-rowresize') || trgt.classList.contains('e-colresize'))) {
-                const sheet: SheetModel = this.parent.getActiveSheet();
                 const range: number[] = getRangeIndexes(sheet.selectedRange);
                 if (!(trgt.classList.contains('e-rowresize') ? range[1] === 0 && range[3] === sheet.colCount - 1 :
                     range[0] === 0 && range[2] === sheet.rowCount - 1)) {
@@ -236,6 +236,12 @@ export class ContextMenu {
                     items = this.getDataSource(target, trgt);
                 }
             } else {
+                if (target === 'Content') {
+                    const range: number[] = getRangeIndexes(sheet.selectedRange);
+                    const rowSelect: boolean = range[1] === 0 && range[3] === sheet.colCount - 1;
+                    const colSelect: boolean = range[0] === 0 && range[2] === sheet.rowCount - 1;
+                    target = rowSelect && colSelect ? 'SelectAll' : (rowSelect ? 'RowHeader' : (colSelect ? 'ColumnHeader' : 'Content'));
+                }
                 items = this.getDataSource(target);
             }
             this.contextMenuInstance.items = items;

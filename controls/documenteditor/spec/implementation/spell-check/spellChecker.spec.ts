@@ -715,4 +715,9 @@ console.log('Find validation');
         editor.search.findAll('This');
         expect(editor.search.textSearchResults.length).not.toBe(0);
     });
+    it('Check uniqueWordcount validation', () => {
+        console.log('Check uniqueWordcount validation');
+        expect(editor.spellChecker.uniqueWordsCount).toBe(15000);
+    });
+        
 });

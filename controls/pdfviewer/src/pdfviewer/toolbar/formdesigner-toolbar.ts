@@ -438,7 +438,9 @@ export class FormDesignerToolbar {
     }
 
     public showHideDeleteIcon(isEnable: boolean): void {
-        this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+        if (this.toolbar) {
+            this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+        }
     }
 
     private applyFormDesignerToolbarSettings(): void {

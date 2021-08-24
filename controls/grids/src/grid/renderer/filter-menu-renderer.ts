@@ -13,7 +13,7 @@ import { StringFilterUI } from './string-filter-ui';
 import { NumberFilterUI } from './number-filter-ui';
 import { BooleanFilterUI } from './boolean-filter-ui';
 import { DateFilterUI } from './date-filter-ui';
-import { getFilterMenuPostion, parentsUntil, appendChildren } from '../base/util';
+import { getFilterMenuPostion, parentsUntil, appendChildren, clearReactVueTemplates } from '../base/util';
 import * as events from '../base/constant';
 import { IXLFilter } from '../common/filter-interface';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
@@ -79,9 +79,8 @@ export class FilterMenuRenderer {
 
     private closeDialog(target?: Element): void {
         if (!this.dlgObj) { return; }
-        if (this.parent.isReact) {
-            this.parent.destroyTemplate(['filterTemplate']);
-            this.parent.renderTemplates();
+        if (this.parent.isReact || this.parent.isVue) {
+            clearReactVueTemplates(this.parent, ['filterTemplate']);
         }
         const elem: Element = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {

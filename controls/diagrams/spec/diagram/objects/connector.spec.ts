@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints } from '../../../src/diagram/enum/enum';
+import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
@@ -629,6 +629,136 @@ describe('Diagram Control', () => {
                 && ((diagram.connectors[1]).wrapper.children[0] as PathElement).data == 'M150 350C210 350 289.5 350 349.5 350'
                 && ((diagram.connectors[2]).wrapper.children[0] as PathElement).data == 'M142.7 375.62C202.7 375.62 289.57 499.74 349.5 500'
                 && ((diagram.connectors[3]).wrapper.children[0] as PathElement).data == 'M91.36 300.96C77.47 222.18 259.6 499.7 349.5 500').toBe(true);
+            done();
+        });
+    });
+
+    describe('save and load then check the connector path', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramConnectorPath' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 470, offsetY: 80, isExpanded: true,
+                    annotations: [{ content: 'node1' }],
+                },
+                {
+                    id: 'node2', width: 150, height: 100, offsetX: 570, offsetY: 80, style: { fill: 'none' },
+                    annotations: [{ content: 'node2' }],
+                },
+                {
+                    id: "Group1", children: ["node1", "node2"],
+                    ports: [
+                        {
+                            id: 'port11', visibility: PortVisibility.Visible, offset: { x: 0.5, y: 0 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                        {
+                            id: 'port12', visibility: PortVisibility.Visible, offset: { x: 0, y: 0.5 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                        {
+                            id: 'port13', visibility: PortVisibility.Visible, offset: { x: 1, y: 0.5 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                        {
+                            id: 'port14', visibility: PortVisibility.Visible, offset: { x: 0.5, y: 1 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                    ]
+                },
+                {
+                    id: 'node3', width: 150, height: 100, offsetX: 100, offsetY: 400, style: { fill: 'none' },
+                    annotations: [{ content: 'node3' }],
+                },
+                {
+                    id: 'node4', width: 90,
+                    height: 90,
+                    offsetX: 300,
+                    offsetY: 400,
+                    shape: { type: 'Basic', shape: 'Rectangle', cornerRadius: 10 },
+                    annotations: [{ id: 'text1', content: 'node4' }],
+                },
+                {
+                    id: "Group2", children: ["node3", "node4"],
+                    ports: [
+                        {
+                            id: 'port21', visibility: PortVisibility.Visible, offset: { x: 0.5, y: 0 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                        {
+                            id: 'port22', visibility: PortVisibility.Visible, offset: { x: 0, y: 0.5 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                        {
+                            id: 'port23', visibility: PortVisibility.Visible, offset: { x: 1, y: 0.5 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                        {
+                            id: 'port24', visibility: PortVisibility.Visible, offset: { x: 0.5, y: 1 },
+                            shape: 'Circle', constraints: PortConstraints.Default | PortConstraints.Draw
+                        },
+                    ]
+                },
+            ];
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1',
+                    type: 'Orthogonal',
+                    segments: [{
+                        type: 'Orthogonal'
+                    }],
+                    sourcePortID: "port21",
+                    targetPortID: "port14",
+                    sourceID: "Group2",
+                    targetID: "Group1"
+                }
+            ];
+            diagram = new Diagram({
+                width: '800px', height: '1000px', nodes: nodes, connectors: connectors,
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramConnectorPath');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Check before save and load ', (done: Function) => {
+            expect(diagram.connectors.length === 1).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints.length === 4).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 185 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[0].y == 350).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[1].x == 185 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[1].y == 330).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[2].x == 532.5 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[2].y == 330).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[3].x == 532.5 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[3].y == 130).toBe(true);
+            diagram.loadDiagram(diagram.saveDiagram());
+            done();
+        });
+        it('Check After save and load ', (done: Function) => {
+            expect(diagram.connectors.length === 1).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints.length === 4).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 185 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[0].y == 350).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[1].x == 185 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[1].y == 330).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[2].x == 532.5 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[2].y == 330).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[3].x == 532.5 &&
+                (diagram.connectors[0] as Connector).intermediatePoints[3].y == 130).toBe(true);
             done();
         });
     });

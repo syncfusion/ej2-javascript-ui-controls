@@ -564,7 +564,7 @@ export class Magnification {
         // eslint-disable-next-line max-len
         this.pdfViewerBase.pageContainer.style.height = this.topValue + this.pdfViewerBase.pageSize[this.pdfViewerBase.pageSize.length - 1].height * this.zoomFactor + 'px';
         this.resizeCanvas(this.pdfViewerBase.currentPageNumber);
-        if (this.pdfViewerBase.textLayer) {
+        if (this.pdfViewerBase.textLayer && this.pdfViewer.formDesignerModule) {
             this.pdfViewerBase.textLayer.clearTextLayers(true);
         }
         if (this.isPinchZoomed) {
@@ -572,6 +572,15 @@ export class Magnification {
         }
         this.pdfViewerBase.renderedPagesList = [];
         this.pdfViewerBase.pinchZoomStorage = [];
+        if (this.pdfViewer.formFieldsModule && !this.pdfViewer.formDesignerModule) {
+            let proxy: any = this;
+            if (!this.pdfViewerBase.documentLoaded) {
+                this.magnifyPageRerenderTimer = setTimeout(
+                    () => {
+                        proxy.rerenderMagnifiedPages();
+                    }, 800);
+            }
+        }
     }
 
     private calculateScrollValues(scrollValue: number): void {

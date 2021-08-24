@@ -385,7 +385,7 @@ describe('ComboBox', () => {
                     expect(comboBoxObj.text !== 'abc').toBe(true);
                     keyEventArgs.action = 'tab';
                     comboBoxObj.keyActionHandler(keyEventArgs);
-                    comboBoxObj.onBlur(keyEventArgs);
+                    comboBoxObj.onBlurHandler(keyEventArgs);
                     expect(comboBoxObj.value === 'abc').toBe(true);
                     expect(comboBoxObj.text === 'abc').toBe(true);
                     expect(comboBoxObj.index === null).toBe(true);
@@ -555,7 +555,7 @@ describe('ComboBox', () => {
         it('Checking null value ', () => {
             comboBoxObj = new ComboBox({ fields: { text: null, value: null } });
             comboBoxObj.appendTo(element);
-            comboBoxObj.onBlur(keyEventArgs);
+            comboBoxObj.onBlurHandler(keyEventArgs);
             expect(comboBoxObj.inputElement.value).toBe('');
         });
     });
@@ -796,7 +796,7 @@ describe('ComboBox', () => {
             e.keyCode = 74;
             comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
-            comboBoxObj.onBlur(keyEventArgs);
+            comboBoxObj.onBlurHandler(keyEventArgs);
             expect(comboBoxObj.value === null).toBe(true);
             expect(comboBoxObj.text === null).toBe(true);
             expect(comboBoxObj.index === null).toBe(true);
@@ -1031,7 +1031,7 @@ describe('ComboBox', () => {
                 let element: Element = comboBoxObj.ulElement.querySelector('li')
                 expect(element.classList.contains('e-item-focus')).toEqual(true);
                 comboBoxObj.hidePopup();
-                comboBoxObj.onBlur(e);
+                comboBoxObj.onBlurHandler(e);
                 setTimeout(() => {
                     expect(comboBoxObj.value === null).toBe(true);
                     expect(comboBoxObj.text === null).toBe(true);
@@ -2318,7 +2318,7 @@ describe('EJ2-43971 : After cleared the typed value, popup not shown the entire 
         comboBoxObj.onInput(keyEventArgs);
         comboBoxObj.onFilterUp(keyEventArgs);
         expect(comboBoxObj.list.querySelectorAll('li').length).toBe(1);
-        comboBoxObj.onBlur(keyEventArgs);
+        comboBoxObj.onBlurHandler(keyEventArgs);
         comboBoxObj.clearAll();
         comboBoxObj.showPopup();
         expect(comboBoxObj.list.querySelectorAll('li').length > 0).toBe(true);

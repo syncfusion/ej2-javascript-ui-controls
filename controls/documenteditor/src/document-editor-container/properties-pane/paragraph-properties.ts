@@ -431,7 +431,7 @@ export class Paragraph {
         const collection: any = [];
         for (const styleObj of styles) {
             const obj: any = {};
-            obj.StyleName = (styleObj as any).name;
+            obj.StyleName = this.localObj.getConstant((styleObj as any).name);
             obj.Style = this.parseStyle((styleObj as any).style as string);
             collection.push(obj);
         }
@@ -569,6 +569,22 @@ export class Paragraph {
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            if (this.localObj.getConstant('Heading 1') === args.itemData.StyleName)
+            {
+                args.itemData.StyleName = 'Heading 1';
+            } else if (this.localObj.getConstant('Heading 2') === args.itemData.StyleName) {
+                args.itemData.StyleName = 'Heading 2';
+            } else if (this.localObj.getConstant('Heading 3') === args.itemData.StyleName) {
+                args.itemData.StyleName = 'Heading 3';
+            } else if (this.localObj.getConstant('Heading 4') === args.itemData.StyleName) {
+                args.itemData.StyleName = 'Heading 4';
+            } else if (this.localObj.getConstant('Heading 5') === args.itemData.StyleName) {
+                args.itemData.StyleName = 'Heading 5';
+            } else if (this.localObj.getConstant('Heading 6') === args.itemData.StyleName) {
+                args.itemData.StyleName = 'Heading 6';
+            } else if (this.localObj.getConstant('Normal') === args.itemData.StyleName) {
+                args.itemData.StyleName = 'Normal';
+            }
             this.documentEditor.editor.applyStyle(args.itemData.StyleName, true);
         }
     }

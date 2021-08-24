@@ -3464,6 +3464,79 @@ describe('RTE base module', () => {
         });
     });
 });
+describe('EJ2-52200-Rich Text Editor character count increased when bold, italic, underline format applied in empty content and accessing using getCharCount -', () => {
+    let rteObj: RichTextEditor;
+
+    beforeAll(() => {
+        rteObj = renderRTE({
+            showCharCount: true,
+            value: '<p><strong>&ZeroWidthSpace;<em>&ZeroWidthSpace;<span style="text-decoration: underline;">&ZeroWidthSpace;</span></em></strong></p>'
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('default count value with no text - bold, italic and underline enabled', () => {
+        (<any>rteObj).getCharCount();
+        let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+        expect(parseInt(charLen) === 0).toBe(true);
+    });
+    it('character value alone', () => {
+        (<any>rteObj).value = "<p>Test</p>";
+        (<any>rteObj).dataBind();
+        (<any>rteObj).getCharCount();
+        let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+        expect(parseInt(charLen) === 4).toBe(true);
+    });
+    it('character value with bold enabled', () => {
+        (<any>rteObj).value = "<p><strong>&ZeroWidthSpace;Test</strong></p>";
+        (<any>rteObj).dataBind();
+        (<any>rteObj).getCharCount();
+        let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+        expect(parseInt(charLen) === 4).toBe(true);
+    });
+    it('character value with italic enabled', () => {
+        (<any>rteObj).value = "<p><em>&ZeroWidthSpace;Test</em></p>";
+        (<any>rteObj).dataBind();
+        (<any>rteObj).getCharCount();
+        let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+        expect(parseInt(charLen) === 4).toBe(true);
+    });
+    it('character value with underline enabled', () => {
+        (<any>rteObj).value = "<p><span style='text-decoration: underline;'>&ZeroWidthSpace;Test</span></p>";
+        (<any>rteObj).dataBind();
+        (<any>rteObj).getCharCount();
+        let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+        expect(parseInt(charLen) === 4).toBe(true);
+    });
+    it('character value with strikethrough enabled', () => {
+        (<any>rteObj).value = "<span style='text-decoration: line-through;'>&ZeroWidthSpace;Test</span>";
+        (<any>rteObj).dataBind();
+        (<any>rteObj).getCharCount();
+        let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+        expect(parseInt(charLen) === 4).toBe(true);
+    });
+});
+
+describe('EJ2-52200-Rich Text Editor character count, using getCharCount in markdownMode -', () => {
+    let rteObj: RichTextEditor;
+
+    beforeAll(() => {
+        rteObj = renderRTE({
+            showCharCount: true,
+            editorMode: 'Markdown',
+            value: 'Test'
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('default count value with text', () => {
+        (<any>rteObj).getCharCount();
+        let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+        expect(parseInt(charLen) === 4).toBe(true);
+    });
+});
 describe(' Image selection prevent - msie ', () => {
     let rteObj: RichTextEditor;
     let editNode: Element;

@@ -27,6 +27,7 @@ export interface IXLFilter extends Component<HTMLElement> {
     dataSource?: Object[] | DataManager;
     getForeignKeyColumns?: Function;
     isReact?: boolean;
+    isVue?: boolean;
     renderTemplates?: Function;
     allowSorting?: boolean;
 }

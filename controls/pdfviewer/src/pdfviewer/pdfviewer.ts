@@ -3022,6 +3022,12 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property('#303030')
     public borderColor: string;
+
+    /**
+     * Allows multiline input in the text field. FALSE, by default.
+     */
+    @Property(false)
+    public isMultiline: boolean;
 }
 /**
  * The `ContextMenuSettings` is used to show the context menu of PDF document.
@@ -3156,6 +3162,12 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      */
     @Property('#303030')
     public borderColor: string;
+
+    /**
+     * Allows multiline input in the text field. FALSE, by default.
+     */
+     @Property(false)
+     public isMultiline: boolean;
 }
 
 /**
@@ -5831,7 +5843,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Options': 'OPTIONS',
         'Delete Item': 'Delete',
         'Up': 'Up',
-        'Down': 'Down'
+        'Down': 'Down',
+        'Multiline': 'Multiline'
     };
 
     /**
@@ -6211,7 +6224,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 this.viewerBase.isInitialField = false;
             let target: any = document.getElementById(field.id);
             target = target ? target : (document.getElementById(field.id + '_content_html_element') ? document.getElementById(field.id + '_content_html_element').children[0].children[0] : null);
-            if (!eventArgs.cancel && target && (target as any).classList.contains('e-pdfviewer-signatureformfields')) {
+            if (!this.signatureFieldSettings.isReadOnly && !eventArgs.cancel && target && (target as any).classList.contains('e-pdfviewer-signatureformfields')) {
+                this.viewerBase.isToolbarSignClicked = false;
                 this.viewerBase.signatureModule.showSignatureDialog(true);
             }
         }
