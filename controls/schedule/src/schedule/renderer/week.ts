@@ -16,6 +16,14 @@ export class Week extends VerticalView {
         super(parent);
     }
 
+    public startDate(): Date {
+        return this.getViewStartDate();
+    }
+
+    public endDate(): Date {
+        return this.getViewEndDate();
+    }
+
     /**
      * Get module name.
      *

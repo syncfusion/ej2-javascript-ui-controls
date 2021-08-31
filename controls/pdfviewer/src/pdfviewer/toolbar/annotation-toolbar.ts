@@ -3864,9 +3864,13 @@ export class AnnotationToolbar {
     }
 
     private updateInteractionTools(): void {
-        this.pdfViewerBase.initiateTextSelectMode();
-        if (!Browser.isDevice) {
-            this.pdfViewer.toolbar.updateInteractionTools(true);
+        if (this.pdfViewer.enableTextSelection) {
+            this.pdfViewerBase.initiateTextSelectMode();
+            if (!Browser.isDevice) {
+                this.pdfViewer.toolbar.updateInteractionTools(true);
+            }
+        } else if (!Browser.isDevice) {
+            this.pdfViewer.toolbar.updateInteractionTools(false);
         }
     }
 

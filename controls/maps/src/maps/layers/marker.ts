@@ -106,7 +106,7 @@ export class Marker {
                         const transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
                         if (eventArgs.template &&  (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCount++;
-                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
+                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location, transPoint,
                                            scale, offset, this.maps);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this.maps as any).renderReactTemplates();
@@ -182,7 +182,7 @@ export class Marker {
         if (this.maps.zoomSettings.shouldZoomInitially && this.maps.markerModule) {
             let minLong: number; let maxLat: number; let minLat: number; let maxLong: number;
             let latZoom: number; let lngZoom : number; let result: number; let zoomLevel : number;
-            let centerLat: number; let centerLong: number; const maxZoomFact: number = 10;
+            let centerLat: number; let centerLong: number; const maxZoomFact: number = this.maps.zoomSettings.maxZoom;
             const mapWidth: number = this.maps.mapAreaRect.width;
             const mapHeight: number = this.maps.mapAreaRect.height;
             this.maps.markerZoomedState =  this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor) ?

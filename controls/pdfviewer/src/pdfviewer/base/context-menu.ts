@@ -252,9 +252,6 @@ export class ContextMenu implements IContextMenu {
                         break;
                     }
                     let menuName: string = this.pdfViewer.localeObj.getConstant(menuItem);
-                    if (menuName === 'Scale Ratio') {
-                        menuName = 'ScaleRatio';
-                    }
                     if (j === 0 && menuName !== ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
                         hideMenuItems.push(menuName);
                     }

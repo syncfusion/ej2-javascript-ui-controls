@@ -2,21 +2,34 @@
 
 ## [Unreleased]
 
+## 19.2.59 (2021-08-31)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I339105` - Resolved the number formatting color change issue.
+- `#I340265` - Text form field default value is preserved in word export.
+- `#I336632` - Style names are now properly listed in the drop down.
+- `#I338027` - Track changes close icon is now positioned properly in RTL mode.
+- `#I337566` - Resolved the table empty paragraph rendering issue.
+
 ## 19.2.57 (2021-08-24)
 
 ### Document Editor
 
 #### Bug Fixes
 
-`#I335857` - Resolved the after spacing preservation issue in copy paste.
-`#I335107` - Resolved the table rendering issue.
-`#I334046` - Optimized the spell check by page service call in optimized spell check mode.
-`#I330165`, `#I327647`, `#I324515`, `#I338278` - Resolved the issues in comment delete and history operation.
-`#I336315` - Resolved the tab issue for the text with floating table.
-`#I319206` - Resolved issue with horizontal line shape rendering.
-`#F167416` - Line spacing is now preserved properly in server side export.
-`#I337720` - Resolved the localization in Document Editor.
-`#I335145`, `#I337499` - Resolved the text measuring issue when HTML and Body tag contains styles.
+- `#I335857` - Resolved the after spacing preservation issue in copy paste.
+- `#I335107` - Resolved the table rendering issue.
+- `#I336632` - Resolved the next style hierarchy issue.
+- `#I334046` - Optimized the spell check by page service call in optimized spell check mode.
+- `#I330165`, `#I327647`, `#I324515`, `#I338278` - Resolved the issues in comment delete and history operation.
+- `#I336315` - Resolved the tab issue for the text with floating table.
+- `#I319206` - Resolved issue with horizontal line shape rendering.
+- `#F167416` - Line spacing is now preserved properly in server side export.
+- `#I337720` - Resolved the localization in Document Editor.
+- `#I335145`, `#I337499` - Resolved the text measuring issue when HTML and Body tag contains styles.
 
 ## 19.2.56 (2021-08-17)
 
@@ -26,7 +39,7 @@
 
 - `#I337569` - Resolved the table relayout issue for the document with compatibility mode.
 - `#I331349` - Resolved the text content clipping issue.
-- `#I336632` - Resolved the next style hierarchy issue .
+- `#I336632` - Resolved the next style hierarchy issue.
 
 ## 19.2.55 (2021-08-11)
 

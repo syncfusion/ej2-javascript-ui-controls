@@ -705,6 +705,12 @@ export class PdfViewerBase {
             this.setLoaderProperties(waitingPopup);
             if (isBlazor()) {
                 this.contextMenuModule = new BlazorContextMenu(this.pdfViewer, this);
+                // eslint-disable-next-line
+                const spinnerElement: any = document.getElementsByClassName(this.pdfViewer.element.id + '_spinner');
+                if (spinnerElement && spinnerElement[0] && (!spinnerElement[0].classList.contains('e-spin-hide'))) {
+                    spinnerElement[0].classList.remove('e-spin-show');
+                    spinnerElement[0].classList.add('e-spin-hide');
+                }
             } else {
                 this.contextMenuModule = new ContextMenu(this.pdfViewer, this);
             }
@@ -757,14 +763,6 @@ export class PdfViewerBase {
         this.documentId = this.createGUID();
         if (this.viewerContainer) {
             this.viewerContainer.scrollTop = 0;
-        }
-        if (isBlazor()) {
-            // eslint-disable-next-line
-            const spinnerElement: any = document.getElementsByClassName(this.pdfViewer.element.id + '_spinner');
-            if (spinnerElement && spinnerElement[0] && (!spinnerElement[0].classList.contains('e-spin-hide'))) {
-                spinnerElement[0].classList.remove('e-spin-show');
-                spinnerElement[0].classList.add('e-spin-hide');
-            }
         }
         this.showLoadingIndicator(true);
         this.hashId = ' ';
@@ -3296,7 +3294,7 @@ export class PdfViewerBase {
     private panOnMouseMove = (event: MouseEvent): void => {
         let isStampMode: boolean = false;
         // eslint-disable-next-line max-len
-        if (this.action === 'Drag' || this.action.indexOf('Rotate') !== -1 || this.action.indexOf('Resize') !== -1) {
+        if (this.action === 'Ink' || this.action === "Line" || this.action === 'Perimeter' || this.action === 'Polygon' || this.action === 'DrawTool' || this.action === 'Drag' || this.action.indexOf('Rotate') !== -1 || this.action.indexOf('Resize') !== -1) {
             isStampMode = true;
         }
         // eslint-disable-next-line max-len

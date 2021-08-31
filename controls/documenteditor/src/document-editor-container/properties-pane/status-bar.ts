@@ -279,6 +279,14 @@ export class StatusBar {
     public toggleWebLayout(): void {
         this.addRemoveClass(this.pageButton, this.webButton);
     }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public togglePageLayout(): void {
+        this.addRemoveClass(this.webButton, this.pageButton);
+    }
+
     private addRemoveClass(addToElement: HTMLElement, removeFromElement: HTMLElement): void {
         addToElement.classList.add('e-btn-toggle');
         if (removeFromElement.classList.contains('e-btn-toggle')) {

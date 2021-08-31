@@ -152,10 +152,18 @@ export class CommentReviewPane {
         this.reviewTab.enablePersistence = true;
         this.parentPaneElement.appendChild(this.element);
 
-        this.closeButton = createElement('button', {
-            className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
-            attrs: { type: 'button', style: 'position:absolute;top:6px;right:1px' }
-        }) as HTMLButtonElement;
+        if (this.owner.enableRtl) {
+            this.closeButton = createElement('button', {
+                className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
+                attrs: { type: 'button', style: 'position:absolute;top:6px;left:1px' }
+            }) as HTMLButtonElement;
+        } else {
+            this.closeButton = createElement('button', {
+                className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
+                attrs: { type: 'button', style: 'position:absolute;top:6px;right:1px' }
+            }) as HTMLButtonElement;
+        }
+
         this.closeButton.title = localValue.getConstant('Close');
         const closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);

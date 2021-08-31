@@ -541,14 +541,23 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     public reset(): void {
         this.isImportRules = false;
-        const bodeElem: Element = this.element.querySelector('.e-group-body');
+        let bodyElem: Element = this.element.querySelector('.e-group-body');
         const inputElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('input.e-control') as NodeListOf<HTMLElement>;
         for (let i: number = 0, len: number = inputElement.length; i < len; i++) {
             if (inputElement[i].parentElement.className.indexOf('e-tooltip') > -1) {
                 (getComponent(inputElement[i].parentElement, 'tooltip') as Tooltip).destroy();
             }
         }
-        bodeElem.innerHTML = '';
+        if (bodyElem) {
+            bodyElem.innerHTML = '';
+        } else {
+            const grpContainer: HTMLElement  = this.createElement('div', { attrs: { class: 'e-group-container' } });
+            const grpHeader: HTMLElement = this.createElement('div', { attrs: { class: 'e-group-header' } });
+            const grpBody: HTMLElement = this.createElement('div', { attrs: { class: 'e-group-body' } });
+            grpContainer.appendChild(grpHeader).appendChild(grpBody);
+            this.element.appendChild(grpContainer);
+            bodyElem = this.element.querySelector('.e-group-body');
+        }
         if (this.headerTemplate && this.isRoot) {
             this.element.innerHTML = '';
             this.isRoot = false;
@@ -556,10 +565,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (this.enableNotCondition) {
             removeClass(this.element.querySelectorAll('.e-qb-toggle'), 'e-active-toggle');
         }
-        bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
+        bodyElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
         this.rule = { condition: 'and', not: false, rules: [] };
-        this.disableRuleCondition(bodeElem.parentElement);
+        this.disableRuleCondition(bodyElem.parentElement);
     }
     private getWrapper(): Element {
         return this.element;
@@ -1086,9 +1095,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private refreshLevelColl(): void {
         this.levelColl = {};
         const groupElem: Element = this.element.querySelector('.e-group-container');
-        this.levelColl[groupElem.id] = [0];
-        const obj: LevelColl = {groupElement: groupElem, level: [0]};
-        this.refreshLevel(obj);
+        if (groupElem) {
+            this.levelColl[groupElem.id] = [0];
+            const obj: LevelColl = {groupElement: groupElem, level: [0]};
+            this.refreshLevel(obj);
+        }
     }
     private refreshLevel(obj: LevelColl): LevelColl | void {
         const ruleList: HTMLCollection = obj.groupElement.querySelector('.e-rule-list').children;
@@ -1173,20 +1184,22 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         ruleElem.appendChild(fieldElem);
         return ruleElem;
     }
-    private addGroupElement(isGroup: boolean, target: Element, condition?: string, isBtnClick?: boolean, not?: boolean, isRoot?: boolean): void {
+    private addGroupElement(isGroup: boolean, target: Element, condition?: string, isBtnClick?: boolean, not?: boolean,
+                            isRoot?: boolean, rule?: RuleModel): void {
         const args: ChangeEventArgs = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertGroup' };
         if (!this.isImportRules && !this.isInitialLoad) {
             this.trigger('beforeChange', args, (observedChangeArgs: ChangeEventArgs) => {
-                this.addGroupSuccess(observedChangeArgs, isGroup, target, condition, isBtnClick, not, isRoot);
+                this.addGroupSuccess(observedChangeArgs, isGroup, target, condition, isBtnClick, not, isRoot, rule);
             });
         } else {
             this.isInitialLoad = false;
-            this.addGroupSuccess(args, isGroup, target, condition, isBtnClick, not, isRoot);
+            this.addGroupSuccess(args, isGroup, target, condition, isBtnClick, not, isRoot, rule);
         }
     }
 
     private addGroupSuccess(
-        args: ChangeEventArgs, isGroup : boolean, eventTarget: Element, condition: string, isBtnClick: boolean, not?: boolean, isRoot?: boolean): void {
+        args: ChangeEventArgs, isGroup : boolean, eventTarget: Element, condition: string, isBtnClick: boolean, not?: boolean,
+        isRoot?: boolean, rule?: RuleModel): void {
         if (!args.cancel && (this.element.querySelectorAll('.e-group-container').length <= this.maxGroupCount)) {
             const target: Element = eventTarget; let dltGroupBtn: HTMLElement;
             const groupElem: Element = this.groupElem.cloneNode(true) as Element;
@@ -1195,10 +1208,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (isRoot) {
                     isGroup = false;
                     groupElem.setAttribute('id', this.element.id + '_group0');
-                    this.headerTemplateFn(groupElem, not, condition);
+                    this.headerTemplateFn(groupElem, not, condition, rule);
                     this.groupIdCounter = 0;
                 } else {
-                    this.headerTemplateFn(groupElem, not, condition);
+                    this.headerTemplateFn(groupElem, not, condition, rule);
                 }
             }
             this.groupIdCounter++;
@@ -1281,12 +1294,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
     }
-    private headerTemplateFn(groupElem: Element, not: boolean, condition: string): Element {
+    private headerTemplateFn(groupElem: Element, not: boolean, condition: string, rule: RuleModel): Element {
         let template: Element; const templateID: string = this.element.id + '_header'; let args: ActionEventArgs;
         const groupHdr: HTMLElement = groupElem.querySelector('.e-group-header');
         if (this.headerTemplate) {
             args = { requestType: 'header-template-initialize', ruleID: groupElem.id,
-                notCondition: this.enableNotCondition ? not : undefined, condition: condition };
+                notCondition: this.enableNotCondition ? not : undefined, condition: condition, rule: rule };
             this.trigger('actionBegin', args);
             this.headerFn = this.templateParser(this.headerTemplate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2876,7 +2889,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         } else {
             if (this.columns.length && this.isImportRules) {
-                this.addGroupElement(false, this.element, this.rule.condition, false, this.rule.not);
+                this.addGroupElement(false, this.element, this.rule.condition, false, this.rule.not, false, this.rule);
                 const mRules: RuleModel = extend({}, this.rule, {}, true);
                 this.isRefreshed = true;
                 this.setGroupRules(mRules as RuleModel);
@@ -3256,8 +3269,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns {void}
      */
     public deleteGroup(target: Element | string): void {
-        const groupElem: Element = target as Element;
-        const groupId: string = groupElem.id.replace(this.element.id + '_', '');
+        const groupElem: Element = target as Element; let groupId: string;
+        if (typeof target === 'string') {
+            groupId = this.element.id + '_' + target as string;
+            target = document.getElementById(groupId);
+        } else {
+            groupId = groupElem.id.replace(this.element.id + '_', '');
+        }
         const args: ChangeEventArgs = { groupID: groupId, cancel: false, type: 'deleteGroup' };
         if (!this.isImportRules) {
             this.trigger('beforeChange', args, (observedChangeArgs: ChangeEventArgs) => {
@@ -3481,7 +3499,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             }
         }
-        if (!rule.condition && rule.condition !== '') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const customObj: any = (rule as any).custom;
+        if ((rule.field && rule.field !== '') && (isNullOrUndefined(customObj) || (customObj && (customObj.type !== 'question' &&
+        customObj.type !== 'answer')))) {
             if (rule.operator) {
                 if (rule.operator.toString().indexOf('null') > -1 || rule.operator.toString().indexOf('empty') > -1) {
                     rule.value = null;
@@ -3489,8 +3510,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
             rule.value !== undefined))) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const customObj: Object = (rule as any).custom;
                 rule = {
                     'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value
                 };
@@ -3502,10 +3521,22 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 rule = {};
             }
         } else {
-            if (this.enableNotCondition) {
-                rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not };
+            if (customObj && (customObj.type === 'question' || customObj.type === 'answer')) {
+                const notValue: boolean = rule.not;
+                rule = { 'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value,
+                    'condition': rule.condition, 'rules': rule.rules
+                };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (rule as any).custom = customObj;
+                if (this.enableNotCondition) {
+                    rule.not = notValue;
+                }
             } else {
-                rule = { 'condition': rule.condition, 'rules': rule.rules };
+                if (this.enableNotCondition) {
+                    rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not };
+                } else {
+                    rule = { 'condition': rule.condition, 'rules': rule.rules };
+                }
             }
         }
         return rule;
@@ -3519,8 +3550,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public setRules(rule: RuleModel): void {
         const mRules: RuleModel = extend({}, rule, {}, true);
         if (this.headerTemplate) {
-            let isRoot: boolean = true;
-            this.setGroupRules(mRules, isRoot);
+            this.setGroupRules(mRules, true);
         } else {
             this.setGroupRules(mRules);
         }
@@ -3531,11 +3561,18 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns {object} - Rule or rule collection
      */
     public getRules(): RuleModel {
+        let rule: RuleModel;
         if (this.enableNotCondition) {
-            return {condition: this.rule.condition, rules: this.rule.rules, not: this.rule.not};
+            rule = {condition: this.rule.condition, rules: this.rule.rules, not: this.rule.not};
         } else {
-            return {condition: this.rule.condition, rules: this.rule.rules};
+            rule = {condition: this.rule.condition, rules: this.rule.rules};
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((this.rule as any).custom) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (rule as any).custom = (this.rule as any).custom;
+        }
+        return rule;
     }
     /**
      * Gets the rule.
@@ -3571,11 +3608,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         const groupId: string = (target instanceof Element) ? target.id : this.element.id + '_' + target;
         const rule: RuleModel = this.getParentGroup(groupId);
-        if (this.enableNotCondition) {
-            return { rules: rule.rules, condition: rule.condition, not: rule.not };
-        } else {
-            return { rules: rule.rules, condition: rule.condition };
-        }
+        return rule;
     }
     /**
      * Deletes the group or groups based on the group ID.
@@ -3939,7 +3972,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private importRules(rule: RuleModel, parentElem?: Element, isReset?: boolean, not?: boolean, isRoot?: boolean): Element {
         if (!isReset) {
-            parentElem = this.renderGroup(rule.condition, parentElem, not);
+            parentElem = this.renderGroup(rule, rule.condition, parentElem, not);
         } else {
             if (rule.rules.length > 1 && !this.headerTemplate) {
                 // enable/disable conditions when rule group is added
@@ -3957,7 +3990,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.disableRuleCondition(parentElem);
             }
             if (this.headerTemplate && isRoot) {
-                parentElem = this.renderGroup(rule.condition, this.element, rule.not, isRoot);
+                parentElem = this.renderGroup(rule, rule.condition, this.element, rule.not, isRoot);
             }
             if (this.enableNotCondition && !this.headerTemplate) {
                 const tglBtnElem: Element = parentElem.querySelector('.e-qb-toggle');
@@ -3973,7 +4006,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             for (let i: number = 0, len: number = ruleColl.length; i < len; i++) {
                 const keys: string[] = Object.keys(ruleColl[i]);
                 if (!isNullOrUndefined(ruleColl[i].rules) && keys.indexOf('rules') > -1) {
-                    parentElem = this.renderGroup(ruleColl[i].condition, parentElem, ruleColl[i].not);
+                    parentElem = this.renderGroup(ruleColl[i], ruleColl[i].condition, parentElem, ruleColl[i].not);
                     parentElem = this.importRules(ruleColl[i], parentElem, true);
                 } else {
                     this.renderRule(ruleColl[i], parentElem);
@@ -3986,8 +4019,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return parentElem;
     }
-    private renderGroup(condition: string, parentElem?: Element, not?: boolean, isRoot?: boolean): Element {
-        this.addGroupElement(true, parentElem, condition, false, not, isRoot); //Child group
+    private renderGroup(rule: RuleModel, condition: string, parentElem?: Element, not?: boolean, isRoot?: boolean): Element {
+        this.addGroupElement(true, parentElem, condition, false, not, isRoot, rule); //Child group
         const element: NodeListOf<Element> = parentElem.querySelectorAll('.e-group-container');
         return element[element.length - 1];
     }

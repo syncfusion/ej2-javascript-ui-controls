@@ -5,7 +5,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { MouseEvents } from './mouseevents.spec';
-import { PortConstraints } from '../../../src/diagram/enum/enum';
+import { PortConstraints,ConnectorConstraints } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
 import { PortVisibility, DiagramTools } from '../../../src/diagram/index';
 import { NodeConstraints } from '../../../src/index';
@@ -703,6 +703,70 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+        });
+    });
+
+    describe('Connection Padding ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram4' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 150, offsetX: 150, offsetY: 150, annotations: [{ content: 'Node1' }],
+                shape: { type: 'Basic', shape: 'Rectangle' },
+                ports: [
+                    { id: 'port3', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 1, y: 0.5 } },
+                ],
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 468, offsetY: 150, annotations: [{ content: 'Node2' }],
+                shape: { type: 'Basic', shape: 'Rectangle' },
+                ports: [
+                    { id: 'port21', visibility: PortVisibility.Visible, height: 50, width: 50, constraints: PortConstraints.Draw | PortConstraints.InConnect, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+                    { id: 'port31', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 0, y: 0.5 } },
+                    { id: 'port41', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 0.5, y: 1 } }
+                ]
+            };
+            diagram = new Diagram({
+
+                width: '1000px', height: '500px', nodes: [node1, node2],
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    if (obj.id.indexOf('connector') !== -1) {
+                        obj.type = 'Orthogonal';
+                        obj.targetDecorator = { shape: 'Arrow', width: 10, height: 10 };
+                    }
+                    obj.constraints = ConnectorConstraints.Default & ~ConnectorConstraints.ConnectToNearByNode;
+                    obj.connectionPadding = 55;
+                    return obj;
+                },
+            });
+
+            diagram.appendTo('#diagram4');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('By Port Draw checking the ConnectToNearByPort', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas, 196, 149);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.connectors[0].connectionPadding).toBe(55);
+            done();
         });
     });
 

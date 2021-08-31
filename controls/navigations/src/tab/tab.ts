@@ -927,7 +927,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 id: CLS_ITEM + this.tabId + '_' + this.lastIndex, role: 'tab', 'aria-selected': 'false'
             };
             const tItem: { [key: string]: {} } = { htmlAttributes: attrObj, template: wrap };
-            tItem.cssClass = ((item.cssClass !== undefined) ? item.cssClass : ' ') + ' ' + disabled + ' ' + hidden
+            tItem.cssClass = ((item.cssClass !== undefined) ? item.cssClass : ' ') + ' ' + disabled + ' ' + hidden + ' '
                 + ((css !== '') ? 'e-i' + pos : '') + ' ' + ((!txtEmpty) ? CLS_ICON : '');
             if (pos === 'top' || pos === 'bottom') {
                 this.element.classList.add('e-vertical-icon');

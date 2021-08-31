@@ -286,7 +286,7 @@ export class DataBind {
             this.parent.notify(checkDateFormat, dateEventArgs);
             if (dateEventArgs.isDate) {
                 if (args.cell) {
-                    args.cell.format = getFormatFromType('ShortDate');
+                    if (!args.cell.format) { args.cell.format = getFormatFromType('ShortDate'); }
                     args.cell.value = <string>dateEventArgs.updatedVal;
                 } else {
                     args.args.sheet.rows[args.rowIndex]
@@ -296,7 +296,7 @@ export class DataBind {
                 }
             } else if (dateEventArgs.isTime) {
                 if (args.cell) {
-                    args.cell.format = getFormatFromType('Time');
+                    if (!args.cell.format) { args.cell.format = getFormatFromType('Time'); }
                     args.cell.value = <string>dateEventArgs.updatedVal;
                 } else {
                     args.args.sheet.rows[args.rowIndex]

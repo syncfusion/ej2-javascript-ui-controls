@@ -850,6 +850,11 @@ export class DiagramEventHandler {
             const selectedConnector: ConnectorModel = targetObject.connectors[0];
             padding = (selectedConnector.constraints & ConnectorConstraints.ConnectToNearByPort) ? selectedConnector.connectionPadding : 0;
         }
+        else if (targetObject && (targetObject instanceof Connector) && this.action === 'PortDraw' && (this.tool instanceof ConnectorDrawingTool)) {
+            if (targetObject.constraints & ConnectorConstraints.ConnectToNearByPort) {
+                padding = targetObject.connectionPadding;
+            }
+        }
         return padding || 0;
     }
     private getBlazorClickEventArgs(arg: IClickEventArgs | IBlazorClickEventArgs): IBlazorClickEventArgs {

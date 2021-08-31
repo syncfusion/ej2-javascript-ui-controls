@@ -1427,6 +1427,197 @@ describe('Map marker properties tesing', () => {
             map.refresh();
         });
     });
+    describe('Legend and toggle for Marker feature', () => {
+        let id: string = 'legend';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let trigger: MouseEvents = new MouseEvents();
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                legendSettings: {
+                    visible: true,
+                    type: 'Markers',
+                    showLegendPath: 'legendVisibility',
+                    removeDuplicateLegend: true,
+                    toggleLegendSettings: {
+                        enable: true,
+                        applyShapeSettings: false,
+                        fill: "yellow",
+                        opacity: 0.1         
+                    }
+                },
+                layers: [
+                    {
+                        shapeData: World_Map,
+                        dataSource: topPopulation,
+                        shapeSettings: {
+                            fill: '#C3E6ED'
+                        },
+                        markerSettings: [
+                            {
+                                dataSource: [
+                                    { name: 'Tokyo', latitude: 35.6894875, longitude: 139.6917064, population: 33200000, Country: 'Japan', Continent: 'Asia', color: 'red', shape: 'Pentagon' },
+                                    { name: 'New York', latitude: 40.7127753,longitude: -74.0059728, population: 17800000, Country: 'United States', Continent: 'North America', color: 'green',shape: 'Diamond' },
+                                    { name: 'Sao Paulo', latitude: -23.5505199,longitude: -46.6333094,population: 17700000,Country: 'Brazil', Continent: 'South America',color: 'orange',shape: 'InvertedTriangle'},
+                                    { name: 'Seoul/Incheon', latitude: 37.566535,longitude: 126.9779692,population: 17500000, Country: 'South Korea',Continent: 'Asia', color: 'red', shape: 'Pentagon'}
+                                ],
+                                visible: true,
+                                animationDuration: 0,
+                                shape: 'Circle',
+                                fill: '#285255',
+                                width: 3,
+                                border: { width: 2, color: '#285255' },
+                                colorValuePath: 'color',
+                                legendText: 'Country',
+                            },
+                        ]
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Marker Legend visibility', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBe(4);
+            };
+        });
+        it('Toggle legend property for marker color', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(5);
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                expect(spec.getAttribute('fill')).toBe("yellow");
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
+                trigger.clickEvent(spec);
+            }
+            map.refresh();
+        });
+        it('Toggle legend property for second marker color', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(5);
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_1')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_1");
+                expect(spec.getAttribute('fill')).toBe("yellow");
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_1')
+                trigger.clickEvent(spec);
+            }
+            map.refresh();
+        });
+        it('Toggle legend property for shapeSettings for default', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(5);
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                expect(spec.getAttribute('fill')).toBe("#C3E6ED");
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
+                trigger.clickEvent(spec);
+            }
+            map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+            map.refresh();
+        });
+        it('Toggle legend property for marker color for interactive', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(9);
+                spec = document.getElementById(map.element.id + '_Legend_Index_0')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                expect(spec.getAttribute('fill')).toBe("yellow");
+                spec = document.getElementById(map.element.id + '_Legend_Index_0')
+                trigger.clickEvent(spec);
+            }
+            map.legendSettings.mode = 'Interactive';
+            map.legendSettings.toggleLegendSettings.applyShapeSettings = false;
+            map.refresh();
+        });
+        it('Toggle legend property for second marker color for interactive', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(9);
+                spec = document.getElementById(map.element.id + '_Legend_Index_1')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_1");
+                expect(spec.getAttribute('fill')).toBe("yellow");
+                spec = document.getElementById(map.element.id + '_Legend_Index_1')
+                trigger.clickEvent(spec);
+            }
+            map.legendSettings.mode = 'Interactive';
+            map.legendSettings.toggleLegendSettings.applyShapeSettings = false;
+            map.refresh();
+        });
+        it('Toggle legend property for shapeSettings for interactive', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(9);
+                spec = document.getElementById(map.element.id + '_Legend_Index_0')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                expect(spec.getAttribute('fill')).toBe("#C3E6ED");
+                spec = document.getElementById(map.element.id + '_Legend_Index_0')
+                trigger.clickEvent(spec);
+            }
+            map.legendSettings.mode = 'Interactive';
+            map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+            map.refresh();
+        });
+        it('Toggle legend property for shapeSettings for interactive in balloon', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(9);
+                spec = document.getElementById(map.element.id + '_Legend_Index_0')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                expect(spec.children[0].getAttribute('fill')).toBe("#C3E6ED");
+                spec = document.getElementById(map.element.id + '_Legend_Index_0')
+            }
+            map.legendSettings.mode = 'Interactive';
+            map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+            map.layers[0].markerSettings[0].shape = 'Balloon';
+            map.layers[0].shapeSettings.border.opacity = 0.5;
+            map.refresh();
+        });
+        it('Toggle legend property for shapeSettings for default in balloon', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById(map.element.id + '_Legend_Group');
+                expect(spec.childElementCount).toBe(5);
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                expect(spec.children[0].getAttribute('fill')).toBe("#C3E6ED");
+                spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
+                trigger.clickEvent(spec);
+            }
+            map.legendSettings.mode = 'Default';
+            map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+            map.layers[0].shapeSettings.border.opacity = 0.5;
+            map.layers[0].markerSettings[0].shape = 'Balloon';
+            map.refresh();
+        });
+
+    });
     describe('Toggle legend settings', () => {
         let id: string = 'container';
         let map: Maps;

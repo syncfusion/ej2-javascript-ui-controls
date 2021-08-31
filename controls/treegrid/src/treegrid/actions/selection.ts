@@ -18,6 +18,7 @@ export class Selection {
     private columnIndex: number;
     private selectedItems: Object[];
     private selectedIndexes: number[];
+    private filteredList: Object[];
     /**
      * Constructor for Selection module
      *
@@ -27,6 +28,7 @@ export class Selection {
         this.parent = parent;
         this.selectedItems = [];
         this.selectedIndexes = [];
+        this.filteredList = [];
         this.addEventListener();
     }
 
@@ -266,8 +268,24 @@ export class Selection {
 
     private headerSelection(checkAll?: boolean): void {
         let index: number = -1; let length: number = 0;
+        if(!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0){
+            var filterResult = this.parent.filterModule.filteredResult;
+            if(this.filteredList.length == 0){
+                this.filteredList = filterResult;
+            }
+            else{
+                if(this.filteredList != filterResult){
+                    this.filteredList = filterResult;
+                }
+            }
+        }
+        if(this.filteredList.length > 0){
+            if(!this.parent.filterSettings.columns.length && this.filteredList.length){
+                this.filteredList = [];
+            }
+        }
         let data: ITreeData[] = (!isNullOrUndefined(this.parent.filterModule) &&
-          this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
+        (this.filteredList.length > 0)) ? this.filteredList :
             this.parent.flatData;
         data = isRemoteData(this.parent) ? this.parent.getCurrentViewRecords() : data;
         if (!isNullOrUndefined(checkAll)) {

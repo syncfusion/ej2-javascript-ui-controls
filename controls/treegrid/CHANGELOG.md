@@ -2,16 +2,26 @@
 
 ## [Unreleased]
 
-## 19.2.57 (2021-08-24)
+## 19.2.59 (2021-08-31)
 
 ### Tree Grid
 
 #### Bug Fixes
 
+- `#F168235` -  Adding a new row as a child using context menu works fine.
+
+## 19.2.56 (2021-08-17)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I335989` - Resolved the issue of dragged rows getting deleted while using drag and drop.
 - `#I337766` - expandAtLevel and collapseAtLevel methods works fine when enableCollapseAll is true.
 - `#I334273` - Resolved white space issue while using single root node with Virtualization and enableCollapseAll.
 - `#I335120` - Drag and drop of newly added records works fine.
 - `#I336436` - RefreshColumns method works properly when we access the column from the getColumnByUid method.
+- `#I337393` - Select all checkbox works fine with filtering.
 
 ## 19.2.51 (2021-08-03)
 

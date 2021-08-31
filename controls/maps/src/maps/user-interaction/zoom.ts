@@ -404,7 +404,7 @@ export class Zoom {
                                 this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
                             }
                             currentEle = layerElement.childNodes[j] as Element;
-                            if (!isNullOrUndefined(currentEle)) {
+                            if (!isNullOrUndefined(currentEle) && currentEle.id.indexOf('Markers') !== -1) {
                                 for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                     this.markerTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate);
                                     const layerIndex : number = parseInt(currentEle.childNodes[k]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
@@ -624,7 +624,7 @@ export class Zoom {
                         const transPoint: Point = {x: x, y: y};
                         if (eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCounts++;
-                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateElements, location,
+                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateElements, location, transPoint,
                                            scale, offset, this.maps);
                         } else  if (!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerCounts++;
@@ -885,13 +885,9 @@ export class Zoom {
                 }
             } else {
                 if (type === 'Template') {
-                    location.x = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location.x)) * scale);
-                    location.y = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location.y)) * scale);
-                    const layerOffset: ClientRect = getElementByID(this.maps.element.id + '_Layer_Collections').getBoundingClientRect();
-                    const elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
-                    (<HTMLElement>element).style.left = (((location.x) + (layerOffset.left - elementOffset.left)) + marker.offset.x) + 'px';
-                    (<HTMLElement>element).style.top = (((location.y) + (layerOffset.top - elementOffset.top)) + marker.offset.y) + 'px';
-                    (<HTMLElement>element).style.transform = 'translate(-50%, -50%)';
+                    const elementOffset: ClientRect = element.getBoundingClientRect();
+                     (<HTMLElement>element).style.left = ((location.x + x) * scale) + marker.offset.x - this.maps.mapAreaRect.x - (elementOffset.width / 2) + 'px';
+                     (<HTMLElement>element).style.top = ((location.y + y) * scale) + marker.offset.y - this.maps.mapAreaRect.y - (elementOffset.height / 2) + 'px';
                 } else {
                     location.x = (((location.x + x) * scale) + marker.offset.x);
                     location.y = (((location.y + y) * scale) + marker.offset.y);

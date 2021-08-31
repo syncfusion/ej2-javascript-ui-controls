@@ -249,6 +249,13 @@ export class SelectionCommands {
                             nodeCutter.SplitNode(range, textNode.parentElement, false);
                         }
                     }
+                    if (nodeTraverse.parentElement.tagName.toLocaleLowerCase() === 'span') {
+                        if ((formatNode as HTMLElement).style.textDecoration === 'underline' &&
+                            nodeTraverse.parentElement.style.textDecoration !== 'underline') {
+                            nodeTraverse = nodeTraverse.parentElement;
+                            continue;
+                        }
+                    }
                     InsertMethods.unwrap(nodeTraverse.parentElement);
                     nodeTraverse = !isNOU(nodeTraverse.parentElement) && !domNode.isBlockNode(nodeTraverse.parentElement) ? textNode :
                         nodeTraverse.parentElement;
@@ -259,14 +266,16 @@ export class SelectionCommands {
         }
         if (child.length > 0 && isFontStyle) {
             for (let num: number = 0; num < child.length; num++) {
-                child[num] = InsertMethods.Wrap(
-                    child[num] as HTMLElement,
-                    this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
-                if (num === 0) {
-                    range.setStartBefore(child[num]);
-                }
-                else if (num === child.length - 1) {
-                    range.setEndAfter(child[num]);
+                if (child[num].nodeType !== 3 || (child[num].textContent && child[num].textContent.trim().length > 0)) {
+                    child[num] = InsertMethods.Wrap(
+                        child[num] as HTMLElement,
+                        this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
+                    if (num === 0) {
+                        range.setStartBefore(child[num]);
+                    }
+                    else if (num === child.length - 1) {
+                        range.setEndAfter(child[num]);
+                    }
                 }
             }
             const currentNodeElem: HTMLElement = nodes[index].parentElement;

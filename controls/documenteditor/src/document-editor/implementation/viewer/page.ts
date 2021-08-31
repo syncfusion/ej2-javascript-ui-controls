@@ -3623,9 +3623,11 @@ export class LineWidget implements IWidget {
                         || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi)
                     || element.previousElement instanceof FieldElementBox
                     || element.previousElement instanceof BookmarkElementBox
+                    || element.previousElement instanceof CommentCharacterElementBox
                     && !isNullOrUndefined(element.previousElement.previousElement) &&
                     !(element.previousElement.previousElement instanceof BookmarkElementBox)
                     || element.previousElement instanceof BookmarkElementBox
+                    || element.previousElement instanceof CommentCharacterElementBox
                     && element.previousElement.previousElement instanceof BookmarkElementBox
                     && !isNullOrUndefined(element.previousElement.previousElement.previousElement)
                     || element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
@@ -3633,6 +3635,7 @@ export class LineWidget implements IWidget {
                     || element.previousElement instanceof ListTextElementBox
                     || element.previousElement instanceof EditRangeEndElementBox
                     || element.previousElement instanceof EditRangeStartElementBox
+                    || element.previousElement instanceof CommentCharacterElementBox
                     || element.previousElement instanceof ImageElementBox)) {
                     isApplied = true;
                     element = element.previousElement;
@@ -3643,7 +3646,7 @@ export class LineWidget implements IWidget {
                         ((textHelper.containsSpecialCharAlone(element.previousElement.text) || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi))))) {
                     endElement = element.previousElement;
                 } else if (!element.previousElement) {
-                    if (element instanceof ListTextElementBox) {
+                    if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox) {
                         break;
                     }
                     endElement = element;

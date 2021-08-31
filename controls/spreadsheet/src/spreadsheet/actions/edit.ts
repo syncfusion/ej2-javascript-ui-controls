@@ -951,6 +951,10 @@ export class Edit {
                 && this.parent.activeSheetIndex === sheetIdx|| this.uniqueCell) {
                 const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
+                    if (td.parentElement) {
+                        const curRowIdx: string = td.parentElement.getAttribute('aria-rowindex');
+                        if (curRowIdx && Number(curRowIdx) - 1 !== rowIdx) { return; }
+                    }
                     const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     const actCell: number[] = getRangeIndexes(sheet.activeCell);
@@ -1032,7 +1036,7 @@ export class Edit {
         const cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         const eventArgs: CellEditEventArgs | CellSaveEventArgs = {
             element: this.editCellData.element,
-            value: cell ? cell.value : this.editCellData.value,
+            value: this.editCellData.value,
             oldValue: this.editCellData.oldValue,
             address: this.editCellData.fullAddr,
             displayText: this.parent.getDisplayText(cell)

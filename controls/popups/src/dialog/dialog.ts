@@ -1794,11 +1794,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private updateIsModal(): void {
         this.element.setAttribute('aria-modal', this.isModal ? 'true' : 'false');
         if (this.isModal) {
-            this.setIsModal();
-            this.element.style.top = '0px';
-            this.element.style.left = '0px';
-            if (!isNullOrUndefined(this.targetEle)) {
-                this.targetEle.appendChild(this.dlgContainer);
+            if (isNullOrUndefined(this.dlgOverlay)) {
+                this.setIsModal();
+                this.element.style.top = '0px';
+                this.element.style.left = '0px';
+                if (!isNullOrUndefined(this.targetEle)) {
+                    this.targetEle.appendChild(this.dlgContainer);
+                }
             }
         } else {
             removeClass([this.element], MODAL_DLG);
@@ -2077,10 +2079,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         if (!isNullOrUndefined(this.targetEle)) {
                             removeClass([this.targetEle],  [DLG_TARGET , SCROLL_DISABLED]);
                         }
-                        if (document.body.classList.contains(DLG_TARGET) &&
-                            document.body.classList.contains(SCROLL_DISABLED)) {
-                            removeClass([document.body],  [DLG_TARGET , SCROLL_DISABLED]);
-                        }
+                    }
+                    if (document.body.classList.contains(DLG_TARGET) &&
+                        document.body.classList.contains(SCROLL_DISABLED)) {
+                        removeClass([document.body],  [DLG_TARGET , SCROLL_DISABLED]);
                     }
                     // eslint-disable-next-line
                     const closeAnimation: Object = {

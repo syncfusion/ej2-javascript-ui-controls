@@ -1330,19 +1330,29 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
             getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
             for (let i: number = 0; i < templateElements.length; i++) {
+                let offSetLetValue: number = 0;
+                let offSetTopValue: number = 0;
                 const templateGroupEle: Element = templateElements[i] as Element;
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
                     const layerOffset: ClientRect = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
                     const elementOffset: ClientRect = getElementByID(templateGroupEle.id).getBoundingClientRect();
-                    const offSetLetValue: number = this.isTileMap ? 0 : (layerOffset.left < elementOffset.left) ?
-                        -(Math.abs(elementOffset.left - layerOffset.left)) : (Math.abs(elementOffset.left - layerOffset.left));
-                    const offSetTopValue: number = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
-                        - (Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
+                    if (templateGroupEle.id.indexOf('Marker') === -1) {
+                        offSetLetValue = this.isTileMap ? 0 : (layerOffset.left < elementOffset.left) ?
+                            -(Math.abs(elementOffset.left - layerOffset.left)) : (Math.abs(elementOffset.left - layerOffset.left));
+                        offSetTopValue = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
+                            - (Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
+                    }
                     for (let j: number = 0; j < templateGroupEle.childElementCount; j++) {
                         const currentTemplate: HTMLElement = <HTMLElement>templateGroupEle.childNodes[j];
-                        currentTemplate.style.left = parseFloat(currentTemplate.style.left) + offSetLetValue + 'px';
-                        currentTemplate.style.top = parseFloat(currentTemplate.style.top) + offSetTopValue + 'px';
-                        currentTemplate.style.transform = 'translate(-50%, -50%)';
+                        if (currentTemplate.id.indexOf('Marker') !== -1) {
+                            const elementOffset: ClientRect = getElementByID(currentTemplate.id).getBoundingClientRect();
+                            currentTemplate.style.left = parseFloat(currentTemplate.style.left) - (this.isTileMap ? 0 : elementOffset.width / 2) + 'px';
+                            currentTemplate.style.top = parseFloat(currentTemplate.style.top) - (this.isTileMap ? 0 : elementOffset.height / 2) + 'px';
+                        } else {
+                            currentTemplate.style.left = parseFloat(currentTemplate.style.left) + offSetLetValue + 'px';
+                            currentTemplate.style.top = parseFloat(currentTemplate.style.top) + offSetTopValue + 'px';
+                            currentTemplate.style.transform = 'translate(-50%, -50%)';
+                        }
                     }
                 }
             }

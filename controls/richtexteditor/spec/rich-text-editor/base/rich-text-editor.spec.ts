@@ -2753,6 +2753,39 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
+    describe('Inserting image after the Inline node testing for RTE elements', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let toolWrap: HTMLElement;
+        let view: HTMLElement;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({});
+            elem = rteObj.element;
+            toolWrap = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_wrapper');
+            view = rteObj.element.querySelector('#' + rteObj.element.id + 'rte-view');
+            done();
+        });
+        it('Inserting image after hr tags', () => {
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
+            (rteObj as any).inputElement.focus();
+            rteObj.executeCommand("insertHTML", "<hr>");
+            rteObj.executeCommand('insertImage', {
+                url: 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png',
+                cssClass: 'testingClass',
+                width: { minWidth: '200px', maxWidth: '200px', width: 180 },
+                height: { minHeight: '200px', maxHeight: '600px', height: 500 },
+                altText: 'testing image'
+            });
+            expect((rteObj.contentModule.getEditPanel() as any).childNodes[0].tagName).toBe('HR');
+            expect((rteObj.contentModule.getEditPanel() as any).childNodes[1].firstElementChild.tagName).toBe('IMG');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('RTE enablePersistence Properties', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -4288,6 +4321,70 @@ describe(' Paste action events', () => {
             expect(actionComplete).toBe(false);
             done();
         }, 10);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-52326 - Cannot cancel fullscreen event in Maximize', () => {
+    let rteObj: RichTextEditor;
+    let actionBegin: boolean = false;
+    let actionComplete: boolean = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Fullscreen mode testing</p>`,
+            toolbarSettings: {
+                items: ['FullScreen']
+            },
+            actionBegin: (e: any) => {
+                actionBegin = true;
+                e.cancel = true;
+            },
+            actionComplete: (e: any) => {
+                actionComplete = true;
+            }
+        });
+        done();
+    });
+    it(" Preventing the fullscreen mode with args.cancel as true", (done) => {
+        (rteObj as any).inputElement.focus();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        expect(actionBegin).toBe(true);
+        expect((rteObj as any).element.classList.contains("e-rte-full-screen")).toBe(false);
+        expect(actionComplete).toBe(false);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-52326 - Cannot cancel fullscreen event in Maximize', () => {
+    let rteObj: RichTextEditor;
+    let actionBegin: boolean = false;
+    let actionComplete: boolean = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Fullscreen mode testing</p>`,
+            toolbarSettings: {
+                items: ['FullScreen']
+            },
+            actionBegin: (e: any) => {
+                actionBegin = true;
+                e.cancel = false;
+            },
+            actionComplete: (e: any) => {
+                actionComplete = true;
+            }
+        });
+        done();
+    });
+    it(" Allowing the fullscreen mode with args.cancel as false", (done) => {
+        (rteObj as any).inputElement.focus();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        expect(actionBegin).toBe(true);
+        expect((rteObj as any).element.classList.contains("e-rte-full-screen")).toBe(true);
+        expect(actionComplete).toBe(true);
+        done();
     });
     afterAll(() => {
         destroy(rteObj);

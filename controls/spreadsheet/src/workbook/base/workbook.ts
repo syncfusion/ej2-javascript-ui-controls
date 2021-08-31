@@ -1032,12 +1032,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} colIndex - Specifies the colIndex.
      * @returns {void} - To set the value for row and col.
      */
-    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number): void {
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string): void {
         this.notify(
             events.workbookEditOperation,
             {
                 action: 'updateCellValue', address: [rowIndex - 1, colIndex - 1], value: value,
-                sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true
+                sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true, formula: formula
             });
     }
 

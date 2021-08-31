@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+## 19.2.59 (2021-08-31)
+
+### Chart
+
+- `#I340170` - Resolved console error thrown on mouse move after removing the chart.
+- Accumulation chart explode is now working properly.
+- `339227` - Logarithmic axis is now working fine for data value below 1.
+
 ## 19.2.57 (2021-08-24)
+
+### Chart
+
+#### Bug Fixes
+
+- `#337302` - Browser responsive issue while zooming the chart has been fixed.
+
+## 19.2.56 (2021-08-17)
 
 ### Chart
 

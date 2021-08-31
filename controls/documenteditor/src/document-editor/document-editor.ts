@@ -87,8 +87,8 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      * @aspType bool
      * @returns {boolean} - `true` use optimized text measuring approach to match Microsoft Word pagination; otherwise, `false`
      */
-     @Property(false)
-     public enableOptimizedTextMeasuring: boolean
+    @Property(false)
+    public enableOptimizedTextMeasuring: boolean
 
 }
 
@@ -259,13 +259,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public searchModule: Search;
-     /**
-      * @private
-      */
+    /**
+     * @private
+     */
     public optimizedModule: Optimized;
-      /**
-       * @private
-       */
+    /**
+     * @private
+     */
     public regularModule: Regular;
     private createdTriggered: boolean = false;
     /**
@@ -274,6 +274,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public collaborativeEditingModule: CollaborativeEditing;
     /**
      * Holds regular or optimized module based on DocumentEditorSettting `enableOptimizedTextMeasuring` property.
+     *
      * @private
      */
     public textMeasureHelper: Regular | Optimized
@@ -1042,7 +1043,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.element.style.width = formatUnit(this.width);
             }
         }
-        this.textMeasureHelper = (this.optimizedModule) ? this.optimizedModule : this.regularModule
+        this.textMeasureHelper = (this.optimizedModule) ? this.optimizedModule : this.regularModule;
         this.documentHelper.initializeComponents();
         this.openBlank();
         this.renderComplete();

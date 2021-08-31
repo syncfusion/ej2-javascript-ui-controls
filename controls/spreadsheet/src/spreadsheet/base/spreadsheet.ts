@@ -1607,7 +1607,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             cellIdx = getRangeIndexes(address);
             const prevELem: HTMLElement = this.getCell(cellIdx[0], cellIdx[1]);
             let classList: string[] = [];
-            for (let i: number = 0; i < prevELem.classList.length; i++) {
+            for (let i: number = 0; prevELem && i < prevELem.classList.length; i++) {
                 classList.push(prevELem.classList[i]);
             }
             const befArgs: BeforeHyperlinkArgs = { hyperlink: hyperlink, cell: address, cancel: false };
@@ -2027,7 +2027,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} colIndex - Specify the col index.
      * @returns {void} - To set value for row and col.
      */
-    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number): void {
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string): void {
         if (value === 'circular reference: ') {
             const circularArgs: { action: string, argValue: string } = {
                 action: 'isCircularReference', argValue: value
@@ -2035,7 +2035,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(formulaOperation, circularArgs);
             value = circularArgs.argValue;
         }
-        super.setValueRowCol(sheetId, value, rowIndex, colIndex);
+        super.setValueRowCol(sheetId, value, rowIndex, colIndex, formula);
         this.notify(
             editOperation, {
                 action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,

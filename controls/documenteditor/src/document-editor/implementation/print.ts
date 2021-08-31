@@ -58,7 +58,6 @@ export class Print {
         printWindow.focus();
         const interval: number = setInterval(
             () => {
-                // eslint-disable-next-line
                 if ((<{ ready: (Function) } & Window>printWindow).ready) {
                     printWindow.print();
                     printWindow.close();

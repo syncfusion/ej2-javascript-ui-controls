@@ -15,7 +15,7 @@ export interface TextSizeInfo {
 /**
  * @private
  */
- export interface FontSizeInfo {
+export interface FontSizeInfo {
     HeightFactor?: number
     BaselineFactor?: number
 }
@@ -28,7 +28,7 @@ export interface TextHeightInfo {
 /**
  * @private
  */
- export interface FontHeightInfo {
+export interface FontHeightInfo {
     [key: string]: FontSizeInfo
 }
 /**

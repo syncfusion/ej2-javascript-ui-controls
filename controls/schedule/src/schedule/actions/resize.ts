@@ -323,6 +323,7 @@ export class Resize extends ActionBase {
         const eventStart: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
         const eventEnd: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.endTime]).getTime());
         let resizeTime: Date;
+        let isDateHeader: boolean = false;
         if (this.parent.activeView.isTimelineView()) {
             const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
             let headerName: string = this.parent.currentView;
@@ -348,7 +349,9 @@ export class Resize extends ActionBase {
                     offsetValue += (this.actionObj.clone.offsetWidth - this.actionObj.cellWidth);
                 }
                 cellIndex = Math.floor(offsetValue / Math.floor((<HTMLElement>tr).offsetWidth / noOfDays));
-                cellIndex = isLeft ? cellIndex : this.parent.currentView === 'TimelineMonth' ? cellIndex + 1 : cellIndex;
+                isDateHeader =
+                    ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 && headerName === 'Date';
+                cellIndex = isLeft ? cellIndex : (this.parent.currentView === 'TimelineMonth' || isDateHeader) ? cellIndex + 1 : cellIndex;
                 isLastCell = cellIndex === tdCollections.length;
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
@@ -414,7 +417,7 @@ export class Resize extends ActionBase {
         } else {
             const isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
                 this.parent.activeViewOptions.timeScale.enable;
-            const resizeEnd: Date = (!isTimeViews && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
+            const resizeEnd: Date = ((!isTimeViews || isDateHeader) && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
                 util.addDays(resizeTime, 1) : resizeTime;
             this.actionObj.end = this.parent.activeViewOptions.timeScale.enable && this.parent.currentView !== 'Month' ?
                 this.calculateIntervalTime(resizeEnd) : resizeEnd;

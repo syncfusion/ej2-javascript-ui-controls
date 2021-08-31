@@ -61,8 +61,8 @@ export class CellFormat {
                         args.manualUpdate);
                 }
                 Object.assign(cell.style, args.style);
-                if(cell.firstElementChild && cell.firstElementChild.classList.contains("e-wrap-content")){
-                    let wrapEle= cell.firstElementChild as HTMLElement;
+                if (cell.firstElementChild && cell.firstElementChild.classList.contains('e-wrap-content')){
+                    const wrapEle: HTMLElement = cell.firstElementChild as HTMLElement;
                     Object.assign(wrapEle.style, args.style);
                 }
                 const CellElem: CellModel = getCell(args.rowIdx, args.colIdx, sheet); // Need to remove after adding span support to merge
@@ -182,7 +182,7 @@ export class CellFormat {
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string,
         sheet: SheetModel): void {
         if (first && first.includes('Column')) { return; }
-        let prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
+        const prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
         if (prevCell) {
             let model: CellModel = getCell(rowIdx, colIdx - 1, sheet, false, true);
             if ((!!model.rowSpan && model.rowSpan !== 1) || (!!model.colSpan && model.colSpan !== 1)) {

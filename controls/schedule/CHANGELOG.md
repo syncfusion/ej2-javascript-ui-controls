@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 19.2.57 (2021-08-24)
+## 19.2.59 (2021-08-31)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I339839` - An issue with the scheduler resize action is not working properly in timeline views has been fixed.
+- `#I338473` - An issue with the scheduler `showWeekend` property set to false appointments missing has been fixed.
+
+## 19.2.56 (2021-08-17)
 
 ### Schedule
 

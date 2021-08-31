@@ -676,20 +676,7 @@ export class DialogEdit {
             this.responsiveTabContent(id, ganttObj);
         }
         if (id === ganttObj.element.id + 'ResourcesTabContainer') {
-            const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0];
-            const resources: Object[] = this.ganttResources;
-            const currentViewData: Object[] = resourceTreeGrid.getCurrentViewRecords();
-            if (resources && resources.length > 0) {
-                currentViewData.forEach((data: CObject, index: number): void => {
-                    for (let i: number = 0; i < resources.length; i++) {
-                        if (data.taskData[ganttObj.resourceFields.id] === resources[i][ganttObj.resourceFields.id] &&
-                            !isNullOrUndefined(resourceTreeGrid.selectionModule) &&
-                            resourceTreeGrid.getSelectedRowIndexes().indexOf(index) === -1) {
-                            resourceTreeGrid.selectRow(index);
-                        }
-                    }
-                });
-            }
+            this.resourceSelection(id);
         } else if (id === ganttObj.element.id + 'NotesTabContainer') {
             ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as RichTextEditor).refresh();
         } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
@@ -1698,8 +1685,30 @@ export class DialogEdit {
             treeGridObj.allowFiltering = false;
             treeGridObj.editSettings.allowEditing = false;
         }
+        treeGridObj.dataBound = () => {
+            if (this.parent.editDialogFields.length >= 1 && this.parent.editDialogFields[0].type === 'Resources') {
+                const id: string = this.parent.element.id + 'ResourcesTabContainer';
+                this.resourceSelection(id);
+            }
+        }
         treeGridObj.appendTo(divElement);
         return divElement;
+    }
+    private resourceSelection(id: string) {
+        const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>this.parent.element.querySelector('#' + id)).ej2_instances[0];
+        let currentViewData: Object[] = resourceTreeGrid.getCurrentViewRecords();
+        let resources: Object[] = this.ganttResources;
+        if (resources && resources.length > 0) {
+            currentViewData.forEach((data: CObject, index: number): void => {
+                for (let i: number = 0; i < resources.length; i++) {
+                    if (data.taskData[this.parent.resourceFields.id] === resources[i][this.parent.resourceFields.id] &&
+                        !isNullOrUndefined(resourceTreeGrid.selectionModule) &&
+                        resourceTreeGrid.getSelectedRowIndexes().indexOf(index) === -1) {
+                        resourceTreeGrid.selectRow(index);
+                    }
+                }
+            });
+        }
     }
     private renderCustomTab(itemName: string): HTMLElement {
         return this.renderGeneralTab(itemName);

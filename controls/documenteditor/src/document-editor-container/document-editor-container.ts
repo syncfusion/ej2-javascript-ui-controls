@@ -549,7 +549,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Bottom margin': 'Bottom margin',
         'Left margin': 'Left margin',
         'Right margin': 'Right margin',
-        'Normal': 'Normal'
+        'Normal': 'Normal',
+        'Heading': 'Heading',
+        'Heading 1': 'Heading 1',
+        'Heading 2': 'Heading 2',
+        'Heading 3': 'Heading 3',
+        'Heading 4': 'Heading 4',
+        'Heading 5': 'Heading 5',
+        'Heading 6': 'Heading 6'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -648,6 +655,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 case 'layoutType':
                     if (this.documentEditor) {
                         this.documentEditor.layoutType = newModel.layoutType;
+                        if (newModel.layoutType === 'Continuous') {
+                            this.statusBar.togglePageLayout();
+                        } else {
+                            this.statusBar.toggleWebLayout();
+                        }
                     }
                     break;
                 case 'enableToolbar':

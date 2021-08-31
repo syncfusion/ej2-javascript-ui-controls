@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 19.2.59 (2021-08-31)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#339434` - Issue in tooltip has been resolved.
+
 ## 19.2.57 (2021-08-24)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#339511` - Issue in maintaining resource selection has been resolved.
+- `#338206` - Cleared warnings thrown in Firefox browser.
+
+## 19.2.56 (2021-08-17)
 
 ### Gantt
 

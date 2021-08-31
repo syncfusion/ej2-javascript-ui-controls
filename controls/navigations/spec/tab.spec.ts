@@ -10488,6 +10488,38 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('EJ2-52472 - Tab visible property not working on initial load', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Items - visible property checking', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1", "iconCss": "icon" }, content: "Content1" },
+                    { header: { "text": "item2", "iconCss": "icon" }, content: "Content2", visible: false }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("item1");
+            expect(element.querySelectorAll(".e-toolbar-item")[1].querySelector(".e-tab-text").innerHTML).toBe("item2");
+            expect(tab.items[0].header.iconCss).toEqual('icon');
+            expect(tab.items[1].header.iconCss).toEqual('icon');
+            expect(tab.element.querySelectorAll('.e-toolbar-item')[0].className).toBe('e-toolbar-item e-ileft e-template e-active');
+            expect(tab.element.querySelectorAll('.e-toolbar-item')[1].className).toBe('e-toolbar-item e-hidden e-ileft e-template');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

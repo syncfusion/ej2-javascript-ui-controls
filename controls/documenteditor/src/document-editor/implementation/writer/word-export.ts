@@ -1846,7 +1846,7 @@ export class WordExport {
         writer.writeStartElement('wp', 'anchor', this.wpNamespace);
         this.serializePictureAndShapeDistance(writer, picture);
         writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
-        writer.writeAttributeString(undefined, 'relativeHeight', undefined, picture.zOrderPosition ? picture.zOrderPosition.toString() : '0');
+        writer.writeAttributeString(undefined, 'relativeHeight', undefined, picture.zOrderPosition ? Math.abs(picture.zOrderPosition).toString() : '0');
         let behindText: boolean = (picture.textWrappingStyle && picture.textWrappingStyle === 'Behind');
         writer.writeAttributeString(undefined, 'behindDoc', undefined, behindText ? '1' : '0');
         const lockAnchor: string = (picture.LockAnchor) ? '1' : '0';
@@ -4816,7 +4816,7 @@ export class WordExport {
                     writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.type.toString().toLowerCase());
                     writer.writeEndElement();
                 }
-                writer.writeStartElement(undefined, 'defalut', this.wNamespace);
+                writer.writeStartElement(undefined, 'default', this.wNamespace);
                 writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.defaultValue);
                 writer.writeEndElement();
                 writer.writeStartElement(undefined, 'format', this.wNamespace);

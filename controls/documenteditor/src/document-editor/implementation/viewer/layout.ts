@@ -2261,6 +2261,15 @@ export class Layout {
             }
         }
         lineWidget.height = topMargin + height + bottomMargin;
+        if (isNullOrUndefined(paragraph.nextRenderedWidget) && paragraph.isInsideTable
+            && paragraph.previousRenderedWidget instanceof TableWidget && paragraph.isEmpty()
+            && (!((paragraph.childWidgets[0] as LineWidget).children.length > 0
+                && (paragraph.childWidgets[0] as LineWidget).children[0] instanceof ListTextElementBox)
+                || (paragraph.childWidgets[0] as LineWidget).children.length === 0)) {
+            //Special behavior for empty cell mark after nested table, preserved with zero height by default.
+            //Empty line is displayed in cell for the last empty paragraph (Cell mark - last paragraph in cell) after a nested table.
+            lineWidget.height = 0;
+        }
         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + lineWidget.height);
         //Clears the previous line elements from collection.
     }

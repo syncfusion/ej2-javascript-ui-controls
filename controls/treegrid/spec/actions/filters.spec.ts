@@ -8,7 +8,7 @@ import { Edit } from '../../src/treegrid/actions/edit';
 import { CellSaveEventArgs } from '../../src';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Query } from '@syncfusion/ej2-data';
-
+import { ITreeData } from '../../src/treegrid/base/interface';
 /**
  * Grid base spec 
  */
@@ -1049,6 +1049,56 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
           gridObj.grid.actionComplete = actionComplete;
           gridObj.query = new Query().search("Phase", ["taskName"]);
        });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+
+    describe('EJ2-51733: showCheckbox with filtering', () => {
+      let gridObj: TreeGrid;
+      let actionComplete: () => void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            filterSettings: {type: 'Excel', hierarchyMode: 'Child'},
+            autoCheckHierarchy: true,
+            columns: [
+              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+              { field: 'taskName', headerText: 'Task Name', showCheckbox: true, width: 250 },
+              { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+            ]
+          },
+          done
+        );
+      });
+      it('Filter using excel filter', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+           expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Allocate resources").toBe(true);
+           done();
+         }
+         gridObj.grid.actionComplete = actionComplete;
+         gridObj.filterByColumn("taskName","startswith","Allocate resources");
+      });
+      it('Check header checkbox', () => {
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-treeselectall')[0]).click();
+        expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).checkboxState).toBe("check");
+        expect(gridObj.getCheckedRecords().length).toBe(1);
+      });
+      it('Remove filter', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+          expect(gridObj.getRows().length == 36).toBe(true);
+          expect(gridObj.getCheckedRecords().length).toBe(1);
+          done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.clearFiltering();
+      });
       afterAll(() => {
         destroy(gridObj);
       });

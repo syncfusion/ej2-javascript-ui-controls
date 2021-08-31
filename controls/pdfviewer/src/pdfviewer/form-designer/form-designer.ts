@@ -2332,7 +2332,9 @@ export class FormDesigner {
             this.pdfViewerBase.disableTextSelectionMode();
         } else {
             this.enableDisableFormFieldsInteraction(false);
-            this.pdfViewer.textSelectionModule.enableTextSelectionMode();
+            if (this.pdfViewer.textSelectionModule) {
+                this.pdfViewer.textSelectionModule.enableTextSelectionMode();
+            }
         }
     }
 

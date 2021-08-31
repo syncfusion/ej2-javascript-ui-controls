@@ -1346,7 +1346,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: any, markerID: string, data: any,
-                               markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
+                               markerIndex: number, markerTemplate: HTMLElement, location: Point, transPoint: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
     templateFn = getTemplateFunction(eventArgs.template);
     if (templateFn && (templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false).length)) {
         const templateElement: HTMLCollection = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
@@ -1356,10 +1356,8 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
         for (let i: number = 0; i < markerElement.children.length; i++) {
             (<HTMLElement>markerElement.children[i]).style.pointerEvents = 'none';
         }
-        markerElement.style.left = ((maps.isTileMap ? location.x :
-            ((Math.abs(maps.baseMapRectBounds['min']['x'] - location.x)) * scale)) + offset.x) + 'px';
-        markerElement.style.top = ((maps.isTileMap ? location.y :
-            ((Math.abs(maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
+        markerElement.style.left = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x -  maps.mapAreaRect.x + 'px';
+        markerElement.style.top = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y - maps.mapAreaRect.y + 'px';
         markerTemplate.appendChild(markerElement);
         if (maps.layers[maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
             const staticMapOffset: ClientRect = getElementByID(maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
@@ -2265,7 +2263,8 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
         scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     } else {
         let zoomFact: number = mapObject.zoomSettings.zoomFactor === 0 ? 1 : mapObject.zoomSettings.zoomFactor;
-        const maxZoomFact: number = 10; zoomFact = zoomFact > maxZoomFact ? maxZoomFact : zoomFact;
+        const maxZoomFact: number = mapObject.zoomSettings.maxZoom;
+        zoomFact = zoomFact > maxZoomFact ? maxZoomFact : zoomFact;
         scaleFactor = zoomFact;
         const mapScale: number = mapObject.mapScaleValue === 0 ? 1 : mapObject.mapScaleValue > maxZoomFact
             ? maxZoomFact : mapObject.mapScaleValue;
@@ -3286,7 +3285,7 @@ export function compareZoomFactor(scaleFactor: number, maps: Maps): void {
 export function calculateZoomLevel(minLat: number, maxLat: number, minLong: number, maxLong: number,
                                    mapWidth: number, mapHeight: number, maps: Maps): number {
     let scaleFactor: number;
-    const maxZoomFact: number = 10;
+    const maxZoomFact: number = maps.zoomSettings.maxZoom;
     let applyMethodeZoom: number;
     const maxLatSin: number = Math.sin(maxLat * Math.PI / 180);
     const maxLatRad: number = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;

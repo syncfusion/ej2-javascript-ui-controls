@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.57 (2021-08-24)
+## 19.2.59 (2021-08-31)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I339402` - An issue with the tab `visible` property is not working on the initial load has been fixed.
+
+## 19.2.56 (2021-08-17)
 
 ### Sidebar
 

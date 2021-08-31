@@ -195,23 +195,22 @@ export class Tooltip {
         const leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
         let tooltipPositionX: number = postion.x;
         let tooltipPositionY: number = postion.y;
-        let tooltipUpdated: boolean = false;
         if (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
             while (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
-                tooltipPositionX = containerPosition.left + containerPosition.width - args.element.offsetWidth - 10;
+                tooltipPositionX = leftEnd - args.element.offsetWidth - 10;
                 args.element.style.left = tooltipPositionX + 'px';
             }
         } else {
             tooltipPositionX = tooltipPositionX + 10;
-        }
-        if ((topEnd < (tooltipPositionY + args.element.offsetHeight + 20)) && this.parent.chartPane.offsetHeight + 20 > tooltipPositionY) {
-            tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
-        } else {
-            tooltipUpdated = true;
-            tooltipPositionY = tooltipPositionY + 10;
+            args.element.style.left = tooltipPositionX + 'px';
         }
         if (window.innerHeight < args.element.offsetHeight + tooltipPositionY) {
-            tooltipPositionY = tooltipPositionY - args.element.offsetHeight - (tooltipUpdated ? 20 : 10);
+            tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
+        }
+        if ((topEnd < (tooltipPositionY + args.element.offsetHeight + 20))) {
+            tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
+        } else {
+            tooltipPositionY = tooltipPositionY + 10;
         }
         args.element.style.top = tooltipPositionY + 'px';
     }

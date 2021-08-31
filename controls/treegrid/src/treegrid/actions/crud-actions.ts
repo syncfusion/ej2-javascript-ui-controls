@@ -286,7 +286,12 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         if (control.enableVirtualization && isNullOrUndefined(record) && !isNullOrUndefined(child)) {
             record = getValue('uniqueIDCollection.' + child.parentUniqueID, control);
         }
-        record.hasChildRecords = false;
+        if (!isSelfReference && !isNullOrUndefined(record.childRecords) && record.childRecords.length) {
+            record.hasChildRecords = true;
+        }
+        else {
+            record.hasChildRecords = false;
+        }
         if (action === 'add' || action === 'batchsave') {
             record.expanded = true;
             record.hasChildRecords = true;

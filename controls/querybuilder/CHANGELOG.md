@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.57 (2021-08-24)
+## 19.2.59 (2021-08-31)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Improvements in Header Template support.
+
+## 19.2.51 (2021-08-03)
 
 ### QueryBuilder
 

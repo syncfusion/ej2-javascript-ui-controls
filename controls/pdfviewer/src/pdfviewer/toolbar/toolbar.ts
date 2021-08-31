@@ -1589,7 +1589,7 @@ export class Toolbar {
             this.toolbar.enableItems(this.textSelectItem.parentElement, false);
         }
         this.toolbar.enableItems(this.panItem.parentElement, true);
-        if (this.pdfViewer.interactionMode === 'TextSelection') {
+        if (this.pdfViewer.interactionMode === 'TextSelection' && this.pdfViewer.enableTextSelection) {
             this.selectItem(this.textSelectItem);
             this.deSelectItem(this.panItem);
         } else {

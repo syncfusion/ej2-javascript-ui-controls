@@ -571,8 +571,12 @@ export class Editor {
             this.deleteCommentWidgetInternal(comment);
             const commentStart: CommentCharacterElementBox = comment.commentStart;
             const commentEnd: CommentCharacterElementBox = comment.commentEnd;
-            this.removeInline(commentEnd);
-            this.removeInline(commentStart);
+            if (commentEnd.indexInOwner !== -1) {
+                this.removeInline(commentEnd);
+            }
+            if (commentStart.indexInOwner !== -1) {
+                this.removeInline(commentStart);
+            }
             commentStart.removeCommentMark();
         }
         if (this.editorHistory) {

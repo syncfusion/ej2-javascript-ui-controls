@@ -329,9 +329,12 @@ export class Clipboard {
                                         (isNullOrUndefined(cell.isLocked) || cell.isLocked === true)) {
                                         cell.isLocked = prevCell.isLocked;
                                     }
-                                    this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ? true
-                                        : y === selIdx[3], isExternal as boolean);
-                                    
+                                    if (cell.colSpan > 0 || isNullOrUndefined(cell.colSpan)) {
+                                        this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ?
+                                            true : y === selIdx[3], isExternal as boolean);
+                                    } else {
+                                        rfshRange[3] = rfshRange[3] - 1;
+                                    }
                                     const sId: number = this.parent.activeSheetIndex;
                                     const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
                                     const address: string = getCellAddress(x + l, colInd);
@@ -732,7 +735,14 @@ export class Clipboard {
             data += '<tr>';
             for (let j: number = range[1]; j <= range[3]; j++) {
                 cell = getCell(i, j, sheet);
-                data += '<td style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;"';
+                data += '<td';
+                if (cell.colSpan) {
+                    data += ' colspan="' + cell.colSpan + '"';
+                }
+                if (cell.rowSpan) {
+                    data += ' rowspan="' + cell.rowSpan + '"';
+                }
+                data += ' style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
                 if (cell && cell.format && cell.format !== 'General') {
                     // eslint-disable-next-line
                     data += cell.format.includes('"') ? " number-format='" + cell.format + "'" : ' number-format="' + cell.format + '"';
@@ -809,7 +819,8 @@ export class Clipboard {
                         cellStyle = this.getStyle(td, ele);
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                         td.textContent = td.textContent.replace(/\s+/g, ' ');
-                        if ((cellStyle as { whiteSpace: string }).whiteSpace) {
+                        if ((cellStyle as { whiteSpace: string }).whiteSpace &&
+                        (cellStyle as { whiteSpace: string }).whiteSpace !== 'nowrap') {
                             cells[j].wrap = true; delete cellStyle['whiteSpace'];
                         }
                         if (Object.keys(cellStyle).length) {
@@ -842,7 +853,7 @@ export class Clipboard {
                                     cell = cells[j].style ? { style: extend({}, cells[j].style) } : {};
                                     if (k !== i) { cell.rowSpan = i - k; }
                                     if (l !== j) { cell.colSpan = j - l; }
-                                    if (!(rows as RowModel[])[k]) { (rows as RowModel[])[k] = { cells: [] } }
+                                    if (!(rows as RowModel[])[k]) { (rows as RowModel[])[k] = { cells: [] }; }
                                     (rows as RowModel[])[k].cells[l] = cell;
                                 }
                             }
@@ -877,7 +888,8 @@ export class Clipboard {
                     if (col || cellStyle) {
                         cells[j] = {};
                         if (cellStyle) {
-                            if ((cellStyle as { whiteSpace: string }).whiteSpace) {
+                            if ((cellStyle as { whiteSpace: string }).whiteSpace &&
+                            (cellStyle as { whiteSpace: string }).whiteSpace !== 'nowrap') {
                                 cells[j].wrap = true;
                                 delete cellStyle['whiteSpace'];
                                 if (Object.keys(cellStyle).length) { cells[j].style = cellStyle; }

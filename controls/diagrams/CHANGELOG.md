@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.59 (2021-08-31)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I339487` - The issue "The connector drawing object does not snap to near by port" has been fixed.
+
 ## 19.2.57 (2021-08-24)
 
 ### Diagram

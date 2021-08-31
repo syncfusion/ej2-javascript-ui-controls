@@ -279,6 +279,10 @@ export class Zoom {
                     argsData.currentZoomFactor  *= (zoomRect.height / bounds.height);
                 }
             }
+            if (parseFloat(axis.zoomFactor.toFixed(3)) <= 0.001) {
+                argsData.currentZoomFactor = argsData.previousZoomFactor;
+                argsData.currentZoomPosition = argsData.previousZoomPosition;
+            }
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;

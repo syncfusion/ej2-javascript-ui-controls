@@ -32,29 +32,38 @@ export class FullScreen {
         }
         this.scrollableParent = getScrollableParent(this.parent.element);
         if (!this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
-            this.parent.trigger(events.actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
-            if (this.parent.toolbarSettings.enableFloating &&
-                !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
-                (this.parent.getToolbarElement() as HTMLElement).style.width = '100%';
-                (this.parent.getToolbarElement() as HTMLElement).style.top = '0px';
-            }
-            this.parent.element.classList.add(classes.CLS_FULL_SCREEN);
-            this.toggleParentOverflow(true);
-            this.parent.setContentHeight();
-            if (this.parent.toolbarModule) {
-                if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
-                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+            const evenArgs: { [key: string]: Object } = {
+                cancel: false,
+                requestType: 'Maximize',
+                targetItem: 'Maximize',
+                args: event
+            };
+            this.parent.trigger(events.actionBegin, evenArgs, (beginEventArgs: { [key: string]: Object }) => {
+                if (!beginEventArgs.cancel) {
+                    if (this.parent.toolbarSettings.enableFloating &&
+                        !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
+                        (this.parent.getToolbarElement() as HTMLElement).style.width = '100%';
+                        (this.parent.getToolbarElement() as HTMLElement).style.top = '0px';
+                    }
+                    this.parent.element.classList.add(classes.CLS_FULL_SCREEN);
+                    this.toggleParentOverflow(true);
+                    this.parent.setContentHeight();
+                    if (this.parent.toolbarModule) {
+                        if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
+                            this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                        }
+                        if (Browser.isDevice) {
+                            this.parent.toolbarModule.removeFixedTBarClass();
+                        }
+                        this.parent.toolbarModule.updateItem({
+                            targetItem: 'Maximize',
+                            updateItem: 'Minimize',
+                            baseToolbar: this.parent.getBaseToolbarObject()
+                        });
+                    }
+                    this.parent.trigger(events.actionComplete, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
                 }
-                if (Browser.isDevice) {
-                    this.parent.toolbarModule.removeFixedTBarClass();
-                }
-                this.parent.toolbarModule.updateItem({
-                    targetItem: 'Maximize',
-                    updateItem: 'Minimize',
-                    baseToolbar: this.parent.getBaseToolbarObject()
-                });
-            }
-            this.parent.trigger(events.actionComplete, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
+            });
         }
     }
 
@@ -72,27 +81,36 @@ export class FullScreen {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
-            this.parent.element.classList.remove(classes.CLS_FULL_SCREEN);
-            const elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
-            for (let i: number = 0; i < elem.length; i++) {
-                removeClass([elem[i]], ['e-rte-overflow']);
-            }
-            this.parent.trigger(events.actionBegin, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
-            this.parent.setContentHeight();
-            if (this.parent.toolbarModule) {
-                if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
-                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+            const evenArgs: { [key: string]: Object } = {
+                cancel: false,
+                requestType: 'Minimize',
+                targetItem: 'Minimize',
+                args: event
+            };
+            this.parent.trigger(events.actionBegin, evenArgs, (beginEventArgs: { [key: string]: Object }) => {
+                if (!beginEventArgs.cancel) {
+                    this.parent.element.classList.remove(classes.CLS_FULL_SCREEN);
+                    const elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
+                    for (let i: number = 0; i < elem.length; i++) {
+                        removeClass([elem[i]], ['e-rte-overflow']);
+                    }
+                    this.parent.setContentHeight();
+                    if (this.parent.toolbarModule) {
+                        if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
+                            this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                        }
+                        this.parent.toolbarModule.updateItem({
+                            targetItem: 'Minimize',
+                            updateItem: 'Maximize',
+                            baseToolbar: this.parent.getBaseToolbarObject()
+                        });
+                        if (Browser.isDevice && this.parent.inlineMode.enable) {
+                            this.parent.toolbarModule.addFixedTBarClass();
+                        }
+                    }
+                    this.parent.trigger(events.actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
                 }
-                this.parent.toolbarModule.updateItem({
-                    targetItem: 'Minimize',
-                    updateItem: 'Maximize',
-                    baseToolbar: this.parent.getBaseToolbarObject()
-                });
-                if (Browser.isDevice && this.parent.inlineMode.enable) {
-                    this.parent.toolbarModule.addFixedTBarClass();
-                }
-            }
-            this.parent.trigger(events.actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
+            });
         }
     }
 

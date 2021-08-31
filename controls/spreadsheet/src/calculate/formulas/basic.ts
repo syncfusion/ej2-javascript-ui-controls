@@ -791,10 +791,10 @@ export class BasicFormulas {
     }
 
     /**
-         * @hidden
-         * @param {string[]} args - specify the range.
-         * @returns {number | string} - Compute the unique.
-         */
+     * @hidden
+     * @param {string[]} args - specify the range.
+     * @returns {number | string} - Compute the unique.
+     */
     public ComputeUNIQUE(...args: string[]): number | string {
         const argArr: string[] = args; let result: string;
         if (isNullOrUndefined(args) || args[0] === '' || argArr.length > 3) {
@@ -955,6 +955,7 @@ export class BasicFormulas {
                         const splitValue: string[] = tmp[i].split('+');
                         if (i > 0) { actRowIdx++; actColIdx = this.parent.colIndex(actCell); }
                         for (let i: number = 0; i < splitValue.length; i++) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
                                                                              splitValue[i], actRowIdx, actColIdx);
                             if (splitValue[i + 1]) {
@@ -967,6 +968,7 @@ export class BasicFormulas {
                     for (let i: number = 0; i < tmp.length; i++) {
                         const splitValue: string[] = tmp[i].split('+');
                         for (let i: number = 0; i < splitValue.length; i++) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
                                                                              splitValue[i], actRowIdx, actColIdx);
                             if (splitValue[i + 1]) {
@@ -1008,6 +1010,7 @@ export class BasicFormulas {
                         getAlphalabel(actColIdx) + actRowIdx, true).indexOf('#SPILL!') > - 1) {
                         return;
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1, null, i, j);
                 }
             }

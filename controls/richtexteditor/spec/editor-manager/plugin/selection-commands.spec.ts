@@ -568,6 +568,43 @@ describe('Selection commands', () => {
     });
 });
 
+describe('EJ2-52289- Textcolor is removed for the range node, when removing the formats', () => {
+    //HTML value
+    let innervalue: string = `<p>Value <span style="text-decoration: underline;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Testing</span></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​</span></p><p><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><strong><em><span style="text-decoration: underline;">TextColorTesting</span></em></strong></span></p>`;
+    let rteObj: any;
+    let rteID: any;
+    let boldItem: any;
+    let italicItem: any;
+    let underlineItem: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            },
+            created: function() {
+                rteID = document.body.querySelector('.e-richtexteditor').id;
+                boldItem = document.body.querySelector('#' + rteID + '_toolbar_Bold')
+                italicItem = document.body.querySelector('#' + rteID + '_toolbar_Italic')
+                underlineItem = document.body.querySelector('#' + rteID + '_toolbar_Underline')
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Checking the fontColor for the node not being removed', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.lastElementChild.firstElementChild.lastElementChild.lastElementChild.lastElementChild.firstChild, rteObj.inputElement.lastElementChild.firstElementChild.lastElementChild.lastElementChild.lastElementChild.firstChild.textContent.length);
+        underlineItem.click();
+        italicItem.click();
+        boldItem.click();
+        expect((rteObj as any).inputElement.children[1].firstElementChild.style.color).toBe('rgb(68, 114, 196)');
+        done();
+    });
+});
+
 describe('Selection Testing with Multiple nodes', () => {
     //HTML value
     let innervalue: string = '<p><strong>​<em>​<span style="text-decoration: underline;">​Testing</span></em>'
@@ -687,6 +724,62 @@ describe('Removing multiple strong and em nodes Testing', () => {
         expect(rteObj.inputElement.childNodes[0].firstChild.nodeType).toBe(3);
         expect(rteObj.inputElement.childNodes[0].querySelectorAll('em').length).toBe(1);
         expect(rteObj.inputElement.childNodes[0].querySelectorAll('strong').length).toBe(1);
+        done();
+    });
+});
+
+describe('EJ2-52390 - When using the list which contains multiple spans inside will create a new list while applying background color', () => {
+    //HTML value
+    let innervalue: string = `<div id="div1"><ol>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>Stakeholders identificeren en groeperen;</span>
+    </span></li>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>Belangen van stakeholders met betrekking tot het managementsysteem bepalen;</span>
+    </span></li>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>Risico’s en kansen inschatten van belangen;</span>
+    </span></li>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>Acties om de risico’s en kansen op te pakken definiëren;</span>
+    </span></li>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>Doelstellingen bepalen op basis van belangen, risico’s, kansen en acties;</span>
+    </span></li>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>KPI’s koppelen aan doelstellingen, om de doelstellingen te concretiseren en meetbaar te maken;</span>
+    </span></li>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>Processen koppelen aan KPI’s, om te waarborgen dat deze KPI’s worden nageleefd;</span>
+    </span></li>
+    <li>
+      <span style="background-color:rgb(255, 255, 0)"><span>En sturingselementen koppelen aan de processen, om te sturen op basis van de informatie die wordt verkregen uit de processen.</span>
+    </span></li>
+  </ol></div>`;
+    let rteObj: any;
+    let parentDiv: HTMLDivElement;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['BackgroundColor']
+            }
+        });
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Applying background color for the range li nodes', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.children[0].firstElementChild.firstElementChild.firstElementChild.firstChild.firstChild, rteObj.inputElement.children[0].firstElementChild.lastElementChild.firstElementChild.firstChild.firstChild, 0, 125);
+        expect((rteObj as any).inputElement.children[0].firstElementChild.children[0].firstElementChild.style.backgroundColor).toBe('rgb(255, 255, 0)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv,  'rgb(246, 198, 206)');
+        expect((rteObj as any).inputElement.children[0].firstElementChild.children[0].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
+        expect((rteObj as any).inputElement.children[0].firstElementChild.children[1].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
+        expect((rteObj as any).inputElement.children[0].firstElementChild.children[2].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
+        expect((rteObj as any).inputElement.children[0].firstElementChild.children[3].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
         done();
     });
 });

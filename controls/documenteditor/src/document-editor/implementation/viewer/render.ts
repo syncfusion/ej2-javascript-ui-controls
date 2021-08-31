@@ -697,7 +697,7 @@ export class Renderer {
         let leftMargin: number = elementBox.margin.left;
         let format: WCharacterFormat = elementBox.listLevel.characterFormat;
         let breakCharacterFormat: WCharacterFormat = elementBox.line.paragraph.characterFormat;
-        let color: string = (format.fontColor === 'empty' || format.fontColor === '#00000000') ? breakCharacterFormat.fontColor : format.fontColor;
+        let color: string = format.hasValue('fontColor') ? format.fontColor : breakCharacterFormat.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
         let italic: string = '';
@@ -705,15 +705,15 @@ export class Renderer {
         if (this.documentHelper.isIosDevice && (elementBox.text === '\u25CF' || elementBox.text === '\u25CB')) {
             fontFamily = '';
         }
-        let fontSize: number = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
+        let fontSize: number = format.hasValue('fontSize') ? format.fontSize: breakCharacterFormat.fontSize;
 
-        let baselineAlignment: BaselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;
+        let baselineAlignment: BaselineAlignment = format.hasValue('baselineAlignment') ? format.baselineAlignment : breakCharacterFormat.baselineAlignment;
         bold = format.hasValue('bold') ? format.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
         italic = format.hasValue('italic') ? format.italic ? 'italic' : '' : breakCharacterFormat.italic ? 'italic' : '';
         fontSize = fontSize === 0 ? 0.5 : fontSize / (baselineAlignment === 'Normal' ? 1 : 1.5);
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
-        let strikethrough: Strikethrough = format.strikethrough === 'None' ? breakCharacterFormat.strikethrough : format.strikethrough;
-        let highlightColor: HighlightColor = format.highlightColor === 'NoColor' ? breakCharacterFormat.highlightColor :
+        let strikethrough: Strikethrough = format.hasValue('strikethrough') ? format.strikethrough : breakCharacterFormat.strikethrough;
+        let highlightColor: HighlightColor = format.hasValue('highlightColor') ? format.highlightColor : breakCharacterFormat.highlightColor;
             format.highlightColor;
         if (highlightColor !== 'NoColor') {
             if (highlightColor.substring(0, 1) !== '#') {
@@ -736,6 +736,7 @@ export class Renderer {
             let index: number = text.indexOf('.');
             text = text.substr(index) + text.substring(0, index);
         }
+        // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
         if (color === "empty" || color === '#00000000') {
             let bgColor: string = this.documentHelper.backgroundColor;
             this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);

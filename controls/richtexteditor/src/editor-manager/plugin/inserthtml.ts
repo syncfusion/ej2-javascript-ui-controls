@@ -124,6 +124,15 @@ export class InsertHtml {
             if (Browser.isIE) {
                 const frag: DocumentFragment = docElement.createDocumentFragment();
                 frag.appendChild(node); range.insertNode(frag);
+            } else if (range.startContainer.nodeType === 1 && range.startContainer.nodeName.toLowerCase() === 'hr'
+            && range.endContainer.nodeName.toLowerCase() === 'hr') {
+                const paraElem: Element = (range.startContainer as  HTMLElement).nextElementSibling;
+                if (paraElem) {
+                    if (paraElem.querySelector('br')) {
+                        detach(paraElem.querySelector('br'));
+                    }
+                    paraElem.appendChild(node);
+                }
             } else {
                 range.insertNode(node);
             }

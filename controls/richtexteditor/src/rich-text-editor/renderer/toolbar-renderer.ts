@@ -63,7 +63,7 @@ export class ToolbarRenderer implements IRenderer {
         if ( !this.parent.enabled) {
             return;
         }
-        if (!this.parent.readonly) {
+        if (!this.parent.readonly || isNullOrUndefined(args.item)) {
             this.parent.notify(events.toolbarClick, args);
         }
         this.parent.trigger('toolbarClick', args);

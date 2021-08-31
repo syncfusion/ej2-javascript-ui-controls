@@ -142,7 +142,7 @@ export class VirtualScroll {
     }
 
     private onVerticalScroll(args: IScrollArgs): void {
-        const idx: number = args.cur.idx; const height: number = args.cur.size;
+        let idx: number = args.cur.idx; const height: number = args.cur.size;
         const prevIdx: number = args.prev.idx;
         let idxDiff: number = Math.abs(idx - prevIdx);
         const threshold: number = this.parent.getThreshold('row');
@@ -155,12 +155,12 @@ export class VirtualScroll {
                         this.translateY = 0;
                         const frozenCol: number = this.parent.frozenColCount(sheet);
                         const frozenRow: number = this.parent.frozenRowCount(sheet);
-                        this.parent.viewport.topIndex = prevIdx - (threshold - frozenRow);
                         if (!args.preventScroll) {
+                            if (!frozenRow) { this.parent.viewport.topIndex = prevIdx - threshold; }
                             const colIndex: number = frozenCol ? getCellIndexes(sheet.topLeftCell)[1] : this.parent.viewport.leftIndex;
                             const fIndexes: number[] = frozenCol ? [frozenRow, this.parent.viewport.leftIndex + frozenCol] : [];
                             if (idxDiff < this.parent.viewport.rowCount + threshold) {
-                                lastIdx = this.parent.viewport.topIndex - 1;
+                                lastIdx = (this.parent.viewport.topIndex + frozenRow) - 1;
                                 startIdx = this.parent.skipHidden(frozenRow, lastIdx)[0];
                                 this.parent.viewport.topIndex = this.parent.renderModule.skipHiddenIdx(startIdx - frozenRow, true);
                                 const hiddenCount: number = this.hiddenCount(startIdx, lastIdx);
@@ -183,6 +183,9 @@ export class VirtualScroll {
                                 this.translate({ refresh: 'Row' });
                             }
                             focus(this.parent.element);
+                            idx = 0;
+                        } else {
+                            this.parent.viewport.topIndex = prevIdx - (threshold - frozenRow);
                         }
                     }
                     this.updateScrollCount(threshold, 'row');

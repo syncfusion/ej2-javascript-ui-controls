@@ -610,7 +610,7 @@ export class Edit {
             if ((this.selectedIndex > -1 || isVirtualization) && withinRange
           && (index || (this.parent.editSettings.newRowPosition === 'Child'
           || this.parent.editSettings.newRowPosition === 'Below'))) {
-                if (index >= rows.length) {
+                if (index >= rows.length - 1) {
                     index = rows.length - 2;
                 }
                 const r: string = 'rows';
@@ -724,7 +724,7 @@ export class Edit {
                 this.addRowRecord = this.parent.getSelectedRecords()[0];
             }
         }
-        if (this.isAddedRowByMethod) {
+        if (this.isAddedRowByMethod && args.index !== 0) {
             this.addRowRecord = this.parent.flatData[args.index];
         }
         if (this.parent.editSettings.newRowPosition === 'Child' && isNullOrUndefined(this.addRowRecord)

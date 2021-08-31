@@ -4389,6 +4389,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public retry(fileData?: FileInfo | FileInfo[], fromcanceledStage?: boolean, custom?: boolean): void {
         fileData = fileData ? fileData : this.filesData;
         const fileDataFiles: FileInfo[] = this.getFilesInArray(fileData);
+		if (this.sequentialUpload && this.isFirstFileOnSelection) {
+            this.isFirstFileOnSelection = false;
+        }
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     }
 

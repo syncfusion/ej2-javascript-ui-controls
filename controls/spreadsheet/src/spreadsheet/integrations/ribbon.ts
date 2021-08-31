@@ -1281,7 +1281,7 @@ export class Ribbon {
     private getBtn(id: string, name: string, bindEvent: boolean = true): Element {
         const btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`, isToggle: true });
         btnObj.createElement = this.parent.createElement;
-        btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}` }));
+        btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}`, attrs: { 'type': 'button' } }));
         if (bindEvent) {
             btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
         }
@@ -1536,7 +1536,8 @@ export class Ribbon {
     }
 
     private getFindDDb(id: string): HTMLElement {
-        const findToolbtn: HTMLElement = this.parent.createElement('button', { id: id + '_findbtn' }) as HTMLElement;
+        const findToolbtn: HTMLElement = this.parent.createElement(
+            'button', { id: id + '_findbtn', attrs: { 'type': 'button' } }) as HTMLElement;
         this.findDdb = new Button({
             cssClass: 'e-spreadsheet-find-ddb e-caret-hide',
             iconCss: 'e-icons e-search-icon'

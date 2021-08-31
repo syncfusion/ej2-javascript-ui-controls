@@ -64,23 +64,30 @@ export class WorkbookEdit {
         switch (action) {
         case 'updateCellValue':
             this.updateCellValue(
-                <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly);
+                <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly, <string>args.formula);
             break;
         }
     }
 
-    private checkDecimalPoint(value: string): string {
+    private checkDecimalPoint(value: string, formula?: string): string {
         if (Number(value)) {
             const decIndex: number = value.toString().indexOf(this.decimalSep) + 1;
-            const checkDec: boolean = value.toString().substr(decIndex).length <= 6;
-            value = checkDec ? decIndex < 7 ? value : (parseFloat(value)).toFixed(0) : decIndex > 7 ? (parseFloat(value)).toFixed(0) :
-                (parseFloat(value)).toFixed(6 - decIndex + 2);
+            const checkDec: boolean = value.toString().substr(decIndex).length <= 6
+            if (checkDec) {
+                if (!formula || formula.includes('RANDBETWEEN')) {
+                    value = decIndex < 7 ? value : (parseFloat(value)).toFixed(0);
+                } else {
+                    value = value.toString().length < 11 ? value : (decIndex < 11 ? parseFloat(value).toFixed(9 - decIndex + 2) : parseFloat(value).toFixed(0));
+                }
+            } else {
+                value = decIndex > 7 ? (parseFloat(value)).toFixed(0) : (parseFloat(value)).toFixed(6 - decIndex + 2);
+            }
         }
         return value;
     }
 
     private updateCellValue(
-        address: string | number[], value: string, sheetIdx?: number, isValueOnly: boolean = false): void {
+        address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string): void {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
@@ -144,7 +151,7 @@ export class WorkbookEdit {
             }
         } else {
             if (value && value.toString().indexOf(this.decimalSep) > -1) {
-                value = this.checkDecimalPoint(value);
+                value = this.checkDecimalPoint(value, formula);
             }
             cell.value = value;
         }

@@ -2482,7 +2482,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         if (target !== 'windowResize') {
-            setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
+            if (this.iframeSettings.enable) {
+                if (heightValue !== 'auto') {
+                    setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
+                }
+            } else {
+                setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
+            }
         }
         if (this.iframeSettings.enable && target === 'sourceCode') {
             const codeElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_RTE_CONTENT, this.element);
