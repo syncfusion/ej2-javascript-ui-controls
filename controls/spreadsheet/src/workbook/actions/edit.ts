@@ -139,7 +139,7 @@ export class WorkbookEdit {
             } else {
                 const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
                 this.parent.notify(checkUniqueRange, args);
-                if (!skipFormula && value !== '' && (!args.isUnique || value.indexOf('UNIQUE') > - 1)) {
+                if (!skipFormula && (!args.isUnique || value && value.toString().indexOf('UNIQUE') > - 1)) {
                     this.parent.notify(workbookFormulaOperation, eventArgs);
                 } else {
                     value = cell.value;

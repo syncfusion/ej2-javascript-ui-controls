@@ -11,7 +11,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { setRow } from '../../workbook/base/row';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../workbook/common/address';
-import { CellFormatArgs, ExtendedRange, getData } from '../../workbook/index';
+import { CellFormatArgs, DefineNameModel, ExtendedRange, getData } from '../../workbook/index';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, ColumnModel, Workbook } from '../../workbook/index';
@@ -199,8 +199,21 @@ export class DataValidation {
     private updateDataSource(cell: CellModel, validation: ValidationModel): { [key: string]: Object }[] {
         this.data = [];
         let count: number = 0;
-        const value: string = validation.value1;
+        let definedNames: DefineNameModel[] = this.parent.definedNames;
+        let value: string = validation.value1;
         const isRange: boolean = value.indexOf('=') !== -1;
+        if (definedNames.length > 0 && isRange) {
+            let listValue: string = value.split('=')[1];
+            for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
+                if (definedNames[idx].name === listValue) {
+                    let definedNameRange: string = definedNames[idx].refersTo;
+                    while (definedNameRange.includes("'")) {
+                        definedNameRange = definedNameRange.replace("'", '');
+                    }
+                    value = definedNameRange
+                }
+            }
+        }
         if (isRange) {
             const sheet: SheetModel = value.indexOf('!') > -1 ?
                 getSheet(this.parent as Workbook, getSheetIndex(this.parent as Workbook, value.split('=')[1].split('!')[0])) : this.parent.getActiveSheet();

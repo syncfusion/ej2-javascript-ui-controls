@@ -244,6 +244,7 @@ export class FocusStrategy {
     protected removeFocus(e?: FocusEvent): void {
         if (!this.currentInfo.element) { return; }
         removeClass([this.currentInfo.element, this.currentInfo.elementToFocus], ['e-focused', 'e-focus']);
+		this.currentInfo.element.tabIndex = -1;
     }
 
     /**

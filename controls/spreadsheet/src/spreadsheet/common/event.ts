@@ -52,8 +52,6 @@ export const cellNavigate: string = 'cellNavigate';
 /** @hidden */
 export const mouseUpAfterSelection: string = 'mouseUpAfterSelection';
 /** @hidden */
-export const selectionComplete: string = 'selectionComplete';
-/** @hidden */
 export const cMenuBeforeOpen: string = 'contextmenuBeforeOpen';
 /** @hidden */
 export const insertSheetTab: string = 'insertSheetTab';

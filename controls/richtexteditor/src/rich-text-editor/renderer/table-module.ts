@@ -103,14 +103,16 @@ export class Table {
     }
 
     private afterRender(): void {
-        this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-        this.parent.on(events.tableColorPickerChanged, this.setBGColor, this);
-        this.parent.on(events.mouseDown, this.cellSelect, this);
-        if (this.parent.tableSettings.resize) {
-            EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-        }
-        if (!Browser.isDevice && this.parent.tableSettings.resize) {
-            EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
+        if (isNullOrUndefined(this.contentModule)) {
+            this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
+            this.parent.on(events.tableColorPickerChanged, this.setBGColor, this);
+            this.parent.on(events.mouseDown, this.cellSelect, this);
+            if (this.parent.tableSettings.resize) {
+                EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+            }
+            if (!Browser.isDevice && this.parent.tableSettings.resize) {
+                EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
+            }
         }
     }
 
@@ -633,8 +635,8 @@ export class Table {
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
         return {
-            top: offset.top - parentOffset.top,
-            left: offset.left - parentOffset.left
+            top: elem.offsetTop,
+            left: elem.offsetLeft
         };
     }
 

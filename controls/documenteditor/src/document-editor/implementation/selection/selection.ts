@@ -8296,6 +8296,7 @@ export class Selection {
         } else if (event.item.text === locale.getConstant('OverwriteCells')) {
             this.owner.editor.applyTablePasteOptions('OverwriteCells');
         } else {
+            this.owner.editor.previousParaFormat = undefined;
             this.owner.editor.applyPasteOptions('KeepTextOnly');
         }
     }

@@ -287,7 +287,7 @@ export const excelQueryCellInfo: string = 'excelQueryCellInfo';
 /** @hidden */
 export const excelHeaderQueryCellInfo: string = 'excelHeaderQueryCellInfo';
 /** @hidden */
-export const exportDetailDataBound: string = 'exportdetaildatabound';
+export const exportDetailDataBound: string = 'exportDetailDataBound';
 /** @hidden */
 export const beforePdfExport: string = 'beforePdfExport';
 /** @hidden */
@@ -544,3 +544,5 @@ export const validateVirtualForm: string = 'validate-virtual-form';
 export const destroyChildGrid: string = 'destroy-child-grid';
 /** @hidden */
 export const stickyScrollComplete: string = 'sticky-scroll-complete';
+/** @hidden */
+export const captionActionComplete: string = 'infinite-group-collapse';

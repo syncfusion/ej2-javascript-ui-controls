@@ -145,7 +145,7 @@ export class WorkbookInsert {
                 if (isModel) { this.updateRangeModel(sheet.ranges); }
                 id = sheet.id;
                 this.parent.notify(workbookFormulaOperation, {
-                    action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id, index: id });
+                    action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id, sheetId: id });
             });
         }
         const insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {

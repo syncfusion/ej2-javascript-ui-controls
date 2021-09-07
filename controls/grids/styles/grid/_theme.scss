@@ -152,7 +152,7 @@
     .e-gridcontent .e-rowdragdrop,
     .e-gridheader .e-rowdragdrop,
     .e-emptyrow {
-      &:not(.e-editedbatchcell) {
+      &:not(.e-editedbatchcell):not(.e-updatedtd) {
         color: $grid-rowcell-color;
       }
     }

@@ -191,4 +191,49 @@ describe('Gantt Selection support', () => {
         }); 
 		
     });
+     describe('CR-issues', function () {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                },
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                allowSelection: true
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Insert key Testing after dialog opened', () => {
+            let addToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+            triggerMouseEvent(addToolbar, 'click');
+            let args: any = { action: 'addRow', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(0);
+        });
+    });
 });

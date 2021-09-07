@@ -4,14 +4,12 @@ import { IRenderer, IGrid, LazyLoadArgs, LazyLoadGroupArgs, NotifyArgs, IRow } f
 import { ServiceLocator } from '../services/service-locator';
 import { ContentRender } from './content-renderer';
 import { ReturnType } from '../base/type';
-import { PredicateModel } from '../base/grid-model';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
 import * as events from '../base/constant';
-import { isRowEnteredInGrid, parentsUntil, setDisplayValue } from '../base/util';
+import { isRowEnteredInGrid, parentsUntil, setDisplayValue, generateExpandPredicates, getPredicates, getGroupKeysAndFields } from '../base/util';
 import { Grid } from '../base/grid';
 import { RowRenderer } from '../renderer/row-renderer';
-import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { GroupModelGenerator, GroupedData } from '../services/group-model-generator';
 import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
@@ -55,7 +53,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private rowsByUid: { [x: number]: Row<Column>[] } = {};
     private objIdxByUid: { [x: number]: Row<Column>[] } = {};
     private initialGroupCaptions: { [x: number]: Row<Column>[] } = {};
-    private requestType: string[] = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete'];
+    private requestType: string[] = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete',
+        'filterbeforeopen', 'filterchoicerequest'];
 
     /** @hidden */
     public pageSize: number;
@@ -90,7 +89,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const oriIndex: number = this.getRowObjectIndexByUid(uid);
         const isRowExist: boolean = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
         const data: Row<Column> = rowsObject[oriIndex];
-        const key: { fields: string[], keys: string[] } = this.getGroupKeysAndFields(oriIndex, rowsObject);
+        const key: { fields: string[], keys: string[] } = getGroupKeysAndFields(oriIndex, rowsObject);
         const e: LazyLoadGroupArgs = { captionRowElement: tr, groupInfo: data, enableCaching: true, cancel: false };
         this.parent.trigger(events.lazyLoadGroupExpand, e, (args: LazyLoadGroupArgs) => {
             if (args.cancel) {
@@ -767,7 +766,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             childRow.lazyLoadCssClass = '';
             const isRowExist: boolean = rows[index + 1] ? childRow.indent === rows[index + 1].indent : false;
             this.scrollData = isRowExist ? this.getCacheRowsOnDownScroll(index + 1) : [];
-            const key: { fields: string[], keys: string[] } = this.getGroupKeysAndFields(capRowObjIdx, rows);
+            const key: { fields: string[], keys: string[] } = getGroupKeysAndFields(capRowObjIdx, rows);
             const args: LazyLoadGroupArgs = {
                 rowIndex: capRowEleIndex, makeRequest: !isRowExist, groupInfo: parentCapRow, fields: key.fields,
                 keys: key.keys, skip: this.childCount, take: this.pageSize, isScroll: true
@@ -817,7 +816,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 lastchild.lazyLoadCssClass = '';
             }
             this.scrollData = isRowExist ? this.getCacheRowsOnDownScroll(this.rowObjectIndex + 1) : [];
-            const query: { fields: string[], keys: string[] } = this.getGroupKeysAndFields(capRowObjIdx, rows);
+            const query: { fields: string[], keys: string[] } = getGroupKeysAndFields(capRowObjIdx, rows);
             const args: LazyLoadGroupArgs = {
                 rowIndex: capRowEleIndex, makeRequest: !isRowExist, groupInfo: parentCapRow, fields: query.fields,
                 keys: query.keys, skip: this.childCount, take: this.pageSize, isScroll: true
@@ -945,7 +944,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             this.scrollData = [];
             return;
         }
-        const key: { fields: string[], keys: string[] } = this.getGroupKeysAndFields(this.getRowObjectIndexByUid(parentCapRow.uid), rows);
+        const key: { fields: string[], keys: string[] } = getGroupKeysAndFields(this.getRowObjectIndexByUid(parentCapRow.uid), rows);
         const args: LazyLoadGroupArgs = {
             rowIndex: capRowEleIndex, makeRequest: false, groupInfo: parentCapRow, fields: key.fields,
             keys: key.keys, skip: this.childCount, take: this.pageSize, isScroll: true, scrollUp: true
@@ -1013,56 +1012,11 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         this.groupCache[page] = this.initialGroupCaptions[page] = extend([], e.data) as Row<Column>[];
     }
 
-    private getGroupKeysAndFields(index: number, rowsObject: Row<Column>[]): { fields: string[], keys: string[] } {
-        const fields: string[] = [];
-        const keys: string[] = [];
-        for (let i: number = index; i >= 0; i--) {
-            if (rowsObject[i].isCaptionRow && fields.indexOf((rowsObject[i].data as GroupedData).field) === -1
-                && (rowsObject[i].indent < rowsObject[index].indent || i === index)) {
-                fields.push((rowsObject[i].data as GroupedData).field);
-                keys.push((rowsObject[i].data as GroupedData).key);
-                if (rowsObject[i].indent === 0) {
-                    break;
-                }
-            }
-        }
-        return { fields: fields, keys: keys };
-    }
-
-    private generateExpandPredicates(fields: string[], values: string[]): Predicate {
-        let filterCols: PredicateModel[] = [];
-        for (let i: number = 0; i < fields.length; i++) {
-            const column: Column = this.parent.getColumnByField(fields[i]);
-            const value: string = values[i] === 'null' ? null : values[i];
-            const pred: {
-                predicate?: string, field?: string, type?: string, uid?: string
-                operator?: string, matchCase?: boolean, ignoreAccent?: boolean
-            } = {
-                field: fields[i], predicate: 'or', uid: column.uid, operator: 'equal', type: column.type,
-                matchCase: this.allowCaseSensitive, ignoreAccent: this.ignoreAccent
-            };
-            if (value === '' || isNullOrUndefined(value)) {
-                filterCols = filterCols.concat(CheckBoxFilterBase.generateNullValuePredicates(pred));
-            } else {
-                filterCols.push(extend({}, { value: value }, pred));
-            }
-        }
-        return CheckBoxFilterBase.getPredicate(filterCols);
-    }
-
-    private getPredicates(pred: Predicate): Predicate[] {
-        const predicateList: Predicate[] = [];
-        for (const prop of Object.keys(pred)) {
-            predicateList.push(<Predicate>pred[prop]);
-        }
-        return predicateList;
-    }
-
     private captionRowExpand(args: LazyLoadGroupArgs): void {
         const captionRow: Row<Column> = args.groupInfo;
         const level: number = this.parent.groupSettings.columns.indexOf((captionRow.data as GroupedData).field) + 1;
-        const pred: Predicate = this.generateExpandPredicates(args.fields, args.keys);
-        const predicateList: Predicate[] = this.getPredicates(pred);
+        const pred: Predicate = generateExpandPredicates(args.fields, args.keys, this);
+        const predicateList: Predicate[] = getPredicates(pred);
         const lazyLoad: Object = { level: level, skip: args.skip, take: args.take, where: predicateList };
         if (args.makeRequest) {
             const query: Query = this.parent.renderModule.data.generateQuery(true);

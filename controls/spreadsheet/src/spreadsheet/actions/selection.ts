@@ -4,13 +4,13 @@ import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClien
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
-import { BeforeSelectEventArgs, selectionComplete, getMoveEvent, getEndEvent, isTouchStart, isMouseUp } from '../common/index';
+import { BeforeSelectEventArgs, getMoveEvent, getEndEvent, isTouchStart, isMouseUp } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
 import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, removeDesignChart, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell } from '../../workbook/index';
-import { getIndexesFromAddress } from '../../workbook/common/address';
+import { getIndexesFromAddress, selectionComplete } from '../../workbook/common/index';
 
 
 /**

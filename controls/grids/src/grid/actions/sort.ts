@@ -367,7 +367,7 @@ export class Sort implements IAction {
             (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!(<any>this.parent).refreshing) {
+        if (!(<any>this.parent).refreshing && (this.parent.isDestroyed || !this.parent.allowSorting)) {
             this.clearSorting();
         }
         this.isModelChanged = true;
@@ -435,12 +435,13 @@ export class Sort implements IAction {
         this.currentTarget = e.target as Element;
         const direction: SortDirection = !target.getElementsByClassName('e-ascending').length ? 'Ascending' :
             'Descending';
+        this.isMultiSort = e.ctrlKey || this.enableSortMultiTouch ||
+            (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey);
         if (e.shiftKey || (this.sortSettings.allowUnsort && target.getElementsByClassName('e-descending').length)
             && !(gObj.groupSettings.columns.indexOf(field) > -1)) {
             this.removeSortColumn(field);
         } else {
-            this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch ||
-                 (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey));
+            this.sortColumn(field, direction, this.isMultiSort);
         }
     }
 

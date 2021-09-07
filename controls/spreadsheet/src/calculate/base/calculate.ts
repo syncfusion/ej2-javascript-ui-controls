@@ -689,7 +689,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     public clearFormulaDependentCells(cell: string): void {
         const dependentFormula: Map<string, string> = this.getDependentFormulaCells().get(cell);
-        if (dependentFormula != null) {
+        if (dependentFormula) {
             dependentFormula.forEach((value: string, key: string) => {
                 const s: string = key;
                 const dependent: string[] = this.getDependentCells().get(s);

@@ -1,4 +1,4 @@
-import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexByName, getSheetIndexFromId } from '../base/index';
+import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId } from '../base/index';
 import { getSingleSelectedRange, getCell, getSheetIndex } from '../base/index';
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
@@ -6,7 +6,7 @@ import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol } from '../common/index';
 import { workbookEditOperation, getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference } from '../common/index';
-import { getUniqueRange, DefineName } from '../common/index';
+import { getUniqueRange, DefineName, selectionComplete } from '../common/index';
 
 
 /**
@@ -134,6 +134,8 @@ export class WorkbookFormula {
             break;
         case 'unRegisterSheet':
             this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount, <boolean>args.propertyChange); break;
+        case 'initSheetInfo':
+            this.updateSheetInfo(); break;
         case 'refreshCalculate':
             if (<boolean>args.isFormula) {
                 args.value = this.autoCorrectFormula(
@@ -162,21 +164,21 @@ export class WorkbookFormula {
             this.renameUpdation(<string>args.value, <number>args.sheetId);
             break;
         case 'addSheet':
-            this.sheetInfo.push({ visibleName: <string>args.visibleName, sheet: <string>args.sheetName, index: <number>args.index });
+            this.sheetInfo.push({ visibleName: <string>args.visibleName, sheet: <string>args.sheetName, index: <number>args.sheetId });
             break;
         case 'getSheetInfo':
             args.sheetInfo = this.sheetInfo;
             break;
         case 'deleteSheetTab':
-            length = this.sheetInfo.length;
-            for (let i: number = 0; i < length; i++) {
-                if (this.sheetInfo[i].index === (args.index as number)) {
-                    args.sheetName = this.sheetInfo[i].sheet; this.sheetInfo.splice(i, 1); break;
+            for (let i: number = 0; i < this.sheetInfo.length; i++) {
+                if (this.sheetInfo[i].index === <number>args.sheetId) {
+                    const sheetName: string = this.sheetInfo[i].sheet; this.sheetInfo.splice(i, 1);
+                    const id: string = args.sheetId.toString();
+                    this.sheetDeletion(sheetName, id);
+                    this.calculateInstance.unregisterGridAsSheet(id, id);
+                    break;
                 }
             }
-            this.calculateInstance.unregisterGridAsSheet((args.index as number - 1).toString(), args.index);
-            this.calculateInstance.tokenCount = this.calculateInstance.tokenCount - 1;
-            this.sheetDeletion(<string>args.sheetName, <number>args.index, <number>args.index);
             break;
         case 'getReferenceError':
             args.refError = this.referenceError(); break;
@@ -210,8 +212,8 @@ export class WorkbookFormula {
     }
     private updateSheetInfo(): void {
         this.sheetInfo = [];
-        this.parent.sheets.forEach((sheet: SheetModel, idx: number) => {
-            this.sheetInfo.push({ visibleName: sheet.name, sheet: 'Sheet' + sheet.id, index: idx });
+        this.parent.sheets.forEach((sheet: SheetModel) => {
+            this.sheetInfo.push({ visibleName: sheet.name, sheet: 'Sheet' + sheet.id, index: sheet.id });
         });
     }
 
@@ -236,121 +238,83 @@ export class WorkbookFormula {
         }
     }
 
-    private sheetDeletion(delSheetName: string, sheetId: number, index: number): void {
+    private sheetDeletion(delSheetName: string, sheetId: string): void {
         const dependentCell: Map<string, string[]> = this.calculateInstance.getDependentCells();
-        const cellRef: string[] = [];
-        let fInfo: FormulaInfo = null;
-        let formulaVal: string = '';
-        let rowId: number; let colId: number;
-        dependentCell.forEach((value: string[], key: string) => {
-            cellRef.push(key);
-        });
-        this.removeSheetTokenIndex(formulaVal, index);
-        for (let i: number = 0; i < cellRef.length; i++) {
-            const dependentCellRef: string[] = this.calculateInstance.getDependentCells().get(cellRef[i]);
-            for (let j: number = 0; j < dependentCellRef.length; j++) {
-                fInfo = this.calculateInstance.getFormulaInfoTable().get(dependentCellRef[j]);
-                sheetId = parseInt(dependentCellRef[j].split('!')[1], 10) + 1;
-                if (!isNullOrUndefined(fInfo) && sheetId > -1) {
+        let fInfo: FormulaInfo; let formulaVal: string; let rowId: number; let colId: number; let token: string;
+        const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
+        dependentCell.forEach((dependentCellRefs: string[], cellRef: string) => {
+            dependentCellRefs.forEach((dependentCellRef: string): void => {
+                fInfo = this.calculateInstance.getFormulaInfoTable().get(dependentCellRef);
+                if (!isNullOrUndefined(fInfo)) {
                     formulaVal = fInfo.formulaText;
                     if (formulaVal.toUpperCase().indexOf(delSheetName.toUpperCase()) > -1) {
                         formulaVal = formulaVal.toUpperCase().split(delSheetName.toUpperCase() +
                             this.calculateInstance.sheetToken).join(this.referenceError());
-                        rowId = this.calculateInstance.rowIndex(dependentCellRef[j]);
-                        colId = this.calculateInstance.colIndex(dependentCellRef[j]);
-                        this.updateDataContainer([rowId - 1, colId - 1], { value: formulaVal, sheetId: sheetId, visible: false });
+                        rowId = this.calculateInstance.rowIndex(dependentCellRef);
+                        colId = this.calculateInstance.colIndex(dependentCellRef);
+                        token = dependentCellRef.slice(0, dependentCellRef.lastIndexOf(this.calculateInstance.sheetToken) + 1);
+                        this.updateDataContainer(
+                            [rowId - 1, colId - 1], { value: formulaVal, visible: false, sheetId: family.tokenToParentObject.has(token) ?
+                            Number(family.tokenToParentObject.get(token)) : parseInt(dependentCellRef.split('!')[1], 10) + 1 });
                         this.calculateInstance.refresh(fInfo.getParsedFormula());
                     }
                 }
-                if (delSheetName.split('Sheet')[1] === cellRef[i].split('!')[1]) {
-                    this.calculateInstance.getFormulaInfoTable().delete(cellRef[i]);
-                    this.calculateInstance.clearFormulaDependentCells(cellRef[i]);
+                token = cellRef.slice(0, cellRef.lastIndexOf(this.calculateInstance.sheetToken) + 1);
+                if (sheetId === (family.tokenToParentObject.has(token) ? family.tokenToParentObject.get(token) :
+                    cellRef.split('!')[1])) {
+                    this.calculateInstance.getFormulaInfoTable().delete(cellRef);
+                    this.calculateInstance.clearFormulaDependentCells(cellRef);
                 }
-            }
-        }
-    }
-    private removeSheetTokenIndex(value: string, index: number): string {
-        const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(this.calculateInstance.grid);
-        family.sheetNameToToken.delete(index.toString());
-        family.sheetNameToParentObject.delete(index.toString());
-        family.parentObjectToToken.delete(index.toString());
-        family.tokenToParentObject.delete('!' + (index - 1).toString() + '!');
-        return value;
+            });
+        });
     }
 
-    private renameUpdation(name: string, sheetIdx: number): void {
-        const dependentCellRef: Map<string, string[]> = this.calculateInstance.getDependentCells();
-        const cellRef: string[] = [];
-        let fInfo: FormulaInfo;
-        let formulaVal: string = '';
-        const savedTokens: number[] = [];
-        let isSheetRenamed: boolean = false;
-        let rowIndex: number; let colIndex: number; let sheetIndex: number;
-        dependentCellRef.forEach((value: string[], key: string) => {
-            cellRef.push(key);
-        });
+    private renameUpdation(name: string, sheetId: number): void {
+        const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId.toString());
+        let formulaVal: string; let token: string;
         for (let i: number = 0; i < this.sheetInfo.length; i++) {
-            if (this.sheetInfo[i].index === sheetIdx) {
+            if (this.sheetInfo[i].index === sheetId) {
                 this.sheetInfo[i].visibleName = name;
+                this.calculateInstance.getFormulaInfoTable().forEach((formulaInfo: FormulaInfo, cellRef: string): void => {
+                    if (formulaInfo.formulaText.toUpperCase().indexOf(this.sheetInfo[i].sheet.toUpperCase()) > -1) {
+                        formulaVal = formulaInfo.formulaText.toUpperCase().split(this.sheetInfo[i].sheet.toUpperCase()).join(name);
+                        token = cellRef.slice(0, cellRef.lastIndexOf(this.calculateInstance.sheetToken) + 1);
+                        this.updateDataContainer(
+                            [this.calculateInstance.rowIndex(cellRef) - 1, this.calculateInstance.colIndex(cellRef) - 1],
+                            { value: formulaVal, sheetId: family.tokenToParentObject.get(token) ?
+                            Number(family.tokenToParentObject.get(token)) : sheetId, visible: true });
+                    }
+                })
                 break;
-            }
-        }
-        const sheetNames: { visibleName: string, sheet: string }[] = this.sheetInfo;
-        for (let i: number = 0; i < cellRef.length; i++) {
-            const dependentCells: string[] = this.calculateInstance.getDependentCells().get(cellRef[i]);
-            for (let j: number = 0; j < dependentCells.length; j++) {
-                fInfo = this.calculateInstance.getFormulaInfoTable().get(dependentCells[j]);
-                formulaVal = fInfo.formulaText;
-                for (let s: number = 0; s < sheetNames.length; s++) {
-                    if (sheetNames[s].visibleName !== sheetNames[s].sheet) {
-                        const name: string = sheetNames[s].sheet.toUpperCase();
-                        if (formulaVal.toUpperCase().indexOf(name) > -1) {
-                            formulaVal = formulaVal.toUpperCase().split(name).join(s + '/');
-                            savedTokens.push(s);
-                            isSheetRenamed = true;
-                        }
-                    }
-                }
-                if (isSheetRenamed) {
-                    for (let k: number = 0; k < savedTokens.length; k++) {
-                        formulaVal = formulaVal.split(savedTokens[k].toString() + '/').join(sheetNames[savedTokens[k]].visibleName);
-                    }
-                    rowIndex = this.calculateInstance.rowIndex(dependentCells[j]);
-                    colIndex = this.calculateInstance.colIndex(dependentCells[j]);
-                    sheetIndex = getSheetIndexByName(
-                        this.parent, ('Sheet') + (parseInt(dependentCells[j].split('!')[1], 10) + 1), this.sheetInfo);
-                    this.updateDataContainer([rowIndex - 1, colIndex - 1], { value: formulaVal, sheetId: sheetIndex, visible: true });
-                }
             }
         }
     }
 
     private updateDataContainer(indexes: number[], data: { value: string, sheetId: number, visible?: boolean }): void {
-        const rowIndex: number = indexes[0];
-        const colIndex: number = indexes[1];
-        let sheetData: RowModel[];
-        let rowData: RowModel;
-        let colObj: CellModel;
-        const len: number = this.parent.sheets.length;
-        for (let i: number = 0; i < len; i++) {
+        let sheet: SheetModel; let rowData: RowModel; let colObj: CellModel;
+        for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
             if (this.parent.sheets[i].id === data.sheetId) {
-                sheetData = this.parent.sheets[i].rows;
-                break;
-            }
-        }
-        if (!isNullOrUndefined(data)) {
-            if (rowIndex in sheetData) {
-                rowData = sheetData[rowIndex];
-                if (colIndex in rowData.cells) {
-                    colObj = rowData.cells[colIndex];
-                    colObj.formula = data.value;
-                    colObj.value = data.visible ? colObj.value : this.referenceError();
+                sheet = this.parent.sheets[i];
+                if (indexes[0] in sheet.rows) {
+                    rowData = sheet.rows[indexes[0]];
+                    if (indexes[1] in rowData.cells) {
+                        colObj = rowData.cells[indexes[1]];
+                        colObj.formula = data.value;
+                        if (data.visible) {
+                            if (i === this.parent.activeSheetIndex && sheet.activeCell === getCellAddress(indexes[0], indexes[1])) {
+                                this.parent.notify(selectionComplete, {});
+                            }
+                        } else {
+                            colObj.value = this.referenceError();
+                        }
+                    } else {
+                        rowData.cells[indexes[1]] = colObj = {};
+                    }
                 } else {
-                    rowData.cells[colIndex] = colObj = {};
+                    rowData = sheet.rows[indexes[0]] = {};
+                    rowData[indexes[1]] = colObj = {};
                 }
-            } else {
-                rowData = sheetData[rowIndex] = {};
-                rowData[colIndex] = colObj = {};
+                break;
             }
         }
     }
@@ -423,12 +387,12 @@ export class WorkbookFormula {
     private refreshCalculate(
         rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): void {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
-        let sheetName: string = sheet.id + '';
+        let sheetId: string = sheet.id + '';
         if (isFormula) {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
-            this.calculateInstance.valueChanged(sheetName, cellArgs, true, usedRange, isRefreshing);
+            this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing);
             const referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true) {
                 let rowId: number;
@@ -440,24 +404,22 @@ export class WorkbookFormula {
                         rowId = this.calculateInstance.rowIndex(referenceCollection[i]);
                         colId = this.calculateInstance.colIndex(referenceCollection[i]);
                         refValue = this.calculateInstance.randomValues.get(referenceCollection[i]);
-                        sheetName = (parseFloat(this.calculateInstance.getSheetToken(
+                        sheetId = (parseFloat(this.calculateInstance.getSheetToken(
                             referenceCollection[i]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
                         const tempArgs: ValueChangedArgs = new ValueChangedArgs(rowId, colId, refValue);
-                        this.calculateInstance.valueChanged(sheetName, tempArgs, true);
+                        this.calculateInstance.valueChanged(sheetId, tempArgs, true);
                     }
                 }
             }
         } else {
-            const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetName);
+            const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
             let cellRef: string = getColumnHeaderText(colIdx + 1) + (rowIdx + 1);
             if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
-                cellRef = family.parentObjectToToken.get(sheetName) + cellRef;
+                cellRef = family.parentObjectToToken.get(sheetId) + cellRef;
             }
             if (this.calculateInstance.getFormulaInfoTable().has(cellRef)) {
                 this.calculateInstance.getFormulaInfoTable().delete(cellRef);
-                if (this.calculateInstance.getDependentCells().has(cellRef)) {
-                    this.calculateInstance.clearFormulaDependentCells(cellRef);
-                }
+                this.calculateInstance.clearFormulaDependentCells(cellRef);
             }
             this.calculateInstance.getComputedValue().clear();
             this.calculateInstance.refresh(cellRef);

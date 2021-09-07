@@ -3012,4 +3012,8 @@
     height: $pv-handwritten-sign-height;
     width: $pv-handwritten-sign-width;
   }
+
+  .e-pv-toolbar-scroll .e-toolbar-pop.e-popup-open {
+    overflow: auto;
+  }
 }

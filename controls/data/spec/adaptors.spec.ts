@@ -2,7 +2,7 @@
  * Test case for dataManager
  */
 import { DataManager, ReturnOption, RequestOptions } from '../src/manager';
-import { JsonAdaptor, RemoteSaveAdaptor, WebMethodAdaptor, UrlAdaptor, CustomDataAdaptor } from '../src/adaptors';
+import { JsonAdaptor, RemoteSaveAdaptor, WebMethodAdaptor, UrlAdaptor, CustomDataAdaptor, GraphQLAdaptor } from '../src/adaptors';
 import { ODataAdaptor, ODataV4Adaptor, WebApiAdaptor, CacheAdaptor } from '../src/adaptors';
 import { Query, Predicate } from '../src/query';
 import { DataUtil } from '../src/util';
@@ -3954,4 +3954,70 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
             });
         });
 
+        describe('GraphQLAdaptor Adaptor', () => {
+            let dataManager: DataManager;
+            let result: any;
+            let data: Object = {
+                data: {
+                    getOrders: {
+                        result: [
+                            { OrderID: 10248, CustomerID: 'VINET', EmployeeID: 7, Freight: 32.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' },
+                            { OrderID: 10249, CustomerID: 'AANAR', EmployeeID: 2, Freight: 11.61, Guid: 'db2d2186-1c29-4d1e-88ef-a127f521b9c6' },
+                            { OrderID: 10250, CustomerID: 'VICTE', EmployeeID: 7, Freight: 65.83, Guid: '6F9619FF-8B86-D011-B42D-00C04FC964FF' },
+                            { OrderID: 10251, CustomerID: 'VINET', EmployeeID: 7, Freight: 70.63, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' },
+                            { OrderID: 10252, CustomerID: 'SUPRD', EmployeeID: 6, Freight: 45.45, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c9' }
+                        ],
+                        count: 5
+                    }
+                }
+            };
+            describe('Get Data', () => {
+                let adaptor = new GraphQLAdaptor({
+                    response: {
+                        result: 'getOrders.result'
+                    },
+                    query: `query DataFetch($datamanager: String) {
+                        getOrders(datamanager: $datamanager) {
+                            count,
+                            result{OrderID, CustomerID, EmployeeID, ShipCity, ShipCountry} 
+                         }
+                    }`,
+                });
+                beforeAll((done: Function) => {
+                    jasmine.Ajax.install();
+                    dataManager = new DataManager({
+                        url: 'Home/Employee',
+                        adaptor: adaptor
+                    });
+                    let promise: Promise<Object> = dataManager.executeQuery(new Query().page(2, 3).take(5));
+                    let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
+                        'status': 200,
+                        'contentType': 'application/json',
+                        'responseText': JSON.stringify(data)
+                    });
+                    promise.then((e: { result: {result: Object[], count: number} }) => {
+                        result = e.result;
+                        done();
+                    });
+                });
+                afterAll(() => {
+                    jasmine.Ajax.uninstall();
+                });
+                it('check length of the data', () => {
+                    expect(result.length).toBe(5);
+                });
+                it('check the ProcessData method', () => {
+                    let query: Query = new Query().skip(2).take(2).select(['OrderID', 'CustomerID', 'EmployeeID']).where('EmployeeID', 'equal', 7);
+                    let datamanager: Object = new UrlAdaptor().processQuery(new DataManager({ url: '' }), query);
+                    let dm: Object = JSON.parse(datamanager['data']);
+                    dm['where'] = JSON.stringify(dm['where']);
+                    let data: Object[] = DataUtil.processData(dm, result) as any;
+                    expect(data.length).toBe(1);
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+        });
     });

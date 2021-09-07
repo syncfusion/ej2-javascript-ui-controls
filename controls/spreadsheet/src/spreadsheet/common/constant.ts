@@ -34,6 +34,22 @@ export const fillColor: { [key: string]: string[] } = {
     ]
 };
 
+/** @hidden */
+export const keyCodes: { [key: string]: number } ={
+    UP: 38,
+    DOWN: 40,
+    LEFT: 37,
+    RIGHT: 39,
+    FIRSTALPHABET: 65,
+    LASTALPHABET: 90,
+    SPACE: 32,
+    BACKSPACE: 8,
+    TAB: 9,
+    DELETE: 46,
+    ENTER: 13,
+    ESC: 27
+};
+
 /**
  * Default locale text
  *

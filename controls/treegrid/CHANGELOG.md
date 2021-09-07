@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.60 (2021-09-07)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I339350` - Text content is displayed properly when allowTextWrap and checkbox column is enabled.
+
 ## 19.2.59 (2021-08-31)
 
 ### Tree Grid

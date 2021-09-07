@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.60 (2021-09-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#338402` - Now, the extra lines are not shown in PDF documents in the Firefox browser.
+
 ## 19.2.57 (2021-08-24)
 
 ### PDF Viewer

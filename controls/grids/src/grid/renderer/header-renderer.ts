@@ -795,7 +795,7 @@ export class HeaderRender implements IRenderer {
             div.appendChild(toolbarItems);
             gObj.element.insertBefore(div, this.parent.element.querySelector('.' + literals.gridHeader));
         } else {
-            if (!gObj.toolbar) {
+            if (gObj.enableAdaptiveUI && !gObj.toolbar) {
                 gObj.getContent().classList.add('e-responsive-header');
             }
         }

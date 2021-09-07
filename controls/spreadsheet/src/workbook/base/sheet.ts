@@ -642,7 +642,8 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
             }
         }
         context.createSheet(sheetIndex + 1, [sheet]);
-        context.notify(workbookFormulaOperation, { action: 'addSheet', sheetName: 'Sheet' + sheet.id, visibleName: sheet.name });
+        context.notify(
+            workbookFormulaOperation, { action: 'addSheet', sheetName: 'Sheet' + sheet.id, visibleName: sheet.name, sheetId: sheet.id });
         context.setProperties({ activeSheetIndex: sheetIndex + 1 }, true);
         context.notify(moveOrDuplicateSheet, { refresh: true, isDuplicate: true });
         if (action) {

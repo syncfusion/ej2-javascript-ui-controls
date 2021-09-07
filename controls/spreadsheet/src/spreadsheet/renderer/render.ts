@@ -34,9 +34,7 @@ export class Render {
         if (this.parent.showSheetTabs) {
             this.parent.notify(sheetTabs, null);
         } else { // for formula calculation
-            const sheetName: string = getSheetName(this.parent as Workbook, 0);
-            const arg: { [key: string]: Object } = { action: 'addSheet', sheetName: 'Sheet1', index: 1, visibleName: sheetName };
-            this.parent.notify(workbookFormulaOperation, arg);
+            this.parent.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
             this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
         }
         if (this.parent.isMobileView()) {

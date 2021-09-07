@@ -281,6 +281,11 @@ export class DataManager {
             return childReq;
         };
         let fnSuccess: Function = (data: string | Object, request: Ajax) => {
+            if (this.isGraphQLAdaptor(this.adaptor)) {
+                if (!isNullOrUndefined(data['errors'])) {
+                    return fnFail(data['errors'], request);
+                }
+            }
             if (this.isCustomDataAdaptor(this.adaptor)) {
                 request = extend({}, this.ajaxReqOption, request) as Ajax;
             }
@@ -409,6 +414,11 @@ export class DataManager {
                 this.beforeSend(ajax.httpRequest, ajax);
             };
             ajax.onSuccess = (data: string | Object, request: Ajax) => {
+                if (this.isGraphQLAdaptor(this.adaptor)) {
+                    if (!isNullOrUndefined(data['errors'])) {
+                        ajax.onFailure(JSON.stringify(data['errors']));
+                    }
+                }
                 deff.resolve(this.adaptor.processResponse(
                     data, this, null, request.httpRequest, request, changes, args));
             };
@@ -516,7 +526,18 @@ export class DataManager {
             (<{ getModuleName?: Function }>this.adaptor).getModuleName() === 'CustomDataAdaptor';
     }
 
+    private isGraphQLAdaptor(dataSource: AdaptorOptions): boolean {
+        return (<{ getModuleName?: Function }>this.adaptor).getModuleName &&
+            (<{ getModuleName?: Function }>this.adaptor).getModuleName() === 'GraphQLAdaptor';
+    }
+
     private successFunc(record: string | Object, request: Ajax): void {
+        if (this.isGraphQLAdaptor(this.adaptor)) {
+            let data: Object = JSON.parse(record as string);
+            if (!isNullOrUndefined(data['errors'])) {
+                this.failureFunc(JSON.stringify(data['errors']));
+            }
+        }
         if (this.isCustomDataAdaptor(this.adaptor)) {
             request = extend({}, this.ajaxReqOption, request) as Ajax;
         }

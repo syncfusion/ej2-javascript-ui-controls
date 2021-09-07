@@ -110,14 +110,28 @@ export class ImageCommand {
             const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
             const imgElm: Element = (e.value === 'Replace' || isReplaced) ? (e.item.selectParent[0] as Element) :
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
+            let preventLoadCall: boolean = false;
             imgElm.addEventListener('load', () => {
-                e.callBack({
-                    requestType: 'Images',
-                    editorMode: 'HTML',
-                    event: e.event,
-                    range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                    elements: [imgElm]
-                });
+                if (e.value === 'Replace' || isReplaced) {
+                    if (!preventLoadCall) {
+                        e.callBack({
+                            requestType: 'Images',
+                            editorMode: 'HTML',
+                            event: e.event,
+                            range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                            elements: [imgElm]
+                        });
+                        preventLoadCall = true;
+                    }
+                } else {
+                    e.callBack({
+                        requestType: 'Images',
+                        editorMode: 'HTML',
+                        event: e.event,
+                        range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                        elements: [imgElm]
+                    });
+                }
             });
         }
     }

@@ -6,6 +6,7 @@ import { getValue } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Group } from '../../../src/grid/actions/group';
+import { LazyLoadGroup } from '../../../src/grid/actions/lazy-load-group';
 import { Page } from '../../../src/grid/actions/page';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Freeze } from '../../../src/grid/actions/freeze';
@@ -18,7 +19,7 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
 import * as events from '../../../src/grid/base/constant';
 
-Grid.Inject(Filter, Page, Selection, Group, Freeze, Sort);
+Grid.Inject(Filter, Page, Selection, Group, LazyLoadGroup, Freeze, Sort);
 
 let getActualProperties: Function = (obj: any): any => {
     if (obj instanceof ChildProperty) {
@@ -1054,5 +1055,79 @@ describe('EJ2-51101 Custom excel filter Radio button alignment issue => ', () =>
         destroy(gridObj);
         gridObj = null;
         actionComplete = null;
+    });
+});
+
+
+describe('EJ2-52268 Filtering array of values on date column through filterByColumn method is not working => ', () => {
+    let gridObj: Grid; 
+    let actionComplete: (args: any) => void;
+    let data: object[] = [ { OrderID: 10248, CustomerID: 'VINET', OrderDate: new Date('08/16/2021') },
+                            { OrderID: 10249, CustomerID: 'TOMSP', OrderDate: new Date('08/18/2021') },
+                            { OrderID: 10250, CustomerID: 'HANAR', OrderDate: new Date('08/19/2021') },
+                            { OrderID: 10251, CustomerID: 'VICTE', OrderDate: new Date('08/22/2021') }];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 140,  textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 150, format:'yyyy/MM/dd', textAlign:'Right' },
+                ],
+                actionComplete : actionComplete
+            }, done);
+        });    
+        it('checking the filterByColumn in mutiple value', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('OrderDate', 'equal', [new Date('08/16/2021'), new Date('08/18/2021')]);
+        });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = data = null;
+    });
+});
+
+describe('EJ2-52360 => In lazyload grouping enabled grid while hiding columns in column chooser throws script error => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                allowFiltering: true,
+                groupSettings: { enableLazyLoading: true },
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'OrderID', type: 'number', visible: true },
+                    { field: 'EmployeeID', type: 'number' },
+                    { field: 'Freight', format: 'C2', type: 'number' },
+                    { field: 'ShipCountry' },
+                    { field: 'OrderDate', format: 'yMd', type: 'date' }],
+            }, done);
+    });
+    
+    it('checking the rowsObject length', (done: Function) => {
+        gridObj.actionComplete = actionComplete = (args?: any): void => {
+            if (args.requestType === "filterchoicerequest") {
+                expect(gridObj.getRowsObject().length).not.toBe(0);
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[1] as any).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
     });
 });

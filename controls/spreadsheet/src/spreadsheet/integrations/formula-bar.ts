@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs, focus } from '../common/index';
+import { formulaBar, locale, enableFormulaInput, DialogBeforeOpenEventArgs, focus } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
 import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula, Workbook, getCell } from '../../workbook/index';
@@ -12,7 +12,7 @@ import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, e
 import { intToDate } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
-import { workbookFormulaOperation } from '../../workbook/common/event';
+import { workbookFormulaOperation, selectionComplete } from '../../workbook/common/event';
 import { isFormulaBarEdit } from '../common/event';
 
 /**

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.60 (2021-09-07)
+
+### Spreadsheet
+
+#### New Features
+
+- `I329743` - Provided the support to use a defined name as the source for the list type data validation.
+
 ## 19.2.59 (2021-08-31)
 
 ### Spreadsheet

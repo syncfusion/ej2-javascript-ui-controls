@@ -157,7 +157,7 @@ export class Toolbar {
             const locale: L10n = this.container.localObj;
             const id: string = this.container.element.id + TOOLBAR_ID;
             if (this.toolbarItems.indexOf('Image') >= 0) {
-                const splitButton: DropDownButton = new DropDownButton({
+                this.imgDropDwn = new DropDownButton({
                     items: [
                         {
                             text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
@@ -167,18 +167,18 @@ export class Toolbar {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
-                splitButton.appendTo('#' + id + INSERT_IMAGE_ID);
+                this.imgDropDwn.appendTo('#' + id + INSERT_IMAGE_ID);
             }
 
             if (this.toolbarItems.indexOf('Break') >= 0) {
-                const splitButton: DropDownButton = new DropDownButton({
+                this.breakDropDwn = new DropDownButton({
                     items: [
                         { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
                         { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
                     cssClass: 'e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
-                splitButton.appendTo('#' + id + BREAK_ID);
+                this.breakDropDwn.appendTo('#' + id + BREAK_ID);
             }
 
 
@@ -206,7 +206,7 @@ export class Toolbar {
                 if (this.container.restrictEditing) {
                     restrictIconCss = ' e-de-selected-item';
                 }
-                const splitbutton: DropDownButton = new DropDownButton({
+                this.restrictDropDwn = new DropDownButton({
                     items: [
                         { text: locale.getConstant('Read only'), id: id + READ_ONLY, iconCss: 'e-icons' + restrictIconCss },
                         { text: locale.getConstant('Protections'), id: id + PROTECTIONS, iconCss: 'e-icons' }],
@@ -216,10 +216,10 @@ export class Toolbar {
                         this.onBeforeRenderRestrictDropdown(args, id);
                     }
                 });
-                splitbutton.appendTo('#' + id + RESTRICT_EDITING_ID);
+                this.restrictDropDwn.appendTo('#' + id + RESTRICT_EDITING_ID);
             }
             if (this.toolbarItems.indexOf('FormFields') >= 0) {
-                const splitbutton: DropDownButton = new DropDownButton({
+                this.formFieldDropDown = new DropDownButton({
                     items: [
                         { text: locale.getConstant('Text Form'), iconCss: 'e-icons e-de-textform', id: id + TEXT_FORM },
                         { text: locale.getConstant('Check Box'), iconCss: 'e-icons e-de-checkbox-form', id: id + CHECKBOX },
@@ -227,7 +227,7 @@ export class Toolbar {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
-                splitbutton.appendTo('#' + id + FORM_FIELDS_ID);
+                this.formFieldDropDown.appendTo('#' + id + FORM_FIELDS_ID);
             }
         }
     }
@@ -301,6 +301,22 @@ export class Toolbar {
      * @returns {void}
      */
     public reInitToolbarItems(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
+        for (let i: number = 0; i< items.length; i++) {
+            switch (items[i]) {
+                case 'RestrictEditing':
+                    this.restrictDropDwn.destroy();
+                    break;
+                case 'Break':
+                    this.breakDropDwn.destroy();
+                    break;
+                case 'Image':
+                    this.imgDropDwn.destroy();
+                    break;
+                case 'FormFields':
+                    this.formFieldDropDown.destroy();
+                    break;   
+            }
+        }
         this.toolbarItems = items;
         const toolbarTarget: HTMLElement = this.container.toolbarContainer;
         this.toolbar.items = this.getToolbarItems();

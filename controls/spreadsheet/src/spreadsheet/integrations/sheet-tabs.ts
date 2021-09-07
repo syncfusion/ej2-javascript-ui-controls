@@ -135,10 +135,10 @@ export class SheetTabs {
         this.tabInstance.appendTo(sheetTab);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         EventHandler.remove(this.tabInstance.element, 'keydown', (this.tabInstance as any).spaceKeyDown);
-        const sheetCount: number = items.tabItems.length;
+        const sheetCount: number = items.tabItems.length; let sheet: SheetModel;
         for (let i: number = 0; i < sheetCount; i++) {
-            const sheetName: string = getSheetName(this.parent as Workbook, i);
-            const arg: { [key: string]: Object } = { action: 'addSheet', sheetName: 'Sheet' + (i + 1), index: i + 1, visibleName: sheetName };
+            sheet = getSheet(this.parent, i);
+            const arg: { [key: string]: Object } = { action: 'addSheet', sheetName: 'Sheet' + sheet.id, sheetId: sheet.id, visibleName: sheet.name };
             this.parent.notify(workbookFormulaOperation, arg);
         }
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
@@ -349,11 +349,11 @@ export class SheetTabs {
         } else {
             this.showRenameDialog(target, l10n.getConstant('SheetRenameEmptyAlert'));
         }
-        const sheetIndex: number = this.parent.getActiveSheet().id;
-        const args: { [key: string]: Object } = { action: 'renameUpdation', value: value, sheetId: sheetIndex };
+        const sheetId: number = this.parent.getActiveSheet().id;
+        const args: { [key: string]: Object } = { action: 'renameUpdation', value: value, sheetId: sheetId };
         this.parent.notify(workbookFormulaOperation, args);
         const eventArgs: { [key: string]: Object } = {
-            index: sheetIndex,
+            index: sheetId,
             value: value
         };
         this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'renameSheet' });
@@ -471,10 +471,7 @@ export class SheetTabs {
                     });
                 }
             } else {
-                const sheetArgs: { action: string, sheetName: string, index: number } = {
-                    action: 'deleteSheetTab', sheetName: '', index: sheetIndex + 1
-                };
-                this.parent.notify(workbookFormulaOperation, sheetArgs);
+                this.parent.notify(workbookFormulaOperation, { action: 'deleteSheetTab', sheetId: getSheet(this.parent, sheetIndex).id });
                 this.destroySheet(sheetIndex);
                 this.parent.notify(clearUndoRedoCollection, null);
                 if (args && !args.isAction) {
@@ -503,11 +500,8 @@ export class SheetTabs {
     }
 
     private forceDelete(sheetIndex: number): void {
-        const sheetArgs: { action: string, sheetName: string, index: number } = {
-            action: 'deleteSheetTab', sheetName: '', index: sheetIndex + 1
-        };
         this.parent.notify(removeDesignChart, {});
-        this.parent.notify(workbookFormulaOperation, sheetArgs);
+        this.parent.notify(workbookFormulaOperation, { action: 'deleteSheetTab', sheetId: getSheet(this.parent, sheetIndex).id });
         this.destroySheet(sheetIndex);
     }
 

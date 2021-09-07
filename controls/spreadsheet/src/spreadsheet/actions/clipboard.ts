@@ -172,7 +172,7 @@ export class Clipboard {
             if (isExternal && !(rows as RowModel[]).length) { // If image pasted
                 return;
             }
-            let cellLength: number = 0;
+            let cellLength: number = 1;
             if (rows) {
                 for (let i: number = 0; i < (rows as RowModel[]).length; i++) {
                     cellLength = rows[i].cells.length > cellLength ? rows[i].cells.length : cellLength;
@@ -329,10 +329,9 @@ export class Clipboard {
                                         (isNullOrUndefined(cell.isLocked) || cell.isLocked === true)) {
                                         cell.isLocked = prevCell.isLocked;
                                     }
-                                    if (cell.colSpan > 0 || isNullOrUndefined(cell.colSpan)) {
-                                        this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ?
-                                            true : y === selIdx[3], isExternal as boolean);
-                                    } else {
+                                    this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ?
+                                        true : y === selIdx[3], isExternal as boolean);
+                                    if (cell.colSpan < 0) {
                                         rfshRange[3] = rfshRange[3] - 1;
                                     }
                                     const sId: number = this.parent.activeSheetIndex;
@@ -742,11 +741,11 @@ export class Clipboard {
                 if (cell.rowSpan) {
                     data += ' rowspan="' + cell.rowSpan + '"';
                 }
-                data += ' style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
                 if (cell && cell.format && cell.format !== 'General') {
                     // eslint-disable-next-line
                     data += cell.format.includes('"') ? " number-format='" + cell.format + "'" : ' number-format="' + cell.format + '"';
                 }
+                data += ' style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
                 if (cell && cell.style) {
                     Object.keys(cell.style).forEach((style: string) => {
                         const regex: RegExpMatchArray = style.match(/[A-Z]/);
@@ -755,6 +754,7 @@ export class Clipboard {
                             ? cell.style[style].slice(0, 7) : cell.style[style]) + ';';
                     });
                 }
+                data += '"';
                 if (cell && !isNullOrUndefined(cell.value)) {
                     const eventArgs: { [key: string]: string | number | boolean } = {
                         formattedText: cell.value,

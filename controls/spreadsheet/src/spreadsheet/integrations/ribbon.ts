@@ -1,6 +1,6 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectEventArgs, selectionComplete, beforeRibbonCreate, removeDataValidation, clearViewer } from '../common/index';
+import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF, focus, freeze } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
 import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
@@ -20,13 +20,13 @@ import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
 import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, SaveType, setMerge } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs } from '../../workbook/common/index';
 import { sheetsDestroyed, SortOrder, NumberFormatType, SetCellFormatArgs, getRangeAddress, clearCFRule } from '../../workbook/common/index';
-import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat } from '../../workbook/index';
+import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { findDlg, insertDesignChart, removeDesignChart, getScrollBarWidth } from '../common/index';
-import { refreshRibbonIcons, ChartTheme } from '../../workbook/common/index';
+import { refreshRibbonIcons, ChartTheme, workbookFormulaOperation } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -2157,6 +2157,7 @@ export class Ribbon {
                             this.parent.activeSheetIndex = this.parent.sheets.length - 1;
                             this.parent.notify(refreshSheetTabs, {});
                             this.parent.notify(sheetsDestroyed, {});
+                            this.parent.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
                             this.parent.renderModule.refreshSheet();
                         }
                     }]

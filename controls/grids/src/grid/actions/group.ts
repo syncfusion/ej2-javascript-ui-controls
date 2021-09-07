@@ -19,6 +19,7 @@ import { Cell } from '../models/cell';
 import { Grid } from '../base/grid';
 import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 import * as literals from '../base/string-literals';
+import { AggregateColumnModel } from '../models/aggregate-model';
 
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -249,7 +250,6 @@ export class Group implements IAction {
         this.parent.on(events.initialEnd, this.render, this);
         this.parent.on(events.groupAggregates, this.onGroupAggregates, this);
         this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on('blazor-action-begin', this.blazorActionBegin, this);
         this.parent.on('group-expand-collapse', this.updateExpand, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
     }
@@ -275,14 +275,7 @@ export class Group implements IAction {
         this.parent.off(events.keyPressed, this.keyPressHandler);
         this.parent.off(events.groupAggregates, this.onGroupAggregates);
         this.parent.off(events.destroy, this.destroy);
-        this.parent.off('blazor-action-begin', this.blazorActionBegin);
         this.parent.off('group-expand-collapse', this.updateExpand);
-    }
-
-    private blazorActionBegin(): void {
-        if (this.parent.allowGrouping && !this.parent.isCollapseStateEnabled()) {
-            this.expandAll();
-        }
     }
 
     private initialEnd(): void {
@@ -408,22 +401,19 @@ export class Group implements IAction {
         const trgt: HTMLTableCellElement = parentsUntil(target, 'e-recordplusexpand') as HTMLTableCellElement ||
             parentsUntil(target, 'e-recordpluscollapse') as HTMLTableCellElement;
         if (trgt) {
-            const cellIdx: number = trgt.cellIndex;
-            const rowIdx: number = (trgt.parentElement as HTMLTableRowElement).rowIndex;
             const rowNodes: HTMLCollection = this.parent.getContentTable().querySelector( literals.tbody).children;
-            const rows: HTMLTableRowElement[] = [].slice.call(rowNodes).slice(rowIdx + 1, rowNodes.length);
             let isHide: boolean;
-            let expandElem: Element;
             let dataManager: Promise<Object>;
             let query: Query;
-            const toExpand: Element[] = [];
             const gObj: IGrid = this.parent;
             const indent: number = trgt.parentElement.getElementsByClassName('e-indentcell').length;
+            const uid: string = trgt.parentElement.getAttribute('data-uid');
+            const captionRow: Row<Column> = gObj.getRowObjectFromUID(uid);
             let expand: boolean = false;
             if (trgt.classList.contains('e-recordpluscollapse')) {
                 addClass([trgt], 'e-recordplusexpand'); removeClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
-                expand = true;
+                expand = true; captionRow.isExpand = true;
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, expand, query, dataManager);
                 }
@@ -431,7 +421,7 @@ export class Group implements IAction {
                     (this.parent.contentModule as GroupLazyLoadRenderer).captionExpand(trgt.parentElement as HTMLTableRowElement);
                 }
             } else {
-                isHide = true;
+                isHide = true; captionRow.isExpand = false;
                 removeClass([trgt], 'e-recordplusexpand'); addClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
                 if (isGroupAdaptive(gObj)) {
@@ -443,37 +433,36 @@ export class Group implements IAction {
             }
             this.aria.setExpand(trgt, expand);
             if (!isGroupAdaptive(gObj) && !this.parent.groupSettings.enableLazyLoading) {
-                for (let i: number = 0, len: number = rows.length; i < len; i++) {
-                    if (rows[i].querySelectorAll('td')[cellIdx] &&
-                        rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
-                        if (isHide) {
-                            rows[i].style.display = 'none';
-                        } else {
-                            if (rows[i].getElementsByClassName('e-indentcell').length === indent + 1) {
-                                rows[i].style.display = '';
-                                expandElem = rows[i].querySelector('.e-recordplusexpand');
-                                if (expandElem) {
-                                    toExpand.push(expandElem);
-                                }
-                                if (rows[i].classList.contains('e-detailrow')) {
-                                    if (rows[i - 1].getElementsByClassName('e-detailrowcollapse').length) {
-                                        rows[i].style.display = 'none';
-                                    }
-                                }
-                            }
-                        }
-                    } else {
+                const rowObjs: Row<Column>[] = gObj.getRowsObject();
+                const startIdx: number = rowObjs.indexOf(captionRow);
+                const rowsState: { [x: string]: boolean } = {};
+                for (let i: number = startIdx; i < rowObjs.length; i++) {
+                    if (i > startIdx && rowObjs[i].indent === indent) {
                         break;
                     }
+                    if (rowObjs[i].isDetailRow) {
+                        const visible: boolean = rowObjs[i - 1].isExpand && rowObjs[i - 1].visible;
+                        (rowNodes[i] as HTMLElement).style.display = visible ? '' : 'none';
+                    } else if (rowsState[rowObjs[i].parentUid] === false) {
+                        rowObjs[i].visible = false;
+                        (rowNodes[i] as HTMLElement).style.display = 'none';
+                    } else {
+                        if (!(rowObjs[i].isDataRow || rowObjs[i].isCaptionRow || rowObjs[i].isDetailRow)) {
+                            const visible: boolean = rowObjs[i].cells.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell
+                                && cell.visible);
+                            if (visible === rowObjs[i].visible) { continue; }
+                        }
+                        rowObjs[i].visible = true;
+                        (rowNodes[i] as HTMLElement).style.display = '';
+                        (rowNodes[i] as HTMLElement).classList.remove('e-hide');
+                    }
+                    if (rowObjs[i].isCaptionRow) {
+                        rowsState[rowObjs[i].uid] = rowObjs[i].isExpand && rowObjs[i].visible;
+                    }
                 }
-                this.parent.updateVisibleExpandCollapseRows();
                 this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
             }
-            for (let i: number = 0, len: number = toExpand.length; i < len; i++) {
-                removeClass([toExpand[i]], 'e-recordplusexpand'); addClass([toExpand[i]], 'e-recordpluscollapse');
-                toExpand[i].firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
-                this.expandCollapseRows(toExpand[i]);
-            }
+            this.parent.notify(events.captionActionComplete, { isCollapse: isHide, parentUid: uid });
         }
     }
 
@@ -964,7 +953,7 @@ export class Group implements IAction {
         const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!this.parent.isDestroyed && !(<any>this.parent).refreshing) {
+        if ((this.parent.isDestroyed || !this.parent.allowGrouping) && !(<any>this.parent).refreshing) {
             this.clearGrouping();
         }
         this.removeEventListener();

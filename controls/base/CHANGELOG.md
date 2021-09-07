@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.2.60 (2021-09-07)
+
+### Common
+
+#### Bug Fixes
+
+- `F168046` - Resolved Template Compilation malfunction when value have hyphen special character.
+- `I339954` - Resolved the issue with Template compilation malfunctions when `href` value is empty.
+
 ## 19.2.51 (2021-08-03)
 
 ### Common

@@ -762,6 +762,10 @@ export class Layout {
             if (!this.isRTLLayout) {
                 if (this.hasFloatingElement) {
                     this.hasFloatingElement = false;
+                    const lineIndex: number = paragraph.childWidgets.indexOf(element.line);
+                    if (lineIndex > 0 && paragraph.bodyWidget.floatingElements.length > 0 && element instanceof TextElementBox && !(paragraph.containerWidget instanceof TableCellWidget)) {
+                        element = (paragraph.childWidgets[lineIndex] as LineWidget).children[0];                       
+                    }
                 } else {
                     element = element.nextElement;
                 }
@@ -6401,9 +6405,12 @@ export class Layout {
                 } else {
                     border = cell.getBorderBasedOnPriority(cellTopBorder, prevCellBottomBorder);
                 }
+                const adjCellStartPos: number = adjCell.x - adjCell.margin.left;
+                const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.right;
+                if (j === 0 && cellStartPos < adjCellStartPos) {
+                    cell.updatedTopBorders.push({ border: cellTopBorder, width: (adjCellStartPos - cellStartPos) });
+                }
                 if (border) {
-                    const adjCellStartPos: number = adjCell.x - adjCell.margin.left;
-                    const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.right;
                     let width: number = 0;
                     /* eslint-disable-next-line max-len */
                     if (HelperMethods.round(adjCellEndPos, 2) === HelperMethods.round(cellEndPos, 2) && HelperMethods.round(adjCellStartPos, 2) === HelperMethods.round(cellStartPos, 2)) {
@@ -6427,6 +6434,9 @@ export class Layout {
                         width = 0;
                     }
                     cell.updatedTopBorders.push({ border: border, width: width });
+                }
+                if (j === (adjCells.length - 1) && cellEndPos > adjCellEndPos) {
+                    cell.updatedTopBorders.push({ border: cellTopBorder, width: (cellEndPos - adjCellEndPos) });
                 }
             }
         }

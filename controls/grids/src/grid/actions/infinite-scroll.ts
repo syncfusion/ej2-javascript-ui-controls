@@ -1,5 +1,5 @@
 import { isNullOrUndefined, remove, extend } from '@syncfusion/ej2-base';
-import { Query } from '@syncfusion/ej2-data';
+import { Query, Predicate } from '@syncfusion/ej2-data';
 import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, CellFocusArgs, KeyboardEventArgs, IModelGenerator, SaveEventArgs } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { FreezeRowModelGenerator } from '../services/freeze-row-model-generator';
@@ -9,10 +9,11 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import * as events from '../base/constant';
 import { Grid } from '../base/grid';
-import { getScrollBarWidth, getEditedDataIndex, resetRowIndex, setRowElements } from '../base/util';
+import { getScrollBarWidth, getEditedDataIndex, resetRowIndex, setRowElements, getRowIndexFromElement, getGroupKeysAndFields, getPredicates, generateExpandPredicates } from '../base/util';
 import { Action, freezeTable, FocusKeys } from '../base/enum';
 import { ColumnWidthService } from '../services/width-controller';
 import * as literals from '../base/string-literals';
+import { GroupedData } from '../services/group-model-generator';
 
 /**
  * Infinite Scrolling class
@@ -25,6 +26,7 @@ export class InfiniteScroll implements IAction {
     private maxPage: number;
     private actionBeginFunction: () => void;
     private actionCompleteFunction: () => void;
+    private dataBoundFunction: Function;
     private infiniteCache: { [x: number]: Row<Column>[] } = {};
     private infiniteCurrentViewData: { [x: number]: Object[] } = {};
     private infiniteFrozenCache: { [x: number]: Row<Column>[][] } = {};
@@ -63,6 +65,11 @@ export class InfiniteScroll implements IAction {
     private isInfiniteScroll: boolean = false;
     private isLastPage: boolean = false;
     private isInitialRender: boolean = true;
+    private isFocusScroll: boolean = false;
+    private lastFocusInfo: { rowIdx: number, cellIdx: number };
+    private isGroupCollapse: boolean = false;
+    private parentCapUid: string;
+    private groupCaptionAction: string;
     protected widthService: ColumnWidthService;
 
     /**
@@ -114,11 +121,15 @@ export class InfiniteScroll implements IAction {
         this.parent.on(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.contentReady, this.selectNewRow, this);
+        this.parent.on(events.captionActionComplete, this.captionActionComplete, this);
+        this.parent.on(events.setVirtualPageQuery, this.setGroupCollapsePageQuery, this);
         this.actionBeginFunction = this.actionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
+        this.dataBoundFunction = this.dataBound.bind(this);
         this.parent.on(events.deleteComplete, this.deleteComplate, this);
         this.parent.addEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.addEventListener(events.actionComplete, this.actionCompleteFunction);
+        this.parent.addEventListener(events.dataBound, this.dataBoundFunction);
     }
 
     /**
@@ -150,8 +161,126 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.contentReady, this.selectNewRow);
+        this.parent.off(events.captionActionComplete, this.captionActionComplete);
+        this.parent.off(events.setVirtualPageQuery, this.setGroupCollapsePageQuery);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
+        this.parent.removeEventListener(events.dataBound, this.dataBoundFunction);
+    }
+
+    private dataBound(): void {
+        if (this.groupCaptionAction === 'collapse') {
+            this.groupCaptionAction = 'refresh';
+            this.makeGroupCollapseRequest();
+        } else if (this.groupCaptionAction === 'refresh') {
+            this.parent.hideSpinner();
+            this.groupCaptionAction = this.empty as string;
+        }
+    }
+
+    private setGroupCollapsePageQuery(args: { query: Query, skipPage: boolean }): void {
+        const gObj: IGrid = this.parent;
+        if (!gObj.infiniteScrollSettings.enableCache && this.isGroupCollapse) {
+            args.skipPage = true; this.isGroupCollapse = false;
+            if (this.groupCaptionAction === 'collapse') {
+                const captionRow: Row<Column> = gObj.getRowObjectFromUID(this.parentCapUid);
+                const rowObjs: Row<Column>[] = gObj.getRowsObject();
+                let childCount: number = 0;
+                for (let i: number = rowObjs.length - 1; i >= 0; i--) {
+                    if (rowObjs[i].indent === captionRow.indent) {
+                        break;
+                    }
+                    if (rowObjs[i].isDataRow) {
+                        childCount++;
+                    }
+                }
+                const key: { fields: string[], keys: string[] } = getGroupKeysAndFields(rowObjs.indexOf(captionRow), rowObjs);
+                let pred: Predicate = generateExpandPredicates(key.fields, key.keys, this);
+                const predicateList: Predicate[] = getPredicates(pred);
+                pred = predicateList[predicateList.length - 1];
+                for (let i: number = predicateList.length - 2; i >= 0; i--) {
+                    pred = pred.and(predicateList[i]);
+                }
+                args.query.where(pred);
+                args.query.skip(childCount);
+                this.parentCapUid = this.empty as string;
+            } else {
+                const rows: Element[] = gObj.getRows(); const size: number = gObj.pageSettings.pageSize;
+                const skip: number = getRowIndexFromElement(rows[rows.length - 1]) + 1;
+                let additionalCnt: number = ((skip - (skip % size)) + size) - skip;
+                if ((skip % size) === 0) { additionalCnt = 0; }
+                args.query.skip(skip);
+                args.query.take((gObj.infiniteScrollSettings.initialBlocks * gObj.pageSettings.pageSize) + additionalCnt);
+            }
+        }
+    }
+
+    private captionActionComplete(args: { isCollapse: boolean, parentUid: string }): void {
+        const gObj: IGrid = this.parent;
+        if (!gObj.infiniteScrollSettings.enableCache && args.isCollapse) {
+            const contetRect: DOMRect | ClientRect = gObj.getContent().firstElementChild.getBoundingClientRect();
+            const tableReact: DOMRect | ClientRect = gObj.contentModule.getTable().getBoundingClientRect();
+            if (Math.round(tableReact.bottom - gObj.getRowHeight()) <= Math.round(contetRect.bottom)) {
+                this.parentCapUid = args.parentUid; this.groupCaptionAction = 'collapse';
+                gObj.showSpinner(); const caption: Row<Column> = gObj.getRowObjectFromUID(args.parentUid);
+                const childCount: boolean = this.getCaptionChildCount(caption);
+                if (!childCount) {
+                    this.groupCaptionAction = 'refresh';
+                    this.makeGroupCollapseRequest();
+                } else {
+                    this.makeGroupCollapseRequest(args.parentUid);
+                }
+            }
+        }
+    }
+
+    private makeGroupCollapseRequest(parentUid?: string): void {
+        const gObj: IGrid = this.parent;
+        const rows: Element[] = gObj.getRows();
+        const index: number = getRowIndexFromElement(rows[rows.length - 1]);
+        const prevPage: number = this.parent.pageSettings.currentPage;
+        this.parent.pageSettings.currentPage = Math.ceil(index / this.parent.pageSettings.pageSize) + 1;
+        if (this.parent.pageSettings.currentPage > this.maxPage) {
+            gObj.hideSpinner();
+            return;
+        }
+        const scrollArg: InfiniteScrollArgs = {
+            requestType: 'infiniteScroll',
+            currentPage: this.parent.pageSettings.currentPage,
+            prevPage: prevPage,
+            startIndex: index + 1,
+            direction: 'down',
+            isCaptionCollapse: true,
+            parentUid: parentUid
+        };
+        this.isGroupCollapse = true;
+        this.parent.notify('model-changed', scrollArg);
+    }
+
+    private getCaptionChildCount(caption: Row<Column>): boolean {
+        const rowObj: Row<Column>[] = this.parent.getRowsObject();
+        const index: number = rowObj.indexOf(caption); let make: boolean = false;
+        for (let i: number = index; i < rowObj.length; i++) {
+            if ((rowObj[i].indent === caption.indent || rowObj[i].indent < caption.indent)
+                && (rowObj[i].data as GroupedData).key !== (caption.data as GroupedData).key) {
+                break;
+            }
+            if (rowObj[i].isCaptionRow && !this.childCheck(rowObj, rowObj[i], i)) {
+                make = true; break;
+            }
+        }
+        return make;
+    }
+
+    private childCheck(rowObj: Row<Column>[], row: Row<Column>, index: number): boolean {
+        let childCount: number = 0;
+        for (let i: number = index + 1; i < rowObj.length; i++) {
+            if (rowObj[i].indent === row.indent) { break; }
+            if (rowObj[i].indent === (row.indent + 1) && rowObj[i].parentUid === row.uid) {
+                childCount++;
+            }
+        }
+        return (row.data as GroupedData).count === childCount;
     }
 
     private updateCurrentViewData(): void {
@@ -208,9 +337,9 @@ export class InfiniteScroll implements IAction {
     private modelChanged(args: InfiniteScrollArgs): void {
         const rows: Element[] = this.parent.getRows();
         if (rows.length && args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
-            this.firstIndex = parseInt(rows[0].getAttribute(literals.ariaRowIndex), 10);
+            this.firstIndex = getRowIndexFromElement(rows[0]);
             this.firstBlock = Math.ceil((this.firstIndex + 1) / this.parent.pageSettings.pageSize);
-            this.lastIndex = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10);
+            this.lastIndex = getRowIndexFromElement(rows[rows.length - 1]);
             if (args.requestType === 'delete') {
                 const rowObj: Row<Column>[] = this.parent.getRowsObject();
                 args.startIndex = this.parent.infiniteScrollSettings.enableCache
@@ -534,7 +663,7 @@ export class InfiniteScroll implements IAction {
     }
 
     private onDataReady(e: NotifyArgs): void {
-        if (!isNullOrUndefined(e.count)) {
+        if (!isNullOrUndefined(e.count) && e.requestType !== 'infiniteScroll') {
             this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
         }
     }
@@ -552,13 +681,15 @@ export class InfiniteScroll implements IAction {
             const scrollEle: Element = this.parent.getContent().firstElementChild;
             this.prevScrollTop = scrollEle.scrollTop;
             const rows: Element[] = this.parent.getRows();
-            const index: number = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10) + 1;
+            const index: number = getRowIndexFromElement(rows[rows.length - 1]) + 1;
             const prevPage: number = this.parent.pageSettings.currentPage;
             let args: InfiniteScrollArgs;
             const offset: number = targetEle.scrollHeight - targetEle.scrollTop;
             const round: number = Math.round(targetEle.scrollHeight - targetEle.scrollTop);
-            const floor: number = offset < targetEle.clientHeight ? Math.ceil(offset) : Math.floor(offset);
+            let floor: number = offset < targetEle.clientHeight ? Math.ceil(offset) : Math.floor(offset);
+            if (floor > targetEle.clientHeight) { floor = floor - 1; }
             const isBottom: boolean = (floor === targetEle.clientHeight || round === targetEle.clientHeight);
+            if (!isNullOrUndefined(this.groupCaptionAction)) { return; }
             if (this.isScroll && isBottom && (this.parent.pageSettings.currentPage <= this.maxPage - 1 || this.enableContinuousScroll)) {
                 if (this.parent.infiniteScrollSettings.enableCache) {
                     this.isUpScroll = false;
@@ -566,7 +697,7 @@ export class InfiniteScroll implements IAction {
                 }
                 const rows: Element[] = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
                 const row: Element = rows[rows.length - 1];
-                const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+                const rowIndex: number = getRowIndexFromElement(row);
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
                 args = {
                     requestType: 'infiniteScroll',
@@ -585,8 +716,8 @@ export class InfiniteScroll implements IAction {
                     this.isUpScroll = true;
                 }
                 const row: Element = [].slice.call(scrollEle.getElementsByClassName(literals.row));
-                const rowIndex: number = parseInt(row[this.parent.pageSettings.pageSize - 1].getAttribute(literals.ariaRowIndex), 10);
-                const startIndex: number = parseInt(row[0].getAttribute(literals.ariaRowIndex), 10) - this.parent.pageSettings.pageSize;
+                const rowIndex: number = getRowIndexFromElement(row[this.parent.pageSettings.pageSize - 1]);
+                const startIndex: number = getRowIndexFromElement(row[0]) - this.parent.pageSettings.pageSize;
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
                 if (this.parent.pageSettings.currentPage) {
                     args = {
@@ -673,11 +804,63 @@ export class InfiniteScroll implements IAction {
         query.page(1, pageSize);
     }
 
+    private scrollToLastFocusedCell(e: CellFocusArgs): void {
+        const gObj: IGrid = this.parent;
+        const rowIdx: number = this.lastFocusInfo.rowIdx + (e.keyArgs.action === literals.upArrow ? -1 : 1);
+        const cellIdx: number = this.lastFocusInfo.cellIdx;
+        let row: HTMLTableRowElement = gObj.getRowByIndex(rowIdx) as HTMLTableRowElement;
+        const content: Element = gObj.getContent().firstElementChild;
+        if (!row) {
+            const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+            const page: number = Math.floor(rowIdx / this.parent.pageSettings.pageSize) + 1;
+            gObj.pageSettings.currentPage = page;
+            const cols: Column[] = gObj.getColumns();
+            remove(gObj.getContent().querySelector('tbody'));
+            gObj.getContent().querySelector('table').appendChild(gObj.createElement('tbody'));
+            let focusRows: Row<Column>[] = [];
+            for (let i: number = (page === 1 || this.maxPage === page) ? 0 : -1, k = 0;
+                k < gObj.infiniteScrollSettings.maxBlocks; this.maxPage === page ? i-- : i++, k++) {
+                const rows: Row<Column>[] = this.infiniteCache[page + i];
+                if (rows) {
+                    focusRows = focusRows.concat(rows);
+                    for (let j: number = 0; j < rows.length; j++) {
+                        gObj.getContent().querySelector('tbody').appendChild(rowRenderer.render(rows[j], cols));
+                    }
+                }
+            }
+            gObj.notify(events.contentReady, { rows: focusRows, args: {} });
+            setRowElements(gObj);
+        }
+        row = gObj.getRowByIndex(rowIdx) as HTMLTableRowElement;
+        const target: Element = row.cells[cellIdx];
+        gObj.focusModule.isInfiniteScroll = true;
+        gObj.focusModule.onClick({ target }, true);
+        gObj.selectRow(rowIdx);
+        (target as HTMLElement).focus();
+        this.isFocusScroll = false;
+        e.cancel = true;
+    }
+
+    private setLastCellFocusInfo(e: CellFocusArgs): void {
+        const cell: Element = ((e.byClick && e.clickArgs.target) || (e.byKey && e.keyArgs.target)
+            || (!this.isFocusScroll && <{ target?: Element }>e).target) as Element;
+        if (cell && cell.classList.contains('e-rowcell')) {
+            const cellIdx: number = parseInt(cell.getAttribute('aria-colindex'), 10);
+            const rowIdx: number = parseInt(cell.parentElement.getAttribute('aria-rowindex'));
+            this.lastFocusInfo = { rowIdx: rowIdx, cellIdx: cellIdx };
+        }
+    }
+
     private infiniteCellFocus(e: CellFocusArgs): void {
         const gObj: IGrid = this.parent;
+        const cache: boolean = gObj.infiniteScrollSettings.enableCache;
         if (e.byKey) {
+            if (cache && this.isFocusScroll) {
+                this.scrollToLastFocusedCell(e);
+                return;
+            }
             const cell: Element = document.activeElement;
-            let rowIndex: number = parseInt(cell.parentElement.getAttribute(literals.ariaRowIndex), 10);
+            let rowIndex: number = getRowIndexFromElement(cell.parentElement);
             this.cellIndex = parseInt(cell.getAttribute(literals.ariaColIndex), 10);
             const content: Element = gObj.getContent().firstElementChild;
             const totalRowsCount: number = (this.maxPage * gObj.pageSettings.pageSize) - 1;
@@ -688,18 +871,26 @@ export class InfiniteScroll implements IAction {
                     this.rowIndex = rowIndex += 1;
                     const row: Element = gObj.getRowByIndex(rowIndex);
                     const rowRect: ClientRect = row && row.getBoundingClientRect();
-                    if (gObj.infiniteScrollSettings.enableCache) {
+                    if (cache) {
                         rowIndex = (cell.parentElement as HTMLTableRowElement).rowIndex + 1;
                     }
-                    if ((!row && rowIndex < totalRowsCount) || (rowRect && rowRect.bottom >= contentRect.bottom)) {
-                        this.pressedKey = e.keyArgs.action;
+                    if (this.isFocusScroll || (!row && rowIndex < totalRowsCount)
+                        || (rowRect && rowRect.bottom >= contentRect.bottom)) {
+                        if (!this.isFocusScroll) {
+                            this.pressedKey = e.keyArgs.action;
+                        }
+                        this.isFocusScroll = false;
                         content.scrollTop = ((rowIndex - visibleRowCount) + 1) * this.parent.getRowHeight();
+                    } else if (!cache && row) {
+                        if (rowRect && (rowRect.bottom >= contentRect.bottom || rowRect.top < contentRect.top)) {
+                            (row as HTMLTableRowElement).cells[this.cellIndex].scrollIntoView();
+                        }
                     }
                 } else if (e.keyArgs.action === literals.upArrow || e.keyArgs.action === literals.shiftEnter) {
                     this.rowIndex = rowIndex -= 1;
                     const row: Element = gObj.getRowByIndex(rowIndex);
                     const rowRect: ClientRect = row && row.getBoundingClientRect();
-                    if (gObj.infiniteScrollSettings.enableCache) {
+                    if (cache) {
                         rowIndex = (cell.parentElement as HTMLTableRowElement).rowIndex - 1;
                     }
                     if (!row || rowRect.top <= contentRect.top) {
@@ -711,6 +902,7 @@ export class InfiniteScroll implements IAction {
         } else if ((e as KeyboardEventArgs).key === 'PageDown' || (e as KeyboardEventArgs).key === 'PageUp') {
             this.pressedKey = (e as KeyboardEventArgs).key as FocusKeys;
         }
+        this.setLastCellFocusInfo(e);
     }
 
     private createEmptyRowdata(): void {
@@ -845,12 +1037,12 @@ export class InfiniteScroll implements IAction {
 
     private selectNewRow(args: { direction: string }): void {
         const gObj: IGrid = this.parent;
-        const row: Element = this.parent.getRowByIndex(this.rowIndex);
+        const row: Element = gObj.getRowByIndex(this.rowIndex);
+        const cache: boolean = gObj.infiniteScrollSettings.enableCache;
         if (row && this.keys.some((value: string) => value === this.pressedKey)) {
             const content: Element = gObj.getContent().firstElementChild;
             const rowHeight: number = gObj.getRowHeight();
             const target: HTMLTableCellElement = (row as HTMLTableRowElement).cells[this.cellIndex];
-            const cache: boolean = gObj.infiniteScrollSettings.enableCache;
             if ((this.pressedKey === literals.downArrow || this.pressedKey === literals.enter)
                 || (cache && (this.pressedKey === literals.upArrow || this.pressedKey === literals.shiftEnter))) {
                 if (!cache && this.pressedKey !== literals.upArrow && this.pressedKey !== literals.shiftEnter) {
@@ -860,16 +1052,17 @@ export class InfiniteScroll implements IAction {
                 gObj.focusModule.onClick({ target }, true);
                 gObj.selectRow(this.rowIndex);
             }
-        } else if (this.pressedKey === literals.pageDown || this.pressedKey === literals.pageUp) {
-            const focusMatrix: number[] = gObj.focusModule.content.matrix.current;
-            const rows: Element[] = gObj.getRows();
-            let row: Element = rows[rows.length - gObj.pageSettings.pageSize];
-            if (args.direction === 'up') {
-                row = rows[gObj.pageSettings.pageSize];
-            }
-            if (row) {
-                const target: HTMLTableCellElement = (row as HTMLTableRowElement).cells[focusMatrix[1]];
-                gObj.focusModule.onClick({ target }, true);
+        } else if (this.lastFocusInfo || this.pressedKey === literals.pageDown || this.pressedKey === literals.pageUp) {
+            const idx: number = cache ? 0 : this.lastFocusInfo.rowIdx;
+            const target: Element = gObj.getCellFromIndex(idx, this.lastFocusInfo.cellIdx);
+            if (target) {
+                this.isFocusScroll = true;
+                if (!cache) {
+                    gObj.focusModule.isInfiniteScroll = true;
+                    gObj.focusModule.onClick({ target }, true);
+                } else {
+                    (target as HTMLElement).focus({ preventScroll: true });
+                }
             }
         }
         this.pressedKey = undefined;
@@ -996,21 +1189,21 @@ export class InfiniteScroll implements IAction {
     }
 
     private removeCaptionRows(rows: Element[], args: InfiniteScrollArgs): void {
+        const rowElements: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         if (args.direction === 'down') {
-            const lastRow: Element = this.parent.getRows()[this.parent.pageSettings.pageSize];
-            const lastRowIndex: number = parseInt(lastRow.getAttribute(literals.ariaRowIndex), 10) - 1;
+            const lastRow: Element = rowElements[this.parent.pageSettings.pageSize - 1];
+            const lastRowIndex: number = getRowIndexFromElement(lastRow) - 1;
             let k: number = 0;
             for (let i: number = 0; k < lastRowIndex; i++) {
                 if (!rows[i].classList.contains(literals.row)) {
                     remove(rows[i]);
                 } else {
-                    k = parseInt(rows[i].getAttribute(literals.ariaRowIndex), 10);
+                    k = getRowIndexFromElement(rows[i]);
                 }
             }
         }
         if (args.direction === 'up') {
-            const rowElements: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
-            const lastIndex: number = parseInt(rowElements[rowElements.length - 1].getAttribute(literals.ariaRowIndex), 10);
+            const lastIndex: number = getRowIndexFromElement(rowElements[rowElements.length - 1]);
             const page: number = Math.ceil(lastIndex / this.parent.pageSettings.pageSize);
             let startIndex: number = 0;
             for (let i: number = this.parent.pageSettings.currentPage + 1; i < page; i++) {

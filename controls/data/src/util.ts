@@ -1,6 +1,7 @@
 import { merge, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from './manager';
-import { Query } from './query';
+import { Query, Predicate } from './query';
+import { ReturnType } from './adaptors';
 const consts: { [key: string]: string } = { GroupGuid: '{271bbba0-1ee7}' };
 
 /**
@@ -1966,6 +1967,117 @@ export class DataUtil {
             return val;
         }
     };
+    /**
+     * Process the given records based on the datamanager string. 
+     * @param  {string} datamanager
+     * @param  {Object[]} records
+     */
+     public static processData(dm: GraphQLParams, records: Object[]): ReturnType {
+         let query: Query = this.prepareQuery(dm);
+         let sampledata: DataManager = new DataManager(records);
+         if (dm.requiresCounts) {
+             query.requiresCount()
+         }
+         let result: ReturnType | any = sampledata.executeLocal(query);
+         let returnValue: ReturnType = {
+             result: dm.requiresCounts ? result.result : result,
+             count: result.count,
+             aggregates: JSON.stringify(result.aggregates)
+         };
+         return dm.requiresCounts ? returnValue : result;
+    }
+
+    private static prepareQuery(dm: GraphQLParams): Query {
+        let query: Query = new Query();
+
+        if (dm.select) {
+            query.select(dm.select as string[]);
+        }
+
+        if (dm.where) {
+            let where: Predicate[] = DataUtil.parse.parseJson(dm.where);
+            where.filter((pred: Predicate) => {    
+                if (isNullOrUndefined(pred.condition)) {
+                    query.where(pred.field, pred.operator, (pred.value as string | number | boolean | Date), pred.ignoreCase,
+                        pred.ignoreAccent);
+                } else {
+                    let predicateList: Predicate[] = [];
+                    if ((pred as Predicate).field) {
+                        predicateList.push(new Predicate(pred.field, pred.operator, pred.value, pred.ignoreCase,
+                            pred.ignoreAccent))
+                    } else {
+                        predicateList = predicateList.concat(this.getPredicate(pred.predicates));
+                    }
+                    if (pred.condition == 'or') {
+                        query.where(Predicate.or(predicateList));
+                    } else if (pred.condition == 'and') {
+                        query.where(Predicate.and(predicateList));
+                    }
+            }
+            });
+            
+        }
+
+        if (dm.search) {
+            let search: object[] = DataUtil.parse.parseJson(dm.search);
+            search.filter((e: { key: string, fields: string[] }) => query.search(e.key, e.fields, e['operator'],
+                e['ignoreCase'], e['ignoreAccent']));
+        }
+        if (dm.aggregates) {
+            dm.aggregates.filter((e: { type: string, field: string }) => query.aggregate(e.type, e.field));
+        }
+
+        if (dm.sorted) {
+            dm.sorted.filter((e: { name: string, direction: string }) => query.sortBy(e.name, e.direction));
+        }
+        if (dm.skip) {
+            query.skip(dm.skip);
+        }
+        if (dm.take) {
+            query.take(dm.take);
+        }
+
+        if (dm.group) {
+            dm.group.filter((grp: string) => query.group(grp));
+        }
+        return query;
+    }
+
+    private static getPredicate(pred: Predicate[]): Predicate[] {
+        let mainPred: Predicate[] = [];
+        for (let i: number = 0; i < pred.length; i++) {
+            let e: Predicate = pred[i];
+            if (e.field) {
+                mainPred.push(new Predicate(e.field, e.operator, e.value, e.ignoreCase,
+                    e.ignoreAccent));
+            } else {
+                let childPred: Predicate[] = [];
+                let cpre = this.getPredicate(e.predicates);
+                for (const prop of Object.keys(cpre)) {
+                    childPred.push(cpre[prop]);
+                }
+                mainPred.push(e.condition == 'or' ? Predicate.or(childPred) : Predicate.and(childPred));
+            }
+        }
+        return mainPred;
+    }
+}
+
+/**
+ * @hidden
+ */
+ export interface GraphQLParams {
+    skip?: number;
+    take?: number;
+    sorted?: {name: string, direction: string}[];
+    group?: string[];
+    table?: string;
+    select?: string[];
+    where?: string;
+    search?: string;
+    requiresCounts?: boolean;
+    aggregates?: Aggregates[];
+    params?: string;
 }
 
 /**

@@ -88,6 +88,7 @@ export class DetailRow {
                     isDetailRow: true,
                     cells: [new Cell<Column>({ cellType: CellType.Indent }), new Cell<Column>({ isDataCell: true, visible: true })]
                 });
+                row.parentUid = rowObj.uid;
                 for (let i: number = 0, len: number = gObj.groupSettings.columns.length; i < len; i++) {
                     detailRow.appendChild(this.parent.createElement('td', { className: 'e-indentcell' }));
                     row.cells.unshift(new Cell<Column>({ cellType: CellType.Indent }));
@@ -143,10 +144,12 @@ export class DetailRow {
                 } else {
                     tr.parentNode.appendChild(detailRow);
                 }
-                gObj.getRows().splice(tr.rowIndex + 1, 0, detailRow);
-                gObj.getRowsObject().splice(tr.rowIndex + 1, 0, row);
+                const rowElems: Element[] = gObj.getRows();
+                const rowObjs: Row<Column>[] = gObj.getRowsObject();
+                rowElems.splice(rowElems.indexOf(tr) + 1, 0, detailRow);
+                rowObjs.splice(rowObjs.indexOf(rowObj) + 1, 0, row);
                 gObj.trigger(events.detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
-                gObj.notify(events.detailDataBound, { rows: gObj.getRowsObject() });
+                gObj.notify(events.detailDataBound, { rows: rowObjs });
             }
             classList(target, ['e-detailrowexpand'], ['e-detailrowcollapse']);
             classList(target.firstElementChild, ['e-dtdiagonaldown', 'e-icon-gdownarrow'], ['e-dtdiagonalright', 'e-icon-grightarrow']);

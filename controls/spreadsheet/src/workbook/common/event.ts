@@ -236,3 +236,5 @@ export const cFUndo: string = 'cFUndo';
 export const refreshClipboard: string = 'refreshClipboard';
 /** @hidden */
 export const updateView: string = 'updateView';
+/** @hidden */
+export const selectionComplete: string = 'selectionComplete';

@@ -20,6 +20,8 @@ import { ColumnMenu } from '../../../src/grid/actions/column-menu';
 import * as events from '../../../src/grid/base/constant';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { DataManager, ODataV4Adaptor } from "@syncfusion/ej2-data";
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { createElement } from '@syncfusion/ej2-base';
 
 Grid.Inject(Filter, Page, Selection, Group, Freeze, Reorder, ColumnMenu, ForeignKey,VirtualScroll);
 
@@ -2592,6 +2594,71 @@ describe('EJ2-51485 - CellSelection with box mode is not working properly after 
     it('Check the cell Selection', () => {
         gridObj.selectionModule.selectCellsByRange({ rowIndex: 0, cellIndex: 1 });
         expect(gridObj.getSelectedRowCellIndexes().length).toBeTruthy(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+describe('EJ2-52526 - Boolean custom menu filter close dialog script error', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let dropInstance: DropDownList
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0,2),
+                allowFiltering: true,
+                filterSettings: {type: 'Menu'},
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'Verified', headerText: 'Verified',filter: {
+                        ui: {
+                          create: (args: any) => {
+                            const flValInput = createElement('input', {
+                              className: 'flm-input'
+                            });
+                            args.target.appendChild(flValInput);
+                            dropInstance = new DropDownList({
+                              dataSource: new DataManager([
+                                { name: 'Enabled', value: 'true' },
+                                { name: 'Disabled', value: 'false' }
+                              ]),
+                              fields: { text: 'name', value: 'value' },
+                              popupHeight: '200px'
+                            });
+                            dropInstance.appendTo(flValInput);
+                          },
+                          read: (args: any) => {
+                            args.fltrObj.filterByColumn(
+                              args.column.field,
+                              args.operator,
+                              dropInstance.value
+                            );
+                          },
+                          write: (args: any) => {
+                            dropInstance.value = args.filteredValue;
+                          }
+                        }
+                      } }],
+                allowPaging: true,
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('open the boolean filter', (done: Function) => {
+        actionComplete = (e:any) => {
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+    });
+    it('close the dialog', (done: Function) => {
+        (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+        done();
     });
 
     afterAll(() => {

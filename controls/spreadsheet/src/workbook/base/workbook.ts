@@ -993,8 +993,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             action: 'getSheetInfo', sheetInfo: []
         };
         this.notify(events.workbookFormulaOperation, args);
-        const id: number = getSheetIndexByName(this, 'Sheet' + sheetId, args.sheetInfo);
-        if (id === -1) {
+        if (getSheetIndexByName(this, 'Sheet' + sheetId, args.sheetInfo) === -1) {
             const errArgs: { action: string, refError: string } = { action: 'getReferenceError', refError: '' };
             this.notify(events.workbookFormulaOperation, errArgs);
             return errArgs.refError;

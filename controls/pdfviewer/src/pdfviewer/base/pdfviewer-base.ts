@@ -554,6 +554,7 @@ export class PdfViewerBase {
      */
     // eslint-disable-next-line
     public restrictionList: any;
+    private isDrawnCompletely: boolean = false;
     /**
      * @private
      */
@@ -1606,6 +1607,7 @@ export class PdfViewerBase {
         this.pdfViewer.formFieldCollection = [];
         this.isAnnotationCollectionRemoved = false;
         this.documentAnnotationCollections = null;
+        this.isDrawnCompletely = false;
         this.annotationRenderredList = [];
         this.isImportAction = false;
         this.isImportedAnnotation = false;
@@ -1619,6 +1621,7 @@ export class PdfViewerBase {
         this.highestHeight = 0;
         this.requestLists = [];
         this.tilerequestLists = [];
+        this.isToolbarInkClicked = false;
         this.pdfViewer.formFieldCollections = [];
         if (this.pdfViewer.formDesignerModule) {
             this.pdfViewer.formDesignerModule.formFieldIndex = 0;
@@ -3812,7 +3815,9 @@ export class PdfViewerBase {
                     }
                     if (this.getSelectTextMarkupCurrentPage() == null) {
                         if (!isBlazor()) {
-                            this.pdfViewer.toolbarModule.showToolbar(true);
+                            if (this.pdfViewer.enableToolbar) {
+                                this.pdfViewer.toolbarModule.showToolbar(true);
+                            }
                         } else {
                             //this.pdfViewer._dotnetInstance.invokeMethodAsync('TapOnMobileDevice', this.isTapHidden);
                             this.blazorUIAdaptor.tapOnMobileDevice(this.isTapHidden);
@@ -4309,7 +4314,6 @@ export class PdfViewerBase {
                 const zoomFactor: number = this.retrieveCurrentZoomFactor();
                 const currentString: string = this.documentId + '_' + pageIndex + '_' + zoomFactor + '_' + data.tileX + '_' + data.tileY;
                 // eslint-disable-next-line max-len
-                if (((this.tilerequestLists.indexOf(currentString) === -1) && this.pdfViewer.restrictZoomRequest) || (!this.pdfViewer.restrictZoomRequest)) {
                     this.tilerequestLists.push(currentString);
                     // eslint-disable-next-line
                     let imageData: string = data['image'];
@@ -4319,8 +4323,9 @@ export class PdfViewerBase {
                         let image: HTMLImageElement = new Image();
                         image.onload = (): void => {
                             const pagecanvas: HTMLElement = this.getElement('_pageCanvas_' + pageIndex);
+                            let scaleFactor: number = (!isNullOrUndefined(data.scaleFactor)) ? data.scaleFactor : 1.5;
+                            let renderTileCanvas: any = this.renderTileCanvas(pageWidth, pageHeight, pageIndex, pageDiv, zoomFactor, scaleFactor);    
                             if (pagecanvas) {
-                                const scaleFactor: number = (!isNullOrUndefined(data.scaleFactor)) ? data.scaleFactor : 1.5;
                                 // eslint-disable-next-line
                                 let pageCanvasWidth: number = parseInt(((pagecanvas as HTMLCanvasElement).width).toString());
                                 // eslint-disable-next-line
@@ -4329,6 +4334,17 @@ export class PdfViewerBase {
                                 if (!isNaN(parseFloat(pagecanvas.style.width)) && pageCanvasWidth !== pageCanvasStyleWidth) {
                                     pagecanvas.style.width = pageWidth + 'px';
                                     pagecanvas.style.height = pageHeight + 'px';
+                                    if (proxy.isDrawnCompletely && renderTileCanvas) {
+                                        renderTileCanvas.style.width = pageWidth + 'px';
+                                        renderTileCanvas.style.height = pageHeight + 'px';
+                                        renderTileCanvas.style.display = "block";
+                                        pagecanvas.style.display = 'none';
+                                    } else {
+                                        (renderTileCanvas as HTMLCanvasElement).height = parseInt((pageHeight * scaleFactor).toString());
+                                        // tslint:disable-next-line
+                                        (renderTileCanvas as HTMLCanvasElement).width = parseInt((pageWidth * scaleFactor).toString());
+                                    }
+    
                                     // eslint-disable-next-line
                                     (pagecanvas as HTMLCanvasElement).height = parseInt((pageHeight * scaleFactor).toString());
                                     // eslint-disable-next-line
@@ -4347,8 +4363,18 @@ export class PdfViewerBase {
                                 const matrix5: number = (matrix.Elements[5] * this.getZoomFactor()) / zoomFactor;
                                 const context: CanvasRenderingContext2D = (pagecanvas as HTMLCanvasElement).getContext('2d');
                                 // eslint-disable-next-line
-                                context.setTransform(matrix0, matrix1, matrix2, matrix3, matrix4, matrix5);
+                                if (navigator.userAgent.indexOf("Firefox") != -1) {
+                                    context.setTransform(matrix0 + 0.001, matrix1, matrix2, matrix3 + 0.001, matrix4, matrix5);
+                                } else {
+                                    context.setTransform(matrix0, matrix1, matrix2, matrix3, matrix4, matrix5);
+                                }
                                 context.drawImage(image, 0, 0);
+                                if (!proxy.isDrawnCompletely && renderTileCanvas) {
+                                    let tileContext: CanvasRenderingContext2D = (renderTileCanvas as HTMLCanvasElement).getContext('2d');
+                                    // tslint:disable-next-line
+                                    tileContext.setTransform(matrix0, matrix1, matrix2, matrix3, matrix4, matrix5);
+                                    tileContext.drawImage(image, 0, 0);
+                                }    
                                 this.showPageLoadingIndicator(pageIndex, false);
                                 const tileX: number = data.tileX ? data.tileX : 0;
                                 const tileY: number = data.tileY ? data.tileY : 0;
@@ -4373,6 +4399,12 @@ export class PdfViewerBase {
                                     if (this.pdfViewer.magnificationModule) {
                                         this.pdfViewer.magnificationModule.rerenderCountIncrement();
                                     }
+                                    if (proxy.isDrawnCompletely && renderTileCanvas) {
+                                        pagecanvas.style.backgroundColor = '#fff';
+                                        pagecanvas.style.display = 'block';
+                                        renderTileCanvas.style.display = "none";
+                                    }
+                                    proxy.isDrawnCompletely=true;    
                                 }
                                 image.onload = null;
                                 image = null;
@@ -4380,7 +4412,6 @@ export class PdfViewerBase {
                         };
                         image.src = imageData;
                     }
-                }
                 const tileX: number = data.tileX ? data.tileX : 0;
                 const tileY: number = data.tileY ? data.tileY : 0;
                 if ((tileX === 0) && (tileY === 0)) {
@@ -4388,6 +4419,22 @@ export class PdfViewerBase {
                 }
             }
         }
+    }
+    private renderTileCanvas(pageWidth: any, pageHeight: any, pageIndex: any, pageDiv: any, zoomFactor: any,scaleFactor:any): any {
+        let pageCanvas: any = this.getElement('_pageTileCanvas_' + pageIndex);
+        if (!pageCanvas) {
+            pageCanvas = createElement('canvas', { id: this.pdfViewer.element.id + '_pageTileCanvas_' + pageIndex, className: 'e-pv-pageTile-canvas' }) as HTMLCanvasElement;
+            pageCanvas.style.width = pageWidth + 'px';
+            pageCanvas.style.height = pageHeight + 'px';
+            pageCanvas.style.display = 'none';
+            pageCanvas.style.backgroundColor = '#fff';
+            if (this.isMixedSizeDocument && this.highestWidth > 0) {
+                pageCanvas.style.marginLeft = 'auto';
+                pageCanvas.style.marginRight = 'auto';
+            }
+            pageDiv.appendChild(pageCanvas);
+        }
+        return pageCanvas;
     }
 
     private calculateImageWidth(pageWidth: number, zoomFactor: number, scaleFactor: number, imageWidth: number): number {
@@ -5368,8 +5415,10 @@ export class PdfViewerBase {
             jsonObject.data = JSON.stringify(source);
         } else {
             jsonObject.data = source;
-            // eslint-disable-next-line
-            jsonObject['fileName'] = proxy.pdfViewer.fileName;
+            if (source.split('.')[1] === 'json') {
+                // eslint-disable-next-line
+                jsonObject['fileName'] = proxy.pdfViewer.fileName;
+            }
         }
         proxy.pdfViewer.fireFormImportStarted(source);
         // eslint-disable-next-line
@@ -5823,14 +5872,15 @@ export class PdfViewerBase {
                                         data = JSON.parse(data);
                                     }
                                     if (data.image && data.uniqueId === proxy.documentId) {
+                                        let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
                                         proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
                                         const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
-                                        if ((viewPortWidth >= pageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
+                                        if ((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
                                             proxy.storeWinData(data, pageNumber);
                                         } else {
                                             proxy.storeWinData(data, pageNumber, data.tileX, data.tileY);
                                         }
-                                        if ((viewPortWidth >= pageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
+                                        if ((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
                                             proxy.renderPage(data, pageNumber);
                                         } else {
                                             proxy.tileRenderPage(data, pageNumber);

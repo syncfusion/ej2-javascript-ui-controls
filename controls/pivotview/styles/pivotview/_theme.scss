@@ -242,7 +242,6 @@
 
     .e-headercelldiv.e-cellvalue {
       @if($pivotgrid-skin == 'bootstrap4') or ($pivotgrid-skin == 'bootstrap') or ($pivotgrid-skin == 'bootstrap-dark') or ($pivotgrid-skin == 'material-dark') or ($pivotgrid-skin == 'material') {
-      float: left;
       margin-left: 0px;
       }
     }

@@ -189,7 +189,7 @@ export class Filter implements IAction {
             this.filterModule.destroy();
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!(<any>this.parent).refreshing) {
+        if (!(<any>this.parent).refreshing && (this.parent.isDestroyed || !this.parent.allowFiltering)) {
             this.filterSettings.columns = [];
         }
         this.updateFilterMsg();
@@ -417,7 +417,11 @@ export class Filter implements IAction {
     private refreshClearIcon(e: Event): void {
         if (this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar' &&
             (e.target as Element).classList.contains('e-clear-icon')) {
-            Input.setValue(null, (e.target as Element).parentElement.children[0] as HTMLInputElement | HTMLTextAreaElement, 'Never', true);
+            const targetText: HTMLInputElement = (e.target as Element).previousElementSibling as  HTMLInputElement;
+            Input.setValue(null, targetText as HTMLInputElement | HTMLTextAreaElement, 'Never', true);
+            if (this.filterSettings.mode === 'Immediate') {
+                this.removeFilteredColsByField(targetText.id.slice(0, -14)); //Length of _filterBarcell = 14
+            }
         }
     }
 
@@ -472,24 +476,24 @@ export class Filter implements IAction {
         this.ignoreAccent = this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
         this.fieldName = fieldName;
         this.operator = filterOperator;
-        filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
+        filterValue = !isNullOrUndefined(filterValue) ? filterValue.toString() : filterValue;
         if (this.column.type === 'number' || this.column.type === 'date') {
             this.matchCase = true;
         }
         gObj.getColumnHeaderByField(fieldName).setAttribute('aria-filtered', 'true');
         if (filterCell && this.filterSettings.type === 'FilterBar') {
-            if (filterValue.length < 1 || (!this.filterByMethod &&
-                this.checkForSkipInput(this.column, filterValue))) {
-                this.filterStatusMsg = filterValue.length < 1 ? '' : this.l10n.getConstant('InvalidFilterMessage');
+            if ((filterValue && (filterValue as string).length < 1) || (!this.filterByMethod &&
+                this.checkForSkipInput(this.column, (filterValue as string)))) {
+                this.filterStatusMsg = (filterValue && (filterValue as string).length < 1) ? '' : this.l10n.getConstant('InvalidFilterMessage');
                 this.updateFilterMsg();
                 return;
             }
             if (filterCell.value !== filterValue) {
-                filterCell.value = filterValue;
+                filterCell.value = (filterValue as string);
             }
         }
         if (!isNullOrUndefined(this.column.format)) {
-            this.applyColumnFormat(filterValue);
+            this.applyColumnFormat((filterValue as string));
             if (this.initialLoad && this.filterSettings.type === 'FilterBar') {
                 filterCell.value = this.values[this.column.field];
             }
@@ -522,7 +526,14 @@ export class Filter implements IAction {
     private applyColumnFormat(filterValue: string | number | Date | boolean): void {
         const getFlvalue: Date | number | string = (this.column.type === 'date' || this.column.type === 'datetime') ?
             new Date(filterValue as string) : parseFloat(filterValue as string);
-        this.values[this.column.field] = this.setFormatForFlColumn(getFlvalue, this.column);
+        if ((this.column.type === 'date' || this.column.type === 'datetime') && filterValue &&
+            (filterValue as string).split(',').length > 1) {
+            this.values[this.column.field] = (((filterValue as string)).split(',')).map((val: string) => {
+                return this.setFormatForFlColumn(new Date(val), this.column);
+            });
+        } else {
+            this.values[this.column.field] = this.setFormatForFlColumn(getFlvalue, this.column);
+        }
     }
 
     // To skip the second time request to server while applying initial filtering - EJ2-44361
@@ -1207,10 +1218,6 @@ export class Filter implements IAction {
                     parentsUntil(target, 'e-grid').id === this.parent.element.id;
                     this.filterModule.closeDialog(target);
                 }
-            }
-            if (this.filterSettings.mode === 'Immediate' && target.classList.contains('e-clear-icon')) {
-                const targetText: HTMLInputElement = target.previousElementSibling as HTMLInputElement;
-                this.removeFilteredColsByField(targetText.id.slice(0, - 14)); //Length of _filterBarcell = 14
             }
         }
     }

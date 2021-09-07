@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.59 (2021-08-31)
+## 19.2.60 (2021-09-07)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I340470` -  The issue with "Kanban `dataBound` event is not receiving `server-side` updated data" has been fixed.
+
+## 19.2.56 (2021-08-17)
 
 ### Kanban
 

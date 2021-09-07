@@ -8,6 +8,16 @@
 
 #### Bug Fixes
 
+- `#F167458` - `enablePersistence` was not maintained when routing to another page is resolved.
+- `#I339406` - Filtering array of values on date column by `filterByColum`, issue has been fixed.
+- `#F168110` - Filter operation is not cleared while clicking the clear button with immediate mode, issue has been fixed.
+
+## 19.2.57 (2021-08-24)
+
+### Grid
+
+#### Bug Fixes
+
 - `#I338200` - Searching operation is not working properly in `foreignKeyColumn` issue has been fixed.
 
 ## 19.2.56 (2021-08-17)

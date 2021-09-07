@@ -169,7 +169,6 @@ export class PivotEngine {
     private columnKeys: { [key: string]: IFieldOptions } = {};
     private fieldDrillCollection: { [key: string]: string } = {};
     private fieldMapping: IFieldOptions[] = [];
-    private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
     private clonedReport: IDataOptions;
     public renderEngine(
@@ -4324,7 +4323,7 @@ export class PivotEngine {
                 } else {
                     delete formatSetting.type;
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
-                        let pattern: string[] = formatSetting.format.match(this.customRegex);
+                        let pattern: string[] = formatSetting.format.match(/^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/);
                         let flag: boolean = true;
                         if (isNullOrUndefined(formatSetting.minimumFractionDigits)) {
                             delete formatSetting.minimumFractionDigits;
@@ -4340,13 +4339,15 @@ export class PivotEngine {
                             delete formatSetting.useGrouping;
                             flag = false;
                         }
-                        let integerPart: string = pattern[6];
-                        if (flag) {
-                            formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
-                        }
-                        let decimalPart: string = pattern[5];
-                        if (isBlazor() && decimalPart && decimalPart.indexOf('.') !== -1 && formatSetting.maximumFractionDigits) {
-                            delete formatSetting.maximumFractionDigits;
+                        if (pattern && pattern.length > 5) {
+                            let integerPart: string = pattern[6];
+                            if (flag) {
+                                formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                            }
+                            let decimalPart: string = pattern[5];
+                            if (isBlazor() && decimalPart && decimalPart.indexOf('.') !== -1 && formatSetting.maximumFractionDigits) {
+                                delete formatSetting.maximumFractionDigits;
+                            }
                         }
                     }
                     formattedValue.formattedText =

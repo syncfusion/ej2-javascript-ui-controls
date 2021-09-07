@@ -2462,7 +2462,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public requiredModules(): ModuleDeclaration[] {
-        this.setFrozenCount();
+        this.setFrozenCount(); this.enableInfiniteAggrgate();
         const modules: ModuleDeclaration[] = [];
         if (this.isDestroyed) { return modules; }
         if (this.allowFiltering) {
@@ -7138,5 +7138,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         return cols;
+    }
+
+    private enableInfiniteAggrgate(): void {
+        if (this.enableInfiniteScrolling && this.allowGrouping && this.aggregates.length) {
+            this.setProperties({ groupSettings: { disablePageWiseAggregates: true } }, true);
+        }
     }
 }

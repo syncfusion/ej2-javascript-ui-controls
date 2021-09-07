@@ -94,7 +94,7 @@ export class BooleanFilterUI implements IFilterMUI {
     }
 
     private destroy(): void {
-        if (this.dropInstance.isDestroyed) { return; }
+        if (!this.dropInstance || this.dropInstance.isDestroyed) { return; }
         this.dropInstance.removeEventListener(literals.open, this.ddOpen);
         this.dropInstance.removeEventListener(events.actionComplete, this.ddComplete);
         this.dropInstance.destroy();

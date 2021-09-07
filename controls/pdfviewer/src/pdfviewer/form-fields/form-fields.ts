@@ -181,7 +181,7 @@ export class FormFields {
                                 for (let j: number = 0; j < this.pdfViewer.formFieldCollections.length; j++) {
                                     if ((inputField.type === 'text' || inputField.type === 'password' || inputField.type === 'textarea') && currentData.Name !== 'SignatureField') {
                                         if (currentData['uniqueID'] === this.pdfViewer.formFieldCollections[j].id) {
-                                            this.pdfViewer.formFieldCollections[j].value = currentData['Value'];
+                                            this.pdfViewer.formFieldCollections[j].value = currentData['Text']; 
                                         }
                                     }
                                 }
@@ -1337,8 +1337,10 @@ export class FormFields {
     public removeExistingFormFields():void{
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
-        for (let i: number = 0; i < formFieldsData.length; i++) {
-            this.pdfViewer.formDesignerModule.deleteFormField(formFieldsData[i].Key.split('_')[0]);
+        if (formFieldsData) {
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                this.pdfViewer.formDesignerModule.deleteFormField(formFieldsData[i].Key.split('_')[0]);
+            }
         }
     }
     // eslint-disable-next-line

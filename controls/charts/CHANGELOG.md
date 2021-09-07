@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.60 (2021-09-07)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I340525` - Data labels are rendering fine when the background is specified for the chart.
+
 ## 19.2.59 (2021-08-31)
 
 ### Chart

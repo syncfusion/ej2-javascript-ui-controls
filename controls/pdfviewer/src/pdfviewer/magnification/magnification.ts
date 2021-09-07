@@ -624,9 +624,9 @@ export class Magnification {
                         // eslint-disable-next-line max-len
                         (pageDivs[i] as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
                     } else {
-                        (pageDivs[i] as HTMLCanvasElement).width = pageWidth * this.pdfViewerBase.getZoomFactor();
+                        (pageDivs[i] as HTMLCanvasElement).style.width = pageWidth * this.pdfViewerBase.getZoomFactor() + 'px';
                         // eslint-disable-next-line max-len
-                        (pageDivs[i] as HTMLCanvasElement).height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor();
+                        (pageDivs[i] as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
                     }
 
                 }
@@ -767,7 +767,7 @@ export class Magnification {
                 }
                 // eslint-disable-next-line max-len
                 this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i, 'none');
-            } else {
+            } else if (!this.pdfViewer.restrictZoomRequest) {
                 // eslint-disable-next-line max-len
                 this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i, 'none');
             }

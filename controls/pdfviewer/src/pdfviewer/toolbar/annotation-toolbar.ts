@@ -200,7 +200,7 @@ export class AnnotationToolbar {
         this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_annotation_toolbar', className: 'e-pv-annotation-toolbar' });
         this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
         this.toolbar = new Tool({
-            width: '', height: '', overflowMode: 'Popup',
+            width: '', height: '', overflowMode: 'Popup', cssClass:'e-pv-toolbar-scroll',
             items: this.createToolbarItems(), clicked: this.onToolbarClicked.bind(this),
             created: () => {
                 this.createDropDowns();
@@ -2189,7 +2189,7 @@ export class AnnotationToolbar {
             this.afterPropertiesToolbarCreation();
         } else {
             if (isShape) {
-                if (!Browser.isDevice) {
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     // eslint-disable-next-line max-len
                     toolbar = new Tool({ items: this.createShapeToolbarItems(), overflowMode: 'MultiRow', clicked: this.onShapeToolbarClicked.bind(this) }, toolbarElement);
                     toolbar.isStringTemplate = true;
@@ -3320,7 +3320,7 @@ export class AnnotationToolbar {
      * @private
      */
     public showAnnotationToolbar(element?: HTMLElement, isInitialLoading?: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (!this.isToolbarHidden) {
                 // eslint-disable-next-line
                 let annotationModule: any = this.pdfViewer.annotationModule;

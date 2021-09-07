@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 19.2.59 (2021-08-31)
+## 19.2.60 (2021-09-07)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#F168308` - The pivot table can now be rendered properly with custom number formats.
+- `#339705` - When the virtualization feature is used, the pivot table can now be rendered properly without an unnecessary horizontal scrollbar when the content does not require it.
+
+## 19.2.56 (2021-08-17)
 
 ### Pivot Table
 

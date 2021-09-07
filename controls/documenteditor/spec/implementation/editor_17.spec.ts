@@ -532,3 +532,37 @@ describe('Table clipping if the last row height type is exactly', () => {
         
     });
 });
+describe('Paste optionv validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableComment: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Paste option validation', function () {
+        editor.openBlank();
+        editor.editor.insertText('Hello');
+        editor.selection.selectAll();
+        editor.selection.copy();
+        editor.editor.paste();
+        editor.editor.applyPasteOptions('KeepSourceFormatting');
+        expect(editor.editor.previousParaFormat).toBe(undefined);
+        
+    });
+});

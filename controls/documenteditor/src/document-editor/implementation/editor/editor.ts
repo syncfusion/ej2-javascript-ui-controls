@@ -179,7 +179,10 @@ export class Editor {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public copiedContent: any = '';
     private copiedTextContent: string = '';
-    private previousParaFormat: WParagraphFormat = undefined;
+    /**
+     * @private
+     */
+    public previousParaFormat: WParagraphFormat = undefined;
     private previousCharFormat: WCharacterFormat = undefined;
     private previousSectionFormat: WSectionFormat = undefined;
     private currentPasteOptions: PasteOptions;
@@ -241,46 +244,55 @@ export class Editor {
     public insertField(code: string, result?: string): void {
         this.isInsertField = true;
         let fieldCode: string = code;
-        if (isNullOrUndefined(result)) {
-            fieldCode = HelperMethods.trimStart(fieldCode);
-            if (fieldCode.substring(0, 10) === 'MERGEFIELD') {
-                fieldCode = fieldCode.substring(10).trim();
-                const index: number = fieldCode.indexOf('\\*');
-                result = '«' + fieldCode.substring(0, index).trim() + '»';
+        fieldCode = HelperMethods.trimStart(fieldCode);
+        if (fieldCode.substring(0, 8) === 'NUMPAGES') {
+            this.insertPageCount(result);
+        } else
+            if (fieldCode.substring(0, 4) === 'PAGE') {
+                this.insertPageNumber(result);
             }
-        }
-        const paragraph: ParagraphWidget = new ParagraphWidget();
-        const insertFormat: WCharacterFormat = new WCharacterFormat();
-        const selectionFormat: WCharacterFormat = this.copyInsertFormat(insertFormat, false);
-        const line: LineWidget = new LineWidget(paragraph);
-        const fieldBegin: FieldElementBox = new FieldElementBox(0);
-        fieldBegin.characterFormat.mergeFormat(selectionFormat);
-        line.children.push(fieldBegin);
-        const fieldCodeSpan: TextElementBox = new TextElementBox();
-        fieldCodeSpan.text = code;
-        line.children.push(fieldCodeSpan);
-        const fieldSeparator: FieldElementBox = new FieldElementBox(2);
-        fieldSeparator.fieldBegin = fieldBegin;
-        fieldBegin.fieldSeparator = fieldSeparator;
-        line.children.push(fieldSeparator);
-        const fieldResultSpan: TextElementBox = new TextElementBox();
-        fieldResultSpan.text = result;
-        fieldResultSpan.characterFormat.mergeFormat(selectionFormat);
-        line.children.push(fieldResultSpan);
-        const fieldEnd: FieldElementBox = new FieldElementBox(1);
-        fieldEnd.characterFormat.mergeFormat(selectionFormat);
-        fieldEnd.fieldSeparator = fieldSeparator;
-        fieldEnd.fieldBegin = fieldBegin;
-        fieldBegin.fieldEnd = fieldEnd;
-        fieldSeparator.fieldEnd = fieldEnd;
-        line.children.push(fieldEnd);
-        fieldBegin.line = line;
-        paragraph.childWidgets.push(line);
-        this.documentHelper.fields.push(fieldBegin);
-        const section: BodyWidget = new BodyWidget();
-        section.sectionFormat = new WSectionFormat(section);
-        section.childWidgets.push(paragraph);
-        this.pasteContentsInternal([section], false);
+            else {
+                if (isNullOrUndefined(result)) {
+                    if (fieldCode.substring(0, 10) === 'MERGEFIELD') {
+                        fieldCode = fieldCode.substring(10).trim();
+                        const index: number = fieldCode.indexOf('\\*');
+                        result = '«' + fieldCode.substring(0, index).trim() + '»';
+                    }
+                }
+
+                const paragraph: ParagraphWidget = new ParagraphWidget();
+                const insertFormat: WCharacterFormat = new WCharacterFormat();
+                const selectionFormat: WCharacterFormat = this.copyInsertFormat(insertFormat, false);
+                const line: LineWidget = new LineWidget(paragraph);
+                const fieldBegin: FieldElementBox = new FieldElementBox(0);
+                fieldBegin.characterFormat.mergeFormat(selectionFormat);
+                line.children.push(fieldBegin);
+                const fieldCodeSpan: TextElementBox = new TextElementBox();
+                fieldCodeSpan.text = code;
+                line.children.push(fieldCodeSpan);
+                const fieldSeparator: FieldElementBox = new FieldElementBox(2);
+                fieldSeparator.fieldBegin = fieldBegin;
+                fieldBegin.fieldSeparator = fieldSeparator;
+                line.children.push(fieldSeparator);
+                const fieldResultSpan: TextElementBox = new TextElementBox();
+                fieldResultSpan.text = result;
+                fieldResultSpan.characterFormat.mergeFormat(selectionFormat);
+                line.children.push(fieldResultSpan);
+                const fieldEnd: FieldElementBox = new FieldElementBox(1);
+                fieldEnd.characterFormat.mergeFormat(selectionFormat);
+                fieldEnd.fieldSeparator = fieldSeparator;
+                fieldEnd.fieldBegin = fieldBegin;
+                fieldBegin.fieldEnd = fieldEnd;
+                fieldSeparator.fieldEnd = fieldEnd;
+                line.children.push(fieldEnd);
+                fieldBegin.line = line;
+                paragraph.childWidgets.push(line);
+                this.documentHelper.fields.push(fieldBegin);
+                const section: BodyWidget = new BodyWidget();
+                section.sectionFormat = new WSectionFormat(section);
+                section.childWidgets.push(paragraph);
+                this.pasteContentsInternal([section], false);
+            }
         this.isInsertField = false;
     }
 

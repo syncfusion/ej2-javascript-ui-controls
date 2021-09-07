@@ -17,6 +17,8 @@ import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { FilterStateObj, IXLFilter } from '../common/filter-interface';
 import { Cell } from '../models/cell';
+import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
+import { GroupedData } from '../services/group-model-generator';
 import * as literals from '../base/string-literals';
 
 //https://typescript.codeplex.com/discussions/401501
@@ -1873,9 +1875,82 @@ export function removeEventHandlers(component: any, evts: string[], instance: an
  * @returns {void}
  * @hidden
  */
- export function clearReactVueTemplates(parent: IGrid | IXLFilter, templates: string[]): void {
+export function clearReactVueTemplates(parent: IGrid | IXLFilter, templates: string[]): void {
     parent.destroyTemplate(templates);
     if (parent.isReact) {
         parent.renderTemplates();
     }
+}
+
+/**
+ *
+ * @param { Element } row - Defines row element
+ * @returns { number } row index
+ */
+export function getRowIndexFromElement(row: Element): number {
+    return parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+}
+
+/**
+ *
+ * @param { string[] } fields - Defines grouped fields
+ * @param { values } values - Defines caption keys
+ * @param { any } instance - Defines dynamic class instance
+ * @returns { Predicate } returns filter predicate
+ */
+// eslint-disable-next-line
+export function generateExpandPredicates(fields: string[], values: string[], instance: any): Predicate {
+    let filterCols: PredicateModel[] = [];
+    for (let i: number = 0; i < fields.length; i++) {
+        const column: Column = instance.parent.getColumnByField(fields[i]);
+        const value: string = values[i] === 'null' ? null : values[i];
+        const pred: {
+            predicate?: string, field?: string, type?: string, uid?: string
+            operator?: string, matchCase?: boolean, ignoreAccent?: boolean
+        } = {
+            field: fields[i], predicate: 'or', uid: column.uid, operator: 'equal', type: column.type,
+            matchCase: instance.allowCaseSensitive, ignoreAccent: instance.parent.filterSettings.ignoreAccent
+        };
+        if (value === '' || isNullOrUndefined(value)) {
+            filterCols = filterCols.concat(CheckBoxFilterBase.generateNullValuePredicates(pred));
+        } else {
+            filterCols.push(extend({}, { value: value }, pred));
+        }
+    }
+    return CheckBoxFilterBase.getPredicate(filterCols);
+}
+
+/**
+ *
+ * @param { Predicate } pred - Defines filter predicate
+ * @returns { Predicate[] } Returns formed predicate
+ */
+export function getPredicates(pred: Predicate): Predicate[] {
+    const predicateList: Predicate[] = [];
+    for (const prop of Object.keys(pred)) {
+        predicateList.push(<Predicate>pred[prop]);
+    }
+    return predicateList;
+}
+
+/**
+ *
+ * @param { number } index - Defines group caption indent
+ * @param { Row<Column>[] } rowsObject - Defines rows object
+ * @returns { { fields: string[], keys: string[] } } Returns grouped keys and values
+ */
+export function getGroupKeysAndFields(index: number, rowsObject: Row<Column>[]): { fields: string[], keys: string[] } {
+    const fields: string[] = [];
+    const keys: string[] = [];
+    for (let i: number = index; i >= 0; i--) {
+        if (rowsObject[i].isCaptionRow && fields.indexOf((rowsObject[i].data as GroupedData).field) === -1
+            && (rowsObject[i].indent < rowsObject[index].indent || i === index)) {
+            fields.push((rowsObject[i].data as GroupedData).field);
+            keys.push((rowsObject[i].data as GroupedData).key);
+            if (rowsObject[i].indent === 0) {
+                break;
+            }
+        }
+    }
+    return { fields: fields, keys: keys };
 }

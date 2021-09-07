@@ -151,10 +151,12 @@ export class FocusModule {
             break;
         case 'addRow':
         {
-            e.preventDefault();
-            const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-gantt-chart');
-            focussedElement.focus();
-            ganttObj.addRecord();
+            if (isNullOrUndefined(document.getElementById(this.parent.element.id + '_dialog'))) {
+                e.preventDefault();
+                const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-gantt-chart');
+                focussedElement.focus();
+                ganttObj.addRecord();
+            }
             break;
         }
         case 'addRowDialog':

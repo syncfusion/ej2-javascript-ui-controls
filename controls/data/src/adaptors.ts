@@ -1,6 +1,6 @@
 import { Ajax } from '@syncfusion/ej2-base';
 import { merge, extend, isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
-import { DataUtil, Aggregates, Group } from './util';
+import { DataUtil, Aggregates, Group, GraphQLParams } from './util';
 import { DataManager, DataOptions } from './manager';
 import { Query, Predicate, QueryOptions, QueryList, ParamOption } from './query';
 const consts: { [key: string]: string } = { GroupGuid: '{271bbba0-1ee7}' };
@@ -666,7 +666,7 @@ export class UrlAdaptor extends Adaptor {
         return DataUtil.isNull(args.count) ? args.result : { result: args.result, count: args.count, aggregates: args.aggregates };
     }
 
-    private formRemoteGroupedData(data: Group[], level: number, childLevel: number): Group[] {
+    protected formRemoteGroupedData(data: Group[], level: number, childLevel: number): Group[] {
         for (let i: number = 0; i < data.length; i++) {
             if (data[i].items.length && Object.keys(data[i].items[0]).indexOf('key') > -1) {
                 this.formRemoteGroupedData(data[i].items, level + 1, childLevel - 1);
@@ -2104,6 +2104,143 @@ export class CustomDataAdaptor extends UrlAdaptor {
     }
 }
 
+/**
+ * The GraphqlAdaptor that is extended from URL Adaptor, is used for retrieving data from the Graphql server. 
+ * It interacts with the Graphql server with all the DataManager Queries and performs CRUD operations.
+ * @hidden
+ */
+export class GraphQLAdaptor extends UrlAdaptor {
+    protected getModuleName(): string {
+        return 'GraphQLAdaptor';
+    }
+
+    private opt: GraphQLAdaptorOptions;
+    private schema: { result: string, count?: string, aggregates?: string };
+    private query: string;
+    public getVariables: Function;
+    private getQuery: Function;
+
+    constructor(options: GraphQLAdaptorOptions) {
+        super();
+        this.opt = options;
+        this.schema = this.opt.response;
+        this.query = this.opt.query;
+        this.getVariables = this.opt.getVariables ? this.opt.getVariables : () => { };
+        this.getQuery = () => this.query;
+    }
+
+    /**
+     * Process the JSON data based on the provided queries.
+     * @param  {DataManager} dm
+     * @param  {Query} query?
+     */
+    public processQuery(datamanager: DataManager, query: Query): Object {
+        let urlQuery: { data: string } = super.processQuery.apply(this, arguments);        
+        let dm: { data: string } = JSON.parse(urlQuery.data);
+
+        // constructing GraphQL parameters
+        let keys: string[] = ['skip', 'take', 'sorted', 'table', 'select', 'where',
+            'search', 'requiresCounts', 'aggregates', 'params'];
+        let temp: GraphQLParams = {};
+        let str: string= 'searchwhereparams';
+        keys.filter((e: string) => {
+            temp[e] = str.indexOf(e) > -1 ? JSON.stringify(dm[e]) : dm[e];
+        });
+
+        let vars: Object = this.getVariables() || {};
+        vars['datamanager'] = temp;
+        let data: string = JSON.stringify({
+            query:  this.getQuery(),
+            variables: vars
+        });
+        urlQuery.data = data;
+        return urlQuery;
+    }
+    /**
+     * Returns the data from the query processing.
+     * It will also cache the data for later usage.
+     * @param  {DataResult} data
+     * @param  {DataManager} ds?
+     * @param  {Query} query?
+     * @param  {XMLHttpRequest} xhr?
+     * @param  {Object} request?
+     * @returns DataResult
+     */
+    public processResponse(resData: DataResult, ds?: DataManager, query?: Query, xhr?: XMLHttpRequest, request?: Object): DataResult {
+        const res: { data: Object[] } = resData as { data: Object[] };
+        let count: number;
+        let aggregates: Object;
+
+        let result: Object | String = getValue(this.schema.result, res.data);
+
+        if (this.schema.count) {
+            count = getValue(this.schema.count, res.data);
+        }
+
+        if (this.schema.aggregates) {
+            aggregates = getValue(this.schema.aggregates, res.data);
+            aggregates = !isNullOrUndefined(aggregates) ? DataUtil.parse.parseJson(aggregates) : aggregates;
+        }
+        let pvt: PvtOptions = (request as { pvtData?: Object }).pvtData || {};
+        let args: DataResult = { result: result, aggregates: aggregates };
+        let data: DataResult = args;
+        if ( pvt && pvt.groups && pvt.groups.length) {
+        this.getAggregateResult(pvt, data, args, null, query);  
+        }      
+        return !isNullOrUndefined(count) ? { result: args.result, count: count, aggregates: aggregates } : args.result;
+    }
+
+    /**
+     * Prepare and returns request body which is used to insert a new record in the table.
+     */
+    
+    public insert(): {data: string} {
+        let inserted: { data: string } = super.insert.apply(this, arguments);
+        return this.generateCrudData(inserted, 'insert');
+    }
+
+    /**
+     * Prepare and returns request body which is used to update a new record in the table.
+     */
+    public update(): {data: string} {
+        let inserted: { data: string } = super.update.apply(this, arguments);
+        return this.generateCrudData(inserted, 'update');
+    }
+
+    /**
+     * Prepare and returns request body which is used to remove a new record in the table.
+     */
+    public remove(): {data: string} {
+        let inserted: { data: string }= super.remove.apply(this, arguments);
+        return this.generateCrudData(inserted, 'remove');
+    }
+
+    /**
+     * Prepare the request body based on the newly added, removed and updated records.
+     * The result is used by the batch request. 
+     * @param  {DataManager} dm
+     * @param  {CrudOptions} changes
+     * @param  {Object} e
+     * @param  {Query} query
+     * @param  {Object} original
+     */
+     public batchRequest(dm: DataManager, changes: CrudOptions, e: {key: string}, query: Query, original?: Object): Object {
+        let batch: { data: string }= super.batchRequest.apply(this, arguments);
+        let bData = JSON.parse(batch.data);
+        bData.key = e.key;
+        batch.data = JSON.stringify(bData);
+        return this.generateCrudData(batch, 'batch');
+    }
+    
+    private generateCrudData(crudData: { data: string }, action: string): {data: string} {
+        let parsed: Object = JSON.parse(crudData.data);
+        crudData.data = JSON.stringify({
+            query: this.opt.getMutation(action),
+            variables: parsed
+        });
+        return crudData;
+    }
+}
 
 /**
  * Cache Adaptor is used to cache the data of the visited pages. It prevents new requests for the previously visited pages.
@@ -2422,6 +2559,17 @@ export interface RemoteOptions {
 /**
  * @hidden
  */
+export interface GraphQLAdaptorOptions {
+    response: { result: string, count?: string, aggregates?: string};
+    query: string;
+    getQuery?: () => string;
+    getVariables?: Function;
+    getMutation?: (action: string) => string;
+}
+
+/**
+ * @hidden
+ */
 interface TempOptions {
     pageIndex?: number;
     pageSize?: number;
@@ -2455,4 +2603,13 @@ export interface LazyLoadGroupArgs {
     result: Object[];
     group: Object[];
     page: { pageIndex: number, pageSize: number };
+}
+
+/**
+ * @hidden
+ */
+export type ReturnType = { 
+    result: Object[], 
+    count?: number, 
+    aggregates?: string
 }

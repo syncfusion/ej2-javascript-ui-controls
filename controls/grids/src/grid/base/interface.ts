@@ -995,6 +995,8 @@ export interface InfiniteScrollArgs {
     startIndex?: number;
     direction?: string;
     isFrozen?: boolean;
+    isCaptionCollapse?: boolean;
+    parentUid?: string;
 }
 
 /**

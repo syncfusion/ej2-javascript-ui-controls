@@ -167,6 +167,25 @@ export class Data {
                     if (this.parent.isDestroyed) { return; }
                        const dataManager: Promise<any> = this.getData(this.getQuery());
                         dataManager.then((e: ReturnType) => this.dataManagerSuccess(e, 'DataSourceChange')).catch((e: ReturnType) => this.dataManagerFailure(e));
+                        if (offlineArgs.requestType === "cardCreated") {
+                            if (!Array.isArray(e)) {
+                                offlineArgs.addedRecords[0] = extend(offlineArgs.addedRecords[0], e);
+                            } else {
+                                this.modifyArrayData(offlineArgs.addedRecords, e);
+                            }
+                        } else if (offlineArgs.requestType === "cardChanged") {
+                            if (!Array.isArray(e)) {
+                                offlineArgs.changedRecords[0] = extend(offlineArgs.changedRecords[0], e);
+                            } else {
+                                this.modifyArrayData(offlineArgs.changedRecords, e);
+                            }
+                        } else if (offlineArgs.requestType === "cardRemoved") {
+                            if (!Array.isArray(e)) {
+                                offlineArgs.deletedRecords[0] = extend(offlineArgs.deletedRecords[0], e);
+                            } else {
+                                this.modifyArrayData(offlineArgs.deletedRecords, e);
+                            }
+                        }
                         this.refreshUI(offlineArgs, index);
                     }).catch((e: ReturnType) => {
                         this.dataManagerFailure(e);
@@ -174,6 +193,15 @@ export class Data {
                 }
             }
         });
+    }
+
+    private modifyArrayData(onLineData: Record<string, any>[], e: Record<string, any>[]): Record<string, any>[] {
+        if (onLineData.length === e.length) {
+            for (let i: number = 0; i < e.length; i++) {
+                onLineData[i] = extend(onLineData[i], e[i]);
+            }
+        }
+        return onLineData;
     }
 
     /**
@@ -216,6 +244,6 @@ export class Data {
         this.parent.layoutModule.refresh();
         this.parent.renderTemplates();
         this.parent.notify(events.contentReady, {});
-        this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
+        this.parent.trigger(events.dataBound, args, () => this.parent.hideSpinner());
     }  
 }

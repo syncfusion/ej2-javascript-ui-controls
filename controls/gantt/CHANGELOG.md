@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.60 (2021-09-07)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#340155` - Dialog closes when pressing insert key issue has been fixed.
+
 ## 19.2.59 (2021-08-31)
 
 ### Gantt

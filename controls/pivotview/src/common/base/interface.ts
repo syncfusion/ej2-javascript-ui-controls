@@ -434,7 +434,12 @@ export interface PivotColumn {
      * Defines the width of the column header.
      */
     width: string | number;
-    /** Allows to enable/disable autofit of the column header. */
+    /**
+     * If `autoFit` set to true, then the particular column content width will be
+     * adjusted based on its content in the initial rendering itself.
+     *
+     * @default false
+     */
     autoFit: boolean;
 }
 

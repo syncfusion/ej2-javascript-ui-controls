@@ -759,5 +759,60 @@ describe('Sorting module => ', () => {
         });
     });
 
+    describe('EJ2-52528 - Multi Sorting number is not update properly => ', () => {
+        let gridObj: Grid;
+        let cols: any;
+        let actionComplete: (e?: Object) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 5 },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 },
+                        { field: 'ShipCountry', headerText: 'Ship Counrty', width: 150 },
+                        { field: 'Verified', width: 120, textAlign: 'Right' }]
+                }, done);
+        });
+        it('MultiSorting', (done: Function) => {
+            actionComplete = (args: Object): void => {
+                expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(3);
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            let columns: Object[] = [
+                { field: 'CustomerID', direction: 'Ascending', isFromGroup: false },
+                { field: 'ShipCity', direction: 'Ascending', isFromGroup: false },
+                { field: 'ShipCountry', direction: 'Descending', isFromGroup: false }
+            ];
+            gridObj.clearSorting();
+            gridObj.setProperties({ sortSettings: { columns: columns } });
+            gridObj.refreshColumns();
+            done();
+        });
+        it('remove one column dynamically', (done: Function) => {
+            actionComplete = (args: Object): void => {
+                gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber')[0].innerHTML = '1'
+                gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber')[1].innerHTML = '2'
+                expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(2);
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.sortModule as any).clickHandler({
+                target: gridObj.element.querySelectorAll('.e-headercell')[3],
+                ctrlKey: true
+            });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = cols = null;
+        });
+    });
 
 });

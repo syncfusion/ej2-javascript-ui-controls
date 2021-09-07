@@ -3777,6 +3777,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 }
             }
             if (!refreshBounds && renderer) {
+		this.rotatedDataLabelCollections = [];
                 this.removeSvg();
                 this.renderElements();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });

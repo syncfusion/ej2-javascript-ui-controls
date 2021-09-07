@@ -1898,6 +1898,49 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+    describe(' ActionComplete event triggered twice when replace the inserted image using quicktoolbar - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let actionCompleteCalled: boolean;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`,
+                actionComplete: actionCompleteFun            
+            });
+            function actionCompleteFun(args: any): void {
+                actionCompleteCalled = true;
+            }
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(' Testing image Replace and acitonComplete triggering', (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_Replace");
+                imageBtn.parentElement.click();
+                let png = "https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
+                let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-img-url');
+                urlInput.value = png;
+                let insertButton: HTMLElement = dialog.querySelector('.e-insertImage.e-primary');
+                insertButton.click();
+                let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
+                expect(updateImage.src === png).toBe(true);
+                setTimeout(function () {
+                    expect(actionCompleteCalled).toBe(true);
+                    done();
+                }, 40);
+            }, 100);
+        });
+    });
     describe(' EJ2-20297: RTE Image insert link  - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;

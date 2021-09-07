@@ -330,13 +330,15 @@ export class Resize implements IAction {
     }
 
     private refreshHeight(): void {
-        const element: HTMLElement[] = this.getResizeHandlers();
-        for (let i: number = 0; i < element.length; i++) {
-            if (element[i].parentElement.offsetHeight > 0) {
-                element[i].style.height = element[i].parentElement.offsetHeight + 'px';
+        if (this.parent.getHeaderTable()) {
+            const element: HTMLElement[] = this.getResizeHandlers();
+            for (let i: number = 0; i < element.length; i++) {
+                if (element[i].parentElement.offsetHeight > 0) {
+                    element[i].style.height = element[i].parentElement.offsetHeight + 'px';
+                }
             }
+            this.setHandlerHeight();
         }
-        this.setHandlerHeight();
     }
 
     private wireEvents(): void {

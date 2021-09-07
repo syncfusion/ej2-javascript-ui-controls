@@ -3738,10 +3738,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     transform: horiOffset + 0 + 'px)'
                 });
                 /* eslint-disable */
-                if (!this.renderModule.isOverflows) {
-                    let columWidth = this.renderModule.calculateColWidth(this.pivotColumns.length);
-                    vWidth = columWidth * engine.columnCount - engine.columnCount * 3;
-                }
                 if (!isNullOrUndefined(this.resizedValue)) {
                     (this.element.querySelector('.e-frozenscrollbar') as HTMLElement).style.width = this.resizedValue + 'px';
                 }

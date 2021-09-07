@@ -1,14 +1,13 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
-import { formulaOperation, keyUp, keyDown, click, refreshFormulaDatasource } from '../common/event';
-import { editOperation, formulaBarOperation } from '../common/event';
-import { workbookFormulaOperation } from '../../workbook/common/event';
+import { formulaOperation, keyUp, keyDown, click, refreshFormulaDatasource, formulaBarOperation, keyCodes } from '../common/index';
+import { editOperation, dialog, locale, focus } from '../common/index';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { KeyboardEventArgs, L10n, detach, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes, Workbook, isCellReference } from '../../workbook/index';
+import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes, isCellReference } from '../../workbook/index';
+import { workbookFormulaOperation, Workbook } from '../../workbook/index';
 import { Dialog } from '../services/index';
-import { dialog, locale, focus } from '../common/index';
 
 /**
  * @hidden
@@ -22,21 +21,6 @@ export class Formula {
     private isPopupOpened: boolean = false;
     private isPreventClose: boolean = false;
     private isSubFormula: boolean = false;
-    private argumentSeparator: string;
-    private keyCodes: { [key: string]: number } = {
-        UP: 38,
-        DOWN: 40,
-        LEFT: 37,
-        RIGHT: 39,
-        FIRSTALPHABET: 65,
-        LASTALPHABET: 90,
-        SPACE: 32,
-        BACKSPACE: 8,
-        TAB: 9,
-        DELETE: 46,
-        ENTER: 13,
-        ESC: 27
-    };
 
     public autocompleteInstance: AutoComplete;
 
@@ -182,7 +166,7 @@ export class Formula {
         new Promise((resolve: Function, reject: Function) => {
             setTimeout(() => { resolve(); }, 100);
         }).then(() => {
-            this.triggerKeyDownEvent(this.keyCodes.DOWN);
+            this.triggerKeyDownEvent(keyCodes.DOWN);
         });
     }
 
@@ -247,7 +231,7 @@ export class Formula {
             this.isFormula = checkIsFormula(editValue);
 
             if (this.isFormula || this.isPopupOpened) {
-                if (e.keyCode !== this.keyCodes.TAB && this.isFormula) {
+                if (e.keyCode !== keyCodes.TAB && this.isFormula) {
                     editValue = this.getSuggestionKeyFromFormula(editValue);
                 }
                 this.refreshFormulaSuggestion(e, editValue);
@@ -262,14 +246,14 @@ export class Formula {
         if (this.isFormula) {
             if (this.isPopupOpened) {
                 switch (keyCode) {
-                case this.keyCodes.UP:
-                case this.keyCodes.DOWN:
+                case keyCodes.UP:
+                case keyCodes.DOWN:
                     e.preventDefault();
                     this.triggerKeyDownEvent(keyCode);
                     break;
-                case this.keyCodes.TAB:
+                case keyCodes.TAB:
                     e.preventDefault();
-                    this.triggerKeyDownEvent(this.keyCodes.ENTER);
+                    this.triggerKeyDownEvent(keyCodes.ENTER);
                     break;
                 }
             }
@@ -277,11 +261,11 @@ export class Formula {
             const trgtElem: HTMLInputElement = <HTMLInputElement>e.target;
             if (trgtElem.id === this.parent.element.id + '_name_box') {
                 switch (keyCode) {
-                case this.keyCodes.ENTER:
+                case keyCodes.ENTER:
                     this.addDefinedName({ name: trgtElem.value });
                     focus(this.parent.element);
                     break;
-                case this.keyCodes.ESC:
+                case keyCodes.ESC:
                     focus(this.parent.element);
                     break;
                 }
@@ -306,7 +290,7 @@ export class Formula {
                 autoCompleteElem.dispatchEvent(new Event('input'));
                 autoCompleteElem.dispatchEvent(new Event('keyup'));
                 if (isSuggestionAlreadyOpened) {
-                    this.triggerKeyDownEvent(this.keyCodes.DOWN);
+                    this.triggerKeyDownEvent(keyCodes.DOWN);
                 }
             }
         } else {
@@ -375,8 +359,8 @@ export class Formula {
     }
 
     private isNavigationKey(keyCode: number): boolean {
-        return (keyCode === this.keyCodes.UP) || (keyCode === this.keyCodes.DOWN) || (keyCode === this.keyCodes.LEFT)
-            || (keyCode === this.keyCodes.RIGHT);
+        return (keyCode === keyCodes.UP) || (keyCode === keyCodes.DOWN) || (keyCode === keyCodes.LEFT)
+            || (keyCode === keyCodes.RIGHT);
     }
 
     private triggerKeyDownEvent(keyCode: number): void {
@@ -393,16 +377,9 @@ export class Formula {
     }
 
     private getArgumentSeparator(): string {
-        if (this.argumentSeparator) {
-            return this.argumentSeparator;
-        } else {
-            const eventArgs: { action: string, argumentSeparator: string } = {
-                action: 'getArgumentSeparator', argumentSeparator: ''
-            };
-            this.parent.notify(workbookFormulaOperation, eventArgs);
-            this.argumentSeparator = eventArgs.argumentSeparator;
-            return eventArgs.argumentSeparator;
-        }
+        const eventArgs: { action: string, argumentSeparator: string } = { action: 'getArgumentSeparator', argumentSeparator: '' };
+        this.parent.notify(workbookFormulaOperation, eventArgs);
+        return eventArgs.argumentSeparator;
     }
 
     private getNames(sheetName?: string): DefineNameModel[] {

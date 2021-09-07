@@ -1,5 +1,5 @@
 import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
-import { remove, resetBlazorTemplate, blazorTemplates } from '@syncfusion/ej2-base';
+import { remove, resetBlazorTemplate, blazorTemplates, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
 import { IGrid, NotifyArgs, IValueFormatter } from '../base/interface';
@@ -203,7 +203,7 @@ export class Render {
      * @returns {void}
      */
     private refreshDataManager(args: NotifyArgs = {}): void {
-        if (args.requestType !== 'virtualscroll') {
+        if (args.requestType !== 'virtualscroll' && args.requestType !== 'infiniteScroll') {
             this.parent.showSpinner();
         }
         this.parent.notify(events.resetInfiniteBlocks, args);
@@ -459,6 +459,7 @@ export class Render {
                     this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
                 }
             } else {
+                if (args && (<{ isCaptionCollapse?: boolean }>args).isCaptionCollapse) { return; }
                 if (!gObj.getColumns().length) {
                     gObj.element.innerHTML = '';
                     alert(this.l10n.getConstant('EmptyDataSourceError')); //ToDO: change this alert as dialog
@@ -659,9 +660,11 @@ export class Render {
                         const context: Object = this.parent;
                         if (types[l] === 'Custom') {
                             const data: Group = itemGroup.level ? uGroupItem : uGroup;
-                            elements[i].aggregates[key] = (row.columns[k] as AggregateColumnModel).customAggregate ?
-                                (<Function>(row.columns[k] as AggregateColumnModel).customAggregate)
-                                    .call(context, data, (row.columns[k] as AggregateColumnModel)) : '';
+                            let temp: Function = (row.columns[k] as AggregateColumnModel).customAggregate as Function;
+                            if (typeof temp === 'string') {
+                                temp = getValue(temp, window);
+                            }
+                            elements[i].aggregates[key] = temp ? (temp as Function).call(context, data, (row.columns[k] as AggregateColumnModel)) : '';
                         } else {
                             // eslint-disable-next-line max-len
                             elements[i].aggregates[key] = DataUtil.aggregates[types[l].toLowerCase()](data, (row.columns[k] as AggregateColumnModel).field);

@@ -11,6 +11,7 @@ import { Freeze } from '../../../src/grid/actions/freeze';
 import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { SortSettingsModel } from '../../../src/grid/base/grid-model';
 import { Column } from '../../../src/grid/models/column';
 import { createGrid, destroy, getKeyUpObj, getClickObj } from '../base/specutil.spec';
@@ -18,8 +19,9 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { RowSelectEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
+import { infiniteGroupData } from '../../../spec/grid/base/datasource.spec';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze, Aggregate);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -1515,5 +1517,98 @@ describe('EJ2-51576 - Adding is not working in infinite scroll with frozen colum
     afterAll(() => {
         destroy(gridObj);
         gridObj = localData = null;
+    });
+});
+
+describe('Infinite scroll with grouping collapse testing => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: infiniteGroupData,
+                allowGrouping: true,
+                enableInfiniteScrolling: true,
+                groupSettings: { columns: ['ProductName'] },
+                height: 400,
+                columns: [
+                    { field: 'OrderID', headerText: 'Employee ID', textAlign: 'Right', width: 125, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 125, editType: 'dropdownedit' },
+                    { field: 'CustomerName', headerText: 'Customer Name', width: 180, editType: 'dropdownedit' },
+                    { field: 'CustomerAddress', headerText: 'Customer Address', width: 110 },
+                    { field: 'ProductName', headerText: 'Product Name', width: 110 }
+                ],
+                aggregates: [{
+                    columns: [{
+                        type: 'Sum',
+                        field: 'OrderID',
+                        groupFooterTemplate: 'Total Order: ${Sum}'
+                    },
+                    {
+                        type: 'Count',
+                        field: 'CustomerID',
+                        groupCaptionTemplate: 'Maximum: ${Count}'
+                    }]
+                }]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('Initial check =>', () => {
+        expect(gridObj.groupSettings.disablePageWiseAggregates).toBe(true);
+        expect(gridObj.getContent().querySelectorAll('.e-groupcaption').length).toBe(1);
+        expect(gridObj.getContent().querySelectorAll('.e-summaryrow').length).toBe(0);
+    });
+
+    it('Collapse caption =>', (done: Function) => {
+        gridObj.dataBound = undefined; let triggerCount: number = 0;
+        let nextCount: number = 0;
+        const dataBound = () => {
+            triggerCount++;
+            if (triggerCount === 2) {
+                expect(gridObj.getContent().querySelectorAll('.e-groupcaption').length).toBe(2);
+                expect(gridObj.getContent().querySelectorAll('.e-summaryrow').length).toBe(1);
+                const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('aria-rowindex'), 10);
+                expect(skip).toBe(nextCount);
+                gridObj.dataBound = undefined;
+                done();
+            } else {
+                const caption: any = gridObj.getRowsObject()[0];
+                const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('aria-rowindex'), 10) + 1;
+                const size: number = gridObj.pageSettings.pageSize;
+                expect(skip).toBe(caption.data.count);
+                expect((gridObj.infiniteScrollModule as any).groupCaptionAction).toBe('refresh');
+                let additionalCnt: number = ((skip - (skip % size)) + size) - skip;
+                nextCount = skip + (gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize) + additionalCnt - 1;
+            }
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.groupModule.expandCollapseRows(gridObj.getContent().querySelectorAll('.e-recordplusexpand')[0]);
+    });
+
+    it('Multiple group testing =>', (done: Function) => {
+        const dataBound = () => {
+            expect(gridObj.getContent().querySelectorAll('.e-groupcaption').length).toBe(4);
+            expect(gridObj.getContent().querySelectorAll('.e-summaryrow').length).toBe(1);
+            gridObj.dataBound = undefined;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.groupSettings.columns = ['ProductName', 'CustomerID', 'CustomerAddress'];
+    });
+
+    it('Complex caption collapse =>', (done: Function) => {
+        const dataBound = () => {
+            const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('aria-rowindex'), 10) + 1;
+            expect(skip).toBe(gridObj.pageSettings.pageSize * (gridObj.infiniteScrollSettings.initialBlocks * 2));
+            gridObj.dataBound = undefined;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.groupModule.expandCollapseRows(gridObj.getContent().querySelectorAll('.e-recordplusexpand')[2])
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });
