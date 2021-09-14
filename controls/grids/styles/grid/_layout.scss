@@ -315,7 +315,7 @@
     }
 
     .e-columnmenu {
-      right: 10px;
+      right: $grid-column-menu-right-touch;
     }
 
     .e-groupheadercell,
@@ -641,6 +641,7 @@
       border-left: 0;
       border-right: 0;
       border-top: $grid-toolbar-border-width $grid-header-border-color;
+      border-radius: 0;
     }
 
     .e-res-toolbar {

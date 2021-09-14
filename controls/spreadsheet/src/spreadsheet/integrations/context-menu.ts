@@ -170,13 +170,15 @@ export class ContextMenu {
             case id + '_insert_column_before': case id + '_delete_column':
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                 this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
-                    this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true });
+                    this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true,
+                    insertType: 'before'});
                 focus(this.parent.element);
                 break;
             case id + '_insert_column_after':
                 indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                 this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
-                    indexes[3] + 1, end: indexes[3] + 1 + (indexes[3] - indexes[1]), modelType: 'Column', isAction: true });
+                    indexes[3] + 1, end: indexes[3] + 1 + (indexes[3] - indexes[1]), modelType: 'Column', isAction: true,
+                    insertType: 'after' });
                 focus(this.parent.element);
                 break;
             case id + '_hyperlink':

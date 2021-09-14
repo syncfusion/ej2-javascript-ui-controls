@@ -30,7 +30,7 @@ export class Edit {
     private selectionStart: number = null;
     private selectionEnd: number = null;
     private endFormulaRef: boolean;
-    private uniqueColl: string;
+    private uniqueColl: string = '';
     private uniqueCell: boolean;
     private uniqueActCell: string = '';
     private isSpill: boolean = false;
@@ -847,6 +847,10 @@ export class Edit {
             oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const cellIndex: number[] = getRangeIndexes(sheet.activeCell);
+            if (oldCellValue && oldCellValue.toString().indexOf('UNIQUE') > - 1 &&
+            this.editCellData.value && this.editCellData.value.toString().indexOf('UNIQUE') > - 1 && isUniqueRange) {
+                this.updateUniqueRange('');
+            }
             this.parent.notify(
                 workbookEditOperation,
                 { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
@@ -871,7 +875,7 @@ export class Edit {
                             const cell: CellModel = getCell(j, k, sheet);
                             if (j === rangeIdx[0] && k === rangeIdx[1]) {
                                 skip = false;
-                            } else if (!isNullOrUndefined(cell.value) && cell.value !== '') {
+                            } else if (cell && !isNullOrUndefined(cell.value) && cell.value !== '') {
                                 skip = true;
                             }
                         }
@@ -895,9 +899,17 @@ export class Edit {
                 for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
                     if (uniquArgs.cellIdx[0] === j && uniquArgs.cellIdx[1] === k) {
                         uniquArgs.isUnique = true; this.uniqueCell = true;
-                        this.uniqueColl = collection[i];
-                        uniquArgs.uniqueRange = collection[i];
-                        break;
+                        const uniqueIndex: number[] = this.uniqueColl !== '' ? getRangeIndexes(this.uniqueColl) : [0, 0, 0, 0];
+                        const collectionIndex: number[] = getRangeIndexes(collection[i]);
+                        if (uniqueIndex[0] === collectionIndex[0] && uniqueIndex[1] === collectionIndex[1]) {
+                            const index: number[] = [uniqueIndex[0], collectionIndex[1], uniqueIndex[0], collectionIndex[1]];
+                            index[2] = uniqueIndex[2] > collectionIndex[2] ? uniqueIndex[2] : collectionIndex[2];
+                            index[3] = uniqueIndex[3] > collectionIndex[3] ? uniqueIndex[3] : collectionIndex[3];
+                            this.uniqueColl = getRangeAddress(index);
+                            uniquArgs.uniqueRange = getRangeAddress(index);
+                        } else { this.uniqueColl = collection[i];
+                            uniquArgs.uniqueRange = collection[i];
+                        }
                     }
                 }
             }
@@ -947,8 +959,8 @@ export class Edit {
     private refreshDependentCellValue(rowIdx: number, colIdx: number, sheetIdx: number): void {
         if (rowIdx && colIdx) {
             rowIdx--; colIdx--;
-            if ((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
-                && this.parent.activeSheetIndex === sheetIdx|| this.uniqueCell) {
+            if (((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
+                && this.parent.activeSheetIndex === sheetIdx) || (this.uniqueCell && this.parent.activeSheetIndex === sheetIdx)) {
                 const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
                     if (td.parentElement) {

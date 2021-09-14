@@ -128,7 +128,7 @@ export class Open {
         }
         this.parent.trigger('openComplete', { response: response });
         this.parent.notify(completeAction, {response: response, action: 'import'});
-        this.parent.renderModule.refreshSheet(true);
+        this.parent.renderModule.refreshSheet(response.isOpenFromJson);
         this.parent.notify(refreshSheetTabs, this);
         this.parent.hideSpinner();
     }
@@ -168,4 +168,5 @@ export class Open {
 interface JsonData {
     data: string;
     eventArgs: OpenOptions;
+    isOpenFromJson: boolean;
 }

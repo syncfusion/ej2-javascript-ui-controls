@@ -4,7 +4,15 @@
 
 ## [Unreleased]
 
-## 19.2.60 (2021-09-07)
+## 19.2.62 (2021-09-14)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I340597` - Tooltip template will now render properly when the Circular Gauge size is smaller than the template's width.
+
+## 19.2.57 (2021-08-24)
 
 ### CircularGauge
 

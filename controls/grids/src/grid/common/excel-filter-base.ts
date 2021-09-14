@@ -40,6 +40,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private secondOperator: string;
     private childRefs: object[] = [];
     private eventHandlers: { [x: string]: { [y: string]: Function } } = {};
+    private isDevice: boolean = false;
 
     /**
      * Constructor for excel filtering module
@@ -93,7 +94,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             this.unwireExEvents();
             super.closeDialog();
         }
-        if (this.menuObj) {
+        if (!this.isDevice && this.menuObj) {
             const li: HTMLElement = this.menuObj.element.querySelector('li.e-focused');
             if (!(li && parentsUntil(li, 'e-excel-menu'))) {
                 this.destroyCMenu();
@@ -238,10 +239,12 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 });
             } else {
                 if (Browser.isDevice) {
+                    this.isDevice = true;
                     const contextRect: ClientRect = this.getContextBounds();
                     pos.top = (window.innerHeight - contextRect.height) / 2;
                     pos.left = (window.innerWidth - contextRect.width) / 2;
                     this.closeDialog();
+                    this.isDevice = false;
                 } else {
                     pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
                     pos.left = this.getCMenuYPosition(this.dlg);

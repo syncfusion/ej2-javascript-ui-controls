@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## 19.2.62 (2021-09-14)
+
+### Grid
+
+#### Bug Fixes
+
+- `#F168526` - `enablePersistence` was not maintained when filtering applied on `foreignKey` column.
+- `#I335206` - Throws script error while adding the stacked columns dynamically is fixed.
+- `#I341127` - Excel filter sub menus does not open in mobile device is Fixed.
+- `#I340337` - Immutable mode doesn’t work for deep compare data issue has been fixed.
+- `#I336801` - Infinite scrolling with editing with checkbox selection issue has been fixed.
+
+## 19.2.60 (2021-09-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I339334` - `exportDetailDataBound` event not triggered when export the `HierarchyGrid` has been fixed.
+- `#I339880` - Script error throws when enable `textwrap` with auto generated columns, issue has been fixed.
+- `#FB27674` - Multi column dynamic sorting issue has been resolved.
+- `#I340037` - Grid focus out issue has been resolved.
+- `#I340122` - Script error while using custom component on boolean menu filter has been resolved.
+- `#I339774` - Script error throws while hiding columns in enabled `lazyload` grid, has been fixed.
+
 ## 19.2.59 (2021-08-31)
 
 ### Grid

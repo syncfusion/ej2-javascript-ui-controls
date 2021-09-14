@@ -917,6 +917,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public localeObj: L10n;
     /** @hidden */
     public isManualRefresh: boolean = false;
+    /** @hidden */
+    public enableDeepCompare: boolean = false;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
     private keyConfigs: { [key: string]: string };

@@ -220,7 +220,7 @@
     margin-right: $dialog-footer-button-margin-right;
   }
 
-  .e-dialog.e-draggable .e-dlg-header-content {
+  .e-dialog.e-draggable> .e-dlg-header-content {
     cursor: move;
   }
 

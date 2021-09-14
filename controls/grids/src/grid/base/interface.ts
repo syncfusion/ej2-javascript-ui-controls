@@ -535,6 +535,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     isManualRefresh?: boolean;
 
+    enableDeepCompare?: boolean;
+
     prevPageMoving?: boolean;
 
     renderModule?: Render;

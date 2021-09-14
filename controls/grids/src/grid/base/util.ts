@@ -333,7 +333,7 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
 
         if (typeof columns[c] === 'string') {
             column = new Column({ field: <string>columns[c] }, gObj);
-        } else if (!(columns[c] instanceof Column)) {
+        } else if (!(columns[c] instanceof Column) || (columns[c] as Column).columns) {
             if (!(columns[c] as Column).columns) {
                 column = new Column(columns[c] as Column, gObj);
             } else {
@@ -1233,11 +1233,10 @@ export function checkDepth(col: Column, index: number): number {
  */
 export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel[]): void {
     for (let i: number = 0; i < filteredCols.length; i++) {
-        const uid: string = gObj.enableColumnVirtualization ? getColumnModelByFieldName(gObj, filteredCols[i].field).uid
-            : gObj.getColumnByField(filteredCols[i].field).uid;
         filteredCols[i].uid = filteredCols[i].isForeignKey ?
             getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
-            : uid;
+            : gObj.enableColumnVirtualization ? getColumnModelByFieldName(gObj, filteredCols[i].field).uid
+                : gObj.getColumnByField(filteredCols[i].field).uid;
     }
 }
 
@@ -1829,6 +1828,7 @@ export function getColumnModelByUid(gObj: IGrid, uid: string): Column {
  */
 export function getColumnModelByFieldName(gObj: IGrid, field: string): Column {
     let column: Column;
+    if (!(<{ columnModel?: Column[] }>gObj).columnModel) { <Column[]>gObj.getColumns(); }
     for (const col of ((<{ columnModel?: Column[] }>gObj).columnModel)) {
         if (col.field === field) {
             column = col;

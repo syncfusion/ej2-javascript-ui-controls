@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.62 (2021-09-14)
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#I341137` - Issue with "fixed grouping headers are not updated while scrolling the popup after set the grouping dynamically" has been resolved.
+
 ## 19.2.55 (2021-08-11)
 
 ### ListBox

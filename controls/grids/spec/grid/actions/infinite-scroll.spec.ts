@@ -1612,3 +1612,57 @@ describe('Infinite scroll with grouping collapse testing => ', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-52419 - Infinite scrolling with frozen columns editing with checkbox selection is not working properly => ', () => {
+    let gridObj: Grid;
+    let localData: object[] = [
+        { FIELD1: '10001', FIELD2: 'Test1', FIELD3: 0, FIELD4: 5 },
+        { FIELD1: '10002', FIELD2: 'Test2', FIELD3: 1, FIELD4: 5 },
+        { FIELD1: '10003', FIELD2: 'Test3', FIELD3: 3, FIELD4: 5 }
+    ];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: localData,
+                enableInfiniteScrolling: true,
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                frozenColumns: 1,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'name', headerText: 'FIELD4', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('Edit the row', function(done: Function){
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'beginEdit') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(1);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+    it('Check the edited data', function(done: Function){
+        let actionComplete = function(args?: any) {
+            if (args.requestType === 'save') {
+                expect(args.data.name).toBeUndefined();
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = localData = null;
+    });
+});

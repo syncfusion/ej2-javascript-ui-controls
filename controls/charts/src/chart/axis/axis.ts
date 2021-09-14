@@ -1114,12 +1114,12 @@ export class Axis extends ChildProperty<Axis> {
      * @returns {void}
      * @private
      */
-    public calculateVisibleRangeOnZooming(chart: Chart): void {
+    public calculateVisibleRangeOnZooming(size: Size): void {
         if (isZoomSet(this)) {
             const baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
             let end: number;
-            if (!this.isInversed || chart.zoomModule) {
+            if (!this.isInversed) {
                 start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
                 end = start + this.zoomFactor * this.actualRange.delta;
             } else {

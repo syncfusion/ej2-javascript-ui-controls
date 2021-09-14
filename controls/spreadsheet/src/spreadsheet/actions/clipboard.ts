@@ -258,6 +258,9 @@ export class Clipboard {
                 const cRows: RowModel[] = [];
                 const isInRange: boolean = this.isInRange(cIdx, selIdx, copiedIdx);
                 const isRowSelected: boolean = (selIdx[1] === 0 && selIdx[3] === curSheet.colCount - 1);
+                const isColSelected: boolean = (selIdx[0] === 0 && selIdx[2] === curSheet.rowCount - 1);
+                let isFullRowMerge: boolean = false;
+                let isFullColMerge: boolean = false;
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
                     if (isInRange) {
                         cRows[selIdx[0] + l] = { cells: [] };
@@ -268,6 +271,37 @@ export class Clipboard {
                         }
                         cell = isExternal ? rows[i].cells[j] : extend({}, (isInRange && cRows[i] && cRows[i].cells[j])
                             ? cRows[i].cells[j] : getCell(i, j, prevSheet), null, true);
+                        if (isRowSelected || isColSelected) {
+                            if (cell && cell.rowSpan) {
+                                if (cell.rowSpan > 0) {
+                                    if ((cell.rowSpan + i) - 1 <= cIdx[2]) {
+                                        isFullRowMerge = true;
+                                    } else {
+                                        cell = {};
+                                    }
+                                } else if (!isFullRowMerge) {
+                                    cell = {};
+                                } else if (cell.rowSpan < 0) {
+                                    const rowSpan: number = cell.rowSpan;
+                                    const colSpan: number = cell.colSpan ? cell.colSpan : 0;
+                                    const spanCell: CellModel = getCell(rowIdx + rowSpan, (selIdx[1] + k) + colSpan, curSheet);
+                                    if (spanCell && !spanCell.rowSpan) {
+                                        cell = {};
+                                    }
+                                }
+                            }
+                            if (cell && cell.colSpan) {
+                                if (cell.colSpan > 0) {
+                                    if ((cell.colSpan + j) - 1 <= cIdx[3]) {
+                                        isFullColMerge = true;
+                                    } else {
+                                        cell = {};
+                                    }
+                                } else if (!isFullColMerge) {
+                                    cell = {};
+                                }
+                            }
+                        }
                         if (cell && args && args.type || pasteType) {
                             switch (pasteType) {
                                 case 'Formats':
@@ -331,9 +365,6 @@ export class Clipboard {
                                     }
                                     this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ?
                                         true : y === selIdx[3], isExternal as boolean);
-                                    if (cell.colSpan < 0) {
-                                        rfshRange[3] = rfshRange[3] - 1;
-                                    }
                                     const sId: number = this.parent.activeSheetIndex;
                                     const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
                                     const address: string = getCellAddress(x + l, colInd);
@@ -575,8 +606,12 @@ export class Clipboard {
         const sheet: ExtendedSheet = this.parent.getActiveSheet() as Sheet;
         let range: number[];
         if (args && args.range) {
+            const isRowSelected: boolean = (args.range[1] === 0 && args.range[3] === sheet.colCount - 1);
+            const isColSelected: boolean = (args.range[0] === 0 && args.range[2] === sheet.rowCount - 1);
             const mergeArgs: MergeArgs = { range: args.range };
-            this.parent.notify(mergedRange, mergeArgs);
+            if (!(isRowSelected || isColSelected)) {
+                this.parent.notify(mergedRange, mergeArgs);
+            }
             range = mergeArgs.range as number[];
         } else {
             range = getRangeIndexes(sheet.selectedRange);
@@ -733,7 +768,10 @@ export class Clipboard {
         for (let i: number = range[0]; i <= range[2]; i++) {
             data += '<tr>';
             for (let j: number = range[1]; j <= range[3]; j++) {
-                cell = getCell(i, j, sheet);
+                cell = getCell(i, j, sheet, false, true);
+                if (cell.colSpan < 0 || cell.rowSpan < 0) {
+                    continue;
+                }
                 data += '<td';
                 if (cell.colSpan) {
                     data += ' colspan="' + cell.colSpan + '"';
@@ -741,21 +779,21 @@ export class Clipboard {
                 if (cell.rowSpan) {
                     data += ' rowspan="' + cell.rowSpan + '"';
                 }
-                if (cell && cell.format && cell.format !== 'General') {
+                if (cell.format && cell.format !== 'General') {
                     // eslint-disable-next-line
                     data += cell.format.includes('"') ? " number-format='" + cell.format + "'" : ' number-format="' + cell.format + '"';
                 }
-                data += ' style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
-                if (cell && cell.style) {
+                data += ' style="white-space:' + (cell.wrap ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
+                if (cell.style) {
                     Object.keys(cell.style).forEach((style: string) => {
                         const regex: RegExpMatchArray = style.match(/[A-Z]/);
                         data += (style === 'backgroundColor' ? 'background' : (regex ? style.replace(regex[0], '-'
                             + regex[0].toLowerCase()) : style)) + ':' + ((style === 'backgroundColor' || style === 'color')
-                            ? cell.style[style].slice(0, 7) : cell.style[style]) + ';';
+                                ? cell.style[style].slice(0, 7) : cell.style[style]) + ';';
                     });
                 }
                 data += '"';
-                if (cell && !isNullOrUndefined(cell.value)) {
+                if (!isNullOrUndefined(cell.value)) {
                     const eventArgs: { [key: string]: string | number | boolean } = {
                         formattedText: cell.value,
                         value: cell.value,

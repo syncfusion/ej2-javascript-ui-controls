@@ -917,7 +917,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (this.scrollSettings.enableVirtualization) {
             new VirtualScroll(this);
         }
-        this.renderModule.render(this.refreshing);
+        this.renderModule.render();
         new ShowHide(this);
     }
 
@@ -1261,8 +1261,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             range: getIndexesFromAddress(address),
             sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))] ?
             this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.getActiveSheet().id,
-            promise: promise
-        } : { promise: promise });
+            promise: promise, isAction: true
+        } : { promise: promise, isAction: true });
         return promise;
     }
 
@@ -1282,8 +1282,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             range: getIndexesFromAddress(address),
             sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))] ?
                 this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.getActiveSheet().id,
-            promise: promise
-        } : { promise: promise });
+            promise: promise, isAction: true
+        } : { promise: promise, isAction: true });
         return promise;
     }
 

@@ -349,17 +349,11 @@ export class SheetTabs {
         } else {
             this.showRenameDialog(target, l10n.getConstant('SheetRenameEmptyAlert'));
         }
-        const sheetId: number = this.parent.getActiveSheet().id;
-        const args: { [key: string]: Object } = { action: 'renameUpdation', value: value, sheetId: sheetId };
-        this.parent.notify(workbookFormulaOperation, args);
-        const eventArgs: { [key: string]: Object } = {
-            index: sheetId,
-            value: value
-        };
-        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'renameSheet' });
+        this.parent.notify(completeAction, { eventArgs: { index: this.parent.getActiveSheet().id, value: value }, action: 'renameSheet' });
     }
 
     private updateSheetName(args: { value: string, idx: number, items?: Element, }): void {
+        const pName: string = this.tabInstance.items[args.idx].header.text as string;
         this.tabInstance.items[args.idx].header.text = args.value;
         this.dropDownInstance.items[args.idx].text = args.value;
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
@@ -370,7 +364,7 @@ export class SheetTabs {
             args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = args.value;
             this.tabInstance.dataBind();
         }
-
+        this.parent.notify(workbookFormulaOperation, { action: 'renameUpdation', value: args.value, pName: pName });
     }
 
     private hideSheet(): void {

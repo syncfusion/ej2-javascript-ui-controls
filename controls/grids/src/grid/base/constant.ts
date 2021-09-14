@@ -546,3 +546,5 @@ export const destroyChildGrid: string = 'destroy-child-grid';
 export const stickyScrollComplete: string = 'sticky-scroll-complete';
 /** @hidden */
 export const captionActionComplete: string = 'infinite-group-collapse';
+/** @hidden */
+export const refreshInfinitePersistSelection: string = 'refresh-infinite-persist-selection';

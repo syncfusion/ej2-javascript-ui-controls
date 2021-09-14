@@ -483,7 +483,8 @@ export class Column {
             this.uid = getUid('grid-column');
         }
         const valueFormatter: ValueFormatter = new ValueFormatter();
-        if (options.format && ((<DateFormatOptions>options.format).skeleton || (<DateFormatOptions>options.format).format)) {
+        if (options.format && ((<DateFormatOptions>options.format).skeleton || ((<DateFormatOptions>options.format).format &&
+            typeof (<DateFormatOptions>options.format).format === 'string'))) {
             this.setFormatter(valueFormatter.getFormatFunction(extend({}, options.format as DateFormatOptions)));
             this.setParser(valueFormatter.getParserFunction(options.format as DateFormatOptions));
         }

@@ -27,7 +27,7 @@ export class BatchEditRender {
         if (this.parent.isReact && args.columnObject && args.columnObject.template) {
             const parentRow: HTMLTableRowElement = args.cell.parentElement as HTMLTableRowElement;
             const newTd: HTMLTableCellElement = args.cell.cloneNode(true) as HTMLTableCellElement;
-            parentRow.insertBefore(newTd, parentRow.children[parseInt(args.cell.getAttribute(literals.ariaColIndex), 10)]);
+            parentRow.insertBefore(newTd, args.cell);
             newTd.focus();
             args.cell.remove();
             args.cell = newTd;

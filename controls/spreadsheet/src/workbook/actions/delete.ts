@@ -50,12 +50,8 @@ export class WorkbookDelete {
         }
         let deletedCells: RowModel[]; const mergeArgsCollection: MergeArgs[] = []; const count: number = (args.end - args.start) + 1;
         let prevCell: CellModel; let freezePane: boolean;
-        const eventArgs: { [key: string]: Object } = {
-            action: 'refreshInsDelFormula', insertArgs: {
-                startIndex: args.start, endIndex: args.end, modelType: args.modelType,
-                name: 'delete', activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, sheet: args.model
-            }
-        };
+        const eventArgs: { action: string, insertArgs: InsertDeleteEventArgs } = { action: 'refreshInsertDelete', insertArgs: { startIndex:
+            args.start, endIndex: args.end, modelType: args.modelType, sheet: args.model } };
         if (args.modelType === 'Row') {
             this.parent.notify(workbookFormulaOperation, eventArgs);
             args.model = <SheetModel>args.model;
@@ -205,21 +201,13 @@ export class WorkbookDelete {
 
         }
         mergeArgsCollection.forEach((merge: MergeArgs): void => { this.parent.notify(setMerge, merge); });
-        const insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {
-            action: 'refreshNamedRange', insertArgs: {
-                startIndex: args.start, endIndex: args.end, modelType: args.modelType,
-                isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
-                activeSheetIndex: this.parent.activeSheetIndex, name: 'delete', sheet: args.model
-            }
-        };
         this.parent.notify(beforeDelete, args);
         if (args.modelType !== 'Sheet') {
-            this.parent.notify(workbookFormulaOperation, insertArgs);
             this.parent.notify(refreshClipboard, args);
             if (args.model !== this.parent.getActiveSheet()) { return; }
         }
         this.parent.notify(deleteAction, {
-            startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: insertArgs.insertArgs.definedNames,
+            startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: eventArgs.insertArgs.definedNames,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
             activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane, sheet: args.model
         });

@@ -54,7 +54,10 @@ export class WorkbookInsert {
             }
         }
         let freezePane: boolean;
+        const eventArgs: { action: string, insertArgs: InsertDeleteEventArgs } = { action: 'refreshInsertDelete', insertArgs: { startIndex:
+            index, endIndex: index + model.length - 1, modelType: args.modelType, sheet: args.model, isInsert: true } };
         if (args.modelType === 'Row') {
+            this.parent.notify(workbookFormulaOperation, eventArgs);
             args.model = <SheetModel>args.model;
             if (!args.model.rows) { args.model.rows = []; }
             if (isModel && args.model.usedRange.rowIndex > -1 && index > args.model.usedRange.rowIndex) {
@@ -84,6 +87,7 @@ export class WorkbookInsert {
                 }
             }
         } else if (args.modelType === 'Column') {
+            this.parent.notify(workbookFormulaOperation, eventArgs);
             args.model = <SheetModel>args.model;
             if (!args.model.columns) { args.model.columns = []; }
             args.model.columns.splice(index, 0, ...model);
@@ -148,18 +152,7 @@ export class WorkbookInsert {
                     action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id, sheetId: id });
             });
         }
-        const insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {
-            action: 'refreshNamedRange', insertArgs: {
-                model: model, index: index, modelType: args.modelType, isAction: args.isAction, definedNames: args.definedNames,
-                    activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, name: 'insert', sheet: args.model }
-        };
-        const eventArgs: { [key: string]: Object } = {
-            action: 'refreshInsDelFormula', insertArgs: {
-                model: model, startIndex: index, endIndex: index + model.length - 1, modelType: args.modelType, name: 'insert',
-                    activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, sheet: args.model }
-        };
         if (args.modelType !== 'Sheet') {
-            this.parent.notify(workbookFormulaOperation, insertArgs); this.parent.notify(workbookFormulaOperation, eventArgs);
             this.parent.notify(
                 refreshClipboard,
                 { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });

@@ -262,6 +262,7 @@ export class VirtualScroll {
                     this.focusSheet();
                 } else {
                     this.setThresholdHeight(height, threshold, frozenRow);
+                    this.translate({ refresh: 'Row' });
                 }
             }
             args.prev.idx = idx;
@@ -403,6 +404,7 @@ export class VirtualScroll {
                     this.focusSheet();
                 } else {
                     this.setThresholdWidth(width, threshold, frozenCol);
+                    this.translate({ refresh: 'Column' });
                 }
             }
             args.prev.idx = idx;

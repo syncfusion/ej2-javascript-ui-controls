@@ -399,7 +399,7 @@ export class NormalEdit {
         let rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.uid);
         if (rowObj) {
             rowObj.changes = data;
-            this.parent.notify(events.refreshVirtualCache, data);
+            this.parent.notify(events.refreshVirtualCache, { data: data });
             refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
             if (this.needRefresh()) {
                 row.refresh(rowObj, this.parent.getColumns() as Column[], true);

@@ -4070,6 +4070,12 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (isNullOrUndefined(this.value) || this.value.length === 0) {
                 this.tempValues = oldProp;
             }
+            // eslint-disable-next-line
+            if (this.allowCustomValue && (this.mode === 'Default' || this.mode === 'Box') && (this as any).isReact && this.inputFocus
+                && this.isPopupOpen() && this.mainData !== this.listData) {
+                const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
+                this.onActionComplete(list, this.mainData);
+            }
             this.initialValueUpdate();
             if (this.mode !== 'Box' && !this.inputFocus) {
                 this.updateDelimView();

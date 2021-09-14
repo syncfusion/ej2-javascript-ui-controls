@@ -67,7 +67,6 @@ export class ContentRender implements IRenderer {
     private initialPageRecords: Object;
     private isInfiniteFreeze: boolean = false;
     private useGroupCache: boolean = false;
-    private mutableData: boolean = false;
 
     private rafCallback: Function = (args: NotifyArgs) => {
         const arg: NotifyArgs = args;
@@ -139,7 +138,7 @@ export class ContentRender implements IRenderer {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.ariaService = this.serviceLocator.getService<AriaService>('ariaService');
-        this.mutableData = this.parent.getDataModule().isRemote();
+        this.parent.enableDeepCompare = this.parent.getDataModule().isRemote();
         this.generator = this.getModelGenerator();
         if (this.parent.isDestroyed) { return; }
         if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization
@@ -312,7 +311,7 @@ export class ContentRender implements IRenderer {
         if ((this.parent.isReact || this.parent.isVue) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
             const templates: string[] = [
                 this.parent.isVue ? 'template' : 'columnTemplate', 'rowTemplate', 'detailTemplate',
-                'captionTemplate', 'commandsTemplate', 'groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate'
+                'captionTemplate', 'commandsTemplate', 'groupFooterTemplate', 'groupCaptionTemplate'
             ];
             clearReactVueTemplates(this.parent, templates);
         }
@@ -1115,7 +1114,7 @@ export class ContentRender implements IRenderer {
                 const oldIndex: number = oldKeys[dataSource[i][key]];
                 if (!isNullOrUndefined(oldIndex)) {
                     let isEqual: boolean = false;
-                    if (this.mutableData) {
+                    if (this.parent.enableDeepCompare) {
                         isEqual = this.objectEqualityChecker(this.prevCurrentView[oldIndex], dataSource[i]);
                     }
                     const tr: HTMLTableRowElement = oldRowElements[oldRowObjs[oldIndex].uid] as HTMLTableRowElement;
@@ -1130,8 +1129,8 @@ export class ContentRender implements IRenderer {
                         continue;
                     }
                     if ((hasBatch && !isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
-                        || (!this.mutableData && dataSource[i] !== this.prevCurrentView[oldIndex])
-                        || (this.mutableData && !isEqual)) {
+                        || (!this.parent.enableDeepCompare && dataSource[i] !== this.prevCurrentView[oldIndex])
+                        || (this.parent.enableDeepCompare && !isEqual)) {
                         oldRowObjs[oldIndex].setRowValue(dataSource[i]);
                     }
                     tbody.appendChild(tr);

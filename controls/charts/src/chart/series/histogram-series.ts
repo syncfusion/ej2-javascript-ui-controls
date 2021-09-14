@@ -39,7 +39,7 @@ export class HistogramSeries extends ColumnSeries {
             sumValue += (value - mean) * (value - mean);
         }
         series.histogramValues.mean = mean;
-        series.histogramValues.sDValue = Math.round(Math.sqrt(sumValue / yValues.length - 1));
+        series.histogramValues.sDValue = Math.round(Math.sqrt(Math.abs(sumValue / yValues.length - 1)));
         series.histogramValues.binWidth = series.binInterval ||
             Math.round((3.5 * series.histogramValues.sDValue) / Math.pow(yValues.length, 1 / 3)) || 1;
     }

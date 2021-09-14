@@ -104,7 +104,7 @@ describe('Content renderer module', () => {
             };
             gridObj.dataBound = dataBound;
             gridObj.rowDataBound = rowDataBound;
-            (gridObj.contentModule as any).mutableData = true;
+            gridObj.enableDeepCompare = true;
             gridObj.dataSource = sampleData2;
         });
         
@@ -155,7 +155,7 @@ describe('Content renderer module', () => {
             };
             gridObj.dataBound = dataBound;
             gridObj.rowDataBound = rowDataBound;
-            (gridObj.contentModule as any).mutableData = true;
+            gridObj.enableDeepCompare = true;
             gridObj.dataSource = sampleData2;
         });
         

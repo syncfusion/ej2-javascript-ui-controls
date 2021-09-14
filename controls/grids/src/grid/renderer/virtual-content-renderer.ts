@@ -921,15 +921,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         e.isScroll = keys.length !== 0 && this.currentInfo.sentinelInfo && this.currentInfo.sentinelInfo.axis === 'X';
     }
 
-    private refreshCache(data: Object): void {
+    private refreshCache(args: { data: Object }): void {
         const block: number = Math.ceil((this.editedRowIndex + 1) / this.getBlockSize());
         const index: number = this.editedRowIndex - ((block - 1) * this.getBlockSize());
-        this.vgenerator.cache[block][index].data = data;
+        this.vgenerator.cache[block][index].data = args.data;
         if (this.vgenerator.movableCache[block]) {
-            this.vgenerator.movableCache[block][index].data = data;
+            this.vgenerator.movableCache[block][index].data = args.data;
         }
         if (this.vgenerator.frozenRightCache[block]) {
-            this.vgenerator.frozenRightCache[block][index].data = data;
+            this.vgenerator.frozenRightCache[block][index].data = args.data;
         }
     }
 

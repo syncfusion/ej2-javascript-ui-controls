@@ -9,6 +9,7 @@ import { IToolbarStatus } from '../../../src/common/interface';
 describe('Update Toolbar commands', () => {
     //HTML value
     let innervalue: string = '<div id="div1"><p id="paragraph1"><b>Description:</b></p>' +
+        '<p><strong id="italic53">&ZeroWidthSpace;<em>&ZeroWidthSpace;<span style="text-decoration: underline;">&ZeroWidthSpace;</span></em></strong></p>' +
         '<p id="paragraph2">The Rich Text Editor (RTE) control is an easy to render in' +
         'client side. Customer easy to edit the contents and get the HTML content for' +
         'the displayed content. A rich text editor control provides users with a toolbar' +
@@ -306,5 +307,13 @@ describe('Update Toolbar commands', () => {
         domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
         let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['8pt'], ['Segoe UI']);
         expect(format.italic).toEqual(false);
+    });
+    it('Checking the Bold, Italic and Underline toolbar enabled when focusing in/out the editor', () => {
+        let node: HTMLElement = document.getElementById('italic53');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['8pt'], ['Segoe UI']);
+        expect(format.bold).toEqual(true);
+        expect(format.italic).toEqual(true);
+        expect(format.underline).toEqual(true);
     });
 });

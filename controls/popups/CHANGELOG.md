@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.60 (2021-09-07)
+## 19.2.62 (2021-09-14)
+
+### Dialog
+
+#### Bug Fixes
+
+- The issue with "Draggable cursor not shown properly in the dialog header, when there are nested dialogs" has been resolved.
+
+## 19.2.59 (2021-08-31)
 
 ### Dialog
 

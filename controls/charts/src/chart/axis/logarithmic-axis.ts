@@ -82,7 +82,7 @@ export class Logarithmic extends Double {
         };
         const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRangeOnZooming(this.chart);
+            axis.calculateVisibleRangeOnZooming(size);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)
                 : axis.visibleRange.interval;

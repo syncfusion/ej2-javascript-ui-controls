@@ -12,7 +12,7 @@ import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { AggregateRowModel, AggregateColumnModel } from '../models/models';
 import * as events from '../base/constant';
-import { prepareColumns, setFormatter, isGroupAdaptive, getDatePredicate, getObject } from '../base/util';
+import { prepareColumns, setFormatter, isGroupAdaptive, getDatePredicate, getObject, clearReactVueTemplates } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -363,7 +363,8 @@ export class Render {
                 columns[i].type = columns[i].type || null;
             }
             const valueFormatter: ValueFormatter = new ValueFormatter();
-            if (columns[i].format && ((<DateFormatOptions>columns[i].format).skeleton || (<DateFormatOptions>columns[i].format).format)) {
+            if (columns[i].format && ((<DateFormatOptions>columns[i].format).skeleton || ((<DateFormatOptions>columns[i].format).format &&
+                typeof (<DateFormatOptions>columns[i].format).format === 'string'))) {
                 columns[i].setFormatter(valueFormatter.getFormatFunction(extend({}, columns[i].format as DateFormatOptions)));
                 columns[i].setParser(valueFormatter.getParserFunction(columns[i].format as DateFormatOptions));
             }
@@ -436,6 +437,9 @@ export class Render {
             if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
                 !this.parent.groupSettings.columns.length) {
                 dataArgs.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
+            }
+            if ((this.parent.isReact || this.parent.isVue) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
+                clearReactVueTemplates(this.parent, ['footerTemplate']);
             }
             this.parent.notify(
                 events.dataReady,

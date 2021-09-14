@@ -324,6 +324,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
      */
     @Property(750)
     public tapHoldThreshold: number;
+    /**
+     * @private
+     */
+    @Property(false)
+    public enableScrollHandler: boolean;
     private target: HTMLElement;
     /**
      * @private
@@ -350,7 +355,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private tapHoldTimer: any = 0;
     private dragElePosition: any;
     public currentStateTarget: any;
-    public enableScrollHandler: boolean = false;
     private externalInitialize: boolean = false;
     private diffY: number = 0;
     private pageY: number;
@@ -567,6 +571,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             /* istanbul ignore next */
             if (this.clone && marginTop !== 0) {
                 pos.top += marginTop;
+            }
+            if (this.enableScrollHandler && !this.clone) {
+                pos.top -= this.parentScrollY;
+                pos.left -= this.parentScrollX;
             }
             let posValue: DragPosition = this.getProcessedPositionValue({
                 top: (pos.top - this.diffY) + 'px',

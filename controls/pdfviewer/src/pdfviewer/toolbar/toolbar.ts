@@ -1020,7 +1020,7 @@ export class Toolbar {
             { percent: '150%', id: '6' }, { percent: '200%', id: '7' }, { percent: '400%', id: '8' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Page'), id: '9' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Width'), id: '10' }, { percent: this.pdfViewer.localeObj.getConstant('Automatic'), id: '11' }
         ];
         // eslint-disable-next-line max-len
-        this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, select: function(args){
+        this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, open: this.openZoomDropdown.bind(this), select: function(args){
             if (args.e.type == 'keydown' && args.itemData.text !== this.zoomDropDown.element.value) {
                 args.cancel = true;
               }
@@ -1453,6 +1453,27 @@ export class Toolbar {
         this.updateStampItems();
         document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).addEventListener
         ('mousedown', this.pdfViewer.annotationModule.stickyNotesAnnotationModule.drawIcons.bind(this));
+    }
+
+    public openZoomDropdown(): void {
+        const toolbarData = this;
+        if(document.fullscreen) {
+            if (isBlazor()) {
+            setTimeout(()=>{
+                let popupElement = document.getElementById(toolbarData.pdfViewer.element.id + "_zoomCombo_popup"); 
+                let targetElement = document.getElementById(toolbarData.toolbarElement.id); 
+                if(popupElement) {
+                targetElement.appendChild(popupElement); 
+                }
+            }, 200);
+           } else {
+            let popupElement = document.getElementById(this.pdfViewer.element.id + "_zoomDropDown_popup"); 
+            let targetElement = document.getElementById(this.toolbarElement.id); 
+            if(popupElement) {
+            targetElement.appendChild(popupElement); 
+            }
+           }
+        }
     }
 
     // eslint-disable-next-line

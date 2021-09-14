@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 19.2.62 (2021-09-14)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `I341489` - Content on cells getting duplicated after removing unique function issue resolved.
+- `I321503` - Formula value not updated while changing its dependent cell, Add / delete rows and columns not updated the formula reference, Renamed sheet not updated in formula reference and Alignment issues while switching between sheets issues resolved.
+- `I339957` - Copy method not working while pasting the copied data using `ctrl+v` action issue resolved.
+- `I339531` - Insert column and cut / paste column actions not updated the range data issue resolved.
+- `I338070` - Merged cells copy and paste the whole row issue has been fixed.
+
 ## 19.2.60 (2021-09-07)
 
 ### Spreadsheet
@@ -9,6 +21,11 @@
 #### New Features
 
 - `I329743` - Provided the support to use a defined name as the source for the list type data validation.
+- `I334078` - Provided the support to get information about the width of the column and the height of the row.
+
+#### Bug Fixes
+
+- `I340130` - Spreadsheet usedRange not refreshed while changing the datasource issue resolved.
 
 ## 19.2.59 (2021-08-31)
 

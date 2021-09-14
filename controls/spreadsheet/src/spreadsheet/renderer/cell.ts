@@ -137,10 +137,8 @@ export class CellRenderer implements ICellRenderer {
                 args.td.removeChild(args.td.querySelector('.e-hyperlink'));
             }
         }
-        if (args.cell && args.cell.formula && (!args.cell.value || args.isRefreshing)) {
-            if (args.cell.formula.indexOf('UNIQUE') === - 1) {
-                this.calculateFormula(args);
-            }
+        if (args.cell && args.cell.formula && args.cell.formula.indexOf('UNIQUE') === - 1) {
+            this.calculateFormula(args);
         }
         const formatArgs: { [key: string]: string | boolean | CellModel } = {
             type: args.cell && getTypeFromFormat(args.cell.format),
@@ -253,6 +251,12 @@ export class CellRenderer implements ICellRenderer {
         }
     }
     private calculateFormula(args: CellRenderArgs): void {
+        if (args.cell.value !== undefined && args.cell.value !== null) {
+            const eventArgs: { [key: string]: string | number | boolean } = { action: 'checkFormulaAdded', added: true, address: args.address, sheetId:
+                (args.sheetIndex === undefined ? this.parent.getActiveSheet() : getSheet(this.parent, args.sheetIndex)).id.toString() };
+            this.parent.notify(workbookFormulaOperation, eventArgs);
+            if (eventArgs.added) { return; }
+        }
         const isFormula: boolean = checkIsFormula(args.cell.formula);
         const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
             args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing };

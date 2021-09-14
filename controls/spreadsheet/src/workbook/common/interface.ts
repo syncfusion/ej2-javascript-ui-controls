@@ -349,7 +349,7 @@ export interface InsertDeleteEventArgs {
     deletedCellsModel?: RowModel[];
     activeSheetIndex?: number;
     sheetCount?: number;
-    name?: string;
+    isInsert?: boolean;
     freezePane?: boolean;
     definedNames?: DefineNameModel[];
 }

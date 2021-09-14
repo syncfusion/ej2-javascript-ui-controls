@@ -414,6 +414,7 @@ export class InfiniteScroll implements IAction {
                 }
             }
             this.parent.hideSpinner();
+            this.parent.notify(events.refreshInfinitePersistSelection, {});
             if (this.requestType === 'delete') {
                 this.parent.notify(events.deleteComplete, args.e);
             } else {
@@ -581,8 +582,8 @@ export class InfiniteScroll implements IAction {
         }
     }
 
-    private refreshInfiniteCache(data: Object): void {
-        this.getEditedRowObject().data = data;
+    private refreshInfiniteCache(args: { data: Object }): void {
+        this.getEditedRowObject().data = args.data;
     }
 
     private getEditedRowObject(): Row<Column> {

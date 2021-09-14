@@ -1,5 +1,6 @@
 import { getDPRValue, Spreadsheet } from '../index';
 import { closest, EventHandler } from '@syncfusion/ej2-base';
+import { Tooltip } from '@syncfusion/ej2-popups';
 import { colWidthChanged, rowHeightChanged, contentLoaded, hideShow, getFilterRange } from '../common/index';
 import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
@@ -80,6 +81,7 @@ export class Resize {
     private mouseMoveHandler(e: MouseEvent): void {
         const colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
         const rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
+        this.resizeTooltip(null, true, e);
         if (colResizeHandler || rowResizeHandler) {
             this.isMouseMoved = true;
             if (colResizeHandler) {
@@ -122,9 +124,13 @@ export class Resize {
         this.resizeOn(e);
         this.isMouseMoved = null;
         const resizeHandler: HTMLElement = colResizeHandler || rowResizeHandler;
+        let HeaderTooltip: HTMLElement = document.querySelector('.e-header-tooltip');
         if (resizeHandler) {
             document.getElementById(this.parent.element.id + '_sheet').removeChild(resizeHandler);
             this.updateCursor();
+        }
+        if (HeaderTooltip) {
+            HeaderTooltip.remove();
         }
         EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
@@ -381,7 +387,46 @@ export class Resize {
             editor.style.top = this.event.clientY - sheet.getBoundingClientRect().top + 'px';
         }
         sheet.appendChild(editor);
+        this.resizeTooltip(trgt, false);
         this.updateCursor();
+    }
+
+    private resizeTooltip(trgt: HTMLElement, isResize?: boolean, e?: MouseEvent): void {
+        if (isResize) {
+            let HeaderTolltip: HTMLElement = document.querySelector('.e-header-tooltip');
+            const colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
+            const rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
+            if (colResizeHandler) {
+                let trgtWidth: number = (e.clientX) - Math.round(this.trgtEle.getBoundingClientRect().left);
+                if (HeaderTolltip) {
+                    HeaderTolltip.firstChild.textContent = trgtWidth > 0 ? ('Width:(' + trgtWidth.toString() + ' pixels)') : ('Width: 0.00');
+                }
+            } else if (rowResizeHandler) {
+                let trgtHeight: number = (e.clientY) - Math.round(this.trgtEle.getBoundingClientRect().top);
+                if (HeaderTolltip) {
+                    HeaderTolltip.firstChild.textContent = trgtHeight > 0 ? ('Height:(' + trgtHeight.toString() + ' pixels)') : ('Height: 0.00');
+                }
+            }
+        } else {
+            const isColResize: boolean = trgt.classList.contains('e-colresize');
+            const isRowResize: boolean = trgt.classList.contains('e-rowresize');
+            if (isColResize || isRowResize) {
+                let className: string = isColResize ? "e-colresize-handler" : "e-rowresize-handler";
+                let tooltip: Tooltip = new Tooltip({
+                    cssClass: 'e-header-tooltip',
+                    showTipPointer: false
+                });
+                if (isColResize) {
+                    tooltip.content = 'Width:(' + Math.round(trgt.getBoundingClientRect().width).toString() + ' pixels)';
+                } else if (isRowResize) {
+                    tooltip.content = 'Height:(' + Math.round(trgt.getBoundingClientRect().height).toString() + ' pixels)';
+                    tooltip.offsetX = -((this.parent.getMainContent().parentElement.clientWidth / 2) - Math.round(trgt.getBoundingClientRect().width));
+                }
+                tooltip.appendTo('.' + className);
+                tooltip.open();
+                tooltip.refresh();
+            }
+        }
     }
 
     private setColWidth(index: number, viewportIdx: number, width: number, curWidth: number): void {

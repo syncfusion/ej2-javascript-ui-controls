@@ -117,10 +117,13 @@
     }
   }
 
+  // sass-lint:disable no-vendor-prefixes
   .e-ddl.e-input-group .e-ddl-hidden,
   .e-ddl.e-float-input .e-ddl-hidden {
+    -webkit-appearance: initial;
     border: 0;
     height: 0;
+    padding: 0;
     visibility: hidden;
     width: 0;
   }

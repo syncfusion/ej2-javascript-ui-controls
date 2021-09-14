@@ -738,6 +738,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     private chartid: number = 57724;
     /** @private */
     public isBlazor: boolean;
+    /** @private */
+    public accumulationResizeBound: EventListenerOrEventListenerObject;
     /**
      * Constructor for creating the AccumulationChart widget
      *
@@ -826,7 +828,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         EventHandler.remove(this.element, cancel, this.accumulationMouseLeave);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.accumulationResize
+            this.accumulationResizeBound
         );
     }
     /**
@@ -854,10 +856,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         EventHandler.add(this.element, 'click', this.accumulationOnMouseClick, this);
         EventHandler.add(this.element, 'contextmenu', this.accumulationRightClick, this);
         EventHandler.add(this.element, cancel, this.accumulationMouseLeave, this);
-
+        this.accumulationResizeBound = this.accumulationResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.accumulationResize.bind(this)
+            this.accumulationResizeBound
         );
         new Touch(this.element); // To avoid geasture blocking for browser
         /*! Apply the style for chart */

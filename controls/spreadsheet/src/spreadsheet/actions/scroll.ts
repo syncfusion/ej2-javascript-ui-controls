@@ -62,7 +62,11 @@ export class Scroll {
             scrollArgs = {
                 cur: this.offset.top, prev: { idx: this.topIndex, size: prevSize }, increase: scrollDown, preventScroll: e.preventScroll };
             this.updateTopLeftCell(scrollDown);
-            this.parent.notify(onVerticalScroll, scrollArgs);
+            if (e.preventScroll && this.offset.top.idx <= this.parent.getThreshold('row')) {
+                this.offset.top = { idx: 0, size: 0 };
+            } else {
+                this.parent.notify(onVerticalScroll, scrollArgs);
+            }
             if (!this.parent.scrollSettings.enableVirtualization && scrollDown && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualRows();
             }

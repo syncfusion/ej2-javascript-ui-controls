@@ -29,7 +29,7 @@ export class MaskedDateTime {
     private objectString : string[];
     private hiddenMask : string = '';
     private validCharacters : string = 'dMyhmHfasz';
-    private value : Date;
+    private maskDateValue : Date;
     private previousValue : string;
     private previousHiddenMask : string;
     private isDayPart : boolean = false;
@@ -53,13 +53,13 @@ export class MaskedDateTime {
     public constructor(parent? : IMaskedDateTime) {
         this.parent = parent;
         this.dateformat = this.getCulturedFormat();
-        this.value = this.parent.value != null ? this.parent.value : new Date();
-        this.value.setMonth(0);
-        this.value.setHours(0);
-        this.value.setMinutes(0);
-        this.value.setSeconds(0);
-        this.previousDate = new Date(this.value.getFullYear(), this.value.getMonth(), this.value.getDate(),this.value.getHours(),
-        this.value.getMinutes(),this.value.getSeconds());
+        this.maskDateValue = this.parent.value != null ? this.parent.value : new Date();
+        this.maskDateValue.setMonth(0);
+        this.maskDateValue.setHours(0);
+        this.maskDateValue.setMinutes(0);
+        this.maskDateValue.setSeconds(0);
+        this.previousDate = new Date(this.maskDateValue.getFullYear(), this.maskDateValue.getMonth(), this.maskDateValue.getDate(),this.maskDateValue.getHours(),
+        this.maskDateValue.getMinutes(),this.maskDateValue.getSeconds());
         this.removeEventListener();
         this.addEventListener();
     }
@@ -155,7 +155,7 @@ export class MaskedDateTime {
         }
     }
     private setDynamicValue(): void {
-        this.value = this.parent.value;
+        this.maskDateValue = this.parent.value;
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = true
         this.updateValue();
         // this.parent.inputElement.selectionStart = start;
@@ -221,7 +221,7 @@ export class MaskedDateTime {
         let inputValue: string = this.parent.inputElement.value;
         let previousVal: string = this.previousValue.substring(0, start + this.previousValue.length - inputValue.length);
         let newVal: string = inputValue.substring(0, start);
-        let newDateValue: Date = this.value;
+        let newDateValue: Date = this.maskDateValue;
         
         let maxDate: number = new Date(newDateValue.getFullYear(), newDateValue.getMonth() + 1, 0).getDate();
         if (previousVal.indexOf(newVal) === 0 && (newVal.length === 0 || this.previousHiddenMask[newVal.length - 1] !== this.previousHiddenMask[newVal.length])) {
@@ -247,7 +247,7 @@ export class MaskedDateTime {
                     newDateValue.setDate(date);
                     this.isNavigate = date.toString().length === 2;
                     this.previousDate = new Date(newDateValue.getFullYear(), newDateValue.getMonth(), newDateValue.getDate());
-                    if (newDateValue.getMonth() !== this.value.getMonth()) {
+                    if (newDateValue.getMonth() !== this.maskDateValue.getMonth()) {
                         return;
                     }
                     this.isDayPart = true;
@@ -299,7 +299,7 @@ export class MaskedDateTime {
                             if (monthString[i].toLowerCase().indexOf(this.monthCharacter) === 0) {
                                 newDateValue.setMonth(i - 1);
                                 this.isMonthPart = true;
-                                this.value = newDateValue;
+                                this.maskDateValue = newDateValue;
                                 return;
                             }
                             i++;
@@ -386,7 +386,7 @@ export class MaskedDateTime {
                     for (let i: number = 0; this.periodCharacter.length > 0; i++) {
                         if ((periodString[periodkeys[0]].toLowerCase().indexOf(this.periodCharacter) === 0 && newDateValue.getHours() >= 12) || (periodString[periodkeys[1]].toLowerCase().indexOf(this.periodCharacter) === 0 && newDateValue.getHours() < 12)) {
                             newDateValue.setHours((newDateValue.getHours() + 12) % 24);
-                            this.value = newDateValue;
+                            this.maskDateValue = newDateValue;
                         }
                         this.periodCharacter = this.periodCharacter.substring(1, this.periodCharacter.length);
                         // Object.values()
@@ -395,7 +395,7 @@ export class MaskedDateTime {
             default:
                 break;
         }
-        this.value = newDateValue;
+        this.maskDateValue = newDateValue;
     }
 
     private formatCheck(): any {
@@ -418,63 +418,63 @@ export class MaskedDateTime {
             switch (formattext) {
                 case 'ddd':
                 case 'dddd':
-                case 'd': result = proxy.isDayPart ? proxy.value.getDate().toString() :  proxy.defaultConstant['day'].toString();
+                case 'd': result = proxy.isDayPart ? proxy.maskDateValue.getDate().toString() :  proxy.defaultConstant['day'].toString();
                     break;
-                case 'dd': result = proxy.isDayPart ? proxy.roundOff(proxy.value.getDate(), 2) :  proxy.defaultConstant['day'].toString();
+                case 'dd': result = proxy.isDayPart ? proxy.roundOff(proxy.maskDateValue.getDate(), 2) :  proxy.defaultConstant['day'].toString();
                     break;
                 case 'E' :
                 case 'EE':
-                case 'EEE': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysAbbreviated[dayKeyAbbreviated[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
+                case 'EEE': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysAbbreviated[dayKeyAbbreviated[proxy.maskDateValue.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                     break;
-                case 'EEEE': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysWide[dayKeyWide[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
+                case 'EEEE': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysWide[dayKeyWide[proxy.maskDateValue.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                     break;
                 case 'EEEEE':
-                    result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysNarrow[dayKeyNarrow[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
+                    result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysNarrow[dayKeyNarrow[proxy.maskDateValue.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                     break;
-                case 'M': result = proxy.isMonthPart ? (proxy.value.getMonth() + 1).toString() :  proxy.defaultConstant['month'].toString();
+                case 'M': result = proxy.isMonthPart ? (proxy.maskDateValue.getMonth() + 1).toString() :  proxy.defaultConstant['month'].toString();
                     break;
-                case 'MM': result = proxy.isMonthPart ? proxy.roundOff(proxy.value.getMonth() + 1, 2) :  proxy.defaultConstant['month'].toString();
+                case 'MM': result = proxy.isMonthPart ? proxy.roundOff(proxy.maskDateValue.getMonth() + 1, 2) :  proxy.defaultConstant['month'].toString();
                     break;
-                case 'MMM': result = proxy.isMonthPart ? monthAbbreviated[proxy.value.getMonth() + 1] :  proxy.defaultConstant['month'].toString();
+                case 'MMM': result = proxy.isMonthPart ? monthAbbreviated[proxy.maskDateValue.getMonth() + 1] :  proxy.defaultConstant['month'].toString();
                     break;
-                case 'MMMM': result = proxy.isMonthPart ? monthWide[proxy.value.getMonth() + 1] :  proxy.defaultConstant['month'].toString();
+                case 'MMMM': result = proxy.isMonthPart ? monthWide[proxy.maskDateValue.getMonth() + 1] :  proxy.defaultConstant['month'].toString();
                     break;
-                case 'yy': result = proxy.isYearPart ? proxy.roundOff(proxy.value.getFullYear() % 100, 2) :  proxy.defaultConstant['year'].toString();
+                case 'yy': result = proxy.isYearPart ? proxy.roundOff(proxy.maskDateValue.getFullYear() % 100, 2) :  proxy.defaultConstant['year'].toString();
                     if (proxy.isYearPart) {
-                        proxy.isNavigate = proxy.isShortYear = (proxy.value.getFullYear() % 100).toString().length === 2;
+                        proxy.isNavigate = proxy.isShortYear = (proxy.maskDateValue.getFullYear() % 100).toString().length === 2;
                     }
                     break;
                 case 'y':
-                case 'yyyy': result = proxy.isYearPart ? proxy.roundOff(proxy.value.getFullYear(), 4) :  proxy.defaultConstant['year'].toString();
+                case 'yyyy': result = proxy.isYearPart ? proxy.roundOff(proxy.maskDateValue.getFullYear(), 4) :  proxy.defaultConstant['year'].toString();
                     break;
-                case 'h': result = proxy.isHourPart ? (proxy.value.getHours() % 12 || 12).toString() :  proxy.defaultConstant['hour'].toString();
+                case 'h': result = proxy.isHourPart ? (proxy.maskDateValue.getHours() % 12 || 12).toString() :  proxy.defaultConstant['hour'].toString();
                     break;
-                case 'hh': result = proxy.isHourPart ? proxy.roundOff(proxy.value.getHours() % 12 || 12, 2) :  proxy.defaultConstant['hour'].toString();
+                case 'hh': result = proxy.isHourPart ? proxy.roundOff(proxy.maskDateValue.getHours() % 12 || 12, 2) :  proxy.defaultConstant['hour'].toString();
                     break;
-                case 'H': result = proxy.isHourPart ? proxy.value.getHours().toString() :  proxy.defaultConstant['hour'].toString();
+                case 'H': result = proxy.isHourPart ? proxy.maskDateValue.getHours().toString() :  proxy.defaultConstant['hour'].toString();
                     break;
-                case 'HH': result = proxy.isHourPart ? proxy.roundOff(proxy.value.getHours(), 2) :  proxy.defaultConstant['hour'].toString() ;
+                case 'HH': result = proxy.isHourPart ? proxy.roundOff(proxy.maskDateValue.getHours(), 2) :  proxy.defaultConstant['hour'].toString() ;
                     break;
-                case 'm': result = proxy.isMinutePart ? proxy.value.getMinutes().toString() :  proxy.defaultConstant['minute'].toString() ;
+                case 'm': result = proxy.isMinutePart ? proxy.maskDateValue.getMinutes().toString() :  proxy.defaultConstant['minute'].toString() ;
                     break;
-                case 'mm': result = proxy.isMinutePart ? proxy.roundOff(proxy.value.getMinutes(), 2) :  proxy.defaultConstant['minute'].toString() ;
+                case 'mm': result = proxy.isMinutePart ? proxy.roundOff(proxy.maskDateValue.getMinutes(), 2) :  proxy.defaultConstant['minute'].toString() ;
                     break;
-                case 's': result = proxy.isSecondsPart ? proxy.value.getSeconds().toString() :  proxy.defaultConstant['second'].toString() ;
+                case 's': result = proxy.isSecondsPart ? proxy.maskDateValue.getSeconds().toString() :  proxy.defaultConstant['second'].toString() ;
                     break;
-                case 'ss': result = proxy.isSecondsPart ? proxy.roundOff(proxy.value.getSeconds(), 2) :  proxy.defaultConstant['second'].toString();
+                case 'ss': result = proxy.isSecondsPart ? proxy.roundOff(proxy.maskDateValue.getSeconds(), 2) :  proxy.defaultConstant['second'].toString();
                     break;
-                case 'f': result = Math.floor(proxy.value.getMilliseconds() / 100).toString();
+                case 'f': result = Math.floor(proxy.maskDateValue.getMilliseconds() / 100).toString();
                     break;
-                case 'ff': milliseconds = proxy.value.getMilliseconds();
-                    if (proxy.value.getMilliseconds() > 99) {
-                        milliseconds = Math.floor(proxy.value.getMilliseconds() / 10);
+                case 'ff': milliseconds = proxy.maskDateValue.getMilliseconds();
+                    if (proxy.maskDateValue.getMilliseconds() > 99) {
+                        milliseconds = Math.floor(proxy.maskDateValue.getMilliseconds() / 10);
                     }
                     result = proxy.roundOff(milliseconds, 2);
                     break;
-                case 'fff': result = proxy.roundOff(proxy.value.getMilliseconds(), 3);
+                case 'fff': result = proxy.roundOff(proxy.maskDateValue.getMilliseconds(), 3);
                     break;
                 case 'a':    
-                case 'aa': result =  proxy.value.getHours() < 12 ? periodString[periodkeys[0]] : periodString[periodkeys[1]] ;
+                case 'aa': result =  proxy.maskDateValue.getHours() < 12 ? periodString[periodkeys[0]] : periodString[periodkeys[1]] ;
                     break;
                 case 'z':
                 case 'zz':
@@ -484,7 +484,7 @@ export class MaskedDateTime {
                         format: formattext,
                         type: 'dateTime', skeleton: 'yMd', calendar: proxy.parent.calendarMode
                     };
-                   result = proxy.parent.globalize.formatDate(proxy.value,dateOptions);
+                   result = proxy.parent.globalize.formatDate(proxy.maskDateValue,dateOptions);
                 break;
             }
             result = result !== undefined ? result : formattext.slice(1, formattext.length - 1);
@@ -554,7 +554,7 @@ export class MaskedDateTime {
             case 'M':
                 this.isMonthPart = isSegment;
                 if (!isSegment) {
-                    this.value.setMonth(0);
+                    this.maskDateValue.setMonth(0);
                     this.monthCharacter = '';
                 }
                 break;
@@ -588,10 +588,10 @@ export class MaskedDateTime {
         } else {
             return;
         }
-        let newDateValue: Date = new Date(this.value.getFullYear(), this.value.getMonth(), this.value.getDate(),this.value.getHours(),
-        this.value.getMinutes(),this.value.getSeconds());
-        this.previousDate = new Date(this.value.getFullYear(), this.value.getMonth(), this.value.getDate(),this.value.getHours(),
-        this.value.getMinutes(),this.value.getSeconds());
+        let newDateValue: Date = new Date(this.maskDateValue.getFullYear(), this.maskDateValue.getMonth(), this.maskDateValue.getDate(),this.maskDateValue.getHours(),
+        this.maskDateValue.getMinutes(),this.maskDateValue.getSeconds());
+        this.previousDate = new Date(this.maskDateValue.getFullYear(), this.maskDateValue.getMonth(), this.maskDateValue.getDate(),this.maskDateValue.getHours(),
+        this.maskDateValue.getMinutes(),this.maskDateValue.getSeconds());
         let incrementValue: number = isDecrement ? -1 : 1;
         switch (formatText) {
             case 'd': newDateValue.setDate(newDateValue.getDate() + incrementValue);
@@ -631,7 +631,7 @@ export class MaskedDateTime {
             default:
                 break;
         }
-        this.value = newDateValue.getFullYear() > 0 ? newDateValue : this.value;
+        this.maskDateValue = newDateValue.getFullYear() > 0 ? newDateValue : this.maskDateValue;
         if (this.validCharacters.indexOf(this.hiddenMask[start]) !== -1) {
             this.handleDeletion(this.hiddenMask[start], true);
         }

@@ -94,15 +94,11 @@ export class WorkbookOpen {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const impData: WorkbookModel = (<any>workbookData).Workbook;
         if (openError.indexOf(impData as string) > -1) {
-            this.parent.notify(openSuccess, {
-                context: this, data: impData as string, eventArgs: eventArgs
-            });
+            this.parent.notify(openSuccess, { context: this, data: <string>impData, eventArgs: eventArgs, isOpenFromJson: isOpenFromJson });
             return;
         }
         this.updateModel(impData, isOpenFromJson);
-        this.parent.notify(openSuccess, {
-            context: this, data: impData as string
-        });
+        this.parent.notify(openSuccess, { context: this, data: <string>impData, isOpenFromJson: isOpenFromJson });
         this.parent.isOpen = false;
         if (eventArgs && eventArgs.password && eventArgs.password.length > 0) {
             if (this.parent.showSheetTabs) {

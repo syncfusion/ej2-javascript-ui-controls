@@ -56,7 +56,7 @@ export class GaugeTooltip {
     public renderTooltip(e: PointerEvent): void {
         this.gaugeId = this.gauge.element.getAttribute('id');
         let pageX: number; let pageY: number; let target: Element; let touchArg: TouchEvent;
-        let location: GaugeLocation; let samePointerEle: boolean = false;
+        let location: GaugeLocation; let samePointerEle: boolean = false; let isTooltipRender: boolean = false;
         if (e.type.indexOf('touch') !== - 1) {
             touchArg = <TouchEvent & PointerEvent>e;
             target = <Element>touchArg.target;
@@ -73,6 +73,7 @@ export class GaugeTooltip {
             if (this.pointerEle !== null) {
                 samePointerEle = (this.pointerEle === target);
             }
+            isTooltipRender = true;
             const svgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
             const elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
             const axisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
@@ -152,6 +153,7 @@ export class GaugeTooltip {
             (this.gauge as any).renderReactTemplates();
         } else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
                    (target.id.indexOf(this.gaugeId) >= 0)) {
+            isTooltipRender = true;
             const rangeSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
             const rangeElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
             const rangeAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
@@ -243,6 +245,7 @@ export class GaugeTooltip {
             (this.gauge as any).renderReactTemplates();
         } else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
                    (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
+            isTooltipRender = true;
             const annotationSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
             const annotationElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
             const annotationAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
@@ -313,6 +316,9 @@ export class GaugeTooltip {
             this.removeTooltip();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).clearTemplate();
+        }
+        if (isTooltipRender && (this.tooltipEle.style.left).indexOf('-') > -1) {
+            this.tooltipEle.style.left = 0 + 'px';
         }
     }
 

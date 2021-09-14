@@ -158,4 +158,9 @@ export interface DraggableModel {
      */
     tapHoldThreshold?: number;
 
+    /**
+     * @private
+     */
+    enableScrollHandler?: boolean;
+
 }

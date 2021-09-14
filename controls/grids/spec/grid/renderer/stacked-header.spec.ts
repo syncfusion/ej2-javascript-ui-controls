@@ -169,4 +169,38 @@ describe('Stacked header render module', () => {
         });
     });
 
+    describe('EJ2-52799 - Script error throws while adding the stacked columns dynamically', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, minWidth: 10 },
+                        {
+                            headerText: 'Order Details', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                                { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10 },
+                            ]
+                        },
+                        {
+                            headerText: 'Ship Details', columns: [
+                                { field: 'ShipCity', width: 120, headerText: 'Ship City' },
+                                { field: 'ShipCountry', headerText: 'Ship Country', width: 140, minWidth: 10 },
+                            ]
+                        }
+                    ]
+                }, done);
+        });
+        it('add the stacked columns dynamically', () => {
+            (gridObj.columns[1] as any).columns.push({field: 'CustomerID', headerText: 'Test column', width: 150});
+            gridObj.refreshColumns();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 });

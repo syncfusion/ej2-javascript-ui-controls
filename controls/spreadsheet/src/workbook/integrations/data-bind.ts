@@ -149,10 +149,8 @@ export class DataBind {
                         } else {
                             flds = [];
                         }
-                        args.sheet.usedRange.rowIndex = Math.max(
-                            (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1,
-                            args.sheet.usedRange.rowIndex);
-                        args.sheet.usedRange.colIndex = Math.max(sColIdx + flds.length - 1, args.sheet.usedRange.colIndex);
+                        args.sheet.usedRange.rowIndex = (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1;
+                        args.sheet.usedRange.colIndex = sColIdx + flds.length - 1;
                         if (insertRowCount) {
                             loadedInfo = this.getLoadedInfo(sRange, eRange, range);
                             sRange = loadedInfo.unloadedRange[0]; eRange = loadedInfo.unloadedRange[1];
@@ -451,37 +449,87 @@ export class DataBind {
                 startCell = getCellIndexes(range.startCell);
                 dataRange = [...startCell, startCell[0] + range.info.count + (range.showFieldAsHeader ? 0 : -1),
                     startCell[1] + range.info.fldLen - 1];
-                if (args.modelType === 'Row') {
-                    if (args.insertType) {
-                        inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
-                            : dataRange[0] < args.index) && dataRange[2] >= args.index;
-                        cellIndices = [args.index];
-                        if (!inRange) {
-                            if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {
-                                isNewRow = true;
-                                range.info.count += args.model.length;
-                            } else if (dataRange[0] >= args.index) {
-                                range.startCell = getCellAddress(startCell[0] + args.model.length, startCell[1]);
+                if (args.modelType === 'Row' || args.modelType === 'Column') {
+                    if (args.modelType === 'Column') {
+                        if (args.insertType) {
+                            inRange = dataRange[1] < args.index && dataRange[3] >= args.index;
+                            cellIndices = [args.index];
+                            if (!inRange) {
+                                if ((dataRange[3] + 1 === args.index && args.insertType === 'after')) {
+                                    args.model.forEach((): void => {
+                                        range.info.flds.splice(args.index - startCell[1], 0, '');
+                                    });
+                                    range.info.fldLen += args.model.length;
+                                } else if (dataRange[1] >= args.index) {
+                                    range.startCell = getCellAddress(startCell[0], startCell[1] + args.model.length);
+                                }
+                            } else {
+                                args.model.forEach((): void => {
+                                    range.info.flds.splice(args.index - startCell[1], 0, '');
+                                });
+                                range.info.fldLen += args.model.length;
                             }
                         } else {
-                            isNewRow = true;
-                            range.info.count += args.model.length;
+                            inRange = dataRange[1] <= args.startIndex && dataRange[3] >= args.startIndex;
+                            if (inRange) {
+                                for (let i: number = args.startIndex; i <= args.endIndex; i++) {
+                                    if (i <= dataRange[3]) {
+                                        range.info.flds.splice(args.startIndex, 1);
+                                        range.info.fldLen -= 1;
+                                    }
+                                }
+                            }
                         }
+                        return;
                     } else {
-                        inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
-                        if (args.isDataRequest) {
-                            cellIndices = [args.startIndex, dataRange[1], args.startIndex, dataRange[1]];
+                        if (args.insertType) {
+                            inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
+                                : dataRange[0] < args.index) && dataRange[2] >= args.index;
+                            cellIndices = [args.index];
+                            if (!inRange) {
+                                if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {
+                                    isNewRow = true;
+                                    range.info.count += args.model.length;
+                                } else if (dataRange[0] >= args.index) {
+                                    range.startCell = getCellAddress(startCell[0] + args.model.length, startCell[1]);
+                                }
+                            } else {
+                                isNewRow = true;
+                                range.info.count += args.model.length;
+                            }
                         } else {
-                            action = 'delete';
+                            inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
+                            if (args.isDataRequest) {
+                                cellIndices = [args.startIndex, dataRange[1], args.startIndex, dataRange[1]];
+                            } else {
+                                action = 'delete';
+                            }
                         }
                     }
                 } else {
-                    cellIndices = getRangeIndexes(args.requestType === 'paste' ? args.pastedRange.split('!')[1] : args.sheetIdx > -1 ? args.address : (args.address || args.range).split('!')[1]);
+                    cellIndices = getRangeIndexes(
+                        args.requestType === 'paste' ? args.pastedRange.split('!')[1] : args.sheetIdx > -1 ? args.address :
+                        (args.address || args.range).split('!')[1]);
                     const dataRangeIndices: number[] =
                         [...[range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]], ...dataRange.slice(1, 4)];
+                    if (cellIndices[0] === startCell[0]) {
+                        for (let i: number = cellIndices[1]; i <= cellIndices[3]; i++) {
+                            if (i >= dataRangeIndices[1] && i <= dataRangeIndices[3]) {
+                                range.info.flds[i - startCell[1]] = getCell(startCell[0], i, sheet, false, true).value || '';
+                            }
+                        }
+                    }
                     inRange = isInRange(dataRangeIndices, cellIndices, true);
                     if (args.requestType === 'paste' && (args as unknown as { copiedInfo: { isCut: boolean } }).copiedInfo.isCut) {
                         cutIndices = [].slice.call((args as unknown as { copiedInfo: { range: number[] } }).copiedInfo.range);
+                        if (cutIndices[0] === startCell[0]) {
+                            for (let i: number = cutIndices[1]; i <= cutIndices[3]; i++) {
+                                if (i >= dataRangeIndices[1] && i <= dataRangeIndices[3]) {
+                                    range.info.flds[i - startCell[1]] = '';
+                                }
+                            }
+                            inRange = false;
+                        }
                         inRangeCut = isInRange(dataRangeIndices, cutIndices, true);
                     }
                 }
@@ -508,8 +556,10 @@ export class DataBind {
                             for (let i: number = 0; i < addedCutData; i++) {
                                 changedData[i] = {};
                                 range.info.flds.forEach((fld: string, idx: number) => {
-                                    cell = getCell(cutIndices[0] + i, startCell[1] + idx, sheet);
-                                    changedData[i][fld] = this.getFormattedValue(cell);
+                                    if (fld) {
+                                        cell = getCell(cutIndices[0] + i, startCell[1] + idx, sheet);
+                                        changedData[i][fld] = this.getFormattedValue(cell);
+                                    }
                                 });
                             }
                         }
@@ -517,8 +567,10 @@ export class DataBind {
                             for (let i: number = 0; i < (isNewRow ? args.model.length : (cellIndices[2] - cellIndices[0]) + 1 || 1); i++) {
                                 changedData[i + addedCutData] = {};
                                 range.info.flds.forEach((fld: string, idx: number) => {
-                                    cell = getCell(cellIndices[0] + i, startCell[1] + idx, sheet);
-                                    changedData[i + addedCutData][fld] = this.getFormattedValue(cell);
+                                    if (fld) {
+                                        cell = getCell(cellIndices[0] + i, startCell[1] + idx, sheet);
+                                        changedData[i + addedCutData][fld] = this.getFormattedValue(cell);
+                                    }
                                 });
                             }
                         }
@@ -526,7 +578,8 @@ export class DataBind {
                     if (args.isDataRequest) {
                         args.data = changedData;
                     } else {
-                        this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
+                        this.parent.trigger(
+                            'dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
                     }
                 } else if (deleteRowDetails && deleteRowDetails.count && dataRange[0] > deleteRowDetails.index) {
                     range.startCell = getCellAddress(startCell[0] - deleteRowDetails.count, startCell[1]);
@@ -553,7 +606,7 @@ export class DataBind {
     }): void {
         const dataChangingActions: string[] = ['insert', 'delete', 'edit', 'cellDelete', 'cellSave', 'clipboard', 'clear'];
         let triggerDataChange: boolean = true;
-        if ((args.action === 'delete' || args.action === 'insert') && ['Column', 'Sheet'].indexOf(args.eventArgs.modelType) > -1) {
+        if ((args.action === 'delete' || args.action === 'insert') && ['Sheet'].indexOf(args.eventArgs.modelType) > -1) {
             triggerDataChange = false;
         } else if (args.action === 'clear' && ['Clear Formats', 'Clear Hyperlinks'].indexOf(args.eventArgs.type) > -1) {
             triggerDataChange = false;

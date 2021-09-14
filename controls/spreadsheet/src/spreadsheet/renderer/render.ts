@@ -20,7 +20,7 @@ export class Render {
         this.addEventListener();
     }
 
-    public render(isRefreshing: boolean): void {
+    public render(): void {
         this.parent.setProperties({ activeSheetIndex: this.parent.skipHiddenSheets(this.parent.activeSheetIndex) }, true);
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
@@ -50,7 +50,7 @@ export class Render {
         }
         this.setSheetPanelSize();
         this.renderSheet(sheetPanel);
-        this.checkTopLeftCell(true, isRefreshing);
+        this.checkTopLeftCell(true);
     }
 
     private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean): void {

@@ -37,7 +37,21 @@ export class ToolbarStatus {
         const nodeSelection: NodeSelection = new NodeSelection();
         const nodes: Node[] = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
         const nodesLength: number = nodes.length;
+        let isNodeChanged: boolean = false;
+        const range: Range = nodeSelection.getRange(docElement);
         for (let index: number = 0; index < nodes.length; index++) {
+            while (nodes[index].nodeType === 3 && range.startContainer.nodeType === 3 && nodes[index].parentNode &&
+                nodes[index].parentNode.lastElementChild && nodes[index].parentNode.lastElementChild.nodeName !== "BR" &&
+                (this.getImmediateBlockNode(nodes[index].parentNode as Node, targetNode) as HTMLElement).textContent.replace(/\u200B/g, '').length === 0 &&
+                range.startContainer.textContent.replace(/\u200B/g, '').length === 0 &&
+                nodeSelection.get(docElement).toString().replace(/\u200B/g, '').length === 0) {
+                nodes[index] = nodes[index].parentNode.lastElementChild.firstChild;
+                isNodeChanged = true;
+            }
+            if (isNodeChanged && nodes[index]) {
+                nodeSelection.setCursorPoint(docElement, (nodes[index] as Element), nodes[index].textContent.length);
+                isNodeChanged = false;
+            }
             if ((nodes[index].nodeName !== 'BR' && nodes[index].nodeType !== 3) ||
             (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
                 nodes.splice(index, 1);
@@ -103,6 +117,13 @@ export class ToolbarStatus {
             formatCollection = JSON.parse(JSON.stringify(statusCollection));
         }
         return nodeCollection;
+    }
+
+    private static getImmediateBlockNode(node: Node, editNode: Node): Node {
+        do {
+            node = node.parentNode;
+        } while (node && CONSTANT.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0);
+        return node;
     }
 
     private static getFormatParent(

@@ -339,7 +339,27 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
-
+        it('Checking Range Tooltip template with Content', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('container_Axis_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                let tooltip = document.getElementById("container_CircularGauge_Tooltip");
+                let split = tooltip.getAttribute('style').split(" ");
+                expect(split[5].indexOf('-') == -1).toBe(true);
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.width = '100';
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = '<div>Sum of Freight</div>';
+            gauge.refresh();
+        });
 
     });
 

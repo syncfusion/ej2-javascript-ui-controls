@@ -3695,6 +3695,7 @@ export class Selection implements IAction {
         this.parent.on(events.dataReady, this.dataReady, this);
         this.onDataBoundFunction = this.onDataBound.bind(this);
         this.parent.addEventListener(events.dataBound, this.onDataBoundFunction);
+        this.parent.on(events.refreshInfinitePersistSelection, this.onDataBoundFunction);
         this.parent.on(events.contentReady, this.checkBoxSelectionChanged, this);
         this.parent.on(events.beforeRefreshOnDataChange, this.initPerisistSelection, this);
         this.parent.on(events.onEmpty, this.setCheckAllForEmptyGrid, this);
@@ -3714,6 +3715,7 @@ export class Selection implements IAction {
         this.parent.off(events.dataReady, this.dataReady);
         this.parent.removeEventListener(events.dataBound, this.onDataBoundFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunc);
+        this.parent.off(events.refreshInfinitePersistSelection, this.onDataBoundFunction);
         this.parent.off(events.onEmpty, this.setCheckAllForEmptyGrid);
         this.parent.off(events.click, this.clickHandler);
         this.parent.off(events.beforeRefreshOnDataChange, this.initPerisistSelection);

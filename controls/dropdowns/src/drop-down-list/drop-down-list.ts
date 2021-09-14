@@ -2735,6 +2735,10 @@ export class DropDownList extends DropDownBase implements IInput {
             this.selectData = null;
             this.clearAll(null, props);
         }
+        if ((this.fields.groupBy && props.fields) && !this.isGroupChecking) {
+            EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
+            EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
+        }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || !(props.dataSource === [])) {
             this.typedString = '';
