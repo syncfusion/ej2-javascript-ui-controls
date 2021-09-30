@@ -2,7 +2,7 @@
 $pager-font-family: sans-serif !default;
 $pager-border-type: $border-type !default;
 $pager-mobile-icon-size: 11px !default;
-$pager-bg-color: $theme-primary !default;
+$pager-bg-color: $content-bg-color !default;
 $pager-mhover-color: $default-font-color !default;
 $pager-pagermessage-weight: normal !default;
 $pager-last-border-size: 0 !default;
@@ -114,3 +114,5 @@ $pager-bigger-dropdown-margin-top: $pager-dropdown-margin-top !default;
 $pager-rtl-nxtpage-margin: 0 !default;
 $pager-disabled-icons-opacity: .3 !default;
 $pager-bigger-dropdown-heigh: 40px !default;
+$pager-external-msg-padding: 6px !default;
+$pager-rtl-bigger-tripledot-font-size: $pager-tripledot-font-size !default;

@@ -276,6 +276,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public showActiveElement: boolean = true;
     /** @hidden */
+    public addDeleteRecord: boolean = false;
+    /** @hidden */
     public enableHeaderFocus: boolean = true;
     /** @hidden */
     public enableValidation: boolean = true;
@@ -383,7 +385,6 @@ export class Gantt extends Component<HTMLElement>
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      */
     @Property(0)
     public treeColumnIndex: number;
@@ -560,7 +561,6 @@ export class Gantt extends Component<HTMLElement>
      *
      * @default 36
      * @aspType int
-     * @blazorType int
      */
     @Property(36)
     public rowHeight: number;
@@ -568,8 +568,6 @@ export class Gantt extends Component<HTMLElement>
      * Defines height of taskbar element in Gantt.
      *
      * @aspType int?
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     @Property(null)
     public taskbarHeight: number;
@@ -578,7 +576,6 @@ export class Gantt extends Component<HTMLElement>
      * Defines start date of the project, if `projectStartDate` value not set then it will be calculated from data source.
      *
      * @default null
-     * @blazorType Date
      */
     @Property(null)
     public projectStartDate: Date | string;
@@ -587,7 +584,6 @@ export class Gantt extends Component<HTMLElement>
      * Defines end date of the project, if `projectEndDate` value not set then it will be calculated from data source.
      *
      * @default null
-     * @blazorType Date
      */
     @Property(null)
     public projectEndDate: Date | string;
@@ -631,7 +627,6 @@ export class Gantt extends Component<HTMLElement>
      *
      * @default 1
      * @aspType int
-     * @blazorType int
      */
     @Property(1)
     public connectorLineWidth: number;
@@ -668,7 +663,6 @@ export class Gantt extends Component<HTMLElement>
      *
      * @default -1
      * @aspType int
-     * @blazorType int
      */
     @Property(-1)
     public selectedRowIndex: number;
@@ -1044,8 +1038,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when Gantt actions such as sorting, filtering, searching etc., starts.
      *
      * @event actionBegin
-     * @blazorproperty 'OnActionBegin'
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionBeginArgs<TValue>
      */
     @Event()
     public actionBegin: EmitType<Object | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>;  // eslint-disable-line
@@ -1054,8 +1046,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when Gantt actions such as sorting, filtering, searching etc. are completed.
      *
      * @event actionComplete
-     * @blazorproperty 'OnActionComplete'
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionCompleteArgs<TValue>
      */
     @Event()
     public actionComplete: EmitType<FilterEventArgs | SortEventArgs | ITaskAddedEventArgs | IKeyPressedEventArgs | ZoomEventArgs>;
@@ -1064,8 +1054,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when actions are failed.
      *
      * @event actionFailure
-     * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.FailureEventArgs
      */
     @Event()
     public actionFailure: EmitType<FailureEventArgs>;
@@ -1099,7 +1087,6 @@ export class Gantt extends Component<HTMLElement>
      * This will be triggered a cell get begins to edit.
      *
      * @event cellEdit
-     * @blazorproperty 'OnCellEdit'
      */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -1108,8 +1095,7 @@ export class Gantt extends Component<HTMLElement>
      * Triggered before the Gantt control gets rendered.
      *
      * @event load
-     * @blazorproperty 'OnLoad'
-     */
+     */
     @Event()
     public load: EmitType<Object>;
 
@@ -1176,7 +1162,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when splitter resizing starts.
      *
      * @event splitterResizeStart
-     * @blazorType Syncfusion.EJ2.Blazor.Layouts.ResizeEventArgs
      */
     @Event()
     public splitterResizeStart: EmitType<ResizeEventArgs>;
@@ -1185,7 +1170,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when splitter bar was dragging.
      *
      * @event splitterResizing
-     * @blazorType Syncfusion.EJ2.Blazor.Layouts.ResizingEventArgs
      */
     @Event()
     public splitterResizing: EmitType<ResizingEventArgs>;
@@ -1279,7 +1263,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers after a cell is selected.
      *
      * @event cellSelected
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
      */
     @Event()
     public cellSelected: EmitType<CellSelectEventArgs>;
@@ -1314,8 +1297,7 @@ export class Gantt extends Component<HTMLElement>
      * This will be triggered before the header cell element is appended to the Grid element.
      *
      * @event headerCellInfo
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs
-     */
+     */
     @Event()
     public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
 
@@ -1340,8 +1322,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when toolbar item was clicked.
      *
      * @event toolbarClick
-     * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -1349,16 +1329,13 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when click on column menu.
      *
      * @event columnMenuClick
-     * @blazorproperty 'ColumnMenuClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnMenuClickEventArgs
-     */
+     */
     @Event()
     public columnMenuClick: EmitType<ColumnMenuClickEventArgs>;
     /**
      * Triggers before context menu opens.
      *
      * @event contextMenuOpen
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ContextMenuOpenEventArgs<TValue>
      */
     @Event()
     public contextMenuOpen: EmitType<CMenuOpenEventArgs>;
@@ -1367,8 +1344,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when click on context menu.
      *
      * @event contextMenuClick
-     * @blazorproperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ContextMenuClickEventArgs<TValue>
      */
     @Event()
     public contextMenuClick: EmitType<CMenuClickEventArgs>;
@@ -1615,7 +1590,18 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      */
     private calculateDimensions(): void {
-        const settingsHeight: string = this.validateDimentionValue(this.height);
+        let settingsHeight: string;
+        if (typeof(this.height) !== 'number' && (this.height as any).indexOf('%') !== -1 && (this.element.parentElement &&
+            !this.element.parentElement.style.height)) {
+            let ganttHeight: number = Number((this.height as any).split("%")[0]);
+            ganttHeight = (ganttHeight * window.innerHeight) / 100;
+            if (this.height === '100%') {
+                ganttHeight = ganttHeight - 16;
+            }
+            settingsHeight = this.validateDimentionValue(ganttHeight);
+            } else {
+                settingsHeight = this.validateDimentionValue(this.height);
+            }
         let settingsWidth: string = this.validateDimentionValue(this.width);
         if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
             settingsWidth = this.width;
@@ -1755,6 +1741,31 @@ export class Gantt extends Component<HTMLElement>
      */
     public windowResize(): void {
         if (!isNullOrUndefined(this.element)) {
+            let settingsHeight: string;
+            if ((this.height as any).indexOf('%') !== -1) {
+               let ganttHeight: number = Number((this.height as any).split("%")[0]);
+               if (this.element.parentElement && this.element.parentElement.style.height) {
+                   let containerHeight: number = Number(this.element.parentElement.style.height.split("px")[0]);
+                   ganttHeight = (ganttHeight * containerHeight) / 100;
+               } else {
+                   ganttHeight = Number((this.height as any).split("%")[0]);
+                   ganttHeight = (ganttHeight * window.innerHeight) / 100;
+               }
+               if (this.height === '100%') {
+                    ganttHeight = ganttHeight - 16;
+               }
+               let toolbarHeight: number = 0;
+               if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
+                   toolbarHeight = this.toolbarModule.element.offsetHeight;
+               }
+               let contentHeight: number = ganttHeight - this.ganttChartModule.chartTimelineContainer.offsetHeight - toolbarHeight;
+               settingsHeight = this.validateDimentionValue(ganttHeight);
+               this.element.style.height = settingsHeight;
+               this.element.querySelectorAll('.e-content')[0]['style'].height = contentHeight + 'px';
+               this.element.querySelectorAll('.e-content')[2]['style'].height = contentHeight + 'px';
+            } else {
+                settingsHeight = this.validateDimentionValue(this.height);
+            }
             this.updateContentHeight();
             this.ganttChartModule.updateWidthAndHeight(); // Updating chart scroll conatiner height for row mismatch
             this.treeGridModule.ensureScrollBar();
@@ -2935,7 +2946,6 @@ export class Gantt extends Component<HTMLElement>
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @returns {Promise<any>} .
-     * @blazorType void
      */
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
@@ -2952,7 +2962,6 @@ export class Gantt extends Component<HTMLElement>
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @returns {Promise<any>} .
-     * @blazorType void
      */
     public csvExport(
         excelExportProperties?: ExcelExportProperties,
@@ -2967,7 +2976,6 @@ export class Gantt extends Component<HTMLElement>
      * @param  {isMultipleExport} isMultipleExport - Define to enable multiple export.
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @returns {Promise<any>} .
-     * @blazorType void
      */
     public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object): Promise<Object> {
         return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc)
@@ -3389,7 +3397,7 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public expandAtLevel(level: number): void {
-        if (this.enableVirtualization) {
+        if(this.enableVirtualization) {
             this.isExpandCollapseLevelMethod = true;
         }
         this.ganttChartModule.expandAtLevel(level);

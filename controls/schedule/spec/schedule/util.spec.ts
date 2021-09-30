@@ -18,6 +18,17 @@ const instance: Internationalization = new Internationalization();
 (window as TemplateFunction).getShortDateTime = (value: Date) => instance.formatDate(value, { type: 'dateTime', skeleton: 'short' });
 (window as TemplateFunction).getResourceName = (value: ResourceDetails) => ((value as ResourceDetails).resourceData) ?
     (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField] : (value as ResourceDetails).resourceName;
+(window as TemplateFunction).getCellText = (value: Date) => {
+    return ([0, 6].indexOf(value.getDay()) >= 0) ? '<span class="caption">Weekend</span>' : '';
+};
+(window as TemplateFunction).getMonthCellText = (date: Date) => {
+    if (date.getMonth() === 0 && date.getDate() === 1) {
+        return '<span class="caption">Template</span>';
+    } else if (date.getMonth() === 0 && date.getDate() === 15) {
+        return '<span class="caption">Template</span>';
+    }
+    return '';
+};
 
 export interface TemplateFunction extends Window {
     getTimeIn12?: CallbackFunction;
@@ -25,6 +36,8 @@ export interface TemplateFunction extends Window {
     getDateHeaderText?: CallbackFunction;
     getShortDateTime?: CallbackFunction;
     getResourceName?: CallbackFunction;
+    getCellText?: CallbackFunction;
+    getMonthCellText?: CallbackFunction;
 }
 
 /**
@@ -260,18 +273,18 @@ export function triggerScrollEvent(target: HTMLElement, scrollTop: number, scrol
  *
  * @param {HTMLElement} target Accepts the DOM element
  * @param {string} keyName Accepts the key value
- * @param {number} keyCode Accepts the keyCode value
+ * @param {number} KeyCode Accepts the number
  * @returns {void}
  * @private
  */
 export function triggerKeyDownEvent(target: HTMLElement, keyName: string, KeyCode: number): void {
-    let event: { [key: string]: string } = {};
+    const event: { [key: string]: string } = {};
     Object.defineProperties(event, {
         code: { value: keyName },
         key: { value: keyName },
         keyCode: { value: KeyCode },
         view: { value: window },
-        bubbles: { value: true },
+        bubbles: { value: true }
     });
     const keyboardEvent: KeyboardEvent = new KeyboardEvent('keydown', event);
     target.dispatchEvent(keyboardEvent);

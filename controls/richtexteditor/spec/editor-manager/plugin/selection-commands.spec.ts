@@ -115,14 +115,14 @@ describe('Selection commands', () => {
         let node2: HTMLElement = document.getElementById('paragraph02');
         let text2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text2, 12, 16);
-        SelectionCommands.applyFormat(document, 'italic', parentDiv);
+        SelectionCommands.applyFormat(document, 'italic', parentDiv, 'P');
         expect(node1.childNodes.length).toEqual(2);
     });
     it('Apply italic tag for None nodes', () => {
         let node1: Node = document.getElementById('paragraph03');
         domSelection.setSelectionText(document, node1, node1, 0, 0);
-        SelectionCommands.applyFormat(document, 'italic', parentDiv);
-        expect(node1.childNodes.length).toEqual(2);
+        SelectionCommands.applyFormat(document, 'italic', parentDiv, 'P');
+        expect(node1.childNodes.length).toEqual(1);
     });
     it('Apply Bold tag for multiple nodes', () => {
         let node1: Node = document.getElementById('paragraph4');
@@ -131,53 +131,53 @@ describe('Selection commands', () => {
         let text2: Text = node2.childNodes[0] as Text;
         ptag = node1;
         domSelection.setSelectionText(document, text1, text2, 0, 16);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
     it('Apply subscript tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document, 'subscript', parentDiv);
+        SelectionCommands.applyFormat(document, 'subscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sub');
     });
     it('Apply underline tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document, 'underline', parentDiv);
+        SelectionCommands.applyFormat(document, 'underline', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('span');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement)
         .style.textDecoration).toEqual('underline');
     });
     it('Apply strikethrough tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('span');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement)
         .style.textDecoration).toEqual('line-through');
     });
     it('Apply superscript tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document, 'superscript', parentDiv);
+        SelectionCommands.applyFormat(document, 'superscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
     });
     it('Apply Italic tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document, 'italic', parentDiv);
+        SelectionCommands.applyFormat(document, 'italic', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
     });
     it('Revert Italic tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document,'italic', parentDiv);
+        SelectionCommands.applyFormat(document,'italic', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert superscript tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document,'superscript', parentDiv);
+        SelectionCommands.applyFormat(document,'superscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert strikethrough tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document,'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document,'strikethrough', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert underline tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document,'underline', parentDiv);
+        SelectionCommands.applyFormat(document,'underline', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert Bold tag for multiple nodes', () => {
-        SelectionCommands.applyFormat(document,'bold', parentDiv);
+        SelectionCommands.applyFormat(document,'bold', parentDiv, 'P');
         expect(ptag.childNodes[0].nodeName).toEqual('#text');
     });
     it('Apply Bold tag for cursor position', () => {
@@ -185,50 +185,50 @@ describe('Selection commands', () => {
         let text1: Text = node1.childNodes[0] as Text;
         ptag = node1;
         domSelection.setSelectionText(document, text1, text1, 1, 1);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
     it('Apply subscript tag for cursor position', () => {
-        SelectionCommands.applyFormat(document, 'subscript', parentDiv);
+        SelectionCommands.applyFormat(document, 'subscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sub');
     });
     it('Apply underline tag for cursor position', () => {
-        SelectionCommands.applyFormat(document, 'underline', parentDiv);
+        SelectionCommands.applyFormat(document, 'underline', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('span');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.textDecoration).toEqual('underline');
     });
     it('Apply strikethrough tag for cursor position', () => {
-        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply superscript tag for cursor position', () => {
-        SelectionCommands.applyFormat(document, 'superscript', parentDiv);
+        SelectionCommands.applyFormat(document, 'superscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
     });
     it('Apply Italic tag for cursor position', () => {
-        SelectionCommands.applyFormat(document, 'italic', parentDiv);
+        SelectionCommands.applyFormat(document, 'italic', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
     });
     it('Revert Italic tag for cursor position', () => {
-        SelectionCommands.applyFormat(document,'italic', parentDiv);
+        SelectionCommands.applyFormat(document,'italic', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert superscript tag for cursor position', () => {
-        SelectionCommands.applyFormat(document,'superscript', parentDiv);
+        SelectionCommands.applyFormat(document,'superscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert strikethrough tag for cursor position', () => {
-        SelectionCommands.applyFormat(document,'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document,'strikethrough', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert underline tag for cursor position', () => {
-        SelectionCommands.applyFormat(document,'underline', parentDiv);
+        SelectionCommands.applyFormat(document,'underline', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert Bold tag for cursor position', () => {
-        SelectionCommands.applyFormat(document,'bold', parentDiv);
+        SelectionCommands.applyFormat(document,'bold', parentDiv, 'P');
         expect(ptag.childNodes[0].nodeName).toEqual('#text');
     });
     it('Apply Bold tag for text node', () => {
@@ -236,53 +236,53 @@ describe('Selection commands', () => {
         let text1: Text = node1.childNodes[0] as Text;
         ptag = node1;
         domSelection.setSelectionText(document, text1, text1, 0, 7);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
     it('Apply subscript tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'subscript', parentDiv);
+        SelectionCommands.applyFormat(document, 'subscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sub');
     });
     it('Apply underline tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'underline', parentDiv);
+        SelectionCommands.applyFormat(document, 'underline', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('span');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement)
         .style.textDecoration).toEqual('underline');
     });
     it('Apply strikethrough tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('span');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement)
         .style.textDecoration).toEqual('line-through');
     });
     it('Apply superscript tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'superscript', parentDiv);
+        SelectionCommands.applyFormat(document, 'superscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('sup');
     });
     it('Apply Italic tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'italic', parentDiv);
+        SelectionCommands.applyFormat(document, 'italic', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('em');
     });
     it('Revert Italic tag for text node', () => {
-        SelectionCommands.applyFormat(document,'italic', parentDiv);
+        SelectionCommands.applyFormat(document,'italic', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0]
             .childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert superscript tag for text node', () => {
-        SelectionCommands.applyFormat(document,'superscript', parentDiv);
+        SelectionCommands.applyFormat(document,'superscript', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert strikethrough tag for text node', () => {
-        SelectionCommands.applyFormat(document,'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document,'strikethrough', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert underline tag for text node', () => {
-        SelectionCommands.applyFormat(document,'underline', parentDiv);
+        SelectionCommands.applyFormat(document,'underline', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].nodeName).toEqual('#text');
     });
     it('Revert Bold tag for text node', () => {
-        SelectionCommands.applyFormat(document,'bold', parentDiv);
+        SelectionCommands.applyFormat(document,'bold', parentDiv, 'P');
         expect(ptag.childNodes[0].nodeName).toEqual('#text');
     });
 
@@ -292,57 +292,57 @@ describe('Selection commands', () => {
         let text1: Text = node1.childNodes[0] as Text;
         ptag = node1;
         domSelection.setSelectionText(document, text1, text1, 0, 26);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'rgb(102, 102, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(102, 102, 0)');
         expect((node1.childNodes[0] as HTMLElement).style.color).toEqual('rgb(102, 102, 0)');
         expect((node1.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontname tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'Arial');
+        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'Arial');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.fontFamily).toEqual('Arial');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontsize tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '20px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '20px');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('20px');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply backgroundcolor tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv,  'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
         expect(
         (ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 206)');
         expect(
             (ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply uppercase tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'uppercase', parentDiv);
+        SelectionCommands.applyFormat(document, 'uppercase', parentDiv, 'P');
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
         .childNodes[0].textContent).toEqual('THE RICH TEXT EDITOR (RTE)');
     });
     it('Re - Apply lowercase tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'lowercase', parentDiv);
+        SelectionCommands.applyFormat(document, 'lowercase', parentDiv, 'P');
         fontTag = ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0];
         expect(ptag.childNodes[0].childNodes[0].childNodes[0]
             .childNodes[0].textContent).toEqual('the rich text editor (rte)');
     });
     it('Re - Apply backgroundcolor tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'rgb(246, 198, 2)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 2)');
         expect(
         (ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 2)');
         expect(
             (ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontsize tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '40px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '40px');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('40px');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontname tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'monospace');
+        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'monospace');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.fontFamily).toEqual('monospace');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontcolor tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'rgb(226, 10, 10)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(226, 10, 10)');
         expect((ptag.childNodes[0] as HTMLElement).style.color).toEqual('rgb(226, 10, 10)');
         expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
@@ -350,22 +350,22 @@ describe('Selection commands', () => {
         fontTag = ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0];
         let text1: Text = fontTag.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 3, 10);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'rgb(102, 102, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(102, 102, 0)');
         expect((ptag.childNodes[1] as HTMLElement).style.color).toEqual('rgb(102, 102, 0)');
         expect((ptag.childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontname tag for already applied specific text node', () => {
-        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'Arial');
+        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'Arial');
         expect((ptag.childNodes[1].childNodes[0] as HTMLElement).style.fontFamily).toEqual('Arial');
         expect((ptag.childNodes[1].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontsize tag for already applied specific text node', () => {
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '20px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '20px');
         expect((ptag.childNodes[1].childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('20px');
         expect((ptag.childNodes[1].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply backgroundcolor tag for already applied specific text node', () => {
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
         expect(
         (ptag.childNodes[1].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor)
         .toEqual('rgb(246, 198, 206)');
@@ -374,7 +374,7 @@ describe('Selection commands', () => {
             .toEqual('span');
     });
     it('Apply uppercase tag for already applied specific text node', () => {
-        SelectionCommands.applyFormat(document, 'uppercase', parentDiv);
+        SelectionCommands.applyFormat(document, 'uppercase', parentDiv, 'P');
         expect(ptag.childNodes[1].childNodes[0].childNodes[0].childNodes[0].childNodes[0].textContent)
         .toEqual(' RICH T');
     });
@@ -384,63 +384,63 @@ describe('Selection commands', () => {
         let node1: Node = document.getElementById('bold1');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, 3);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(document.getElementById('boldparent').childNodes[0].textContent).toEqual('the');
     });
     it('Apply Italic tag for span style node', () => {
         let node1: Node = document.getElementById('italic1');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, 3);
-        SelectionCommands.applyFormat(document, 'italic', parentDiv);
+        SelectionCommands.applyFormat(document, 'italic', parentDiv, 'P');
         expect(document.getElementById('italicparent').childNodes[0].textContent).toEqual('the');
     });
     it('Apply Underline tag for span style node', () => {
         let node1: Node = document.getElementById('underline1');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, 3);
-        SelectionCommands.applyFormat(document, 'underline', parentDiv);
+        SelectionCommands.applyFormat(document, 'underline', parentDiv, 'P');
         expect(document.getElementById('italicparent').childNodes[0].textContent).toEqual('the');
     });
     it('Apply Strike tag for span style node', () => {
         let node1: Node = document.getElementById('strike1');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, 3);
-        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv, 'P');
         expect(document.getElementById('italicparent').childNodes[0].textContent).toEqual('the');
     });
     it('Apply Bold tag for cursor position 1', () => {
         let node1: Node = document.getElementById('cursor1');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 5, 5);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[1].nodeName.toLowerCase()).toEqual('strong');
     });
     it('Apply Bold tag for cursor position 2', () => {
         let node1: Node = document.getElementById('cursor5');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 4, 4);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(document.getElementById('cursor4').childNodes[1].nodeName.toLowerCase()).toEqual('#text');
     });
     it('Apply Bold tag for cursor position 3', () => {
         let node1: Node = document.getElementById('cursor7');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 4, 4);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(document.getElementById('cursor6').childNodes.length).toEqual(3);
     });
     it('Apply uppercase tag for cursor position 1', () => {
         let node1: Node = document.getElementById('cursor7');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 4, 4);
-        SelectionCommands.applyFormat(document, 'uppercase', parentDiv);
+        SelectionCommands.applyFormat(document, 'uppercase', parentDiv, 'P');
         expect(document.getElementById('cursor6').childNodes.length).toEqual(3);
     });
     it('Apply strikethrough tag for cursor position 1', () => {
         let node1: Node = document.getElementById('cursor9');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 3, 3);
-        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv);
+        SelectionCommands.applyFormat(document, 'strikethrough', parentDiv, 'P');
         expect(document.getElementById('cursor8').childNodes.length).toEqual(2);
     });
     // Branch coverage
@@ -448,7 +448,7 @@ describe('Selection commands', () => {
         let node1: Node = document.getElementById('cursor1');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, 3);
-        SelectionCommands.applyFormat(document, 'scripts', parentDiv);
+        SelectionCommands.applyFormat(document, 'scripts', parentDiv, 'P');
         expect(node1.nodeName.toLowerCase()).toEqual('span');
     });
     it('un formatted tag for selection', () => {
@@ -457,16 +457,16 @@ describe('Selection commands', () => {
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 3);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
     it('Edge browser formatted issue', () => {
         let node1: Node = document.getElementById('format1');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, text1.nodeValue.length);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('#text');
     });
     it('Cursor pointer multiple style with empty node applied issue', () => {
@@ -474,13 +474,13 @@ describe('Selection commands', () => {
         let node1: Node = document.getElementById('format4');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, 0);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect((node1 as HTMLElement).children[0].textContent.match(regEx)).not.toBe(null);
-        SelectionCommands.applyFormat(document, 'italic', parentDiv);
+        SelectionCommands.applyFormat(document, 'italic', parentDiv, 'P');
         expect((node1 as HTMLElement).children[0].children[0].textContent.match(regEx)).not.toBe(null);
-        SelectionCommands.applyFormat(document, 'underline', parentDiv);
+        SelectionCommands.applyFormat(document, 'underline', parentDiv, 'P');
         expect((node1 as HTMLElement).children[0].children[0].textContent.match(regEx)).not.toBe(null);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[2].nodeName.toLowerCase()).toEqual('em');
         expect(node1.childNodes[2].childNodes[1].nodeName.toLowerCase()).toEqual('span');
     });
@@ -488,14 +488,14 @@ describe('Selection commands', () => {
         let node1: Node = document.getElementById('format5').querySelector('u');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, text1.nodeValue.length, text1.nodeValue.length);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(document.getElementById('format5').nextSibling.nodeName.toLowerCase()).toEqual('em');
         expect(document.getElementById('format5').nextSibling.childNodes[0].nodeName.toLowerCase()).toEqual('u');
     });
     it('transparent background color not apllied issue', () => {
         let node1: Node = document.getElementById('format6');
         domSelection.setSelectionText(document, node1, node1, 0, node1.childNodes.length);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, '');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', '');
         expect((document.getElementById('format6').childNodes[1] as HTMLElement).style.color).toEqual('');
     });
     it('Apply fontsize tag for list elements', () => {
@@ -504,7 +504,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph26');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '36px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '36px');
         expect(document.getElementById('paragraph20').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph21').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph22').parentElement.style.fontSize).toEqual('36px');
@@ -519,7 +519,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph35');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'rgb(83, 129, 53)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(83, 129, 53)');
         expect(document.getElementById('paragraph30').parentElement.style.color).toEqual('rgb(83, 129, 53)');
         expect(document.getElementById('paragraph31').parentElement.style.color).toEqual('rgb(83, 129, 53)');
         expect(document.getElementById('paragraph32').parentElement.style.color).toEqual('rgb(83, 129, 53)');
@@ -535,7 +535,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph26');
         let listNode2: Text = node2.childNodes[0].childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 5, 5);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '10px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '10px');
         expect(document.getElementById('paragraph20').parentElement.style.fontSize).not.toEqual('10px');
         expect(((document.getElementById('paragraph20').firstElementChild as HTMLElement).tagName.toLowerCase()) === 'span').toBe(true);
         expect((document.getElementById('paragraph20').childNodes[1] as HTMLElement).style.fontSize).toEqual('10px');
@@ -554,7 +554,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph28');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '36px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '36px');
         expect(document.getElementById('paragraph27').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph28').parentElement.style.fontSize).toEqual('36px');
     });
@@ -563,7 +563,7 @@ describe('Selection commands', () => {
         let text1: Text = node1.childNodes[0].childNodes[0] as Text;
         ptag = node1;
         domSelection.setSelectionText(document, text1, text1, 11, 11);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect((node1 as HTMLElement).querySelectorAll('strong').length).toEqual(1);
     });
 });
@@ -775,7 +775,7 @@ describe('EJ2-52390 - When using the list which contains multiple spans inside w
     it('Applying background color for the range li nodes', (done) => {
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.children[0].firstElementChild.firstElementChild.firstElementChild.firstChild.firstChild, rteObj.inputElement.children[0].firstElementChild.lastElementChild.firstElementChild.firstChild.firstChild, 0, 125);
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[0].firstElementChild.style.backgroundColor).toBe('rgb(255, 255, 0)');
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv,  'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[0].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[1].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[2].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
@@ -836,7 +836,7 @@ describe('Font size change with br', () => {
         let node2: Node = document.getElementById('paragraphlast');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 0);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '36px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '36px');
         let brelement = document.querySelectorAll('br');
         for (let i: number = 0; i < brelement.length; i++) {
             expect(brelement[i].parentElement.style.fontSize).toBe('36px');
@@ -849,7 +849,7 @@ describe('Font size change with br', () => {
         let node2: Node = document.getElementById('paragraphlast');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 0);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '8px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '8px');
         let brelement = document.querySelectorAll('br');
         for (let i: number = 0; i < brelement.length; i++) {
             expect(brelement[i].parentElement.style.fontSize).toBe('8px');
@@ -890,7 +890,7 @@ describe('Bold the content', () => {
         let node1: Node = document.getElementById('nestedTable');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 1, 1);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
 });
@@ -918,7 +918,7 @@ describe('Bold the content inside table in fire fox', () => {
     it('Apply bold to the content inside the table testing in firefox', () => {
         let node1: Node = document.querySelector('tr');
         domSelection.setSelectionText(document, node1, node1, 0, 3);
-        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
         expect(node1.childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
 });
@@ -940,7 +940,7 @@ describe('EJ2-46060: bold remove testing', () => {
     it('Remove bold', () => {
         let node1: Node = document.querySelector('strong');
         domSelection.setSelectionText(document, node1, node1, 0, 0);
-        SelectionCommands.applyFormat(document, 'bold', divElement);
+        SelectionCommands.applyFormat(document, 'bold', divElement, 'P');
         expect(divElement.innerHTML).toEqual('<p><br></p>');
     });
 });

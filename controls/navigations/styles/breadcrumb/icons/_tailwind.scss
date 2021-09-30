@@ -1,0 +1,13 @@
+
+@include export-module('breadcrumb-tailwind-icons') {
+  /*! breadcrumb icons */
+  .e-breadcrumb {
+    .e-breadcrumb-collapsed::before {
+      content: '\e76f';
+    }
+
+    .e-home::before {
+      content: '\e927';
+    }
+  }
+}

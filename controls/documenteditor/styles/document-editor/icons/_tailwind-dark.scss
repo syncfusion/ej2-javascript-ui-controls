@@ -1,4 +1,4 @@
-@include export-module('documenteditor-tailwind-dark-icons') {
+@include export-module('documenteditor-tailwind-icons') {
   .e-documenteditor {
     .e-close::before {
       color: $icon-color;
@@ -647,5 +647,25 @@
     color: $icon-color;
     content: '\e75e';
     font-family: 'e-icons';
+  }
+
+  .e-item .e-de-paste-column::before {
+    content: '\e869';
+  }
+
+  .e-item .e-de-paste-row::before {
+    content: '\e866';
+  }
+
+  .e-item .e-de-paste-overwrite-cells::before {
+    content: '\e86b';
+  }
+
+  .e-item .e-de-paste-nested-table::before {
+    content: '\e864';
+  }
+
+  .e-item .e-de-paste-merge-table::before {
+    content: '\e861';
   }
 }

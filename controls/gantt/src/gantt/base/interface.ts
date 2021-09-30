@@ -423,10 +423,7 @@ export interface PredecessorTooltip {
 export interface BeforeTooltipRenderEventArgs {
     /** Defines the data. */
     data?: BeforeTooltipRenderEventArgsData;
-    /** Defines the original event arguments of tooltip control.
-     *
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.TooltipEventArgs
-     */
+    /** Defines the original event arguments of tooltip control. */
     args?: TooltipEventArgs;
     /** Defines the content. */
     content?: string | Element;
@@ -521,13 +518,7 @@ export interface ContextMenuOpenEventArgs extends GridContextMenuOpenEventArgs {
     disableItems?: string[];
     /** Defines the target element. */
     target?: Element;
-    /**
-     * @blazorType double?
-     */
     top?: number;
-    /**
-     * @blazorType double?
-     */
     left?: number;
 }
 
@@ -617,17 +608,11 @@ export interface RowDataBoundEventArgs extends GridRowDataBoundEventArgs {
 }
 
 export interface RowDeselectEventArgs extends GridRowDeselectEventArgs {
-    /** Defines the selected/deselected row index.
-     *
-     * @blazorType double[]
-     */
+    /** Defines the selected/deselected row index. */
     rowIndex?: number;
     /** Defines the data collections. */
     data?: IGanttData[];
-    /** Defines the selected/deselected row.
-     *
-     * @blazorType List<DOM>
-     */
+    /** Defines the selected/deselected row. */
     row?: Element;
 }
 
@@ -709,10 +694,7 @@ export interface CellEditArgs  {
 }
 
 export interface CellSelectingEventArgs extends GridCellSelectingEventArgs {
-    /** Defines the previously selected cell index.
-     *
-     * @blazorType object
-     */
+    /** Defines the previously selected cell index */
     previousRowCellIndex?: number;
 }
 

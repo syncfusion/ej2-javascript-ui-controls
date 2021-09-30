@@ -28,35 +28,13 @@
 
 - Now, the Tooltip will be rendered when providing an ID that starts with an integer type.
 
-## 19.2.55 (2021-08-11)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I337211` - The issue with "Styles are not properly removed from the body, when open and close the fullscreen dialog" has been resolved.
-
-## 19.2.48 (2021-07-20)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I328768` - The issue with "The Tooltip content is not updated while hovering over the target quickly" has been resolved.
-
-## 19.2.46 (2021-07-06)
+## 19.2.44 (2021-06-30)
 
 ### Tooltip
 
 #### Bug Fixes
 
 - `#I328768` - The issue with "The Tooltip is not opened in the current cursor position while enabling the `mouseTrail` and `openDelay` support" has been resolved.
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I333082` - Provided a new additional argument `closedBy`, in the `beforeClose` event of the dialog.
 
 ## 19.1.66 (2021-06-01)
 

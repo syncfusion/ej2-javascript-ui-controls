@@ -1,7 +1,7 @@
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { IMulitSelect } from './interface';
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
-import { EventHandler, select, removeClass, addClass, detach, compile, L10n, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, select, removeClass, addClass, detach, compile, L10n } from '@syncfusion/ej2-base';
 import { Browser, attributes, isNullOrUndefined, KeyboardEventArgs, append, closest, prepend } from '@syncfusion/ej2-base';
 import { dropDownBaseClasses } from '../drop-down-base/drop-down-base';
 import { MultiSelectModel } from '../multi-select';
@@ -159,8 +159,8 @@ export class CheckBoxSelection {
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
             if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
-                !(this.parent.isDynamicDataChange && isBlazor())) || (this.parent.isDynamicDataChange &&
-                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1 && isBlazor())) {
+                !(this.parent.isDynamicDataChange)) || (this.parent.isDynamicDataChange &&
+                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1)) {
                 this.checkAllParent.style.display = 'none';
             } else {
                 this.checkAllParent.style.display = 'block';
@@ -178,19 +178,17 @@ export class CheckBoxSelection {
     }
     public listSelection(args: IUpdateListArgs): void {
         let target: EventTarget;
-        const isBlazorListbox: boolean = isBlazor() && (args.module && args.module === 'listbox');
         if (!isNullOrUndefined(args.e)) {
             const frameElm: Element = args.li.querySelector('.e-checkbox-wrapper .e-frame');
             target = !isNullOrUndefined(args.e.target) ?
                 ((args.e.target as HTMLElement).classList.contains('e-frame')
                 && (!this.parent.showSelectAll
                     || ( this.checkAllParent && !this.checkAllParent.contains(args.e.target as Element)))) ?
-                    args.e.target : (isBlazorListbox ? frameElm : args.li.querySelector('.e-checkbox-wrapper').childNodes[1])
-                : (isBlazorListbox ? frameElm : args.li.querySelector('.e-checkbox-wrapper').childNodes[1]);
+                    args.e.target : args.li.querySelector('.e-checkbox-wrapper').childNodes[1]
+                : args.li.querySelector('.e-checkbox-wrapper').childNodes[1];
         } else {
             const checkboxWrapper: Element = args.li.querySelector('.e-checkbox-wrapper');
-            target = checkboxWrapper ? (isBlazorListbox ?
-                checkboxWrapper.querySelector('.e-frame') : checkboxWrapper.childNodes[1]) : args.li.lastElementChild.childNodes[1];
+            target = checkboxWrapper ? checkboxWrapper.childNodes[1] : args.li.lastElementChild.childNodes[1];
         }
         if (this.parent.itemTemplate || this.parent.enableGroupCheckBox ) {
             target = args.li.firstElementChild.childNodes[1];

@@ -2,7 +2,7 @@
  * Base RTE spec
  */
 import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent } from '../../../src/rich-text-editor/index';
+import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
@@ -2678,11 +2678,11 @@ describe('RTE base module', () => {
             range = selection.getRange(document);
             saveSelection = selection.save(range, document);
             rteObj.executeCommand('insertTable', {
-                row: 2,
+                rows: 2,
                 columns: 5,
                 width: { minWidth: '20px', maxWidth: '100px', width: 40 },
                 selection: saveSelection
-            });
+            } as ITableCommandsArgs);
             expect((rteObj as any).inputElement.querySelector('table')).not.toBe(null);
             expect((rteObj as any).inputElement.querySelectorAll('tr').length).toBe(2);
             expect((rteObj as any).inputElement.querySelectorAll('tr')[0].querySelectorAll('td').length).toBe(5);
@@ -4358,6 +4358,49 @@ describe('EJ2-52326 - Cannot cancel fullscreen event in Maximize', () => {
         destroy(rteObj);
     });
 });
+describe('EJ2-52870-Pasting the text content for the second time after clearing the value, hangs the editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 64, key: '' };
+    let curDocument: Document;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<p><strong>​<em>​<span style="text-decoration: underline;">​</span></em></strong></p><div style=" font-family: &quot;Segoe UI&quot;, system-ui, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal;">Testing content</div>`,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            }
+        });
+        curDocument = rteObj.contentModule.getDocument();
+        done();
+    });
+    it("Pasting the content for the second time", (done) => {
+        rteObj.value = '';
+        rteObj.pasteCleanupSettings.prompt = false;
+        rteObj.pasteCleanupSettings.plainText = false;
+        rteObj.pasteCleanupSettings.keepFormat = true;
+        rteObj.dataBind();
+        keyBoardEvent.clipboardData = {
+            getData: (e: any) => {
+              if (e === "text/plain") {
+                return 'Pasted Testing content';
+              } else {
+                return '';
+              }
+            },
+            items: []
+        };
+        (rteObj as any).inputElement.focus();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).click();
+        setCursorPoint(curDocument, (rteObj as any).inputElement.lastElementChild.lastElementChild.lastElementChild.lastElementChild.firstChild, 1);
+        rteObj.onPaste(keyBoardEvent);
+        expect((rteObj as any).inputElement.childElementCount).toBe(2);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
 describe('EJ2-52326 - Cannot cancel fullscreen event in Maximize', () => {
     let rteObj: RichTextEditor;
     let actionBegin: boolean = false;
@@ -4493,7 +4536,7 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
 });
 
 describe('Tab key navigation with empty RTE content and enableTabKey is set true', () => {
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9 };
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
     let rteObj: RichTextEditor;
     let curDocument: Document;
     let editNode: Element;
@@ -4672,8 +4715,10 @@ describe('EJ2-26359 Clear Format is not working after applied selection and pare
         let item: HTMLElement = rteElement.querySelector("#" + controlId + '_toolbar_ClearFormat');
         dispatchEvent(item, 'mousedown');
         item.click();
-        let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`;
-        expect(expectedHTML === rteObj.inputElement.innerHTML).toBe(true);
+        setTimeout(() => {
+            let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`;
+            expect(expectedHTML === rteObj.inputElement.innerHTML).toBe(true);
+        });
     });
     afterAll(() => {
         destroy(rteObj);

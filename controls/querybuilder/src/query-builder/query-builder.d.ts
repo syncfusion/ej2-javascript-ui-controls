@@ -5,6 +5,7 @@ import { Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { ChildProperty } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel, ValueModel } from './query-builder-model';
 import { RadioButtonModel } from '@syncfusion/ej2-buttons';
+import { DropDownTreeModel } from '@syncfusion/ej2-dropdowns';
 import { MultiSelectModel, DropDownListModel } from '@syncfusion/ej2-dropdowns';
 import { EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Query, Predicate, DataManager } from '@syncfusion/ej2-data';
@@ -216,7 +217,15 @@ export interface FormatObject {
     skeleton?: string;
 }
 /**
- * Specify Specifies the displayMode as Horizontal or Vertical.
+ * Specifies the fieldMode as DropDownList or DropDownTree.
+ */
+export declare type FieldMode = 
+/** Display the DropdownList */
+'Default' | 
+/** Display the DropdownTree */
+'DropdownTree';
+/**
+ * Specifies the displayMode as Horizontal or Vertical.
  */
 export declare type DisplayMode = 
 /**  Display the Horizontal UI */
@@ -337,6 +346,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     allowValidation: boolean;
     /**
+     * Specifies the fieldMode as DropDownList or DropDownTree.
+     *
+     * @default 'Default'
+     */
+    fieldMode: FieldMode;
+    /**
      * Specifies columns to create filters.
      *
      * @default {}
@@ -347,7 +362,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      *
      *  @default null
      */
-    fieldModel: DropDownListModel;
+    fieldModel: DropDownListModel | DropDownTreeModel;
     /**
      * Specifies the property for operator.
      *

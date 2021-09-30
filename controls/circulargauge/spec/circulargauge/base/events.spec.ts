@@ -4,7 +4,7 @@
 
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
-import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { Annotations } from '../../../src/circular-gauge/annotations/annotations';
 import { GaugeTooltip } from '../../../src/circular-gauge/user-interaction/tooltip';
 import { MouseEvents } from '../user-interaction/mouse-events.spec';

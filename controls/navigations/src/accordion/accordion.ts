@@ -468,14 +468,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     protected render(): void {
-        if (!this.isServerRendered) {
-            this.initializeheaderTemplate();
-            this.initializeItemTemplate();
-            this.initialize();
-            this.renderControl();
-        } else {
-            this.wireFocusEvents();
-        }
+        this.initializeHeaderTemplate();
+        this.initializeItemTemplate();
+        this.initialize();
+        this.renderControl();
         this.wireEvents();
         this.renderComplete();
     }
@@ -546,7 +542,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
         return undefined;
     }
-    private initializeheaderTemplate(): void {
+    private initializeHeaderTemplate(): void {
         if (this.headerTemplate) {
             this.headerTemplateFn = this.templateParser(this.headerTemplate);
         }
@@ -557,7 +553,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
     }
     /* eslint-disable */
-    private getheaderTemplate(): Function {
+    private getHeaderTemplate(): Function {
         return this.headerTemplateFn;
     }
     /* eslint-disable */
@@ -684,30 +680,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         eventArgs.originalEvent = e;
         const ctnCheck: boolean = !isNOU(tglIcon) && acrdnItem.childElementCount <= 1;
         if (ctnCheck && (isNOU(acrdnCtn) || !isNOU(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem)))) {
-            if (!this.isServerRendered) {
-                acrdnItem.appendChild(this.contentRendering(index));
-                this.ariaAttrUpdate(acrdnItem);
-                this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
-            } else {
-                const id: string = acrdnItem.id;
-                if (this.items.length > 0) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).interopAdaptor.invokeMethodAsync('OnItemClick', index).then(() => {
-                        if (this.isDestroyed) {
-                            return;
-                        }
-                        this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
-                    });
-                } else {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).interopAdaptor.invokeMethodAsync('OnDataClick', id).then(() => {
-                        if (this.isDestroyed) {
-                            return;
-                        }
-                        this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
-                    });
-                }
-            }
+            acrdnItem.appendChild(this.contentRendering(index));
+            this.ariaAttrUpdate(acrdnItem);
+            this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
         } else {
             this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
         }
@@ -838,7 +813,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             const ctnEle: HTEle = this.headerEleGenerate();
             const hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
             ctnEle.appendChild(hdrEle);
-            append(this.getheaderTemplate()(item, this, 'headerTemplate', this.element.id + '_headerTemplate', false), hdrEle);
+            append(this.getHeaderTemplate()(item, this, 'headerTemplate', this.element.id + '_headerTemplate', false), hdrEle);
             innerEle.appendChild(ctnEle);
             ctnEle.appendChild(this.toggleIconGenerate());
             this.add(innerEle, CLS_SLCT);
@@ -1355,16 +1330,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
     }
     /**
-     * Refresh the Accordion component.
-     *
-     * @returns {void}.
-     */
-    public refresh(): void {
-        if (!this.isServerRendered) {
-            super.refresh();
-        }
-    }
-    /**
      * Expands/Collapses the specified Accordion item.
      *
      * @param  {boolean} isExpand - Boolean value that determines the action as expand or collapse.
@@ -1410,33 +1375,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             return;
         }
         if (isNOU(ctn) && isExpand) {
-            if (!this.isServerRendered) {
-                ctn = this.contentRendering(index);
-                ele.appendChild(ctn);
-                this.ariaAttrUpdate(ele);
-                this.expand(ctn);
-            } else {
-                const id: string = ele.id;
-                if (this.items.length > 0) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).interopAdaptor.invokeMethodAsync('OnItemClick', index).then(() => {
-                        if (this.isDestroyed) {
-                            return;
-                        }
-                        ctn = <HTEle>ele.children[1];
-                        this.expand(ctn);
-                    });
-                } else {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).interopAdaptor.invokeMethodAsync('OnDataClick', id).then(() => {
-                        if (this.isDestroyed) {
-                            return;
-                        }
-                        ctn = <HTEle>ele.children[1];
-                        this.expand(ctn);
-                    });
-                }
-            }
+            ctn = this.contentRendering(index);
+            ele.appendChild(ctn);
+            this.ariaAttrUpdate(ele);
+            this.expand(ctn);
         } else if (!isNOU(ctn)) {
             if (isExpand) {
                 this.expand(ctn);
@@ -1518,10 +1460,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'items':
-                if (this.isServerRendered) {
-                    this.wireFocusEvents();
-                    break;
-                }
                 if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
                     const changedProp: Object[] = Object.keys(newProp.items);
                     for (let j: number = 0; j < changedProp.length; j++) {
@@ -1573,7 +1511,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 isRefresh = true;
                 break;
             case 'headerTemplate':
-                this.initializeheaderTemplate();
+                this.initializeHeaderTemplate();
                 isRefresh = true;
                 break;
             case 'itemTemplate':
@@ -1605,7 +1543,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 break;
             }
         }
-        if (isRefresh && !this.isServerRendered) {
+        if (isRefresh) {
             this.initExpand = [];
             if (this.expandedIndices.length > 0) {
                 this.initExpand = this.expandedIndices;

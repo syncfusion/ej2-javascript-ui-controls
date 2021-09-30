@@ -105,14 +105,14 @@ export class Bubble {
             width: bubbleSettings.border.width
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const center: any = findMidPointOfPolygon(shapePoints[midIndex], projectionType);
+        const center: any = findMidPointOfPolygon(shapePoints[midIndex], projectionType, layer.geometryType);
         if (bubbleSettings.visible) {
             if (!isNullOrUndefined(center)) {
                 centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
                 eventArgs = {
                     cancel: false, name: bubbleRendering, border: bubbleBorder,
                     cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor,
-                    maps: this.maps.isBlazor ? null : this.maps, radius: radius
+                    maps: this.maps, radius: radius
                 };
             } else {
                 const shapePointsLength: number = shapePoints.length - 1;
@@ -120,15 +120,11 @@ export class Bubble {
                     eventArgs = {
                         cancel: false, name: bubbleRendering, border: bubbleBorder,
                         cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
-                        data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
+                        data: shapeData, fill: bubbleColor, maps: this.maps,
                         radius: radius
                     };
                 } else {
                     return;
-                }
-                if (this.maps.isBlazor) {
-                    const { maps, ...blazorEventArgs }: IBubbleRenderingEventArgs = eventArgs;
-                    eventArgs = blazorEventArgs;
                 }
             }
             this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs: IBubbleRenderingEventArgs) => {
@@ -223,10 +219,6 @@ export class Bubble {
             cancel: false, name: bubbleClick, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        if (this.maps.isBlazor) {
-            const {maps, ...blazorEventArgs}:  IBubbleClickEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger(bubbleClick, eventArgs);
     }
     /**
@@ -270,10 +262,6 @@ export class Bubble {
             cancel: false, name: bubbleMouseMove, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        if (this.maps.isBlazor) {
-            const {maps, ...blazorEventArgs} :  IBubbleMoveEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger(bubbleMouseMove, eventArgs);
     }
     /**

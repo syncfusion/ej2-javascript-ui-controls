@@ -32,6 +32,15 @@
     &:focus {
       +label {
         &::before {
+          border-color: $radio-btn-focus-check-border-color;
+          box-shadow: $radio-btn-focussed-box-shadow;
+        }
+      }
+    }
+
+    &:focus {
+      +label {
+        &::before {
           border-color: $radio-btn-hover-border-color;
           box-shadow: $radio-btn-focussed-box-shadow;
         }

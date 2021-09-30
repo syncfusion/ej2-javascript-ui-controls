@@ -184,7 +184,7 @@
       vertical-align: middle;
       width: 100%;
 
-      @if $hscroll-skin == 'tailwind' or $hscroll-skin == 'tailwind-dark' {
+      @if $hscroll-skin == 'tailwind' or $hscroll-skin == 'bootstrap5' {
         font-size: $hscroll-device-arrow-size;
       }
 

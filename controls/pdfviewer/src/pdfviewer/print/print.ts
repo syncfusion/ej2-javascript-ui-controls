@@ -156,7 +156,7 @@ export class Print {
                 const pageImage: HTMLImageElement = new Image();
                 const annotationImage: HTMLImageElement = new Image();
                 pageImage.onload = (): void => {
-                    if (pageHeight > pageWidth) {
+                    if ((pageHeight > pageWidth) || !proxy.pdfViewer.enablePrintRotation) {
                         context.drawImage(pageImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
                         if (annotationSource) {
                             context.drawImage(annotationImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
@@ -236,7 +236,7 @@ export class Print {
                         }
                         // eslint-disable-next-line
                         let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
-                        if (pageDetails.width > pageDetails.height) {
+                        if ((pageDetails.width > pageDetails.height) && this.pdfViewer.enablePrintRotation) {
                             inputField.style.transform = 'rotate(-90deg)';
                             let previousLeft: number = parseFloat(inputField.style.left);
                             let currentWidthPosition: number = parseFloat(inputField.style.width) / 2;
@@ -401,7 +401,7 @@ export class Print {
                 const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
                 var heightRatio: number;
                 var widthRatio: number;
-                if (pageHeight < pageWidth) {
+                if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
                     heightRatio = pageHeight / 816;
                     widthRatio = pageWidth / 1056;
                 } else {

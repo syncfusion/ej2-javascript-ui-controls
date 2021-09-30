@@ -50,7 +50,7 @@ export class DropDownFormFieldDialog {
         let firstDiv: HTMLElement = createElement('div', { className: 'e-de-drp-dwn-frst-div' });
         let drpDownItemsLabel: HTMLElement = createElement('div', {
             className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Drop-down items')
+            innerHTML: localValue.getConstant('Dropdown items')
         });
         this.drpDownItemsInput = createElement('input', {
             className: 'e-input e-bookmark-textbox-input',
@@ -60,7 +60,7 @@ export class DropDownFormFieldDialog {
         let secondDiv: HTMLElement = createElement('div', { className: 'e-de-ff-drpdwn-dlg-scndiv' });
         let itemsDrpItemsLabel: HTMLElement = createElement('div', {
             className: 'e-de-ff-dlg-drpdwn-heading',
-            innerHTML: localValue.getConstant('Items in drop-down list')
+            innerHTML: localValue.getConstant('Items in dropdown list')
         });
         let listviewDiv: HTMLElement = createElement('div', {
             className: 'e-bookmark-listViewDiv e-de-ff-drpdwn-listview',
@@ -96,14 +96,14 @@ export class DropDownFormFieldDialog {
         let moveBtnDiv: HTMLElement = createElement('div', { attrs: { style: 'display:inline-flex' } });
         let moveUpButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
         let moveUpButtonEle: HTMLElement = createElement('button', {
-            attrs: { type: 'button', style: 'height:36px;width:36px' },
+            attrs: { type: 'button', style: 'height:36px;width:40px' },
             className: 'e-de-ff-drpdwn-mvup'
         });
         this.moveUpButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-up' });
         moveUpButtonEle.addEventListener('click', this.moveUpItem.bind(this));
         let moveDownButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
         let moveDownButtonEle: HTMLElement = createElement('button', {
-            attrs: { type: 'button', style: 'height:36px;width:36px' },
+            attrs: { type: 'button', style: 'height:36px;width:40px' },
             className: 'e-de-ff-drpdwn-mvdn'
         });
         this.moveDownButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-down' });

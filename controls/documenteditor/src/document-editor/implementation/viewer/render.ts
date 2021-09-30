@@ -19,6 +19,7 @@ import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
 import { WSectionFormat } from '../format';
 import { TextWrappingStyle } from '../../base';
+import { TextSizeInfo } from './text-helper';
 
 /**
  * @private
@@ -330,7 +331,7 @@ export class Renderer {
         let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
         let shapeType: any = shape.autoShapeType;
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
-
+        
         this.pageContext.beginPath();
         if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill) {
             this.pageContext.fillStyle = shape.fillFormat.color;
@@ -533,8 +534,13 @@ export class Renderer {
                     let height: number = lineWidget.height;
                     let isLastLine: boolean = lineWidget.isLastLine();
                     if (isLastLine) {
-
                         height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getAfterSpacing(lineWidget.paragraph))
+                        if (lineWidget.paragraph.paragraphFormat.lineSpacing > 1) {
+                            let formField: FieldElementBox = this.getFormfieldInLine(lineWidget);
+                            const sizeInfo: TextSizeInfo = this.documentHelper.textHelper.getHeight(formField.characterFormat);
+                            let maxHeight: number = sizeInfo.Height;
+                            height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getLineSpacing(lineWidget.paragraph, maxHeight, true))
+                        }
                     }
 
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(height));
@@ -653,7 +659,7 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(left, 1);
                 let shapeTop: number = this.getScaledValue(top, 2);
                 this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
-            } else {
+            }  else {
                 elementBox.isVisible = true;
                 left += elementBox.padding.left;
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);
@@ -705,7 +711,7 @@ export class Renderer {
         if (this.documentHelper.isIosDevice && (elementBox.text === '\u25CF' || elementBox.text === '\u25CB')) {
             fontFamily = '';
         }
-        let fontSize: number = format.hasValue('fontSize') ? format.fontSize: breakCharacterFormat.fontSize;
+        let fontSize: number = format.hasValue('fontSize') ? format.fontSize : breakCharacterFormat.fontSize;
 
         let baselineAlignment: BaselineAlignment = format.hasValue('baselineAlignment') ? format.baselineAlignment : breakCharacterFormat.baselineAlignment;
         bold = format.hasValue('bold') ? format.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
@@ -714,7 +720,6 @@ export class Renderer {
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
         let strikethrough: Strikethrough = format.hasValue('strikethrough') ? format.strikethrough : breakCharacterFormat.strikethrough;
         let highlightColor: HighlightColor = format.hasValue('highlightColor') ? format.highlightColor : breakCharacterFormat.highlightColor;
-            format.highlightColor;
         if (highlightColor !== 'NoColor') {
             if (highlightColor.substring(0, 1) !== '#') {
                 this.pageContext.fillStyle = HelperMethods.getHighlightColorCode(highlightColor);
@@ -738,7 +743,7 @@ export class Renderer {
         }
         // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
         if (color === "empty" || color === '#00000000') {
-            let bgColor: string = this.documentHelper.backgroundColor;
+            let bgColor: string = this.getBackgroundColorHeirachy(elementBox);
             this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
         } else {
             this.pageContext.fillStyle = HelperMethods.getColor(color);
@@ -803,7 +808,7 @@ export class Renderer {
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
         if (color === "empty" || color === '#00000000') {
-            let bgColor: string = this.documentHelper.backgroundColor;
+            let bgColor: string = this.getBackgroundColorHeirachy(elementBox);
             this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
         } else {
             this.pageContext.fillStyle = HelperMethods.getColor(color);
@@ -867,6 +872,24 @@ export class Renderer {
         }
     }
 
+    private getBackgroundColorHeirachy(element: ElementBox): string {
+        let bgColor: string;
+        // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
+        if (element.paragraph.isInsideTable) {
+            let cell: TableCellWidget = element.paragraph.containerWidget as TableCellWidget;
+            bgColor = cell.cellFormat.shading.backgroundColor;
+            if (bgColor !== "empty" && bgColor !== '#00000000') {
+                return bgColor;
+            } else {
+                bgColor = cell.ownerTable.tableFormat.shading.backgroundColor;
+                if (bgColor !== "empty" && bgColor !== '#00000000') {
+                    return bgColor;
+                }
+            }
+        }
+        return this.documentHelper.backgroundColor;
+    }
+
 
     private handleChangeDetectedElements(elementBox: TextElementBox, underlineY: number, left: number, top: number, baselineAlignment: BaselineAlignment): void {
         let checkText: string = elementBox.text.trim();
@@ -903,17 +926,17 @@ export class Renderer {
                             this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
                         } else {
                             if (!this.documentHelper.owner.editor.triggerPageSpellCheck) {
+                            /* eslint-disable @typescript-eslint/no-explicit-any */
+
+                            this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
+                                let jsonObject: any = JSON.parse(data);
 
-                                this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
-                                    /* eslint-disable @typescript-eslint/no-explicit-any */
-                                    let jsonObject: any = JSON.parse(data);
+                                let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
 
-                                    let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-
-                                    this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
-                                });
-                            }
+                                this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                            });
+                        }
                         }
                     }
                 }
@@ -933,17 +956,17 @@ export class Renderer {
                 this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markIndex, isLastItem);
             } else {
                 if (!this.documentHelper.owner.editor.triggerPageSpellCheck) {
+                /* eslint-disable @typescript-eslint/no-explicit-any */
+
+                this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
+                    let jsonObject: any = JSON.parse(data);
 
-                    this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
-                        /* eslint-disable @typescript-eslint/no-explicit-any */
-                        let jsonObject: any = JSON.parse(data);
+                    let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
 
-                        let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-
-                        this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                    });
-                }
+                    this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
+                });
+            }
             }
         }
     }
@@ -1075,7 +1098,7 @@ export class Renderer {
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
             let width: number = elementBox.width;
-            if (elementBox instanceof TextElementBox && !(elementBox instanceof TabElementBox) && isNullOrUndefined(elementBox.nextNode)) {
+            if (elementBox instanceof TextElementBox && !(elementBox instanceof TabElementBox) && isNullOrUndefined(elementBox.nextNode)) {              
                 width = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat);
             }
             this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(width), this.getScaledValue(underlineHeight));
@@ -1262,12 +1285,12 @@ export class Renderer {
         let leftBorderWidth: number = lineWidth;
         if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
-        } else {
+        } else { 
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
                 let row: TableRowWidget = tableCell.ownerTable.childWidgets[i] as TableRowWidget;
                 let cell: TableCellWidget
                 for (let j: number = 0; j < row.childWidgets.length; j++) {
-                    let currentCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    let currentCell :TableCellWidget = row.childWidgets[j] as TableCellWidget;
                     if ((currentCell.columnIndex + currentCell.cellFormat.columnSpan - 1) === tableCell.columnIndex - 1) {
                         cell = currentCell as TableCellWidget;
                         break;
@@ -1496,6 +1519,15 @@ export class Renderer {
             }
         }
         return undefined;
+    }
+
+    private getFormfieldInLine(line: LineWidget) : FieldElementBox {
+      for (let i: number = 0; i < line.children.length; i++) {
+          if (line.children[i] instanceof FieldElementBox && !isNullOrUndefined((line.children[i] as FieldElementBox).formFieldData)) {
+              return line.children[i] as FieldElementBox;
+          }
+      }
+      return undefined;
     }
     /**
      * Destroys the internal objects which is maintained.

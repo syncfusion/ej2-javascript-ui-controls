@@ -387,8 +387,19 @@ export class Edit {
                     if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) { rowIndex = i; return; }
                 });
             } else {
-                rowIndex = (this.parent.getRows().indexOf(row) === -1 && (this.parent.getFrozenColumns() > 0)) ?
+                let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+                if (freeze) {
+                    if (this.parent.getRows().indexOf(row) != -1) {
+                        rowIndex = this.parent.getRows().indexOf(row);
+                    } else if (this.parent.getFrozenRightRows().indexOf(row) != -1) {
+                        rowIndex = this.parent.getFrozenRightRows().indexOf(row);
+                    } else {
+                        rowIndex = this.parent.getMovableRows().indexOf(row);
+                    }
+                } else {
+                    rowIndex = (this.parent.getRows().indexOf(row) === -1 && (this.parent.getFrozenColumns() > 0)) ?
                     this.parent.grid.getMovableRows().indexOf(row) : this.parent.getRows().indexOf(row);
+                }
             }
             const arg: CellSaveEventArgs = {};
             extend(arg, args);
@@ -445,8 +456,23 @@ export class Edit {
             this.isOnBatch = false;
         }
         this.enableToolbarItems('save');
-        if (this.parent.getFrozenColumns() > 0) {
-            mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
+        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (freeze) {
+            if (args.cell.closest('.e-frozen-left-header') || args.cell.closest('.e-frozen-left-content')) {
+                mRow = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
+            } else if (args.cell.closest('.e-movableheader') || args.cell.closest('.e-movablecontent')) {
+                mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
+            } else {
+                mRow = <HTMLTableRowElement>this.parent.grid.getFrozenRightRows()[rowIndex];
+            }
+            removeClass([mRow], ['e-editedrow', 'e-batchrow']);
+            removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+        } else if (this.parent.getFrozenColumns() > 0) {
+            if (args.cell.closest('.e-frozenheader') || args.cell.closest('.e-frozencontent')) {
+                mRow = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
+            } else {
+                mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
+            }
             removeClass([mRow], ['e-editedrow', 'e-batchrow']);
             removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
         }
@@ -623,11 +649,16 @@ export class Edit {
                     this.parent.grid.contentModule[r].splice(0, 1);
                     this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
                 }
-                if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns) {
+                let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+                if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns || freeze) {
                     const movableRows: Object[] = this.parent.getMovableDataRows();
                     const frows: string = 'freezeRows';
                     const newFreezeRowObject: Row<Column> = this.parent.grid.getRowsObject()[0];
                     movableRows[index + 1][position](movableRows[0]);
+                    if (freeze) {
+                        const rightFrozenRows: Object[] = this.parent.getFrozenRightDataRows();
+                        rightFrozenRows[index + 1][position](rightFrozenRows[0]);
+                    }
                     if (this.parent.editSettings.mode === 'Batch') {
                         this.parent.grid.contentModule[frows].splice(0, 1);
                         this.parent.grid.contentModule[frows].splice(rowObjectIndex, 0, newFreezeRowObject);

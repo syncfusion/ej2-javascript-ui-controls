@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs } from '@syncfusion/ej2-base';
+import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs, KeyboardEventArgs, detach } from '@syncfusion/ej2-base';
 import { removeClass, classList, remove, Browser, EventHandler, extend } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
@@ -114,6 +114,7 @@ export class DragAndDrop {
             } else {
                 this.draggedClone(this.dragObj.element);
             }
+            EventHandler.add(document.body, 'keydown', this.keydownHandler, this);
             this.parent.notify(events.contentReady, {});
         });
     }
@@ -336,10 +337,20 @@ export class DragAndDrop {
         }
     }
 
+    private keydownHandler(e: KeyboardEventArgs): void {
+        if (e.code === 'Escape' && this.dragObj.cloneElement) {
+            EventHandler.remove(this.dragObj.cloneElement, 'keydown', this.keydownHandler);
+            this.dragObj.element.removeAttribute('aria-grabbed');
+            this.dragStopClear();
+            this.dragStopPostClear();
+        }
+    }
+
     private dragStop(e: MouseEvent): void {
         let contentCell: Element = closest(this.dragObj.targetClone, '.' + cls.CONTENT_CELLS_CLASS);
         let columnKey: Element;
         let dropIndex: number;
+        EventHandler.remove(document.body, 'keydown', this.keydownHandler);
         if (this.dragObj.targetClone.parentElement) {
             const className: string = '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS;
             const element: HTMLElement[] = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
@@ -373,33 +384,7 @@ export class DragAndDrop {
             dropIndex: dropIndex
         };
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
-            this.removeElement(this.dragObj.draggedClone);
-            this.removeElement(this.dragObj.targetClone, this.kanbanObj);
-            this.removeElement(this.dragObj.cloneElement);
-            const dragMultiClone: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.DRAGGED_CLONE_CLASS));
-            dragMultiClone.forEach((clone: HTMLElement) => { remove(clone); });
-            this.dragObj.element.style.removeProperty('width');
-            this.multiCloneRemove();
-            if (this.dragObj.selectedCards instanceof HTMLElement) {
-                removeClass([this.dragObj.selectedCards as HTMLElement], cls.DRAGGED_CARD_CLASS);
-            } else {
-                removeClass(this.dragObj.selectedCards as HTMLElement[], cls.DRAGGED_CARD_CLASS);
-            }
-            clearInterval(this.dragObj.navigationInterval);
-            this.dragObj.navigationInterval = null;
-            if (document.body.style.cursor === 'not-allowed') {
-                document.body.style.cursor = '';
-            }
-            const styleCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[style]'));
-            styleCards.forEach((styleCard: HTMLElement) => { styleCard.style.cursor = ''; });
-            const className: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ')';
-            const cells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + cls.CONTENT_CELLS_CLASS));
-            cells.forEach((cell: Element) => removeClass([cell], cls.DROPPING_CLASS));
-            if (this.parent.externalDropObj) {
-                const externalCells: HTMLElement[] = [].slice.call(this.parent.externalDropObj.element.querySelectorAll(className + ' .' +
-                    cls.CONTENT_CELLS_CLASS));
-                externalCells.forEach((externalCell: Element) => removeClass([externalCell], cls.DROPPING_CLASS));
-            }
+            this.dragStopClear();
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
                     const updateCard: Record<string, any>[] | Record<string, any> = dragEventArgs.data instanceof Array &&
@@ -408,14 +393,48 @@ export class DragAndDrop {
                     this.parent.crudModule.updateCard(updateCard, dragEventArgs.dropIndex);
                 }
             }
-            if (this.parent.isAdaptive) {
-                this.parent.touchModule.tabHold = false;
-            }
-            this.dragObj.cardDetails = this.dragObj.modifiedData = [];
-            this.isDragging = false;
-            this.parent.isExternalKanbanDrop = false;
-            this.parent.externalDropObj = null;
+            this.dragStopPostClear();
         });
+    }
+
+    private dragStopClear(): void {
+        this.removeElement(this.dragObj.draggedClone);
+        this.removeElement(this.dragObj.targetClone, this.kanbanObj);
+        this.removeElement(this.dragObj.cloneElement);
+        const dragMultiClone: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.DRAGGED_CLONE_CLASS));
+        dragMultiClone.forEach((clone: HTMLElement) => { remove(clone); });
+        this.dragObj.element.style.removeProperty('width');
+        this.multiCloneRemove();
+        if (this.dragObj.selectedCards instanceof HTMLElement) {
+            removeClass([this.dragObj.selectedCards as HTMLElement], cls.DRAGGED_CARD_CLASS);
+        } else {
+            removeClass(this.dragObj.selectedCards as HTMLElement[], cls.DRAGGED_CARD_CLASS);
+        }
+        clearInterval(this.dragObj.navigationInterval);
+        this.dragObj.navigationInterval = null;
+        if (document.body.style.cursor === 'not-allowed') {
+            document.body.style.cursor = '';
+        }
+        const styleCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[style]'));
+        styleCards.forEach((styleCard: HTMLElement) => { styleCard.style.cursor = ''; });
+        const className: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ')';
+        const cells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + cls.CONTENT_CELLS_CLASS));
+        cells.forEach((cell: Element) => removeClass([cell], cls.DROPPING_CLASS));
+        if (this.parent.externalDropObj) {
+            const externalCells: HTMLElement[] = [].slice.call(this.parent.externalDropObj.element.querySelectorAll(className + ' .' +
+                cls.CONTENT_CELLS_CLASS));
+            externalCells.forEach((externalCell: Element) => removeClass([externalCell], cls.DROPPING_CLASS));
+        }
+    }
+
+    private dragStopPostClear(): void {
+        if (this.parent.isAdaptive) {
+            this.parent.touchModule.tabHold = false;
+        }
+        this.dragObj.cardDetails = this.dragObj.modifiedData = [];
+        this.isDragging = false;
+        this.parent.isExternalKanbanDrop = false;
+        this.parent.externalDropObj = null;
     }
 
     private updateDroppedData(element: HTMLElement, cardStatus: string, contentCell: Element): void {

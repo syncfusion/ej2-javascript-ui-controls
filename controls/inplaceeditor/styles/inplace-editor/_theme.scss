@@ -119,6 +119,12 @@
           box-shadow: 0 1px 4px 0 $black-color;
         }
 
+        @else if $inplace-skin == 'bootstrap5' {
+          background-color: $content-bg-color;
+          border: 1px solid $border-light;
+          border-radius: 4px;
+        }
+
         .e-btn-icon.e-icons {
           color: $editor-btn-icon-color;
         }
@@ -162,7 +168,7 @@
     }
   }
 
-  @if $inplace-skin == 'tailwind' or $inplace-skin == 'tailwind-dark' {
+  @if $inplace-skin == 'tailwind' or $inplace-skin == 'bootstrap5' {
     .e-inplaceeditor .e-editable-value-wrapper {
       background-color: $editor-background-color;
       border-radius: 4px;

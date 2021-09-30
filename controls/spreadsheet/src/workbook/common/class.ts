@@ -1,5 +1,5 @@
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
-import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme } from './enum';
+import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme, AutoFillType } from './enum';
 import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
 import { CellStyleModel, FormatModel, LegendSettingsModel, AxisModel, DataLabelSettingsModel, ChartModel } from './class-model';
 import { CellModel } from '../base';
@@ -782,5 +782,31 @@ export class Image extends ChildProperty<CellModel> {
      */
     @Property(0)
     public left: number;
+}
+
+/**
+ * Represents the AutoFillSettings.
+ */
+export class AutoFillSettings extends ChildProperty<AutoFillSettings> {
+    /**
+     * Specifies the auto fill settings. The possible values are
+     *
+     * * CopyCells: To update the copied cells of the selected range.
+     * * FillSeries: To update the filled series of the selected range.
+     * * FillFormattingOnly: To fill the formats only for the selected range.
+     * * FillWithoutFormatting: To fill without the format of the selected range.
+     *
+     * @default 'FillSeries'
+     */
+    @Property('FillSeries')
+    public fillType: AutoFillType;
+
+    /**
+     * Specifies whether fill options need to shown or not.
+     *
+     * @default true
+     */
+     @Property(true)
+     public showFillOptions: boolean;
 }
 

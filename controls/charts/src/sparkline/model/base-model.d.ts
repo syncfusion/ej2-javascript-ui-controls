@@ -227,7 +227,6 @@ export interface AxisSettingsModel {
      * To configure Sparkline x axis min value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     minX?: number;
 
@@ -235,7 +234,6 @@ export interface AxisSettingsModel {
      * To configure Sparkline x axis max value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     maxX?: number;
 
@@ -243,7 +241,6 @@ export interface AxisSettingsModel {
      * To configure Sparkline y axis min value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     minY?: number;
 
@@ -251,7 +248,6 @@ export interface AxisSettingsModel {
      * To configure Sparkline y axis max value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     maxY?: number;
 
@@ -259,7 +255,6 @@ export interface AxisSettingsModel {
      * To configure Sparkline horizontal axis line position.
      *
      * @default 0
-     * @blazorDefaultValue 0
      */
     value?: number;
 

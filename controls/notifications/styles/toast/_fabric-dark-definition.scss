@@ -5,7 +5,7 @@ $toast-icon-nrml-size: 16px !default;
 $toast-icon-nrml-right-margin: 8px !default;
 $toast-close-icon-nrml-height: 24px !default;
 $toast-close-icon-nrml-width: 24px !default;
-$toast-close-icon-nrml-size: 16px !default;
+$toast-close-icon-nrml-size: 14px !default;
 $toast-position-nrml-distance: 10px !default;
 $multitoast-nrml-gap-distance: 10px !default;
 $toast-nrml-min-height: 48px !default;
@@ -92,4 +92,7 @@ $toast-danger-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
 //icon variabels
 
 $toast-close-icon: '\e7a7' !default;
+$toast-success-icon: '\ea84' !default;
+$toast-error-icon: '\e7e9' !default;
+$toast-info-icon: '\e607' !default;
 //enddefault

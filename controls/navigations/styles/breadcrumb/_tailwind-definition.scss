@@ -1,0 +1,47 @@
+// Size variables
+$breadcrumb-skin: 'tailwind' !default;
+$breadcrumb-last-item-font-weight: $font-weight-medium !default;
+$breadcrumb-font-size: $text-sm !default;
+$breadcrumb-bigger-font-size: $text-base !default;
+$breadcrumb-icon-font-size: $text-sm !default;
+$breadcrumb-icon-bigger-font-size: $text-base !default;
+$breadcrumb-padding: 3px 12px !default;
+$breadcrumb-padding-left: 0 !default;
+$breadcrumb-padding-right: 0 !default;
+$breadcrumb-bigger-padding: 2px 16px !default;
+$breadcrumb-separator-padding: 3px 4px !default;
+$breadcrumb-separator-bigger-padding: 2px 4px !default;
+$breadcrumb-icon-color: $cool-gray-500 !default;
+$breadcrumb-icon-right-padding: 8px !default;
+$breadcrumb-icon-bigger-right-padding: 12px !default;
+$breadcrumb-collapsed-icon-padding: 4px 8px !default;
+$breadcrumb-collapsed-icon-bigger-padding: 3px 8px !default;
+$breadcrumb-collapsed-icon-font-size: 16px !default;
+$breadcrumb-collapsed-icon-bigger-font-size: 18px !default;
+$breadcrumb-sibling-separator-padding: 0 !default;
+$breadcrumb-sibling-separator-margin-left: -4px !default;
+$breadcrumb-icon-item-padding: 2px 0 !default;
+$breadcrumb-item-focus-padding: 2px 11px !default;
+$breadcrumb-item-focus-bigger-padding: 1px 15px !default;
+$breadcrumb-icon-only-item-padding: 3px 5px !default;
+$breadcrumb-icon-only-item-focus-padding: 2px 4px !default;
+$breadcrumb-icon-only-item-bigger-padding: 3px 5px !default;
+$breadcrumb-icon-only-item-focus-bigger-padding: 2px 4px !default;
+
+// Color variables
+$breadcrumb-item-color: $content-text-color-alt2 !default;
+$breadcrumb-separator-color: $content-text-color-alt2 !default;
+$breadcrumb-item-hover-color: $content-text-color-alt1 !default;
+$breadcrumb-item-focus-color: $content-text-color-alt1 !default;
+$breadcrumb-item-active-color: $content-text-color !default;
+$breadcrumb-item-hover-bgcolor: $transparent !default;
+$breadcrumb-item-active-bgcolor: $transparent !default;
+$breadcrumb-item-focus-bgcolor: $transparent !default;
+$breadcrumb-last-item-font-color: $content-text-color-alt2 !default;
+$breadcrumb-collapsed-icon-hover-bgcolor: $content-bg-color-alt2 !default;
+$breadcrumb-collapsed-icon-active-bgcolor: $content-bg-color-alt3 !default;
+$breadcrumb-collapsed-icon-focus-bgcolor: $content-bg-color-alt2 !default;
+$breadcrumb-collapsed-icon-color: $icon-color !default;
+$breadcrumb-collapsed-icon-hover-color: $content-text-color-alt2 !default;
+$breadcrumb-disabled-item-color: $content-text-color-disabled !default;
+$breadcrumb-item-focus-border: 1px solid $content-text-color-alt1 !default;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.56 (2021-08-17)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I337431` - The issue with "`filterFiles` method in file manager component" has been resolved.
+
 ## 19.2.48 (2021-07-20)
 
 ### File Manager

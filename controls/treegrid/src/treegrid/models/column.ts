@@ -1,4 +1,4 @@
-import { TextAlign, ClipMode, ValueAccessor, IFilter, IFilterUI, IEditCell, CommandModel  } from '@syncfusion/ej2-grids';
+import { TextAlign, ClipMode, ValueAccessor, IFilter, IFilterUI, IEditCell, CommandModel, freezeDirection } from '@syncfusion/ej2-grids';
 import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-base';
 import { ITreeGridCellFormatter } from '../base/interface';
 import { SortComparer} from '@syncfusion/ej2-grids';
@@ -14,7 +14,6 @@ export class Column {
      * the first character must be an alphabet and should not contain spaces and special characters.
      *
      * @default 'undefined'
-     * @blazorDefaultValue ''
      */
 
     public field: string;
@@ -96,8 +95,6 @@ export class Column {
      * Defines the type of component for editable.
      *
      * @default 'stringedit'
-     * @blazorType Syncfusion.Blazor.Grids.EditType
-     * @blazorDefaultValue Syncfusion.Blazor.Grids.EditType.DefaultEdit
      */
     public editType: string;
 
@@ -112,7 +109,6 @@ export class Column {
      * Defines default values for the component when adding a new record to the TreeGrid.
      *
      * @default null
-     * @blazorType object
      */
     public defaultValue: string;
 
@@ -197,8 +193,6 @@ export class Column {
      * Defines the data type of the column.
      *
      * @default null
-     * @blazorDefaultValueIgnore
-     * @blazorType Syncfusion.Blazor.Grids.ColumnType
      */
 
     public type: string;
@@ -211,7 +205,6 @@ export class Column {
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
 
     public format: string | NumberFormatOptions | DateFormatOptions;
@@ -377,6 +370,16 @@ export class Column {
      */
     public lockColumn: boolean;
 
+    /**
+     * defines which side the column need to freeze
+     * The available built-in freeze directions are
+     * * Left - Freeze the column at left side.
+     * * Right - Freeze the column at right side.
+     *
+     * @default null
+     */
+    public freeze: freezeDirection;
+
     constructor(options: ColumnModel) {
         merge(this, options);
     }
@@ -393,7 +396,6 @@ export interface ColumnModel {
      * the first character must be an alphabet and should not contain spaces and special characters.
      *
      * @default 'undefined'
-     * @blazorDefaultValue ''
      */
 
     field?: string;
@@ -448,7 +450,6 @@ export interface ColumnModel {
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
-     * @blazorType Syncfusion.Blazor.Grids.TextAlign
      */
 
     textAlign?: TextAlign;
@@ -470,7 +471,6 @@ export interface ColumnModel {
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
-     * @blazorType Syncfusion.Blazor.Grids.ClipMode
      */
     clipMode?: ClipMode;
 
@@ -479,10 +479,8 @@ export interface ColumnModel {
      *
      * @default null
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
-     * @blazorType Syncfusion.Blazor.Grids.TextAlign
      */
     headerTextAlign?: TextAlign;
 
@@ -498,8 +496,6 @@ export interface ColumnModel {
      * Defines the data type of the column.
      *
      * @default null
-     * @blazorType Syncfusion.Blazor.Grids.ColumnType
-     * @blazorDefaultValueIgnore
      */
 
     type?: string;
@@ -548,7 +544,6 @@ export interface ColumnModel {
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
 
     format?: string | NumberFormatOptions | DateFormatOptions;
@@ -730,15 +725,12 @@ export interface ColumnModel {
      * Defines the type of component for editing.
      *
      * @default 'stringedit'
-     * @blazorType Syncfusion.Blazor.Grids.EditType
-     * @blazorDefaultValue Syncfusion.Blazor.Grids.EditType.DefaultEdit
      */
     editType?: string;
     /**
      * Defines default values for the component when adding a new record to the TreeGrid.
      *
      * @default null
-     * @blazorType object
      */
     defaultValue?: string;
 
@@ -791,4 +783,9 @@ export interface ColumnModel {
      * @default false
      */
     lockColumn?: boolean;
+
+    /**
+     * Defines which side the column need to freeze
+     */
+    freeze?: freezeDirection;
 }

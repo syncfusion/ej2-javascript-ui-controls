@@ -16,33 +16,39 @@ const defaultType: string = 'GET';
  * ```
  */
 export class Ajax {
-    /**		
+    /**
      * Specifies the URL to which request to be sent.
-     * @default null		
+     *
+     * @default null
      */
     public url: string;
-    /**		
+    /**
      * Specifies which HTTP request method to be used. For ex., GET, POST
+     *
      * @default GET
      */
     public type: string;
-    /**		
+    /**
      * Specifies the data to be sent.
-     * @default null		
+     *
+     * @default null
      */
     public data: string | Object;
-    /**		 
+    /**
      * A boolean value indicating whether the request should be sent asynchronous or not.
+     *
      * @default true
      */
     public mode: boolean = true;
-    /**		 
+    /**
      * Specifies the callback for creating the XMLHttpRequest object.
+     *
      * @default null
      */
     public httpRequest: XMLHttpRequest;
-    /**		 
+    /**
      * A boolean value indicating whether to ignore the promise reject.
+     *
      * @private
      * @default true
      */
@@ -61,11 +67,13 @@ export class Ajax {
     private dataType: string;
     /**
      * Constructor for Ajax class
-     * @param  {string|Object} options?
-     * @param  {string} type?
-     * @param  {boolean} async?
-     * @returns defaultType
+     *
+     * @param  {string|Object} options ?
+     * @param  {string} type ?
+     * @param  {boolean} async ?
+     * @returns defaultType any
      */
+
     constructor(options?: string | Object, type?: string, async?: boolean, contentType?: string) {
         if (typeof options === 'string') {
             this.url = options;
@@ -79,17 +87,20 @@ export class Ajax {
         this.contentType = (this.contentType !== undefined) ? this.contentType : contentType;
     }
     /**
+     *
      * Send the request to server.
+     *
      * @param {any} data - To send the user data
-     * @return {Promise}
+     * @return {Promise} ?
      */
+
     public send(data?: string | Object): Promise<Ajax> {
         this.data = isNullOrUndefined(data) ? this.data : data;
-        let eventArgs: BeforeSendEventArgs = {
+        const eventArgs: BeforeSendEventArgs = {
             cancel: false,
             httpRequest: null
         };
-        let promise: Promise<Ajax> = new Promise((resolve: Function, reject: Function) => {
+        const promise: Promise<Ajax> = new Promise((resolve: Function, reject: Function) => {
             this.httpRequest = new XMLHttpRequest();
             this.httpRequest.onreadystatechange = () => { this.stateChange(resolve, reject); };
             if (!isNullOrUndefined(this.onLoad)) {
@@ -127,20 +138,23 @@ export class Ajax {
         return promise;
     }
     /**
-     * Specifies the callback function to be triggered before sending request to sever. 
+     * Specifies the callback function to be triggered before sending request to sever.
      * This can be used to modify the XMLHttpRequest object before it is sent.
-     * @event 
+     *
+     * @event beforeSend
      */
     public beforeSend: Function;
     /**
-     * Specifies callback function to be triggered after XmlHttpRequest is succeeded. 
+     * Specifies callback function to be triggered after XmlHttpRequest is succeeded.
      * The callback will contain server response as the parameter.
-     * @event
+     *
+     * @event onSuccess
      */
     public onSuccess: Function;
     /**
      * Triggers when XmlHttpRequest is failed.
-     * @event
+     *
+     * @event onFailure
      */
     public onFailure: Function;
     private successHandler(data: string): string {
@@ -182,19 +196,23 @@ export class Ajax {
         }
     }
     /**
-     * To get the response header from XMLHttpRequest 
-     * @param  {string} key Key to search in the response header 
-     * @returns {string}
+     * To get the response header from XMLHttpRequest
+     *
+     * @param  {string} key Key to search in the response header
+     * @returns {string} ?
      */
+
     public getResponseHeader(key: string): string {
         let responseHeaders: { [key: string]: string };
         let header: string;
+        // eslint-disable-next-line
         responseHeaders = {};
         let headers: string[] = headerRegex.exec(this.httpRequest.getAllResponseHeaders());
         while (headers) {
             responseHeaders[headers[1].toLowerCase()] = headers[2];
             headers = headerRegex.exec(this.httpRequest.getAllResponseHeaders());
         }
+        // eslint-disable-next-line
         header = responseHeaders[key.toLowerCase()];
         return isNullOrUndefined(header) ? null : header;
     }
@@ -208,8 +226,9 @@ export interface HeaderOptions {
 }
 
 /**
- * Specifies the ajax beforeSend event arguments 
- * @event
+ * Specifies the ajax beforeSend event arguments
+ *
+ * @event BeforeSendEventArgs
  */
 export interface BeforeSendEventArgs {
 

@@ -238,7 +238,7 @@ export class GanttChart {
     public updateWidthAndHeight(): void {
         //empty row height
         const emptydivHeight: number = 36;
-        const emptyHeight: number = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
+        const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 : this.parent.contentHeight;
         this.chartBodyContent.style.height = formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
         this.chartBodyContent.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);

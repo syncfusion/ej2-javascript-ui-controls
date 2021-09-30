@@ -187,8 +187,8 @@ export class RangeNavigatorAxis extends DateTime {
         }
         nextInterval = start.getTime();
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
-            format: axis.labelFormat || this.blazorFormat(axis),
-            type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null, this.rangeNavigator.isBlazor)
+            format: axis.labelFormat || '',
+            type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
         });
         while (nextInterval <= axis.visibleRange.max) {
             text = this.dateFormats(this.rangeNavigator.format(new Date(nextInterval)), axis, axis.visibleLabels.length);
@@ -201,14 +201,6 @@ export class RangeNavigatorAxis extends DateTime {
         }
     }
 
-    private blazorFormat(axis: Axis): string {
-        if (this.rangeNavigator.isBlazor && axis .actualIntervalType === 'Years') {
-            return 'yyyy';
-        } else {
-            return '';
-        }
-    }
-
     /**
      * To find date time formats for Quarter and week interval type
      *
@@ -218,18 +210,17 @@ export class RangeNavigatorAxis extends DateTime {
      */
     private dateFormats(text: string, axis: Axis, index: number): string {
         let changedText: string = text;
-        const isBlazor: boolean = this.rangeNavigator.isBlazor;
         const isFirstLevel: boolean = this.rangeNavigator.enableGrouping && this.firstLevelLabels.length === 0;
         switch (axis.actualIntervalType as RangeIntervalType) {
         case 'Quarter':
             if (text.indexOf('Jan') > -1) {
-                changedText = !isFirstLevel ? text.replace(isBlazor ? 'January' : 'Jan', 'Quarter1') : 'Quarter1';
+                changedText = !isFirstLevel ? text.replace('Jan', 'Quarter1') : 'Quarter1';
             } else if (text.indexOf('Apr') > -1) {
-                changedText = !isFirstLevel ? text.replace(isBlazor ? 'April' : 'Apr', 'Quarter2') : 'Quarter2';
+                changedText = !isFirstLevel ? text.replace('Apr', 'Quarter2') : 'Quarter2';
             } else if (text.indexOf('Jul') > -1) {
-                changedText = !isFirstLevel ? text.replace(isBlazor ? 'July' : 'Jul', 'Quarter3') : 'Quarter3';
+                changedText = !isFirstLevel ? text.replace('Jul', 'Quarter3') : 'Quarter3';
             } else if (text.indexOf('Oct') > -1) {
-                changedText = !isFirstLevel ? text.replace(isBlazor ? 'October' : 'Oct', 'Quarter4') : 'Quarter4';
+                changedText = !isFirstLevel ? text.replace('Oct', 'Quarter4') : 'Quarter4';
             }
             break;
         case 'Weeks':

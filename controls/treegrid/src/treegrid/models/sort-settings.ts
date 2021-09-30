@@ -19,9 +19,7 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
      *
      * @default ''
      * @isEnumeration true
-     * @blazorDefaultValueIgnore
      * @aspType Syncfusion.EJ2.Grids.SortDirection
-     * @blazorType Syncfusion.Blazor.Grids.SortDirection
      */
     @Property()
     public direction: SortDirection;

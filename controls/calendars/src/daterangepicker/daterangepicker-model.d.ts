@@ -1,4 +1,4 @@
-import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend, isBlazor } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase} from '@syncfusion/ej2-lists';
+import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase} from '@syncfusion/ej2-lists';
 import {DateRange,RangeEventArgs,RangeFormatObject} from "./daterangepicker";
 import {CalendarBaseModel} from "../calendar/calendar-model";
 
@@ -51,7 +51,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Gets or sets the minimum date that can be selected in the calendar-popup.
      *
      * @default new Date(1900, 00, 01)
-     * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
     min?: Date;
 
@@ -59,7 +58,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Gets or sets the maximum date that can be selected in the calendar-popup.
      *
      * @default new Date(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     max?: Date;
 
@@ -109,7 +107,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers when Calendar is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -117,7 +114,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers when Calendar is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -125,7 +121,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers when the Calendar value is changed.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<RangeEventArgs>;
 
@@ -140,7 +135,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers when the Calendar is navigated to another view or within the same level of view.
      *
      * @event navigated
-     * @blazorProperty 'Navigated'
      */
     navigated?: EmitType<NavigatedEventArgs>;
 
@@ -148,7 +142,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers when each day cell of the Calendar is rendered.
      *
      * @event renderDayCell
-     * @blazorProperty 'OnRenderDayCell'
      */
 
     renderDayCell?: EmitType<RenderDayCellEventArgs>;
@@ -157,7 +150,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Gets or sets the start date of the date range selection.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     startDate?: Date;
 
@@ -165,7 +157,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Gets or sets the end date of the date range selection.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     endDate?: Date;
 
@@ -191,7 +182,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     zIndex?: number;
 
@@ -247,7 +237,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      *
      * @default null
      * @aspType int
-     * @blazorType int
      */
     minDays?: number;
 
@@ -258,8 +247,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      *
      * @default null
      * @aspType int
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     maxDays?: number;
 
@@ -388,7 +375,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * {% codeBlock src='daterangepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     keyConfigs?: { [key: string]: string };
 
@@ -400,7 +386,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * @aspType string
      * {% codeBlock src='daterangepicker/format/index.md' %}{% endcodeBlock %}
      * @default null
-     * @blazorType string
      */
     format?: string | RangeFormatObject;
 
@@ -438,7 +423,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     floatLabelType?: FloatLabelType | string;
@@ -463,8 +447,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers when the DateRangePicker is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
-     * @blazorType RangePopupEventArgs
      */
     open?: EmitType<Object>;
 
@@ -472,8 +454,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers when the DateRangePicker is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
-     * @blazorType RangePopupEventArgs
      */
     close?: EmitType<Object>;
 
@@ -481,8 +461,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Triggers on selecting the start and end date.
      *
      * @event select
-     * @blazorProperty 'RangeSelected'
-     * @blazorType RangeEventArgs
      */
     select?: EmitType<Object>;
 

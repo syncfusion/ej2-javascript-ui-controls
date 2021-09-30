@@ -7,7 +7,7 @@ import { IItemHighlightEventArgs, IItemSelectedEventArgs } from '../model/interf
 import { itemHighlight, itemSelected } from '../model/constants';
 import { HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
 import { findHightLightItems, removeClassNames, applyOptions, removeShape, removeLegend,
-    removeSelectionWithHighlight, setColor, getLegendIndex, pushCollection } from '../utils/helper';
+    removeSelectionWithHighlight, setColor, getLegendIndex, pushCollection, setItemTemplateContent } from '../utils/helper';
 
 /**
  * Performing treemap highlight
@@ -41,7 +41,6 @@ export class TreeMapHighlight {
         const targetId: string = (<Element>e.target).id;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let eventArgs: IItemHighlightEventArgs; const items: any[] = [];
-        let eventBlazorArgs: IItemHighlightEventArgs;
         const highlight: HighlightSettingsModel = this.treemap.highlightSettings;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let item: any; const highLightElements: Element[] = []; let process: boolean;
@@ -109,8 +108,7 @@ export class TreeMapHighlight {
                             this.highLightId = targetId;
                         }
                         eventArgs = { cancel: false, name: itemHighlight, treemap: treemap, items: items, elements: highLightElements };
-                        eventBlazorArgs = { cancel: false, name: itemHighlight, items: null, elements: highLightElements };
-                        treemap.trigger(itemHighlight, treemap.isBlazor ? eventBlazorArgs : eventArgs);
+                        treemap.trigger(itemHighlight, eventArgs);
                     } else {
                         processHighlight = false;
                     }
@@ -250,7 +248,6 @@ export class TreeMapSelection {
         const targetEle: Element = <Element>e.target;
         let eventArgs: IItemSelectedEventArgs;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let eventBlazorArgs: any;
         const treemap: TreeMap = this.treemap;
         treemap.levelSelection = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -326,30 +323,9 @@ export class TreeMapSelection {
                     }
                     eventArgs = { cancel: false, name: itemSelected, treemap: treemap, items: items, elements: selectionElements,
                         text : labelText, contentItemTemplate : labelText };
-                    eventBlazorArgs = { cancel: false, name: itemSelected, text: labelText, contentItemTemplate: labelText };
-                    if (treemap.isBlazor) {
-                        const { treemap, items, elements, ...blazorEventArgs }: IItemSelectedEventArgs = eventArgs;
-                        eventBlazorArgs = blazorEventArgs;
-                    }
-                    treemap.trigger(itemSelected, treemap.isBlazor ? eventBlazorArgs : eventArgs, (observedArgs: IItemSelectedEventArgs) => {
+                    treemap.trigger(itemSelected, eventArgs, (observedArgs: IItemSelectedEventArgs) => {
                         if (observedArgs.contentItemTemplate !== labelText) {
-                            const itemSelect: string = targetId.split('_RectPath')[0];
-                            let itemTemplate: Element;
-                            if (targetId.indexOf('_LabelTemplate') > -1) {
-                                itemTemplate = targetEle;
-                            } else {
-                                itemTemplate = document.querySelector('#' + itemSelect + '_LabelTemplate');
-                            }
-                            if (!isNullOrUndefined(itemTemplate)) {
-                                if (treemap.isBlazor) {
-                                    const templateCreated : Element = createElement('div');
-                                    templateCreated.innerHTML = observedArgs.contentItemTemplate;
-                                    const templateElement: Element = templateCreated.children[0].firstElementChild;
-                                    itemTemplate['style']['left'] = Number(itemTemplate['style']['left'].split('px')[0]) - (templateElement['style']['width'].split('px')[0] / 2) + 'px';
-                                    itemTemplate['style']['top'] = Number(itemTemplate['style']['top'].split('px')[0]) - (templateElement['style']['height'].split('px')[0] / 2) + 'px';
-                                }
-                                itemTemplate.innerHTML = observedArgs.contentItemTemplate;
-                            }
+                            setItemTemplateContent(targetId, targetEle, observedArgs.contentItemTemplate);
                         }
                     });
                 }

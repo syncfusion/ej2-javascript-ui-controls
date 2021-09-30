@@ -243,8 +243,42 @@ describe('Month Event Render Module', () => {
             util.destroy(schObj);
         });
         it('checking week number cell and work cell height ', () => {
-            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('111px');
-            expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('111px');
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('110px');
+            expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('110px');
+        });
+    });
+
+    describe('EJ2-52001 - Month view cell height checking when height is auto and both showWeekNumber and rowAutoHeight properties enabled on same time', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Normal event',
+            StartTime: new Date(2017, 10, 8, 10),
+            EndTime: new Date(2017, 10, 8, 10)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                currentView: 'Month', height: 'auto', width: '100%',
+                showWeekNumber: true, rowAutoHeight: true, selectedDate: new Date(2017, 10, 6)
+            };
+            schObj = util.createSchedule(model, sampleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking work-cells height when height is auto', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('76px');
+                expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('76px');
+                expect(schObj.eventsData.length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                done();
+            };
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('76px');
+            expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('76px');
+            expect(schObj.eventsData.length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+            schObj.refreshEvents();
         });
     });
 

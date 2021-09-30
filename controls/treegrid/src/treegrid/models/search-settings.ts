@@ -52,8 +52,6 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * </table>
      *
      * @default 'contains'
-     * @blazorType Syncfusion.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.Blazor.Operator.Contains
      */
     @Property('contains')
     public operator: string;

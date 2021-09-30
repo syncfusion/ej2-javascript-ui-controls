@@ -3,8 +3,8 @@ import { CircularGauge } from '../circular-gauge';
 import { Axis, Pointer, Range, Annotation } from '../axes/axis';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { IVisiblePointer, ITooltipRenderEventArgs } from '../model/interface';
-import {GaugeLocation, getPointer, Rect, getMousePosition, Size, getElementSize, stringToNumber} from '../utils/helper';
-import { getAngleFromValue, getLabelFormat, getLocationFromAngle } from '../utils/helper';
+import { stringToNumber, getAngleFromValue, getLocationFromAngle, getPointer, getLabelFormat, Size, GaugeLocation, Rect } from '../utils/helper-common';
+import { getMousePosition, getElementSize } from '../utils/helper-tooltip';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
 import { Browser, createElement, remove } from '@syncfusion/ej2-base';
@@ -110,11 +110,6 @@ export class GaugeTooltip {
                 name: tooltipRender, cancel: false, content: pointerContent, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge, appendInBodyTag: false, type: 'Pointer'
             };
-            if (this.gauge.isBlazor) {
-                const { name, cancel, content, location, tooltip, event, appendInBodyTag, type } : ITooltipRenderEventArgs =
-                    tooltipArgs;
-                tooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag, type };
-            }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const pointerTooltip: any = (tooltipArgs: ITooltipRenderEventArgs) => {
                 let template: string = tooltipArgs.tooltip.template;
@@ -195,11 +190,6 @@ export class GaugeTooltip {
                 name: tooltipRender, cancel: false, content: rangeContent, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, range: this.currentRange, event: e, gauge: this.gauge, appendInBodyTag: false, type: 'Range'
             };
-            if (this.gauge.isBlazor) {
-                const { name, cancel, content, location, tooltip, event, appendInBodyTag, type } : ITooltipRenderEventArgs =
-                    rangeTooltipArgs;
-                rangeTooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag, type };
-            }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const rangeTooltip: any = (rangeTooltipArgs: ITooltipRenderEventArgs) => {
                 let rangeTemplate: string = rangeTooltipArgs.tooltip.rangeSettings.template;
@@ -273,11 +263,6 @@ export class GaugeTooltip {
                 tooltip: this.tooltip, annotation: this.currentAnnotation, event: e, gauge: this.gauge, appendInBodyTag: false,
                 type: 'Annotation'
             };
-            if (this.gauge.isBlazor) {
-                const { name, cancel, content, location, tooltip, event, appendInBodyTag, type } : ITooltipRenderEventArgs =
-                    annotationTooltipArgs;
-                annotationTooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag, type };
-            }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const annotationTooltip: any = (annotationTooltipArgs: ITooltipRenderEventArgs) => {
                 let annotationTemplate: string = annotationTooltipArgs.tooltip.annotationSettings.template;
@@ -350,8 +335,7 @@ export class GaugeTooltip {
             fill: fill || gauge.themeStyle.tooltipFillColor,
             textStyle: textStyle,
             availableSize: gauge.availableSize,
-            border: border,
-            blazorTemplate: { name: 'TooltipTemplate', parent: gauge.tooltip }
+            border: border
         });
         return svgTooltip;
     }

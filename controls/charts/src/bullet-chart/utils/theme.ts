@@ -62,6 +62,7 @@ export namespace BulletChartTheme {
  */
 // tslint:disable-next-line:max-func-body-length
 export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
+    const darkBackground: string = theme === 'MaterialDark' ? '#383838' : (theme === 'FabricDark' ? '#242424' : '#1b1b1b');
     let style: IBulletStyle = {
         majorTickLineColor: '#424242',
         minorTickLineColor: '#424242',
@@ -163,7 +164,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
         style = {
             majorTickLineColor: '#F0F0F0',
             minorTickLineColor: '#F0F0F0',
-            background: '#000000',
+            background: darkBackground,
             labelFontColor: '#FFFFFF',
             categoryFontColor: '#FFFFFF',
             labelFontFamily: 'Helvetica',
@@ -207,8 +208,8 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
         };
         break;
-	case 'Tailwind':
-		style = {
+    case 'Tailwind':
+        style = {
             majorTickLineColor: '#D1D5DB',
             minorTickLineColor: '#D1D5DB',
             background: 'transparent',
@@ -231,8 +232,8 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }]
         };
         break;
-	case 'TailwindDark':
-		style = {
+    case 'TailwindDark':
+        style = {
             majorTickLineColor: '#4B5563',
             minorTickLineColor: '#4B5563',
             background: 'transparent',
@@ -255,7 +256,54 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             rangeStrokes: [{ color: '#6B7280' }, { color: '#4B5563' }, { color: '#374151' }]
         };
         break;
-	
+    case 'Bootstrap5':
+        style = {
+            majorTickLineColor: '#CED4DA',
+            minorTickLineColor: '#CED4DA',
+            background: 'transparent',
+            labelFontColor: '#495057',
+            categoryFontColor: '#6B7280',
+            labelFontFamily: 'Helvetica Neue',
+            tooltipFill: '#212529',
+            legendLabel: '#343A40',
+            tooltipBoldLabel: '#F9FAFB',
+            featuredMeasureColor: '#1F2937',
+            comparativeMeasureColor: '#1F2937',
+            titleFontColor: '#343A40',
+            dataLabelFontColor: '#495057',
+            titleFontFamily: 'Helvetica Neue',
+            subTitleFontColor: '#343A40',
+            subTitleFontFamily: 'Helvetica Neue',
+            firstRangeColor: '#9CA3AF',
+            secondRangeColor: '#D1D5DB',
+            thirdRangeColor: '#E5E7EB',
+            rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }]
+        };
+        break;
+    case 'Bootstrap5Dark':
+        style = {
+            majorTickLineColor: '#6C757D',
+            minorTickLineColor: '#6C757D',
+            background: '#212529',
+            labelFontColor: '#CED4DA',
+            categoryFontColor: '#6B7280',
+            labelFontFamily: 'Helvetica Neue',
+            tooltipFill: '#E9ECEF',
+            legendLabel: '#E9ECEF',
+            tooltipBoldLabel: '#ADB5BD',
+            featuredMeasureColor: '#ADB5BD',
+            comparativeMeasureColor: '#ADB5BD',
+            titleFontColor: '#E9ECEF',
+            dataLabelFontColor: '#CED4DA',
+            titleFontFamily: 'Helvetica Neue',
+            subTitleFontColor: '#E9ECEF',
+            subTitleFontFamily: 'Helvetica Neue',
+            firstRangeColor: '#6C757D',
+            secondRangeColor: '#495057',
+            thirdRangeColor: '#343A40',
+            rangeStrokes: [{ color: '#6C757D' }, { color: '#495057' }, { color: '#343A40' }]
+        };
+        break;
     default:
         // eslint-disable-next-line no-self-assign
         style = style;

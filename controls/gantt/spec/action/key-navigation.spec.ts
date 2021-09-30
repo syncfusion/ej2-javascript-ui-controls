@@ -191,7 +191,7 @@ describe('Gantt Selection support', () => {
         }); 
 		
     });
-     describe('CR-issues', function () {
+        describe('CR-issues', function () {
         let ganttObj: Gantt;
         let preventDefault: Function = new Function();
         beforeAll(function (done) {

@@ -29,13 +29,14 @@ export namespace RangeNavigatorTheme {
     };
 }
 /** @private */
+// tslint:disable-next-line:max-func-body-length
 export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IRangeStyle {
     const thumbSize: ThumbSettingsModel = range.navigatorStyleSettings.thumb;
     const thumbWidth: number = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     const thumbHeight: number = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
     const darkAxisColor: string = (theme === 'HighContrast') ? '#969696' : '#6F6C6C';
     const darkGridlineColor: string = (theme === 'HighContrast') ? '#4A4848' : '#414040';
-    const darkBackground: string = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
+    const darkBackground: string = theme === 'MaterialDark' ? '#383838' : (theme === 'FabricDark' ? '#242424' : '#1b1b1b');
     let style: IRangeStyle = {
         gridLineColor: '#E0E0E0',
         axisLineColor: '#000000',
@@ -135,7 +136,7 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbHeight: thumbHeight
         };
         break;
-	case 'Tailwind':
+    case 'Tailwind':
         style = {
             gridLineColor: '#E5E7EB',
             axisLineColor: '#D1D5DB',
@@ -153,7 +154,7 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbHeight: thumbHeight
         };
         break;
-	case 'TailwindDark':
+    case 'TailwindDark':
         style = {
             gridLineColor: '#374151',
             axisLineColor: '#4B5563',
@@ -162,11 +163,47 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumpLineColor: '#6B7280',
             thumbBackground: '#1F2937',
             gripColor: '#D1D5DB',
-            background: 'rgba(255, 255, 255, 0.6)',
+            background: '#1f2937',
             thumbHoverColor: '#E5E7EB',
             selectedRegionColor: range.series.length ? 'rgba(255, 255, 255, 0.6)' : '#22D3EE',
             tooltipBackground: '#F9FAFB',
             tooltipFontColor: '#1F2937',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight
+        };
+        break;
+    case 'Bootstrap5':
+        style = {
+            gridLineColor: '#E5E7EB',
+            axisLineColor: '#E5E7EB',
+            labelFontColor: '#495057',
+            unselectedRectColor: range.series.length ? 'transparent' : '#E5E7EB',
+            thumpLineColor: '#9CA3AF',
+            thumbBackground: '#FFFFFF',
+            gripColor: '#6C757D',
+            background: 'rgba(255, 255, 255, 0.0)',
+            thumbHoverColor: '#374151',
+            selectedRegionColor: range.series.length ? 'rgba(31, 41, 55, 0.1)' : '#4F46E5',
+            tooltipBackground: '#212529',
+            tooltipFontColor: '#F9FAFB',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight
+        };
+        break;
+    case 'Bootstrap5Dark':
+        style = {
+            gridLineColor: '#343A40',
+            axisLineColor: '#343A40',
+            labelFontColor: '#CED4DA',
+            unselectedRectColor: range.series.length ? 'transparent' : '#E5E7EB',
+            thumpLineColor: '#6C757D',
+            thumbBackground: '#ADB5BD',
+            gripColor: '#ADB5BD',
+            background: '#212529',
+            thumbHoverColor: '#374151',
+            selectedRegionColor: range.series.length ? 'rgba(173, 181, 189, 0.1)' : '#ADB5BD',
+            tooltipBackground: '#E9ECEF',
+            tooltipFontColor: '#212529',
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight
         };

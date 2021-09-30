@@ -3,9 +3,9 @@ import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheet
 import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
-import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';
+import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange, RangeModel } from './index';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';
+import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType, AutoFillSettings, AutoFillDirection, AutoFillType } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
@@ -19,13 +19,14 @@ import { DataBind, setRow, setColumn } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookChart } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
-import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';
+import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
-import { setLinkModel, setImage, setChart, updateView } from '../common/event';
+import { setLinkModel, setImage, setChart, updateView, setAutoFill } from '../common/event';
 import { beginAction, completeAction, deleteChart } from '../../spreadsheet/common/event';
 import { WorkbookFindAndReplace } from '../actions/find-and-replace';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
+import { AutoFillSettingsModel } from '../..';
 
 /**
  * Represents the Workbook.
@@ -110,9 +111,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property()
     public filterCollection: FilterCollectionModel[];
-
-    /** @hidden */
-    public filteredRows: {rowIdxColl?: number[] , sheetIdxColl?: number[]};
 
     /**
      * It stores the filtered range collection.
@@ -278,6 +276,43 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public allowChart: boolean;
+
+     /**
+     * It allows to enable/disable AutoFill functionalities.
+     *
+     * @default true
+     */
+      @Property(true)
+      public allowAutoFill: boolean;
+
+      /**
+     * Configures the auto fill settings.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *      autoFillSettings: {
+     *          fillType: 'FillSeries',
+     *          showFillOptions: true
+     *      }
+     * ...
+     * }, '#Spreadsheet');
+     *
+     * The autoFillSettings `fillType` property has FOUR values and it is described below:
+     *
+     * * CopyCells: To update the copied cells of the selected range.
+     * * FillSeries: To update the filled series of the selected range.
+     * * FillFormattingOnly: To fill the formats only for the selected range.
+     * * FillWithoutFormatting: To fill without the format of the selected range.
+     *
+     * ```
+     *
+     * @default { fillType: 'FillSeries', showFillOptions: true }
+     */
+
+     @Complex<AutoFillSettingsModel>({}, AutoFillSettings)
+     public autoFillSettings: AutoFillSettingsModel;
 
     /**
      * It allows you to apply conditional formatting to the sheet.
@@ -507,7 +542,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace,
-            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart);
+            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart, WorkbookAutoFill);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -981,6 +1016,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return 'workbook';
     }
 
+    /** @hidden */
+    public goTo(address: string): void {
+        /** */
+    }
+
     /** @hidden
      * @param {number} sheetId - Specifies the sheet id.
      * @param {number} rowIndex - Specifies the rowIndex.
@@ -1018,7 +1058,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     this, `${sheet.name}!A1:${getCellAddress(rowIndex - 1, colIndex - 1)}`, null, null, null, null, formulaCellReference,
                     sheetIndex);
             }
-        } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value)) && cell.formula.indexOf('UNIQUE') === - 1) {
+        } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value)) && cell.formula.indexOf('UNIQUE') === -1) {
             this.notify('calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex });
         }
         return cell && cell.value;
@@ -1096,7 +1136,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 customParams: {},
                 isFullPost: true,
                 needBlobData: false,
-                cancel: false
+                cancel: false,
+                pdfLayoutSettings: { fitSheetOnOnePage: false }
             };
             this.trigger('beforeSave', eventArgs);
             this.notify(beginAction, { eventArgs: eventArgs, action: 'beforeSave' });
@@ -1104,7 +1145,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 this.notify(
                     events.beginSave, {
                         saveSettings: eventArgs, isFullPost: eventArgs.isFullPost,
-                        needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams
+                        needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams, pdfLayoutSettings: eventArgs.pdfLayoutSettings
                     });
             }
         }
@@ -1164,12 +1205,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Protect the active sheet based on the protect sheetings.
      *
-     * @param {number} sheet - Specifies the protect settings of the sheet.
+     * @param {number} sheet - Specifies the sheet to protect.
      * @param {ProtectSettingsModel} protectSettings - Specifies the protect settings of the sheet.
-     * @returns {void} - Unprotect the active sheet.
+     * @param {string} password - Specifies the password to protect
+     * @returns {void} - protect the active sheet.
      */
-    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
-        this.notify(events.protectsheetHandler, protectSettings);
+    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel, password?:string): void {
+        this.notify(events.protectsheetHandler, { protectSettings:protectSettings, password: password} );
     }
 
     /**
@@ -1293,6 +1335,23 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * This method is used to update the Range property in specified sheetIndex.
+     *
+     * @param {RangeModel} range - Specifies the range properties to update.
+     * @param {number} sheetIdx - Specifies the sheetIdx to update.
+     * @returns {void} - To update a range properties.
+     */
+     public updateRange(range: RangeModel, sheetIdx?: number): void {
+        sheetIdx = sheetIdx ? sheetIdx - 1 : this.activeSheetIndex;
+        let sheet: SheetModel = getSheet(this, sheetIdx);
+        let ranges: RangeModel[] = sheet.ranges;
+        if (!isNullOrUndefined(sheet)) {
+            ranges.push(range);
+            sheet.ranges = ranges;
+        }
+    }
+
+    /**
      * This method is used to wrap/unwrap the text content of the cell.
      *
      * {% codeBlock src='spreadsheet/wrap/index.md' %}{% endcodeBlock %}
@@ -1363,6 +1422,25 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public insertImage(images: ImageModel[], range?: string): void {
         this.notify(setImage, { options: images, range: range ? range : this.getActiveSheet().selectedRange });
+    }
+
+    /**
+     * Used to perform autofill action based on the specified range in spreadsheet.
+    *
+    * @param {string} fillRange - Specifies the fill range.
+    * @param {string} dataRange - Specifies the data range.
+    * @param {AutoFillDirection} direction - Specifies the direction("Down","Right","Up","Left") to be filled.
+    * @param {AutoFillType} fillType - Specifies the fill type("FillSeries","CopyCells","FillFormattingOnly","FillWithoutFormatting") for autofill action.
+    * @returns {void} - To perform autofill action based on the specified range in spreadsheet.
+    */
+    public autoFill(fillRange: string, dataRange?: string,  direction?: AutoFillDirection, fillType?: AutoFillType): void {
+        const options: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType } = {
+            dataRange: dataRange ? dataRange : this.getActiveSheet().selectedRange,
+            fillRange: fillRange,
+            direction: direction ? direction : 'Down',
+            fillType: fillType ? fillType : 'FillSeries'
+        };
+        this.notify(setAutoFill, options);
     }
 
     /**

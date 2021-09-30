@@ -72,6 +72,9 @@ export class Row extends ChildProperty<SheetModel> {
      */
     @Complex<FormatModel>({}, Format)
     public format: FormatModel;
+
+    /** @hidden */
+    public isFiltered: boolean;
 }
 
 /**

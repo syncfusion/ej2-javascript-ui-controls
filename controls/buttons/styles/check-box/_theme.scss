@@ -70,6 +70,28 @@
         }
       }
 
+      & .e-checkbox {
+        &:active {
+          +.e-frame {
+            background-color: $cbox-focussed-bgcolor;
+            border-color: $cbox-focussed-border-color;
+            box-shadow: $cbox-focussed-box-shadow;
+
+            &.e-check {
+              background-color: $cbox-focussed-checkmark-bgcolor;
+              border-color: $cbox-focussed-checkmark-border-color;
+              box-shadow: $cbox-focussed-box-shadow;
+              color: $cbox-focussed-checkmark-color;
+            }
+
+            &.e-stop {
+              box-shadow: $cbox-focussed-box-shadow;
+              color: $cbox-indeterminate-hover-color;
+            }
+          }
+        }
+      }
+
       &:hover {
         & .e-frame {
           background-color: $cbox-hover-bgcolor;
@@ -86,7 +108,7 @@
               background-color: $cbox-checkmark-hover-bgcolor;
               border-color: $cbox-checkmark-hover-border-color;
             }
-            @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
               background-color: $cbox-checkmark-hover-bgcolor;
               border-color: $cbox-checkmark-hover-border-color;
             }

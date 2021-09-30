@@ -120,10 +120,10 @@ export class IframeContentRender extends ContentRender {
         const iframe: HTMLIFrameElement = <HTMLIFrameElement>this.parent.createElement(
             'iframe',
             {
-                innerHTML: iFrameContent,
                 id: this.parent.getID() + '_rte-view',
                 className: 'e-rte-content',
-                styles: 'display:block;'
+                styles: 'display:block;',
+                attrs: { 'srcdoc': iFrameContent }
             });
         this.setPanel(iframe);
         rteObj.element.appendChild(iframe);

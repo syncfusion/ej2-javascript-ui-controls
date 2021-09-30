@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange } from '../common/event';
-import { getRangeIndexes, parseIntValue } from '../common/index';
+import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
@@ -147,6 +147,10 @@ export class WorkbookEdit {
                 if (isFormula) {
                     cell.formula = <string>eventArgs.value;
                     value = cell.value;
+                } else if (cell.value && typeof cell.value === 'string' && (cell.value.indexOf('www.') === 0 ||
+                    cell.value.indexOf('https://') === 0 || cell.value.indexOf('http://') === 0 || cell.value.indexOf('ftp://') === 0)) {
+                    this.parent.notify(
+                        setLinkModel, { hyperlink: cell.value, cell: `${sheet.name}!${getCellAddress(range[0], range[1])}` });
                 }
             }
         } else {

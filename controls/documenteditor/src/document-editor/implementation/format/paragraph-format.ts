@@ -161,6 +161,14 @@ export class WParagraphFormat {
         this.setPropertyValue('keepLinesTogether', value);
     }
 
+    public get widowControl(): boolean {
+        return this.getPropertyValue('widowControl') as boolean;
+    }
+
+    public set widowControl(value: boolean) {
+        this.setPropertyValue('widowControl', value);
+    }
+
     public get outlineLevel(): OutlineLevel {
         return this.getPropertyValue('outlineLevel') as OutlineLevel;
     }
@@ -266,7 +274,8 @@ export class WParagraphFormat {
                 this.ownerBase.containerWidget instanceof TableCellWidget;
         }
         let isPaste: boolean = !isNullOrUndefined(this.ownerBase) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)
-            && (this.ownerBase as ParagraphWidget).bodyWidget.page && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor.isPaste;
+            && (this.ownerBase as ParagraphWidget).bodyWidget.page && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor
+            && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor.isPaste;
         if (isInsideBodyWidget && !isPaste
             && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
             const propValue: Object = docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
@@ -318,6 +327,7 @@ export class WParagraphFormat {
         this.addUniqueParaFormat('contextualSpacing', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('keepWithNext', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('keepLinesTogether', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('widowControl', property, propValue, uniqueParaFormatTemp);
 
         this.uniqueParagraphFormat = WParagraphFormat.uniqueParagraphFormats.addUniqueFormat(uniqueParaFormatTemp, WParagraphFormat.uniqueFormatType);
     }
@@ -331,48 +341,51 @@ export class WParagraphFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-        case 'leftIndent':
-            value = 0;
-            break;
-        case 'rightIndent':
-            value = 0;
-            break;
-        case 'firstLineIndent':
-            value = 0;
-            break;
-        case 'textAlignment':
-            value = 'Left';
-            break;
-        case 'beforeSpacing':
-            value = 0;
-            break;
-        case 'afterSpacing':
-            value = 0;
-            break;
-        case 'lineSpacing':
-            value = 1;
-            break;
-        case 'lineSpacingType':
-            value = 'Multiple';
-            break;
-        case 'styleName':
-            value = 'Normal';
-            break;
-        case 'outlineLevel':
-            value = 'BodyText';
-            break;
-        case 'bidi':
-            value = false;
-            break;
-        case 'contextualSpacing':
-            value = false;
-            break;
-        case 'keepWithNext':
-            value = false;
-            break;
-        case 'keepLinesTogether':
-            value = false;
-            break;
+            case 'leftIndent':
+                value = 0;
+                break;
+            case 'rightIndent':
+                value = 0;
+                break;
+            case 'firstLineIndent':
+                value = 0;
+                break;
+            case 'textAlignment':
+                value = 'Left';
+                break;
+            case 'beforeSpacing':
+                value = 0;
+                break;
+            case 'afterSpacing':
+                value = 0;
+                break;
+            case 'lineSpacing':
+                value = 1;
+                break;
+            case 'lineSpacingType':
+                value = 'Multiple';
+                break;
+            case 'styleName':
+                value = 'Normal';
+                break;
+            case 'outlineLevel':
+                value = 'BodyText';
+                break;
+            case 'bidi':
+                value = false;
+                break;
+            case 'contextualSpacing':
+                value = false;
+                break;
+            case 'keepWithNext':
+                value = false;
+                break;
+            case 'keepLinesTogether':
+                value = false;
+                break;
+            case 'widowControl':
+                value = true;
+                break;
         }
         return value;
     }
@@ -501,6 +514,9 @@ export class WParagraphFormat {
         }
         if (isNullOrUndefined(this.getValue('keepLinesTogether'))) {
             this.keepLinesTogether = format.getValue('keepLinesTogether') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('widowControl'))) {
+            this.widowControl = format.getValue('widowControl') as boolean;
         }
         if (isNullOrUndefined(this.listFormat)) {
             this.listFormat.mergeFormat(format.listFormat);

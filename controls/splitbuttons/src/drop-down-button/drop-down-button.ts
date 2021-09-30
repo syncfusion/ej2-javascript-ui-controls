@@ -531,7 +531,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     private keyEventHandler(e: KeyboardEventArgs): void {
-        if (this.target && (e.keyCode === 13 || e.keyCode === 9)) {
+        if (this.target && (e.keyCode === 13 || e.keyCode === 9 )) {
+            return;
+        }
+        if (e.target && (e.target as Element).className.indexOf('e-edit-template') > -1 && e.keyCode === 32) {
             return;
         }
         if (e.keyCode !== 9) {
@@ -615,6 +618,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     private closePopup(e: MouseEvent | KeyboardEventArgs = null, focusEle?: HTMLElement): void {
         const ul: HTMLElement = this.getULElement();
         const beforeCloseArgs: BeforeOpenCloseMenuEventArgs = { element: ul, items: this.items, event: e, cancel: false };
+        let popupElement: HTMLElement = this.getPopUpElement();
+        if (popupElement) {
+            EventHandler.remove(popupElement, 'keydown', this.keyBoardHandler);
+        }
         this.trigger('beforeClose', beforeCloseArgs,  (observedArgs: BeforeOpenCloseMenuEventArgs) => {
             if (!observedArgs.cancel) {
                 const ul: HTMLElement = this.getULElement();

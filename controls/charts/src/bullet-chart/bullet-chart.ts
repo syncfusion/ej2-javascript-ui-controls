@@ -441,7 +441,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Triggers after the bullet chart rendering
      *
      * @event loaded
-     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<IBulletLoadedEventArgs>;
@@ -450,7 +449,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Triggers on clicking the chart.
      *
      * @event bulletChartMouseClick
-     * @blazorProperty 'OnBulletChartMouseClick'
      */
 
     @Event()
@@ -469,7 +467,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Triggers before the prints gets started.
      *
      * @event beforePrint
-     * @blazorProperty 'OnPrint'
      */
 
     @Event()
@@ -545,8 +542,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public format: Function;
     private isLegend: boolean;
-    /** private */
-    private isBlazor: boolean;
     /**
      * Gets the current visible ranges of the bullet Chart.
      *
@@ -567,8 +562,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Initialize the event handler.
      */
     protected preRender(): void {
-        const blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
         this.allowServerDataBinding = false;
         this.unWireEvents();
         this.initPrivateValues();
@@ -603,12 +596,12 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
     protected render(): void {
         const loadEventData: IBulletLoadedEventArgs = {
-            bulletChart: this.isBlazor ? {} as BulletChart : this,
+            bulletChart: this,
             theme: this.theme, name: 'load'
         };
         this.trigger('load', loadEventData, () => {
 
-            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.theme = this.theme;
             this.setTheme();
 
             this.createSvg(this);
@@ -624,8 +617,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
             this.renderBulletElements();
 
-            const blazor: string = 'Blazor';
-            this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
+            this.trigger('loaded', { bulletChart: this });
 
             this.allowServerDataBinding = true;
             this.renderComplete();
@@ -1516,14 +1508,12 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             if (!refreshBounds && renderer) {
                 this.removeSvg();
                 this.renderBulletElements();
-                const blazor: string = 'Blazor';
-                this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
+                this.trigger('loaded', { bulletChart: this });
 
             }
             if (refreshBounds) {
                 this.render();
-                const blazor: string = 'Blazor';
-                this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
+                this.trigger('loaded', { bulletChart: this });
                 this.redraw = false;
             }
         }

@@ -21,6 +21,29 @@ describe('Table creation', () => {
                 },
                 quickToolbarSettings: {
                     table: ['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles', 'TableEditProperties']
+                },
+                tableSettings: {
+                    width: '100%',
+                    styles: [
+                        {
+                            text: 'Dashed Borders',
+                            command: 'Table',
+                            subCommand: 'Dashed',
+                            cssClass: 'e-dashed-test'
+                        },
+                        {
+                            text: 'Alterte Rows',
+                            command: 'Table',
+                            subCommand: 'Alternate',
+                            cssClass: 'e-alternate-test'
+                        },
+                        {
+                            text: 'No border',
+                            command: 'Table',
+                            subCommand: 'Custom',
+                            cssClass: 'e-no-border'
+                        }
+                    ]
                 }
             });
             rteEle = rteObj.element;
@@ -232,6 +255,7 @@ describe('Table creation', () => {
                 };
                 (mouseEventArgs.target as HTMLElement).click();
                 expect(closest(tar, 'table').classList.contains('e-dashed-border')).toBe(true);
+                expect(closest(tar, 'table').classList.contains('e-dashed-test')).toBe(true);
                 (tableTBItems.item(8).childNodes[0] as HTMLElement).click();
                 popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {
@@ -239,6 +263,14 @@ describe('Table creation', () => {
                 };
                 (mouseEventArgs.target as HTMLElement).click();
                 expect(closest(tar, 'table').classList.contains('e-alternate-border')).toBe(true);
+                expect(closest(tar, 'table').classList.contains('e-alternate-test')).toBe(true);
+                (tableTBItems.item(8).childNodes[0] as HTMLElement).click();
+                popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+                mouseEventArgs = {
+                    target: popupElement.childNodes[0].childNodes[2]
+                };
+                (mouseEventArgs.target as HTMLElement).click();
+                expect(closest(tar, 'table').classList.contains('e-no-border')).toBe(true);
                 tar = rteObj.contentModule.getEditPanel().querySelector('table');
                 rteObj.inputElement.dispatchEvent(clickEvent);
                 eventsArg = { pageX: 50, pageY: 300, target: tar };

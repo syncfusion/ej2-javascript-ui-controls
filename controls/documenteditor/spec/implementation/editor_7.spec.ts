@@ -1046,57 +1046,57 @@ let sfdt: object = {
         }
     ]
 };
-describe('Table relayouting with row span', () => {
-    let editor: DocumentEditor = undefined;
-    beforeAll(() => {
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
-        editor.acceptTab = true;
-        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-    });
-    afterAll((done) => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        setTimeout(() => {
-            document.body.innerHTML = '';
-            done();
-        }, 1000);
-    });
-    it('Layout table with allow row break across pages', () => {
-        console.log('Layout table with allow row break across pages');
-        editor.open(JSON.stringify(sfdt));
-        editor.editorModule.insertTable(2, 2);
-        editor.selection.handleRightKey();
-        editor.selection.handleShiftDownKey();
-        editor.editor.mergeCells();
-        for (let i: number = 0; i < 24; i++) {
-            editor.editorModule.onEnter();
-        }
-        expect(() => { editor.editorModule.onEnter() }).not.toThrowError();
-    });
-    it('Layout table without allow row break across pages', () => {
-        console.log('Layout table without allow row break across pages');
-        editor.open(JSON.stringify(sfdt));
-        editor.editorModule.insertTable(2, 2);
-        editor.selection.rowFormat.allowBreakAcrossPages = false;
-        editor.selection.handleDownKey();
-        editor.selection.rowFormat.allowBreakAcrossPages = false;
-        editor.selection.handleRightKey();
-        editor.selection.handleShiftUpKey();
-        editor.editor.mergeCells();
-        for (let i: number = 0; i < 24; i++) {
-            editor.editorModule.onEnter();
-        }
-        expect(() => { editor.editorModule.onEnter() }).not.toThrowError();
-    });
-});
+// describe('Table relayouting with row span', () => {
+//     let editor: DocumentEditor = undefined;
+//     beforeAll(() => {
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.appendChild(ele);
+//         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+//         editor.acceptTab = true;
+//         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         editor.appendTo('#container');
+//     });
+//     afterAll((done) => {
+//         editor.destroy();
+//         document.body.removeChild(document.getElementById('container'));
+//         editor = undefined;
+//         setTimeout(() => {
+//             document.body.innerHTML = '';
+//             done();
+//         }, 1000);
+//     });
+//     // it('Layout table with allow row break across pages', () => {
+//     //     console.log('Layout table with allow row break across pages');
+//     //     editor.open(JSON.stringify(sfdt));
+//     //     editor.editorModule.insertTable(2, 2);
+//     //     editor.selection.handleRightKey();
+//     //     editor.selection.handleShiftDownKey();
+//     //     editor.editor.mergeCells();
+//     //     for (let i: number = 0; i < 24; i++) {
+//     //         editor.editorModule.onEnter();
+//     //     }
+//     //     expect(() => { editor.editorModule.onEnter() }).not.toThrowError();
+//     // });
+//     it('Layout table without allow row break across pages', () => {
+//         console.log('Layout table without allow row break across pages');
+//         editor.open(JSON.stringify(sfdt));
+//         editor.editorModule.insertTable(2, 2);
+//         editor.selection.rowFormat.allowBreakAcrossPages = false;
+//         editor.selection.handleDownKey();
+//         editor.selection.rowFormat.allowBreakAcrossPages = false;
+//         editor.selection.handleRightKey();
+//         editor.selection.handleShiftUpKey();
+//         editor.editor.mergeCells();
+//         for (let i: number = 0; i < 24; i++) {
+//             editor.editorModule.onEnter();
+//         }
+//         expect(() => { editor.editorModule.onEnter() }).not.toThrowError();
+//     });
+// });
 let formfield: object = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHeight": 792, "leftMargin": 72, "rightMargin": 72, "topMargin": 72, "bottomMargin": 72, "differentFirstPage": false, "differentOddAndEvenPages": false, "headerDistance": 36, "footerDistance": 36, "bidi": false }, "blocks": [{ "paragraphFormat": { "styleName": "Normal", "listFormat": {} }, "characterFormat": {}, "inlines": [{ "characterFormat": {}, "fieldType": 0, "hasFieldEnd": true, "formFieldData": { "name": "Text1", "enabled": true, "helpText": "", "statusText": "", "textInput": { "type": "Text", "maxLength": 0, "defaultValue": "", "format": "" } } }, { "characterFormat": {}, "bookmarkType": 0, "name": "Text1" }, { "characterFormat": {}, "text": " FORMTEXT " }, { "characterFormat": {}, "fieldType": 2 }, { "characterFormat": {}, "text": " " }, { "characterFormat": {}, "text": " " }, { "characterFormat": {}, "text": " " }, { "characterFormat": {}, "text": " " }, { "characterFormat": {}, "text": " " }, { "characterFormat": {}, "fieldType": 1 }, { "characterFormat": {}, "bookmarkType": 0, "name": "_GoBack" }, { "characterFormat": {}, "bookmarkType": 1, "name": "Text1" }, { "characterFormat": {}, "bookmarkType": 1, "name": "_GoBack" }] }], "headersFooters": {} }], "characterFormat": { "bold": false, "italic": false, "fontSize": 11, "fontFamily": "Calibri", "underline": "None", "strikethrough": "None", "baselineAlignment": "Normal", "highlightColor": "NoColor", "fontColor": "#000000", "fontSizeBidi": 11, "fontFamilyBidi": "Arial" }, "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 0, "afterSpacing": 8, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "listFormat": {}, "bidi": false }, "defaultTabWidth": 36, "enforcement": false, "hashValue": "", "saltValue": "", "formatting": false, "protectionType": "NoProtection", "dontUseHTMLParagraphAutoSpacing": false, "styles": [{ "name": "Normal", "type": "Paragraph", "paragraphFormat": { "listFormat": {} }, "characterFormat": {}, "next": "Normal" }, { "name": "Default Paragraph Font", "type": "Character", "characterFormat": {} }, { "name": "Heading 1", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 12, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level1", "listFormat": {} }, "characterFormat": { "fontSize": 16, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 1 Char", "next": "Normal" }, { "name": "Heading 1 Char", "type": "Character", "characterFormat": { "fontSize": 16, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 2", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level2", "listFormat": {} }, "characterFormat": { "fontSize": 13, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 2 Char", "next": "Normal" }, { "name": "Heading 2 Char", "type": "Character", "characterFormat": { "fontSize": 13, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 3", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level3", "listFormat": {} }, "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 3 Char", "next": "Normal" }, { "name": "Heading 3 Char", "type": "Character", "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 4", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level4", "listFormat": {} }, "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 4 Char", "next": "Normal" }, { "name": "Heading 4 Char", "type": "Character", "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 5", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level5", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 5 Char", "next": "Normal" }, { "name": "Heading 5 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 6", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level6", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 6 Char", "next": "Normal" }, { "name": "Heading 6 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }], "lists": [], "abstractLists": [], "comments": [] };
 describe('form field validation', () => {
     let editor: DocumentEditor = undefined;
@@ -1362,34 +1362,34 @@ describe('Track changes Validation For FormField', () => {
         let count: number =  container.revisions.changes[0].range.length;
         expect(count).toBe(6);
     });
-    it('form fields BackSpace Validation For revision content  ', function () {
-        console.log('form fields BackSpace Validation For revision content  ');
-        container.openBlank();
-        container.enableTrackChanges = true;
-        container.editor.insertText("hello");
-        container.showRevisions = true;
-        container.editor.insertFormField("Text");
-        (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
-        container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
-        container.editor.onBackSpace();
-        container.editor.onBackSpace();
-        container.editorHistory.undo();
-        let count: number =  container.revisions.changes[0].range.length;
-        expect(count).toBe(6);
-    });
-    it('form fields Delete Validation For revision content  ', function () {
-        console.log('form fields Delete Validation For revision content  ');
-        container.openBlank();
-        container.enableTrackChanges = true;
-        container.editor.insertText("hello");
-        container.showRevisions = true;
-        container.editor.insertFormField("Text");
-        (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
-        container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
-        container.selection.selectAll();
-        container.editor.delete();
-        container.editorHistory.undo();
-        let count: number =  container.revisions.changes[0].range.length;
-        expect(count).toBe(6);
-    });
+    // it('form fields BackSpace Validation For revision content  ', function () {
+    //     console.log('form fields BackSpace Validation For revision content  ');
+    //     container.openBlank();
+    //     container.enableTrackChanges = true;
+    //     container.editor.insertText("hello");
+    //     container.showRevisions = true;
+    //     container.editor.insertFormField("Text");
+    //     (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+    //     container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
+    //     container.editor.onBackSpace();
+    //     container.editor.onBackSpace();
+    //     container.editorHistory.undo();
+    //     let count: number =  container.revisions.changes[0].range.length;
+    //     expect(count).toBe(6);
+    // });
+    // it('form fields Delete Validation For revision content  ', function () {
+    //     console.log('form fields Delete Validation For revision content  ');
+    //     container.openBlank();
+    //     container.enableTrackChanges = true;
+    //     container.editor.insertText("hello");
+    //     container.showRevisions = true;
+    //     container.editor.insertFormField("Text");
+    //     (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+    //     container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
+    //     container.selection.selectAll();
+    //     container.editor.delete();
+    //     container.editorHistory.undo();
+    //     let count: number =  container.revisions.changes[0].range.length;
+    //     expect(count).toBe(6);
+    // });
 });

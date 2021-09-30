@@ -500,6 +500,7 @@ export class SelectionParagraphFormat {
     private bidiIn: boolean = undefined;
     private keepWithNextIn: boolean = undefined;
     private keepLinesTogetherIn: boolean = undefined;
+    private widowControlIn: boolean = undefined;
     private contextualSpacingIn: boolean = undefined;
     /**
      * @private
@@ -764,6 +765,28 @@ export class SelectionParagraphFormat {
         this.keepLinesTogetherIn = value;
         this.notifyPropertyChanged('keepLinesTogether');
     }
+
+    /**
+     * Gets or sets a value indicating whether the first and last lines of the paragraph are to remain on the same page as the rest of the paragraph when paginating the document. 
+     *
+     * @default true
+     * @aspType bool
+     * @returns {boolean} - `true` if the first and last lines of the paragraph are to remain on the same page; otherwise, `false`.
+     */
+     public get widowControl(): boolean {
+        return this.widowControlIn;
+    }
+    /**
+     * Sets a value indicating whether the first and last lines of the paragraph are to remain on the same page as the rest of the paragraph when paginating the document. 
+     *
+     * @default true
+     * @aspType bool
+     */
+    public set widowControl(value: boolean) {
+        this.widowControlIn = value;
+        this.notifyPropertyChanged('widowControl');
+    }
+
     /**
      * Gets or sets a value indicating whether to add space between the paragraphs of same style.
      *
@@ -852,7 +875,9 @@ export class SelectionParagraphFormat {
         case 'keepWithNext':
             return this.keepWithNext;
         case 'keepLinesTogether':
-            return this.keepLinesTogether;                    
+            return this.keepLinesTogether;     
+        case 'widowControl':
+            return this.widowControl;
         default:
             return undefined;
         }
@@ -920,6 +945,7 @@ export class SelectionParagraphFormat {
         this.bidi = format.bidi;
         this.keepLinesTogether = format.keepLinesTogether;
         this.keepWithNext = format.keepWithNext;
+        this.widowControl = format.widowControl;
         this.contextualSpacing = format.contextualSpacing;
         if (!isNullOrUndefined(format.listFormat) && !isNullOrUndefined(format.listFormat.listId)) {
             this.listId = format.listFormat.listId;
@@ -973,6 +999,9 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.keepLinesTogether)) {
             format.keepLinesTogether = this.keepLinesTogether;
         }
+        if (!isNullOrUndefined(this.widowControl)) {
+            format.widowControl = this.widowControl;
+        }
         if (!isNullOrUndefined(this.contextualSpacing)) {
             format.contextualSpacing = this.contextualSpacing;
         }
@@ -1022,6 +1051,9 @@ export class SelectionParagraphFormat {
         }
         if (!isNullOrUndefined(this.keepWithNext) && this.keepWithNext !== format.keepWithNext) {
             this.keepWithNext = undefined;
+        }
+        if (!isNullOrUndefined(this.widowControl) && this.widowControl !== format.widowControl) {
+            this.widowControl = undefined;
         }
         if (!isNullOrUndefined(this.contextualSpacing) && this.contextualSpacing !== format.contextualSpacing) {
             this.contextualSpacing = undefined;

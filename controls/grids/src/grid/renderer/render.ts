@@ -438,7 +438,7 @@ export class Render {
                 !this.parent.groupSettings.columns.length) {
                 dataArgs.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
             }
-            if ((this.parent.isReact || this.parent.isVue) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
+            if ((this.parent.isReact || this.parent.isVue) && !isNullOrUndefined(args) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
                 clearReactVueTemplates(this.parent, ['footerTemplate']);
             }
             this.parent.notify(

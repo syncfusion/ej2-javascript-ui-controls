@@ -120,7 +120,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseLeaveEvent(diagramCanvas);
             let pivotelem = document.querySelector('.e-diagram-pivot-line');
             let pivotelemstyle = getComputedStyle(pivotelem);
-            expect(pivotelemstyle.stroke === 'rgb(227, 22, 91)').toBe(true);
+            expect(pivotelemstyle.stroke === 'rgb(63, 81, 181)' || pivotelemstyle.stroke === 'rgb(227, 22, 91)' ).toBe(true);
             done();
         });
 

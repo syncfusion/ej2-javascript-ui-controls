@@ -20,14 +20,15 @@ export class WorkbookProtectSheet {
         this.parent = workbook;
         this.addEventListener();
     }
-    private protectsheetHandler(args: ProtectSettings): void {
+    private protectsheetHandler(args: {protectSettings: ProtectSettings, password?: string}): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.setSheetPropertyOnMute(sheet, 'protectSettings', {
-            selectCells: args.selectCells, formatCells: args.formatCells,
-            formatColumns: args.formatColumns, formatRows: args.formatRows, insertLink: args.insertLink
+            selectCells: args.protectSettings.selectCells, formatCells: args.protectSettings.formatCells,
+            formatColumns: args.protectSettings.formatColumns, formatRows: args.protectSettings.formatRows, insertLink: args.protectSettings.insertLink
         });
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });
+        sheet.password = args.password ? args.password : '';
         sheet.columns.forEach((column: ColumnModel) => {
             if (column && isUndefined(column.isLocked)) {
                 column.isLocked = true;

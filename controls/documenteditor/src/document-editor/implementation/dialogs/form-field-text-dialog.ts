@@ -72,7 +72,7 @@ export class TextFormFieldDialog {
             className: 'e-de-ff-dlg-heading-small',
             innerHTML: localValue.getConstant('Default text')
         });
-        this.defaultTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', styles: 'margin-top:3px' }) as HTMLInputElement;
+        this.defaultTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
         let secondDiv: HTMLElement = createElement('div', { className: 'e-de-div-seperate-dlg' });
         let maxLengthDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
         let maxLengthLabel: HTMLElement = createElement('div', {

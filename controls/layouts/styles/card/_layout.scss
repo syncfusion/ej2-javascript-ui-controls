@@ -443,7 +443,7 @@
 
       .e-card-btn,
       a {
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        @if $skin-name == 'tailwind' {
           border-radius: 4px;
         }
 
@@ -482,7 +482,7 @@
       }
     }
 
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    @if $skin-name == 'tailwind' {
       .e-card-header .e-card-actions {
         padding: 0;
       }

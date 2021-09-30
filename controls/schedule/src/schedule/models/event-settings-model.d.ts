@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Query, DataManager } from '@syncfusion/ej2-data';import { Field } from './fields';import { FieldModel } from './fields-model';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Query, DataManager } from '@syncfusion/ej2-data';import { SortComparerFunction } from '../base/interface';import { Field } from './fields';import { FieldModel } from './fields-model';
 
 /**
  * Interface for a class EventSettings
@@ -115,5 +115,14 @@ export interface EventSettingsModel {
      * @default false
      */
     ignoreWhitespace?: boolean;
+
+    /**
+     * Defines the custom sort comparer function.
+     * The sort comparer function has the same functionality like
+     * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
+     *
+     * @default null
+     */
+    sortComparer?: SortComparerFunction;
 
 }

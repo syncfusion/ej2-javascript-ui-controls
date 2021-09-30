@@ -209,7 +209,7 @@ export class GanttTreeGrid {
         }
     }
     private expanded(args: object): void {
-        if (!this.parent.ganttChartModule.isExpandCollapseFromChart  && !this.parent.isExpandCollapseLevelMethod) {
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart && !this.parent.isExpandCollapseLevelMethod) {
             if(!args['data'].length) {
                 const expandedArgs: object = this.createExpandCollapseArgs(args);
                 this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
@@ -309,8 +309,13 @@ export class GanttTreeGrid {
             setValue('action', 'CellEditing', updatedArgs);
             this.parent.isCancelled = false;
         }
-         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args))) {
-            this.parent.selectRow(this.parent.selectedRowIndex);
+        if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args)) && this.parent.addDeleteRecord) {
+            if (this.parent.selectedRowIndex != -1) {
+                this.parent.selectRow(this.parent.selectedRowIndex);
+            } else {
+                this.parent.selectRow(0);
+            }
+            this.parent.addDeleteRecord = false;
         }
         this.parent.trigger('actionComplete', updatedArgs);
     }

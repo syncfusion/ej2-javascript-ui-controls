@@ -51,7 +51,6 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * of list items on the suggestion popup.
      *
      * @default 20
-     * @blazorType int
      */
     suggestionCount?: number;
 
@@ -83,7 +82,6 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * the search action will perform after typed minimum characters.
      *
      * @default 1
-     * @blazorType int
      */
     minLength?: number;
 
@@ -122,7 +120,6 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * The default value set to `Contains`, all the suggestion items which contain typed characters to listed in the suggestion popup.
      *
      * @default 'Contains'
-     * @blazorOverrideType override
      */
     filterType?: FilterType;
 
@@ -130,7 +127,6 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Triggers on typing a character in the component.
      *
      * @event filtering
-     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 
@@ -139,9 +135,6 @@ export interface AutoCompleteModel extends ComboBoxModel{
      *
      * @default null
      * @private
-     * @blazorType int
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
      * @deprecated
      */
     index?: number;
@@ -160,7 +153,6 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @deprecated
      */
     floatLabelType?: FloatLabelType;

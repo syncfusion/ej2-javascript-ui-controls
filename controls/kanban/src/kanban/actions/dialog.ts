@@ -5,7 +5,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel, BeforeOpenEventArgs, ButtonPropsModel, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { Kanban } from '../base/kanban';
-import { CardClickEventArgs, DialogEventArgs, EJ2Instance } from '../base/interface';
+import { CardClickEventArgs, DialogEventArgs, EJ2Instance, ActionEventArgs } from '../base/interface';
 import { CurrentAction } from '../base/type';
 import { DialogFieldsModel } from '../models/index';
 import * as events from '../base/constant';

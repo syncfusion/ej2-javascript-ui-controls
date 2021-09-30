@@ -299,6 +299,17 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.gaugeResize(<Event>{});
         });
+        it('Checking  center x and center y with empty string', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                let path = svg.getAttribute('d');
+                expect(path.indexOf('NaN') == -1).toBe(true);
+                done();
+            };
+            gauge.centerX = '';
+            gauge.centerY = '';
+            gauge.refresh();
+        });
     });
     describe('Checking theme support', () => {
         let gauge: CircularGauge;

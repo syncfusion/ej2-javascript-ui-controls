@@ -389,6 +389,9 @@ export class WUniqueFormat {
         if (property === 'keepLinesTogether') {
             return 13;
         }
+        if (property === 'widowControl') {
+            return 14;
+        }
         return 0;
     }
     private static getSectionFormatType(property: string): number {
@@ -577,6 +580,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('keepLinesTogether', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('widowControl', source, modifiedProperty, modifiedValue, 3)) {
             return false;
         }
         return true;

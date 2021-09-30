@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.55 (2021-08-11)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#I337016` - Input space not works in DropDownButton if the target is set as text input issue has been resolved.
+
 ## 18.4.41 (2021-02-02)
 
 ### SplitButton

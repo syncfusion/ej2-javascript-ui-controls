@@ -45,7 +45,7 @@ export class NonWorkingDay {
                 this.nonworkingContainer.appendChild(this.holidayContainer);
             }
             this.holidayContainer.innerHTML = this.getHolidaysElement().innerHTML;
-        } else if (this.holidayContainer) {
+        } else if (this.holidayContainer && this.holidayContainer.parentNode) {
             remove(this.holidayContainer);
             if (this.nonworkingContainer && this.nonworkingContainer.childNodes.length === 0) {
                 remove(this.nonworkingContainer);

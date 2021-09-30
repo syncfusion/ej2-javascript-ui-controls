@@ -87,5 +87,8 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
     if (context.allowChart) {
         modules.push({ member: 'workbookChart', args: [context] });
     }
+    if (context.allowAutoFill) {
+        modules.push({ member: 'workbookautofill', args: [context] });
+    }
     return modules;
 }

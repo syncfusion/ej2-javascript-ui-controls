@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor, Ajax } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, Ajax, formatUnit } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
@@ -9,8 +9,8 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
-import { Uploader, SelectedEventArgs, MetaData, NumericTextBox, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
-import { RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
+import { Uploader, SelectedEventArgs, MetaData, TextBox, InputEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
+import { RemovingEventArgs, UploadingEventArgs, ProgressEventArgs } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
@@ -43,10 +43,15 @@ export class Image {
     private imgEle: HTMLImageElement;
     private prevSelectedImgEle: HTMLImageElement;
     private isImgUploaded: boolean = false;
+    private isAllowedTypes: boolean = true;
     private pageX: number = null;
     private pageY: number = null;
     private dialogRenderObj: DialogRenderer;
     private deletedImg: Node[] = [];
+    private changedWidthValue: string;
+    private changedHeightValue: string;
+    private inputWidthValue: string;
+    private inputHeightValue: string;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -169,7 +174,7 @@ export class Image {
         if (Browser.isDevice) {
             removeClass([(e.target as HTMLElement).parentElement], 'e-mob-span');
         }
-        const args: ResizeArgs = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
+        const args: ResizeArgs = { event: e, requestType: 'images' };
         this.parent.trigger(events.resizeStop, args);
         /* eslint-disable */
         let pageX: number = this.getPointX(e);
@@ -222,7 +227,7 @@ export class Image {
                 !this.imgResizeDiv.classList.contains('e-mob-span')) {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             } else {
-                const args: ResizeArgs = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
+                const args: ResizeArgs = { event: e, requestType: 'images' };
                 this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -358,6 +363,10 @@ export class Image {
                 }
                 img.style.height = null;
                 img.removeAttribute('height');
+            } else if (img.style.width === '' && img.style.height !== '') {
+                img.style.height = expectedY + 'px';
+            } else if (img.style.width !== '' && img.style.height === '') {
+                img.style.width = ((width / height * expectedY) + width / height).toString() + 'px';
             } else if (img.style.width !== '') {
                 img.style.width = (width / height * expectedY) + 'px';
                 img.style.height = expectedY + 'px';
@@ -397,7 +406,7 @@ export class Image {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
     private imgDupMouseMove(width: string, height: string, e: PointerEvent | TouchEvent): void {
-        const args: ResizeArgs = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
+        const args: ResizeArgs = { event: e, requestType: 'images' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -1227,7 +1236,7 @@ export class Image {
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertImageUrl.bind(selectObj),
-                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage', isPrimary: true }
+                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage', isPrimary: true, disabled: true }
             },
             {
                 click: (e: MouseEvent) => {
@@ -1358,6 +1367,15 @@ export class Image {
             className: 'e-input e-img-url',
             attrs: { placeholder: placeUrl, spellcheck: 'false' }
         });
+        this.inputUrl.addEventListener('input', () => {
+            if (!isNOU(this.inputUrl)) {
+                if ((this.inputUrl as HTMLInputElement).value.length === 0) {
+                    (this.dialogObj.getButtons(0) as Button).element.disabled = true;
+                } else {
+                    (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
+                }
+            }
+        });
         imgUrl.appendChild(this.inputUrl);
         return imgUrl;
     }
@@ -1418,37 +1436,54 @@ export class Image {
         const imgHeight: string = this.i10n.getConstant('imageHeight');
         const imgWidth: string = this.i10n.getConstant('imageWidth');
         const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' });
-        const widthVal: string | number = (selectNode.getAttribute('width') === 'auto' ||
-            isNullOrUndefined(selectNode.getAttribute('width'))) ? selectNode.width : selectNode.getClientRects()[0].width;
-        const heightVal: string | number = (selectNode.getAttribute('height') === 'auto' ||
-            isNullOrUndefined(selectNode.getAttribute('height'))) ? selectNode.height : selectNode.getClientRects()[0].height;
+        const widthVal: string = isNullOrUndefined(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
+            selectNode.style.width !== "") ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
+            this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString())).toString();
+        const heightVal: string = isNullOrUndefined(this.changedHeightValue) && (selectNode.style.height.toString() === 'auto' ||
+            selectNode.style.height !== "") ? selectNode.style.height : !isNullOrUndefined(this.changedHeightValue) ?
+            this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString())).toString();
+        this.changedWidthValue = null;
+        this.changedHeightValue = null;
         const content: string = '<div class="e-rte-label"><label>' + imgWidth +
-            '</label></div><div class="e-rte-field"><input type="text" data-role ="none" id="imgwidth" class="e-img-width" value=' +
+            '</label></div><div class="e-rte-field"><input type="text" id="imgwidth" class="e-img-width" value=' +
             widthVal
             + ' /></div>' +
             '<div class="e-rte-label">' + '<label>' + imgHeight + '</label></div><div class="e-rte-field"> ' +
-            '<input type="text" data-role ="none" id="imgheight" class="e-img-height" value=' +
+            '<input type="text" id="imgheight" class="e-img-height" value=' +
             heightVal
             + ' /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         imgSizeWrap.appendChild(contentElem);
-        const widthNum: NumericTextBox = new NumericTextBox({
-            format: '###.### px', min: this.parent.insertImageSettings.minWidth as number,
-            max: this.parent.getInsertImgMaxWidth() as number,
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+        const widthNum: TextBox = new TextBox({
+            value: formatUnit(widthVal as string),
+            enableRtl: this.parent.enableRtl,
+            input: (e: InputEventArgs) => {
+                this.inputWidthValue = formatUnit(this.inputValue(e.value));
+            }
         });
-        widthNum.isStringTemplate = true;
         widthNum.createElement = this.parent.createElement;
         widthNum.appendTo(imgSizeWrap.querySelector('#imgwidth') as HTMLElement);
-        const heightNum: NumericTextBox = new NumericTextBox({
-            format: '###.### px', min: this.parent.insertImageSettings.minHeight as number,
-            max: this.parent.insertImageSettings.maxHeight as number,
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+        const heightNum: TextBox = new TextBox({
+            value: formatUnit(heightVal as string),
+            enableRtl: this.parent.enableRtl,
+            input: (e: InputEventArgs) => {
+                this.inputHeightValue = formatUnit(this.inputValue(e.value));
+            }
         });
-        heightNum.isStringTemplate = true;
         heightNum.createElement = this.parent.createElement;
         heightNum.appendTo(imgSizeWrap.querySelector('#imgheight') as HTMLElement);
         return imgSizeWrap;
+    }
+
+    private inputValue(value: string): string {
+        if (value === 'auto' || value.indexOf('%') !== -1 || value.indexOf('px') !== -1
+        || value.match(/(\d+)/)) {
+            return value;
+        }
+        else
+        {
+            return "auto";
+        }
     }
 
     private insertSize(e: IImageNotifyArgs): void {
@@ -1458,8 +1493,10 @@ export class Image {
             proxy.parent.formatter.saveData();
         }
         const dialogEle: Element = proxy.dialogObj.element;
-        const width: number = parseFloat((dialogEle.querySelector('.e-img-width') as HTMLInputElement).value);
-        const height: number = parseFloat((dialogEle.parentElement.querySelector('.e-img-height') as HTMLInputElement).value);
+        this.changedWidthValue = this.inputWidthValue;
+        this.changedHeightValue = this.inputHeightValue;
+        const width: string = (dialogEle.querySelector('.e-img-width') as HTMLInputElement).value;
+        const height: string = (dialogEle.parentElement.querySelector('.e-img-height') as HTMLInputElement).value;
         proxy.parent.formatter.process(
             this.parent, e.args, e.args,
             {
@@ -1567,6 +1604,10 @@ export class Image {
                                     }
                                 };
                                 proxy.inputUrl.setAttribute('disabled', 'true');
+                                if (isNullOrUndefined(proxy.parent.insertImageSettings.saveUrl) && this.isAllowedTypes
+                                    && !isNullOrUndefined(this.dialogObj)) {
+                                    (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
+                                }
                             });
                             reader.readAsDataURL(selectArgs.filesData[0].rawFile as Blob);
                         }
@@ -1622,6 +1663,9 @@ export class Image {
                         };
                         proxy.inputUrl.setAttribute('disabled', 'true');
                     }
+                    if ((e as ProgressEventArgs).operation === 'upload' && !isNullOrUndefined(this.dialogObj)) {
+                        (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
+                    }
                 });
             },
             failure: (e: object) => {
@@ -1631,10 +1675,10 @@ export class Image {
                 // eslint-disable-next-line
                 this.parent.trigger(events.imageRemoving, e, (e: RemovingEventArgs) => {
                     proxy.isImgUploaded = false;
+                    (this.dialogObj.getButtons(0) as Button).element.disabled = true;
                     proxy.inputUrl.removeAttribute('disabled'); if (proxy.uploadUrl) {
                         proxy.uploadUrl.url = '';
                     }
-                    (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
                 });
             }
         });
@@ -1645,8 +1689,9 @@ export class Image {
         if (this.uploadObj.allowedExtensions) {
             if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
                 (this.dialogObj.getButtons(0) as Button).element.setAttribute('disabled', 'disabled');
+                this.isAllowedTypes = false;
             } else {
-                (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
+                this.isAllowedTypes = true;
             }
         }
     }

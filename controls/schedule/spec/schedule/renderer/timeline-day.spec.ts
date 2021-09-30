@@ -2086,7 +2086,7 @@ describe('Schedule timeline day view', () => {
             schObj.selectResourceByIndex(2);
             menuElement.click();
             expect((schObj.element.querySelector('.e-resource-tree  .e-active') as HTMLElement).innerText).toEqual('Steven');
-            schObj.selectResourceByIndex(schObj.getIndexFromResourceId(1, 'Owners'))
+            schObj.selectResourceByIndex(schObj.getIndexFromResourceId(1, 'Owners'));
             menuElement.click();
             expect((schObj.element.querySelector('.e-resource-tree  .e-active') as HTMLElement).innerText).toEqual('Nancy');
         });
@@ -2595,7 +2595,7 @@ describe('Schedule timeline day view', () => {
             expect(headTrs[4].children.length).toEqual(48);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-            expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+            expect(headTrs[4].children[1].innerHTML).toEqual('');
         });
 
         it('check work cells', () => {
@@ -2672,7 +2672,7 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children.length).toEqual(48);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.getWorkCellElements().length).toEqual(48);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -2709,7 +2709,7 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children.length).toEqual(48);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.getWorkCellElements().length).toEqual(48);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -3285,7 +3285,7 @@ describe('Schedule timeline day view', () => {
             expect(headTrs[4].children.length).toEqual(48);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-            expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+            expect(headTrs[4].children[1].innerHTML).toEqual('');
         });
 
         it('check resource column', () => {
@@ -3369,7 +3369,7 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children.length).toEqual(48);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
@@ -3425,7 +3425,7 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children.length).toEqual(48);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
@@ -3628,8 +3628,10 @@ describe('Schedule timeline day view', () => {
         beforeAll((done: DoneFn) => {
             const options: ScheduleModel = {
                 showWeekend: false, currentView: 'TimelineDay', selectedDate: new Date(2018, 3, 1),
-                views: [{ displayName: '3 Days', option: 'TimelineDay', interval: 3, showWeekend: false },
-                    { option: 'TimelineMonth' }]
+                views: [
+                    { displayName: '3 Days', option: 'TimelineDay', interval: 3, showWeekend: false },
+                    { option: 'TimelineMonth' }
+                ]
             };
             schObj = util.createSchedule(options, timelineData, done);
         });
@@ -3661,14 +3663,16 @@ describe('Schedule timeline day view', () => {
             const options: ScheduleModel = {
                 currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1), width: '100%', height: '550px',
                 views: [
-                    { option: 'TimelineDay',        
-                     headerRows: [
-                        { option: 'Year' },
-                        { option: 'Month' },
-                        { option: 'Week' },
-                        { option: 'Date' }
-                    ] }
-                ],
+                    {
+                        option: 'TimelineDay',
+                        headerRows: [
+                            { option: 'Year' },
+                            { option: 'Month' },
+                            { option: 'Week' },
+                            { option: 'Date' }
+                        ]
+                    }
+                ]
             };
             schObj = util.createSchedule(options, timelineData, done);
         });

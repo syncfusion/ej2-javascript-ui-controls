@@ -1,0 +1,48 @@
+// Size variables
+$breadcrumb-skin: 'highcontrast' !default;
+$breadcrumb-last-item-font-weight: 400 !default;
+$breadcrumb-font-size: 18px !default;
+$breadcrumb-bigger-font-size: 20px !default;
+$breadcrumb-icon-font-size: 18px !default;
+$breadcrumb-icon-bigger-font-size: 20px !default;
+$breadcrumb-padding: 4px 4px !default;
+$breadcrumb-padding-left: 0 !default;
+$breadcrumb-padding-right: 0 !default;
+$breadcrumb-bigger-padding: 4px 4px !default;
+$breadcrumb-separator-padding: 4px 3px !default;
+$breadcrumb-separator-bigger-padding: 4px 5px !default;
+$breadcrumb-icon-right-padding: 4px !default;
+$breadcrumb-icon-bigger-right-padding: 4px !default;
+$breadcrumb-collapsed-icon-padding: 5px 8px 3px 8px !default;
+$breadcrumb-collapsed-icon-bigger-padding: 6px 8px 4px 8px !default;
+$breadcrumb-collapsed-icon-font-size: 21px !default;
+$breadcrumb-collapsed-icon-bigger-font-size: 21px !default;
+$breadcrumb-sibling-separator-padding: 0 !default;
+$breadcrumb-sibling-separator-margin-left: -4px !default;
+$breadcrumb-icon-item-padding: 3px 3px !default;
+$breadcrumb-collapsed-icon-focus-padding: 5px 7px 3px 7px !default;
+$breadcrumb-collapsed-icon-focus-bigger-padding: 6px 7px 4px 7px !default;
+$breadcrumb-item-focus-padding: 3px 3px !default;
+$breadcrumb-item-focus-bigger-padding: 3px 3px !default;
+
+// Color variables
+$breadcrumb-item-color: $content-font !default;
+$breadcrumb-icon-color: $content-font !default;
+$breadcrumb-separator-color: $content-font !default;
+$breadcrumb-item-hover-color: $content-font !default;
+$breadcrumb-item-focus-color: $content-font !default;
+$breadcrumb-item-active-color: $selection-font !default;
+$breadcrumb-last-item-font-color: $content-font !default;
+$breadcrumb-collapsed-icon-hover-bgcolor: $hover-bg !default;
+$breadcrumb-collapsed-icon-active-bgcolor: $selection-bg !default;
+$breadcrumb-collapsed-icon-focus-bgcolor: transparent !default;
+$breadcrumb-collapsed-icon-color: $content-font !default;
+$breadcrumb-collapsed-icon-hover-color: $content-font !default;
+$breadcrumb-disabled-item-color: $disable !default;
+$breadcrumb-collapsed-icon-focus-color: $content-font !default;
+$breadcrumb-collapsed-icon-focus-border: 1px solid $selection-border !default;
+$breadcrumb-item-hover-bgcolor: $hover-bg !default;
+$breadcrumb-item-active-bgcolor: $selection-bg !default;
+$breadcrumb-item-focus-border: 1px solid $selection-border !default;
+$breadcrumb-icon-hover-color: $content-font !default;
+$breadcrumb-icon-active-color: $selection-font !default;

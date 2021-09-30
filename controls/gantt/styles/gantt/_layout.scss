@@ -915,6 +915,14 @@
     opacity: 1;
   }
 
+  .e-gantt .e-cloneproperties.e-draganddrop .e-row .e-rowcell .e-treecolumn-container .e-icons.e-none::before {
+    content: '';
+  }
+
+  .e-bigger .e-gantt .e-gantt-chart .e-label {
+    font-size: $gantt-bigger-label-font-size;
+  }
+
   .e-gantt-tooltip-label {
     padding-bottom: 2px;
     padding-right: 2px;

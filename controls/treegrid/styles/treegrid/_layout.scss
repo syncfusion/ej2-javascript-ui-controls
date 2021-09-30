@@ -29,6 +29,10 @@
 
   .e-treegrid {
 
+    .e-icons.e-none::before {
+      content: '';
+    }
+
     .e-treegridexpand::before,
     .e-treegridcollapse::before {
       text-align: center;
@@ -100,8 +104,8 @@
     }
 
     .e-hierarchycheckbox .e-frame {
-      height: $treegrid-frame-icon-height;
-      width: $treegrid-frame-icon-width;
+      height: $cbox-height;
+      width: $cbox-width;
     }
 
     .e-checkselection {
@@ -127,7 +131,7 @@
 
     .e-treecell {
       display: table-cell;
-      line-height: $treegrid-smaller-icon-size;
+      line-height: $treegrid-right-arrow-icon-font-size;
     }
 
     .e-grid {

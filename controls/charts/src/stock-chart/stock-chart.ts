@@ -644,8 +644,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /** @private */
     public tempPeriods: PeriodsModel[] = [];
     /** @private */
-    public isBlazor: boolean;
-    /** @private */
     public legend: StockLegend;
     /** @private */
     public visibleSeriesCount: number;
@@ -703,8 +701,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Pre render for financial Chart
      */
     protected preRender(): void {
-        const blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
@@ -798,9 +794,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
 
     protected render(): void {
-        const loadEventData: IStockChartEventArgs = { name: 'load', stockChart: this.isBlazor ? {} as StockChart : this, theme: this.theme };
+        const loadEventData: IStockChartEventArgs = { name: 'load', stockChart: this, theme: this.theme };
         this.trigger('load', loadEventData, () => {
-            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.theme = this.theme;
             this.themeStyle = getThemeColor(this.theme);
             this.storeDataSource();
             this.drawSVG();
@@ -826,7 +822,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.findRange();
         this.renderRangeSelector();
         this.renderPeriodSelector();
-        this.trigger('loaded', { stockChart: this.isBlazor ? {} : this });
+        this.trigger('loaded', { stockChart: this });
     }
 
     /**

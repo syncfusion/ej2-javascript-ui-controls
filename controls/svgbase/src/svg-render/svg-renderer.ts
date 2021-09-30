@@ -434,7 +434,11 @@ export class SvgRenderer {
     public setElementAttributes(options: SVGCanvasAttributes, element: Element | HTMLElement): Element | HTMLElement {
         const keys: string[] = Object.keys(options);
         for (let i: number = 0; i < keys.length; i++) {
-            element.setAttribute(keys[i], options[keys[i]]);
+            if (keys[i] === 'style') {
+                element['style'] = options[keys[i]];
+            } else {
+                element.setAttribute(keys[i], options[keys[i]]);
+            }
         }
         return element;
     }

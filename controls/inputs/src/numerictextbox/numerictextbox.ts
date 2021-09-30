@@ -2,7 +2,7 @@ import { Component, EventHandler, Property, Event, Browser, L10n, EmitType } fro
 import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';
-import { Internationalization, NumberFormatOptions, getNumericObject, isBlazor } from '@syncfusion/ej2-base';
+import { Internationalization, NumberFormatOptions, getNumericObject } from '@syncfusion/ej2-base';
 import { NumericTextBoxModel } from './numerictextbox-model';
 import { Input, InputObject, FloatLabelType } from '../input/input';
 
@@ -106,7 +106,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * @default null
      * @aspType object
      * @isGenericType true
-     * @blazorDefaultValue SfBase.GetNumericValue<TValue>("MinValue")
      * @deprecated
      */
     @Property(-(Number.MAX_VALUE))
@@ -120,7 +119,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * @default null
      * @aspType object
      * @isGenericType true
-     * @blazorDefaultValue SfBase.GetNumericValue<TValue>("MaxValue")
      * @deprecated
      */
     @Property(Number.MAX_VALUE)
@@ -133,7 +131,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      *
      * @default 1
      * @isGenericType true
-     * @blazorDefaultValue SfBase.GetNumericValue<TValue>("Step")
      */
     @Property(1)
     public step: number;
@@ -223,9 +220,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * [decimals](../../numerictextbox/formats/#precision-of-numbers).
      *
      * @default null
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
-     * @blazorType int
      */
     @Property(null)
     public decimals: number;
@@ -287,7 +281,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * Triggers when the NumericTextBox component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -296,7 +289,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * Triggers when the NumericTextBox component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -305,7 +297,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * Triggers when the value of the NumericTextBox changes.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -368,15 +359,13 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             setValue('ej2_instances', ejInstance, this.element);
 
         }
-        if (!(isBlazor() && this.isServerRendered)) {
-            attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-            const localeText: object = {
-                incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder
-            };
-            this.l10n = new L10n('numerictextbox', localeText, this.locale);
-            if (this.l10n.getConstant('placeholder') !== '') {
-                this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
-            }
+        attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
+        const localeText: object = {
+            incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder
+        };
+        this.l10n = new L10n('numerictextbox', localeText, this.locale);
+        if (this.l10n.getConstant('placeholder') !== '') {
+            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         }
         this.isValidState = true;
         this.inputStyle = null;
@@ -385,16 +374,14 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.initCultureInfo();
         this.initCultureFunc();
         this.prevValue = this.value;
-        if (!(isBlazor() && this.isServerRendered)) {
-            this.updateHTMLAttrToElement();
-            this.checkAttributes(false);
-            if (this.formEle) {
-                this.inputEleValue = this.value;
-            }
+        this.updateHTMLAttrToElement();
+        this.checkAttributes(false);
+        if (this.formEle) {
+            this.inputEleValue = this.value;
         }
         this.validateMinMax();
         this.validateStep();
-        if (this.placeholder === null && !(isBlazor() && this.isServerRendered)) {
+        if (this.placeholder === null) {
             this.updatePlaceholder();
         }
     }
@@ -407,45 +394,25 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     public render(): void {
         if (this.element.tagName.toLowerCase() === 'input') {
-            if (!(isBlazor() && this.isServerRendered)) {
-                this.createWrapper();
-                if (this.showSpinButton) {
-                    this.spinBtnCreation();
-                }
-                this.setElementWidth(this.width);
-                if (!this.container.classList.contains('e-input-group')) {
-                    this.container.classList.add('e-input-group');
-                }
-                this.changeValue(this.value === null || isNaN(this.value) ?
-                    null : this.strictMode ? this.trimValue(this.value) : this.value);
-            } else {
-                this.container = this.element.parentElement;
-                this.inputWrapper = { container: this.container };
-                this.hiddenInput = this.container.querySelector('input[type="hidden"]');
-                if (this.showClearButton) {
-                    this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
-                    Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
-                }
-                if (this.showSpinButton) {
-                    this.spinDown = this.container.querySelector('.' + SPINDOWN);
-                    this.spinUp = this.container.querySelector('.' + SPINUP);
-                    this.wireSpinBtnEvents();
-                }
-                Input.bindInitialEvent({
-                    element: this.element, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: this.properties
-                });
+            this.createWrapper();
+            if (this.showSpinButton) {
+                this.spinBtnCreation();
             }
+            this.setElementWidth(this.width);
+            if (!this.container.classList.contains('e-input-group')) {
+                this.container.classList.add('e-input-group');
+            }
+            this.changeValue(this.value === null || isNaN(this.value) ?
+                null : this.strictMode ? this.trimValue(this.value) : this.value);
             this.wireEvents();
-            if (!(isBlazor() && this.isServerRendered)) {
-                if (this.value !== null && !isNaN(this.value)) {
-                    if (this.decimals) {
-                        this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
-                    }
+            if (this.value !== null && !isNaN(this.value)) {
+                if (this.decimals) {
+                    this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
                 }
-                if (this.element.getAttribute('value') || this.value) {
-                    this.element.setAttribute('value', this.element.value);
-                    this.hiddenInput.setAttribute('value', this.hiddenInput.value);
-                }
+            }
+            if (this.element.getAttribute('value') || this.value) {
+                this.element.setAttribute('value', this.element.value);
+                this.hiddenInput.setAttribute('value', this.hiddenInput.value);
             }
             this.elementPrevValue = this.element.value;
             if (this.element.hasAttribute('data-val')) {
@@ -1386,25 +1353,23 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     public destroy(): void {
         this.unwireEvents();
-        if (!(isBlazor() && this.isServerRendered)) {
-            detach(this.hiddenInput);
-            if (this.showSpinButton) {
-                this.unwireSpinBtnEvents();
-                detach(this.spinUp);
-                detach(this.spinDown);
-            }
-            const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
-                'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
-                'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
-                'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
-            for (let i: number = 0; i < attrArray.length; i++) {
-                this.element.removeAttribute(attrArray[i]);
-            }
-            this.element.classList.remove('e-input');
-            this.container.insertAdjacentElement('afterend', this.element);
-            detach(this.container);
-            super.destroy();
+        detach(this.hiddenInput);
+        if (this.showSpinButton) {
+            this.unwireSpinBtnEvents();
+            detach(this.spinUp);
+            detach(this.spinDown);
         }
+        const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+        for (let i: number = 0; i < attrArray.length; i++) {
+            this.element.removeAttribute(attrArray[i]);
+        }
+        this.element.classList.remove('e-input');
+        this.container.insertAdjacentElement('afterend', this.element);
+        detach(this.container);
+        super.destroy();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns */
     /**
@@ -1556,31 +1521,16 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private updateClearButton(newProp: NumericTextBoxModel): void {
-        if (isBlazor()) {
-            if (this.showClearButton) {
-                this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
-                Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
-            }
-        } else {
-            Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
-            this.bindClearEvent();
-        }
+        Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
+        this.bindClearEvent();
     }
 
     private updateSpinButton(newProp: NumericTextBoxModel): void {
-        if (isBlazor()) {
-            if (this.showSpinButton) {
-                this.spinDown = this.container.querySelector('.' + SPINDOWN);
-                this.spinUp = this.container.querySelector('.' + SPINUP);
-                this.wireSpinBtnEvents();
-            }
+        if (newProp.showSpinButton) {
+            this.spinBtnCreation();
         } else {
-            if (newProp.showSpinButton) {
-                this.spinBtnCreation();
-            } else {
-                detach(this.spinUp);
-                detach(this.spinDown);
-            }
+            detach(this.spinUp);
+            detach(this.spinDown);
         }
     }
 

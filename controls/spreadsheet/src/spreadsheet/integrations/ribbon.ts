@@ -12,12 +12,13 @@ import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, M
 import { ItemModel as TlbItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select, EventHandler } from '@syncfusion/ej2-base';
 import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat, setCell, RowModel } from '../../workbook/index';
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, SaveType, setMerge } from '../../workbook/common/index';
+import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, SaveType, setMerge, updateCustomFormatsFromImport } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs } from '../../workbook/common/index';
 import { sheetsDestroyed, SortOrder, NumberFormatType, SetCellFormatArgs, getRangeAddress, clearCFRule } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
@@ -25,7 +26,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { findDlg, insertDesignChart, removeDesignChart, getScrollBarWidth } from '../common/index';
+import { findDlg, insertDesignChart, removeDesignChart, getScrollBarWidth, blankWorkbook, UnProtectWorksheet } from '../common/index';
 import { refreshRibbonIcons, ChartTheme, workbookFormulaOperation } from '../../workbook/common/index';
 
 /**
@@ -63,9 +64,11 @@ export class Ribbon {
     private chartThemeDDB: DropDownButton;
     private chartThemeIndex: number = 5;
     private cPickerEle: HTMLElement;
+    private formatData: { [key: string]: string }[];
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
+        this.initDefaultFormats();
         new RibbonColorPicker(parent);
     }
     public getModuleName(): string {
@@ -1293,6 +1296,7 @@ export class Ribbon {
         this.datavalidationDdb = new DropDownButton({
             cssClass: 'e-datavalidation-ddb',
             iconCss: 'e-datavalidation-icon e-icons',
+            content: l10n.getConstant('DataValidation'),
             items: [
                 { text: l10n.getConstant('DataValidation') },
                 { text: l10n.getConstant('HighlightInvalidData') },
@@ -1619,6 +1623,7 @@ export class Ribbon {
                     EventHandler.add(document, 'click', this.closeDialog, this);
                 },
                 open: (): void => {
+                    findSpan.textContent = '0 of 0'
                     this.textFocus(toolbarObj.element);
                 },
                 beforeClose: (): void => {
@@ -1789,7 +1794,11 @@ export class Ribbon {
             { id: 'FabricDark', text: l10n.getConstant('FabricDark') },
             { id: 'HighContrast', text: l10n.getConstant('HighContrast') },
             { id: 'BootstrapDark', text: l10n.getConstant('BootstrapDark') },
-            { id: 'Bootstrap4', text: l10n.getConstant('Bootstrap4') }
+            { id: 'Bootstrap4', text: l10n.getConstant('Bootstrap4') },
+            { id: 'Bootstrap5Dark', text: l10n.getConstant('Bootstrap5Dark') },
+            { id: 'Bootstrap5', text: l10n.getConstant('Bootstrap5') },
+            { id: 'TailwindDark', text: l10n.getConstant('TailwindDark') },
+            { id: 'Tailwind', text: l10n.getConstant('Tailwind') }
         ];
     }
 
@@ -1806,7 +1815,8 @@ export class Ribbon {
             { id: id + '_Percentage', text: l10n.getConstant('Percentage') },
             { id: id + '_Fraction', text: l10n.getConstant('Fraction') },
             { id: id + '_Scientific', text: l10n.getConstant('Scientific') },
-            { id: id + '_Text', text: l10n.getConstant('Text') }
+            { id: id + '_Text', text: l10n.getConstant('Text') },
+            { id: id + '_Custom', text: l10n.getConstant('Custom')}
         ];
     }
     private getFontFamilyItems(): ItemModel[] {
@@ -1817,10 +1827,16 @@ export class Ribbon {
     }
 
     private numDDBSelect(args: MenuEventArgs): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const cellIndex: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet());
         const eventArgs: { format: string, range: string, cancel: boolean, requestType: string } = {
             format: getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType),
             range: this.parent.getActiveSheet().selectedRange, cancel: false, requestType: 'NumberFormat'
         };
+        if (args.item.text === l10n.getConstant('Custom') && cell) {
+            eventArgs.format = cell.format;
+        }
         const actionArgs: BeforeCellFormatArgs = {
             range: this.parent.getActiveSheet().name + '!' + eventArgs.range,
             format: <string>eventArgs.format, requestType: 'NumberFormat'
@@ -1832,8 +1848,113 @@ export class Ribbon {
         }
         this.parent.notify(applyNumberFormatting, eventArgs);
         this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
-        this.refreshNumFormatSelection(args.item.text);
-        this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
+        if (args.item.text === l10n.getConstant('Custom')) {
+            this.renderCustomFormatDialog();
+        } else {
+            this.refreshNumFormatSelection(args.item.text);
+            this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
+        }
+    }
+
+    private renderCustomFormatDialog(): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const cellIndex: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet());
+        const dummyDiv: HTMLElement = this.parent.createElement('div');
+        const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
+        const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('APPLY')});
+        const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample', innerHTML: l10n.getConstant('CustomFormatSample') + ':'});
+        const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': 'Custom Number Format', 'spellcheck': 'false' }});
+        const listviewCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-listview'});
+        const customFormatDialog: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const listview: ListView = new ListView({
+            dataSource: this.formatData,
+            select: (args: SelectEventArgs) => {
+                (inputElem as HTMLInputElement).value = args.text;
+            }
+        });
+        dialogCont.appendChild(inputElem);
+        dialogCont.appendChild(dialogBtn);
+        dialogCont.appendChild(sampleDiv);
+        dialogCont.appendChild(listviewCont);
+        listview.appendTo(listviewCont);
+        dialogBtn.addEventListener('click', () => {
+            const format: string = (inputElem as HTMLInputElement).value;
+            const actionArgs: BeforeCellFormatArgs = {
+                range: this.parent.getActiveSheet().name + '!' + this.parent.getActiveSheet().selectedRange,
+                format: format, requestType: 'NumberFormat'
+            };
+            this.parent.numberFormat(format);
+            const item: { [key: string]: string } = { text: format };
+            if (this.checkNewFormats(format) && format.length > 0) {
+                this.formatData.push(item);
+            }
+            this.refreshNumFormatSelection(l10n.getConstant('Custom'));
+            this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
+            customFormatDialog.hide();
+        });
+        customFormatDialog.show({
+            header: l10n.getConstant('CustomFormat'),
+            cssClass:'e-custom-format-dlg',
+            height: this.parent.cssClass.indexOf('e-bigger') > -1 ? 502 : 480,
+            width: 440,
+            isModal: true,
+            showCloseIcon: true,
+            content: dialogCont,
+            footerTemplate: dummyDiv
+        });
+        const item: { [key: string]: string } = { text: cell.format };
+        listview.selectItem(item);
+    }
+
+    private checkNewFormats(format: string): boolean {
+        let isNewFormat: boolean = true;
+        this.formatData.forEach((e: { [key: string]: string }) => {
+            if (e.text === format) {
+                isNewFormat = false;
+            }
+        });
+        return isNewFormat;
+    }
+
+    private initDefaultFormats(): void {
+        this.formatData = [
+            { text: 'General' },
+            { text: '0' },
+            { text: '0.00' },
+            { text: '#,##0'},
+            { text: '#,##0.00'},
+            { text: '#,##0_);(#,##0)'},
+            { text: '#,##0_);[Red](#,##0)'},
+            { text: '#,##0.00_);(#,##0.00)'},
+            { text: '#,##0.00_);[Red](#,##0.00)'},
+            { text: '$#,##0_);($#,##0)'},
+            { text: '$#,##0_);[Red]($#,##0)'},
+            { text: '$#,##0.00_);($#,##0.00)'},
+            { text: '$#,##0.00_);[Red]($#,##0.00)'},
+            { text: '0%'},
+            { text: '0.00%'},
+            { text: '0.00E+00'},
+            { text: '##0.0E+0'},
+            { text: '# ?/?'},
+            { text: '# ??/??'},
+            { text: 'dd-mm-yy'},
+            { text: 'dd-mmm-yy'},
+            { text: 'dd-mmm'},
+            { text: 'mmm-yy'},
+            { text: 'h:mm AM/PM'},
+            { text: 'h:mm:ss AM/PM'},
+            { text: 'h:mm'},
+            { text: 'h:mm:ss'},
+            { text: 'dd-mm-yy h:mm'},
+            { text: 'mm:ss'},
+            { text: 'mm:ss.0'},
+            { text: '@'},
+            { text: '[h]:mm:ss'},
+            { text: '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'},
+            { text: '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)'},
+            { text: '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)'},
+            { text: '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'}];
     }
 
     private chartThemeDDBSelect(args: MenuEventArgs): void {
@@ -1881,6 +2002,9 @@ export class Ribbon {
             sheetIndex: this.parent.activeSheetIndex,
             onLoad: true
         };
+        if (args.item.text === 'Custom') {
+            return;
+        }
         const numElem: HTMLElement = this.parent.createElement('div', {
             className: 'e-numformat-text',
             styles: 'width:100%',
@@ -1935,6 +2059,9 @@ export class Ribbon {
                 type = 'General';
                 this.refreshNumFormatSelection(type);
             } else {
+                if (cell.format && type === 'General') {
+                    type = 'Custom';
+                }
                 this.refreshNumFormatSelection(l10n.getConstant(type));
             }
         }
@@ -2113,6 +2240,18 @@ export class Ribbon {
         case 'Bootstrap4':
             selectedTheme = l10n.getConstant('Bootstrap4');
             break;
+        case 'Bootstrap5Dark':
+            selectedTheme = l10n.getConstant('Bootstrap5Dark');
+            break;
+        case 'Bootstrap5':
+            selectedTheme = l10n.getConstant('Bootstrap5');
+            break;
+        case 'TailwindDark':
+            selectedTheme = l10n.getConstant('TailwindDark');
+            break;
+        case 'Tailwind':
+            selectedTheme = l10n.getConstant('Tailwind');
+        break;
         }
         return selectedTheme;
     }
@@ -2153,12 +2292,8 @@ export class Ribbon {
                             content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true
                         },
                         click: (): void => {
-                            this.parent.sheets.length = 0; this.parent.createSheet(); dialogInst.hide();
-                            this.parent.activeSheetIndex = this.parent.sheets.length - 1;
-                            this.parent.notify(refreshSheetTabs, {});
-                            this.parent.notify(sheetsDestroyed, {});
-                            this.parent.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
-                            this.parent.renderModule.refreshSheet();
+                            dialogInst.hide();
+                            this.blankWorkbook();
                         }
                     }]
                 });
@@ -2166,6 +2301,18 @@ export class Ribbon {
             }
         }
     }
+
+    private blankWorkbook(): void {
+        this.parent.sheets.length = 0; this.parent.sheetNameCount = 1;
+        this.parent.notify(sheetsDestroyed, {}); this.parent.createSheet();
+        this.parent.activeSheetIndex = this.parent.sheets.length - 1;
+        this.parent.notify(refreshSheetTabs, {});
+        this.parent.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
+        this.parent.renderModule.refreshSheet();
+        this.parent.openModule.isImportedFile = false;
+        this.parent.openModule.unProtectSheetIdx = [];
+    }
+
     private toolbarClicked(args: ClickEventArgs): void {
         if (!(args.item.id === 'spreadsheet_find')) {
             const parentId: string = this.parent.element.id;
@@ -2202,9 +2349,16 @@ export class Ribbon {
                 focus(this.parent.element);
                 break;
             case parentId + '_protect':
+                if(this.parent.openModule.isImportedFile && this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) == -1){
+                    this.parent.notify(UnProtectWorksheet, {isImportedSheet: true});
+                }
+                else if (sheet.password && sheet.password.length > 0) {
+                    this.parent.notify(UnProtectWorksheet, null);
+                } else {
                 this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
                 isActive = sheet.isProtected ? false : true;
                 this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
+                }
                 break;
             case parentId + '_undo':
                 this.parent.notify(performUndoRedo, { isUndo: true });
@@ -2681,6 +2835,12 @@ export class Ribbon {
             }
         }
     }
+    private updateCustomFormats(args: {format: { [key: string]: string }}): void {
+        if (this.checkNewFormats(args.format.toString()) && args.format.toString().length > 0) {
+            const item: { [key: string]: string } = { text: args.format.toString() };
+            this.formatData.push(item);
+        }
+    }
     private addEventListener(): void {
         this.parent.on(ribbon, this.initRibbon, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
@@ -2700,6 +2860,8 @@ export class Ribbon {
         this.parent.on(insertDesignChart, this.insertDesignChart, this);
         this.parent.on(removeDesignChart, this.removeDesignChart, this);
         this.parent.on(ribbonFind, this.findToolDlg, this);
+        this.parent.on(blankWorkbook, this.blankWorkbook, this);
+        this.parent.on(updateCustomFormatsFromImport, this.updateCustomFormats, this);
     }
     public destroy(): void {
         const parentElem: HTMLElement = this.parent.element;
@@ -2752,6 +2914,8 @@ export class Ribbon {
             this.parent.off(insertDesignChart, this.insertDesignChart);
             this.parent.off(removeDesignChart, this.removeDesignChart);
             this.parent.on(ribbonFind, this.findToolDlg, this);
+            this.parent.off(blankWorkbook, this.blankWorkbook);
+            this.parent.off(updateCustomFormatsFromImport, this.updateCustomFormats);
         }
     }
 }

@@ -738,11 +738,11 @@ describe('Chart Legend', () => {
                 legendElement = document.getElementById(legendId + '_text_' + 4);
                 trigger.clickEvent(legendElement);
                 selectedElement = document.getElementsByClassName(selection + 4);
-                expect(selectedElement.length).toBe(1);
+                expect(selectedElement.length).toBe(3);
                 legendElement = document.getElementById(legendId + '_text_' + 1);
                 trigger.clickEvent(legendElement);
                 selectedElement = document.getElementsByClassName(selection + 1);
-                expect(selectedElement.length).toBe(1);
+                expect(selectedElement.length).toBe(3);
                 done();
             };
             chartObj.legendSettings.toggleVisibility = false;

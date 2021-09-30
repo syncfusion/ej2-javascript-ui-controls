@@ -247,10 +247,6 @@ export class LayerPanel {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject, visible: layer.visible
         };
-        if (this.mapObject.isBlazor) {
-            const { maps, layer, ...blazorEventArgs }: ILayerRenderingEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.mapObject.trigger('layerRendering', eventArgs, (observedArgs: ILayerRenderingEventArgs) => {
             if (!eventArgs.cancel && eventArgs.visible) {
                 if (layer.layerType !== 'Geometry') {
@@ -284,11 +280,6 @@ export class LayerPanel {
                                 bing.maxZoom = maxZoom;
                             }
                             proxy.mapObject['bingMap'] = bing;
-                            if (this.mapObject.isBlazor) {
-                                if (!isNullOrUndefined(markerGroupElement)) {
-                                    removeElement(this.mapObject.element.id + '_Markers_Group');
-                                }
-                            }
                             proxy.renderTileLayer(proxy, layer, layerIndex, bing);
                             this.mapObject.arrangeTemplate();
                         };
@@ -452,10 +443,6 @@ export class LayerPanel {
                     shape: shapeSettings, fill: fill,
                     border: { width: borderValue.width, color: borderValue.color, opacity: borderValue.opacity}
                 };
-                if (this.mapObject.isBlazor) {
-                    const { maps, ...blazorEventArgs }: IShapeRenderingEventArgs = eventArgs;
-                    eventArgs = blazorEventArgs;
-                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const shapeRenderingSuccess: any = (eventArgs: IShapeRenderingEventArgs) => {
                     let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])

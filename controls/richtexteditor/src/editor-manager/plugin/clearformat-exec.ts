@@ -32,14 +32,14 @@ export class ClearFormatExec {
     private onKeyDown(e: IHtmlKeyboardEvent): void {
         switch ((e.event as KeyboardEventArgs).action) {
         case 'clear-format':
-            this.applyClear({ subCommand: 'ClearFormat', callBack: e.callBack });
+            this.applyClear({ subCommand: 'ClearFormat', callBack: e.callBack, enterAction: e.enterAction });
             e.event.preventDefault();
             break;
         }
     }
     private applyClear(e: IHtmlSubCommands): void {
         if (e.subCommand === 'ClearFormat') {
-            ClearFormat.clear(this.parent.currentDocument, this.parent.editableElement, e.selector);
+            ClearFormat.clear(this.parent.currentDocument, this.parent.editableElement, e.enterAction, e.selector);
             if (e.callBack) {
                 e.callBack({
                     requestType: e.subCommand,

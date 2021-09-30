@@ -8,22 +8,6 @@
 
 ## [Unreleased]
 
-## 19.2.62 (2021-09-14)
-
-### TreeMap
-
-#### Bug Fixes
-
-- TreeMap properly render in React when theme applied.
-
-## 19.2.47 (2021-07-13)
-
-### TreeMap
-
-#### Bug Fixes
-
-- `#I331257` - Labels will be displayed for all the leaf items in the TreeMap.
-
 ## 18.2.44 (2020-07-07)
 
 ### TreeMap

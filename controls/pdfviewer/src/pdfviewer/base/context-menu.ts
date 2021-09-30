@@ -46,7 +46,7 @@ export class ContextMenu implements IContextMenu {
             { separator: true, id: pdfViewer.element.id + '_context_menu_comment_separator' },
             { text: this.pdfViewer.localeObj.getConstant('Comment'), iconCss: 'e-pv-comment-icon' },
             { separator: true, id: pdfViewer.element.id + '_context_menu_separator' },
-            { text: this.pdfViewer.localeObj.getConstant('Properties') }
+            { text: this.pdfViewer.localeObj.getConstant('Properties'), iconCss: 'e-pv-property-icon' }
         ];
     }
     /**

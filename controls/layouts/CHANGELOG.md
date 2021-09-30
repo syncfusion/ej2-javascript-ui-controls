@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.62 (2021-09-14)
+## 19.3.43 (2021-09-30)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I341650` - The issue with "Resize event handler is not properly un-wired, when destroying the splitter component" has been resolved.
+
+## 19.2.55 (2021-08-11)
 
 ### Dashboard Layout
 

@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../calendar/calendar-model.d.ts'/>
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, closest, attributes, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';
@@ -75,7 +75,6 @@ export class DatePicker extends Calendar implements IInput {
     private isDateIconClicked: boolean = false;
     protected isAltKeyPressed: boolean = false;
     private isInteracted: boolean = true;
-    private isBlazorServer: boolean = false;
     private index: number;
     private formElement: HTMLElement;
     protected invalidValueString: string = null;
@@ -134,7 +133,6 @@ export class DatePicker extends Calendar implements IInput {
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     @Property(null)
     public format: string | FormatObject;
@@ -300,7 +298,6 @@ export class DatePicker extends Calendar implements IInput {
      * {% codeBlock src='datepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      * @deprecated
      */
     @Property(null)
@@ -319,7 +316,6 @@ export class DatePicker extends Calendar implements IInput {
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -346,7 +342,6 @@ export class DatePicker extends Calendar implements IInput {
      *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     @Property('Never')
@@ -395,8 +390,6 @@ export class DatePicker extends Calendar implements IInput {
      * Triggers when the popup is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
-     * @blazorType PopupObjectArgs
      */
     @Event()
     public open: EmitType<PreventableEventArgs | PopupObjectArgs>;
@@ -413,8 +406,6 @@ export class DatePicker extends Calendar implements IInput {
      * Triggers when the popup is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
-     * @blazorType PopupObjectArgs
      */
     @Event()
     public close: EmitType<PreventableEventArgs | PopupObjectArgs>;
@@ -436,7 +427,6 @@ export class DatePicker extends Calendar implements IInput {
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -444,7 +434,6 @@ export class DatePicker extends Calendar implements IInput {
      * Triggers when the component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -469,9 +458,7 @@ export class DatePicker extends Calendar implements IInput {
         this.initialize();
         this.bindEvents();
         this.renderComplete();
-        if (!this.isBlazorServer) {
-            this.setTimeZone(this.serverTimezoneOffset);
-        }
+        this.setTimeZone(this.serverTimezoneOffset);
     }
     protected setTimeZone(offsetValue: number ): void {
         if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
@@ -511,35 +498,18 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private initialize(): void {
-        if (!this.isBlazorServer) {
-            if (this.enableMask) {
-              this.notify("createMask", {
-                module: "MaskedDateTime",
-              });
-            }
-            this.checkInvalidValue(this.value);
-            this.createInput();
-            this.updateHtmlAttributeToWrapper();
-            this.setAllowEdit();
-            this.updateInput();
-            if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
-                this.updateInputValue(this.maskedDateValue);
-            }
-        } else {
-            const parentElement: HTMLElement = this.element.parentElement as HTMLElement;
-            this.inputWrapper = {
-                container: parentElement,
-                clearButton: parentElement.querySelector('.' + CLEARICON),
-                buttons: [parentElement.querySelector('.' + DATEICON)]
-            };
-            Input.bindInitialEvent({
-                element: this.inputElement,
-                floatLabelType: this.floatLabelType
+        if (this.enableMask) {
+            this.notify("createMask", {
+              module: "MaskedDateTime",
             });
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                Input.wireClearBtnEvents(this.inputElement, this.inputWrapper.clearButton, this.inputWrapper.container);
-            }
-            this.setAllowEdit();
+        }
+        this.checkInvalidValue(this.value);
+        this.createInput();
+        this.updateHtmlAttributeToWrapper();
+        this.setAllowEdit();
+        this.updateInput();
+        if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
+            this.updateInputValue(this.maskedDateValue);
         }
         this.previousElementValue = this.inputElement.value;
         this.previousDate = !isNullOrUndefined(this.value) ? new Date(+this.value) : null;
@@ -603,9 +573,7 @@ export class DatePicker extends Calendar implements IInput {
     protected updateInput(isDynamic: boolean = false): void {
         let formatOptions: DateFormatOptions;
         if (this.value && !this.isCalendar() && !isDynamic) {
-            if (!this.isBlazorServer) {
-                this.disabledDates();
-            }
+            this.disabledDates();
         }
         if (isNaN(+new Date(this.checkValue(this.value)))) {
             this.setProperties({ value: null }, true);
@@ -623,7 +591,7 @@ export class DatePicker extends Calendar implements IInput {
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
                     dateString = this.globalize.formatDate(this.value, {
-                        format: tempFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+                        format: tempFormat, type: 'dateTime', skeleton: 'yMd'
                     });
                 } else {
                     dateString = this.globalize.formatDate(this.value, {
@@ -632,7 +600,7 @@ export class DatePicker extends Calendar implements IInput {
                 }
             } else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 } else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
@@ -685,15 +653,15 @@ export class DatePicker extends Calendar implements IInput {
         if (this.getModuleName() === 'datetimepicker') {
             const culture: Internationalization = new Internationalization(this.locale);
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
-                formatDateTime = { format: culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' }), type: 'dateTime' };
+                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
+                formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
             } else {
                 formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime', calendar: 'islamic' };
             }
         } else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             } else {
                 formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
@@ -716,8 +684,8 @@ export class DatePicker extends Calendar implements IInput {
             if (this.getModuleName() === 'datetimepicker') {
                 const culture: Internationalization = new Internationalization(this.locale);
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
-                    formatDateTime = { format: culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' }), type: 'dateTime' };
+                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
+                    formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
                 } else {
                     formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -725,7 +693,7 @@ export class DatePicker extends Calendar implements IInput {
                 }
             } else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -775,12 +743,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     protected bindEvents(): void {
-        EventHandler.add(
-            this.inputWrapper.buttons[0],
-            'mousedown touchstart',
-            (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler),
-            this
-        );
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
         EventHandler.add(this.inputElement, 'mouseup', this.mouseUpHandler,this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
@@ -790,7 +753,7 @@ export class DatePicker extends Calendar implements IInput {
         this.bindInputEvent();
         // To prevent the twice triggering.
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+        if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
         }
         if (this.formElement) {
@@ -835,11 +798,7 @@ export class DatePicker extends Calendar implements IInput {
     }
 
     protected unBindEvents() : void {
-        EventHandler.remove(
-            this.inputWrapper.buttons[0],
-            'mousedown touchstart',
-            (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler)
-        );
+        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler);
         EventHandler.remove(this.inputElement, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
@@ -847,7 +806,7 @@ export class DatePicker extends Calendar implements IInput {
         if(this.enableMask){
             EventHandler.remove(this.inputElement, 'keydown',this.keydownHandler);
             }
-        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+        if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
         }
         if (this.formElement) {
@@ -865,13 +824,11 @@ export class DatePicker extends Calendar implements IInput {
                 this.inputValueCopy = null;
                 this.inputElement.setAttribute('value', '');
             }
-            if (!this.isBlazorServer) {
-                this.setProperties({ value: this.inputValueCopy }, true);
-                this.restoreValue();
-                if (this.inputElement) {
-                    this.updateInputValue(value);
-                    this.errorClass();
-                }
+            this.setProperties({ value: this.inputValueCopy }, true);
+            this.restoreValue();
+            if (this.inputElement) {
+                this.updateInputValue(value);
+                this.errorClass();
             }
         }
     }
@@ -880,7 +837,7 @@ export class DatePicker extends Calendar implements IInput {
         this.previousDate = this.value;
         this.previousElementValue = (isNullOrUndefined(this.inputValueCopy)) ? '' :
             this.globalize.formatDate(this.inputValueCopy, {
-                format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
             });
     }
     private inputChangeHandler(e: MouseEvent): void {
@@ -911,9 +868,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private clear(event: MouseEvent): void {
-        if (!this.isBlazorServer) {
-            this.setProperties({ value: null }, true);
-        }
+        this.setProperties({ value: null }, true);
         if(!this.enableMask)
         {
         this.updateInputValue('');
@@ -923,20 +878,14 @@ export class DatePicker extends Calendar implements IInput {
         };
         this.trigger('cleared', clearedArgs);
         this.invalidValueString = '';
-        if (!this.isBlazorServer) {
-            this.updateInput();
-            this.popupUpdate();
-            this.changeEvent(event);
-            if(this.enableMask)
-            {
-                this.notify("clearHandler", {
-                    module: "MaskedDateTime"
-                });
-            }
-        }
-        if (this.isBlazorServer) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this as any).interopAdaptor.invokeMethodAsync('OnValueCleared');
+        this.updateInput();
+        this.popupUpdate();
+        this.changeEvent(event);
+        if(this.enableMask)
+        {
+            this.notify("clearHandler", {
+                module: "MaskedDateTime"
+            });
         }
     }
 
@@ -960,23 +909,19 @@ export class DatePicker extends Calendar implements IInput {
             this.inputElement.setAttribute('readonly', '');
             this.inputElement.blur();
         }
-        if (!this.isBlazorServer) {
-            e.preventDefault();
-        }
+        e.preventDefault();
         if (!this.readonly) {
-            if (this.isCalendar() && !this.isBlazorServer) {
+            if (this.isCalendar()) {
                 this.hide(e);
             } else {
-                if (!this.isBlazorServer || (this.isBlazorServer && this.inputWrapper.container.nextElementSibling)) {
-                    this.isDateIconClicked = true;
-                    this.show(null, e);
-                    if (this.getModuleName() === 'datetimepicker') {
-                        (this.inputElement as HTMLElement).focus();
-                    }
-                    (<HTMLElement>this.inputElement).focus();
-                    addClass([this.inputWrapper.container], [INPUTFOCUS]);
-                    addClass(this.inputWrapper.buttons, ACTIVE);
+                this.isDateIconClicked = true;
+                this.show(null, e);
+                if (this.getModuleName() === 'datetimepicker') {
+                    (this.inputElement as HTMLElement).focus();
                 }
+                (<HTMLElement>this.inputElement).focus();
+                addClass([this.inputWrapper.container], [INPUTFOCUS]);
+                addClass(this.inputWrapper.buttons, ACTIVE);
             }
         }
         this.isIconClicked = false;
@@ -1072,7 +1017,7 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
         const focusArguments: BlurEventArgs = {
-            model: isBlazor() && this.isServerRendered ? null : this
+            model: this
         };
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
@@ -1094,33 +1039,28 @@ export class DatePicker extends Calendar implements IInput {
         if (!this.enabled) {
             return;
         }
-        if (!this.isBlazorServer) {
-            this.strictModeUpdate();
-            if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
-                this.invalidValueString = null;
-                this.updateInputValue('');
-            }
-            this.updateInput();
-            this.popupUpdate();
-            this.changeTrigger(e);
-            if(this.enableMask && this.maskedDateValue && this.placeholder && this.floatLabelType !== 'Always' )
-           {
+        this.strictModeUpdate();
+        if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
+            this.invalidValueString = null;
+            this.updateInputValue('');
+        }
+        this.updateInput();
+        this.popupUpdate();
+        this.changeTrigger(e);
+        if(this.enableMask && this.maskedDateValue && this.placeholder && this.floatLabelType !== 'Always' )
+        {
             if(this.inputElement.value == this.maskedDateValue && !this.value && (this.floatLabelType == 'Auto' || this.floatLabelType == 'Never' || this.placeholder))
             {
-                this.updateInputValue('');
+            this.updateInputValue('');
             }
-         }
-            this.errorClass();
-        } else {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
         }
+        this.errorClass();
         if (this.isCalendar() && document.activeElement === this.inputElement) {
             this.hide(e);
         }
         if (this.getModuleName() === 'datepicker') {
             const blurArguments: BlurEventArgs = {
-                model: isBlazor() && this.isServerRendered ? null : this
+                model: this
             };
             this.trigger('blur', blurArguments);
         }
@@ -1156,7 +1096,7 @@ export class DatePicker extends Calendar implements IInput {
             } else if (closest(target, '.e-footer-container')
                        && target.classList.contains('e-today')
                        && target.classList.contains('e-btn')
-                       && (+new Date(+this.value) === +super.generateTodayVal(this.value) && !this.isBlazorServer)) {
+                       && (+new Date(+this.value) === +super.generateTodayVal(this.value))) {
                 this.hide(e);
             }
         }
@@ -1172,37 +1112,22 @@ export class DatePicker extends Calendar implements IInput {
             break;
         case 'altDownArrow':
             this.isAltKeyPressed = true;
-            if (!this.isBlazorServer) {
-                this.strictModeUpdate();
-                this.updateInput();
-                this.changeTrigger(e);
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
-            }
+            this.strictModeUpdate();
+            this.updateInput();
+            this.changeTrigger(e);
             if (this.getModuleName() === 'datepicker') {
-                if (!this.isBlazorServer) {
-                    this.show(null, e);
-                } else {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).interopAdaptor.invokeMethodAsync('OnPopupHide', true);
-                }
+                this.show(null, e);
             }
             break;
         case 'escape':
             this.hide(e);
             break;
         case 'enter':
-            if (!this.isBlazorServer) {
-                this.strictModeUpdate();
-                this.updateInput();
-                this.popupUpdate();
-                this.changeTrigger(e);
-                this.errorClass();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
-            }
+            this.strictModeUpdate();
+            this.updateInput();
+            this.popupUpdate();
+            this.changeTrigger(e);
+            this.errorClass();
             if (!this.isCalendar() && document.activeElement === this.inputElement) {
                 this.hide(e);
             }
@@ -1229,16 +1154,11 @@ export class DatePicker extends Calendar implements IInput {
               start = this.inputElement.selectionStart;
               end = this.inputElement.selectionEnd;
             }
-            if (!this.isBlazorServer) {
-                this.strictModeUpdate();
-                this.updateInput();
-                this.popupUpdate();
-                this.changeTrigger(e);
-                this.errorClass();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
-            }
+            this.strictModeUpdate();
+            this.updateInput();
+            this.popupUpdate();
+            this.changeTrigger(e);
+            this.errorClass();
             if(this.enableMask)
             {
                 this.inputElement.selectionStart = start ;
@@ -1258,7 +1178,7 @@ export class DatePicker extends Calendar implements IInput {
         this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
         if (this.isCalendar()) {
             super.keyActionHandle(e);
-            if (!this.isBlazorServer && this.isCalendar()) {
+            if (this.isCalendar()) {
                 attributes(this.inputElement, {
                     'aria-activedescendant': '' + this.setActiveDescendant()
                 });
@@ -1273,7 +1193,7 @@ export class DatePicker extends Calendar implements IInput {
                     removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED), [SELECTED]);
                 }
             }
-            if (!isNullOrUndefined(this.value) && !this.isBlazorServer) {
+            if (!isNullOrUndefined(this.value)) {
                 if ((+this.value >= +this.min) && (+this.value <= +this.max)) {
                     const targetdate: Date = new Date(this.checkValue(this.value));
                     super.navigateTo('Month', targetdate);
@@ -1300,7 +1220,7 @@ export class DatePicker extends Calendar implements IInput {
             if (this.calendarMode === 'Gregorian') {
                 dateOptions = {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+                    type: 'dateTime', skeleton: 'yMd'
                 };
             } else {
                 dateOptions = {
@@ -1311,7 +1231,7 @@ export class DatePicker extends Calendar implements IInput {
 
         } else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: format, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
             } else {
                 formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
@@ -1326,7 +1246,7 @@ export class DatePicker extends Calendar implements IInput {
                 date = this.globalize.parseDate(this.inputElement.value, dateOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    formatOptions = { type: 'dateTime', skeleton: 'yMd' };
                 } else {
                     formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
@@ -1367,16 +1287,9 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private createCalendar(): void {
-        if (!this.isBlazorServer) {
-            this.popupWrapper = this.createElement('div', { className: '' + ROOT + ' ' + POPUPWRAPPER });
-            if (!isNullOrUndefined(this.cssClass)) {
-                this.popupWrapper.className += ' ' + this.cssClass;
-            }
-        } else {
-            this.popupWrapper = this.inputWrapper.container.nextElementSibling as HTMLElement;
-            this.calendarElement = this.popupWrapper.firstElementChild as HTMLElement;
-            this.tableBodyElement = select('tbody', this.calendarElement) as HTMLElement;
-            this.contentElement = select('.e-content', this.calendarElement) as HTMLElement;
+        this.popupWrapper = this.createElement('div', { className: '' + ROOT + ' ' + POPUPWRAPPER });
+        if (!isNullOrUndefined(this.cssClass)) {
+            this.popupWrapper.className += ' ' + this.cssClass;
         }
         if (Browser.isDevice) {
             this.modelHeader();
@@ -1389,7 +1302,7 @@ export class DatePicker extends Calendar implements IInput {
         //this.calendarElement represent the Calendar object from the Calendar class.
         this.calendarElement.querySelector('table tbody').className = '';
         this.popupObj = new Popup(this.popupWrapper as HTMLElement, {
-            content: this.isBlazorServer ? null : this.calendarElement,
+            content: this.calendarElement,
             relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
             position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             offsetY: OFFSETVALUE,
@@ -1422,7 +1335,7 @@ export class DatePicker extends Calendar implements IInput {
                 if (this.isDateIconClicked) {
                     (this.inputWrapper.container.children[this.index] as HTMLElement).focus();
                 }
-                if (this.value && !this.isBlazorServer) {
+                if (this.value) {
                     this.disabledDates();
                 }
                 if (this.popupObj) {
@@ -1440,9 +1353,7 @@ export class DatePicker extends Calendar implements IInput {
                 }
             }
         });
-        if (!this.isBlazorServer) {
-            this.popupObj.element.className += ' ' + this.cssClass;
-        }
+        this.popupObj.element.className += ' ' + this.cssClass;
         this.setAriaAttributes();
     }
 
@@ -1554,14 +1465,14 @@ export class DatePicker extends Calendar implements IInput {
         if (this.value) {
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd' };
                 } else {
                     formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 } else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
@@ -1613,17 +1524,13 @@ export class DatePicker extends Calendar implements IInput {
             let outOfRange: Date;
             if (!isNullOrUndefined(this.value) && !(+this.value >= +this.min && +this.value <= +this.max)) {
                 outOfRange = new Date(this.checkValue(this.value));
-                if (!this.isBlazorServer) {
-                    this.setProperties({ 'value': null }, true);
-                }
+                this.setProperties({ 'value': null }, true);
             } else {
                 outOfRange = this.value || null;
             }
             if (!this.isCalendar()) {
-                if (!this.isBlazorServer) {
-                    super.render();
-                    this.setProperties({ 'value': outOfRange || null }, true);
-                }
+                super.render();
+                this.setProperties({ 'value': outOfRange || null }, true);
                 this.previousDate = outOfRange;
                 this.createCalendar();
             }
@@ -1635,7 +1542,7 @@ export class DatePicker extends Calendar implements IInput {
                 preventDefault: (): void => {
                     prevent = false;
                 },
-                popup: isBlazor() && this.isServerRendered ? null : this.popupObj,
+                popup: this.popupObj,
                 event: e || null,
                 cancel: false,
                 appendTo: Browser.isDevice ? this.mobilePopupWrapper : document.body
@@ -1644,11 +1551,6 @@ export class DatePicker extends Calendar implements IInput {
             this.trigger('open', eventArgs, (eventArgs: PopupObjectArgs) => {
                 this.preventArgs = eventArgs;
                 if (prevent && !this.preventArgs.cancel) {
-                    if (this.isBlazorServer) {
-                        this.popupWrapper.style.visibility = '';
-                        this.popupWrapper.style.width = 'auto';
-                        this.popupWrapper.style.height = 'auto';
-                    }
                     addClass(this.inputWrapper.buttons, ACTIVE);
                     this.preventArgs.appendTo.appendChild(this.popupWrapper);
                     this.popupObj.refreshPosition(this.inputElement);
@@ -1661,17 +1563,11 @@ export class DatePicker extends Calendar implements IInput {
                     } else {
                         this.popupObj.show(new Animation(openAnimation), null);
                     }
-                    if (!this.isBlazorServer) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        super.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice as any);
-                    }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    super.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice as any);
                     this.setAriaAttributes();
                 } else {
                     this.popupObj.destroy();
-                    if (this.isBlazorServer) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this as any).interopAdaptor.invokeMethodAsync('OnPopupHide', false);
-                    }
                     this.popupWrapper = this.popupObj = null;
                 }
                 if (!isNullOrUndefined(this.inputElement) && this.inputElement.value === '') {
@@ -1697,7 +1593,7 @@ export class DatePicker extends Calendar implements IInput {
                 preventDefault: (): void => {
                     prevent = false;
                 },
-                popup: isBlazor() && this.isServerRendered ? null : this.popupObj,
+                popup: this.popupObj,
                 event: event || null,
                 cancel: false
             };
@@ -1722,16 +1618,9 @@ export class DatePicker extends Calendar implements IInput {
     private closeEventCallback(prevent: boolean, eventArgs: PopupObjectArgs): void {
         this.preventArgs = eventArgs;
         if (this.isCalendar() && (prevent && !this.preventArgs.cancel)) {
-            if (!this.isBlazorServer) {
-                this.popupObj.hide();
-                this.isAltKeyPressed = false;
-                this.keyboardModule.destroy();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this as any).interopAdaptor.invokeMethodAsync('OnPopupHide', false);
-                this.isAltKeyPressed = false;
-                this.popupWrapper = this.popupObj = null;
-            }
+            this.popupObj.hide();
+            this.isAltKeyPressed = false;
+            this.keyboardModule.destroy();
             removeClass(this.inputWrapper.buttons, ACTIVE);
         }
         this.setAriaAttributes();
@@ -1814,12 +1703,10 @@ export class DatePicker extends Calendar implements IInput {
      */
     public destroy(): void {
         this.unBindEvents();
-        if (!this.isBlazorServer) {
+        super.destroy();
+        this.keyboardModules.destroy();
+        if (this.popupObj && this.popupObj.element.classList.contains(POPUP)) {
             super.destroy();
-            this.keyboardModules.destroy();
-            if (this.popupObj && this.popupObj.element.classList.contains(POPUP)) {
-                super.destroy();
-            }
         }
         const ariaAttrs: object = {
             'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-disabled': 'true',
@@ -1843,9 +1730,7 @@ export class DatePicker extends Calendar implements IInput {
                 detach(this.popupWrapper);
             }
             this.popupObj = this.popupWrapper = null;
-            if (!this.isBlazorServer) {
-                this.keyboardModule.destroy();
-            }
+            this.keyboardModule.destroy();
         }
         if (this.ngTag === null) {
             if (this.inputElement) {
@@ -1891,43 +1776,38 @@ export class DatePicker extends Calendar implements IInput {
         this.inputElement = <HTMLInputElement>this.element;
         this.formElement = <HTMLFormElement>closest(this.inputElement, 'form');
         this.index = this.showClearButton ? 2 : 1;
-        this.isBlazorServer = (isBlazor() && this.isServerRendered && this.getModuleName() === 'datepicker') ? true : false;
-        if (!this.isBlazorServer) {
-            this.ngTag = null;
-            if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
-                this.ngTag = this.element.tagName;
-                this.inputElement = <HTMLInputElement>this.createElement('input');
-                this.element.appendChild(this.inputElement);
+        this.ngTag = null;
+        if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
+            this.ngTag = this.element.tagName;
+            this.inputElement = <HTMLInputElement>this.createElement('input');
+            this.element.appendChild(this.inputElement);
+        }
+        if (this.element.getAttribute('id')) {
+            if (this.ngTag !== null) {
+                this.inputElement.id = this.element.getAttribute('id') + '_input';
             }
-            if (this.element.getAttribute('id')) {
+        } else {
+            if (this.getModuleName() === 'datetimepicker') {
+                this.element.id = getUniqueID('ej2-datetimepicker');
                 if (this.ngTag !== null) {
-                    this.inputElement.id = this.element.getAttribute('id') + '_input';
+                    attributes(this.inputElement, { 'id': this.element.id + '_input' });
                 }
             } else {
-                if (this.getModuleName() === 'datetimepicker') {
-                    this.element.id = getUniqueID('ej2-datetimepicker');
-                    if (this.ngTag !== null) {
-                        attributes(this.inputElement, { 'id': this.element.id + '_input' });
-                    }
-                } else {
-                    this.element.id = getUniqueID('ej2-datepicker');
-                    if (this.ngTag !== null) {
-                        attributes(this.inputElement, { 'id': this.element.id + '_input' });
-                    }
+                this.element.id = getUniqueID('ej2-datepicker');
+                if (this.ngTag !== null) {
+                    attributes(this.inputElement, { 'id': this.element.id + '_input' });
                 }
             }
-            if (this.ngTag !== null) {
-                this.validationAttribute(this.element, this.inputElement);
-            }
-            this.updateHtmlAttributeToElement();
         }
+        if (this.ngTag !== null) {
+            this.validationAttribute(this.element, this.inputElement);
+        }
+        this.updateHtmlAttributeToElement();
         this.defaultKeyConfigs = this.getDefaultKeyConfig();
         this.checkHtmlAttributes(false);
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        if (!this.isBlazorServer) {
-            this.element.removeAttribute('tabindex');
-            super.preRender();
-        }
+        this.element.removeAttribute('tabindex');
+        super.preRender();
     }
     protected getDefaultKeyConfig(): { [key: string]: string } {
         this.defaultKeyConfigs = {
@@ -1973,7 +1853,7 @@ export class DatePicker extends Calendar implements IInput {
         const culture: Internationalization = new Internationalization(this.locale);
         if (this.format) {
             if (typeof this.format === 'string') {
-                this.formatString = isBlazor() ? this.format.replace(/tt/, 'a') : this.format;
+                this.formatString = this.format;
             } else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
                 const skeletonString: string = this.format.skeleton;
                 if (this.getModuleName() === 'datetimepicker') {
@@ -2003,7 +1883,7 @@ export class DatePicker extends Calendar implements IInput {
             if (this.calendarMode === 'Gregorian') {
                 options = {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+                    type: 'dateTime', skeleton: 'yMd'
                 };
             } else {
                 options = {
@@ -2014,7 +1894,7 @@ export class DatePicker extends Calendar implements IInput {
 
         } else {
             if (this.calendarMode === 'Gregorian') {
-                options = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             } else {
                 options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
@@ -2023,8 +1903,7 @@ export class DatePicker extends Calendar implements IInput {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                 case 'disabled':
-                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || dynamic) &&
-                    !this.isBlazorServer) {
+                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || dynamic)) {
                         const enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                         this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? false : true;
@@ -2032,32 +1911,25 @@ export class DatePicker extends Calendar implements IInput {
                     }
                     break;
                 case 'readonly':
-                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || dynamic) &&
-                    !this.isBlazorServer) {
+                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || dynamic)) {
                         const readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
                         this.inputElement.getAttribute(prop) === '' || this.inputElement.getAttribute(prop) === 'true' ? true : false;
                         this.setProperties({ readonly: readonly }, !dynamic);
                     }
                     break;
                 case 'placeholder':
-                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || dynamic) &&
-                    !this.isBlazorServer) {
+                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || dynamic)) {
                         this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !dynamic);
                     }
                     break;
                 case 'style':
-                    if (!this.isBlazorServer) {
-                        this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
-                    }
+                    this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
                     break;
                 case 'name':
-                    if (!this.isBlazorServer) {
-                        this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
-                    }
+                    this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
                     break;
                 case 'value':
-                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || dynamic) &&
-                    !this.isBlazorServer) {
+                    if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || dynamic)) {
                         const value: string = this.inputElement.getAttribute(prop);
                         this.setProperties(setValue(prop, this.globalize.parseDate(value, options), {}), !dynamic);
                     }
@@ -2075,7 +1947,7 @@ export class DatePicker extends Calendar implements IInput {
                     }
                     break;
                 case 'type':
-                    if (this.inputElement.getAttribute(prop) !== 'text' && !this.isBlazorServer) {
+                    if (this.inputElement.getAttribute(prop) !== 'text') {
                         this.inputElement.setAttribute('type', 'text');
                     }
                     break;
@@ -2099,9 +1971,7 @@ export class DatePicker extends Calendar implements IInput {
         const previousValCopy: Date = this.previousDate;
         //calls the Calendar render method to check the disabled dates through renderDayCell event and update the input value accordingly.
         this.minMaxUpdates();
-        if (!this.isBlazorServer) {
-            super.render();
-        }
+        super.render();
         this.previousDate = previousValCopy;
         const date: number = valueCopy && +(valueCopy);
         const dateIdString: string = '*[id^="/id"]'.replace('/id', '' + date);
@@ -2122,7 +1992,7 @@ export class DatePicker extends Calendar implements IInput {
             if (this.calendarMode === 'Gregorian') {
                 globalize = this.globalize.formatDate(valueCopy, {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+                    type: 'dateTime', skeleton: 'yMd'
                 });
             } else {
                 globalize = this.globalize.formatDate(valueCopy, {
@@ -2133,7 +2003,7 @@ export class DatePicker extends Calendar implements IInput {
             inputVal = globalize;
         } else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             } else {
                 formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
@@ -2151,23 +2021,12 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private setAriaAttributes(): void {
-        if (this.isBlazorServer) {
-            if (this.isCalendar()) {
-                const focusedEle: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
-                const selectedEle: Element = this.tableBodyElement.querySelector('tr td.e-selected');
-                const id: string = (focusedEle || selectedEle) ? (focusedEle || selectedEle).getAttribute('id') : 'null';
-                attributes(this.inputElement, { 'aria-activedescendant': '' + id });
-            } else {
-                attributes(this.inputElement, { 'aria-activedescendant': 'null' });
-            }
+        if (this.isCalendar()) {
+            Input.addAttributes({ 'aria-expanded': 'true' }, this.inputElement);
+            attributes(this.inputElement, { 'aria-activedescendant': '' + this.setActiveDescendant() });
         } else {
-            if (this.isCalendar()) {
-                Input.addAttributes({ 'aria-expanded': 'true' }, this.inputElement);
-                attributes(this.inputElement, { 'aria-activedescendant': '' + this.setActiveDescendant() });
-            } else {
-                Input.addAttributes({ 'aria-expanded': 'false' }, this.inputElement);
-                attributes(this.inputElement, { 'aria-activedescendant': 'null' });
-            }
+            Input.addAttributes({ 'aria-expanded': 'false' }, this.inputElement);
+            attributes(this.inputElement, { 'aria-activedescendant': 'null' });
         }
     }
     protected errorClass(): void {
@@ -2200,20 +2059,16 @@ export class DatePicker extends Calendar implements IInput {
                 this.isDynamicValueChanged = true;
                 this.isInteracted = false;
                 this.invalidValueString = null;
-                if (!this.isBlazorServer) {
-                    this.checkInvalidValue(newProp.value);
-                }
+                this.checkInvalidValue(newProp.value);
                 newProp.value = this.value;
                 this.previousElementValue = this.inputElement.value;
-                if (!this.isBlazorServer) {
-                    if (isNullOrUndefined(this.value)) {
-                        this.updateInputValue('');
-                        this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
-                    }
-                    this.updateInput(true);
-                    if (+this.previousDate !== +this.value) {
-                        this.changeTrigger(null);
-                    }
+                if (isNullOrUndefined(this.value)) {
+                    this.updateInputValue('');
+                    this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
+                }
+                this.updateInput(true);
+                if (+this.previousDate !== +this.value) {
+                    this.changeTrigger(null);
                 }
                 this.isInteracted = true;
                 this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
@@ -2226,16 +2081,14 @@ export class DatePicker extends Calendar implements IInput {
             case 'format':
                 this.checkFormat();
                 this.bindInputEvent();
-                if (!this.isBlazorServer) {
-                    this.updateInput();
-                    if (this.enableMask) {
-                        this.notify("createMask", {
-                          module: "MaskedDateTime",
-                        });
-                        if(!this.value)
-                        {
-                            this.updateInputValue(this.maskedDateValue);
-                        }
+                this.updateInput();
+                if (this.enableMask) {
+                    this.notify("createMask", {
+                        module: "MaskedDateTime",
+                    });
+                    if(!this.value)
+                    {
+                        this.updateInputValue(this.maskedDateValue);
                     }
                 }
                 break;
@@ -2262,14 +2115,12 @@ export class DatePicker extends Calendar implements IInput {
                 this.l10n.setLocale(this.locale);
                 this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
                 Input.setPlaceholder(this.placeholder, this.inputElement);
-                if (!this.isBlazorServer) {
-                    this.updateInput();
-                    if (this.enableMask) {
-                        this.notify("createMask", {
-                          module: "MaskedDateTime",
-                        });
-                      }
-                }
+                this.updateInput();
+                if (this.enableMask) {
+                    this.notify("createMask", {
+                        module: "MaskedDateTime",
+                    });
+                    }
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
@@ -2277,7 +2128,7 @@ export class DatePicker extends Calendar implements IInput {
             case 'start':
             case 'depth':
                 this.checkView();
-                if (this.calendarElement && !this.isBlazorServer) {
+                if (this.calendarElement) {
                     super.onPropertyChanged(newProp, oldProp);
                 }
                 break;
@@ -2294,9 +2145,7 @@ export class DatePicker extends Calendar implements IInput {
                 break;
             case 'strictMode':
                 this.invalidValueString = null;
-                if (!this.isBlazorServer) {
-                    this.updateInput();
-                }
+                this.updateInput();
                 break;
             case 'width':
                 this.setWidth(newProp.width);
@@ -2323,7 +2172,7 @@ export class DatePicker extends Calendar implements IInput {
                   }
                 break;
             default:
-                if (this.calendarElement && !this.isBlazorServer && this.isCalendar()) {
+                if (this.calendarElement && this.isCalendar()) {
                     super.onPropertyChanged(newProp, oldProp);
                 }
                 break;

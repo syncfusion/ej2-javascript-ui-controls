@@ -409,6 +409,8 @@ export interface IRenderer {
     getEventRows(trCount: number): Element[];
     getDateSlots(renderDates: Date[], workDays: number[]): TdData[];
     getNextPreviousDate(type: string): Date;
+    refreshHeader(): void;
+    refreshResourceHeader(): void;
     renderLayout(type: string): void;
     renderResourceMobileLayout(): void;
     setPanel(panel: HTMLElement): void;
@@ -569,6 +571,7 @@ export interface ViewsData extends ViewsModel {
     dateHeaderTemplateName?: string;
     cellTemplateName?: string;
     resourceHeaderTemplateName?: string;
+    headerIndentTemplateName?: string;
     eventTemplateName?: string;
     dayHeaderTemplateName?: string;
     monthHeaderTemplateName?: string;
@@ -586,3 +589,9 @@ export interface CallbackFunction extends Function {
     // eslint-disable-next-line max-len
     bind<T, A0, A1, A2, A3, A extends any[], R>(this: (this: T, args0: A0, args1: A1, args2: A2, args3: A3, ...args: A[]) => R, thisArgs: T, args0: A0, args1: A1, args2: A2, args3: A3): (...args: A[]) => R;
 }
+
+/** @private */
+export interface SortComparerFunction {
+    (param:  Record<string, any>[]):  Record<string, any>[];
+}
+

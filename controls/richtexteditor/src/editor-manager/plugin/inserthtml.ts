@@ -118,7 +118,7 @@ export class InsertHtml {
             }
         } else {
             range.deleteContents();
-            if (isCursor && range.startContainer.textContent === '') {
+            if (isCursor && range.startContainer.textContent === '' && range.startContainer.nodeName !== 'BR') {
                 (range.startContainer as HTMLElement).innerHTML = '';
             }
             if (Browser.isIE) {
@@ -134,7 +134,11 @@ export class InsertHtml {
                     paraElem.appendChild(node);
                 }
             } else {
-                range.insertNode(node);
+                if (range.startContainer.nodeName === 'BR') {
+                    range.startContainer.parentElement.insertBefore(node,  range.startContainer);
+                } else {
+                    range.insertNode(node);
+                }
             }
             if (node.nodeType !== 3 && node.childNodes.length > 0) {
                 nodeSelection.setSelectionText(docElement, node, node, 1, 1);
@@ -321,6 +325,9 @@ export class InsertHtml {
                 blockNode = editNode.firstElementChild;
                 range.setStart(editNode.firstElementChild, editNode.firstElementChild.textContent.length);
                 range.setEnd(editNode.firstElementChild, editNode.firstElementChild.textContent.length);
+            }
+            if (blockNode.nodeName === 'BODY' && range.startContainer === range.endContainer && range.startContainer.nodeType === 1) {
+                blockNode = range.startContainer;
             }
             if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });

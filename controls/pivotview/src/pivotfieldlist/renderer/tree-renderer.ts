@@ -13,7 +13,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
 import { IOlapField } from '../../base/olap/engine';
-import { PivotView } from '../../pivotview';
+import { PivotView } from '../../pivotview/base/pivotview';
 
 /**
  * Module to render Field List
@@ -374,12 +374,6 @@ export class TreeViewRenderer implements IAction {
     //         dataSourceSettings: this.parent.dataSourceSettings, cancel: false
     //     }
     //     let treeModule: TreeViewRenderer = this;
-    //     if (isBlazor()) {
-    //         dragEventArgs = this.getFieldDragEventArgs(dragEventArgs);
-    //         dragEventArgs.then((e: any) => {
-    //             return e;
-    //         });
-    //     }
     //     let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
     //     control.trigger(events.fieldDragStart, dragEventArgs);
     //     return dragEventArgs;
@@ -514,6 +508,12 @@ export class TreeViewRenderer implements IAction {
                         removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                         this.updateSelectedNodes(li, args.action);
                         this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
+                        if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
+                            fieldInfo && fieldInfo.position < this.parent.dataSourceSettings.valueIndex &&
+                            ((this.parent.dataSourceSettings.valueAxis === 'row' && fieldInfo.axis === 'rows') ||
+                                (this.parent.dataSourceSettings.valueAxis === 'column' && fieldInfo.axis === 'columns'))) {
+                            control.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }, true);
+                        }
                         if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
                             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
                         }
@@ -529,6 +529,20 @@ export class TreeViewRenderer implements IAction {
     private updateReportSettings(newField: IFieldOptions, dropArgs: FieldDropEventArgs): void {
         let dropPosition: number = dropArgs.dropPosition;
         let dropClass: string = dropArgs.dropAxis;
+        if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1) {
+            let dropAxisFields: IFieldOptions[] = (this.parent.dataSourceSettings.valueAxis === 'row' &&
+                dropClass === 'rows') ? this.parent.dataSourceSettings.rows : (this.parent.dataSourceSettings.valueAxis === 'column' && dropClass === 'columns') ?
+                this.parent.dataSourceSettings.columns : undefined;
+            if (!isNullOrUndefined(dropAxisFields)) {
+                if (dropPosition === -1 && this.parent.dataSourceSettings.valueIndex === -1) {
+                    this.parent.setProperties({ dataSourceSettings: { valueIndex: dropAxisFields.length } }, true);
+                } else if (dropPosition > -1 && dropPosition <= this.parent.dataSourceSettings.valueIndex) {
+                    this.parent.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex + 1 } }, true);
+                } else if (this.parent.dataSourceSettings.valueIndex > -1 && dropPosition > this.parent.dataSourceSettings.valueIndex) {
+                    dropPosition = dropPosition - 1;
+                }
+            }
+        }
         switch (dropClass) {
             case 'filters':
                 dropPosition !== -1 ?   /* eslint-disable-line */

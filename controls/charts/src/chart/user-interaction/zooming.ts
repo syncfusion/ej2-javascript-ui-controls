@@ -603,8 +603,7 @@ export class Zoom {
             transform: 'translate(' + transX + ',' + transY + ')'
         });
         this.toolkitElements.appendChild(defElement);
-        const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' :
-            this.chart.theme === 'TailwindDark' ? '#374151' : '#fafafa';
+        const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : '#fafafa';
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
             1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0

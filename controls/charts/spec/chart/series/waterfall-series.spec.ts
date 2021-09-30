@@ -550,7 +550,7 @@ describe('Waterfall Series', () => {
                 element = document.getElementById('container_Series_1_Point_1');
                 trigger.clickEvent(element);
                 selected = document.getElementsByClassName('container_ej2_chart_selection_series_1 ');
-                expect(selected.length).toBe(1);
+                expect(selected.length).toBe(3);
                 done();
             };
             chartObj.selectionMode = 'Point';

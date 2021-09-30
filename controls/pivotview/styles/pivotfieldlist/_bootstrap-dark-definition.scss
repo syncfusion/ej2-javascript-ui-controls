@@ -105,6 +105,7 @@ $field-list-sort-wrapper-padding-size: 10px !default;
 $field-list-sort-select-background-color: $grey-dark !default;
 $field-list-sort-select-border-color: $grey-8c !default;
 $field-list-sort-select-color: $grey-light-font !default;
+$field-list-border: $content-border-color !default;
 
 /*! component's adaptive definitions and variables */
 $field-list-adaptive-content-padding-size: 20px !default;
@@ -134,10 +135,12 @@ $field-list-calc-formula-font-size: 13px !default;
 $field-list-calc-bigger-formula-font-size: 13px !default;
 $field-list-bigger-button-line-height: 1em !default;
 $error-font-color: #f44336 !default;
+
 /*! component's theme wise override definitions and variables */
 $field-list-active-color: $brand-primary !default;
 $field-list-default-font-color: $grey-dark-font !default;
 $field-list-default-formula-font-color: $field-list-default-font-color !default;
+$field-list-cal-button-text-color: $field-list-default-font-color !default;
 $field-list-default-border-color: $grey-8c !default;
 $field-list-default-prompt-color: $grey-f8 !default;
 $field-list-toggle-border-color: $grey-cc !default;

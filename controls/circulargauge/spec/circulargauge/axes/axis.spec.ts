@@ -5,7 +5,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Axis, Label } from '../../../src/circular-gauge/axes/axis';
-import { getAngleFromLocation, GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { getAngleFromLocation, GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/circular-gauge/model/interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { axisLabelRender } from '../../../src/circular-gauge/model/constants';
@@ -469,6 +469,54 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.title = 'CircularGauge';
             gauge.titleStyle.size = '20';
+            gauge.refresh();
+        });
+        it('Checking axis rendering with same minimum and maximum - clockwise', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                let elementCount = document.getElementById('container_Axis_Labels_0').childElementCount;
+                expect(svg == null).toBe(true);
+                expect(elementCount == 0).toBe(true);
+                done();
+            };
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 0;
+            gauge.axes[0].direction = 'ClockWise';
+            gauge.refresh();
+        });
+        it('Checking axis rendering with same minimum and maximum - anti-clockwise', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                let elementCount = document.getElementById('container_Axis_Labels_0').childElementCount;
+                expect(svg == null).toBe(true);
+                expect(elementCount == 0).toBe(true);
+                done();
+            };
+            gauge.axes[0].minimum = 50;
+            gauge.axes[0].maximum = 50;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.refresh();
+        });
+        it('Checking axis rendering in multiple axes with same minimum and maximum - clockwise', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_1');
+                let elementCount = document.getElementById('container_Axis_Labels_1').childElementCount;
+                expect(svg == null).toBe(true);
+                expect(elementCount == 0).toBe(true);
+                done();
+            };
+            gauge.axes = [{minimum: 0, maximum: 50, direction: 'ClockWise'},{minimum: 10, maximum: 10, direction: 'ClockWise'}];
+            gauge.refresh();
+        });
+        it('Checking axis rendering in multiple axes with same minimum and maximum - anti-clockwise', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_1');
+                let elementCount = document.getElementById('container_Axis_Labels_1').childElementCount;
+                expect(svg == null).toBe(true);
+                expect(elementCount == 0).toBe(true);
+                done();
+            };
+            gauge.axes = [{minimum: 0, maximum: 50, direction: 'AntiClockWise'},{minimum: 10, maximum: 10, direction: 'AntiClockWise'}];
             gauge.refresh();
         });
 

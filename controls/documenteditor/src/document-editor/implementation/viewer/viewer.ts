@@ -890,6 +890,7 @@ export class DocumentHelper {
         paragraphFormat.bidi = false;
         paragraphFormat.keepWithNext = false;
         paragraphFormat.keepLinesTogether = false;
+        paragraphFormat.widowControl = true;
     }
     /**
      * @private
@@ -1849,10 +1850,12 @@ export class DocumentHelper {
             if (event.offsetY + viewerTop > viewerTop) {
                 this.scrollMoveTimer = setInterval((): void => {
                     this.scrollForwardOnSelection(cursorPoint);
+                    clearInterval(this.scrollMoveTimer);
                 }, 500);
             } else {
                 this.scrollMoveTimer = setInterval((): void => {
                     this.scrollBackwardOnSelection(cursorPoint);
+                    clearInterval(this.scrollMoveTimer);
                 }, 500);
             }
             if (this.isMouseEntered) {

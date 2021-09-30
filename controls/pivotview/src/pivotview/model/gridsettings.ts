@@ -6,7 +6,7 @@ import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventAr
 import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { CheckboxSelectionType, SelectionType } from '@syncfusion/ej2-grids';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { ColumnRenderEventArgs, SelectionSettings } from '../../common';
+import { ColumnRenderEventArgs, SelectionSettings } from '../../common/base/interface';
 import { PivotTableContextMenuItem, SelectionMode, PivotCellSelectionMode } from '../../common/base/enum';
 
 /**

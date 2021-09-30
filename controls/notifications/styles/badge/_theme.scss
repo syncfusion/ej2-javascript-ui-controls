@@ -16,7 +16,7 @@
     &.e-badge-success:not(.e-badge-ghost):not([href]),
     &.e-badge-success[href]:not(.e-badge-ghost) {
       background-color: $badge-success-bg-color;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
         color: $badge-success-font-color;
       }
       @else {
@@ -27,7 +27,7 @@
     &.e-badge-danger:not(.e-badge-ghost):not([href]),
     &.e-badge-danger[href]:not(.e-badge-ghost) {
       background-color: $badge-danger-bg-color;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' ) {
         color: $badge-danger-font-color;
       }
       @else {
@@ -44,7 +44,7 @@
     &.e-badge-info:not(.e-badge-ghost):not([href]),
     &.e-badge-info[href]:not(.e-badge-ghost) {
       background-color: $badge-info-bg-color;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
         color: $badge-info-font-color;
       }
       @else {
@@ -177,7 +177,7 @@
 
       &.e-badge-secondary {
         background-color: transparent;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           border: 1px solid $badge-secondary-font-color;
           color: $badge-secondary-font-color;
         }
@@ -189,7 +189,7 @@
 
       &.e-badge-success {
         background-color: transparent;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           border: 1px solid $badge-success-font-color;
           color: $badge-success-font-color;
         }
@@ -201,7 +201,7 @@
 
       &.e-badge-danger {
         background-color: transparent;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           border: 1px solid $badge-danger-font-color;
           color: $badge-danger-font-color;
         }
@@ -213,7 +213,7 @@
 
       &.e-badge-warning {
         background-color: transparent;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           border: 1px solid $badge-warning-font-color;
           color: $badge-warning-font-color;
         }
@@ -225,7 +225,7 @@
 
       &.e-badge-info {
         background-color: transparent;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           border: 1px solid $badge-info-font-color;
           color: $badge-info-font-color;
         }
@@ -237,7 +237,7 @@
 
       &.e-badge-light {
         background-color: transparent;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           border: 1px solid $badge-light-font-color;
           color: $badge-light-font-color;
         }

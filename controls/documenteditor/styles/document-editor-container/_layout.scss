@@ -5,8 +5,11 @@
 
   .e-de-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text .e-de-text-wrap {
     height: 0;
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    @if $skin-name == 'tailwind' {
       line-height: 1;
+    }
+    @else if $skin-name == 'bootstrap5' {
+      line-height: .5;
     }
     @else {
       line-height: 0;

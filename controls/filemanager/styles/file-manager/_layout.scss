@@ -88,7 +88,7 @@
 
         .e-btn-icon.e-icons.e-caret {
           font-size: $fe-tb-ddb-caret-size;
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
             height: 18px;
             margin: 2px 4px 0;
             padding: 1px;
@@ -140,9 +140,13 @@
 
       & > .e-ul {
         overflow: initial;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           padding-left: 8px;
         }
+      }
+
+      .e-icons .e-treeview-spinner {
+        display: none;
       }
 
       .e-list-parent {
@@ -163,7 +167,7 @@
           }
 
           &.e-fe-drop-folder > .e-fullrow {
-            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
               border: 1px dashed;
             }
             @else {
@@ -225,9 +229,20 @@
           height: $fe-search-height;
           margin: 0;
 
+          @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+            &.e-input-focus {
+              .e-input {
+                padding: 0;
+              }
+            }
+          }
+
           .e-input {
             margin: $fe-search-input-margin;
             padding: 0;
+            @if $skin-name == 'bootstrap5' {
+              height: 30px;
+            }
           }
 
           .e-clear-icon {
@@ -239,7 +254,7 @@
       .e-fe-search {
         font-size: 14px;
         margin: $fe-search-icon-margin;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           margin-right: 4px;
           padding: 3px;
         }
@@ -278,7 +293,7 @@
         cursor: pointer;
         font-size: $fe-bc-font-size;
         line-height: $fe-bc-text-size;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           font-weight: $font-weight-medium;
         }
         @else {
@@ -293,7 +308,7 @@
 
       .e-address-list-item {
         display: inline-block;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           height: $fe-bc-li-item-height;
         }
 
@@ -311,12 +326,12 @@
         .e-icons {
           font-size: $fe-bc-icon-font-size;
           margin: $fe-bc-icon-margin;
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' {
             vertical-align: middle;
           }
 
           &::before {
-            @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+            @if $fm-skin-name != 'tailwind' {
               padding: $fe-bc-icon-padding;
             }
           }
@@ -396,7 +411,7 @@
         }
 
         tr.e-row.e-fe-drop-folder .e-rowcell:first-child {
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' {
             border-bottom: 1px dashed $fe-drop-folder-bg-color;
             border-left: 1px dashed $fe-drop-folder-bg-color;
             border-top: 1px dashed $fe-drop-folder-bg-color;
@@ -407,7 +422,7 @@
         }
 
         tr.e-row.e-fe-drop-folder .e-rowcell:last-child {
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' {
             border-bottom: 1px dashed $fe-drop-folder-bg-color;
             border-right: 1px dashed $fe-drop-folder-bg-color;
             border-top: 1px dashed $fe-drop-folder-bg-color;
@@ -418,7 +433,7 @@
         }
 
         tr.e-row.e-fe-drop-folder .e-rowcell {
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' {
             border-bottom: 1px dashed $fe-drop-folder-bg-color;
             border-top: 1px dashed $fe-drop-folder-bg-color;
             padding-bottom: 6px;
@@ -439,7 +454,7 @@
         margin: $fe-grid-empty-content-margin;
         padding: $fe-grid-empty-content-padding;
         text-align: $fe-grid-empty-content-text-align;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 24px;
         }
       }
@@ -453,7 +468,7 @@
       .e-empty-inner-content {
         font-size: $fe-grid-empty-inner-content-font-size;
         margin: $fe-grid-empty-inner-content-margin;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 22px;
         }
         @else {
@@ -481,7 +496,7 @@
         }
 
         .e-fe-grid-icon {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          @if $fm-skin-name != 'tailwind' {
             padding: 0 0 0 12px;
           }
 
@@ -505,7 +520,7 @@
 
         &.e-focused {
           box-shadow: none;
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
             td {
               box-shadow: $fe-grid-row-ie-box-shadow;
             }
@@ -580,7 +595,7 @@
         margin: $fe-lg-icon-empty-content-margin;
         padding: $fe-lg-icon-empty-content-padding;
         text-align: $fe-lg-icon-empty-content-text-align;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 24px;
         }
       }
@@ -594,7 +609,7 @@
       .e-empty-inner-content {
         font-size: $fe-lg-icon-empty-inner-content-font-size;
         margin: $fe-lg-icon-empty-inner-content-margin;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 22px;
         }
         @else {
@@ -617,7 +632,7 @@
         position: absolute;
         top: 0;
         visibility: hidden;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           margin: 2px;
         }
       }
@@ -630,12 +645,12 @@
         overflow: hidden;
         padding: $fe-lg-item-padding;
         width: $fe-lg-item-width;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           &.e-fe-drop-folder {
             border: 1px dashed $fe-drop-folder-bg-color;
           }
         }
-        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           border-radius: 4px;
         }
 
@@ -663,7 +678,7 @@
 
       .e-list-img {
         border: 2px solid;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           box-shadow: $fe-img-box-shadow;
         }
         display: block;
@@ -689,7 +704,7 @@
         border: $fe-clone-border;
         box-shadow: $fe-clone-box-shadow;
         display: inline-flex;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           height: 38px;
         }
         @else {
@@ -702,7 +717,7 @@
 
         .e-fe-name {
           display: inline-block;
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
             font-size: 14px;
             line-height: 22px;
             margin: 8px 8px 8px 0;
@@ -720,7 +735,7 @@
 
         .e-fe-icon {
           display: inline-block;
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
             height: 20px;
             margin: 9px 8px;
             width: 20px;
@@ -737,7 +752,7 @@
         border: 1px solid;
         border-radius: 50%;
         font-size: 12px;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           height: 20px;
           line-height: 18px;
           margin: -10px 0 0 -10px;
@@ -760,7 +775,7 @@
       .e-treeview {
 
         & > .e-ul {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
             padding: 0 8px 0 0;
           }
         }
@@ -785,14 +800,14 @@
           float: left;
           left: 0;
           right: auto;
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
             padding-left: 12px;
           }
 
           .e-input-group {
 
             .e-input {
-              @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+              @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
                 margin: 0 29px 0 0;
               }
               @else {
@@ -806,7 +821,7 @@
         .e-addressbar-ul {
           display: flex;
 
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
             padding: $fe-rtl-bc-padding;
           }
 
@@ -820,7 +835,7 @@
       .e-grid.e-rtl {
 
         .e-row.e-focused {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
             td:first-child {
               box-shadow: $fe-grid-row-lc-ie-box-shadow;
             }
@@ -830,7 +845,7 @@
             }
           }
         }
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' {
           .e-content {
 
             tr.e-row.e-fe-drop-folder .e-rowcell:first-child {
@@ -886,7 +901,7 @@
         margin-right: -12px;
       }
 
-      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
         .e-fe-clone .e-fe-name {
           margin: 8px 0 8px 8px;
         }
@@ -953,7 +968,7 @@
         max-width: 211px;
         min-width: 51px;
         padding: $fe-dg-td-padding;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 22px;
 
           &:first-child {
@@ -993,7 +1008,7 @@
         width: 100%;
       }
 
-      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
         .e-dlg-content {
           padding-top: 16px;
         }
@@ -1017,7 +1032,7 @@
     }
 
     .e-fe-error {
-      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
         font-size: $text-xs;
         line-height: 18px;
         padding-top: 4px;
@@ -1191,7 +1206,7 @@
         .e-fe-grid-icon .e-fe-icon {
           height: $fe-mobile-grid-icon-size;
           width: $fe-mobile-grid-icon-size;
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
             margin: 0 8px 0 0;
           }
         }
@@ -1213,8 +1228,14 @@
         }
 
         .e-gridcontent .e-fe-grid-icon {
-          padding-left: 10px;
-          padding-right: 10px;
+          @if $fm-skin-name == 'fabric-dark' {
+            padding-left: 9px;
+            padding-right: 9px;
+          }
+          @else {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
         }
 
         .e-fe-text {
@@ -1302,7 +1323,7 @@
           .e-fe-search {
             left: 0;
             margin-left: 8px;
-            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
               margin-top: 7px;
             }
             @else {
@@ -1354,7 +1375,7 @@
   .e-bigger .e-fe-popup {
 
     .e-fe-error {
-      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
         font-size: $text-sm;
         line-height: 22px;
       }
@@ -1383,6 +1404,9 @@
 
       .e-toolbar-items .e-toolbar-item .e-btn-icon.e-icons {
         font-size: $fe-mobile-icon-font-size;
+        @if $skin-name == 'bootstrap5' {
+          padding-bottom: 0;
+        }
       }
 
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn {
@@ -1403,7 +1427,7 @@
         }
 
         &.e-tbar-btn .e-btn-icon.e-icons.e-caret {
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' {
             font-size: 22px;
             height: 22px;
             margin: 4px 4px 0;
@@ -1425,7 +1449,7 @@
         font-size: $fe-mobile-icon-font-size;
       }
     }
-    @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+    @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
       .e-fe-clone {
         .e-fe-content {
           .e-fe-name {
@@ -1453,7 +1477,7 @@
     .e-treeview {
 
       & > .e-ul {
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           padding-left: 12px;
         }
       }
@@ -1513,9 +1537,14 @@
       }
 
       .e-fe-search {
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           font-size: 18px;
+        }
+        @if $fm-skin-name == 'tailwind' {
           margin: 6px 4px;
+        }
+        @else if $fm-skin-name == 'bootstrap5' {
+          margin: 4px;
         }
         @else {
           margin: 7px 0;
@@ -1549,17 +1578,22 @@
         }
 
         .e-fe-checkbox {
-          padding-left: 16px;
+          padding-left: 10px;
         }
 
         .e-fe-grid-icon {
-          padding-left: 16px;
+          @if $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'tailwind' {
+            padding-left: 10px;
+          }
+          @else {
+            padding-left: 16px;
+          }
         }
       }
 
       .e-content {
         tr.e-row.e-fe-drop-folder .e-rowcell {
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          @if $fm-skin-name == 'tailwind' {
             padding-bottom: 11px;
             padding-top: 11px;
           }
@@ -1567,7 +1601,7 @@
       }
 
       .e-fe-icon {
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' {
           height: 24px;
           width: 24px;
         }
@@ -1596,7 +1630,7 @@
       .e-empty-inner-content {
         font-size: $fe-big-grid-empty-inner-content-font-size;
         margin: $fe-big-grid-empty-inner-content-margin;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           opacity: $fe-big-grid-empty-inner-content-opacity;
         }
         padding: $fe-big-grid-empty-inner-content-padding;
@@ -1658,7 +1692,7 @@
       .e-empty-inner-content {
         font-size: $fe-big-lg-icon-empty-inner-content-font-size;
         margin: $fe-big-lg-icon-empty-inner-content-margin;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           opacity: $fe-big-lg-icon-empty-inner-content-opacity;
         }
         padding: $fe-big-lg-icon-empty-inner-content-padding;
@@ -1671,13 +1705,13 @@
       .e-treeview {
 
         & > .e-ul {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
             padding: 0 12px 0 0;
           }
         }
       }
 
-      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
         .e-fe-clone .e-fe-name {
           margin: 7px 0 7px 12px;
         }

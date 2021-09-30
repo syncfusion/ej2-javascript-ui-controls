@@ -11,7 +11,7 @@
       border-left: $listview-border-left solid $listview-border-left-color;
       border-right: $listview-border-right solid $listview-border-right-color;
       border-top: $listview-border-top solid $listview-border-top-color;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         .e-text-content .e-list-text {
           font-size: $listview-touch-item-font-size;
         }
@@ -25,7 +25,7 @@
       @if ($skin-name == 'bootstrap4') {
         padding: 12px 20px;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         padding: $listview-touch-item-padding;
       }
     }
@@ -41,12 +41,12 @@
         font-size: 16px;
         padding: 12px 20px;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         padding: $listview-template-padding;
       }
 
       .e-text-content {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           font-size: $listview-touch-header-font-size;
           line-height: $listview-touch-groupheader-line-height;
         }
@@ -63,7 +63,7 @@
         line-height: 1.2;
         padding: 0 0 0 20px;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         font-size: $text-sm;
         line-height: $listview-item-line-height;
         padding: $listview-template-padding;
@@ -87,7 +87,7 @@
         margin-top: -3px;
         padding-right: 12px;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         margin-right: $listview-touch-icon-margin-right;
       }
     }
@@ -96,7 +96,7 @@
       @if ($skin-name == 'bootstrap4') {
         margin-right: 12px;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         height: $listview-touch-item-size;
         margin-right: $listview-touch-icon-margin-right;
         width: $listview-touch-item-size;
@@ -107,7 +107,7 @@
       @if ($skin-name == 'bootstrap4') {
         font-size: 12px;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         font-size: $listview-touch-item-size;
         height: $listview-touch-item-size;
         width: $listview-touch-item-size;
@@ -119,7 +119,7 @@
         @if ($skin-name == 'bootstrap4') {
           margin: 0 12px 0 0;
         }
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           margin: $listview-touch-checkbox-left-margin;
         }
       }
@@ -128,14 +128,14 @@
         @if ($skin-name == 'bootstrap4') {
           margin: 0 0 0 12px;
         }
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           margin: $listview-touch-checkbox-right-margin;
         }
       }
     }
 
     &.e-rtl {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         &:not(.e-list-template) .e-list-item {
           padding: $listview-rtl-touch-item-padding;
         }
@@ -155,7 +155,7 @@
           @if ($skin-name == 'bootstrap4') {
             margin: 0 12px 0 0;
           }
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             margin: $listview-touch-rtl-checkbox-right-margin;
           }
         }
@@ -164,13 +164,13 @@
           @if ($skin-name == 'bootstrap4') {
             margin: 0 0 0 12px;
           }
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             margin: $listview-touch-rtl-checkbox-left-margin;
           }
         }
       }
 
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         &.e-list-template {
           .e-list-wrapper {
             &.e-list-avatar {
@@ -191,7 +191,7 @@
       }
     }
 
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+    @if ($skin-name == 'tailwind') {
       &.e-list-template {
         .e-list-header {
           padding: 8px 16px;
@@ -266,7 +266,7 @@
       & .e-list-item {
         border-bottom: $listview-border-size solid;
         cursor: pointer;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           .e-text-content .e-list-text {
             font-size: $listview-font-size;
           }
@@ -283,7 +283,7 @@
       }
 
       & .e-icon-back {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           height: $listview-back-icon-size;
           width: $listview-back-icon-size;
         }
@@ -301,7 +301,7 @@
         display: flex;
         font-weight: $listview-header-font-weight;
         height: $listview-header-height;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           padding: 6px $listview-header-text-padding;
 
           .e-headertext {
@@ -320,7 +320,7 @@
 
       & .e-but-back {
         cursor: pointer;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           margin-right: $listview-back-padding-right;
         }
         @else {
@@ -338,7 +338,7 @@
         border-top: $listview-group-border-top solid;
         height: $listview-groupheader-item-height;
         line-height: $listview-groupheader-item-line-height;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           box-sizing: border-box;
           font-weight: $font-weight-medium;
           padding: $listview-header-padding;
@@ -360,7 +360,7 @@
         right: 0%;
         top: 50%;
         transform: translateY(-50%);
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           height: $listview-icon-size;
           width: $listview-icon-size;
         }
@@ -429,7 +429,7 @@
 
       & .e-list-icon {
         margin-right: $listview-icon-margin-right;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           height: $listview-icon-size;
           width: $listview-icon-size;
         }
@@ -458,13 +458,13 @@
         direction: rtl;
 
         &:not(.e-list-template) .e-list-item {
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             padding: $listview-rtl-item-padding;
           }
         }
 
         & .e-list-icon {
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             margin-left: 8px;
           }
           @else {
@@ -486,14 +486,14 @@
 
         & .e-but-back {
           transform: rotate(180deg);
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             margin-left: 8px;
             margin-right: 0;
           }
         }
 
         & .e-icon-back {
-          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+          @if ($skin-name != 'tailwind') {
             margin-top: $listview-rtl-icon-back-margin;
           }
         }

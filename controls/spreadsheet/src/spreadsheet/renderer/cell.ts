@@ -140,16 +140,16 @@ export class CellRenderer implements ICellRenderer {
         if (args.cell && args.cell.formula && args.cell.formula.indexOf('UNIQUE') === - 1) {
             this.calculateFormula(args);
         }
-        const formatArgs: { [key: string]: string | boolean | CellModel } = {
+        const formatArgs: { [key: string]: string | boolean | number | CellModel } = {
             type: args.cell && getTypeFromFormat(args.cell.format),
             value: args.cell && args.cell.value, format: args.cell && args.cell.format ? args.cell.format : 'General',
             formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell,
-            rowIdx: args.rowIdx.toString(), colIdx: args.colIdx.toString() };
+            rowIndex: args.rowIdx, colIndex: args.colIdx, isRowFill: false };
         if (args.cell) { this.parent.notify(getFormattedCellObject, formatArgs); }
         if (!isNullOrUndefined(args.td)) {
             this.parent.refreshNode(args.td, { type: formatArgs.type as string, result: formatArgs.formattedText as string,
                 curSymbol: getNumberDependable(this.parent.locale, 'USD'), isRightAlign: formatArgs.isRightAlign as boolean,
-                value: <string>formatArgs.value || ''
+                value: <string>formatArgs.value || '', isRowFill: <boolean>formatArgs.isRowFill
             });
         }
         let style: CellStyleModel = {};

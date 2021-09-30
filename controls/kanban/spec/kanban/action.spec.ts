@@ -2,7 +2,7 @@
 /**
  * action spec
  */
-import { Kanban, KanbanModel, CardClickEventArgs, ActionEventArgs, ColumnsModel } from '../../src/kanban/index';
+import { Kanban, KanbanModel, EJ2Instance, CardClickEventArgs, ActionEventArgs, ColumnsModel } from '../../src/kanban/index';
 import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { kanbanData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
@@ -1126,6 +1126,56 @@ describe('Action module', () => {
             expect(isNullOrUndefined((kanbanObj.kanbanData[0] as any).Color)).toBe(false);
             expect(kanbanObj.cardSettings.footerCssField).toEqual('ClassName');
             expect(isNullOrUndefined((kanbanObj.kanbanData[0] as any).ClassName)).toBe(false);
+        });
+    });
+
+    describe('EJ2-47242 - Script error thrown when hide the column', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', allowToggle: true, isExpanded: true },
+                    { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, isExpanded: true },
+                    { headerText: 'Testing', keyField: 'Testing', allowToggle: true, isExpanded: true },
+                    { headerText: 'Done', keyField: 'Close', allowToggle: true, isExpanded: true }
+                ],
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('testing to show and hide column  ', () => {
+            expect(kanbanObj.columns.length).toEqual(4);
+            const card: Element = kanbanObj.element.querySelector('.e-card[data-id="2"]');
+            util.triggerMouseEvent(card, 'dblclick');
+        });
+        it('Check the opened dropdown list values', () => {
+            let element = (document.getElementById("Kanban_dialog_wrapper").getElementsByClassName('e-dropdownlist')[0] as EJ2Instance);
+            expect((element.ej2_instances[0] as any).getItems().length).toEqual(4);
+        });
+        it('dialog close after card double click', () => {
+            kanbanObj.closeDialog();
+        });
+        it('testing to show and hide column  ', () => {
+            expect(kanbanObj.columns.length).toEqual(4);
+            kanbanObj.hideColumn('Testing');
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells').length).toEqual(3);
+            expect(kanbanObj.columns.length).toEqual(4);
+            const card: Element = kanbanObj.element.querySelector('.e-card[data-id="2"]');
+            util.triggerMouseEvent(card, 'dblclick');
+        });
+        it('Check the opened dropdown list values', () => {
+            let dialogWrapper: Element = document.getElementById("Kanban_dialog_wrapper");
+            let element: EJ2Instance = (dialogWrapper.getElementsByClassName('e-dropdownlist')[0] as EJ2Instance);
+            expect((element.ej2_instances[0] as any).getItems().length).toEqual(3);
+        });
+        it('dialog close after card double click', () => {
+            kanbanObj.closeDialog();
         });
     });
 

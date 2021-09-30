@@ -33,6 +33,8 @@ export class StackingBarSeries extends ColumnBase {
                 withInRange(series.points[pointStack.index - 1], pointStack, series.points[pointStack.index + 1], series)) {
                 rect = this.getRectangle(pointStack.xValue + sideBySideInfo.start, stackedValue.endValues[pointStack.index],
                     pointStack.xValue + sideBySideInfo.end, stackedValue.startValues[pointStack.index], series);
+                rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : rect.height;
+                rect.y = series.columnWidthInPixel ? rect.y - (series.columnWidthInPixel / 2) : rect.y;
                 argsData = this.triggerEvent(series, pointStack, series.interior,
                     { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {

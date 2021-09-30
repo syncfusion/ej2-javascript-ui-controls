@@ -12,9 +12,9 @@ import { IAxisLabelRenderEventArgs, ScrollBar, Zoom, IResizeEventArgs, TooltipSe
 import { ZoomSettingsModel, ParetoSeries, Export, Crosshair, MultiLevelLabelsModel, MultiLevelLabel } from '@syncfusion/ej2-charts';
 import { ColumnModel, IPointEventArgs, IMultiLevelLabelClickEventArgs, LegendSettingsModel, BubbleSeries } from '@syncfusion/ej2-charts';
 import { AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
-import { createElement, remove, isNullOrUndefined, isBlazor, select } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
-import { PivotView } from '../../pivotview';
+import { PivotView } from '../../pivotview/base/pivotview';
 import {
     RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo,
     DrillArgs, MultiLevelLabelClickEventArgs, EnginePopulatedEventArgs, EnginePopulatingEventArgs
@@ -175,6 +175,13 @@ export class PivotChart {
         let memberCell: IAxisSet;
         let drillDimension: string = '';
         let isDrill: boolean = false;
+        let measureNames: { [key: string]: string } = {};
+        let isValidHeader: boolean = false;
+        for (let field of this.dataSourceSettings.values) {
+            let fieldName: string = field.name;
+            measureNames[fieldName] = field.caption ? field.caption : fieldName;
+            measureNames[field.caption ? field.caption : fieldName] = fieldName;
+        }
         if (this.parent.dataType === 'olap') {
             levelPos = this.groupHierarchyWithLevels(pivotValues as any);
             lastHierarchy = this.fieldPosition[this.fieldPosition.length - 1];
@@ -185,8 +192,27 @@ export class PivotChart {
         for (let rKey of rKeys) {
             let rowIndex: number = Number(rKey);
             if (!isNullOrUndefined(pivotValues[rowIndex])) {
-                if (pivotValues[rowIndex][0] && (pivotValues[rowIndex][0] as IAxisSet).axis === 'row' &&
-                    (this.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex][0] as IAxisSet).type !== 'grand sum')) {
+                let header: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
+                let valueSort: string[] = header && header.valueSort && !isNullOrUndefined(header.valueSort.levelName) ?
+                    header.valueSort.levelName.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) : undefined;
+                isValidHeader = false;
+                if (valueSort && valueSort[0] !== 'Grand Total') {
+                    if ((chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ||
+                        valueSort.indexOf(measureNames[this.currentMeasure]) > -1) {
+                        isValidHeader = true;
+                    }
+                    if (!isValidHeader) {
+                        for (let levelName of valueSort) {
+                            if (measureNames[levelName]) {
+                                isValidHeader = true;
+                                break;
+                            }
+                        }
+                        isValidHeader = isValidHeader ? false : true;
+                    }
+                }
+                if (header && header.axis === 'row' && (this.dataSourceSettings.rows.length === 0 ? true :
+                    (header.type !== 'grand sum' && isValidHeader))) {
                     let firstRowCell: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
                     let tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
                         (this.engineModule as OlapEngine).tupRowInfo[firstRowCell.ordinal] : undefined;
@@ -254,6 +280,32 @@ export class PivotChart {
                         memberCell = firstRowCell.memberType !== 3 ? firstRowCell : memberCell;
                     } else {
                         memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
+                        if (firstRowCell.type !== 'value') {
+                            memberCell = firstRowCell;
+                        } else {
+                            let valueSort: string[] = firstRowCell && firstRowCell.valueSort && firstRowCell.valueSort.levelName &&
+                                firstRowCell.valueSort.levelName.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter);
+                            let levelName: string;
+                            if (valueSort && valueSort.length > 0) {
+                                valueSort.splice(valueSort.length - 1, 1);
+                                levelName = valueSort.join(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter);
+                            }
+                            if ((this.parent.dataSourceSettings.valueIndex <= 0 || (this.engineModule as PivotEngine).valueAxis &&
+                                this.dataSourceSettings.rows.length === (this.engineModule as PivotEngine).measureIndex) ||
+                                isNullOrUndefined(memberCell.valueSort) || (levelName === memberCell.valueSort.levelName)) {
+                                memberCell = memberCell;
+                            } else {
+                                let prevIndex = rowIndex;
+                                while (prevIndex > -1) {
+                                    if (pivotValues[prevIndex] && pivotValues[prevIndex][0] && (pivotValues[prevIndex][0] as IAxisSet).valueSort &&
+                                        (pivotValues[prevIndex][0] as IAxisSet).valueSort.levelName === levelName) {
+                                        memberCell = pivotValues[prevIndex][0] as IAxisSet;
+                                        prevIndex = 0;
+                                    }
+                                    prevIndex--;
+                                }
+                            }
+                        }
                     }
                     for (let cKey of cKeys) {
                         let cellIndex: number = Number(cKey);
@@ -270,7 +322,7 @@ export class PivotChart {
                                 ((firstRowCell.memberType === 3 && prevMemberCell) ?
                                     (fieldPos === this.measurePos ? (prevMemberCell.isDrilled && prevMemberCell.hasChild) : true) : (firstRowCell.isDrilled && firstRowCell.hasChild)) : true)
                                 : (((firstRowCell.type === 'value' && prevMemberCell) ?
-                                    prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
+                                prevMemberCell.members.length > 0 && prevMemberCell.isDrilled : firstRowCell.members.length > 0 && firstRowCell.isDrilled) || !measureAllow)) {
                                 break;
                             }
                             let colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
@@ -281,6 +333,7 @@ export class PivotChart {
                             let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
                                 !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
                                 Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
+                                yValue = yValue === Infinity ? null : yValue;
                             if (yValue === 0) {
                                 this.accEmptyPoint = true;
                             }
@@ -334,12 +387,6 @@ export class PivotChart {
             currentSeries.dataSource = this.columnGroupObject[this.currentColumn];
             currentSeries.xName = 'x';
             currentSeries.yName = 'y';
-            if (isBlazor()) {
-                if (isNullOrUndefined(this.persistSettings.chartSeries.dataLabel.visible)) {
-                    this.persistSettings.chartSeries.dataLabel.visible = true;
-                    this.persistSettings.chartSeries.dataLabel.position = "Outside";
-                }
-            }
             if (this.persistSettings.chartSeries && this.persistSettings.chartSeries.dataLabel) {
                 currentSeries.dataLabel = this.persistSettings.chartSeries.dataLabel;
                 currentSeries.dataLabel.name = 'x';
@@ -972,6 +1019,16 @@ export class PivotChart {
     }
     /* eslint-enable */
     private getZoomFactor(): number {
+        this.calculatedWidth = this.getCalulatedWidth();
+        let seriesLength: number = (this.chartSeries.length * 10) > 120 ? (this.chartSeries.length * 10) : 120;
+        let zoomFactor: number = this.chartSeries.length > 0 ?
+            (this.calculatedWidth / (Object.keys(this.chartSeries[0].dataSource).length * seriesLength)) : 1;
+        zoomFactor = (zoomFactor < 1 && zoomFactor > 0) ? zoomFactor : 1;
+        return zoomFactor;
+    }
+
+    /** @hidden */
+    public getCalulatedWidth(): number {
         if (!isNaN(Number(this.parent.width))) {
             this.calculatedWidth = Number(this.parent.width);
         } else if ((this.parent.width as string).indexOf('%') > -1) {
@@ -981,11 +1038,7 @@ export class PivotChart {
         } else {
             this.calculatedWidth = this.parent.element.clientWidth;
         }
-        let seriesLength: number = (this.chartSeries.length * 10) > 120 ? (this.chartSeries.length * 10) : 120;
-        let zoomFactor: number = this.chartSeries.length > 0 ?
-            (this.calculatedWidth / (Object.keys(this.chartSeries[0].dataSource).length * seriesLength)) : 1;
-        zoomFactor = (zoomFactor < 1 && zoomFactor > 0) ? zoomFactor : 1;
-        return zoomFactor;
+        return this.calculatedWidth;
     }
 
     private configTooltipSettings(): TooltipSettingsModel {
@@ -997,13 +1050,7 @@ export class PivotChart {
         if (this.parent.tooltipTemplate) {
             tooltip.template = tooltip.template ? tooltip.template : this.parent.tooltipTemplate;
         }
-        if (isBlazor()) {
-            this.parent.allowServerDataBinding = false;
-            this.parent.setProperties({ chartSettings: { tooltip: { header: tooltip.header ? tooltip.header : '' } } }, true);
-            this.parent.allowServerDataBinding = true;
-        } else {
-            tooltip.header = tooltip.header ? tooltip.header : '';
-        }
+        tooltip.header = tooltip.header ? tooltip.header : '';
         tooltip.enableMarker = tooltip.enableMarker === undefined ? true : tooltip.enableMarker;
         return tooltip;
     }
@@ -1470,7 +1517,7 @@ export class PivotChart {
         };
         let drillArgs: DrillArgs = {
             drillInfo: drilledItem,
-            pivotview: isBlazor() ? undefined : pivot.parent
+            pivotview: pivot.parent
         };
         pivot.parent.trigger(events.drill, drillArgs);
         let enginePopulatingEventArgs: EnginePopulatingEventArgs = {
@@ -1479,24 +1526,7 @@ export class PivotChart {
         this.parent.trigger(events.enginePopulating, enginePopulatingEventArgs);
         this.parent.setProperties({ dataSourceSettings: enginePopulatingEventArgs.dataSourceSettings }, true);
         if (pivot.parent.enableVirtualization) {
-            if (isBlazor()) {
-                /* eslint-disable */
-                let sfBlazor: string = 'sfBlazor';
-                let dataSourceSettings: any = (window as any)[sfBlazor].copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
-                let drillItem: any = (window as any)[sfBlazor].copyWithoutCircularReferences([drilledItem], drilledItem);
-                let args: any = (window as any)[sfBlazor].copyWithoutCircularReferences([drillArgs], drillArgs);
-                (pivot.parent as any).interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'onDrill',
-                    { 'dataSourceSettings': dataSourceSettings, 'drilledItem': drillItem }).then((data: any) => {
-                        pivot.parent.updateBlazorData(data, pivot.parent);
-                        pivot.parent.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
-                        pivot.parent.allowServerDataBinding = false;
-                        pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-                        delete (pivot.parent as any).bulkChanges.pivotValues;
-                        pivot.parent.allowServerDataBinding = true;
-                        pivot.parent.renderPivotGrid();
-                    });
-                /* eslint-enable */
-            } else if (pivot.parent.dataSourceSettings.mode === 'Server') {
+            if (pivot.parent.dataSourceSettings.mode === 'Server') {
                 pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
             } else {
                 pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
@@ -1505,7 +1535,7 @@ export class PivotChart {
         } else if (pivot.parent.dataSourceSettings.mode === 'Server') {
             pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
         } else {
-            (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings);
+            (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings, true);
         }
         pivot.parent.allowServerDataBinding = false;
         pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
@@ -1553,9 +1583,6 @@ export class PivotChart {
     }
 
     private resized(args: IResizeEventArgs): void {
-        if (isBlazor()) {
-            args.chart = this.parent.chart;
-        }
         if (this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0) {
             (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? this.getZoomFactor() : this.parent.chartSettings.primaryXAxis.zoomFactor;
             if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {

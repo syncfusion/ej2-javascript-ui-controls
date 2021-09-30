@@ -4949,7 +4949,7 @@ export class WordExport {
             writer.writeStartElement(undefined, 'keepLines', this.wNamespace);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
+        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) { 
             writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
             writer.writeEndElement();
@@ -4959,6 +4959,15 @@ export class WordExport {
             writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
             if (!paragraphFormat.contextualSpacing) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, '0');
+            }
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(paragraphFormat.widowControl)) {
+            writer.writeStartElement('w', 'widowControl', this.wNamespace);
+            if (paragraphFormat.widowControl) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, '1');
+            }else {
+                writer.writeAttributeString('w', 'val', this.wNamespace, '0');  
             }
             writer.writeEndElement();
         }

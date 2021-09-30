@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property, isBlazor } from '@syncfusion/ej2-base';
+import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, Browser, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { createElement, remove, Event, EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { createSvg, RectOption, measureText, TextOption, renderTextElement } from '../smithchart/utils/helper';
@@ -221,7 +221,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers before the prints gets started.
      *
      * @event beforePrint
-     * @blazorProperty 'OnPrint'
      */
     @Event()
     public beforePrint: EmitType<ISmithchartPrintEventArgs>;
@@ -229,7 +228,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers after the animation completed.
      *
      * @event animationComplete
-     * @blazorProperty 'AnimationCompleted'
      */
     @Event()
     public animationComplete: EmitType<ISmithchartAnimationCompleteEventArgs>;
@@ -238,7 +236,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers before smithchart rendered.
      *
      * @event load
-     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ISmithchartLoadEventArgs>;
@@ -246,7 +243,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers after smithchart rendered.
      *
      * @event loaded
-     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ISmithchartLoadedEventArgs>;
@@ -255,7 +251,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers before the legend is rendered.
      *
      * @event legendRender
-     * @blazorProperty 'LegendRendering'
      */
     @Event()
     public legendRender: EmitType<ISmithchartLegendRenderEventArgs>;
@@ -264,7 +259,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers before the title is rendered.
      *
      * @event titleRender
-     * @blazorProperty 'TitleRendering'
      */
     @Event()
     public titleRender: EmitType<ITitleRenderEventArgs>;
@@ -273,7 +267,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers before the sub-title is rendered.
      *
      * @event subtitleRender
-     * @blazorProperty 'SubtitleRendering'
      */
     @Event()
     public subtitleRender: EmitType<ISubTitleRenderEventArgs>;
@@ -282,7 +275,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers before the datalabel text is rendered.
      *
      * @event textRender
-     * @blazorProperty 'TextRendering'
      */
     @Event()
     public textRender: EmitType<ISmithchartTextRenderEventArgs>;
@@ -290,7 +282,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Triggers before the axis label is rendered
      *
      * @event axisLabelRender
-     * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
     public axisLabelRender: EmitType<ISmithchartAxisLabelRenderEventArgs>;
@@ -312,9 +303,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     @Event()
     public tooltipRender: EmitType<ISmithChartTooltipEventArgs>;
-
-    /** @private */
-    public isBlazor: boolean;
 
     /**
      * Get component name
@@ -491,9 +479,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      */
 
     protected preRender(): void {
-        this.isBlazor = isBlazor();
         this.allowServerDataBinding = false;
-        this.trigger(load, { smithchart: !this.isBlazor ? this : null });
+        this.trigger(load, { smithchart: this });
         this.unWireEVents();
         this.initPrivateVariable();
         this.wireEVents();
@@ -536,7 +523,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         this.seriesrender.draw(this, axisRender, this.bounds);
         this.renderComplete();
         this.allowServerDataBinding = true;
-        this.trigger(loaded, { smithchart: !this.isBlazor ? this : null });
+        this.trigger(loaded, { smithchart: this });
     }
     private createSecondaryElement(): void {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {

@@ -22,11 +22,11 @@
   .e-date-wrapper {
     #{if(&, '&', '*')} span.e-input-group-icon {
       #{if(&, '&', '*')}.e-date-icon.e-icons.e-active {
-        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
           color: $datepicker-icon-color;
         }
       }#{if(&, '&', '*')}.e-date-icon.e-icons.e-active {
-        @if $skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
           background: $datepicker-icon-active-bg-color;
           border-color: $datepicker-active-border-color;
         }

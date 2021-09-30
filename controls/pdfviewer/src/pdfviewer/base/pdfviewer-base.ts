@@ -6790,6 +6790,12 @@ export class PdfViewerBase {
                 this.tool = this.getTool(this.action);
                 this.setCursor(eventTarget, evt);
             } else {
+                if (!this.tool && this.action && this.action === 'Rotate') {
+                    this.tool = this.getTool(this.action);
+                    if (evt.target as HTMLElement) {
+                        this.setCursor(evt.target as HTMLElement, evt);
+                    }
+                }
                 // eslint-disable-next-line max-len
                 if (!this.pdfViewer.designerMode && ((!isNullOrUndefined(target) && (!isNullOrUndefined(target.formFieldAnnotationType))) || isFormFieldSign)) {
                     if (this.action === 'ResizeSouthEast' || this.action === 'ResizeNorthEast' || this.action === 'ResizeNorthWest' || this.action === 'ResizeSouthWest' ||

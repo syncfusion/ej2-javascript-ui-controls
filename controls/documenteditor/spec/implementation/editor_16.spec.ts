@@ -42,13 +42,13 @@ console.log('valid list conversion on enter');
         editor.selection.handleDownKey();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('2.1.');
     });
-    it('undo after list conversion', () => {
-console.log('undo after list conversion');
-        editor.editorHistory.undo();
-        editor.selection.handleDownKey();
-        editor.selection.handleDownKey();
-        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.1.');
-    })
+//     it('undo after list conversion', () => {
+// console.log('undo after list conversion');
+//         editor.editorHistory.undo();
+//         editor.selection.handleDownKey();
+//         editor.selection.handleDownKey();
+//         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.1.');
+//     })
 });
 
 describe('Hidden list edit validation - 2', () => {
@@ -84,11 +84,11 @@ console.log('valid list conversion on enter in list level 1');
         editor.editor.onEnter();
         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.2.');
     });
-    it('undo after list conversion in list level 1', () => {
-console.log('undo after list conversion in list level 1');
-        editor.editorHistory.undo();
-        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.1.');
-    });
+//     it('undo after list conversion in list level 1', () => {
+// console.log('undo after list conversion in list level 1');
+//         editor.editorHistory.undo();
+//         expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('1.1.');
+//     });
     it('redo after list conversion in list level 1', () => {
 console.log('redo after list conversion in list level 1');
         editor.editorHistory.redo();
@@ -271,12 +271,12 @@ console.log('Remove hyperlink at start of paragraph');
         editor.editor.removeHyperlink();
         expect(editor.selection.getHyperlinkField()).toBeUndefined();
     });
-    it('undo after remove hyperlink', () => {
-console.log('undo after remove hyperlink');
-        editor.editorHistory.undo();
-        editor.selection.handleLeftKey();
-        expect(editor.selection.getHyperlinkField()).not.toBeUndefined();
-    });
+//     it('undo after remove hyperlink', () => {
+// console.log('undo after remove hyperlink');
+//         editor.editorHistory.undo();
+//         editor.selection.handleLeftKey();
+//         expect(editor.selection.getHyperlinkField()).not.toBeUndefined();
+//     });
 });
 
 //Customer reported issue

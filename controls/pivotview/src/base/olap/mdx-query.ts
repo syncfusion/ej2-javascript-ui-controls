@@ -567,7 +567,7 @@ export class MDXQuery {
         for (let field of this.filters) {
             let isFound: boolean = false;
             for (let column of this.columns) {
-                if (this.getDimensionUniqueName(column.name) === this.getDimensionUniqueName(field.name)) {
+                if (!isFound && this.getDimensionUniqueName(column.name) === this.getDimensionUniqueName(field.name)) {
                     if (filters[field.name]) {
                         columnFilter.push(filters[field.name] as string[]);
                         isFound = true;
@@ -576,9 +576,10 @@ export class MDXQuery {
             }
             if (!isFound) {
                 for (let row of this.rows) {
-                    if (this.getDimensionUniqueName(row.name) === this.getDimensionUniqueName(field.name)) {
+                    if (!isFound && this.getDimensionUniqueName(row.name) === this.getDimensionUniqueName(field.name)) {
                         if (filters[field.name]) {
                             rowFilter.push(filters[field.name] as string[]);
+                            isFound = true;
                         }
                     }
                 }

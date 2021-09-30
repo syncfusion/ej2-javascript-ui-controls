@@ -202,7 +202,7 @@ export class EventBase {
             const data: number = this.getGroupIndexFromEvent(eventObj);
             resourceData = this.parent.resourceBase.lastResourceLevel[data];
         }
-        let blockEvents: Record<string, any>[] = <Record<string, any>[]>extend([], this.parent.blockProcessed, null, true);
+        const blockEvents: Record<string, any>[] = <Record<string, any>[]>extend([], this.parent.blockProcessed, null, true);
         for (const eventObj of blockEvents) {
             if (eventObj[fields.isAllDay]) {
                 const isDifferentTime: boolean = (eventObj[fields.endTime] as Date).getTime() >
@@ -261,27 +261,35 @@ export class EventBase {
         return filteredCollection;
     }
 
-    public sortByTime(appointments: Record<string, any>[]): Record<string, any>[] {
-        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        appointments.sort((a: Record<string, any>, b: Record<string, any>) => {
-            const d1: Date = a[fieldMapping.startTime] as Date;
-            const d2: Date = b[fieldMapping.startTime] as Date;
-            return d1.getTime() - d2.getTime();
-        });
-        return appointments;
+    public sortByTime(appointmentsCollection: Record<string, any>[]): Record<string, any>[] {
+        if (this.parent.eventSettings.sortComparer) {
+            appointmentsCollection = this.parent.eventSettings.sortComparer.call(this.parent, appointmentsCollection);
+        } else {
+            const fieldMappings: EventFieldsMapping = this.parent.eventFields;
+            appointmentsCollection.sort((a: Record<string, any>, b: Record<string, any>) => {
+                const d1: Date = a[fieldMappings.startTime] as Date;
+                const d2: Date = b[fieldMappings.startTime] as Date;
+                return d1.getTime() - d2.getTime();
+            });
+        }
+        return appointmentsCollection;
     }
 
     public sortByDateTime(appointments: Record<string, any>[]): Record<string, any>[] {
-        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        appointments.sort((object1: Record<string, any>, object2: Record<string, any>) => {
-            const d3: Date = object1[fieldMapping.startTime] as Date;
-            const d4: Date = object2[fieldMapping.startTime] as Date;
-            const d5: Date = object1[fieldMapping.endTime] as Date;
-            const d6: Date = object2[fieldMapping.endTime] as Date;
-            const d1: number = d5.getTime() - d3.getTime();
-            const d2: number = d6.getTime() - d4.getTime();
-            return (d3.getTime() - d4.getTime() || d2 - d1);
-        });
+        if (this.parent.eventSettings.sortComparer) {
+            appointments = this.parent.eventSettings.sortComparer.call(this.parent, appointments);
+        } else {
+            const fieldMapping: EventFieldsMapping = this.parent.eventFields;
+            appointments.sort((object1: Record<string, any>, object2: Record<string, any>) => {
+                const d3: Date = object1[fieldMapping.startTime] as Date;
+                const d4: Date = object2[fieldMapping.startTime] as Date;
+                const d5: Date = object1[fieldMapping.endTime] as Date;
+                const d6: Date = object2[fieldMapping.endTime] as Date;
+                const d1: number = d5.getTime() - d3.getTime();
+                const d2: number = d6.getTime() - d4.getTime();
+                return (d3.getTime() - d4.getTime() || d2 - d1);
+            });
+        }
         return appointments;
     }
 
@@ -333,10 +341,10 @@ export class EventBase {
 
     public splitEvent(event: Record<string, any>, dateRender: Date[]): Record<string, any>[] {
         const fields: EventFieldsMapping = this.parent.eventFields;
-        let start: number = util.resetTime(new Date(event[fields.startTime] + '')).getTime();
-        let end: number = util.resetTime(new Date(event[fields.endTime] + '')).getTime();
+        let start: number = util.resetTime(event[fields.startTime]).getTime();
+        let end: number = util.resetTime(event[fields.endTime]).getTime();
         if (util.getDateInMs(event[fields.endTime] as Date) <= 0) {
-            const temp: number = util.addDays(util.resetTime(new Date(event[fields.endTime] + '')), -1).getTime();
+            const temp: number = util.addDays(util.resetTime(event[fields.endTime]), -1).getTime();
             end = start > temp ? start : temp;
         }
         const orgStart: number = start;

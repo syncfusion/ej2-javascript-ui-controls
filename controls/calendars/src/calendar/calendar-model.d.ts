@@ -1,4 +1,4 @@
-import { Component, EventHandler, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser , ChildProperty} from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';import { Islamic, IslamicDateArgs } from './index';
+import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser , ChildProperty} from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';import { Islamic, IslamicDateArgs } from './index';
 import {CalendarType,CalendarView,WeekRule,DayHeaderFormats,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -68,7 +68,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * Gets or sets the minimum date that can be selected in the Calendar.
      *
      * @default new Date(1900, 00, 01)
-     * @blazorDefaultValue new DateTime(1900, 01, 01)
      * @deprecated
      */
     min?: Date;
@@ -92,7 +91,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * Gets or sets the maximum date that can be selected in the Calendar.
      *
      * @default new Date(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      * @deprecated
      */
     max?: Date;
@@ -102,7 +100,6 @@ export interface CalendarBaseModel extends ComponentModel{
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      * @deprecated
      * > For more details about firstDayOfWeek refer to
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
@@ -316,7 +313,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * {% codeBlock src='calendar/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      * @deprecated
      */
     keyConfigs?: { [key: string]: string };
@@ -335,7 +331,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * Triggers when Calendar is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -343,7 +338,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * Triggers when Calendar is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -351,7 +345,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * Triggers when the Calendar is navigated to another level or within the same level of view.
      *
      * @event navigated
-     * @blazorProperty 'Navigated'
      */
     navigated?: EmitType<NavigatedEventArgs>;
 
@@ -359,7 +352,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * Triggers when each day cell of the Calendar is rendered.
      *
      * @event renderDayCell
-     * @blazorProperty 'OnRenderDayCell'
      */
     renderDayCell?: EmitType<RenderDayCellEventArgs>;
 
@@ -398,7 +390,6 @@ export interface CalendarModel extends CalendarBaseModel{
      * Triggers when the Calendar value is changed.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangedEventArgs>;
 

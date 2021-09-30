@@ -6,7 +6,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/ban-types */
 import { BulletChart } from '../bullet-chart';
-import { compile as templateComplier, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { compile as templateComplier } from '@syncfusion/ej2-base';
 import { stringToNumber } from '../../common/utils/helper';
 import { IBulletTooltipContent, IBulletchartTooltipEventArgs } from '../model/bullet-interface';
 import { tooltipRender } from '../../common/model/constants';
@@ -77,7 +77,7 @@ export class BulletTooltip {
         if (targetClass !== 'undefined' && this.control.tooltip.enable && (targetClass === this.control.svgObject.id + '_FeatureMeasure' ||
             targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
             let data: IBulletTooltipContent;
-            let blazorTooltipData: IBulletTooltipContent;
+            let tooltipData: IBulletTooltipContent;
             let measureId: string;
             let currentVal: number;
             let targetVal: string[] = [];
@@ -102,7 +102,7 @@ export class BulletTooltip {
             }
             labelCategoryText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +categoryVal);
             data = { value: labelCurrentText, target: targetValues, category: labelCategoryText };
-            blazorTooltipData = { value: labelCurrentText, target: labelTargetText, category: labelCategoryText };
+            tooltipData = { value: labelCurrentText, target: labelTargetText, category: labelCategoryText };
             let style: string = 'position: absolute; z-index: 13000; display: block;';
             if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
                 tooltipdiv = <HTMLDivElement>this.control.createElement('div');
@@ -117,10 +117,10 @@ export class BulletTooltip {
                 this.updateTemplateFn();
                 let elem: Element = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
                 let templateElement: HTMLCollection = this.templateFn(
-                    blazorTooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem
+                    tooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem
                 );
                 while (templateElement && templateElement.length > 0) {
-                    if (isBlazor() || templateElement.length === 1) {
+                    if (templateElement.length === 1) {
                         elem.appendChild(templateElement[0]);
                         templateElement = null;
                     } else {
@@ -161,11 +161,6 @@ export class BulletTooltip {
             }
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 tooltipdiv.setAttribute('style', 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;');
-                if (isBlazor()) {
-                    updateBlazorTemplate(
-                        this.control.element.id + 'parent_template' + '_blazorTemplate', 'Template', this.control.tooltip
-                    );
-                }
             } else {
                 const divStyle: string = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
                     '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +

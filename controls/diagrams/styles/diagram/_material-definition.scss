@@ -1,52 +1,56 @@
 @import 'definition.scss';
 
 $skin-name: 'material';
-$diagram-endpoint-handle-color: $accent;
-$diagram-endpoint-handle-connected-border: $accent;
-$diagram-endpoint-handle-connected-color: $grey-white;
+$diagram-endpoint-handle-color: $primary-font;
+$diagram-endpoint-handle-connected-border: $primary-font;
+$diagram-endpoint-handle-connected-color: $accent;
 
 $diagram-resize-handle-color: $accent;
-$diagram-resize-handle-stroke: $grey-white;
+$diagram-resize-handle-stroke: $accent;
 $diagram-border-stroke: $accent;
 
-$diagram-resize-handle-disable-color: $grey-500;
-$diagram-resize-handle-disable-stroke: $accent-font;
+$diagram-resize-handle-disable-color: $grey-400;
+$diagram-resize-handle-disable-stroke: $primary-font;
 $diagram-border-stroke-disabled: $grey-400;
 
-$diagram-rotate-handle-color: #000;
+$diagram-rotate-handle-color: $accent;
 
-$diagram-bezier-handle-color: $accent;
+$diagram-bezier-handle-color: $primary-font;
 $diagram-bezier-line-color: $accent;
 
 $diagram-highlighter-stroke: $accent;
-$diagram-selected-region-stroke: $primary;
+$diagram-selected-region-stroke: $accent;
 $diagram-pivot-line-stroke: $accent;
 
-$diagram-text-edit-selection-color: $grey-white;
+$diagram-helper-stroke: $accent;
+
+$diagram-text-edit-selection-color: $primary-font;
 $diagram-text-edit-selection-background: $accent;
 
 $diagram-symbolpalette-hover: $grey-200;
-$diagram-symbolpalette-shape-radius: 00px;
-$diagram-symbolpalette-selected: $grey-300;
+$diagram-symbolpalette-shape-radius: 4px;
+$diagram-symbolpalette-selected: $grey-400;
 
 $diagram-tooltip: none;
 
-$diagram-ruler-color: $grey-600;
+$diagram-ruler-color: $grey-100;
 $diagram-ruler-font-size: 10px;
 $diagram-ruler-marker-stroke: $accent;
-$diagram-ruler-marker-background-color: $grey-white;
+$diagram-ruler-marker-background-color: $grey-100;
 $diagram-ruler-label-fill: $grey-700;
-$diagram-ruler-tick-stroke: $grey-600;
+$diagram-ruler-tick-stroke: $grey-400;
 
-$diagram-background-color: transparent;
+$palette-background-color: #fff;
 
-$diagram-editbox-background: #fff;
-$diagram-editbox-fontcolor: #000;
+$diagram-background-color: $primary-font;
+
+$diagram-editbox-background: $primary-font;
+$diagram-editbox-fontcolor: $grey-black;
 $diagram-border-stroke-width: 2;
 $diagram-lane-border-stroke-width: 2;
 $diagram-highlighter-border-stroke-width: 2;
-$diagram-border-strokes: $accent;
-$diagram-lane-border-strokes: #0078ff;
+$diagram-border-strokes: $primary;
+$diagram-lane-border-strokes: $primary;
 
 .e-icons {
   font-family: 'e-icons';

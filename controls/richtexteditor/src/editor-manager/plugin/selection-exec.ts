@@ -35,7 +35,7 @@ export class SelectionBasedExec {
             SelectionCommands.applyFormat(
                 this.parent.currentDocument,
                 e.event.action,
-                this.parent.editableElement);
+                this.parent.editableElement, e.enterAction);
             this.callBack(e, e.event.action);
         }
     }
@@ -44,7 +44,7 @@ export class SelectionBasedExec {
         SelectionCommands.applyFormat(
             this.parent.currentDocument,
             e.subCommand.toLocaleLowerCase(),
-            this.parent.editableElement,
+            this.parent.editableElement, e.enterAction,
             e.value as string, e.selector);
         this.callBack(e, e.subCommand);
     }

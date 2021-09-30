@@ -70,7 +70,12 @@
           & .e-caret {
             font-size: $menu-caret-font-size;
             height: auto;
-            line-height: $menu-li-height;
+            @if $skin-name == 'bootstrap5' {
+              line-height: $menu-icon-li-height;
+            }
+            @else {
+              line-height: $menu-li-height;
+            }
             position: absolute;
             right: $menu-caret-right;
             top: 0;
@@ -316,7 +321,12 @@
 
       & .e-caret {
         font-size: $menu-bigger-caret-font-size;
-        line-height: $menu-bigger-li-height;
+        @if $skin-name == 'bootstrap5' {
+          line-height: $menu-bigger-li-icon-height;
+        }
+        @else {
+          line-height: $menu-bigger-li-height;
+        }
         right: $menu-bigger-caret-right;
       }
 

@@ -42,6 +42,15 @@ export class Freeze {
         const movableRows: HTMLTableRowElement[] = <HTMLTableRowElement[]>this.parent.getMovableDataRows();
         const frozenrows: HTMLTableRowElement[] = this.parent.getRows();
         let rows: HTMLTableRowElement[];
+        let frozenRightRows: HTMLTableRowElement[];
+        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (freeze) {
+            frozenRightRows = <HTMLTableRowElement[]>this.parent.getFrozenRightRows().filter(
+                (e: HTMLTableRowElement) =>
+                    e.querySelector(
+                        '.e-gridrowindex' + args.record.index + 'level' + (args.record.level + 1)
+                    ));
+        }
         if (!args.detailrows.length) {
             rows = movableRows.filter(
                 (e: HTMLTableRowElement) =>
@@ -54,6 +63,9 @@ export class Freeze {
         for (let i: number = 0; i < rows.length; i++) {
             const rData: ITreeData = this.parent.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
             rows[i].style.display = args.action;
+            if (freeze) {
+                frozenRightRows[i].style.display = args.action;
+            }
             const queryselector: string = args.action === 'none' ? '.e-treecolumn-container .e-treegridcollapse'
                 : '.e-treecolumn-container .e-treegridexpand';
             if (frozenrows[rows[i].rowIndex].querySelector(queryselector)) {

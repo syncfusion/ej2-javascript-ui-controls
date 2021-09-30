@@ -64,7 +64,7 @@
       }
     }
 
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
       .e-ul {
         padding: $treeview-big-root-ul-padding;
       }
@@ -200,7 +200,7 @@
 
     .e-checkbox-wrapper {
       margin: $treeview-big-check-margin;
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
         & + .e-list-text {
           padding: $treeview-big-check-text-padding;
         }
@@ -218,7 +218,7 @@
       @if $skin-name == 'bootstrap4' {
         font-size: $treeview-big-image-font-size;
         }
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         & + .e-list-text {
           padding: $treeview-big-image-text-padding;
         }
@@ -246,7 +246,7 @@
 
     &.e-drag-item {
 
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
 
         .e-text-content {
           padding-left:  $treeview-big-drag-item-text-padding-left;
@@ -255,12 +255,19 @@
         .e-icon-collapsible,
         .e-icon-expandable {
           font-size: $treeview-big-drag-icon-font-size;
-          margin: $treeview-big-drag-icon-margin;
+          @if ($skin-name != 'bootstrap5') {
+            margin: $treeview-big-drag-icon-margin;
+          }
         }
 
         .e-icon-collapsible::before,
         .e-icon-expandable::before {
-          padding: $treeview-big-drag-before-icon-padding;
+          @if ($skin-name != 'bootstrap5') {
+            padding: $treeview-big-drag-before-icon-padding;
+          }
+          @if ($skin-name == 'bootstrap5') {
+            font-size: $treeview-big-drag-icon-font-size;
+          }
         }
 
         @if $skin-name == 'bootstrap4' {
@@ -273,7 +280,7 @@
 
     &.e-rtl {
 
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
         .e-ul {
           padding: $treeview-big-rtl-root-ul-padding;
         }
@@ -291,6 +298,17 @@
         .e-icon-collapsible,
         .e-icon-expandable {
           margin: $treeview-big-rtl-icon-margin;
+        }
+      }
+
+      &.e-drag-item {
+
+        @if ($skin-name == 'bootstrap5') {
+
+          .e-text-content {
+            padding-left: 0;
+            padding-right:  $treeview-big-drag-item-text-padding-left;
+          }
         }
       }
 
@@ -450,6 +468,14 @@
       position: relative;
     }
 
+    .e-icons .e-treeview-spinner {
+      position: absolute;
+    }
+
+    .e-icons-spinner {
+      position: relative;
+    }
+
     .e-text-content {
       @include user-select;
       border: 1px solid;
@@ -511,8 +537,11 @@
 
       .e-input-group {
         height: $treeview-input-height;
-        @if($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if($skin-name == 'tailwind') {
           margin-top: 3px;
+        }
+        @else if($skin-name == 'bootstrap5') {
+          margin-bottom: 2px;
         }
         @else {
           margin-bottom: 0;
@@ -567,7 +596,7 @@
     }
 
     .e-sibling {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         width: 100%;
       }
       @else {
@@ -581,8 +610,11 @@
     }
 
     .e-text-content + .e-sibling {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         margin-top: -2px;
+      }
+      @else if ($skin-name == 'bootstrap5') {
+        margin-top: 1px;
       }
       @else {
         margin-top: -1px;
@@ -591,7 +623,7 @@
 
     .e-sibling::before {
       @include sibling-before(ltr);
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         height: 2px;
         top: -1.5px;
       }
@@ -708,19 +740,34 @@
 
       .e-text-content {
         float: left;
+
+        .e-list-text {
+          @if ($skin-name == 'bootstrap5') {
+            padding: 0 $treeview-drag-icon-padding;
+          }
+        }
       }
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' ) {
         .e-icon-collapsible,
         .e-icon-expandable {
-          margin:  $treeview-drag-icon-margin;
+          @if ($skin-name != 'bootstrap5') {
+            margin:  $treeview-drag-icon-margin;
+          }
+
+          @if ($skin-name == 'bootstrap5') {
+            box-sizing: content-box;
+            padding-left: $treeview-drag-icon-padding;
+          }
         }
       }
 
       .e-icon-collapsible::before,
       .e-icon-expandable::before {
         font-size: $treeview-drag-icon-font-size;
-        padding: $treeview-drag-icon-padding;
-        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name != 'bootstrap5') {
+          padding: $treeview-drag-icon-padding;
+        }
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
           padding-right: $treeview-drag-icon-padding-right;
         }
       }
@@ -738,7 +785,7 @@
         @else {
           line-height: normal;
           min-width: 12px;
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
             padding: 1px 3px 2px;
           }
           @else {
@@ -850,7 +897,7 @@
 
         .e-icon-collapsible,
         .e-icon-expandable {
-          @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
             margin: $treeview-rtl-drag-margin;
           }
         }

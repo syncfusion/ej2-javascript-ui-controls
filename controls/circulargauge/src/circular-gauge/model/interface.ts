@@ -5,7 +5,7 @@
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Pointer, Annotation, Range } from '../axes/axis';
 import { FontModel } from '../model/base-model';
-import { Size, GaugeLocation, Rect } from '../utils/helper';
+import { Size, GaugeLocation, Rect } from '../utils/helper-common';
 import { TooltipSettings } from './base';
 import { GaugeShape } from '../utils/enum';
 

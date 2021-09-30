@@ -6,7 +6,7 @@
     background: $acrdn-bg-color;
     border: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
 
-    @if $acrdn-skin == 'bootstrap4' {
+    @if ($acrdn-skin == 'bootstrap4' or $acrdn-skin == 'bootstrap5') {
       border-radius: $acrdn-border-radius;
     }
 
@@ -27,12 +27,24 @@
         border-top: 1px solid $acrdn-item-border-color;
       }
 
-      @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+      @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' {
         border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
         border-radius: 4px 4px 0 0;
 
         &.e-select:last-child {
           border-bottom: 0;
+          border-radius: 0 0 4px 4px;
+        }
+      }
+
+      @if $acrdn-skin == 'bootstrap5' {
+        border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
+
+        &:first-child .e-acrdn-header:focus {
+          border-radius: 4px 4px 0 0;
+        }
+
+        &:last-child:not(.e-expand-state) .e-acrdn-header:focus {
           border-radius: 0 0 4px 4px;
         }
       }
@@ -120,7 +132,7 @@
           }
         }
 
-        @if $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+        @if $acrdn-skin == 'tailwind' or $acrdn-skin == 'bootstrap5' {
           &.e-overlay.e-select.e-expand-state {
             .e-acrdn-header {
 
@@ -153,7 +165,7 @@
 
       .e-acrdn-panel.e-nested {
 
-        @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+        @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'bootstrap5' {
           .e-acrdn-content .e-acrdn-item:last-child {
             border-bottom: $acrdn-border-size $acrdn-selected-border-type $acrdn-default-border;
           }
@@ -220,7 +232,7 @@
           @else if $acrdn-skin == 'highcontrast' {
             border-color: $acrdn-item-exp-hdr-focus-border-color;
           }
-          @else {
+          @else if $acrdn-skin != 'bootstrap5' {
             background: $acrdn-header-focus-bg;
           }
         }
@@ -236,7 +248,9 @@
           @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-header-hover-bg;
           }
-          background: $acrdn-header-hover-bg;
+          @if $acrdn-skin != 'bootstrap5' {
+            background: $acrdn-header-hover-bg;
+          }
           @if $acrdn-skin == 'highcontrast' {
             border-color: $acrdn-item-header-hover-border-color;
           }
@@ -253,10 +267,15 @@
         }
 
         &:focus {
-          @if $acrdn-skin == 'fabric' {
-            border: 1px solid $acrdn-header-focus-bg;
+          @if ($acrdn-skin == 'fabric') {
+            border: 1px solid $acrdn-item-header-focus-border-color;
           }
-          background: $acrdn-header-focus-bg;
+          @if $acrdn-skin == 'bootstrap5' {
+            box-shadow: $shadow-focus-ring1;
+          }
+          @else {
+            background: $acrdn-header-focus-bg;
+          }
           @if $acrdn-skin == 'highcontrast' {
             background: $acrdn-item-header-focus-bg-color;
             border: 2px dashed $acrdn-item-header-focus-border-color;
@@ -300,7 +319,10 @@
           @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-selected-header-color;
           }
-          background: $acrdn-selected-header-color;
+
+          @if $acrdn-skin != 'bootstrap5' {
+            background: $acrdn-selected-header-color;
+          }
 
           @if $acrdn-skin == 'bootstrap4' {
             &:hover {
@@ -340,13 +362,15 @@
             }
           }
 
-          > .e-toggle-icon {
-            color: $acrdn-selected-icon-color;
-          }
+          @if $acrdn-skin != 'bootstrap5' {
+            > .e-toggle-icon {
+              color: $acrdn-selected-icon-color;
+            }
 
-          .e-acrdn-header-icon,
-          .e-acrdn-header-content {
-            color: $acrdn-selected-header-font-color;
+            .e-acrdn-header-icon,
+            .e-acrdn-header-content {
+              color: $acrdn-selected-header-font-color;
+            }
           }
         }
 
@@ -391,12 +415,28 @@
             border-bottom: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
             border-top: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
 
-            @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+            @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'bootstrap5' {
               border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
 
               &.e-select:last-child {
                 border-bottom: $acrdn-border-size $acrdn-selected-border-type $acrdn-default-border;
               }
+            }
+          }
+        }
+
+        @if $acrdn-skin == 'bootstrap5' {
+          > .e-acrdn-header {
+            background: $acrdn-header-focus-bg;
+            border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
+
+            > .e-toggle-icon,
+            > .e-acrdn-header-content {
+              color: $acrdn-selected-header-font-color;
+            }
+
+            &:focus {
+              box-shadow: $shadow-focus-ring1;
             }
           }
         }

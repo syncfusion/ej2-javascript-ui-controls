@@ -117,15 +117,15 @@ export class EditorManager {
     /* eslint-enable */
     public execCommand<T>(
         command: ExecCommand, value: T, event?: Event, callBack?: Function, text?: string | Node, exeValue?: T,
-        selector?: string): void {
+        selector?: string, enterAction?: string): void {
         switch (command.toLocaleLowerCase()) {
         case 'lists':
             this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack,
-                selector: selector, item: exeValue });
+                selector: selector, item: exeValue, enterAction: enterAction });
             break;
         case 'formats':
             this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack,
-                selector: selector, exeValue: exeValue
+                selector: selector, exeValue: exeValue, enterAction: enterAction
             });
             break;
         case 'alignments':
@@ -152,7 +152,7 @@ export class EditorManager {
         case 'table':
             switch (value.toString().toLocaleLowerCase()) {
             case 'createtable':
-                this.observer.notify(CONSTANT.TABLE, { item: exeValue, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.TABLE, { item: exeValue, event: event, callBack: callBack, enterAction: enterAction });
                 break;
             case 'insertrowbefore':
             case 'insertrowafter':
@@ -197,7 +197,7 @@ export class EditorManager {
         case 'casing':
             this.observer.notify(
                 CONSTANT.SELECTION_TYPE,
-                { subCommand: value, event: event, callBack: callBack, value: text, selector: selector });
+                { subCommand: value, event: event, callBack: callBack, value: text, selector: selector, enterAction: enterAction });
             break;
         case 'inserthtml':
             this.observer.notify(CONSTANT.INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text });
@@ -206,7 +206,7 @@ export class EditorManager {
             this.observer.notify(CONSTANT.INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });
             break;
         case 'clear':
-            this.observer.notify(CONSTANT.CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
+            this.observer.notify(CONSTANT.CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector, enterAction: enterAction });
             break;
         case 'actions':
             this.observer.notify(EVENTS.ACTION, { subCommand: value, event: event, callBack: callBack, selector: selector });

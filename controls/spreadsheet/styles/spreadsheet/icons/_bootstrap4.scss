@@ -4,13 +4,13 @@
 
       & .e-prev-icon {
         &::before {
-          content: '\e651';
+          content: '\e734';
         }
       }
 
       & .e-next-icon {
         &::before {
-          content: '\e652';
+          content: '\e705';
         }
       }
 
@@ -292,6 +292,14 @@
     & .e-clear-icon {
       &::before {
         content: '\e703';
+      }
+    }
+  }
+
+  .e-dragfill-ddb {
+    & .e-dragfill-icon {
+      &::before {
+        content: '\e92a';
       }
     }
   }

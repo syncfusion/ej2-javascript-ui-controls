@@ -48,7 +48,8 @@
       content: '\e70b';
     }
 
-    .e-icon-filter::before {
+    .e-icon-filter::before,
+    .e-icon-filter.e-filtered::before {
       content: '\e714';
     }
 
@@ -122,7 +123,8 @@
       content: '\e78f';
     }
 
-    .e-columnmenu::before {
+    .e-columnmenu::before,
+    .e-columnmenu.e-filtered::before {
       content: '\e781';
     }
 

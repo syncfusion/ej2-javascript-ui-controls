@@ -2,7 +2,7 @@
   /*! timepicker theme */
   .e-time-wrapper {
     #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
-      @if $skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
         background: $timepicker-icon-active-bg-color;
         border-color: $timepicker-active-border-color;
       }

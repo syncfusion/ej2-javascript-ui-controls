@@ -10,6 +10,37 @@
 
   .e-footer-content {
     background-color: $dialog-footer-bg-color;
+
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+      .e-btn.e-primary.e-flat {
+        background-color: $dialog-footer-btn-bg-color;
+        border-color: $dialog-footer-btn-border-color;
+        color: $dialog-footer-btn-color;
+      }
+
+      .e-btn:hover.e-primary.e-flat {
+        background-color: $dialog-footer-hover-btn-color;
+      }
+    }
+
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+      .e-btn.e-flat {
+        background-color: $dialog-footer-flat-btn-bg-color;
+        border-color: $dialog-footer-flat-btn-bg-color;
+        color: $dialog-footer-btn-color;
+      }
+
+      .e-btn:hover.e-flat {
+        background-color: $dialog-footer-flat-hover-btn-bg-color;
+      }
+    }
+
+    @if $skin-name == 'tailwind' {
+      .e-btn.e-flat {
+        border-color: $dialog-footer-flat-btn-border-color;
+        color: $dialog-footer-flat-btn-content-color;
+      }
+    }
   }
 
   .e-dlg-header,
@@ -85,5 +116,11 @@
   .e-north-east,
   .e-north-west {
     color: transparent;
+  }
+
+  @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'bootstrap4'  {
+    .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn.e-ripple {
+      overflow: visible;
+    }
   }
 }

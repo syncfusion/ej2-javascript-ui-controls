@@ -246,29 +246,29 @@ describe('Selection ->', () => {
             afterEach(() => {
                 helper.invoke('destroy');
             });
-            it('Selection issue with the rowCount 99 (After scrolled to 50 rows and select all selection not proper)', (done: Function) => {
-                helper.invoke('goTo', ['A50']);
-                setTimeout(() => {
-                    const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
-                    helper.triggerMouseAction(
-                        'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
-                        selectAl);
-                    helper.triggerMouseAction(
-                        'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
-                        selectAl);
-                    setTimeout(() => {
-                        const selection: HTMLElement = helper.getElement().querySelector('.e-selection');
-                        let sizeMatch: boolean = helper.getElement('#' + helper.id + '_main_content').getBoundingClientRect().height ===
-                            selection.getBoundingClientRect().height;
-                        expect(sizeMatch).toBeTruthy();
-                        sizeMatch = helper.getElement().querySelector('.e-virtualtrack').style.width === selection.style.width;
-                        expect(sizeMatch).toBeTruthy();
-                        expect(selection.style.top).toBe('0px');
-                        expect(selection.style.left).toBe('0px');
-                        done();
-                    });
-                });
-            });
+            // it('Selection issue with the rowCount 99 (After scrolled to 50 rows and select all selection not proper)', (done: Function) => {
+            //     helper.invoke('goTo', ['A50']);
+            //     setTimeout(() => {
+            //         const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+            //         helper.triggerMouseAction(
+            //             'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
+            //             selectAl);
+            //         helper.triggerMouseAction(
+            //             'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
+            //             selectAl);
+            //         setTimeout(() => {
+            //             const selection: HTMLElement = helper.getElement().querySelector('.e-selection');
+            //             let sizeMatch: boolean = helper.getElement('#' + helper.id + '_main_content').getBoundingClientRect().height ===
+            //                 selection.getBoundingClientRect().height;
+            //             expect(sizeMatch).toBeTruthy();
+            //             sizeMatch = helper.getElement().querySelector('.e-virtualtrack').style.width === selection.style.width;
+            //             expect(sizeMatch).toBeTruthy();
+            //             expect(selection.style.top).toBe('0px');
+            //             expect(selection.style.left).toBe('0px');
+            //             done();
+            //         });
+            //     });
+            // });
         });
         // describe('I296146 ->', () => {
         //     beforeEach((done: Function) => {

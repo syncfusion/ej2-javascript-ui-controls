@@ -71,7 +71,11 @@ export type AccumulationTheme =
     /**  Render a accumulation chart with Tailwind theme. */
     'Tailwind' |
     /**  Render a accumulation chart with TailwindDark theme. */
-    'TailwindDark';
+    'TailwindDark' |
+    /**  Render a accumulation chart with Bootstrap5 theme. */
+    'Bootstrap5' |
+    /**  Render a accumulation chart with Bootstrap5Dark theme. */
+    'Bootstrap5Dark';
 
 /**
  * Defines the empty point mode of the chart.

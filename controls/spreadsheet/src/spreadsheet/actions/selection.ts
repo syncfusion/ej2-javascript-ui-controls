@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange } from '../common/index';
 import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
@@ -45,6 +45,8 @@ export class Selection {
     private dStartCell: { rowIndex: number, colIndex: number };
     private dEndCell: { rowIndex: number, colIndex: number };
     private touchSelectionStarted: boolean;
+    private isautoFillClicked: boolean;
+    public dAutoFillCell: string;
 
     /**
      * Constructor for the Spreadsheet selection module.
@@ -228,6 +230,7 @@ export class Selection {
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
             }
+            
             if (!closest(e.target as Element, '.e-findtool-dlg')) {
                 if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
                     && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
@@ -262,6 +265,10 @@ export class Selection {
                     }
                     if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
                         return;
+                    }
+                    if((e.target as HTMLElement).className.indexOf('e-autofill') > -1){
+                        this.isautoFillClicked = true;
+                        this.dAutoFillCell = sheet.selectedRange;
                     }
                     if (mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
                         (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
@@ -300,8 +307,10 @@ export class Selection {
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [rowIdx, colIdx];
                         }
+                        if(!this.isautoFillClicked && !closest(e.target as Element, '.e-filloption')){
                         this.selectRangeByIdx(
                             [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+                        }
                     }
                     if (this.parent.isMobileView()) {
                         this.parent.element.classList.add('e-mobile-focused');
@@ -373,12 +382,17 @@ export class Selection {
                 this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
             }, 100);
         } else {
-            const indexes: number[] = [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]);
+            let indexes: number[] = [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]);
             if (frozenRow && indexes[0] < frozenRow && indexes[2] >= frozenRow && verticalContent.scrollTop) {
                 verticalContent.scrollTop = 0; indexes[2] = frozenRow;
             }
             if (frozenCol && indexes[1] < frozenCol && indexes[3] >= frozenCol && horizontalContent.scrollLeft) {
                 horizontalContent.scrollLeft = 0; indexes[3] = frozenCol;
+            }
+            if(this.isautoFillClicked){
+                let args: {e: MouseEvent & TouchEvent, indexes?: number[] } = { e: e, indexes: null };
+                this.parent.notify(selectAutoFillRange, args);
+                indexes = args.indexes;
             }
             this.selectRangeByIdx(indexes, e);
         }
@@ -397,13 +411,22 @@ export class Selection {
                 this.getColIdxFromClientX({ clientX: getClientX(this.touchEvt), target: e.target as Element }) === colIdx)) {
             this.mouseDownHandler(e);
         }
-        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
         document.removeEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
         if (!Browser.isPointer) {
             document.removeEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt);
         }
         EventHandler.remove(document, getEndEvent(), this.mouseUpHandler);
         this.parent.notify(mouseUpAfterSelection, e);
+        if (this.isautoFillClicked) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            let indexes: number[] = getRangeIndexes(sheet.selectedRange);
+            if (!(this.isColSelected && indexes[1] == colIdx) && !(this.isRowSelected && indexes[0] == rowIdx)) {
+                this.parent.notify(performAutoFill, { event: e, dAutoFillCell: this.dAutoFillCell });
+            }
+            this.isautoFillClicked = false;
+        } else {
+            this.parent.notify(positionAutoFillElement, null);
+        }
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
@@ -560,15 +583,16 @@ export class Selection {
         if (isFormulaEdit && formulaRefIndicator) {
             formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
         }
+        this.parent.notify(hideAutoFillOptions, null );
         if ((isSingleCell(range) || mergeArgs.isActiveCell) && !isMultiRange) {
             if (ele) {
                 if (!ele.classList.contains('e-multi-range')) {
                     ele.classList.add('e-hide');
                 }
                 if (sheet.frozenRows || sheet.frozenColumns) {
-                    removeRangeEle(this.parent.getSelectAllContent(), null, false);
-                    removeRangeEle(this.parent.getColumnHeaderContent(), null, false);
-                    removeRangeEle(this.parent.getRowHeaderContent(), null, false);
+                    removeRangeEle(this.parent.getSelectAllContent(), null, 'e-selection');
+                    removeRangeEle(this.parent.getColumnHeaderContent(), null, 'e-selection');
+                    removeRangeEle(this.parent.getRowHeaderContent(), null, 'e-selection');
                 }
             }
             if (!sheet.frozenColumns && !sheet.frozenRows && ele) { setPosition(this.parent, ele, range); }
@@ -605,9 +629,16 @@ export class Selection {
             selRanges[selectedRowColIdx] = selRange;
             selRange = selRanges.join(' ');
         }
-        if (!isFormulaEdit) {
+        if (!isFormulaEdit && !this.isautoFillClicked) {
+            let isSelectRangeChange: boolean = false;
+            if (sheet.selectedRange !== selRange) {
+                isSelectRangeChange = true;
+            }
             updateSelectedRange(this.parent as Workbook, selRange, sheet, isMultiRange);
-        } else if (!isInit) {
+            if (isSelectRangeChange) {
+                this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
+            }
+        } else if (!isInit && !this.isautoFillClicked) {
             updateSelectedRange(this.parent as Workbook, selRange, sheet, isMultiRange);
         }
         this.UpdateRowColSelected(range);
@@ -628,6 +659,7 @@ export class Selection {
         } else if (!isInit) {
             this.parent.notify(selectionComplete, e);
         }
+        this.parent.notify(positionAutoFillElement, null );
         this.parent.notify(showAggregate, {});
         this.parent.notify(refreshImgElem, {});
         if (overlayEle) {

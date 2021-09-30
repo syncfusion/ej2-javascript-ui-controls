@@ -110,7 +110,7 @@ describe('Chart Control Selection ', () => {
             trigger.clickEvent(element);
             element = document.getElementById(id + '_Series_0' + '_Point_5');
             trigger.clickEvent(element);
-            expect(document.getElementsByClassName(selection + '0').length).toBe(1);
+            expect(document.getElementsByClassName(selection + '0').length).toBe(3);
             done();
         };
         chartObj.loaded = loaded;
@@ -123,7 +123,7 @@ describe('Chart Control Selection ', () => {
             element = document.getElementById(id + '_Series_1' + '_Point_2');
             trigger.clickEvent(element);
             for (let i: number = 0; i < seriesCollection.length; i++) {
-                expect(document.getElementsByClassName(selection + i).length).toBe(1);
+                expect(document.getElementsByClassName(selection + i).length).toBe(3);
             }
             done();
         };
@@ -139,7 +139,7 @@ describe('Chart Control Selection ', () => {
             element = document.getElementById(id + '_Series_1' + '_Point_3');
             trigger.clickEvent(element);
             selected = document.getElementsByClassName(selection + '1');
-            expect(selected.length).toBe(1);
+            expect(selected.length).toBe(3);
             expect(selected[0].childNodes.length).toBe(8);
             done();
         };
@@ -187,9 +187,9 @@ describe('Chart Control Selection ', () => {
             trigger.clickEvent(element);
             element = document.getElementById(id + '_Series_2' + '_Point_' + 4);
             trigger.clickEvent(element);
-            expect(document.getElementsByClassName(selection + '0').length).toBe(2);
-            expect(document.getElementsByClassName(selection + '1').length).toBe(1);
-            expect(document.getElementsByClassName(selection + '2').length).toBe(2);
+            expect(document.getElementsByClassName(selection + '0').length).toBe(5);
+            expect(document.getElementsByClassName(selection + '1').length).toBe(3);
+            expect(document.getElementsByClassName(selection + '2').length).toBe(5);
             done();
         };
         chartObj.selectionMode = 'Point';
@@ -202,7 +202,7 @@ describe('Chart Control Selection ', () => {
             element = document.getElementById(id + '_Series_0' + '_Point_' + 3);
             trigger.clickEvent(element);
             for (let i: number = 0; i < seriesCollection.length; i++) {
-                expect(document.getElementsByClassName(selection + i).length).toBe(1);
+                expect(document.getElementsByClassName(selection + i).length).toBe(3);
             }
             done();
         };
@@ -249,11 +249,13 @@ describe('Chart Control Selection ', () => {
     it('Multiple point selection and UnSelection', (done: Function) => {
         loaded = () => {
             for (j = 0; j < seriesCollection.length; j++) {
+                let val: number = 0;
                 for (i = 0, length = chartObj.visibleSeries[j].points.length; i < length; i++) {
                     element = document.getElementById(id + '_Series_' + j + '_Point_' + i);
                     trigger.clickEvent(element);
                     selected = document.getElementsByClassName(selection + j);
-                    expect(selected.length).toBe(i + 1);
+                    val = (i === 0 ? 3 : val + 2);
+                    expect(selected.length).toBe(val);
                 }
                 for (i = 0; i > 0; i--) {
                     element = document.getElementById(id + '_Series_' + j + '_Point_' + i);
@@ -276,7 +278,7 @@ describe('Chart Control Selection ', () => {
             element = document.getElementById(id + '_Series_0_Point_0');
             trigger.clickEvent(element);
             selected = document.getElementsByClassName(selection + '0');
-            expect(selected.length).toBe(1);
+            expect(selected.length).toBe(3);
             expect(selected[0].childNodes.length).toBe(8);
             trigger.clickEvent(element);
             selected = document.getElementsByClassName(selection + '0');
@@ -296,7 +298,7 @@ describe('Chart Control Selection ', () => {
                 element = document.getElementById(id + '_Series_' + i + '_Point_0');
                 trigger.clickEvent(element);
                 selected = document.getElementsByClassName(selection + i);
-                expect(selected.length).toBe(1);
+                expect(selected.length).toBe(3);
                 total = 9 * (i + 1);
                 expect(selected[0].childNodes.length).toBe(8);
             }
@@ -323,7 +325,7 @@ describe('Chart Control Selection ', () => {
             trigger.clickEvent(element);
             for (i = 0; i < seriesCollection.length; i++) {
                 selected = document.getElementsByClassName(selection + i);
-                expect(selected.length).toBe(1);
+                expect(selected.length).toBe(3);
             }
             element = document.getElementById(id + '_Series_0_Point_' + index);
             trigger.clickEvent(element);
@@ -349,7 +351,7 @@ describe('Chart Control Selection ', () => {
             trigger.clickEvent(element);
             for (i = 0; i < seriesCollection.length; i++) {
                 selected = document.getElementsByClassName(selection + i);
-                expect(selected.length).toBe(3);
+                expect(selected.length).toBe(7);
             }
             element = document.getElementById(id + '_Series_1_Point_' + 1);
             trigger.clickEvent(element);
@@ -371,7 +373,7 @@ describe('Chart Control Selection ', () => {
     });
     it('Selected DataIndexes checking', (done: Function) => {
         loaded = () => {
-            expect(document.getElementsByClassName(selection + '0').length).toBe(1);
+            expect(document.getElementsByClassName(selection + '0').length).toBe(3);
             done();
         };
         chartObj.selectionMode = 'Point';
@@ -498,7 +500,7 @@ describe('Chart Control Selection ', () => {
             expect(element.getAttribute('y')).toEqual('92');
             expect(element.getAttribute('height')).toEqual('200');
             expect(element.getAttribute('width')).toEqual('200');
-            expect(document.getElementsByClassName(selection + '2').length).toBe(1);
+            expect(document.getElementsByClassName(selection + '2').length).toBe(3);
             trigger.mouseupEvent(document.getElementById(closeId), 0, 0, 0, 0);
             done();
         };
@@ -523,7 +525,7 @@ describe('Chart Control Selection ', () => {
         trigger.clickEvent(element);
         chartObj.isMultiSelect = false;
         chartObj.dataBind();
-        expect(document.getElementsByClassName(selection + '0').length).toBe(1);
+        expect(document.getElementsByClassName(selection + '0').length).toBe(3);
         done();
     });
     it('Selected Legend toggle visible false', (done: Function) => {
@@ -531,7 +533,7 @@ describe('Chart Control Selection ', () => {
             element = document.getElementById(id + '_chart_legend' + '_text_' + 1);
             trigger.clickEvent(element);
             expect(element.getAttribute('class') !== '').toBe(true);
-            expect(document.getElementsByClassName(selection + '1').length).toBe(1);
+            expect(document.getElementsByClassName(selection + '1').length).toBe(3);
             trigger.clickEvent(element);
             expect(document.getElementsByClassName(selection + '1').length).toBe(0);
             element = document.getElementById(id + '_chart_legend' + '_text_' + 0);
@@ -563,7 +565,7 @@ describe('Chart Control Selection ', () => {
         trigger.clickEvent(element);
         chartObj.dataBind();
         for (i = 0; i < chartObj.series.length; i++) {
-            expect(document.getElementsByClassName(selection + i).length).toBe(1);
+            expect(document.getElementsByClassName(selection + i).length).toBe(3);
         }
         done();
     });
@@ -583,8 +585,8 @@ describe('Chart Control Selection ', () => {
         trigger.clickEvent(element);
         chartObj.selectionMode = 'Point';
         chartObj.dataBind();
-        expect(document.getElementsByClassName(selection + '0').length).toBe(1);
-        expect(document.getElementsByClassName(selection + '1').length).toBe(1);
+        expect(document.getElementsByClassName(selection + '0').length).toBe(3);
+        expect(document.getElementsByClassName(selection + '1').length).toBe(3);
         expect(document.getElementsByClassName(selection + '2').length).toBe(0);
         done();
     });
@@ -594,7 +596,7 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionMode = 'Series';
         chartObj.dataBind();
         expect(document.getElementsByClassName(selection + '0').length).toBe(0);
-        expect(document.getElementsByClassName(selection + '1').length).toBe(1);
+        expect(document.getElementsByClassName(selection + '1').length).toBe(3);
         expect(document.getElementsByClassName(selection + '2').length).toBe(0);
         done();
     });
@@ -604,28 +606,28 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionMode = 'Cluster';
         chartObj.dataBind();
         for (i = 0; i < chartObj.series.length; i++) {
-            expect(document.getElementsByClassName(selection + i).length).toBe(2);
+            expect(document.getElementsByClassName(selection + i).length).toBe(5);
         }
         done();
     });
     it('Selected DataBind cluster to point', (done: Function) => {
         chartObj.selectionMode = 'Point';
         chartObj.dataBind();
-        expect(document.getElementsByClassName(selection + 0).length).toBe(1);
-        expect(document.getElementsByClassName(selection + 1).length).toBe(1);
+        expect(document.getElementsByClassName(selection + 0).length).toBe(3);
+        expect(document.getElementsByClassName(selection + 1).length).toBe(3);
         expect(document.getElementsByClassName(selection + 2).length).toBe(0);
         element = document.getElementById(id + '_Series_1_Point_' + 4);
         trigger.clickEvent(element);
-        expect(document.getElementsByClassName(selection + '1').length).toBe(2);
-        expect(document.getElementsByClassName(selection + '0').length).toBe(1);
+        expect(document.getElementsByClassName(selection + '1').length).toBe(5);
+        expect(document.getElementsByClassName(selection + '0').length).toBe(3);
         expect(document.getElementsByClassName(selection + '2').length).toBe(0);
         done();
     });
     it('Selected DataBind point multi select false', (done: Function) => {
         chartObj.isMultiSelect = false;
         chartObj.dataBind();
-        expect(document.getElementsByClassName(selection + 0).length).toBe(1);
-        expect(document.getElementsByClassName(selection + 1).length).toBe(1);
+        expect(document.getElementsByClassName(selection + 0).length).toBe(3);
+        expect(document.getElementsByClassName(selection + 1).length).toBe(3);
         expect(document.getElementsByClassName(selection + 2).length).toBe(0);
         done();
     });
@@ -633,7 +635,7 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionMode = 'Series';
         chartObj.dataBind();
         expect(document.getElementsByClassName(selection + '0').length).toBe(0);
-        expect(document.getElementsByClassName(selection + '1').length).toBe(1);
+        expect(document.getElementsByClassName(selection + '1').length).toBe(3);
         expect(document.getElementsByClassName(selection + '2').length).toBe(0);
         done();
     });
@@ -641,7 +643,7 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionMode = 'Cluster';
         chartObj.dataBind();
         for (i = 0; i < chartObj.series.length; i++) {
-            expect(document.getElementsByClassName(selection + i).length).toBe(1);
+            expect(document.getElementsByClassName(selection + i).length).toBe(3);
         }
         done();
     });
@@ -652,7 +654,7 @@ describe('Chart Control Selection ', () => {
         chartObj.dataBind();
         expect(document.getElementsByClassName(selection + '0').length).toBe(0);
         expect(document.getElementsByClassName(selection + '1').length).toBe(0);
-        expect(document.getElementsByClassName(selection + '2').length).toBe(1);
+        expect(document.getElementsByClassName(selection + '2').length).toBe(3);
         expect(document.getElementsByClassName(selection + '2')[0].childNodes.length).toBeGreaterThan(5);
         done();
     });
@@ -661,7 +663,7 @@ describe('Chart Control Selection ', () => {
         chartObj.dataBind();
         expect(document.getElementsByClassName(selection + '0').length).toBe(0);
         expect(document.getElementsByClassName(selection + '1').length).toBe(0);
-        expect(document.getElementsByClassName(selection + '2').length).toBe(1);
+        expect(document.getElementsByClassName(selection + '2').length).toBe(3);
         expect(document.getElementsByClassName(selection + '2')[0].childNodes.length).toBe(0);
         done();
     });
@@ -669,7 +671,7 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionMode = 'Cluster';
         chartObj.dataBind();
         for (i = 0; i < chartObj.series.length; i++) {
-            expect(document.getElementsByClassName(selection + i).length).toBe(1);
+            expect(document.getElementsByClassName(selection + i).length).toBe(3);
         }
         done();
     });
@@ -678,13 +680,13 @@ describe('Chart Control Selection ', () => {
         chartObj.dataBind();
         expect(document.getElementsByClassName(selection + 0).length).toBe(0);
         expect(document.getElementsByClassName(selection + 1).length).toBe(0);
-        expect(document.getElementsByClassName(selection + 2).length).toBe(1);
+        expect(document.getElementsByClassName(selection + 2).length).toBe(3);
         element = document.getElementById(id + '_Series_2_Point_' + 3);
         trigger.clickEvent(element);
         expect(document.getElementsByClassName(selection + 2).length).toBe(0);
         element = document.getElementById(id + '_Series_2_Point_' + 4);
         trigger.clickEvent(element);
-        expect(document.getElementsByClassName(selection + 2).length).toBe(1);
+        expect(document.getElementsByClassName(selection + 2).length).toBe(3);
         done();
     });
     it('Selected refresh clear selection', (done: Function) => {
@@ -868,7 +870,7 @@ describe('Chart Control Selection ', () => {
             expect(document.getElementsByClassName(selection + 1).length > 0).toBe(false);
             trigger.draganddropEvent(chartContainer, 250, 100, 450, 250);
             element = document.getElementById(draggedRectGroup);
-            expect(document.getElementsByClassName(selection + 1).length == 3).toBe(true);
+            expect(document.getElementsByClassName(selection + 1).length === 7).toBe(true);
             done();
         };
         chartObj.primaryXAxis.zoomFactor = 1;

@@ -8,6 +8,7 @@ import { DroppableModel } from './droppable-model';
 import {Coordinates, DropInfo} from './draggable';
 /**
  * Droppable arguments in drop callback.
+ *
  * @private
  */
 export interface DropData {
@@ -24,7 +25,7 @@ export interface DropEvents extends MouseEvent, TouchEvent {
     dropTarget?: HTMLElement;
 }
 /**
- * Interface for drop event args 
+ * Interface for drop event args
  */
 export interface DropEventArgs {
     /**
@@ -40,7 +41,7 @@ export interface DropEventArgs {
      */
     droppedElement?: HTMLElement;
     /**
-     * Specifies the dragData 
+     * Specifies the dragData
      */
     dragData?: DropInfo;
 }
@@ -67,26 +68,29 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
     @Property()
     public accept: string;
     /**
-     * Defines the scope value to group sets of draggable and droppable items. 
+     * Defines the scope value to group sets of draggable and droppable items.
      * A draggable with the same scope value will only be accepted by the droppable.
      */
     @Property('default')
     public scope: string;
     /**
      * Specifies the callback function, which will be triggered while drag element is dropped in droppable.
-     * @event
+     *
+     * @event drop
      */
     @Event()
     public drop: (args: DropEventArgs) => void;
     /**
      * Specifies the callback function, which will be triggered while drag element is moved over droppable element.
-     * @event
+     *
+     * @event over
      */
     @Event()
     public over: Function;
     /**
      * Specifies the callback function, which will be triggered while drag element is moved out of droppable element.
-     * @event
+     *
+     * @event bind
      */
     @Event()
     public out: Function;
@@ -103,6 +107,7 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, Browser.touchEndEvent, this.intDrop, this);
     }
     // triggers when property changed
+    // eslint-disable-next-line
     public onPropertyChanged(newProp: DroppableModel, oldProp: DroppableModel): void {
         //No Code to handle
     }
@@ -112,7 +117,7 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
     private dragStopCalled: boolean = false;
     public intOver(event: MouseEvent & TouchEvent, element?: Element): void {
         if (!this.mouseOver) {
-            let drag: DropInfo = this.dragData[this.scope];
+            const drag: DropInfo = this.dragData[this.scope];
             this.trigger('over', { event: event, target: element, dragData: drag });
             this.mouseOver = true;
         }
@@ -130,14 +135,14 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
             this.dragStopCalled = false;
         }
         let accept: boolean = true;
-        let drag: DropInfo = this.dragData[this.scope];
-        let isDrag: Boolean = drag ? (drag.helper && isVisible(drag.helper)) : false;
+        const drag: DropInfo = this.dragData[this.scope];
+        const isDrag: boolean = drag ? (drag.helper && isVisible(drag.helper)) : false;
         let area: DropData;
         if (isDrag ) {
-             area = this.isDropArea(evt, drag.helper, element);
-             if (this.accept) {
-                 accept = matches(drag.helper, this.accept);
-             }
+            area = this.isDropArea(evt, drag.helper, element);
+            if (this.accept) {
+                accept = matches(drag.helper, this.accept);
+            }
         }
         if (isDrag && this.drop && area.canDrop && accept) {
             this.trigger('drop', { event: evt, target: area.target, droppedElement: drag.helper, dragData: drag });
@@ -145,12 +150,12 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
         this.mouseOver = false;
     }
     private isDropArea(evt: MouseEvent & TouchEvent, helper: HTMLElement, element?: HTMLElement): DropData {
-        let area: DropData = { canDrop: true, target: element || (<HTMLElement>evt.target) };
-        let isTouch: boolean = evt.type === 'touchend';
+        const area: DropData = { canDrop: true, target: element || (<HTMLElement>evt.target) };
+        const isTouch: boolean = evt.type === 'touchend';
         if ( isTouch || area.target === helper) {
             helper.style.display = 'none';
-            let coord: Coordinates = isTouch ? (evt.changedTouches[0]) : evt;
-            let ele: Element = document.elementFromPoint(coord.clientX, coord.clientY);
+            const coord: Coordinates = isTouch ? (evt.changedTouches[0]) : evt;
+            const ele: Element = document.elementFromPoint(coord.clientX, coord.clientY);
             area.canDrop = false;
             area.canDrop = compareElementParent(ele, this.element);
             if (area.canDrop) {
@@ -161,7 +166,7 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
         return area;
     }
     public destroy(): void {
-          EventHandler.remove(this.element, Browser.touchEndEvent, this.intDrop);
-          super.destroy();
+        EventHandler.remove(this.element, Browser.touchEndEvent, this.intDrop);
+        super.destroy();
     }
 }

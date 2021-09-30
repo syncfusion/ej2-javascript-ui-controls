@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Range, Pointer } from '../../../src/circular-gauge/axes/axis';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/circular-gauge/model/interface';
-import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { GaugeTooltip } from '../../../src/circular-gauge/user-interaction/tooltip';
 import { MouseEvents } from '../user-interaction/mouse-events.spec';
 CircularGauge.Inject(GaugeTooltip);

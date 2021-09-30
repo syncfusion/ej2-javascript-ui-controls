@@ -231,7 +231,7 @@ describe('Schedule base module', () => {
             });
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelector('.e-active-view').classList.contains('e-month')).toEqual(true);
-            expect((<HTMLElement>schObj.element.querySelector('.e-work-cells')).offsetWidth).toEqual(86);
+            expect((<HTMLElement>schObj.element.querySelector('.e-work-cells')).offsetWidth).toBeGreaterThanOrEqual(85);
             schObj.element.style.width = '300px';
             (schObj as any).onScheduleResize();
         });
@@ -460,8 +460,8 @@ describe('Schedule base module', () => {
             schObj = new Schedule({ showTimeIndicator: true });
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelectorAll('.e-current-time').length).toEqual(1);
-            const currentTime = schObj.getCurrentTime();
-            const interval = 60000 - currentTime.getSeconds() * 1000 + currentTime.getMilliseconds();
+            const currentTime: Date = schObj.getCurrentTime();
+            const interval: number = 60000 - currentTime.getSeconds() * 1000 + currentTime.getMilliseconds();
             jasmine.clock().tick(interval);
             expect(schObj.element.querySelectorAll('.e-current-time').length).toEqual(1);
             jasmine.clock().tick(60000);
@@ -728,7 +728,7 @@ describe('Schedule base module', () => {
 
     describe('Testing event setting fields', () => {
         let schObj: Schedule;
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 height: '600px',
                 eventSettings: {
@@ -744,7 +744,7 @@ describe('Schedule base module', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
-        it('default values', (done: Function) => {
+        it('default values', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]');
                 eventElement.click();
@@ -755,7 +755,7 @@ describe('Schedule base module', () => {
                 expect(eventPopup.querySelector('.' + cls.DESCRIPTION_DETAILS_CLASS).innerHTML).toEqual('Default Description');
                 (eventPopup.querySelector('.' + cls.CLOSE_CLASS) as HTMLElement).click();
                 done();
-            }
+            };
             const workCell: HTMLElement = schObj.element.querySelector('.e-work-hours');
             util.triggerMouseEvent(workCell, 'click');
             util.triggerMouseEvent(workCell, 'dblclick');
@@ -1677,6 +1677,274 @@ describe('Schedule base module', () => {
         });
     });
 
+    describe('refreshTemplate checking', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Event',
+            StartTime: new Date(2020, 0, 1, 10),
+            EndTime: new Date(2020, 0, 1, 12),
+            IsAllDay: false,
+            RoomId: 1,
+            OwnerId: 1
+        }, {
+            Id: 2,
+            Subject: 'Testing',
+            StartTime: new Date(2020, 0, 4, 10),
+            EndTime: new Date(2020, 0, 4, 12),
+            IsAllDay: false,
+            RoomId: 2,
+            OwnerId: 2
+        }];
+        const appTemplate: string = '<div class="app-template"><div class="subject">~${Subject}~</div></div>';
+        const dateHeaderTemplate: string = '<span>~${getDateHeaderText(data.date)}~</span>';
+        const cellTemplate: string = '${if(type === "workCells")}<div class="templatewrap">${getCellText(data.date)}</div>${/if}' +
+            '${if(type === "monthCells")}<div class="templatewrap">${getMonthCellText(data.date)}</div>${/if}';
+        const cellHeaderTemplate: string = '<div class="e-custom-cell">~${getDateHeaderText(data.date)}</div>';
+        const resourceHeaderTemp: string = '<div class="resource-template">' +
+            '<div class="resource-details"><div class="resource-name">~${resourceData.Text}~</div></div></div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2020, 0, 4),
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [
+                    {
+                        field: 'RoomId', name: 'Rooms',
+                        dataSource: [
+                            { Text: 'Room 1', Id: 1, Color: '#cb6bb2' },
+                            { Text: 'Room 2', Id: 2, Color: '#56ca85' }
+                        ]
+                    },
+                    {
+                        field: 'OwnerId', name: 'Owners',
+                        dataSource: [
+                            { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
+                        ]
+                    }
+                ],
+                resourceHeaderTemplate: resourceHeaderTemp,
+                dateHeaderTemplate: dateHeaderTemplate,
+                cellTemplate: cellTemplate,
+                views: [
+                    { option: 'Day' },
+                    { option: 'Week' },
+                    { option: 'WorkWeek' },
+                    { option: 'Month', cellHeaderTemplate: cellHeaderTemplate },
+                    { option: 'Agenda' },
+                    { option: 'MonthAgenda' },
+                    { option: 'TimelineDay' },
+                    { option: 'TimelineWeek' },
+                    { option: 'TimelineWorkWeek' },
+                    { option: 'TimelineMonth' }
+                ],
+                eventSettings: { template: appTemplate, dataSource: eventData }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('refresh templates testing in Day view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                // dateHeaderTemplate checking
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                schObj.refreshTemplates('dateHeaderTemplate');
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                done();
+            };
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in Week view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                // dateHeaderTemplate checking
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
+                schObj.refreshTemplates('dateHeaderTemplate');
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
+                done();
+            };
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in Month view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in Agenda views', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 2~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 2~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                // dateHeaderTemplate checking
+                expect(schObj.element.querySelector('.e-agenda-cells .e-day-date-header').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                schObj.refreshTemplates('dateHeaderTemplate');
+                expect(schObj.element.querySelector('.e-agenda-cells .e-day-date-header').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                done();
+            };
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in MonthAgenda views', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-appointment-indicator').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-appointment-indicator').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                done();
+            };
+            schObj.currentView = 'MonthAgenda';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in TimelineDay view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Testing~');
+                // dateHeaderTemplate checking
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                schObj.refreshTemplates('dateHeaderTemplate');
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                done();
+            };
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in TimelineWeek view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                // dateHeaderTemplate checking
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
+                schObj.refreshTemplates('dateHeaderTemplate');
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
+                done();
+            };
+            schObj.currentView = 'TimelineWeek';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in TimelineWorkWeek view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(1);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                // dateHeaderTemplate checking
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Mon, 12/30~</span>');
+                schObj.refreshTemplates('dateHeaderTemplate');
+                expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Mon, 12/30~</span>');
+                done();
+            };
+            schObj.currentView = 'TimelineWorkWeek';
+            schObj.dataBind();
+        });
+        it('refresh templates testing in TimelineMonth view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                // resourceHeaderTemplate checking
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                schObj.refreshTemplates('resourceHeaderTemplate');
+                expect(schObj.element.querySelectorAll('.resource-template').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.resource-template .resource-name')[0].innerHTML).toEqual('~Room 1~');
+                // appointment template checking
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                schObj.refreshTemplates('eventTemplate');
+                expect(schObj.element.querySelectorAll('.app-template').length).toEqual(2);
+                expect(schObj.element.querySelector('.app-template .subject').innerHTML).toEqual('~Event~');
+                done();
+            };
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+        });
+    });
+
     describe('Capitalization checking on french culture', () => {
         let schObj: Schedule;
         const eventData: Record<string, any>[] = [{
@@ -1841,21 +2109,23 @@ describe('Schedule base module', () => {
         });
         util.loadCultureFiles('zh');
         beforeAll((done: DoneFn) => {
-            const schOptions: ScheduleModel = { height: '500px', currentView: 'Agenda', locale: 'zh',
-            eventSettings: {
-                fields: {
-                    id: 'Id',
-                    subject: { name: 'Subject', validation: { required: true } },
-                    location: { name: 'Location', validation: { required: true } },
-                    description: {
-                        name: 'Description', validation: {
-                            required: true
-                        }
-                    },
-                    startTime: { name: 'StartTime', validation: { required: true } },
-                    endTime: { name: 'EndTime', validation: { required: true } }
-                }
-            }, selectedDate: new Date(2017, 10, 1) };
+            const schOptions: ScheduleModel = {
+                height: '500px', currentView: 'Agenda', locale: 'zh',
+                eventSettings: {
+                    fields: {
+                        id: 'Id',
+                        subject: { name: 'Subject', validation: { required: true } },
+                        location: { name: 'Location', validation: { required: true } },
+                        description: {
+                            name: 'Description', validation: {
+                                required: true
+                            }
+                        },
+                        startTime: { name: 'StartTime', validation: { required: true } },
+                        endTime: { name: 'EndTime', validation: { required: true } }
+                    }
+                }, selectedDate: new Date(2017, 10, 1)
+            };
             schObj = util.createSchedule(schOptions, defaultData, done);
         });
         afterEach((): void => {
@@ -1863,12 +2133,12 @@ describe('Schedule base module', () => {
         });
 
         it('Testing chinese locale form validator', () => {
-        util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_6"]') as HTMLElement, 'click');
-        util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_6"]') as HTMLElement, 'dblclick');
-        const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-        const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
-        saveButton.click();
-        expect((document.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('此字段是必需的。'); 
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_6"]') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_6"]') as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            expect((document.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('此字段是必需的。');
         });
     });
 
@@ -1880,3 +2150,4 @@ describe('Schedule base module', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });
+

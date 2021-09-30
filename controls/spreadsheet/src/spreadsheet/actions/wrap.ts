@@ -1,7 +1,7 @@
 import { closest, Browser } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
-import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
+import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction, positionAutoFillElement } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
 import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
@@ -139,8 +139,22 @@ export class WrapText {
                             setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow);
                         }
                     }
+                    if (isCustomHgt && !isMerge) {
+                        let displayText: string = this.parent.getDisplayText(cell);
+                        if (args.wrap) {
+                            if (ele && ele.classList.contains('e-alt-unwrap')) {
+                                ele.classList.remove('e-alt-unwrap');
+                            }
+                        }
+                        else {
+                            if (displayText.indexOf('\n') > -1) {
+                                ele.classList.add('e-alt-unwrap');
+                            }
+                        }
+                    }
                 }
             }
+            this.parent.notify(positionAutoFillElement, null);
         }
     }
     private ribbonClickHandler(args: ClickEventArgs): void {
@@ -161,11 +175,12 @@ export class WrapText {
         if (args.isCustomHgt) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const leftIdx: number = this.parent.viewport.leftIndex;
-            const rightIdx: number = leftIdx + this.parent.viewport.colCount + this.parent.getThreshold('col') * 2;
+            const rightIdx: number = this.parent.viewport.rightIndex;
             for (let i: number = leftIdx; i < rightIdx; i++) {
                 const cell: CellModel = getCell(args.rowIdx, i, sheet);
                 if (cell && cell.wrap) {
                     const ele: Element = this.parent.getCell(args.rowIdx, i);
+                    if (!ele) { continue; }
                     let styleText: string = (ele as HTMLElement).style.cssText;
                     if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
                         ele.innerHTML = this.parent.createElement('span', {

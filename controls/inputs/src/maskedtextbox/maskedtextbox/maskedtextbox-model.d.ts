@@ -1,4 +1,4 @@
-import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';import { removeClass , Browser, closest, isBlazor} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';import { maskInputBlurHandler } from '../base/mask-base';
+import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';import { removeClass , Browser, closest} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';import { maskInputBlurHandler } from '../base/mask-base';
 import {MaskChangeEventArgs,MaskFocusEventArgs,MaskBlurEventArgs} from "./maskedtextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -132,7 +132,6 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * Triggers when the MaskedTextBox component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -140,7 +139,6 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * Triggers when the MaskedTextBox component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -148,7 +146,6 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * Triggers when the value of the MaskedTextBox changes.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType <MaskChangeEventArgs>;
 

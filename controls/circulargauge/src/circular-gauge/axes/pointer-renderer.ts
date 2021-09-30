@@ -1,10 +1,8 @@
 /* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Pointer, VisibleRangeModel, Axis, NeedleTail, Cap } from './axis';
-import {
-    linear, getAngleFromValue, getCompleteArc, getRoundedPathArc, getLocationFromAngle, appendPath,
-    textElement, PathOption, TextOption, calculateShapes, Size, GaugeLocation, stringToNumber
-} from '../utils/helper';
+import { stringToNumber, textElement, appendPath, getAngleFromValue, getLocationFromAngle, getRoundedPathArc, calculateShapes, PathOption, Size, GaugeLocation, TextOption } from '../utils/helper-common';
+import { linear, getCompleteArc } from '../utils/helper-pointer-renderer';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { animationComplete } from '../model/constants';
 import { GaugeShape } from '../utils/enum';
@@ -45,7 +43,7 @@ export class PointerRenderer {
         });
         let childElement: Element;
         let range: VisibleRangeModel;
-        if (this.gauge.allowComponentRender) {
+        if (this.gauge.isComponentRender) {
             axis.pointers.map((pointer: Pointer, pointerIndex: number) => {
                 if (!isNullOrUndefined(pointer.offset) && (<string>pointer.offset).length > 0) {
                     pointer.currentDistanceFromScale = stringToNumber(<string>pointer.offset, axis.currentRadius);
@@ -458,7 +456,7 @@ export class PointerRenderer {
             end: (model: AnimationOptions) => {
                 this.setPointerValue(axis, pointer, end);
                 if (pointer.type === 'Marker' || (element.id.indexOf('_Pointer_NeedleCap') >= 0)) {
-                    this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
+                    this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
                 }
             }
         });
@@ -548,7 +546,7 @@ export class PointerRenderer {
             },
             end: (model: AnimationOptions) => {
                 this.setPointerValue(axis, pointer, end);
-                this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
             }
         });
     }

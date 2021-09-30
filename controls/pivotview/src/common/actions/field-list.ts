@@ -108,7 +108,7 @@ export class FieldList implements IAction {
     private update(): void {
         let currentWidth: number;
         if (this.parent.currentView !== 'Table') {
-            currentWidth = this.parent.chart ? this.parent.chartModule.calculatedWidth : currentWidth;
+            currentWidth = this.parent.chart ? this.parent.chartModule.getCalulatedWidth() : currentWidth;
         } else {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
         }
@@ -119,7 +119,9 @@ export class FieldList implements IAction {
                     -Math.abs((actualWidth) -
                         (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
                     (actualWidth) -
-                    (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
+                    (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
+
+                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ""
             });
             if (this.parent.enableRtl) {
                 addClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');

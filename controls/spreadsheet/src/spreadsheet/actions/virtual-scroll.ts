@@ -435,7 +435,7 @@ export class VirtualScroll {
     }
 
     private translate(args: { refresh: RefreshType, skipTranslate?: boolean }): void {
-        if (args.skipTranslate) { return; }
+        if (args.skipTranslate || !this.content) { return; }
         const translateX: number = this.parent.enableRtl ? -this.translateX : this.translateX;
         if (args.refresh === 'Row' || args.refresh === 'RowPart') {
             this.content.style.transform = `translate(${translateX}px, ${this.translateY}px)`;

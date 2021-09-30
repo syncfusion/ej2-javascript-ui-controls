@@ -14,7 +14,7 @@ import { SortSettings } from '../models/sort-settings';
 import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel, DialogSettingsModel } from '../models/index';
 import { SortSettingsModel } from '../models/index';
 import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ScrollPosition } from './interface';
-import { QueryCellInfoEventArgs, DialogEventArgs } from './interface';
+import { QueryCellInfoEventArgs, DialogEventArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
 import { ReturnType, ConstraintType, CurrentAction } from './type';
 import { Action } from '../actions/action';
 import { Crud } from '../actions/crud';
@@ -350,6 +350,24 @@ export class Kanban extends Component<HTMLElement> {
     public dialogClose: EmitType<DialogEventArgs>;
 
     /**
+     * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
+     * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
+     *
+     * @event dataStateChange
+     */
+     @Event()
+     public dataStateChange: EmitType<DataStateChangeEventArgs>;
+ 
+     /**
+      * Triggers when the grid data is added, deleted and updated.
+      * Invoke the done method from the argument to start render after edit operation.
+      *
+      * @event dataSourceChanged
+      */
+     @Event()
+     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
+
+    /**
      * Constructor for creating the Kanban widget
      *
      * @param {KanbanModel} options Accepts the kanban properties to render the component.
@@ -488,6 +506,9 @@ export class Kanban extends Component<HTMLElement> {
                 break;
             case 'dataSource':
             case 'query':
+                if (this.dataModule) {
+                    this.dataModule.setState({ isDataChanged: false });
+                }
                 this.dataModule = new Data(this);
                 break;
             case 'columns':
@@ -822,6 +843,19 @@ export class Kanban extends Component<HTMLElement> {
      */
     public hideColumn(key: string | number): void {
         this.actionModule.hideColumn(key);
+    }
+
+    /**
+     * Method to refresh the Kanban UI based on modified records.
+     *
+     * @function refreshUI
+     * @param {ActionEventArgs} args Accepts the added, changed or deleted data.
+     * @param {number} index Accepts the index of the changed items.
+     * @returns {void}
+     */
+    public refreshUI(args: ActionEventArgs, index?: number): void {
+        index = index ? index : 0;
+        this.dataModule.refreshUI(args, index);
     }
 
     /**

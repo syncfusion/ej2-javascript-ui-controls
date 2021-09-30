@@ -52,7 +52,7 @@ $pivotgrid-tooltip-padding: 3px 3px !default;
 $pivotgrid-tooltip-fontcolor: $grey-dark-font !default;
 $pivotgrid-tooltip-fontsize: 13px !default;
 $pivotgrid-tooltip-fontfamily: Segoe UI !default;
-$pivotgrid-member-filter-list-bigger-height: 135px !default;
+$pivotgrid-member-filter-list-bigger-height: 134px !default;
 $pivotgrid-member-filter-list-height: 155px !default;
 $pivotgrid-button-font-color: $neutral-light-font !default;
 $pivotgrid-button-acitve-font-color: $neutral-light-fontalt !default;
@@ -62,9 +62,9 @@ $pivotgrid-icon-hover-color: $neutral-light-fontalt !default;
 $pivotgrid-icon-focus-color: $neutral-light-fontalt !default;
 $pivotgrid-hover-color: $neutral-quintenary !default;
 $pivotgrid-focus-color: $neutral-tertiary-alt !default;
-$pivotgrid-excel-member-filter-height: 125px !default;
+$pivotgrid-excel-member-filter-height: 141px !default;
 $pivotgrid-excel-filter-height: 215px !default;
-$pivotgrid-excel-member-filter-bigger-height: 81px !default;
+$pivotgrid-excel-member-filter-bigger-height: 102px !default;
 $pivotgrid-excel-filter-bigger-height: 195px !default;
 $pivotgrid-clear-filter-icon: '\ea83' !default;
 $pivotgrid-bigger-excel-dialog-min-width: 350px !default;
@@ -97,6 +97,7 @@ $pivotview-value-sort-rtl-padding: .8em !default;
 $pivotview-filter-toolbar-items-margin-left: 12px !default;
 $pivotview-filter-toolbar-items-margin-right: 12px !default;
 $pivotgrid-header-text-margin-top: 4px !default;
+$pivotgrid-border: $pivotgrid-cell-border-color !default;
 
 //enddefault
 
@@ -114,8 +115,6 @@ $pivotgrid-bigger-button-font-size: 13px !default;
 $pivotgrid-button-inner-padding: 4px !default;
 $pivotgrid-bigger-button-inner-padding: 6px !default;
 $pivotgrid-bigger-button-line-height: .9em !default;
-$pivotgrid-checkbox-frame-size: 20px !default;
-$pivotgrid-bigger-checkbox-frame-size: 22px !default;
 $pivotgrid-expand-bigger-icon-fontsize: 10px !default;
 $pivotgrid-collapse-bigger-icon-fontsize: 10px !default;
 $pivotgrid-grouping-padding-bottom: 10px !default;

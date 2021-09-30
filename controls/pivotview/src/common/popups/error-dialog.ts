@@ -2,7 +2,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { PivotFieldList } from '../../pivotfieldlist';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 
 /**
  * `ErrorDialog` module to create error dialog.

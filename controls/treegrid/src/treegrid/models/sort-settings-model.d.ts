@@ -17,9 +17,7 @@ export interface SortDescriptorModel {
      *
      * @default ''
      * @isEnumeration true
-     * @blazorDefaultValueIgnore
      * @aspType Syncfusion.EJ2.Grids.SortDirection
-     * @blazorType Syncfusion.Blazor.Grids.SortDirection
      */
     direction?: SortDirection;
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { createElement, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Smithchart} from '../../smithchart';
 import { SmithchartMarginModel, SmithchartFontModel} from '../../smithchart/utils/utils-model';
 import { measureText } from '../../smithchart/utils/helper';
@@ -255,8 +255,6 @@ export class DataLabel {
                 labelElement.style.left = pointsRegion[i].point.x - labelElement.offsetWidth / 2 + 'px';
                 labelElement.style.top =  pointsRegion[i].point.y - labelElement.offsetHeight -
                                           smithchart.series[seriesindex].marker.height / 2 + 'px';
-                const blazorId: string = '_seriesIndex' + seriesindex + '_pointIndex' + i + smithchart.element.id;
-                updateBlazorTemplate(blazorId + 'Template', 'Template');
                 const left: number = parseInt(labelElement.style.left, 10);
                 const top: number = parseInt(labelElement.style.top, 10);
                 const width: number = labelElement.offsetWidth;

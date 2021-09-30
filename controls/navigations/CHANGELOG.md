@@ -2,7 +2,39 @@
 
 ## [Unreleased]
 
+## 19.3.43 (2021-09-30)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I341589` - An issue with the tab content not updated properly on the initial load has been fixed.
+
+### Breadcrumb
+
+Breadcrumb is a graphical user interface that helps to identify or highlight the current location within a hierarchical structure of websites. The aim is to make the user aware of their current position in a hierarchy of website links.
+
+- **Overflow Mode** - Used to limit the number of breadcrumb items to be displayed.
+- **Icons** - Icons can be specified in Breadcrumb items.
+- **Template** - Supports template for item and separator.
+- **Bind To Location** - Supports items to be rendered based on the URL or current location.
+- **Accessibility** - Provided with built-in accessibility support that helps to access all the Breadcrumb component features through the keyboard, screen readers, or other assistive technology devices.
+
+### Sidebar
+
+#### Bug Fixes
+
+- The issue with "The Sidebar background color is not correct in high-contrast theme" has been resolved.
+
 ## 19.2.62 (2021-09-14)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I341648` - The issue with "The resize event is not unwired after destroying the Sidebar component" has been resolved.
+
+## 19.2.59 (2021-08-31)
 
 ### Tab
 

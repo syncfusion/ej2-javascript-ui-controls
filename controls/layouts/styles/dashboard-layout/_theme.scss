@@ -12,8 +12,8 @@
       & .e-panel-container {
         & .e-panel-header {
           color: $panel-header-color;
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-            background: $content-bg-color-alt1;
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+            background: $panel-header-bg-color;
             box-sizing: $panel-box-sizing;
           }
         }
@@ -22,7 +22,7 @@
 
     & .e-panel.e-dragging {
       &:active {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           background: $content-bg-color;
           box-shadow: $panel-active-drag-box-shadow;
         }
@@ -36,7 +36,7 @@
       position: $panel-position;
 
       &:active {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           background: $panel-active-background;
         }
       }

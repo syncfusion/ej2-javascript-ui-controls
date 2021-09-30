@@ -1,4 +1,4 @@
-@include export-module('documenteditor-material-dark-icons') {
+@include export-module('documenteditor-material-icons') {
   .e-documenteditor {
     .e-close::before {
       content: '\e825';
@@ -45,6 +45,16 @@
       font-size: $de-op-icon-font-size;
     }
 
+    .e-de-save-icon::before {
+      content: '\e614';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cancel-icon::before {
+      content: '\eb36';
+      font-family: 'e-icons';
+    }
+
     .e-de-cmt-mark-icon::before {
       content: '\e817';
       font-family: 'e-icons';
@@ -76,16 +86,6 @@
       font-family: 'e-icons';
     }
 
-    .e-de-save-icon::before {
-      content: '\e614';
-      font-family: 'e-icons';
-    }
-
-    .e-de-cancel-icon::before {
-      content: '\eb36';
-      font-family: 'e-icons';
-    }
-
     .e-de-nav-up::before {
       content: '\e651';
       font-family: 'e-icons';
@@ -107,16 +107,6 @@
 
   .e-de-ctn-title-download::before {
     content: '\e603';
-    font-family: 'e-icons';
-  }
-
-  .e-de-acceptchange::before {
-    content: '\e19f';
-    font-family: 'e-icons';
-  }
-
-  .e-de-rejectchange::before {
-    content: '\e204';
     font-family: 'e-icons';
   }
 
@@ -304,6 +294,16 @@
     top: $de-td-table-border-top;
   }
 
+  .e-de-acceptchange::before {
+    content: '\e19f';
+    font-family: 'e-icons';
+  }
+
+  .e-de-rejectchange::before {
+    content: '\e204';
+    font-family: 'e-icons';
+  }
+
   .e-menu-item .e-de-cmt-add::before {
     content: '\e814';
     font-family: 'e-icons';
@@ -313,14 +313,16 @@
     content: '\e279';
   }
 
-  .e-menu-item .e-de-copy::before {
-    content: '\e280';
-  }
-
   .e-menu-item .e-de-spellcheck::before {
     content: '\e689';
   }
 
+  .e-menu-item .e-de-copy::before {
+    content: '\e280';
+  }
+
+  .e-btn-icon .e-de-paste::before,
+  .e-icon-btn .e-de-paste::before,
   .e-menu-item .e-de-paste::before {
     content: '\e501';
   }
@@ -341,6 +343,10 @@
     content: '\e278';
   }
 
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e605';
+  }
+
   .e-menu-item .e-de-copy-hyperlink::before {
     content: '\e295';
   }
@@ -351,10 +357,6 @@
 
   .e-menu-item .e-de-remove-hyperlink::before {
     content: '\e286';
-  }
-
-  .e-menu-item .e-de-open-properties::before {
-    content: '\e605';
   }
 
   .e-menu-item .e-de-fonts::before {
@@ -566,10 +568,5 @@
 
   .e-item .e-de-paste-merge-table::before {
     content: '\e91f';
-  }
-
-  .e-btn-icon .e-de-paste::before,
-  .e-icon-btn .e-de-paste::before {
-    content: '\e68a';
   }
 }

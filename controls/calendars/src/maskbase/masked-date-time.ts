@@ -50,10 +50,15 @@ export class MaskedDateTime {
     private isDeletion: boolean = false;
     private isShortYear: boolean = false;
     private isDeleteKey: boolean = false;
+    private isDateZero: boolean = false;
+    private isMonthZero: boolean = false;
+    private isYearZero: boolean = false;
+    private dayTypeCount: number = 0;
+    private monthTypeCount: number = 0;
     public constructor(parent? : IMaskedDateTime) {
         this.parent = parent;
         this.dateformat = this.getCulturedFormat();
-        this.maskDateValue = this.parent.value != null ? this.parent.value : new Date();
+        this.maskDateValue = this.parent.value != null ? new Date(+this.parent.value) : new Date();
         this.maskDateValue.setMonth(0);
         this.maskDateValue.setHours(0);
         this.maskDateValue.setMinutes(0);
@@ -237,6 +242,7 @@ export class MaskedDateTime {
         switch (this.previousHiddenMask[start - 1]) {
             case 'd':
                 let date: number = (this.isDayPart && newDateValue.getDate().toString().length < 2 ? newDateValue.getDate() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.isDateZero = (newVal[start - 1] == '0' );
                 if (isNaN(date)) {
                     return;
                 }
@@ -251,8 +257,10 @@ export class MaskedDateTime {
                         return;
                     }
                     this.isDayPart = true;
+                    this.dayTypeCount = this.dayTypeCount + 1;
                 } else {
                     this.isDayPart = false;
+                    this.dayTypeCount = this.isDateZero ? this.dayTypeCount + 1 : this.dayTypeCount
                 }
                 break;
             case 'M':
@@ -265,6 +273,7 @@ export class MaskedDateTime {
                 {
                     month = parseInt(newVal[start - 1], 10);
                 }
+                this.isMonthZero = (newVal[start - 1] == '0' );
                 if (!isNaN(month)) {
                     while (month > 12) {
                         month = parseInt(month.toString().slice(1), 10);
@@ -285,9 +294,11 @@ export class MaskedDateTime {
                         }
                         this.previousDate = new Date(newDateValue.getFullYear(), newDateValue.getMonth(), newDateValue.getDate());
                         this.isMonthPart = true;
+                        this.monthTypeCount = this.monthTypeCount + 1;
                     } else {
                         newDateValue.setMonth(0);
                         this.isMonthPart = false;
+                         this.monthTypeCount = this.isMonthZero ? this.monthTypeCount + 1 : this.monthTypeCount
                     }
                 } else { // let monthString: string[] = <string[]>(getValue('months[stand-alone].wide', getDefaultDateObject()));
                     let monthString: string[] = <string[]>(this.getCulturedValue('months[stand-alone].wide'));
@@ -311,6 +322,7 @@ export class MaskedDateTime {
             case 'y':
                 let year: number = (this.isYearPart && (newDateValue.getFullYear().toString().length < 4 && !this.isShortYear) ? newDateValue.getFullYear() * 10 : 0) + parseInt(newVal[start - 1], 10);
                 this.isShortYear = false;
+                this.isYearZero = (newVal[start - 1] == '0' );
                 if (isNaN(year)) {
                     return;
                 }
@@ -419,9 +431,17 @@ export class MaskedDateTime {
                 case 'ddd':
                 case 'dddd':
                 case 'd': result = proxy.isDayPart ? proxy.maskDateValue.getDate().toString() :  proxy.defaultConstant['day'].toString();
+                          result = proxy.zeroCheck(proxy.isDateZero , proxy.isDayPart , result );
                     break;
                 case 'dd': result = proxy.isDayPart ? proxy.roundOff(proxy.maskDateValue.getDate(), 2) :  proxy.defaultConstant['day'].toString();
-                    break;
+                            result = proxy.zeroCheck(proxy.isDateZero , proxy.isDayPart , result )
+                                if ( proxy.dayTypeCount == 2)
+                                {
+                                    proxy.isNavigate = true;
+                                    proxy.dayTypeCount = 0;
+                                }
+                            
+                                break;
                 case 'E' :
                 case 'EE':
                 case 'EEE': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysAbbreviated[dayKeyAbbreviated[proxy.maskDateValue.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
@@ -432,21 +452,31 @@ export class MaskedDateTime {
                     result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysNarrow[dayKeyNarrow[proxy.maskDateValue.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                     break;
                 case 'M': result = proxy.isMonthPart ? (proxy.maskDateValue.getMonth() + 1).toString() :  proxy.defaultConstant['month'].toString();
+                          result = proxy.zeroCheck(proxy.isMonthZero , proxy.isMonthPart , result )
                     break;
                 case 'MM': result = proxy.isMonthPart ? proxy.roundOff(proxy.maskDateValue.getMonth() + 1, 2) :  proxy.defaultConstant['month'].toString();
-                    break;
+                           result = proxy.zeroCheck(proxy.isMonthZero , proxy.isMonthPart , result )
+                           if ( proxy.monthTypeCount == 2)
+                           {
+                               proxy.isNavigate = true;
+                               proxy.monthTypeCount = 0;
+                           }
+
+                break;
                 case 'MMM': result = proxy.isMonthPart ? monthAbbreviated[proxy.maskDateValue.getMonth() + 1] :  proxy.defaultConstant['month'].toString();
                     break;
                 case 'MMMM': result = proxy.isMonthPart ? monthWide[proxy.maskDateValue.getMonth() + 1] :  proxy.defaultConstant['month'].toString();
                     break;
                 case 'yy': result = proxy.isYearPart ? proxy.roundOff(proxy.maskDateValue.getFullYear() % 100, 2) :  proxy.defaultConstant['year'].toString();
+                     result = proxy.zeroCheck(proxy.isYearZero , proxy.isYearPart , result )
                     if (proxy.isYearPart) {
                         proxy.isNavigate = proxy.isShortYear = (proxy.maskDateValue.getFullYear() % 100).toString().length === 2;
                     }
                     break;
                 case 'y':
                 case 'yyyy': result = proxy.isYearPart ? proxy.roundOff(proxy.maskDateValue.getFullYear(), 4) :  proxy.defaultConstant['year'].toString();
-                    break;
+                             result = proxy.zeroCheck(proxy.isYearZero , proxy.isYearPart , result )
+                break;
                 case 'h': result = proxy.isHourPart ? (proxy.maskDateValue.getHours() % 12 || 12).toString() :  proxy.defaultConstant['hour'].toString();
                     break;
                 case 'hh': result = proxy.isHourPart ? proxy.roundOff(proxy.maskDateValue.getHours() % 12 || 12, 2) :  proxy.defaultConstant['hour'].toString();
@@ -509,6 +539,7 @@ export class MaskedDateTime {
         inputValue = this.dateformat.replace(this.formatRegex, this.formatCheck());
         this.isHiddenMask = true;
         this.hiddenMask = this.dateformat.replace(this.formatRegex, this.formatCheck());
+        this.isDateZero = this.isMonthZero = this.isYearZero = false;
         this.isHiddenMask = false;
         this.previousHiddenMask = this.hiddenMask;
         this.previousValue = inputValue;
@@ -545,6 +576,16 @@ export class MaskedDateTime {
         }
         return result + valueText;
     }
+
+    private zeroCheck(isZero: boolean , isDayPart: boolean, resultValue: string): string {
+        let result: string = resultValue;
+        if(isZero && !isDayPart)
+        {
+            result = '0';
+        }
+        return result;
+    }
+
 
     private handleDeletion(format : string, isSegment : boolean): boolean {
         switch (format) {

@@ -40,6 +40,12 @@ export class VerticalEvent extends EventBase {
     }
 
     public renderAppointments(): void {
+        if (isNullOrUndefined(this.parent)) { return; }
+
+        if (this.parent.dragAndDropModule) {
+            this.parent.dragAndDropModule.setDragArea();
+        }
+
         const wrapperElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS +
             ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.ROW_COUNT_WRAPPER_CLASS));
         const isDragging: boolean = (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) ? true : false;
@@ -549,10 +555,10 @@ export class VerticalEvent extends EventBase {
             const index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
             this.wireAppointmentEvents(appointmentElement, eventObj);
-            if (appointmentElement.offsetHeight < this.cellHeight) {
+            if (appHeight  < this.cellHeight) {
                 const resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
                 resizeHandlers.forEach((resizeHandler: HTMLElement) => {
-                    resizeHandler.style.height = Math.ceil(appointmentElement.offsetHeight / resizeHandler.offsetHeight) + 'px';
+                    resizeHandler.style.height = Math.ceil(appHeight / resizeHandler.offsetHeight) + 'px';
                 });
             }
         }
@@ -600,7 +606,7 @@ export class VerticalEvent extends EventBase {
                 (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] <= recordEnd) ||
                 (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart) ||
                 (data[fieldMapping.endTime].getTime() === data[fieldMapping.startTime].getTime() &&
-                data[fieldMapping.startTime].getTime() === recordStart.getTime() && data[fieldMapping.endTime] < recordEnd));
+                    data[fieldMapping.startTime].getTime() === recordStart.getTime() && data[fieldMapping.endTime] < recordEnd));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
             }
@@ -639,11 +645,12 @@ export class VerticalEvent extends EventBase {
             eventsList = eventsList.filter((obj: Record<string, any>) => (obj[fieldMapping.startTime] === record[fieldMapping.startTime] &&
                 obj[fieldMapping.endTime] > record[fieldMapping.endTime] || obj[fieldMapping.endTime] > record[fieldMapping.startTime] &&
                 obj[fieldMapping.startTime] < record[fieldMapping.endTime] || obj[fieldMapping.endTime] === record[fieldMapping.startTime]
-                && obj[fieldMapping.startTime] === record[fieldMapping.endTime]) || ((obj[fieldMapping.startTime].getTime() ===
-                record[fieldMapping.startTime].getTime() && obj[fieldMapping.endTime].getTime() === record[fieldMapping.endTime].getTime())
-                || (obj[fieldMapping.startTime].getTime() === record[fieldMapping.startTime].getTime() &&
-                obj[fieldMapping.endTime].getTime() < record[fieldMapping.endTime].getTime() ||
-                obj[fieldMapping.endTime].getTime() > record[fieldMapping.endTime].getTime())));
+                && obj[fieldMapping.startTime] === record[fieldMapping.endTime]) ||
+                ((obj[fieldMapping.startTime].getTime() === record[fieldMapping.startTime].getTime() &&
+                    obj[fieldMapping.endTime].getTime() === record[fieldMapping.endTime].getTime())
+                    || (obj[fieldMapping.startTime].getTime() === record[fieldMapping.startTime].getTime() &&
+                        obj[fieldMapping.endTime].getTime() < record[fieldMapping.endTime].getTime() ||
+                        obj[fieldMapping.endTime].getTime() > record[fieldMapping.endTime].getTime())));
         }
         if (eventsList.length > 0) {
             const appLevel: number[] = eventsList.map((obj: Record<string, any>) => obj.Index) as number[];

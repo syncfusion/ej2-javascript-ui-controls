@@ -1,5 +1,5 @@
 import { Dialog, OffsetPosition, BeforeOpenEventArgs, Tooltip, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { Droppable, createElement, extend, remove, addClass, closest, getInstance, isBlazor, select } from '@syncfusion/ej2-base';
+import { Droppable, createElement, extend, remove, addClass, closest, getInstance, select } from '@syncfusion/ej2-base';
 import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IDataOptions, IFieldOptions, ICalculatedFields, IFormatSettings, PivotEngine } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
@@ -766,7 +766,7 @@ export class CalculatedField implements IAction {
     private addFormula(report: IDataOptions, field: string): void {
         this.isFormula = true;
         this.field = field;
-        if (isBlazor() || this.parent.dataSourceSettings.mode === 'Server') {
+        if (this.parent.dataSourceSettings.mode === 'Server') {
             PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings(report));
         } else {
             this.parent.setProperties({ dataSourceSettings: report }, true);
@@ -778,7 +778,7 @@ export class CalculatedField implements IAction {
             this.parent.updateDataSource(false);
             let pivot: PivotView = (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule) ?
                 (this.parent as PivotFieldList).pivotGridModule : (this.parent as PivotView);
-            if (!(isBlazor() && pivot && pivot.enableVirtualization) && (pivot && pivot.dataSourceSettings.mode !== 'Server')) {
+            if (pivot && pivot.dataSourceSettings.mode !== 'Server') {
                 this.endDialog();
             } else {
                 this.isRequireUpdate = true;
@@ -834,11 +834,7 @@ export class CalculatedField implements IAction {
         }
         this.parent.pivotCommon.errorDialog.createErrorDialog(
             this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
-        if (isBlazor()) {
-            PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings(this.existingReport));
-        } else {
-            this.parent.setProperties({ dataSourceSettings: this.existingReport }, true);
-        }
+        this.parent.setProperties({ dataSourceSettings: this.existingReport }, true);
         if (this.isEdit) {
             let calcFields: CalculatedFieldSettingsModel[] = this.parent.dataSourceSettings.calculatedFieldSettings;
             for (let i: number = 0; calcFields && i < calcFields.length; i++) {

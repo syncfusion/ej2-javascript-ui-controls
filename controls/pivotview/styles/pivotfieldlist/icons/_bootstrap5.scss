@@ -1,0 +1,352 @@
+@include export-module('field-list-icons') {
+  /*! field-list component icons */
+  .e-pivotfieldlist {
+    .e-select-table::before {
+      content: '\e751';
+    }
+  }
+
+  .e-pivot-formatting-dialog {
+    .e-format-delete-icon::before {
+      content: '\e7e7';
+    }
+
+    .e-add-icon::before {
+      content: '\e805';
+    }
+
+    .e-colorpicker-wrapper .e-format-back-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before,
+    .e-colorpicker-container .e-format-back-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before {
+      content: '\e783';
+    }
+
+    .e-colorpicker-wrapper .e-format-font-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before,
+    .e-colorpicker-container .e-format-font-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before {
+      content: '\e76f';
+    }
+  }
+
+  .e-level-options {
+    .e-selected-level-icon::before {
+      content: '\e774';
+    }
+  }
+
+  .e-pivot-calc-dialog-div {
+    .e-drag::before {
+      content: '\e726';
+    }
+
+    .e-pivot-all-field-title-wrapper .e-info.e-icons::before,
+    .e-pivot-all-field-title-container .e-info.e-icons::before {
+      content: '\e800';
+    }
+
+    .e-list-item .e-text-content .e-edited.e-icons::before {
+      content: '\e740';
+    }
+
+    .e-list-item .e-text-content .e-edit.e-icons::before {
+      content: '\e730';
+    }
+
+    .e-list-item .e-text-content .e-remove-report.e-icons::before {
+      content: '\e820';
+    }
+
+    .e-remove-report.e-icons::before {
+      content: '\e820';
+    }
+
+    .e-list-item .e-text-content .e-format.e-icons::before {
+      content: '\e75c';
+    }
+
+    // sass-lint:disable-all
+    .e-measureGroupCDB-icon::before {
+      content: '\e7d2' !important;
+    }
+
+    .e-measure-icon::before {
+        content: '\e7d2' !important;
+    }
+
+    .e-folderCDB-icon::before {
+        content: '\e83c' !important;
+    }
+
+    .e-folderCDB-open-icon::before {
+        content: '\e760' !important;
+    }
+
+    .e-dimensionCDB-icon::before {
+        content: '\e81d' !important;
+    }
+
+    .e-kpiCDB-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiGoal-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiStatus-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiTrend-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiValue-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-namedSetCDB-icon::before {
+        content: '\e829' !important;
+    }
+
+    .e-hierarchyCDB-icon::before {
+        content: '\e709' !important;
+    }
+
+    .e-attributeCDB-icon::before {
+        content: '\e73e' !important;
+    }
+
+    .e-hierarchy-level-0-icon::before {
+        content: '\e76a' !important;
+    }
+
+    .e-hierarchy-level-1-icon::before {
+        content: '\e76a' !important;
+    }
+
+    .e-hierarchy-level-2-icon::before {
+        content: '\e807' !important;
+    }
+
+    .e-hierarchy-level-3-icon::before {
+        content: '\e780' !important;
+    }
+
+    .e-hierarchy-level-4-icon::before {
+        content: '\e711' !important;
+    }
+
+    .e-hierarchy-level-5-icon::before {
+        content: '\e837' !important;
+    }
+
+    .e-calcMemberGroupCDB::before {
+      content: '\e798' !important;
+    }
+
+    .e-calc-measure-icon::before {
+      content: '\e7d2' !important;
+    }
+
+    .e-calc-dimension-icon::before {
+      content: '\e81d' !important;
+    }
+
+    .e-sort-none::before {
+        content: '\e824' !important;
+    }
+
+    .e-sort-ascend::before {
+        content: '\e7df' !important;
+    }
+
+    .e-sort-descend::before {
+        content: '\e7d8' !important;
+    }
+    // sass-lint:enable-all
+  }
+
+  .e-pivotfieldlist-wrapper,
+  .e-pivotfieldlist-container {
+    .e-field-list-back-icon::before {
+      content: '\e773';
+    }
+
+    .e-sort::before {
+      content: '\e7df';
+    }
+
+    .e-pv-filter::before {
+      content: '\e7f7';
+    }
+
+    .e-pv-filtered::before {
+      content: '\e735';
+    }
+
+    .e-drag::before {
+      content: '\e726';
+    }
+
+    .e-add-icon::before {
+      content: '\e805';
+    }
+
+    .e-remove::before {
+      content: '\e7e7';
+    }
+
+    .e-axis-rows::before {
+      content: '\e7e6';
+    }
+
+    .e-axis-columns::before {
+      content: '\e76b';
+    }
+
+    .e-axis-values::before {
+      content: '\e7d2';
+    }
+
+    .e-axis-filters::before {
+      content: '\e7f7';
+    }
+
+    .e-selected-option-icon::before {
+      content: '\e774';
+    }
+
+    .e-clear-filter-icon::before {
+      content: '\e72c';
+    }
+
+    .e-dropdown-icon::before {
+      content: '\e70d';
+    }
+
+    // sass-lint:disable-all
+    .e-measureGroupCDB-icon::before {
+      content: '\e7d2' !important;
+    }
+
+    .e-measure-icon::before {
+        content: '\e7d2' !important;
+    }
+
+    .e-folderCDB-icon::before {
+        content: '\e83c' !important;
+    }
+
+    .e-folderCDB-open-icon::before {
+        content: '\e760' !important;
+    }
+
+    .e-dimensionCDB-icon::before {
+        content: '\e81d' !important;
+    }
+
+    .e-kpiCDB-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiGoal-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiStatus-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiTrend-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-kpiValue-icon::before {
+        content: '\e73f' !important;
+    }
+
+    .e-namedSetCDB-icon::before {
+        content: '\e829' !important;
+    }
+
+    .e-hierarchyCDB-icon::before {
+        content: '\e709' !important;
+    }
+
+    .e-attributeCDB-icon::before {
+        content: '\e73e' !important;
+    }
+
+    .e-hierarchy-level-0-icon::before {
+        content: '\e76a' !important;
+    }
+
+    .e-hierarchy-level-1-icon::before {
+        content: '\e76a' !important;
+    }
+
+    .e-hierarchy-level-2-icon::before {
+        content: '\e807' !important;
+    }
+
+    .e-hierarchy-level-3-icon::before {
+        content: '\e780' !important;
+    }
+
+    .e-hierarchy-level-4-icon::before {
+        content: '\e711' !important;
+    }
+
+    .e-hierarchy-level-5-icon::before {
+        content: '\e837' !important;
+    }
+
+    .e-calcMemberGroupCDB::before {
+      content: '\e798' !important;
+    }
+
+    .e-calc-measure-icon::before {
+      content: '\e7d2' !important;
+    }
+
+    .e-calc-dimension-icon::before {
+      content: '\e81d' !important;
+    }
+
+    .e-sort-none::before {
+        content: '\e824' !important;
+    }
+
+    .e-sort-ascend::before {
+        content: '\e7df' !important;
+    }
+
+    .e-sort-descend::before {
+        content: '\e7d8' !important;
+    }
+    // sass-lint:enable-all
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edited.e-icons::before {
+      content: '\e740';
+    }
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edit.e-icons::before {
+      content: '\e730';
+    }
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-remove-report.e-icons::before {
+      content: '\e820';
+    }
+
+    .e-pivot-button .e-edit::before {
+      content: '\e730';
+    }
+
+    .e-sort-ascend-icon::before {
+      content: '\e7a3';
+    }
+
+    .e-sort-descend-icon::before {
+      content: '\e7b6';
+    }
+  }
+}

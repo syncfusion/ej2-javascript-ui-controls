@@ -809,7 +809,7 @@ describe('Chart Control - Box and Whisker Series', () => {
                 svg = document.getElementById('container_Series_0_Point_1_BoxPath');
                 trigger.clickEvent(svg);
                 for (let i: number = 0; i < 1; i++) {
-                    expect(document.getElementsByClassName(selection + i).length).toBe(1);
+                    expect(document.getElementsByClassName(selection + i).length).toBe(2);
                 }
                 done();
             };

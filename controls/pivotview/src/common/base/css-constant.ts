@@ -67,6 +67,8 @@ export const RIGHT_AXIS_PANEL_CLASS: string = 'e-right-axis-fields';
 /** @hidden */
 export const ALL_FIELDS_PANEL_CLASS: string = 'e-all-fields-axis';
 /** @hidden */
+export const FIELD_PANEL_SCROLL_CLASS: string = 'e-hscroll';
+/** @hidden */
 export const AXIS_HEADER_CLASS: string = 'e-axis-header';
 /** @hidden */
 export const AXIS_CONTENT_CLASS: string = 'e-axis-content';

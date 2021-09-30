@@ -3,7 +3,7 @@
   font-weight: $panel-bigger-header-font-weight;
   height: $panel-bigger-header-height;
   padding: $panel-bigger-header-padding;
-  @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+  @if ($skin-name == 'tailwind') {
     line-height: $panel-bigger-header-line-height;
   }
 }
@@ -20,11 +20,15 @@
     }
 
     .e-dashboard-gridline-table tbody tr td.e-dashboard-gridline {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         border: 1px dashed $gridline-border;
       }
       @else {
         border: 1px dotted $gridline-border;
+      }
+
+      @if ($skin-name == 'bootstrap5') {
+        border-radius: $gridline-border-radius;
       }
       position: absolute;
     }
@@ -40,14 +44,14 @@
     & .e-panel {
 
       & .e-resize.e-dl-icon {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           line-height: 9px;
         }
       }
 
       &:hover {
         border: $panel-hover-border;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           box-shadow: $panel-hover-box-shadow;
         }
 
@@ -84,8 +88,13 @@
         font-weight: $panel-header-font-weight;
         height: $panel-header-height;
         padding: $panel-header-padding;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           line-height: $panel-header-line-height;
+        }
+
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind') {
+          border-top-left-radius: $panel-header-border-radius;
+          border-top-right-radius: $panel-header-border-radius;
         }
 
         & div {

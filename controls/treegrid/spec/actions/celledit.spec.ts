@@ -1006,7 +1006,7 @@ describe('update rows method', () => {
     });
   });
 
-  describe('Cancelling the edit action Testing - EJ2-50710', () => {
+    describe('Cancelling the edit action Testing - EJ2-50710', () => {
     let gridObj: TreeGrid;
     let preventDefault: Function = new Function();
     beforeAll((done: Function) => {
@@ -1029,37 +1029,6 @@ describe('update rows method', () => {
     it('Cancelling the edit action testing on escape click', () => {
       gridObj.editCell(0, 'taskName');
       gridObj.grid.keyboardModule.keyAction({ action: 'escape', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-      expect(gridObj.getRows()[0].querySelectorAll(".e-treegridexpand").length == 1).toBe(true);
-  });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
-
-  describe('Expand record testing after Enter key is pressed for save action - EJ2-51156', () => {
-    let gridObj: TreeGrid;
-    let preventDefault: Function = new Function();
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell" },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
-          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-          { field: 'taskName', headerText: 'Task Name' },
-          { field: 'priority', headerText: 'priority' },
-          ]
-        },
-        done
-      );
-    });
-    it('expand case testing on after enter key click', () => {
-      gridObj.collapseRow(gridObj.getRows()[0])
-      gridObj.editCell(5, 'taskName');
-      gridObj.grid.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-      gridObj.expandRow(gridObj.getRows()[0])
       expect(gridObj.getRows()[0].querySelectorAll(".e-treegridexpand").length == 1).toBe(true);
   });
     afterAll(() => {

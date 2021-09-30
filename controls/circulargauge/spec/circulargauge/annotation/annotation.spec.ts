@@ -5,7 +5,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Annotations } from '../../../src/circular-gauge/annotations/annotations';
-import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 CircularGauge.Inject(Annotations);

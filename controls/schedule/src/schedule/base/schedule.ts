@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
 import { getElement, removeClass, addClass, classList, remove } from '@syncfusion/ej2-base';
@@ -111,6 +111,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private quickInfoTemplatesContentFn: CallbackFunction;
     private quickInfoTemplatesFooterFn: CallbackFunction;
     private resourceHeaderTemplateFn: CallbackFunction;
+    private headerIndentTemplateFn: CallbackFunction;
     private defaultLocale: Record<string, any>;
     public dayModule: Day;
     public weekModule: Week;
@@ -684,6 +685,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public resourceHeaderTemplate: string;
 
     /**
+     * Template option to customize the header indent bar. Here, the template accepts either
+     *  the string or HTMLElement as template design and then the parsed design is displayed onto the header indent cell.
+     *
+     * Refer to the below code snippet.
+     *
+     * {% codeBlock src='schedule/headerIndentTemplate/index.md' %}{% endcodeBlock %}
+     *
+     * @default null
+     */
+    @Property()
+    public headerIndentTemplate: string;
+
+    /**
      * Allows defining the group related settings of multiple resources. When this property is non-empty, it means
      * that the resources will be grouped on the schedule layout based on the provided resource names.
      * {% codeBlock src='schedule/group/index.md' %}{% endcodeBlock %}
@@ -986,11 +1000,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         classList(this.element, addClasses, removeClasses);
         this.validateDate();
-        this.eventTooltipTemplateFn = this.templateParser(this.eventSettings.tooltipTemplate);
-        this.editorTemplateFn = this.templateParser(this.editorTemplate);
-        this.quickInfoTemplatesHeaderFn = this.templateParser(this.quickInfoTemplates.header);
-        this.quickInfoTemplatesContentFn = this.templateParser(this.quickInfoTemplates.content);
-        this.quickInfoTemplatesFooterFn = this.templateParser(this.quickInfoTemplates.footer);
         createSpinner({ target: this.element });
         this.scrollModule = new Scroll(this);
         this.scrollModule.setWidth();
@@ -1141,6 +1150,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             obj.dayHeaderTemplateName = obj.dayHeaderTemplate ? obj.option : '';
             obj.monthHeaderTemplateName = obj.monthHeaderTemplate ? obj.option : '';
             obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
+            obj.headerIndentTemplateName = obj.headerIndentTemplate ? obj.option : '';
             obj.eventTemplateName = obj.eventTemplate ? obj.option : '';
             if (!isNullOrUndefined(obj.firstDayOfWeek) && obj.firstDayOfWeek === 0) {
                 delete obj.firstDayOfWeek;
@@ -1199,6 +1209,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             eventTemplate: this.eventSettings.template,
             dateHeaderTemplate: this.dateHeaderTemplate,
             resourceHeaderTemplate: this.resourceHeaderTemplate,
+            headerIndentTemplate: this.headerIndentTemplate,
             firstMonthOfYear: this.firstMonthOfYear,
             firstDayOfWeek: this.firstDayOfWeek,
             workDays: workDays,
@@ -1278,7 +1289,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.minorSlotTemplateFn = this.templateParser(this.activeViewOptions.timeScale.minorSlotTemplate);
         this.appointmentTemplateFn = this.templateParser(this.activeViewOptions.eventTemplate);
         this.resourceHeaderTemplateFn = this.templateParser(this.activeViewOptions.resourceHeaderTemplate);
+        this.headerIndentTemplateFn = this.templateParser(this.activeViewOptions.headerIndentTemplate);
         this.headerTooltipTemplateFn = this.templateParser(this.activeViewOptions.group.headerTooltipTemplate);
+        this.eventTooltipTemplateFn = this.templateParser(this.eventSettings.tooltipTemplate);
+        this.editorTemplateFn = this.templateParser(this.editorTemplate);
+        this.quickInfoTemplatesHeaderFn = this.templateParser(this.quickInfoTemplates.header);
+        this.quickInfoTemplatesContentFn = this.templateParser(this.quickInfoTemplates.content);
+        this.quickInfoTemplatesFooterFn = this.templateParser(this.quickInfoTemplates.footer);
     }
 
     private initializePopups(): void {
@@ -1954,6 +1971,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Method to process indent template
+     *
+     * @returns {CallbackFunction} Returns the callback function
+     * @private
+     */
+    public getHeaderIndentTemplate(): CallbackFunction {
+        return this.headerIndentTemplateFn;
+    }
+
+    /**
      * Method to get dynamic CSS properties
      *
      * @returns {ScrollCss} Returns the CSS properties dynamically
@@ -2020,7 +2047,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
             this.activeView.resetColWidth();
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
-            this.notify(events.dataReady, {});
+            this.refreshEvents(false);
         } else {
             this.notify(events.contentReady, {});
         }
@@ -2131,6 +2158,25 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         return weekNumber;
     }
 
+    /**
+     * Method to render the header indent template.
+     *
+     * @param {TdData} data Accepts the td data
+     * @param {Element} td Accepts the td element
+     * @returns {void}
+     * @private
+     */
+    public renderHeaderIndentTemplate(data: TdData, td: Element): void {
+        if (this.activeViewOptions.headerIndentTemplate) {
+            const scheduleId: string = this.element.id + '_';
+            const viewName: string = this.activeViewOptions.headerIndentTemplateName;
+            const templateId: string = scheduleId + viewName + 'headerIndentTemplate';
+            const indentTemplate: HTMLElement[] =
+                [].slice.call(this.getHeaderIndentTemplate()(data, this, 'headerIndentTemplate', templateId, false));
+            append(indentTemplate, td);
+        }
+    }
+
     private unWireEvents(): void {
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.onScheduleResize);
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'orientationchange', this.onScheduleResize);
@@ -2202,7 +2248,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties() });
                 if (this.activeView.isTimelineView()) {
-                    this.notify(events.dataReady, {});
+                    this.refreshEvents(false);
                 }
                 break;
             case 'showWeekend':
@@ -2385,10 +2431,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             break;
         case 'allowDragAndDrop':
         case 'allowResizing':
-            this.notify(events.dataReady, { processedData: this.eventBase.processData(this.eventsData) });
-            break;
         case 'eventDragArea':
-            this.notify(events.dataReady, {});
+            this.refreshEvents(false);
             break;
         case 'weekRule':
             state.isLayout = true;
@@ -2414,6 +2458,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.headerModule = new HeaderRenderer(this);
                 this.headerModule.updateDateRange(this.activeView.getDateRangeText());
             }
+            state.isLayout = true;
+            break;
+        case 'headerIndentTemplate':
+            this.activeViewOptions.headerIndentTemplate = newProp.headerIndentTemplate;
+            this.headerIndentTemplateFn = this.templateParser(this.activeViewOptions.headerIndentTemplate);
             state.isLayout = true;
             break;
         }
@@ -2483,7 +2532,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'enableMaxHeight':
             case 'enableIndicator':
-                this.notify(events.dataReady, { processedData: this.eventBase.processData(this.eventsData) });
+                this.refreshEvents(false);
                 break;
             case 'ignoreWhitespace':
                 state.isLayout = true;
@@ -3049,14 +3098,101 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Refreshes the event dataSource. This method may be useful when the events alone in the schedule needs to be re-rendered.
      *
      * @function refreshEvents
+     * @param {boolean} isRemoteRefresh Accepts the boolean to refresh data from remote or local
      * @returns {void}
      */
-    public refreshEvents(): void {
+    public refreshEvents(isRemoteRefresh: boolean = true): void {
         if (this.dragAndDropModule) {
             this.dragAndDropModule.actionObj.action = '';
             removeClass([this.element], cls.EVENT_ACTION_CLASS);
         }
-        this.crudModule.refreshDataManager();
+        if (isRemoteRefresh) {
+            this.crudModule.refreshDataManager();
+        } else {
+            const eventsData: Record<string, any>[] = this.eventsData || [];
+            const blockData: Record<string, any>[] = this.blockData || [];
+            const data: Record<string, any>[] = eventsData.concat(blockData);
+            this.notify(events.dataReady, { processedData: this.eventBase ? this.eventBase.processData(data) : [] });
+        }
+    }
+
+    /**
+     * Method to refresh the given Schedule templates
+     *
+     * @param {string} templateName Accepts the template name
+     * @returns {void}
+     */
+    public refreshTemplates(templateName: string): void {
+        if (templateName) {
+            this.resetTemplates([templateName]);
+        } else {
+            this.resetTemplates();
+        }
+        switch (templateName) {
+        case 'eventTemplate':
+            this.appointmentTemplateFn = this.templateParser(this.activeViewOptions.eventTemplate);
+            this.refreshEvents(false);
+            break;
+        case 'dateHeaderTemplate':
+            this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
+            this.activeView.refreshHeader();
+            break;
+        case 'resourceHeaderTemplate':
+            this.resourceHeaderTemplateFn = this.templateParser(this.activeViewOptions.resourceHeaderTemplate);
+            if (this.activeView.isTimelineView()) {
+                this.activeView.refreshResourceHeader();
+            } else {
+                this.activeView.refreshHeader();
+            }
+            break;
+        case 'quickInfoTemplates':
+            if (this.quickPopup) {
+                this.quickPopup.destroy();
+                this.quickPopup = null;
+            }
+            this.quickPopup = new QuickPopups(this);
+            this.quickInfoTemplatesHeaderFn = this.templateParser(this.quickInfoTemplates.header);
+            this.quickInfoTemplatesContentFn = this.templateParser(this.quickInfoTemplates.content);
+            this.quickInfoTemplatesFooterFn = this.templateParser(this.quickInfoTemplates.footer);
+            break;
+        case 'editorTemplate':
+            if (this.eventWindow) {
+                this.eventWindow.destroy();
+                this.eventWindow = null;
+            }
+            this.eventWindow = new EventWindow(this);
+            this.editorTemplateFn = this.templateParser(this.editorTemplate);
+            break;
+        case 'tooltipTemplate':
+        case 'headerTooltipTemplate':
+            if (this.eventTooltip) {
+                this.eventTooltip.destroy();
+                this.eventTooltip = null;
+            }
+            this.eventTooltip = new EventTooltip(this);
+            this.eventTooltipTemplateFn = this.templateParser(this.eventSettings.tooltipTemplate);
+            this.headerTooltipTemplateFn = this.templateParser(this.activeViewOptions.group.headerTooltipTemplate);
+            break;
+        default:
+            this.initializeView(this.currentView);
+            break;
+        }
+    }
+
+    /**
+     * Refreshes the Schedule layout without re-render.
+     *
+     * @function refreshLayout
+     * @returns {void}
+     */
+    public refreshLayout(): void {
+        this.onScheduleResize();
+        if (this.headerModule) {
+            this.headerModule.refresh();
+        }
+        if (this.eventWindow) {
+            this.eventWindow.refresh();
+        }
     }
 
     /**

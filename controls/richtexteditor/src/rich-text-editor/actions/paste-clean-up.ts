@@ -4,7 +4,7 @@ import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
@@ -17,7 +17,7 @@ import { DialogRenderer } from '../renderer/dialog-renderer';
 import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
-import { sanitizeHelper, convertToBlob } from '../base/util';
+import { sanitizeHelper, convertToBlob, getDefaultValue } from '../base/util';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -163,7 +163,7 @@ export class PasteCleanup {
         let contentInnerElem: string = '';
         for (let i: number = 0; i < enterSplitText.length; i++) {
             if (enterSplitText[i].trim() === '') {
-                contentInnerElem += '<p><br></p>';
+                contentInnerElem += getDefaultValue(this.parent);
             } else {
                 const contentWithSpace: string = this.makeSpace(enterSplitText[i]);
                 contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
@@ -489,7 +489,7 @@ export class PasteCleanup {
                             dialog.hide();
                             this.parent.height = isHeight ? preRTEHeight : this.parent.height;
                             isHeight = false;
-                            const argument: Dialog = isBlazor() ? null : dialog;
+                            const argument: Dialog = dialog;
                             this.dialogRenderObj.close(argument);
                             dialog.destroy();
                             this.selectFormatting(value, args, keepChecked, cleanChecked);
@@ -507,7 +507,7 @@ export class PasteCleanup {
                             dialog.hide();
                             this.parent.height = isHeight ? preRTEHeight : this.parent.height;
                             isHeight = false;
-                            const args: Dialog = isBlazor() ? null : dialog;
+                            const args: Dialog = dialog;
                             this.dialogRenderObj.close(args);
                             dialog.destroy();
                         }

@@ -76,7 +76,9 @@ export class WorkbookConditionalFormat {
         }
     }
 
-    private clearRules(args: { range: string, isPublic?: boolean, isclearFormat?: true, sheetIdx?: number, isClearCF?: boolean, isUndoRedo?: boolean }): void {
+    private clearRules(
+        args: { range: string, isPublic?: boolean, isclearFormat?: true, sheetIdx?: number, isClearCF?: boolean,
+        isUndoRedo?: boolean }): void {
         const isPublic: boolean = isNullOrUndefined(args.isPublic) ? true : false;
         const cFormats: ConditionalFormatModel[] = [];
         const oldRange: string[] = [];

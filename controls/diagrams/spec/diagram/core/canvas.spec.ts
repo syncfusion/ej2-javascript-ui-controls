@@ -966,6 +966,56 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Validating DOM elements', () => {
+
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+
+            ele = createElement('div', { id: 'diagramCanvasInteraction4' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 50, height: 50, margin: { left: 10 }, offsetX: 100, offsetY: 200,
+                },
+                {
+                    id: 'node2', width: 50, height: 50, margin: { left: 150, top: 50 }, offsetX: 100, offsetY: 200,
+                },
+                {
+                    id: 'group', children: ['node1', 'node2'],
+                    width: 300, height: 200,
+                    offsetX: 200, offsetY: 200,
+                    container: { type: 'Canvas', orientation: 'Vertical' },
+                    constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+                },
+                {
+                    id: 'node3', offsetX: 500, offsetY: 200, width: 75, height: 75
+                }
+            ];
+
+            diagram = new Diagram({ width: '700px', height: '600px', nodes: nodes });
+            diagram.appendTo('#diagramCanvasInteraction4');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Measure elements', (done: Function) => {
+            expect((document.getElementById('measureElement').childNodes[1] as any).alt).toBe('measureElementImage');
+            expect((document.getElementById('measureElement').childNodes[2].childNodes[0] as any).attributes[0].nodeValue).toBe('');
+            done();
+        });
+    });
+
     describe('Simple canvas panel interaction - Events', () => {
 
         let diagram: Diagram;

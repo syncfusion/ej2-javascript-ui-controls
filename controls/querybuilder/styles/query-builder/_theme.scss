@@ -112,7 +112,7 @@
     & .e-removerule.e-btn.e-round {
       background-color: $groupfill-color;
       @if $skin-name == 'bootstrap4' {
-        background-color:  $qrybldr-btngroup-bgcolor;
+        background-color: $qrybldr-btngroup-bgcolor;
       }
 
       &.e-readonly {

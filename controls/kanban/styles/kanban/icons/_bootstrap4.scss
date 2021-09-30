@@ -1,19 +1,19 @@
 @include export-module('kanban-bootstrap4-icons') {
   .e-kanban {
     .e-column-expand::before {
-      content: '\e654';
+      content: '\e70d';
     }
 
     .e-column-collapse::before {
-      content: '\e653';
+      content: '\e76a';
     }
 
     .e-swimlane-row-expand::before {
-      content: '\e652';
+      content: '\e705';
     }
 
     .e-swimlane-row-collapse::before {
-      content: '\e653';
+      content: '\e76a';
     }
 
     .e-show-add-icon::before {
@@ -28,15 +28,15 @@
 
     &.e-rtl {
       .e-column-collapse::before {
-        content: '\e654';
+        content: '\e70d';
       }
 
       .e-column-expand::before {
-        content: '\e653';
+        content: '\e76a';
       }
 
       .e-swimlane-row-collapse::before {
-        content: '\e654';
+        content: '\e70d';
       }
     }
   }
@@ -45,4 +45,3 @@
     content: '\e745';
   }
 }
-  

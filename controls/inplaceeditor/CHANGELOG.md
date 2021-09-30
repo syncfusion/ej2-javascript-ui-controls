@@ -12,7 +12,7 @@
 
 - `#I335868` - In popup mode, pressing the close-icon on the In-place editor `numeric` type changes the value to -1 has been resolved.
 
-## 19.2.46 (2021-07-06)
+## 19.2.44 (2021-06-30)
 
 ### In-place Editor
 

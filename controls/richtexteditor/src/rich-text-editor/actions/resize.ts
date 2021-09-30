@@ -1,4 +1,4 @@
-import { EventHandler, Browser, isNullOrUndefined, isBlazor, detach } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { IRichTextEditor, ResizeArgs } from '../base/interface';
@@ -43,7 +43,7 @@ export class Resize {
         }
         this.wireResizeEvents();
         this.parent.notify(events.resizeInitialized, {});
-        const args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
+        const args: ResizeArgs = { event: e, requestType: 'editor' };
         this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
             if (resizeStartArgs.cancel) {
                 this.unwireResizeEvents();
@@ -52,7 +52,7 @@ export class Resize {
     }
 
     private performResize(e?: MouseEvent | TouchEvent | PointerEvent): void {
-        const args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
+        const args: ResizeArgs = { event: e, requestType: 'editor' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.unwireResizeEvents();
@@ -76,7 +76,7 @@ export class Resize {
     private stopResize(e?: MouseEvent | TouchEvent | PointerEvent): void {
         this.parent.refreshUI();
         this.unwireResizeEvents();
-        const args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
+        const args: ResizeArgs = { event: e, requestType: 'editor' };
         this.parent.trigger(events.resizeStop, args);
     }
 

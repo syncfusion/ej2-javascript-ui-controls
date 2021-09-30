@@ -1,0 +1,57 @@
+$kanban-skin: 'bootstrap5' !default;
+//Layout Variables Start
+$kanban-icons-border-radius: 4px !default;
+$kanban-font-weight-medium: $font-weight-medium !default;
+$kanban-text-xs: $text-xs !default;
+$kanban-text-xxs: $text-xxs !default;
+$kanban-text-sm: $text-sm !default;
+$kanban-leading-normal: $leading-normal !default;
+$kanban-leading-relaxed: $leading-relaxed !default;
+$kanban-text-base: $text-base !default;
+$kanban-popup-box-shadow-1: 0 24px 38px 3px rgba(0, 0, 0, .14) !default;
+$kanban-popup-box-shadow-2: 0 9px 46px 8px rgba(0, 0, 0, .12) !default;
+$kanban-popup-box-shadow-3: 0 11px 15px -7px rgba(0, 0, 0, .2) !default;
+$kanban-card-box-shadow: 0 1px 2px rgba($black, .06), 0 1px 3px rgba($black, .1) !default;
+$kanban-stacked-border-color: $border !default;
+$kanban-hover-box-shadow: $shadow-focus-ring1 !default;
+$kanban-selection-hover-box-shadow: 0 4px 6px -1px rgba($black, .05), 0 10px 15px -3px rgba($black, .1) !default;
+$kanban-card-border-color: $border-light !default;
+$kanban-text-lg: $text-lg !default;
+$kanban-text-xl: $text-xl !default;
+$kanban-text-focus-box-shadow: 0 0 0 2px $primary !default;
+//Layout Variables End
+//Theme Variables Start
+$kanban-column-bg-color: $content-bg-color-alt1 !default;
+$kanban-default-font: $content-text-color !default;
+$kanban-header-font: $content-text-color-alt2 !default;
+$kanban-header-item-color: $content-text-color-alt3 !default;
+$kanban-content-font: $content-text-color-alt1 !default;
+$kanban-border-color: $border-dark !default;
+$kanban-focus-color: $gray-300 !default;
+$kanban-card-selection: $content-bg-color-alt2 !default;
+$kanban-primary-color: $primary !default;
+$kanban-dropped-clone-bg-color: $primary-lighter !default;
+$kanban-dropped-clone-border-color: $primary !default;
+$kanban-dragged-clone-border-color: $border-dark !default;
+$kanban-icons-color: $gray-500 !default;
+$kanban-bg-color: $content-bg-color !default;
+$kanban-text-area-bg-color: initial !default;
+$kanban-text-area-color: $gray-900 !default;
+$kanban-popup-overlay-bg-color: $overlay-bg-color !default;
+$kanban-min-color: $warning-light !default;
+$kanban-max-color: $danger-light !default;
+$kanban-header-border-color: $gray-300 !default;
+$kanban-icons-toggle-bg-color: $content-bg-color-alt3 !default;
+$kanban-icons-toggle-color: $icon-color-hover !default;
+$kanban-tags-bg-color: $content-bg-color-alt3 !default;
+$kanban-tags-color: $gray-900 !default;
+$kanban-card-selection-box-shadow: 0 4px 6px -1px rgba($black, .05), 0 10px 15px -3px rgba($black, .1) !default;
+$kanban-card-hover-box-shadow-1: 0 4px 6px -1px rgba(0, 0, 0, .05) !default;
+$kanban-card-hover-box-shadow-2: 0 10px 15px -3px rgba(0, 0, 0, .1) !default;
+//Theme Variables End
+
+$kanban-collapse-icon-bg-color: $secondary-bg-color-hover !default;
+$kanban-collapse-icon-color: $white !default;
+$kanban-collapse-icon-action-box-shadow-boot5: $secondary-shadow-focus !default;
+$kanban-collapse-icon-action-box-shadow-boot5: $secondary-shadow-focus !default;
+$kanban-card-hover-border-color: $border-dark !default;

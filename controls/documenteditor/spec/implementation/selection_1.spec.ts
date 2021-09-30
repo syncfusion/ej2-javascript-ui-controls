@@ -145,13 +145,13 @@ describe('Insert Picture Validation', () => {
       done();
     }, 1000);
   });
-  it('insert image api return when readonly is true', () => {
-console.log('insert image api return when readonly is true');
-    editor.open(JSON.stringify(jsonStr));
-    editor.isReadOnly = true;
-    editor.editor.insertImage(imageString, 500, 400);
-    expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).not.toBe(true);
-  });
+//   it('insert image api return when readonly is true', () => {
+// console.log('insert image api return when readonly is true');
+//     editor.open(JSON.stringify(jsonStr));
+//     editor.isReadOnly = true;
+//     editor.editor.insertImage(imageString, 500, 400);
+//     expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).not.toBe(true);
+//   });
 //   it('caret not to be shown when editable lose its focus', () => {
 // console.log('caret not to be shown when editable lose its focus');
 //     let event: any = { preventDefault: function () { } };

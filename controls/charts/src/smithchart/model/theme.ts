@@ -52,31 +52,56 @@ export namespace Theme {
 export function getSeriesColor(theme: SmithchartTheme): string[] {
     let palette: string[];
     switch (theme.toLowerCase()) {
-    case 'highcontrastlight':
-        palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
-            '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
-        break;
-    case 'fabric':
-        palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
-            '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
-        break;
-    case 'bootstrap':
-        palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
-            '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
-        break;
-	case 'tailwind':
-        palette = ['#5A61F6', '#65A30D', '#334155', '#14B8A6', '#8B5CF6',
-                '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
-        break;
-    case 'tailwinddark':
-        palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
-                    '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
-        break;  
-    default:
-        palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
-            '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
-        break;
-    }
+        case 'fabric':
+            palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
+                '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
+            break;
+        case 'bootstrap4':
+            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+            break;
+        case 'bootstrap':
+            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+            break;
+        case 'highcontrastlight':
+        case 'highcontrast':
+            palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
+                '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
+            break;
+        case 'materialdark':
+            palette = ['#9ECB08', '#56AEFF', '#C57AFF', '#61EAA9', '#EBBB3E',
+                '#F45C5C', '#8A77FF', '#63C7FF', '#FF84B0', '#F7C928'];
+            break;
+        case 'fabricdark':
+            palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
+                '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
+            break;
+        case 'bootstrapdark':
+            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+            break;
+        case 'tailwind':
+            palette = ['#5A61F6', '#65A30D', '#334155', '#14B8A6', '#8B5CF6',
+                    '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
+            break;
+        case 'tailwinddark':
+            palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
+                        '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
+            break;
+        case 'bootstrap5':
+            palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+                        '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+            break;
+        case 'bootstrap5dark':
+            palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+                        '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+            break;
+        default:
+            palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
+                '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
+            break;
+        }
     return palette;
 }
 
@@ -85,9 +110,11 @@ export function getSeriesColor(theme: SmithchartTheme): string[] {
  * @private
  * @returns {ISmithchartThemeStyle} theme style of the smith chart
  */
+// tslint:disable-next-line:max-func-body-length
 export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
     let style: ISmithchartThemeStyle;
     const themes: string = theme.toLowerCase();
+    const darkBackground: string = themes === 'materialdark' ? '#383838' : (themes === 'fabricdark' ? '#242424' : '#1b1b1b');
     switch (themes) {
     case 'highcontrast':
         style = {
@@ -116,7 +143,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             minorGridLine: '#514F4F',
             chartTitle: '#ffffff',
             legendLabel: '#DADADA',
-            background: '#000000',
+            background: darkBackground,
             areaBorder: ' #9A9A9A',
             tooltipFill: '#F4F4F4',
             dataLabel: '#DADADA',
@@ -147,7 +174,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             tooltipTextOpacity: 0.9
         };
         break;
-	case 'tailwind':
+    case 'tailwind':
         style = {
             axisLabel: '#6B7280',
             axisLine: '#D1D5DB',
@@ -169,7 +196,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             tooltipTextOpacity: 1
         };
         break;
-	case 'tailwinddark':
+    case 'tailwinddark':
         style = {
             axisLabel: '#9CA3AF',
             axisLine: '#4B5563',
@@ -177,7 +204,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             minorGridLine: '#4B5563',
             chartTitle: '#D1D5DB',
             legendLabel: '#D1D5DB',
-            background: 'transprent',
+            background: '#1f2937',
             areaBorder: '#4B5563',
             tooltipFill: '#F9FAFB',
             dataLabel: '#D1D5DB',
@@ -187,6 +214,50 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             fontFamily: 'Inter',
             fontSize: '14px',
             labelFontFamily: 'inter',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1
+        };
+        break;
+    case 'bootstrap5':
+        style = {
+            axisLabel: '#495057',
+            axisLine: '#D1D5DB',
+            majorGridLine: '#E5E7EB',
+            minorGridLine: '#E5E7EB',
+            chartTitle: '#343A40',
+            legendLabel: '#343A40',
+            background: 'rgba(255, 255, 255, 0.0)',
+            areaBorder: ' #DEE2E6',
+            tooltipFill: '#212529',
+            dataLabel: '#D1D5DB',
+            tooltipBoldLabel: '#D1D5DB',
+            tooltipLightLabel: '#F9FAFB',
+            tooltipHeaderLine: '#6B7280',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            labelFontFamily: 'Helvetica Neue',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1
+        };
+        break;
+    case 'bootstrap5dark':
+        style = {
+            axisLabel: '#CED4DA',
+            axisLine: '#495057',
+            majorGridLine: '#495057',
+            minorGridLine: '#495057',
+            chartTitle: '#E9ECEF',
+            legendLabel: '#E9ECEF',
+            background: '#212529',
+            areaBorder: ' #495057',
+            tooltipFill: '#212529',
+            dataLabel: '#D1D5DB',
+            tooltipBoldLabel: '#D1D5DB',
+            tooltipLightLabel: '#F9FAFB',
+            tooltipHeaderLine: '#6B7280',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            labelFontFamily: 'Helvetica Neue',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1
         };

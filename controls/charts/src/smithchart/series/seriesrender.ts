@@ -308,7 +308,7 @@ export class SeriesRender {
                 let event: ISmithchartAnimationCompleteEventArgs = {
                     cancel: false,
                     name: animationComplete,
-                    smithchart: !smithchart.isBlazor ? smithchart : null
+                    smithchart: smithchart
                 };
                 smithchart.trigger(animationComplete, event);
             }

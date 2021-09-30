@@ -6,8 +6,6 @@ import { ChildProperty } from './child-property';
 import { Property, NotifyPropertyChanges } from './notify-property-change';
 import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';
 import { createElement, addClass, removeClass, ElementProperties, select } from './dom';
-import { VirtualDOM } from './virtual-dom';
-import { getRandomId } from './template-engine';
 let componentCount: number = 0;
 let lastPageID: number;
 let lastHistoryLen: number = 0;
@@ -15,10 +13,10 @@ export let versionBasedStatePersistence: boolean = false;
 
 /**
  * To enable or disable version based statePersistence functionality for all components globally.
+ *
  * @param {boolean} status - Optional argument Specifies the status value to enable or disable versionBasedStatePersistence option.
  * @returns {void}
  */
-/* istanbul ignore next */
 export function enableVersionBasedPersistence(status: boolean): void {
     versionBasedStatePersistence = status;
 }
@@ -33,6 +31,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     public ej2StatePersistenceVersion: string;
     /**
      * Enable or disable persisting component's state between page reloads.
+     *
      * @default false
      */
     @Property(false)
@@ -40,22 +39,25 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     /**
      * Enable or disable rendering component in right to left direction.
+     *
      * @default false
      */
     @Property()
     public enableRtl: boolean;
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     *
      * @default ''
      */
     @Property()
     public locale: string;
     /**
      * string template option for Blazor template rendering
+     *
      * @private
      */
     public isStringTemplate: boolean = false;
-    //tslint:disable:no-any
+    // eslint-disable-next-line
     public currentContext: { calls?: Function, args?: any };
     protected needsID: boolean = false;
     protected isReactHybrid: boolean = false;
@@ -68,10 +70,12 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     protected mount: Function;
     protected requiredModules(): ModuleDeclaration[] {
         return [];
-    };
+    }
 
     /**
      * Destroys the sub modules while destroying the widget
+     *
+     * @returns {void} ?
      */
     protected destroy(): void {
         if (this.isDestroyed) { return; }
@@ -88,6 +92,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
     /**
      * Applies all the pending property changes and render the component again.
+     *
+     * @returns {void} ?
      */
     public refresh(): void {
         this.refreshing = true;
@@ -100,7 +106,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.render();
         this.refreshing = false;
     }
-    /* istanbul ignore next */
+
     private accessMount(): void {
         if (this.mount && !this.isReactHybrid) {
             this.mount();
@@ -108,10 +114,12 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
     /**
      * Returns the route element of the component
+     *
+     * @returns {HTMLElement} ?
      */
-    /* istanbul ignore next */
     public getRootElement(): HTMLElement {
         if (this.isReactHybrid) {
+            // eslint-disable-next-line
             return (this as any).actualElement;
         } else {
             return this.element;
@@ -119,11 +127,12 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
     /**
      * Returns the persistence data for component
+     *
+     * @returns {any} ?
      */
-    /* istanbul ignore next */
-    //tslint:disable:no-any
+    // eslint-disable-next-line
     public getLocalData(): any {
-        let eleId: string = this.getModuleName() + this.element.id;
+        const eleId: string = this.getModuleName() + this.element.id;
         if (versionBasedStatePersistence) {
             return window.localStorage.getItem(eleId + this.ej2StatePersistenceVersion);
         } else {
@@ -132,7 +141,9 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
     /**
      * Appends the control within the given HTML element
+     *
      * @param {string | HTMLElement} selector - Target element where control needs to be appended
+     * @returns {void} ?
      */
     public appendTo(selector?: string | HTMLElement): void {
         if (!isNullOrUndefined(selector) && typeof (selector) === 'string') {
@@ -141,7 +152,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             this.element = <ElementType>selector;
         }
         if (!isNullOrUndefined(this.element)) {
-            let moduleClass: string = 'e-' + this.getModuleName().toLowerCase();
+            const moduleClass: string = 'e-' + this.getModuleName().toLowerCase();
             addClass([this.element], ['e-control', moduleClass]);
             this.isProtectedOnChange = false;
             if (this.needsID && !this.element.id) {
@@ -151,7 +162,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
                 this.mergePersistData();
                 window.addEventListener('unload', this.setPersistData.bind(this));
             }
-            let inst: Object[] = getValue('ej2_instances', this.element);
+            const inst: Object[] = getValue('ej2_instances', this.element);
             if (!inst || inst.indexOf(this) === -1) {
                 super.addInstance();
             }
@@ -168,11 +179,14 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     /**
      * It is used to process the post rendering functionalities to a component.
+     *
+     * @param {Node} wrapperElement ?
+     * @returns {void} ?
      */
     protected renderComplete(wrapperElement?: Node): void {
         if (isBlazor()) {
-            let sfBlazor: string = 'sfBlazor';
-            // tslint:disable-next-line:no-any
+            const sfBlazor: string = 'sfBlazor';
+            // eslint-disable-next-line
             (window as any)[sfBlazor].renderComplete(this.element, wrapperElement);
         }
         this.isRendered = true;
@@ -180,25 +194,28 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     /**
      * When invoked, applies the pending property changes immediately to the component.
+     *
+     * @returns {void} ?
      */
     public dataBind(): void {
         this.injectModules();
         super.dataBind();
-    };
+    }
     /**
      * Attach one or more  event handler to the current component context.
      * It is used for internal handling event internally within the component only.
+     *
      * @param {BoundOptions[]| string} event - It is  optional type either to  Set the collection of event list or the eventName.
      * @param {Function} handler - optional parameter Specifies the handler to run when the event occurs
      * @param {Object} context - optional parameter Specifies the context to be bind in the handler.
-     * @return {void}
+     * @returns {void} ?
      * @private
      */
     public on(event: BoundOptions[] | string, handler?: Function, context?: Object): void {
         if (typeof event === 'string') {
             this.localObserver.on(event, handler, context);
         } else {
-            for (let arg of event) {
+            for (const arg of event) {
                 this.localObserver.on(arg.event, arg.handler, arg.context);
             }
         }
@@ -207,25 +224,27 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     /**
      * To remove one or more event handler that has been attached with the on() method.
+     *
      * @param {BoundOptions[]| string} event - It is  optional type either to  Set the collection of event list or the eventName.
      * @param {Function} handler - optional parameter Specifies the function to run when the event occurs
-     * @return {void}
+     * @returns {void} ?
      * @private
      */
     public off(event: BoundOptions[] | string, handler?: Function): void {
         if (typeof event === 'string') {
             this.localObserver.off(event, handler);
         } else {
-            for (let arg of event) {
+            for (const arg of event) {
                 this.localObserver.off(arg.event, arg.handler);
             }
         }
     }
     /**
      * To notify the handlers in the specified event.
+     *
      * @param {string} property - Specifies the event to be notify.
      * @param {Object} argument - Additional parameters to pass while calling the handler.
-     * @return {void}
+     * @returns {void} ?
      * @private
      */
     public notify(property: string, argument: Object): void {
@@ -235,14 +254,19 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
     /**
      * Get injected modules
+     *
+     * @returns {Function} ?
      * @private
      */
     public getInjectedModules(): Function[] {
         return this.injectedModules;
-    };
+    }
 
     /**
      * Dynamically injects the required modules to the component.
+     *
+     * @param {Function} moduleList ?
+     * @returns {void} ?
      */
     public static Inject(...moduleList: Function[]): void {
         if (!this.prototype.injectedModules) {
@@ -257,6 +281,9 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     /**
      * Initialize the constructor for component base
+     *
+     * @param {Object} options ?
+     * @param {string} selector ?
      */
     constructor(options?: Object, selector?: string | ElementType) {
         super(options, selector);
@@ -276,32 +303,28 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
     /**
      * This is a instance method to create an element.
+     *
+     * @param {string} tagName ?
+     * @param {ElementProperties} prop ?
+     * @param {boolean} isVDOM ?
+     * @returns {any} ?
      * @private
      */
-    /* istanbul ignore next */
-    //tslint:disable:no-any
+    // eslint-disable-next-line
     public createElement(tagName: string, prop?: ElementProperties, isVDOM?: boolean): any {
-        if (isVDOM && this.isReactHybrid) {
-            if (prop) {
-                prop = {};
-            }
-            prop['data-id'] = getRandomId();
-            return VirtualDOM.createElement(tagName, prop);
-        } else {
-            return createElement(tagName, prop);
-        }
+        return createElement(tagName, prop);
     }
     /**
-     * 
-     * @param handler - handler to be triggered after state Updated.
-     * @param argument - Arguments to be passed to caller.
+     *
+     * @param {Function} handler - handler to be triggered after state Updated.
+     * @param {any} argument - Arguments to be passed to caller.
+     * @returns {void} .
      * @private
      */
-    /* istanbul ignore next */
-    //tslint:disable:no-any
+    // eslint-disable-next-line
     public triggerStateChange(handler?: Function, argument?: any): void {
         if (this.isReactHybrid) {
-            //tslint:disable:no-any
+            // eslint-disable-next-line
             (this as any).setState();
             this.currentContext = { calls: handler, args: argument };
         }
@@ -315,7 +338,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
 
     private detectFunction(args: Object): void {
-        let prop: string[] = Object.keys(args);
+        const prop: string[] = Object.keys(args);
         if (prop.length) {
             this[prop[0]] = args[prop[0]];
         }
@@ -326,7 +349,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         if (versionBasedStatePersistence) {
             data = window.localStorage.getItem(this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion);
         } else {
-           data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id);
         }
         if (!(isNullOrUndefined(data) || (data === ''))) {
             this.setProperties(JSON.parse(data), true);
@@ -335,8 +358,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     private setPersistData(): void {
         if (!this.isDestroyed) {
             if (versionBasedStatePersistence) {
-                window.localStorage.setItem
-                (this.getModuleName() + this.element.id + this.ej2StatePersistenceVersion, this.getPersistData());
+                window.localStorage.setItem(this.getModuleName() +
+                this.element.id + this.ej2StatePersistenceVersion, this.getPersistData());
             } else {
                 window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
             }
@@ -348,7 +371,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         //No Code
     }
 
-    //tslint:disable-next-line
+    // eslint-disable-next-line
     protected clearTemplate(templateName?: string[], index?: any): void {
         //No Code
     }
@@ -366,7 +389,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         let hash: number = 0;
         if (url.length === 0) { return hash; }
         for (let i: number = 0; i < url.length; i++) {
-            let char: number = url.charCodeAt(i);
+            const char: number = url.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
             hash = hash & hash; // Convert to 32bit integer
         }
@@ -378,9 +401,10 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
 
     protected addOnPersist(options: string[]): string {
-        let persistObj: Object = {};
-        for (let key of options) {
+        const persistObj: Object = {};
+        for (const key of options) {
             let objValue: Object;
+            // eslint-disable-next-line
             objValue = getValue(key, this);
             if (!isUndefined(objValue)) {
                 setValue(key, this.getActualProperties(objValue), persistObj);
@@ -404,13 +428,13 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
 
     protected iterateJsonProperties(obj: { [key: string]: Object }, ignoreList: string[]): Object {
-        let newObj: { [key: string]: Object } = {};
-        for (let key of Object.keys(obj)) {
+        const newObj: { [key: string]: Object } = {};
+        for (const key of Object.keys(obj)) {
             if (ignoreList.indexOf(key) === -1) {
-                // tslint:disable-next-line:no-any
-                let value: any = obj[key];
+                // eslint-disable-next-line
+                const value: any = obj[key];
                 if (typeof value === 'object' && !(value instanceof Array)) {
-                    let newList: string[] = ignoreList.filter((str: string): boolean => {
+                    const newList: string[] = ignoreList.filter((str: string): boolean => {
                         return new RegExp(key + '.').test(str);
                     }).map((str: string): string => {
                         return str.replace(key + '.', '');
@@ -425,7 +449,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
 }
 
-//Function handling for page navigation detection 
+//Function handling for page navigation detection
 /* istanbul ignore next */
 (() => {
     if (typeof window !== 'undefined') {

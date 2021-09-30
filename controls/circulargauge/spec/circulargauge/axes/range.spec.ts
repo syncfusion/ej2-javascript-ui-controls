@@ -6,7 +6,7 @@ import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Range, Axis } from '../../../src/circular-gauge/axes/axis';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
-import { getAngleFromLocation, GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { GaugeLocation, getAngleFromLocation } from '../../../src/circular-gauge/utils/helper-common';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
 describe('Circular-Gauge Control', () => {
@@ -351,6 +351,33 @@ describe('Circular-Gauge Control', () => {
                 expect(end !== gauge.axes[0].ranges[0].end).toBe(true);
                 done();
             };
+            gauge.refresh();
+        });
+        it('Checking the axis range with rangeGap', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                let path = svg.getAttribute('d');
+                let split = path.split(" ");
+                expect(split[2] == split[10]).toBe(true);
+                done();
+            };
+            gauge.axes[0].rangeGap = 10;
+            gauge.axes[0].ranges[0].start = 10;
+            gauge.axes[0].ranges[0].end = 10;
+            gauge.axes[0].ranges[1].start = 30;
+            gauge.axes[0].ranges[1].end = 50;
+            gauge.refresh();
+        });
+        it('Checking the axis range rendering', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let elementCount = document.getElementById('container_Axis_0_Range_0');
+                expect(elementCount == null).toBe(true);
+                done();
+            };
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 10;
+            gauge.axes[0].ranges[0].start = 20;
+            gauge.axes[0].ranges[0].end = 50;
             gauge.refresh();
         });
     });

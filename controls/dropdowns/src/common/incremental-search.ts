@@ -17,11 +17,10 @@ export type SearchType = 'StartsWith' | 'Equal';
  * after selected item otherwise it will do from initial.
  * @param  { boolean } ignoreCase - Specifies the case consideration when search has done.
  * @param {string} elementId - Specifies the list element ID.
- * @param {boolean} isBlazor - Specifies the platform is Blazor or not.
  * @returns {Element} Returns list item based on key code matches with list text content.
  */
 export function incrementalSearch(
-    keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean, elementId: string, isBlazor?: boolean): Element {
+    keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean, elementId: string): Element {
     queryString += String.fromCharCode(keyCode);
     setTimeout(() => {
         queryString = '';
@@ -54,11 +53,7 @@ export function incrementalSearch(
                 index = i;
             }
             item = listItems[index] as HTMLElement;
-            if (isBlazor) {
-                text = ignoreCase ? item.textContent.trim().toLowerCase() : item.textContent.trim();
-            } else {
-                text = ignoreCase ? item.innerText.toLowerCase() : item.innerText;
-            }
+            text = ignoreCase ? item.innerText.toLowerCase() : item.innerText;
             if (text.substr(0, strLength) === queryString) {
                 matches.push(listItems[index]);
             }

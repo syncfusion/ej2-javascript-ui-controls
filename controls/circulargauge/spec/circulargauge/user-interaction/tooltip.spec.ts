@@ -6,7 +6,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
 import { GaugeTooltip } from '../../../src/circular-gauge/user-interaction/tooltip';
-import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { MouseEvents } from './mouse-events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 CircularGauge.Inject(GaugeTooltip);

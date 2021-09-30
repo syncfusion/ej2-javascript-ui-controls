@@ -597,7 +597,6 @@ export class FormFields {
             let formFieldsData: any = JSON.parse(data);
             // eslint-disable-next-line
             let datas: any = {};
-            // eslint-disable-next-line
             let fieldDatas: any = [];
             for (let m: number = 0; m < formFieldsData.length; m++) {
                 // eslint-disable-next-line
@@ -620,6 +619,7 @@ export class FormFields {
                     }
                     fieldDatas = {fieldValue: currentData.Value, isReadOnly: currentData.IsReadonly};
                     datas[currentData.GroupName] = fieldDatas;
+                    
                 } else if (currentData.Name === 'CheckBox') {
                     if (currentData.Selected === false) {
                         this.pdfViewerBase.validateForm = true;
@@ -630,9 +630,11 @@ export class FormFields {
                     if (currentData.CheckboxIndex && currentData.Selected) {
                         fieldDatas={fieldValue: currentData.CheckboxIndex, isReadOnly: currentData.IsReadonly};
                         datas[currentData.GroupName] = fieldDatas;
+                        
                     } else if (datas[currentData.GroupName] === undefined || datas[currentData.GroupName] === null) {
                         fieldDatas={fieldValue: currentData.Selected, isReadOnly: currentData.IsReadonly};
                         datas[currentData.GroupName] = fieldDatas;
+                        
                     }
                 } else if (currentData.Name === 'DropDown') {
                     if (currentData.SelectedValue === '') {
@@ -643,6 +645,7 @@ export class FormFields {
                     }
                     fieldDatas = {fieldValue: currentData.SelectedValue, isReadOnly: currentData.IsReadonly};
                     datas[currentData.Text] = fieldDatas;
+                   
                 } else if (currentData.Name === 'ListBox') {
                     // eslint-disable-next-line
                     let childItems: any = currentData['TextList'];
@@ -654,6 +657,7 @@ export class FormFields {
                     }
                     fieldDatas = { fieldValue: JSON.stringify(childItemsText), isReadOnly: currentData.IsReadonly};
                     datas[currentData.Text] = fieldDatas;
+                    
                 } else if (currentData.Name === 'SignatureField') {
                     // eslint-disable-next-line
                     let csData: any;
@@ -1241,8 +1245,8 @@ export class FormFields {
                         const signField: HTMLElement = target as HTMLElement;
                         if (signField.classList.contains('e-pdfviewer-signatureformfields') || signField.classList.contains('e-pdfviewer-signatureformfields-signature')) {
                             if (signaturePath) {
-                                currentData.Value = signaturePath;
-                            } 
+                               currentData.Value = signaturePath;
+                            }
                             if (signatureBounds) {
                                 currentData.Bounds = signatureBounds;
                             }
@@ -1310,7 +1314,7 @@ export class FormFields {
                             }
                         }
                     }
-                    if (target.disabled) {
+                    if(target.disabled) {
                         currentData.IsReadonly = true;
                     }
                     this.updateFormFieldsCollection(currentData);

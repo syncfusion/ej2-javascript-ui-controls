@@ -1,7 +1,7 @@
-﻿﻿﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';
-import { addClass, removeClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { SortableModel } from './sortable-model';
 
 /**
@@ -151,10 +151,6 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
             element.style.width = `${target.offsetWidth}px`; element.style.height = `${target.offsetHeight}px`;
         }
         addClass([element], ['e-sortableclone']);
-        removeClass([element], ['e-listboxtool-container']);
-        if (element && element.className.indexOf("e-listbox-wrapper") < 0) {
-            addClass([element], ['e-listbox-wrapper']);
-        }
         document.body.appendChild(element);
         return element;
     }
@@ -314,9 +310,8 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         const isPlaceHolderPresent: boolean = this.isPlaceHolderPresent(dropInst);
         if (isPlaceHolderPresent) {
             const curIdx: number = this.getIndex(dropInst.placeHolderElement, dropInst);
-            let prevIndx: number = this === dropInst && (prevIdx - curIdx) > 0 ? prevIdx - 1 : prevIdx;
             const args: DropEventArgs = {
-                previousIndex: prevIndx, currentIndex: this.curTarget === this.target ? prevIndx : curIdx, target: e.target, droppedElement: this.target,
+                previousIndex: prevIdx, currentIndex: curIdx, target: e.target, droppedElement: this.target,
                 helper: e.helper, cancel: false, handled: false
             };
             this.trigger('beforeDrop', args, (observedArgs: DropEventArgs) => {
@@ -343,8 +338,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         // eslint-disable-next-line prefer-const
         curIdx = dropInst.element.childElementCount;
         prevIdx = this.getIndex(this.target);
-        const target: HTMLElement = (e.target.className.indexOf("e-list-nrt") > -1) ? e.target.parentElement : e.target;
-        if (dropInst.element === target || (!isPlaceHolderPresent && this.curTarget === this.target)) {
+        if (dropInst.element === e.target || (!isPlaceHolderPresent && this.curTarget === this.target)) {
             const beforeDropArgs: DropEventArgs = {
                 previousIndex: prevIdx, currentIndex: this.curTarget === this.target ? prevIdx : curIdx,
                 target: e.target, droppedElement: this.target, helper: e.helper, cancel: false

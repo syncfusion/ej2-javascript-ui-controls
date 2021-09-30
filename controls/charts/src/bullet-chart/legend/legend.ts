@@ -83,14 +83,14 @@ export class BulletChartLegend extends BaseLegend {
             }
         }
         if (bulletChart.dataSource !== null && bulletChart.valueField !== '') {
-            fill = bulletChart.valueFill || 'black';
+            fill = (bulletChart.theme.indexOf('Dark') > -1) ? 'white' : bulletChart.valueFill ? bulletChart.valueFill : 'black';
             const shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'TargetRect' : 'ActualRect';
             this.legendCollections.push(new LegendOptions(
                 'Actual', fill, shape, this.chart.legendSettings.visible, null, '', null, false, count++, null
             ));
         }
         if (bulletChart.dataSource !== null && bulletChart.targetField !== '') {
-            fill = bulletChart.targetColor || 'black';
+            fill = (bulletChart.theme.indexOf('Dark') > -1) ? 'white' : bulletChart.targetColor ? bulletChart.targetColor : 'black';
             const shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect';
             for (let i: number = 0; i < Object.keys(bulletChart.dataSource).length; i++) {
                 if (isNullOrUndefined(bulletChart.dataSource[i][bulletChart.targetField].length)

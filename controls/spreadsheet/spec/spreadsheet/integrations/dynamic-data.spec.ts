@@ -78,7 +78,7 @@ describe('Dynamic data binding - ', () => {
         setTimeout(() => {
             setTimeout(() => {
                 expect(spreadsheet.getCell(1, 14).innerText).toBe('Platform');
-                expect(spreadsheet.getCell(6, 18).innerText).toBe('0.512859');
+                expect(spreadsheet.getCell(6, 18).innerText).toBe('0.51');
                 // checking new row added in another range
                 // expect(spreadsheet.getCell(10, 0).innerText).toBe('Shirts'); Check this now
                 done();

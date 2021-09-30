@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 19.2.62 (2021-09-14)
+## 19.3.43 (2021-09-30)
 
 ### Pivot Table
 
@@ -10,6 +10,14 @@
 
 - `#F168308` - The pivot table can now be rendered properly with custom number formats.
 - `#339705` - When the virtualization feature is used, the pivot table can now be rendered properly without an unnecessary horizontal scrollbar when the content does not require it.
+- `#341987` - The pivot table can now be rendered properly while perform filtering with OLAP data source.
+- `#342221` - The pivot table can now be rendered properly while applying date grouing through UI.
+- The column headers are now displayed properly while perform resizing.
+- `#342221` - The pivot table can now be rendered properly while perform member filtering with an empty header.
+
+#### New Features
+
+- `#300095` - Provided support to display measures at any desired positions in the column or row axis for relational data sources.
 
 ## 19.2.56 (2021-08-17)
 

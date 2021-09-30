@@ -41,7 +41,12 @@ export class ResourceBase {
     public renderResourceHeaderIndent(tr: Element): void {
         const resColTd: Element = createElement('td', { className: cls.RESOURCE_LEFT_TD_CLASS });
         const resColDiv: Element = createElement('div', { className: cls.RESOURCE_TEXT_CLASS });
-        resColTd.appendChild(resColDiv);
+        if (this.parent.activeViewOptions.headerIndentTemplate) {
+            const data: TdData = { className: [resColTd.className], type: 'emptyCells' };
+            this.parent.renderHeaderIndentTemplate(data, resColTd);
+        } else {
+            resColTd.appendChild(resColDiv);
+        }
         const args: RenderCellEventArgs = { elementType: 'emptyCells', element: resColTd };
         this.parent.trigger(events.renderCell, args);
         tr.appendChild(resColTd);
@@ -230,7 +235,7 @@ export class ResourceBase {
                     cancel: false, event: e, groupIndex: index,
                     requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed'
                 };
-                this.parent.notify(events.dataReady, {});
+                this.parent.refreshEvents(false);
                 this.parent.trigger(events.actionComplete, args);
             }
         });

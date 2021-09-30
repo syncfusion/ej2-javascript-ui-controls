@@ -2,7 +2,7 @@
  * Gantt resource view spec
  */
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll } from '../../src/index';
-import { resourceCollection, resourcesData, resourceSelefReferenceData, normalResourceData, multiTaskbarData, multiResources,
+import { resourceCollection, resourceSelefReferenceData, resourcesData, normalResourceData, multiTaskbarData, multiResources,
      virtualResourceData, editingResources } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Edit, Selection, Toolbar, Filter, DayMarkers, VirtualScroll);
@@ -807,7 +807,8 @@ describe('Self reference data', () => {
         expect(ganttObj.element.getElementsByClassName('e-rangecontainer')[0].children.length).toBe(5);
       });
   });
-     describe("Add record using method", () => {
+  
+       describe("Add record using method", () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
       ganttObj = createGantt(

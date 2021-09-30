@@ -297,6 +297,14 @@
     }
   }
 
+  .e-dragfill-ddb {
+    & .e-dragfill-icon {
+      &::before {
+        content: '\e92a';
+      }
+    }
+  }
+
   .e-chart-ddb,
   .e-chart-type-ddb {
     & .e-chart-icon,

@@ -703,7 +703,7 @@ export function renderTextElement(
         'opacity': style.opacity,
         'dominant-baseline': option.baseLine
     };
-    const text: string = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
+    const text: string = typeof option.text === 'string' || typeof option.text === 'number' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
     let tspanElement: Element;
     const renderer: SvgRenderer = new SvgRenderer('');
     let height: number;
@@ -1847,7 +1847,7 @@ export function getRatioOfBubble(min: number, max: number, value: number, minVal
  * @returns {any} - Specifies the object
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function findMidPointOfPolygon(points: MapLocation[], type: string): any {
+export function findMidPointOfPolygon(points: MapLocation[], type: string, geometryType?: string): any {
     if (!points.length) {
         return null;
     }
@@ -1863,13 +1863,13 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string): any 
 
     for (let i: number = min; i <= max - 1; i++) {
         startX = points[i].x;
-        startY = type === 'Mercator' ? points[i].y : -(points[i].y);
+        startY = type === 'Mercator' || geometryType === 'Normal' ? points[i].y : -(points[i].y);
         if (i === max - 1) {
             startX1 = points[0].x;
-            startY1 = type === 'Mercator' ? points[0].y : -(points[0].y);
+            startY1 = type === 'Mercator' || geometryType === 'Normal' ? points[0].y : -(points[0].y);
         } else {
             startX1 = points[i + 1].x;
-            startY1 = type === 'Mercator' ? points[i + 1].y : -(points[i + 1].y);
+            startY1 = type === 'Mercator' || geometryType === 'Normal' ? points[i + 1].y : -(points[i + 1].y);
         }
         sum = sum + Math.abs(((startX * startY1)) - (startX1 * startY));
         xSum = xSum + Math.abs(((startX + startX1) * (((startX * startY1) - (startX1 * startY)))));
@@ -1891,7 +1891,7 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string): any 
     let height: number = 0;
     for (let i: number = min; i <= max - 1; i++) {
         const point: MapLocation = points[i];
-        point.y = type === 'Mercator' ? point.y : -(point.y);
+        point.y = type === 'Mercator' || geometryType === 'Normal'? point.y : -(point.y);
         if (point.y > ySum) {
             if (point.x < xSum && xSum - point.x < xSum - bottomMinPoint.x) {
                 bottomMinPoint = { x: point.x, y: point.y };

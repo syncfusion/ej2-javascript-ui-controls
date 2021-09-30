@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax } from '@syncfusion/ej2-base';import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement, setValue, extend } from '@syncfusion/ej2-base';import { Event, remove, L10n, Collection, Internationalization, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition } from './utils/helper';import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';import { createStyle } from './utils/helper';import { ZoomSettings, LegendSettings, Tile } from './model/base';import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel } from './model/base-model';import { MarkerSettingsModel, SelectionSettingsModel , InitialMarkerSelectionSettingsModel} from './model/base-model';import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel, InitialShapeSelectionSettingsModel } from './model/base-model';import { MapsAreaSettingsModel, AnnotationModel } from './model/base-model';import { Bubble } from './layers/bubble';import { Legend } from './layers/legend';import { Marker } from './layers/marker';import { Highlight } from './user-interaction/highlight';import { Selection } from './user-interaction/selection';import { MapsTooltip } from './user-interaction/tooltip';import { Zoom } from './user-interaction/zoom';import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, itemSelection, zoomIn } from './model/constants';import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';import { getThemeStyle } from './model/theme';import { BingMap } from './layers/bing-map';import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';import { GeoPosition, ITooltipRenderCompleteEventArgs, ILegendRenderingEventArgs } from './model/interface';import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs } from './model/interface';import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';import { LayerPanel } from './layers/layer-panel';import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax, processResult } from '../maps/utils/helper';import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint, calculateZoomLevel } from '../maps/utils/helper';import { Annotations } from '../maps/user-interaction/annotation';import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } from './index';import { NavigationLineSettingsModel, changeBorderWidth } from './index';import { NavigationLine } from './layers/navigation-selected-line';import { DataManager, Query } from '@syncfusion/ej2-data';import { ExportType } from '../maps/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { Print } from './model/print';import { PdfExport } from './model/export-pdf';import { ImageExport } from './model/export-image';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax } from '@syncfusion/ej2-base';import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement, setValue, extend } from '@syncfusion/ej2-base';import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition } from './utils/helper';import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';import { createStyle } from './utils/helper';import { ZoomSettings, LegendSettings, Tile } from './model/base';import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel } from './model/base-model';import { MarkerSettingsModel, SelectionSettingsModel , InitialMarkerSelectionSettingsModel} from './model/base-model';import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel, InitialShapeSelectionSettingsModel } from './model/base-model';import { MapsAreaSettingsModel, AnnotationModel } from './model/base-model';import { Bubble } from './layers/bubble';import { Legend } from './layers/legend';import { Marker } from './layers/marker';import { Highlight } from './user-interaction/highlight';import { Selection } from './user-interaction/selection';import { MapsTooltip } from './user-interaction/tooltip';import { Zoom } from './user-interaction/zoom';import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, itemSelection, zoomIn } from './model/constants';import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';import { getThemeStyle } from './model/theme';import { BingMap } from './layers/bing-map';import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';import { GeoPosition, ITooltipRenderCompleteEventArgs, ILegendRenderingEventArgs } from './model/interface';import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs } from './model/interface';import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';import { LayerPanel } from './layers/layer-panel';import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax, processResult } from '../maps/utils/helper';import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint, calculateZoomLevel } from '../maps/utils/helper';import { Annotations } from '../maps/user-interaction/annotation';import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } from './index';import { NavigationLineSettingsModel, changeBorderWidth } from './index';import { NavigationLine } from './layers/navigation-selected-line';import { DataManager, Query } from '@syncfusion/ej2-data';import { ExportType } from '../maps/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { Print } from './model/print';import { PdfExport } from './model/export-pdf';import { ImageExport } from './model/export-image';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -155,7 +155,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when the map is on load.
      *
      * @event load
-     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadEventArgs>;
 
@@ -163,7 +162,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the print gets started.
      *
      * @event beforePrint
-     * @blazorProperty 'OnPrint'
      */
     beforePrint?: EmitType<IPrintEventArgs>;
 
@@ -171,7 +169,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers after the maps gets rendered.
      *
      * @event loaded
-     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
@@ -179,7 +176,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when clicking an element in maps.
      *
      * @event click
-     * @blazorProperty 'OnClick'
      */
     click?: EmitType<IMouseEventArgs>;
 
@@ -187,7 +183,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when performing the double click operation on an element in maps.
      *
      * @event doubleClick
-     * @blazorProperty 'OnDoubleClick'
      */
     doubleClick?: EmitType<IMouseEventArgs>;
 
@@ -195,7 +190,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when performing the right click operation on an element in maps.
      *
      * @event rightClick
-     * @blazorProperty 'OnRightClick'
      */
     rightClick?: EmitType<IMouseEventArgs>;
 
@@ -203,7 +197,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when resizing the maps.
      *
      * @event resize
-     * @blazorProperty 'Resizing'
      */
     resize?: EmitType<IResizeEventArgs>;
 
@@ -211,7 +204,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the maps tooltip gets rendered.
      *
      * @event tooltipRender
-     * @blazorProperty 'TooltipRendering'
      */
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
 
@@ -220,7 +212,6 @@ export interface MapsModel extends ComponentModel{
      *
      * @event legendRendering
      * @deprecated
-     * @blazorProperty 'LegendRendering'
      */
     legendRendering?: EmitType<ILegendRenderingEventArgs>;
 
@@ -229,7 +220,6 @@ export interface MapsModel extends ComponentModel{
      *
      * @deprecated
      * @event tooltipRenderComplete
-     * @blazorProperty 'TooltipRenderComplete'
      */
     tooltipRenderComplete?: EmitType<ITooltipRenderCompleteEventArgs>;
 
@@ -237,7 +227,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when clicking a shape in maps.
      *
      * @event shapeSelected
-     * @blazorProperty 'ShapeSelected'
      */
     shapeSelected?: EmitType<IShapeSelectedEventArgs>;
 
@@ -245,7 +234,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when clicking the shape on maps and before the selection is applied.
      *
      * @event itemSelection
-     * @blazorProperty 'OnItemSelect'
      */
     itemSelection?: EmitType<ISelectionEventArgs>;
 
@@ -253,7 +241,6 @@ export interface MapsModel extends ComponentModel{
      * Trigger when mouse move on the shape in maps and before the shape gets highlighted.
      *
      * @event itemHighlight
-     * @blazorProperty 'OnItemHighlight'
      */
     itemHighlight?: EmitType<ISelectionEventArgs>;
 
@@ -261,7 +248,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when mouse move on the shape in maps and before the shape gets highlighted.
      *
      * @event shapeHighlight
-     * @blazorProperty 'ShapeHighlighted'
      */
     shapeHighlight?: EmitType<IShapeSelectedEventArgs>;
 
@@ -269,7 +255,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the maps layer gets rendered.
      *
      * @event layerRendering
-     * @blazorProperty 'LayerRendering'
      */
     layerRendering?: EmitType<ILayerRenderingEventArgs>;
 
@@ -277,7 +262,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the maps shape gets rendered.
      *
      * @event shapeRendering
-     * @blazorProperty 'ShapeRendering'
      */
     shapeRendering?: EmitType<IShapeRenderingEventArgs>;
 
@@ -285,7 +269,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the maps marker gets rendered.
      *
      * @event markerRendering
-     * @blazorProperty 'MarkerRendering'
      */
     markerRendering?: EmitType<IMarkerRenderingEventArgs>;
 
@@ -300,7 +283,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when clicking on the maps marker element.
      *
      * @event markerClick
-     * @blazorProperty 'OnMarkerClick'
      */
     markerClick?: EmitType<IMarkerClickEventArgs>;
 
@@ -322,7 +304,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when moving the mouse over the marker element in maps.
      *
      * @event markerMouseMove
-     * @blazorProperty 'OnMarkerMouseMove'
      */
     markerMouseMove?: EmitType<IMarkerMoveEventArgs>;
 
@@ -330,7 +311,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the data-label gets rendered.
      *
      * @event dataLabelRendering
-     * @blazorProperty 'DataLabelRendering'
      */
     dataLabelRendering?: EmitType<ILabelRenderingEventArgs>;
 
@@ -338,7 +318,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the bubble element gets rendered on the map.
      *
      * @event bubbleRendering
-     * @blazorProperty 'BubbleRendering'
      */
     bubbleRendering?: EmitType<IBubbleRenderingEventArgs>;
 
@@ -346,7 +325,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when performing the click operation on the bubble element in maps.
      *
      * @event bubbleClick
-     * @blazorProperty 'OnBubbleClick'
      */
     bubbleClick?: EmitType<IBubbleClickEventArgs>;
 
@@ -354,7 +332,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers when hovering the mouse on the bubble element in maps.
      *
      * @event bubbleMouseMove
-     * @blazorProperty 'OnBubbleMouseMove'
      */
     bubbleMouseMove?: EmitType<IBubbleMoveEventArgs>;
 
@@ -362,7 +339,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers after the animation completed in the maps component.
      *
      * @event animationComplete
-     * @blazorProperty 'AnimationCompleted'
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
@@ -370,7 +346,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before rendering the annotation in maps.
      *
      * @event annotationRendering
-     * @blazorProperty 'AnnotationRendering'
      */
     annotationRendering?: EmitType<IAnnotationRenderingEventArgs>;
 
@@ -378,7 +353,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before the zoom operations in the maps such as zoom in and zoom out.
      *
      * @event zoom
-     * @blazorProperty 'OnZoom'
      */
     zoom?: EmitType<IMapZoomEventArgs>;
 
@@ -386,7 +360,6 @@ export interface MapsModel extends ComponentModel{
      * Triggers before performing the panning operation.
      *
      * @event pan
-     * @blazorProperty 'OnPan'
      */
     pan?: EmitType<IMapPanEventArgs>;
 

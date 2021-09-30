@@ -29,7 +29,8 @@ export class IsFormatted {
         'sup',
         'tt',
         'u',
-        'var'
+        'var',
+        'del'
     ];
 
     /**

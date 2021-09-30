@@ -1,4 +1,4 @@
-import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, isBlazor, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
+import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 import {visualMode,MultiSelectChangeEventArgs,RemoveEventArgs,ISelectAllEventArgs,TaggingEventArgs,CustomValueEventArgs} from "./multi-select";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -182,7 +182,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      */
     width?: string | number;
 
@@ -193,7 +192,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      *
      * @default '300px'
      * @aspType string
-     * @blazorType string
      */
     popupHeight?: string | number;
 
@@ -204,7 +202,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      */
     popupWidth?: string | number;
 
@@ -284,8 +281,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * {% codeBlock src="multiselect/allow-filtering-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
      */
     allowFiltering?: boolean;
 
@@ -317,7 +312,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * based on the limitation, list selection will be prevented.
      *
      * @default 1000
-     * @blazorType int
      */
     maximumSelectionLength?: number;
 
@@ -411,7 +405,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 
@@ -454,7 +447,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Fires each time when selection changes happened in list items after model and input value get affected.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<MultiSelectChangeEventArgs>;
 
@@ -462,7 +454,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Fires before the selected item removed from the widget.
      *
      * @event removing
-     * @blazorProperty 'OnValueRemove'
      */
     removing?: EmitType<RemoveEventArgs>;
 
@@ -470,15 +461,21 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Fires after the selected item removed from the widget.
      *
      * @event removed
-     * @blazorProperty 'ValueRemoved'
      */
     removed?: EmitType<RemoveEventArgs>;
+
+    /**
+     * Fires before select all process.
+     *
+     * @event beforeSelectAll
+     * @blazorProperty 'beforeSelectAll'
+     */
+    beforeSelectAll?: EmitType<ISelectAllEventArgs>;
 
     /**
      * Fires after select all process completion.
      *
      * @event selectedAll
-     * @blazorProperty 'SelectedAll'
      */
     selectedAll?: EmitType<ISelectAllEventArgs>;
 
@@ -486,8 +483,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Fires when popup opens before animation.
      *
      * @event beforeOpen
-     * @blazorProperty 'OnOpen'
-     * @blazorType BeforeOpenEventArgs
      */
     beforeOpen?: EmitType<Object>;
 
@@ -495,7 +490,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Fires when popup opens after animation completion.
      *
      * @event open
-     * @blazorProperty 'Opened'
      */
     open?: EmitType<PopupEventArgs>;
 
@@ -503,7 +497,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Fires when popup close after animation completion.
      *
      * @event close
-     * @blazorProperty 'OnClose'
      */
     close?: EmitType<PopupEventArgs>;
 
@@ -525,7 +518,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Event triggers when the chip selection.
      *
      * @event chipSelection
-     * @blazorProperty 'ChipSelected'
      */
     chipSelection?: EmitType<Object>;
 
@@ -534,7 +526,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * > For more details about filtering, refer to [`Filtering`](../../multi-select/filtering) documentation.
      *
      * @event filtering
-     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 
@@ -543,7 +534,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * > For more details about chip customization refer [`Chip Customization`](../../multi-select/chip-customization)
      *
      * @event tagging
-     * @blazorProperty 'OnChipTag'
      */
     tagging?: EmitType<TaggingEventArgs>;
 
@@ -551,7 +541,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Triggers when the [`customValue`](../../multi-select/custom-value) is selected.
      *
      * @event customValueSelection
-     * @blazorProperty 'CustomValueSpecifier'
      */
     customValueSelection?: EmitType<CustomValueEventArgs>;
 

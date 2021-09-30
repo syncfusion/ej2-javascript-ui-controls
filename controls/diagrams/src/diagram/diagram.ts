@@ -5044,7 +5044,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             objects = collection;
         }
         this.diagramActions = this.diagramActions | DiagramAction.Clear;
-        if (isBlazor()) {
+        if (isBlazor() && blazorTemplates["diagramsf_node_template"]) {
             this.resetTemplate();
             let length: number = blazorTemplates["diagramsf_node_template"].length
             if (length > 0) {

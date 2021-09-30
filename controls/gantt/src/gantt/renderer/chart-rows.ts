@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, extend, compile, getValue, setValue } from '@syncfusion/ej2-base';
-import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, addClass } from '@syncfusion/ej2-base';
+import { formatUnit, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -190,7 +190,7 @@ export class ChartRows extends DateProcessor {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
-            if (labelString) {
+            if (labelString !== 'null') {
                 taskLabel = '<span class="' + cls.taskLabel + '" style="line-height:' +
                     (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : '') +
                     'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') +
@@ -395,7 +395,7 @@ export class ChartRows extends DateProcessor {
             this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.flatData);
             this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.flatData);
             if (data.parentItem && this.parent.getParentTask(data.parentItem).ganttProperties.isAutoSchedule
-                && this.parent.isInPredecessorValidation) {  
+                && this.parent.isInPredecessorValidation) {
                 this.parent.dataOperation.updateParentItems(data.parentItem);
             }
             this.refreshRecords(this.parent.currentViewData);
@@ -837,7 +837,7 @@ export class ChartRows extends DateProcessor {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
-            if (labelString !== '') {
+            if (labelString !== 'null') {
                 labelDiv = this.createDivElement('<span class="' +
                     cls.taskLabel + '" style="line-height:' +
                     (this.taskBarHeight - 1) + 'px; display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') + 'width:' +
@@ -929,67 +929,6 @@ export class ChartRows extends DateProcessor {
     public getTemplateID(templateName: string): string {
         const ganttID: string = this.parent.element.id;
         return ganttID + templateName;
-    }
-
-    private updateTaskbarBlazorTemplate(isUpdate: boolean, ganttData?: IGanttData): void {
-        let isMilestone: boolean = true;
-        let isParent: boolean = true;
-        let isChild: boolean = true;
-        if (ganttData) {
-            if (ganttData.ganttProperties.isMilestone) {
-                isParent = isChild = false;
-            } else if (ganttData.hasChildRecords) {
-                isMilestone = isChild = false;
-            } else if (!ganttData.hasChildRecords) {
-                isParent = isMilestone = false;
-            }
-        }
-        if (this.parentTaskbarTemplateFunction && isParent) {
-            if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate', this.parent, false);
-            } else {
-                resetBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate');
-            }
-        }
-        if (this.childTaskbarTemplateFunction && isChild) {
-            if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate', this.parent, false);
-            } else {
-                resetBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate');
-            }
-        }
-        if (this.milestoneTemplateFunction && isMilestone) {
-            if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate', this.parent, false);
-            } else {
-                resetBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate');
-            }
-        }
-        if (this.leftTaskLabelTemplateFunction) {
-            if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate', this.parent.labelSettings, false);
-            } else {
-                resetBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate');
-            }
-        }
-        if (this.rightTaskLabelTemplateFunction) {
-            if (isUpdate) {
-                updateBlazorTemplate(
-                    this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate', this.parent.labelSettings, false);
-            } else {
-                resetBlazorTemplate(
-                    this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate');
-            }
-        }
-        if (this.taskLabelTemplateFunction && (isParent || isChild)) {
-            if (isUpdate) {
-                updateBlazorTemplate(
-                    this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate', this.parent.labelSettings, false);
-            } else {
-                resetBlazorTemplate(
-                    this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate');
-            }
-        }
     }
 
     private leftLabelContainer(): NodeList {
@@ -1287,7 +1226,6 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     private createTaskbarTemplate(): void {
-        this.updateTaskbarBlazorTemplate(false);
         const trs: Element[] = [].slice.call(this.ganttChartTableBody.querySelectorAll('tr'));
         this.ganttChartTableBody.innerHTML = '';
         const collapsedResourceRecord: IGanttData[] = [];
@@ -1343,7 +1281,6 @@ export class ChartRows extends DateProcessor {
             }
         }
         this.parent.renderTemplates();
-        this.updateTaskbarBlazorTemplate(true);
     }
 
     /**
@@ -1762,7 +1699,6 @@ export class ChartRows extends DateProcessor {
      */
     public refreshRecords(items: IGanttData[], isValidateRange?: boolean): void {
         if (this.parent.isGanttChartRendered) {
-            this.updateTaskbarBlazorTemplate(false);
             this.parent.renderTemplates();
             if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar) {
                 let sortedRecords: IGanttData[] = [];
@@ -1775,7 +1711,6 @@ export class ChartRows extends DateProcessor {
                 this.refreshRow(index, isValidateRange);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
-            this.updateTaskbarBlazorTemplate(true);
         }
     }
 

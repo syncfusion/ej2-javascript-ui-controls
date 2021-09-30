@@ -23,7 +23,7 @@ describe('Util module', () => {
     it('Get week number', () => {
         expect(util.getWeekNumber(new Date(2017, 9, 5))).toEqual(40);
     });
-    it('Add millisecods to date', () => {
+    it('Add milliseconds to date', () => {
         const date: Date = new Date(2017, 9, 5, 4, 30);
         util.setTime(date, 5400000);
         expect(date).toEqual(new Date(2017, 9, 5, 6));
@@ -31,7 +31,7 @@ describe('Util module', () => {
     it('Reset date to zero hours', () => {
         expect(util.resetTime(new Date(2017, 9, 5, 4, 30))).toEqual(new Date(2017, 9, 5));
     });
-    it('Get date in millisecods', () => {
+    it('Get date in milliseconds', () => {
         expect(util.getDateInMs(new Date(2017, 9, 5, 4, 30))).toEqual(16200000);
     });
     it('Add days to date', () => {

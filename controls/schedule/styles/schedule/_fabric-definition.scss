@@ -1,5 +1,5 @@
 /*! Schedule component's fabric theme definitions and variables */
-$schedule-skin: 'fabric' !default;
+$schedule-skin: $skin-name !default;
 $schedule-header-bg-color: $neutral-white !default;
 $schedule-header-border-color: $neutral-quintenaryalt !default;
 $schedule-header-font-color: $neutral-secondary-alt !default;
@@ -164,7 +164,7 @@ $schedule-timeline-work-cells-border: 0 0 1px 1px !default;
 $schedule-rtl-timeline-work-cells-border: 0 1px 1px 0 !default;
 $schedule-timeline-resources-width: 200px !default;
 $schedule-timeline-appointment-height: 38px !default;
-$schedule-timeline-year-work-cells-height: 70px !default;
+$schedule-timeline-year-work-cells-height: 75px !default;
 $schedule-timeline-year-work-cells-width: 100px !default;
 
 $schedule-tree-bg-color: $content-bg-color !default;

@@ -1,7 +1,7 @@
 import { Workbook, SheetModel, CellModel, getData } from '../base/index';
 import { DataManager, Query, Deferred, Predicate } from '@syncfusion/ej2-data';
-import { getCellIndexes, getIndexesFromAddress, getSwapRange, getRangeAddress } from '../common/index';
-import { BeforeFilterEventArgs, FilterOptions, FilterEventArgs } from '../common/interface';
+import { getCellIndexes, getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, getCellAddress } from '../common/index';
+import { BeforeFilterEventArgs, FilterOptions, FilterEventArgs, setRow, ExtendedRowModel } from '../index';
 import { initiateFilter, clearAllFilter, dataRefresh } from '../common/event';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -60,7 +60,7 @@ export class WorkbookFilter {
         eventArgs.promise = deferred.promise;
         this.filterRange = args.range;
         if (filterOptions.datasource) {
-            this.setFilter(filterOptions.datasource, filterOptions.predicates);
+            this.setFilter(filterOptions.datasource, filterOptions.predicates, args.range);
             const filterEventArgs: FilterEventArgs = { range: args.range, filterOptions: filterOptions };
             deferred.resolve(filterEventArgs);
         } else {
@@ -79,7 +79,7 @@ export class WorkbookFilter {
             const address: string = getRangeAddress(range);
             getData(this.parent, `${sheet.name}!${address}`, true, true, null, null, null, null, false).then((jsonData: {[key: string]: CellModel}[]) => {
                 const dataManager: DataManager = new DataManager(jsonData);
-                this.setFilter(dataManager, filterOptions.predicates);
+                this.setFilter(dataManager, filterOptions.predicates, args.range);
                 const filterEventArgs: FilterEventArgs = { range: address, filterOptions: filterOptions };
                 deferred.resolve(filterEventArgs);
             });
@@ -93,7 +93,7 @@ export class WorkbookFilter {
      * @param {Predicate[]} predicates - Specify the predicates.
      * @returns {void} - Hides or unhides the rows based on the filter predicates.
      */
-    private setFilter(dataManager: DataManager, predicates: Predicate[]): void {
+    private setFilter(dataManager: DataManager, predicates: Predicate[], range: string): void {
         if (dataManager && predicates) {
             const jsonData: {[key: string]: CellModel}[] = dataManager.dataSource.json as {[key: string]: CellModel}[];
             const query: Query = new Query();
@@ -102,41 +102,38 @@ export class WorkbookFilter {
             }
             const result: { [key: string]: CellModel }[] = dataManager.executeLocal(query) as { [key: string]: CellModel }[];
             const rowKey: string = '__rowIndex';
-            jsonData.forEach((data: { [key: string]: CellModel }) => {
-                if (!data) { return; }
-                const rowIdx: number = parseInt(data[rowKey] as string, 10);
-                this.parent.hideRow(rowIdx - 1, undefined, result.indexOf(data) < 0);
-                if (isNullOrUndefined(this.parent.filteredRows)) {
-                    this.parent.filteredRows = {};
-                    this.parent.filteredRows.rowIdxColl = [];
-                    this.parent.filteredRows.sheetIdxColl = [];
-                }
-                const filterRows: number[] = this.parent.filteredRows.rowIdxColl;
-                const filterSheet: number[] = this.parent.filteredRows.sheetIdxColl;
-                if (result.indexOf(data) < 0) {
-                    if (filterRows && filterSheet) {
-                        for (let i: number = 0, len: number = filterSheet.length; i < len; i++) {
-                            if (this.parent.activeSheetIndex === filterSheet[i] && filterRows[i] === rowIdx - 1) {
-                                filterRows.splice(i, 1);
-                                filterSheet.splice(i, 1);
-                            }
-                        }
-                    }
-                    filterRows.push(rowIdx - 1);
-                    filterSheet.push(this.parent.activeSheetIndex);
-                } else {
-                    if (filterRows && filterSheet) {
-                        for (let i: number = 0, length: number = filterSheet.length; i < length; i++) {
-                            if (this.parent.activeSheetIndex === filterSheet[i] && filterRows[i] === rowIdx - 1) {
-                                filterRows.splice(i, 1);
-                                filterSheet.splice(i, 1);
-                            }
-                        }
-                    }
-                }
-            });
             const sheet: SheetModel = this.parent.getActiveSheet();
-            if (sheet.frozenColumns || sheet.frozenRows) { this.parent.notify(dataRefresh, null); }
+            if (this.parent.getModuleName() === 'spreadsheet') {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                const parent: any = this.parent;
+                if ((parent.scrollSettings.enableVirtualization && (jsonData.length > parent.viewport.bottomIndex -
+                    parent.viewport.topIndex)) || !!sheet.frozenColumns || !!sheet.frozenRows) {
+                    let hide: boolean;
+                    jsonData.forEach((data: { [key: string]: CellModel }) => {
+                        hide = result.indexOf(data) < 0;
+                        setRow(sheet, Number(data[rowKey]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
+                    });
+                    this.parent.notify(dataRefresh, null);
+                } else {
+                    let aboveViewport: boolean;
+                    jsonData.forEach((data: { [key: string]: CellModel }) => {
+                        const eventArgs: { [key: string]: number | boolean } = {
+                            startIndex: Number(data[rowKey]) - 1, hide: result.indexOf(data) < 0, isFiltering: true, aboveViewport: false
+                        };
+                        eventArgs.endIndex = eventArgs.startIndex;
+                        this.parent.notify('hideShow', eventArgs);
+                        if (!aboveViewport) { aboveViewport = <boolean>eventArgs.aboveViewport; }
+                    });
+                    if (aboveViewport && range) {
+                        const index: number[] = getRangeIndexes(range);
+                        this.parent.goTo(getCellAddress(index[0], index[1]));
+                    }
+                }
+            } else {
+                jsonData.forEach((data: { [key: string]: CellModel }) => {
+                    this.parent.hideRow(Number(data[rowKey]) - 1, undefined, result.indexOf(data) < 0);
+                });
+            }
         }
     }
 

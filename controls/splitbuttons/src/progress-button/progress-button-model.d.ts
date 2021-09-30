@@ -1,4 +1,4 @@
-import { Button, IconPosition } from '@syncfusion/ej2-buttons';import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';import { EmitType, Event, BaseEventArgs, remove, removeClass } from '@syncfusion/ej2-base';import { Complex, ChildProperty, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Button, IconPosition } from '@syncfusion/ej2-buttons';import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';import { EmitType, Event, BaseEventArgs, remove, removeClass } from '@syncfusion/ej2-base';import { Complex, ChildProperty, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {SpinPosition,AnimationEffect,ProgressEventArgs} from "./progress-button";
 
 /**

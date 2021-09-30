@@ -29,6 +29,9 @@ export class RangeColumnSeries extends ColumnBase {
                                                   series)) {
                 rect = this.getRectangle(rangePoint.xValue + sideBySideInfo.start, <number>rangePoint.high,
                                          rangePoint.xValue + sideBySideInfo.end, <number>rangePoint.low, series);
+                rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : rect.width;
+                rect.x = series.columnWidthInPixel ? rect.x - (((series.columnWidthInPixel / 2) * series.rectCount) -
+                    (series.columnWidthInPixel * series.index)) : rect.x;
 
                 argsData = this.triggerEvent(series, rangePoint, series.interior,
                                              { width: series.border.width, color: series.border.color });

@@ -529,11 +529,11 @@ export class TablePropertiesDialog {
         }
         this.bordersAndShadingButton = createElement('button', {
             innerHTML: localValue.getConstant('Borders and Shading') + '...',
-            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button',
+            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-de-ok-button',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton = createElement('button', {
-            className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options') + '...',
+            className: 'e-control e-btn', innerHTML: localValue.getConstant('Options') + '...',
             id: element.id + '_table_cellmargin', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton.addEventListener('click', this.showTableOptionsDialog);
@@ -555,7 +555,7 @@ export class TablePropertiesDialog {
         element.appendChild(alignmentContainer); element.appendChild(tableDirHeader);
         element.appendChild(tableDirContainer); element.appendChild(tableOptionContiner);
         this.tableWidthBox = new NumericTextBox({
-            value: 0, decimals: 2, min: 0, max: 1584, width: 120, enablePersistence: false
+            value: 0, decimals: 2, min: 0, max: 1584, enablePersistence: false
         });
         this.tableWidthBox.appendTo(this.preferredWidth);
         this.leftIndentBox = new NumericTextBox({
@@ -566,7 +566,7 @@ export class TablePropertiesDialog {
             label: localValue.getConstant('Preferred Width'), enableRtl: isRtl
         });
         this.preferCheckBox.appendTo(preferCheckBox);
-        this.tableWidthType = new DropDownList({ width: '120px', enableRtl: isRtl });
+        this.tableWidthType = new DropDownList({ enableRtl: isRtl });
         this.tableWidthType.appendTo(tableWidthType);
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
@@ -851,7 +851,7 @@ export class TablePropertiesDialog {
         element.appendChild(alignmentDiv); element.appendChild(allowRowContainer);
         element.appendChild(repeatHeaderContaniner);
         this.rowHeightBox = new NumericTextBox({
-            value: 0, decimals: 2, min: 0, max: 1584, width: 120, enablePersistence: false
+            value: 0, decimals: 2, min: 0, max: 1584, enablePersistence: false
         });
         this.rowHeightBox.appendTo(this.rowHeight);
         this.rowHeightCheckBox = new CheckBox({
@@ -859,7 +859,7 @@ export class TablePropertiesDialog {
             enableRtl: isRtl
         });
         this.rowHeightCheckBox.appendTo(rowHeightCheckBox);
-        this.rowHeightType = new DropDownList({ width: '120px', enableRtl: isRtl });
+        this.rowHeightType = new DropDownList({ enableRtl: isRtl });
         this.rowHeightType.appendTo(rowHeightType);
         this.allowRowBreak = new CheckBox({
             label: localValue.getConstant('Allow row to break across pages'),
@@ -1074,7 +1074,7 @@ export class TablePropertiesDialog {
         }) as HTMLLabelElement;
         this.cellOptionButton = createElement('button', {
             innerHTML: localValue.getConstant('Options') + '...', id: element.id + '_table_cellmargin',
-            className: 'e-control e-btn e-flat', attrs: { type: 'button' }
+            className: 'e-control e-btn', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.cellOptionButton.style.cssFloat = isRtl ? 'left' : 'right';
         divAlignment.appendChild(topAlignDiv); divAlignment.appendChild(centerAlignDiv);
@@ -1083,12 +1083,12 @@ export class TablePropertiesDialog {
         element.appendChild(alignmentDiv); element.appendChild(divAlignment); element.appendChild(this.cellOptionButton);
         this.cellOptionButton.addEventListener('click', this.showCellOptionsDialog);
         this.cellWidthBox = new NumericTextBox({
-            value: 0, decimals: 2, min: 0, max: 1584, width: 120, enablePersistence: false
+            value: 0, decimals: 2, min: 0, max: 1584, enablePersistence: false
         });
         this.cellWidthBox.appendTo(this.preferredCellWidth);
         this.preferredCellWidthCheckBox = new CheckBox({ label: localValue.getConstant('Preferred Width'), enableRtl: isRtl });
         this.preferredCellWidthCheckBox.appendTo(preferredCellWidthCheckBox);
-        this.cellWidthType = new DropDownList({ width: '120px', enableRtl: isRtl });
+        this.cellWidthType = new DropDownList({ enableRtl: isRtl });
         this.cellWidthType.appendTo(cellWidthType);
         if (isRtl) {
             childdiv2.classList.add('e-de-rtl');

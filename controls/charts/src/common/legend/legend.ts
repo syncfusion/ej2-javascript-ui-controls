@@ -1169,12 +1169,13 @@ export class BaseLegend {
      * @param legendGroup
      */
 
+    // tslint:disable-next-line:max-func-body-length
     private renderPagingElements(
         chart: Chart | AccumulationChart | BulletChart | StockChart, bounds: Rect, textOption: TextOption, legendGroup: Element): void {
         const paginggroup: Element = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
         const isCanvas: boolean = this.isStockChartControl ? false : (chart as Chart).enableCanvas;
         const titleHeight: number = this.isBulletChartControl ? 0 : this.legendTitleSize.height;
-        const grayColor: string = '#545454';
+        const grayColor: string = this.chart.theme.indexOf('Dark') > -1 ? '#FFFFFF' : '#545454';
         const legend: LegendSettingsModel = chart.legendSettings; // to solve parameter lint error, legend declaration is here
         const padding: number = 8; // const padding for paging elements
         const symbolOption: PathOption = new PathOption(this.legendID + '_pageup', 'transparent', 5, grayColor, 1, '', '');
@@ -1244,12 +1245,13 @@ export class BaseLegend {
         textOption.y = y + (size.height / 4);
         textOption.id = this.legendID + '_pagenumber';
         textOption.text = '1/' + this.totalPages;
+        const color: string = this.chart.theme.indexOf('Dark') > -1 ? '#FFFFFF' : legend.textStyle.color;
         if (isCanvas && this.totalNoOfPages) {
             textOption.text = this.currentPageNumber  + '/' + this.totalNoOfPages;
         }
         if (legend.enablePages || this.isBulletChartControl) {
             pageTextElement = textElement(
-                chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup,
+                chart.renderer, textOption, legend.textStyle, color, paginggroup,
                 false, false, false, false, null,
                 new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0)
             );

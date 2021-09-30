@@ -8,7 +8,7 @@ import {
     getTemplateFunction, convertElement, findLabelLocation, PathOption, textFormatter, ColorValue, colorNameToHex, convertHexToColor,
     colorMap, measureElement, convertToContainer, convertToRect, getShortestEdge, getArea, orderByArea, isParentItem, maintainSelection
 } from '../utils/helper';
-import { isNullOrUndefined, createElement, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, extend } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Location, findChildren, renderTextElement } from '../utils/helper';
 import { LevelSettings, Font, LeafItemSettings } from '../model/base';
@@ -523,10 +523,6 @@ export class LayoutPanel {
                 cancel: false, name: itemRendering, treemap: this.treemap, text : renderText,
                 currentItem: item, RenderItems: this.renderItems, options: item['options']
             };
-            if (this.treemap.isBlazor) {
-                const { treemap, RenderItems, ...blazorEventArgs} : IItemRenderingEventArgs = eventArgs;
-                eventArgs = blazorEventArgs;
-            }
             this.treemap.trigger(itemRendering, eventArgs, (observedArgs: IItemRenderingEventArgs) => {
                 if (!observedArgs.cancel) {
                     rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
@@ -556,10 +552,8 @@ export class LayoutPanel {
                 }
             });
         }
-        if (templateGroup.childNodes.length > 0) {
+        if (templateGroup.childNodes.length > 0 && !isNullOrUndefined(secondaryEle)) {
             secondaryEle.appendChild(templateGroup);
-            updateBlazorTemplate(this.treemap.element.id + '_HeaderTemplate', 'HeaderTemplate', levels[levels.length - 1]);
-            updateBlazorTemplate(this.treemap.element.id + '_LabelTemplate', 'LabelTemplate', leaf);
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     }

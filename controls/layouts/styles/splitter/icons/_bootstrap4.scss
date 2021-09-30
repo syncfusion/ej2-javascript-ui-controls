@@ -7,6 +7,12 @@
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
         }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
+        }
       }
 
       &.e-split-bar-vertical {
@@ -14,6 +20,12 @@
           content: '\e71b';
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
+        }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
         }
       }
     }

@@ -189,19 +189,19 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
 
     public generateCell(
-        column: Column, rowId?: string, cellType?: CellType, colSpan?: number,
+        col: Column, rowId?: string, cellType?: CellType, colSpan?: number,
         oIndex?: number, foreignKeyData?: Object): Cell<Column> {
         const opt: ICell<Column> = {
-            'visible': column.visible,
-            'isDataCell': !isNullOrUndefined(column.field || column.template),
-            'isTemplate': !isNullOrUndefined(column.template),
+            'visible': col.visible,
+            'isDataCell': !isNullOrUndefined(col.field || col.template),
+            'isTemplate': !isNullOrUndefined(col.template),
             'rowID': rowId,
-            'column': column,
+            'column': col,
             'cellType': !isNullOrUndefined(cellType) ? cellType : CellType.Data,
             'colSpan': colSpan,
-            'commands': column.commands,
-            'isForeignKey': column.isForeignColumn && column.isForeignColumn(),
-            'foreignKeyData': column.isForeignColumn && column.isForeignColumn() && getValue(column.field, foreignKeyData)
+            'commands': col.commands,
+            'isForeignKey': col.isForeignColumn && col.isForeignColumn(),
+            'foreignKeyData': col.isForeignColumn && col.isForeignColumn() && getValue(col.field, foreignKeyData)
         };
 
         if (opt.isDataCell || opt.column.type === 'checkbox' || opt.commands) {
@@ -312,7 +312,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           + Math.ceil(vHeight / this.parent.getRowHeight()))
             - this.parent.pageSettings.pageSize;
             index = (index > 0) ? index : 0;
-            if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] != -1 && index != this[selectedRowIndex]) {
+            if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] !== -1 && index !== this[selectedRowIndex]) {
                 index = this[selectedRowIndex];
             }
             this.startIndex = index;
@@ -342,9 +342,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
         } else if (downScroll) {
             let nextSetResIndex: number = ~~(content.scrollTop / this.parent.getRowHeight());
-            let isLastBlock: boolean = (this[selectedRowIndex] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
-            if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] != -1 &&
-             nextSetResIndex != this[selectedRowIndex] && !isLastBlock) {
+            const isLastBlock: boolean = (this[selectedRowIndex] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
+            if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] !== -1 &&
+             nextSetResIndex !== this[selectedRowIndex] && !isLastBlock) {
                 nextSetResIndex = this[selectedRowIndex];
             }
             let lastIndex: number = nextSetResIndex + this.parent.pageSettings.pageSize;

@@ -453,7 +453,7 @@ describe('Schedule Resources', () => {
         });
     });
 
-    describe('Public methods for resoure expand/collpase ', () => {
+    describe('Public methods for resource expand/collapse ', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
@@ -1043,12 +1043,12 @@ describe('Schedule Resources', () => {
             schObj.scrollToResource(3);
             expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(240);
             schObj.scrollToResource(1, 'Categories');
-            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(60);
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toBeGreaterThanOrEqual(59);
             schObj.scrollToResource('2', 'Projects');
             expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(180);
             (schObj.element.querySelector('.e-resource-tree-icon.e-resource-collapse') as HTMLElement).click();
             schObj.scrollToResource(1, 'Categories');
-            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(60);
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toBeGreaterThanOrEqual(59);
         });
     });
 

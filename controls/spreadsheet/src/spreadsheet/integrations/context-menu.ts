@@ -95,8 +95,8 @@ export class ContextMenu {
                 this.parent.notify(removeSheetTab, {});
                 break;
             case id + '_insert_sheet':
-                this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex,
-                    end: this.parent.activeSheetIndex, modelType: 'Sheet', isAction: true });
+                this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex +1,
+                    end: this.parent.activeSheetIndex +1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
                 break;
             case id + '_hide_sheet':
                 this.parent.notify(hideSheet, null);

@@ -225,6 +225,9 @@
     font-size: $ddl-list-font-size;
     padding-right: $ddl-list-padding-right;
     text-indent: $ddl-list-text-indent;
+    @if ($skin-name == 'bootstrap5') {
+      color: $ddl-list-header-font-color;
+    }
   }
 
   .e-ddl.e-popup.e-multiselect-group .e-list-group-item.e-item-focus {

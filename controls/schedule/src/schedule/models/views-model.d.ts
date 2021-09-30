@@ -208,6 +208,15 @@ export interface ViewsModel {
     resourceHeaderTemplate?: string;
 
     /**
+     * The template option which is used to render the customized header indent cell on the schedule. Here, the
+     *  template accepts either the string or HTMLElement as template design and then the parsed design is displayed onto the header indent cell.
+     *  It gets applied only to the view objects on which it is defined.
+     *
+     * @default null
+     */
+    headerIndentTemplate?: string;
+
+    /**
      * By default, Schedule follows the time-format as per the default culture assigned to it.
      * It is also possible to manually set specific time format by using the `timeFormat` property.
      * {% codeBlock src='schedule/timeFormat/index.md' %}{% endcodeBlock %}

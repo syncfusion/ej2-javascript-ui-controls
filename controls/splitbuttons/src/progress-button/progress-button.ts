@@ -1,7 +1,7 @@
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
 import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';
 import { EmitType, Event, BaseEventArgs, remove, removeClass } from '@syncfusion/ej2-base';
-import { Complex, ChildProperty, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { Complex, ChildProperty, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { ProgressButtonModel, SpinSettingsModel, AnimationSettingsModel } from './progress-button-model';
 
@@ -260,9 +260,6 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * @private
      */
     public render(): void {
-        if (isBlazor()) {
-            this.isServerRendered = false;
-        }
         super.render();
         this.init();
         this.wireEvents();
@@ -379,20 +376,12 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
 
     private setContent(): void {
         let cont: string;
-        if (isBlazor()) {
-            cont = this.content;
-            if (this.enableHtmlSanitizer) {
-                cont = SanitizeHtmlHelper.sanitize(this.content);
-            }
-            this.setContentIcon(cont);
-        } else {
-            cont = this.element.innerHTML;
-            if (this.enableHtmlSanitizer) {
-                cont = SanitizeHtmlHelper.sanitize(this.element.innerHTML);
-            }
-            this.element.innerHTML = '';
-            this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
+        cont = this.element.innerHTML;
+        if (this.enableHtmlSanitizer) {
+            cont = SanitizeHtmlHelper.sanitize(this.element.innerHTML);
         }
+        this.element.innerHTML = '';
+        this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
     }
 
     private setContentIcon(content: string): void {
@@ -620,27 +609,14 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'content':
-                if (isBlazor()) {
-                    const btnElem: HTMLElement = this.element.querySelector('.e-btn-content');
-                    if (this.iconCss) {
-                        if (this.iconPosition === 'Left' || this.iconPosition === 'Top') {
-                            btnElem.childNodes[1].textContent = this.content;
-                        } else {
-                            btnElem.childNodes[0].textContent = this.content;
-                        }
-                    } else {
-                        btnElem.textContent = this.content;
-                    }
-                } else {
-                    this.setContent();
-                    this.createSpinner();
-                    if (isSpinning) {
-                        showSpinner(this.element);
-                        isSpinning = false;
-                    }
-                    if (this.enableProgress) {
-                        this.createProgress();
-                    }
+                this.setContent();
+                this.createSpinner();
+                if (isSpinning) {
+                    showSpinner(this.element);
+                    isSpinning = false;
+                }
+                if (this.enableProgress) {
+                    this.createProgress();
                 }
                 ele.setAttribute('aria-label', ele.textContent + ' progress');
                 break;

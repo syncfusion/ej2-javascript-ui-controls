@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, Browser, Internationalization } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import {
@@ -21,12 +22,10 @@ const instance: Internationalization = new Internationalization();
 
 describe('Schedule Timeline Week view', () => {
     beforeAll(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
@@ -284,8 +283,8 @@ describe('Schedule Timeline Week view', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
         });
-        
-        it ('Checking right indicator icon between dates', (done: DoneFn) => {
+
+        it('Checking right indicator icon between dates', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList[17].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
@@ -478,7 +477,6 @@ describe('Schedule Timeline Week view', () => {
             schObj = util.createSchedule(model, timelineData, done);
         });
         afterAll(() => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const activeView: any = schObj.activeView;
             util.destroy(schObj);
             activeView.changeCurrentTimePosition();
@@ -1026,11 +1024,16 @@ describe('Schedule Timeline Week view', () => {
             expect(contentArea.scrollLeft).toEqual(200);
         });
 
+        it('scrollTo particular date and hour', () => {
+            schObj.scrollTo('04:00', new Date(2017, 9, 6));
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            expect(contentArea.scrollLeft).toEqual(6000);
+        });
+
         it('addEvent & getEventDetails', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
                 const appElem: Element = schObj.element.querySelector('.e-appointment');
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const app: Record<string, any> = schObj.getEventDetails(appElem);
                 expect(app.Subject).toEqual('added');
                 done();
@@ -1204,7 +1207,6 @@ describe('Schedule Timeline Week view', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
                 const appElem: Element = schObj.element.querySelector('.e-appointment');
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const app: Record<string, any> = schObj.getEventDetails(appElem);
                 expect(app.Subject).toEqual('added');
                 done();
@@ -2867,7 +2869,7 @@ describe('Schedule Timeline Week view', () => {
             expect(headTrs[4].children.length).toEqual(48 * daysLength);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-            expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+            expect(headTrs[4].children[1].innerHTML).toEqual('');
         });
 
         it('check work cells', () => {
@@ -2936,7 +2938,7 @@ describe('Schedule Timeline Week view', () => {
                 expect(headTrs[4].children.length).toEqual(48 * daysLength);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.getWorkCellElements().length).toEqual(48 * daysLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 6).getTime().toString());
@@ -2972,7 +2974,7 @@ describe('Schedule Timeline Week view', () => {
                 expect(headTrs[4].children.length).toEqual(48 * daysLength);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.getWorkCellElements().length).toEqual(48 * daysLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -3503,7 +3505,7 @@ describe('Schedule Timeline Week view', () => {
             expect(headTrs[4].children.length).toEqual(336);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-            expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+            expect(headTrs[4].children[1].innerHTML).toEqual('');
         });
 
         it('check resource column', () => {
@@ -3586,7 +3588,7 @@ describe('Schedule Timeline Week view', () => {
                 expect(headTrs[4].children.length).toEqual(336);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
@@ -3641,7 +3643,7 @@ describe('Schedule Timeline Week view', () => {
                 expect(headTrs[4].children.length).toEqual(336);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
@@ -4036,6 +4038,130 @@ describe('Schedule Timeline Week view', () => {
             schObj.startHour = '04:00';
             schObj.endHour = '11:00';
             schObj.dataBind();
+        });
+    });
+
+    describe('checking indent template with resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '580px', selectedDate: new Date(2018, 4, 1), currentView: 'TimelineWeek',
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerColor: '#f8a398' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }],
+                views: [
+                    { option: 'TimelineDay' },
+                    { option: 'TimelineWeek' },
+                    { option: 'TimelineWorkWeek' },
+                    { option: 'TimelineMonth' },
+                    { option: 'TimelineYear', orientation: 'Vertical', displayName: 'VerticalYear' },
+                    { option: 'TimelineYear', orientation: 'Horizontal', displayName: 'HorizontalYear' }
+                ],
+                headerIndentTemplate: '<div class="temp-wrap">Resources</div>'
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Resource indent template', () => {
+            expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-week');
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).innerHTML).toEqual(
+                '<div class="temp-wrap">Resources</div>');
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+        });
+
+        it('changing current view and check resource indent template', () => {
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).innerHTML).toEqual(
+                '<div class="temp-wrap">Resources</div>');
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            schObj.currentView = 'TimelineWorkWeek';
+            schObj.dataBind();
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).innerHTML).toEqual(
+                '<div class="temp-wrap">Resources</div>');
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).innerHTML).toEqual(
+                '<div class="temp-wrap">Resources</div>');
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            schObj.currentView = 'TimelineYear';
+            schObj.dataBind();
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).innerHTML).toEqual(
+                '<div class="temp-wrap">Resources</div>');
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            schObj.changeCurrentView('TimelineYear', 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-resource-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-resource-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+        });
+
+        it('checking indentTemplate property', () => {
+            schObj.currentView = 'TimelineDay';
+            schObj.headerIndentTemplate = '<div class="template-wrap">Testing</div>';
+            schObj.dataBind();
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).innerHTML).toEqual(
+                '<div class="template-wrap">Testing</div>');
+            expect((schObj.element.querySelector('.e-resource-left-td') as HTMLElement).firstElementChild.classList.contains('template-wrap'))
+                .toBeTruthy();
+        });
+    });
+
+    describe('checking indent template without resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '580px', selectedDate: new Date(2018, 4, 1),
+                views: [
+                    { option: 'TimelineYear', isSelected: true, orientation: 'Vertical', displayName: 'VerticalYear' },
+                    { option: 'TimelineYear', orientation: 'Horizontal', displayName: 'HorizontalYear' }
+                ],
+                headerIndentTemplate: '<div class="temp-wrap">Resources</div>'
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking indent template', () => {
+            expect(schObj.element.querySelector('.e-timeline-year-view')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            schObj.changeCurrentView('TimelineYear', 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+        });
+
+        it('checking indentTemplate property', () => {
+            schObj.headerIndentTemplate = '<div class="template-wrap">Testing</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="template-wrap">Testing</div>');
+            expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('template-wrap'))
+                .toBeTruthy();
         });
     });
 

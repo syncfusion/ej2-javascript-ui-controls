@@ -7,7 +7,7 @@ import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded,
 import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx, isReact, getDPRValue } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, renderReactTemplates, rowHeightChanged } from '../common/index';
 import { colWidthChanged, clearUndoRedoCollection } from '../common/index';
-import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight } from '../../workbook/index';
+import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getFormattedCellObject, getColorCode } from '../../workbook/index';
 
 /**
  * Sheet module is used to render Sheet
@@ -42,7 +42,7 @@ export class SheetRender implements IRenderer {
         } else {
             cell = this.headerPanel.firstElementChild; cell.classList.add('e-select-all-cell');
         }
-        cell.appendChild(this.parent.createElement('button', { className: 'e-selectall e-icons',
+        cell.appendChild(this.parent.createElement('button', { className: 'e-selectall',
             id: `${this.parent.element.id}_select_all` }));
     }
 
@@ -266,6 +266,10 @@ export class SheetRender implements IRenderer {
                 first: layout ? (layout.includes('Row') ? (indexes[0] === args.indexes[0] ? 'Row' : (layout.includes('Column') ? (
                     indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' }));
             if (frozenCol && indexes[1] === frozenCol - 1) { row = null; }
+            if (value && value.format && (getColorCode(value.format) || value.format.indexOf('*') > -1)) {
+                this.parent.notify(getFormattedCellObject, { cell: value, value: value.value, format: value.format,
+                    rowIndex: indexes[0], colIndex: indexes[1], td: this.parent.getCell(indexes[0], indexes[1]) });
+            }
             if (indexes[0] === args.indexes[0]) {
                 if (frozenCol && indexes[1] < frozenCol) {
                     col = this.updateCol(sheet, indexes[1], selectAllColGrp);
@@ -281,6 +285,7 @@ export class SheetRender implements IRenderer {
         if (this.parent[isReact]) { this.parent[renderReactTemplates](); }
         cTBody.parentElement.insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf((): void => {
+            if (!this.parent) { return; }
             const content: HTMLElement = this.parent.getMainContent();
             const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
             sheetContent.appendChild(frag);
@@ -310,8 +315,11 @@ export class SheetRender implements IRenderer {
                 if (triggerEvent) {
                     /* eslint-disable */
                     if ((this.parent as any).isReact) {
-                        setTimeout(() => this.triggerCreatedEvent());
-                    /* eslint-enable */
+                        setTimeout(() => {
+                            if (!this.parent) { return; }
+                            this.triggerCreatedEvent();
+                        });
+                        /* eslint-enable */
                     } else {
                         this.triggerCreatedEvent();
                     }

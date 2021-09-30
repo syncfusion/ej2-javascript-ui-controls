@@ -66,7 +66,7 @@ export class Paragraph {
         paragraphDiv.appendChild(label);
         const styleDiv: HTMLElement = this.createDivElement(element + '_styleDiv', paragraphDiv);
         styleDiv.classList.add('e-de-ctnr-segment', 'e-de-ctnr-style-div');
-        const styleSelect: HTMLSelectElement = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;' }) as HTMLSelectElement;
+        const styleSelect: HTMLSelectElement = createElement('input', { id: element + '_style', styles: 'width:248px;letter-spacing: 0.05px;' }) as HTMLSelectElement;
         styleDiv.appendChild(styleSelect);
         this.createStyleDropDownList(styleSelect);
         const indentWholeDiv: HTMLElement = this.createDivElement(element + '_indentWholeDiv', paragraphDiv);
@@ -431,7 +431,8 @@ export class Paragraph {
         const collection: any = [];
         for (const styleObj of styles) {
             const obj: any = {};
-            obj.StyleName = this.localObj.getConstant((styleObj as any).name);
+            const styleName: string = this.localObj.getConstant((styleObj as any).name);
+            obj.StyleName = styleName === '' ? (styleObj as any).name : styleName;
             obj.Style = this.parseStyle((styleObj as any).style as string);
             collection.push(obj);
         }

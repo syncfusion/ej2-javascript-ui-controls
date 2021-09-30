@@ -1,7 +1,6 @@
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../index';
 import { ExportType } from '../utils/enum';
-import { triggerDownload } from '../utils/helper';
 
 /**
  * Represent the Image Export for gauge
@@ -53,7 +52,7 @@ export class ImageExport {
             );
             if (type === 'SVG') {
                 if (allowDownload) {
-                    triggerDownload(
+                    this.triggerDownload(
                         fileName, type,
                         url, isDownload
                     );
@@ -67,7 +66,7 @@ export class ImageExport {
                     context.drawImage(image, 0, 0);
                     window.URL.revokeObjectURL(url);
                     if (allowDownload) {
-                        triggerDownload(
+                        this.triggerDownload(
                             fileName, type,
                             element.toDataURL('image/png').replace('image/png', 'image/octet-stream'),
                             isDownload);
@@ -101,5 +100,27 @@ export class ImageExport {
      */
     public destroy(gauge: CircularGauge): void {
         // Destroy method performed here
+    }
+
+    /**
+    * To trigger the download element
+    *
+    * @param {string} fileName - Specifies the file name.
+    * @param {ExportType} type - Specifies the export type.
+    * @param {string} url - Specifies the url.
+    * @param {boolean} isDownload - Specifies the boolean value.
+    * @returns {void}
+    */
+    private triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
+        createElement('a', {
+            attrs: {
+                'download': fileName + '.' + (type as string).toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
     }
 }

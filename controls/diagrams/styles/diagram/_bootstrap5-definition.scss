@@ -1,0 +1,97 @@
+@import 'definition.scss';
+
+$skin-name: 'bootstrap5';
+//layout variables
+$diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
+$diagram-symbolpalette-shape-radius: 00px;
+$diagram-tooltip: none;
+//normal
+$diagram-endpoint-handle-color: $white;
+$diagram-endpoint-handle-connected-border: $white;
+
+$diagram-resize-handle-disable-color: $content-bg-color-alt5;
+$diagram-border-stroke-disabled: $content-bg-color-alt5;
+$diagram-resize-handle-disable-stroke: $white;
+$diagram-rotate-handle-color: $primary;
+$diagram-bezier-handle-color: $white;
+
+$diagram-symbolpalette-hover: $diagram-palette-hover-background;
+$diagram-symbolpalette-selected: $content-bg-color-alt3;
+
+$diagram-ruler-color: $content-text-color-alt2;
+$diagram-ruler-font-size: $text-xxs;
+$diagram-ruler-marker-background-color: $content-bg-color-alt1;
+$diagram-ruler-label-fill: $content-text-color-alt2;
+$diagram-ruler-tick-stroke: $series-3;
+
+$palette-background-color: $diagram-palette-background;
+
+$diagram-background-color: $white;
+$diagram-editbox-fontcolor: $black;
+//end normal
+//primary
+$diagram-endpoint-handle-connected-color: $primary;
+
+$diagram-resize-handle-color: $primary;
+$diagram-resize-handle-stroke: $primary;
+
+$diagram-border-stroke: $primary;
+$diagram-bezier-line-color: $primary;
+
+$diagram-highlighter-stroke: $primary;
+$diagram-selected-region-stroke: $primary;
+$diagram-pivot-line-stroke: $primary;
+$diagram-ruler-marker-stroke: $primary;
+
+$diagram-helper-stroke: $primary;
+
+$diagram-text-edit-selection-background: $primary;
+$diagram-editbox-background: $primary-text-color;
+
+$diagram-border-strokes: $primary;
+$diagram-lane-border-strokes: $primary;
+$diagram-text-edit-selection-color: $primary-text-color;
+//end primary
+
+.e-icons {
+  font-family: 'e-icons';
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-transform: none;
+}
+
+@include export-module('diagram-bootstrap-icons') {
+  .e-diagram-menu {
+    .e-bringforward::before { content: '\e72f'; }
+    .e-bringfront::before { content: '\e840'; }
+    .e-sendback::before { content: '\e78a'; }
+    .e-sendbackward::before { content: '\e7ed'; }
+    .e-delete::before { content: '\e94a'; }
+    .e-ungroup::before { content: '\e749'; }
+    .e-group::before { content: '\e7f4'; }
+    .e-undo::before { content: '\e713'; }
+    .e-redo::before { content: '\e755'; }
+    .e-copy::before { content: '\e77c'; }
+    .e-cut::before { content: '\e7fb'; }
+    .e-save::before { content: '\e7c8'; }
+    .e-paste::before { content: '\e70b'; }
+    .e-zoomin::before { content: '\e795'; }
+    .e-italic::before { content: '\e75a'; }
+    .e-close::before { content: '\e7e7'; }
+    .e-pan::before { content: '\e7b1'; }
+    .e-bold::before { content: '\e737'; }
+    .e-underline::before { content: '\e82f'; }
+    .e-zoomout::before { content: '\e825'; }
+    .e-export::before { content: '\e72e'; }
+    .e-print::before { content: '\e75d'; }
+    .e-order::before { content: '\e809'; }
+}
+
+  .e-symbolpalette {
+    .e-clear-searchtext::before { content: '\e754'; }
+}
+}

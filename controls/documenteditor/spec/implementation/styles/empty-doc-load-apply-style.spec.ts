@@ -42,136 +42,136 @@ describe('Load Empty Document - Edit and Apply Style', () => {
             done();
         }, 1000);
     });
-    it('Apply Heading1', () => {
-console.log('Apply Heading1');
-        editor.open(json);
-        editor.editorModule.insertText('Heading');
-        editor.editorModule.onEnter();
-        editor.selection.handleUpKey();
-        editor.selection.handleEndKey();
-        editor.editorModule.applyStyle('Heading 1');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
-        expect(editor.selection.characterFormat.fontSize).toBe(16.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
-        expect(editor.selection.paragraphFormat.beforeSpacing).toBe(12.0);
-        expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.documentHelper.onKeyDownInternal(event);
+//     it('Apply Heading1', () => {
+// console.log('Apply Heading1');
+//         editor.open(json);
+//         editor.editorModule.insertText('Heading');
+//         editor.editorModule.onEnter();
+//         editor.selection.handleUpKey();
+//         editor.selection.handleEndKey();
+//         editor.editorModule.applyStyle('Heading 1');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
+//         expect(editor.selection.characterFormat.fontSize).toBe(16.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
+//         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(12.0);
+//         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
+//         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+//         editor.documentHelper.onKeyDownInternal(event);
 
-        currentPara = editor.selection.start.currentWidget.paragraph;
-        editor.editorModule.insertText('Heading');
-        currentPara = editor.selection.start.currentWidget.paragraph;
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
-        expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("empty");
-    });
-    it('Apply Heading2', () => {
-console.log('Apply Heading2');
-        editor.open(json);
-        editor.editorModule.insertText('Heading');
-        editor.editorModule.onEnter();
-        editor.selection.handleUpKey();
-        editor.selection.handleEndKey();
-        editor.editorModule.applyStyle('Heading 2');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
-        expect(editor.selection.characterFormat.fontSize).toBe(13.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
-        expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
-        expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
+//         currentPara = editor.selection.start.currentWidget.paragraph;
+//         editor.editorModule.insertText('Heading');
+//         currentPara = editor.selection.start.currentWidget.paragraph;
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
+//         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("empty");
+//     });
+//     it('Apply Heading2', () => {
+// console.log('Apply Heading2');
+//         editor.open(json);
+//         editor.editorModule.insertText('Heading');
+//         editor.editorModule.onEnter();
+//         editor.selection.handleUpKey();
+//         editor.selection.handleEndKey();
+//         editor.editorModule.applyStyle('Heading 2');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
+//         expect(editor.selection.characterFormat.fontSize).toBe(13.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
+//         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
+//         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
-        event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.documentHelper.onKeyDownInternal(event);
+//         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+//         editor.documentHelper.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
-        expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("empty");
-    });
-    it('Apply Heading3', () => {
-console.log('Apply Heading3');
-        editor.open(json);
-        editor.editorModule.insertText('Heading');
-        editor.editorModule.onEnter();
-        editor.selection.handleUpKey();
-        editor.selection.handleEndKey();
-        editor.editorModule.applyStyle('Heading 3');
+//         editor.editorModule.insertText('Heading');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
+//         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("empty");
+//     });
+//     it('Apply Heading3', () => {
+// console.log('Apply Heading3');
+//         editor.open(json);
+//         editor.editorModule.insertText('Heading');
+//         editor.editorModule.onEnter();
+//         editor.selection.handleUpKey();
+//         editor.selection.handleEndKey();
+//         editor.editorModule.applyStyle('Heading 3');
 
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
-        expect(editor.selection.characterFormat.fontSize).toBe(12.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
-        expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
-        expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
+//         expect(editor.selection.characterFormat.fontSize).toBe(12.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
+//         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
+//         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
-        event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.documentHelper.onKeyDownInternal(event);
+//         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+//         editor.documentHelper.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
-        expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("empty");
-    });
-    it('Apply Heading4', () => {
-console.log('Apply Heading4');
-        editor.open(json);
-        editor.editorModule.insertText('Heading');
-        editor.editorModule.onEnter();
-        editor.selection.handleUpKey();
-        editor.selection.handleEndKey();
-        editor.editorModule.applyStyle('Heading 4');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
-        expect(editor.selection.characterFormat.italic).toBe(true);
-        expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
-        expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
-        expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
+//         editor.editorModule.insertText('Heading');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
+//         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("empty");
+//     });
+//     it('Apply Heading4', () => {
+// console.log('Apply Heading4');
+//         editor.open(json);
+//         editor.editorModule.insertText('Heading');
+//         editor.editorModule.onEnter();
+//         editor.selection.handleUpKey();
+//         editor.selection.handleEndKey();
+//         editor.editorModule.applyStyle('Heading 4');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
+//         expect(editor.selection.characterFormat.italic).toBe(true);
+//         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
+//         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
+//         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
-        event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.documentHelper.onKeyDownInternal(event);
+//         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+//         editor.documentHelper.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
-        expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("empty");
-    });
-    it('Apply Heading5', () => {
-console.log('Apply Heading5');
-        editor.open(json);
-        editor.editorModule.insertText('Heading');
-        editor.editorModule.onEnter();
-        editor.selection.handleUpKey();
-        editor.selection.handleEndKey();
-        editor.editorModule.applyStyle('Heading 5');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
-        expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
-        expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
-        expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
+//         editor.editorModule.insertText('Heading');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
+//         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("empty");
+//     });
+//     it('Apply Heading5', () => {
+// console.log('Apply Heading5');
+//         editor.open(json);
+//         editor.editorModule.insertText('Heading');
+//         editor.editorModule.onEnter();
+//         editor.selection.handleUpKey();
+//         editor.selection.handleEndKey();
+//         editor.editorModule.applyStyle('Heading 5');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
+//         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
+//         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
+//         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
-        event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.documentHelper.onKeyDownInternal(event);
+//         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+//         editor.documentHelper.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
-        expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("empty");
-    });
-    it('Apply Heading6', () => {
-console.log('Apply Heading6');
-        editor.open(json);
-        editor.editorModule.insertText('Heading');
-        editor.editorModule.onEnter();
-        editor.selection.handleUpKey();
-        editor.selection.handleEndKey();
-        editor.editorModule.applyStyle('Heading 6');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
-        expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
-        expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
-        expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
+//         editor.editorModule.insertText('Heading');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
+//         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("empty");
+//     });
+//     it('Apply Heading6', () => {
+// console.log('Apply Heading6');
+//         editor.open(json);
+//         editor.editorModule.insertText('Heading');
+//         editor.editorModule.onEnter();
+//         editor.selection.handleUpKey();
+//         editor.selection.handleEndKey();
+//         editor.editorModule.applyStyle('Heading 6');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
+//         expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
+//         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
+//         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
-        event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.documentHelper.onKeyDownInternal(event);
+//         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+//         editor.documentHelper.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading');
-        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
-        expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("empty");
-    });
+//         editor.editorModule.insertText('Heading');
+//         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
+//         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
+//         expect(editor.selection.characterFormat.fontColor).toBe("empty");
+//     });
 });

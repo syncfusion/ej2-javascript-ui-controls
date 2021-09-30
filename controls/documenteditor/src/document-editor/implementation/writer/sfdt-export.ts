@@ -1320,6 +1320,7 @@ export class SfdtExport {
         paragraphFormat.keepLinesTogether = isInline ? format.keepLinesTogether : format.getValue('keepLinesTogether');
         paragraphFormat.keepWithNext = isInline ? format.keepWithNext : format.getValue('keepWithNext');
         paragraphFormat.contextualSpacing = isInline ? format.contextualSpacing : format.getValue('contextualSpacing');
+        paragraphFormat.widowControl = isInline ? format.widowControl : format.getValue('widowControl');
         if (this.writeInlineStyles && !isInline) {
             paragraphFormat.inlineFormat = this.writeParagraphFormat(format, true);
         }

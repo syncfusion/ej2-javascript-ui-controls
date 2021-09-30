@@ -94,7 +94,11 @@ export class TimelineYear extends Year {
                 if (className === cls.DATE_HEADER_WRAP_CLASS) {
                     if (c.template) { append(c.template, tdEle); }
                     if (c.colSpan) { tdEle.setAttribute('colspan', c.colSpan.toString()); }
+                    if (c.groupIndex > -1) { tdEle.setAttribute('data-group-index', c.groupIndex.toString()); }
                     this.setResourceHeaderContent(tdEle, c);
+                }
+                if (className === cls.LEFT_INDENT_WRAP_CLASS) {
+                    this.parent.renderHeaderIndentTemplate(c, tdEle);
                 }
                 const args: RenderCellEventArgs = { elementType: c.type, element: tdEle, date: c.date, groupIndex: c.groupIndex };
                 this.parent.trigger(event.renderCell, args);

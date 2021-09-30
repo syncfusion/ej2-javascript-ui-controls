@@ -53,7 +53,7 @@ export class TableCommand {
         }
         const tdWid: number = parseInt(e.item.width.width as string, 10) > 100 ?
             100 / e.item.columns : parseInt(e.item.width.width as string, 10) / e.item.columns;
-        for (let i: number = 0; i < e.item.row; i++) {
+        for (let i: number = 0; i < e.item.rows; i++) {
             const row: HTMLElement = createElement('tr');
             for (let j: number = 0; j < e.item.columns; j++) {
                 const cell: HTMLElement = createElement('td');
@@ -69,9 +69,17 @@ export class TableCommand {
         this.removeEmptyNode();
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
         if (table.nextElementSibling === null) {
-            const emptyPara: HTMLElement = createElement('p');
-            emptyPara.appendChild(createElement('br'));
-            this.insertAfter(emptyPara, table);
+            let insertElem: HTMLElement;
+            if (e.enterAction === 'DIV') {
+                insertElem = createElement('div');
+                insertElem.appendChild(createElement('br'));
+            } else if (e.enterAction === 'BR') {
+                insertElem = createElement('br');
+            } else {
+                insertElem = createElement('p');
+                insertElem.appendChild(createElement('br'));
+            }
+            this.insertAfter(insertElem, table);
         }
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
@@ -215,16 +223,16 @@ export class TableCommand {
         const curRow: HTMLElement = closest(selectedCell as HTMLElement, 'tr') as HTMLElement;
         let curCell: Element;
         const allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest((curRow), 'table') as HTMLTableElement).rows;
-        const colIndex: number = Array.prototype.slice.call((curRow as HTMLElement).querySelectorAll('th,td')).indexOf(selectedCell);
-        const previousWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll('td,th').length);
-        const currentWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll('td,th').length + 1);
+        const colIndex: number = Array.prototype.slice.call((curRow as HTMLElement).querySelectorAll(':scope > td, :scope > th')).indexOf(selectedCell);
+        const previousWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll(':scope > td, :scope > th').length);
+        const currentWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll(':scope > td, :scope > th').length + 1);
         let currentTabElm: Element = closest(curRow as HTMLElement, 'table');
         let thTdElm: NodeListOf<HTMLElement> = closest(curRow as HTMLElement, 'table').querySelectorAll('th,td');
         for (let i: number = 0; i < thTdElm.length; i++) {
             thTdElm[i].dataset.oldWidth = (thTdElm[i].offsetWidth / (currentTabElm as HTMLElement).offsetWidth * 100) + "%";
         }
         for (let i: number = 0; i < allRows.length; i++) {
-            curCell = allRows[i].querySelectorAll('th,td')[colIndex];
+            curCell = allRows[i].querySelectorAll(':scope > td, :scope > th')[colIndex];
             const colTemplate: Node = (curCell as HTMLElement).cloneNode(true);
             (colTemplate as HTMLElement).innerHTML = '';
             (colTemplate as HTMLElement).appendChild(createElement('br'));
@@ -770,7 +778,7 @@ export class TableCommand {
         // eslint-disable-next-line
         let _this = this;
         const colspan: number = 0;
-        const allRows: NodeListOf<HTMLTableRowElement> = _this.curTable.querySelectorAll('tr');
+        const allRows: HTMLCollectionOf<HTMLTableRowElement> = _this.curTable.rows;
         for (let i: number = 0; i <= allRows.length - 1; i++) {
             const ele: HTMLElement = allRows[i];
             let index: number = 0;

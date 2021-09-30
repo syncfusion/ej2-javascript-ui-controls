@@ -1015,7 +1015,7 @@ export class FormDesigner {
         if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.signatureFieldSettings.isReadOnly) {
             signatureField.isReadonly = true;
         }
-        this.updateSignatureFieldProperties(signatureField, element);
+        this.updateSignatureFieldProperties(signatureField, element, isPrint);
         return element;
     }
 
@@ -1038,7 +1038,7 @@ export class FormDesigner {
         select.style.height = "100%";
         if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.DropdownFieldSettings.isReadOnly) {
             drawingObject.isReadonly = true;
-        }
+        } 
         this.updateDropdownListProperties(drawingObject, select);
         for (let j: number = 0; j < dropDownChildren.length; j++) {
             var option = document.createElement("option");
@@ -1076,7 +1076,7 @@ export class FormDesigner {
         select.multiple = true;
         if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.listBoxFieldSettings.isReadOnly) {
             drawingObject.isReadonly = true;
-        }
+        } 
         this.updateListBoxProperties(drawingObject, select);
         for (let j: number = 0; j < dropDownChildren.length; j++) {
             var option = document.createElement("option");
@@ -1125,10 +1125,10 @@ export class FormDesigner {
                 }
                 this.updateTextboxProperties(drawingObject, textArea);
             } else {
-                inputElement = this.createTextboxElement(inputElement.id); 
+                inputElement = this.createTextboxElement(inputElement.id);
                 if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.textFieldSettings.isReadOnly) {
                     drawingObject.isReadonly = true;
-                }
+                } 
                 this.updateTextboxProperties(drawingObject, inputElement);
             }
         } else if (formFieldAnnotationType == "Checkbox") {
@@ -1178,7 +1178,7 @@ export class FormDesigner {
             } else {
                 if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.checkBoxFieldSettings.isReadOnly) {
                     drawingObject.isReadonly = true;
-                }
+                } 
                 this.updateCheckboxProperties(drawingObject, checkboxDiv);
             }
             labelElement.appendChild(inputElement);
@@ -1199,7 +1199,7 @@ export class FormDesigner {
             inputElement.addEventListener('change', this.getTextboxValue.bind(this));
             if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.passwordFieldSettings.isReadOnly) {
                 drawingObject.isReadonly = true;
-            }
+            } 
             this.updatePasswordFieldProperties(drawingObject, inputElement);
         } else {
             element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
@@ -1241,7 +1241,7 @@ export class FormDesigner {
             inputElement.style.height = bounds.height + "px";
             if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.radioButtonFieldSettings.isReadOnly) {
                 drawingObject.isReadonly = true;
-            }
+            } 
             this.updateRadioButtonProperties(drawingObject, inputElement);
 
             labelElement.appendChild(inputElement);
@@ -2714,7 +2714,7 @@ export class FormDesigner {
     /**
      * @private
     */
-    public updateSignatureFieldProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+    public updateSignatureFieldProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement, isPrint?: boolean): void {
         (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Signature' + this.setFormFieldIndex();
         (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
         inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
@@ -2731,7 +2731,7 @@ export class FormDesigner {
         }
         inputElement.style.color = obj.color ? obj.color : 'black';
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
-        inputElement.style.backgroundColor = '#FFE48559';
+        inputElement.style.backgroundColor =  isPrint? 'transparent': '#FFE48559';
         if (obj.isReadonly) {
             (inputElement as HTMLInputElement).disabled = true;
             inputElement.style.cursor = 'default';
@@ -2886,21 +2886,21 @@ export class FormDesigner {
     private getPropertyPanelHeaderContent(formFieldType: FormFieldAnnotationType): string {
         switch (formFieldType) {
             case 'Textbox':
-                return 'Textbox';
+                return this.pdfViewer.localeObj.getConstant('Textbox');
             case 'PasswordField':
-                return 'Password';
+                return this.pdfViewer.localeObj.getConstant('Password');
             case 'Checkbox':
-                return 'Checkbox';
+                return this.pdfViewer.localeObj.getConstant('Check Box');
             case 'RadioButton':
-                return 'Radio Button';
+                return this.pdfViewer.localeObj.getConstant('Radio Button');
             case 'DropdownList':
-                return 'Drop Down';
+                return this.pdfViewer.localeObj.getConstant('Dropdown');
             case 'ListBox':
-                return 'List Box';
+                return this.pdfViewer.localeObj.getConstant('List Box');
             case 'InitialField':
-                return 'Initial';
+                return this.pdfViewer.localeObj.getConstant('Initial');
             case 'SignatureField':
-                return 'Signature';
+                return this.pdfViewer.localeObj.getConstant('Signature');
         }
     }
 

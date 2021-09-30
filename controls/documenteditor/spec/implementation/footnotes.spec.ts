@@ -4013,8 +4013,8 @@ describe('Footnotes validation', () => {
         }, 1000);
     });
 
-    it('Foot notes splitted on a paragraph in two pages', () => {
-        console.log('Foot notes splitted on a paragraph in two pages');
-        expect(() => { editor.open(JSON.stringify(sfdtFileWithMultiPageFootNotes)); }).not.toThrowError();
-    });
+    // it('Foot notes splitted on a paragraph in two pages', () => {
+    //     console.log('Foot notes splitted on a paragraph in two pages');
+    //     expect(() => { editor.open(JSON.stringify(sfdtFileWithMultiPageFootNotes)); }).not.toThrowError();
+    // });
 });

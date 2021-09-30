@@ -23,7 +23,7 @@ import { MinorTickLinesModel as PivotChartMinorTickLinesModel, IAxisLabelRenderE
 import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs, SelectionPattern } from '@syncfusion/ej2-charts';
 import { PivotSeriesModel, PivotAxisModel, PivotTooltipSettingsModel, PivotZoomSettingsModel } from './chartsettings-model';
 import { PivotPieChartCenterModel, PivotChartDataLabelModel, PivotChartConnectorStyleModel } from './chartsettings-model';
-import { ChartSeriesType, ChartSelectionMode } from '../../common';
+import { ChartSeriesType, ChartSelectionMode } from '../../common/base/enum';
 import { Theme } from '../../common/base/themes';
 import { MultiLevelLabelClickEventArgs, MultiLevelLabelRenderEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
 import { LabelPosition, MultipleAxisMode } from '../../common/base/enum';

@@ -9,3 +9,4 @@ export * from './menu/index';
 export * from './tab/index';
 export * from './treeview/index';
 export * from './sidebar/index';
+export * from './breadcrumb/index';

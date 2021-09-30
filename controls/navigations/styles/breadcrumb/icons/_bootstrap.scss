@@ -1,0 +1,13 @@
+
+@include export-module('breadcrumb-bootstrap-icons') {
+  /*! breadcrumb icons */
+  .e-breadcrumb {
+    .e-breadcrumb-collapsed::before {
+      content: '\e615';
+    }
+
+    .e-home::before {
+      content: '\e92b';
+    }
+  }
+}

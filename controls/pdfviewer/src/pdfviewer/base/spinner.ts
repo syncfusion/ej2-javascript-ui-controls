@@ -13,6 +13,8 @@ const CLS_MATERIALSPIN: string = 'e-spin-material';
 const CLS_FABRICSPIN: string = 'e-spin-fabric';
 const CLS_BOOTSPIN: string = 'e-spin-bootstrap';
 const CLS_BOOT4SPIN: string = 'e-spin-bootstrap4';
+const CLS_BOOT5SPIN: string = 'e-spin-bootstrap5';
+const CLS_TAILWIND: string = 'e-spin-tailwind';
 const CLS_HIGHCONTRASTSPIN: string = 'e-spin-high-contrast';
 const CLS_SPINWRAP: string = 'e-spinner-pane';
 const CLS_SPININWRAP: string = 'e-spinner-inner';
@@ -147,6 +149,32 @@ function createBootstrap4Spinner(container: HTMLElement, radius: number, makeEle
 
 /**
  * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
+ */
+function createBootstrap5Spinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+    const uniqueID: string = randomGenerator();
+    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap5', radius: radius };
+    createMaterialElement (container, uniqueID, makeElement, CLS_BOOT5SPIN);
+    matCalculateAttributes(radius, container, 'Bootstrap5', CLS_BOOT5SPIN);
+}
+
+/**
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
+ */
+function createTailwindSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+    const uniqueID: string = randomGenerator();
+    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Tailwind', radius: radius };
+    createMaterialElement (container, uniqueID, makeElement, CLS_TAILWIND);
+    matCalculateAttributes(radius, container, 'Tailwind', CLS_TAILWIND);
+}
+
+/**
+ * @param {HTMLElement} container - The HTMLElement.
  * @param {string} uniqueID - The uniqueID.
  * @param {number} radius - The radius.
  * @returns {void}
@@ -222,6 +250,12 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
         break;
     case 'Bootstrap4':
         createBootstrap4Spinner(innerContainer, radius, makeElement );
+        break;
+    case 'Bootstrap5':
+        createBootstrap5Spinner(innerContainer, radius, makeElement );
+        break;
+    case 'Tailwind':
+        createTailwindSpinner(innerContainer, radius, makeElement );
         break;
     }
 }

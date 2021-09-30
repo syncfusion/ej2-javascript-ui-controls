@@ -17,6 +17,11 @@
       @if $skin-name == 'bootstrap4' {
         padding: $cpicker-split-btn-padding;
       }
+      @else if $skin-name == 'bootstrap5' {
+        background-color: $cpicker-tile-active-border-color;
+        border: $cpicker-split-btn-border;
+        color: $cpicker-split-btn-icon-color;
+      }
     }
 
     & .e-split-btn-wrapper {
@@ -26,6 +31,10 @@
         padding: $cpicker-split-btn-padding;
         @if $skin-name == 'bootstrap4' {
           box-shadow: none;
+        }
+        @else if $skin-name == 'bootstrap5' {
+          background-color: transparent;
+          border: $cpicker-split-btn-border;
         }
 
         & .e-selected-color {
@@ -46,6 +55,11 @@
           @if $skin-name == 'bootstrap4' {
             padding: $cpicker-split-btn-padding;
           }
+          @else if $skin-name == 'bootstrap5' {
+            background-color: $cpicker-tile-active-border-color;
+            border: $cpicker-split-btn-border;
+            color: $flyout-text-color-pressed;
+          }
         }
       }
 
@@ -57,6 +71,11 @@
         & .e-btn.e-icon-btn {
           @if $skin-name == 'bootstrap4' {
             padding: $cpicker-split-btn-padding;
+          }
+          @else if $skin-name == 'bootstrap5' {
+            background-color: transparent;
+            border: $cpicker-split-btn-border;
+            color: $cpicker-split-btn-icon-color;
           }
         }
       }
@@ -154,6 +173,10 @@
       & .e-split-colorpicker.e-split-btn {
         line-height: $cpicker-bigger-split-line-height;
         padding: $cpicker-bigger-split-btn-padding;
+        @if $skin-name == 'bootstrap5' {
+          background-color: $content-bg-color;
+          border: $cpicker-split-btn-border;
+        }
 
         & .e-selected-color {
           height: $cpicker-bigger-split-btn-icon-height;
@@ -386,7 +409,7 @@
         position: relative;
         top: $cpicker-preview-container-top;
         width: $cpicker-preview-size;
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
           height: 38px;
         }
 
@@ -765,13 +788,13 @@
         width: $cpicker-bigger-container-width;
 
         & .e-switch-ctrl-btn .e-ctrl-btn .e-btn {
-          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
             height: 38px;
           }
         }
 
         & .e-switch-ctrl-btn .e-mode-switch-btn {
-          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
             height: 38px;
           }
         }

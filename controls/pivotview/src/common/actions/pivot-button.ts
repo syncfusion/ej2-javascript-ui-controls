@@ -1,5 +1,5 @@
 import { createElement, Draggable, DragEventArgs, remove, extend, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { EventHandler, MouseEventArgs, BlazorDragEventArgs, isBlazor, select } from '@syncfusion/ej2-base';
+import { EventHandler, MouseEventArgs, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, closest, Browser } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
@@ -65,12 +65,22 @@ export class PivotButton implements IAction {
             (this.parent as PivotFieldList).pivotGridModule.showValuesButton : this.parent.showValuesButton : false);
         if (((this.parent.dataSourceSettings.valueAxis === 'row' && args.axis === 'rows') ||
             (this.parent.dataSourceSettings.valueAxis === 'column' && args.axis === 'columns')) && showValuesButton && this.parent.dataSourceSettings.values.length > 1) {
-            valuePos = field.length;
-            if (isNullOrUndefined(PivotUtil.getFieldByName(this.parent.localeObj.getConstant('values'), field))) {
-                field.push({
-                    name: this.parent.localeObj.getConstant('values'), caption: this.parent.localeObj.getConstant('values'),
-                    axis: args.axis, showRemoveIcon: true, allowDragAndDrop: true
-                });
+            if (isNullOrUndefined(PivotUtil.getFieldByName('[Measures]', field))) {
+                let measureField: IFieldOptions = PivotUtil.getFieldByName('[Measures]', this.parent.dataSourceSettings.fieldMapping) as IFieldOptions;
+                let valueField: IFieldOptions = {
+                    name: '[Measures]', caption: this.parent.localeObj.getConstant('values'),
+                    axis: args.axis,
+                    showRemoveIcon: (measureField && 'showRemoveIcon' in measureField) ? measureField.showRemoveIcon : true,
+                    allowDragAndDrop: (measureField && 'allowDragAndDrop' in measureField) ? measureField.allowDragAndDrop : true,
+                };
+                if ((this.parent.dataSourceSettings.valueIndex === -1 || this.parent.dataSourceSettings.valueIndex > field.length)) {
+                    valuePos = field.length;
+                    field.push(valueField);
+                    this.parent.setProperties({ dataSourceSettings: { valueIndex: -1 } }, true);
+                } else {
+                    valuePos = this.parent.dataSourceSettings.valueIndex;
+                    field.splice(valuePos, 0, valueField);
+                }
             }
         }
         this.parentElement = this.parent.getModuleName() === 'pivotview' ? this.parent.element :
@@ -705,7 +715,7 @@ export class PivotButton implements IAction {
         document.body.appendChild(cloneElement);
         return cloneElement;
     }
-    private onDragStart(e: DragEventArgs & BlazorDragEventArgs): void {
+    private onDragStart(e: DragEventArgs): void {
         let element: Element = closest(e.element, '.' + cls.PIVOT_BUTTON_CLASS);
         let dragItem: HTMLElement = document.getElementById(this.parent.element.id + '_DragClone');
         let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(element.getAttribute('data-uid'), this.parent);
@@ -739,9 +749,6 @@ export class PivotButton implements IAction {
                     for (let axisContent of axis) {
                         addClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
                     }
-                }
-                if (isBlazor()) {
-                    e.bindEvents(e.dragElement);
                 }
             } else {
                 this.parent.isDragging = false;
@@ -890,25 +897,7 @@ export class PivotButton implements IAction {
         pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
             this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
         let fieldName: string = (args.target as HTMLElement).parentElement.id;
-        if (pivotObj && pivotObj.enableVirtualization && isBlazor() && pivotObj.dataType === 'pivot') {
-            let $this: PivotButton = this;
-            (pivotObj as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'fetchFieldMembers',
-                fieldName).then((data: any) => {
-                    let parsedData: any = JSON.parse(data.dateMembers);
-                    let dateMembers: any = [];
-                    let formattedMembers: any = {};
-                    let members: any = {};
-                    for (let i: number = 0; i < parsedData.length; i++) {
-                        dateMembers.push({ formattedText: parsedData[i].FormattedText, actualText: parsedData[i].ActualText });
-                        formattedMembers[parsedData[i].FormattedText] = {};
-                        members[parsedData[i].ActualText] = {};
-                    }
-                    $this.parent.engineModule.fieldList[fieldName].dateMember = dateMembers;
-                    $this.parent.engineModule.fieldList[fieldName].formattedMembers = formattedMembers;
-                    $this.parent.engineModule.fieldList[fieldName].members = members;
-                    $this.updateFilterEvents();
-                });
-        } else if (pivotObj.dataSourceSettings.mode === 'Server') {
+        if (pivotObj.dataSourceSettings.mode === 'Server') {
             if (this.parent.engineModule.fieldList[fieldName].members && Object.keys(this.parent.engineModule.fieldList[fieldName].members).length > 0) {
                 this.updateFilterEvents();
             } else {
@@ -1009,8 +998,8 @@ export class PivotButton implements IAction {
             type: type,
             measure: measure,
             condition: operator as Operators,
-            value1: filterType === 'date' && !isBlazor() ? new Date(operand1) : operand1 as string,
-            value2: filterType === 'date' && !isBlazor() ? new Date(operand2) : operand2 as string
+            value1: filterType === 'date' ? new Date(operand1) : operand1 as string,
+            value2: filterType === 'date' ? new Date(operand2) : operand2 as string
         };
         let filterObject: IFilter;
         if (this.parent.dataType === 'olap') {
@@ -1121,12 +1110,17 @@ export class PivotButton implements IAction {
                 if (target.parentElement.getAttribute('isvalue') === 'true') {
                     this.parent.setProperties({ dataSourceSettings: { values: [] } }, true);
                     if (this.parent.dataType === 'olap') {
-                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[measures]');
+                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
                     }
                 } else {
                     this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(fieldName);
+                    if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
+                        fieldInfo.position < this.parent.dataSourceSettings.valueIndex && ((this.parent.dataSourceSettings.valueAxis === 'row' &&
+                            observedArgs.axis === 'rows') || (this.parent.dataSourceSettings.valueAxis === 'column' && observedArgs.axis === 'columns'))) {
+                        this.parent.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }, true);
+                    }
                     if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
-                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[measures]');
+                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
                     }
                 }
                 if (this.parent.getModuleName() === 'pivotfieldlist') {

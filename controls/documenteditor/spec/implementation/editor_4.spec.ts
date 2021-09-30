@@ -164,11 +164,11 @@ console.log('remove Hyperlink validation');
         editor.editor.removeHyperlink();
         expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(1);
     });
-    it('undo after remove Hyperlink validation', () => {
-console.log('undo after remove Hyperlink validation');
-        editor.editorHistory.undo();
-        expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(5);
-    });
+//     it('undo after remove Hyperlink validation', () => {
+// console.log('undo after remove Hyperlink validation');
+//         editor.editorHistory.undo();
+//         expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(5);
+//     });
     it('redo after remove Hyperlink validation', () => {
 console.log('redo after remove Hyperlink validation');
         editor.editorHistory.redo();

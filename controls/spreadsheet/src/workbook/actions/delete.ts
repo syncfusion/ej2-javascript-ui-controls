@@ -1,7 +1,7 @@
 import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
-import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete, checkUniqueRange } from '../../workbook/common/index';
+import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
-import { SheetModel } from '../../workbook/base/index';
+import { SheetModel, checkUniqueRange } from '../../workbook/index';
 
 /**
  * The `WorkbookDelete` module is used to delete cells, rows, columns and sheets from workbook.
@@ -128,7 +128,9 @@ export class WorkbookDelete {
             if (args.start < frozenCol) {
                 frozenCol = args.end < frozenCol ? (args.end - args.start) + 1 : frozenCol - args.start;
                 frozenCol = args.model.frozenColumns - frozenCol;
-                this.parent.setSheetPropertyOnMute(args.model, 'frozenColumns', frozenCol); freezePane = true;
+                this.parent.setSheetPropertyOnMute(args.model, 'frozenColumns', frozenCol);
+                this.parent.updateTopLeftCell();
+                freezePane = true;
             }
             deletedCells = []; const curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {

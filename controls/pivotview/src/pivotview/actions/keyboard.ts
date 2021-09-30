@@ -106,29 +106,31 @@ export class KeyboardInteraction {
         return target;
     }
     private allpivotButtons(target: HTMLElement): HTMLElement[] {
-        let buttons: HTMLElement[];
-        let columnFilterValueGroup: HTMLElement = closest(target, '.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement;
-        let rowGroup: HTMLElement = closest(target, '.' + cls.GROUP_PIVOT_ROW) as HTMLElement;
-        let chartGroup: HTMLElement = closest(target, '.' + cls.CHART_GROUPING_BAR_CLASS) as HTMLElement;
-        let tableAxis: boolean = target.classList.contains(cls.ROWSHEADER);
-        let chartAxis: boolean;
-        let rowAxis: boolean;
-        let columnFilterValueAxis: boolean;
-        if (columnFilterValueGroup !== null) {
-            rowAxis = columnFilterValueGroup.classList.contains(cls.GRID_GROUPING_BAR_CLASS);
-        } else if (rowGroup !== null) {
-            columnFilterValueAxis = rowGroup.classList.contains(cls.GROUP_PIVOT_ROW);
-        } else if (chartGroup !== null) {
-            chartAxis = chartGroup.classList.contains(cls.CHART_GROUPING_BAR_CLASS);
-        }
-        if (rowAxis || columnFilterValueAxis || tableAxis) {
-            /* eslint-disable */
-            let groupingbarButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
-            let headerButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GROUP_PIVOT_ROW).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
-            buttons = groupingbarButton.concat(headerButton);
-        }
-        else if (chartAxis) {
-            buttons = [].slice.call(this.parent.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+        let buttons: HTMLElement[] = [];
+        if (target && this.parent.showGroupingBar) {
+            let columnFilterValueGroup: HTMLElement = closest(target, '.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement;
+            let rowGroup: HTMLElement = closest(target, '.' + cls.GROUP_PIVOT_ROW) as HTMLElement;
+            let chartGroup: HTMLElement = closest(target, '.' + cls.CHART_GROUPING_BAR_CLASS) as HTMLElement;
+            let tableAxis: boolean = target.classList.contains(cls.ROWSHEADER);
+            let chartAxis: boolean;
+            let rowAxis: boolean;
+            let columnFilterValueAxis: boolean;
+            if (columnFilterValueGroup !== null) {
+                rowAxis = columnFilterValueGroup.classList.contains(cls.GRID_GROUPING_BAR_CLASS);
+            } else if (rowGroup !== null) {
+                columnFilterValueAxis = rowGroup.classList.contains(cls.GROUP_PIVOT_ROW);
+            } else if (chartGroup !== null) {
+                chartAxis = chartGroup.classList.contains(cls.CHART_GROUPING_BAR_CLASS);
+            }
+            if (rowAxis || columnFilterValueAxis || tableAxis) {
+                /* eslint-disable */
+                let groupingbarButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+                let headerButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GROUP_PIVOT_ROW).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+                buttons = groupingbarButton.concat(headerButton);
+            }
+            else if (chartAxis) {
+                buttons = [].slice.call(this.parent.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+            }
         }
         /* eslint-enable */
         return buttons;
@@ -404,7 +406,7 @@ export class KeyboardInteraction {
                 e.preventDefault();
                 return;
             }
-        } else if (target.classList.contains('e-numerictextbox') && e.action === 'rightArrow' || e.action === 'leftArrow') {
+        } else if (target.classList.contains('e-numerictextbox') && (e.action === 'rightArrow' || e.action === 'leftArrow')) {
             (target as HTMLElement).click();
         }
 

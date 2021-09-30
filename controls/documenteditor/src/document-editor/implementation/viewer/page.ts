@@ -1287,6 +1287,10 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
+     public isContainInsideTable: boolean = false;
+     /**
+      * @private
+      */
     get isGridUpdated(): boolean {
         return ((this.flags & 0x4) >> 2) !== 0;
     }
@@ -1792,7 +1796,7 @@ export class TableWidget extends BlockWidget {
                 if (cell.cellFormat.preferredWidthType === 'Auto' || cell.cellFormat.cellWidth === 0) {
                     cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
                 }
-                //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
+                 //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
             }
             if (rowFormat.gridAfter > 0) {
                 rowFormat.afterWidth = this.tableHolder.getCellWidth(0, rowFormat.gridAfter, tableWidth);

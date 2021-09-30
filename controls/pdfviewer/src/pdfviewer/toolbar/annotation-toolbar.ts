@@ -595,23 +595,23 @@ export class AnnotationToolbar {
             let items: any[];
             items = [
                 // eslint-disable-next-line max-len
-                { prefixIcon: 'e-pv-comment-icon e-pv-icon', className: 'e-pv-comment-container', id: this.pdfViewer.element.id + '_comment', align: 'Left' },
+                { prefixIcon: 'e-pv-comment-icon e-pv-icon', className: 'e-pv-comment-container', id: this.pdfViewer.element.id + '_comment' },
                 { type: 'Separator', align: 'Left' },
                 // eslint-disable-next-line max-len
-                { prefixIcon: 'e-pv-highlight-icon e-pv-icon', className: 'e-pv-highlight-container', id: this.pdfViewer.element.id + '_highlight', align: 'Left' },
+                { prefixIcon: 'e-pv-highlight-icon e-pv-icon', className: 'e-pv-highlight-container', id: this.pdfViewer.element.id + '_highlight' },
                 // eslint-disable-next-line max-len
-                { prefixIcon: 'e-pv-underline-icon e-pv-icon', className: 'e-pv-underline-container', id: this.pdfViewer.element.id + '_underline', align: 'Left' },
+                { prefixIcon: 'e-pv-underline-icon e-pv-icon', className: 'e-pv-underline-container', id: this.pdfViewer.element.id + '_underline' },
                 // eslint-disable-next-line max-len
-                { prefixIcon: 'e-pv-strikethrough-icon e-pv-icon', className: 'e-pv-strikethrough-container', id: this.pdfViewer.element.id + '_strikethrough', align: 'Left' },
+                { prefixIcon: 'e-pv-strikethrough-icon e-pv-icon', className: 'e-pv-strikethrough-container', id: this.pdfViewer.element.id + '_strikethrough' },
                 { type: 'Separator', align: 'Left' },
                 // eslint-disable-next-line max-len
-                { prefixIcon: 'e-pv-annotation-shape-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_annotation_shapes', align: 'Left' },
+                { prefixIcon: 'e-pv-annotation-shape-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_annotation_shapes'},
                 { type: 'Separator', align: 'Left' },
                 // eslint-disable-next-line max-len
-                { prefixIcon: 'e-pv-annotation-calibrate-icon e-pv-icon', className: 'e-pv-annotation-calibrate-container', id: this.pdfViewer.element.id + '_annotation_calibrate', align: 'Left' },
+                { prefixIcon: 'e-pv-annotation-calibrate-icon e-pv-icon', className: 'e-pv-annotation-calibrate-container', id: this.pdfViewer.element.id + '_annotation_calibrate' },
                 { type: 'Separator', align: 'Left' },
                 // eslint-disable-next-line max-len
-                { prefixIcon: 'e-pv-freetext-icon e-pv-icon', className: 'e-pv-annotation-freetextedit-container', id: this.pdfViewer.element.id + '_annotation_freeTextEdit', align: 'Left' },
+                { prefixIcon: 'e-pv-freetext-icon e-pv-icon', className: 'e-pv-annotation-freetextedit-container', id: this.pdfViewer.element.id + '_annotation_freeTextEdit' },
                 { type: 'Separator', align: 'Left' },
                 { template: stampTemplate },
                 { type: 'Separator', align: 'Left' },
@@ -852,6 +852,7 @@ export class AnnotationToolbar {
                                 let signatureImage: any;
                                 if (signatureCollection.image[0].signatureType === 'SignatureText') {
                                     signatureImage = createElement('div');
+                                    signatureImage.classList.add('e-pv-align-border-div');
                                     (signatureImage as HTMLElement).innerText = collectionKey;
                                     (signatureImage as HTMLElement).style.fontFamily = signatureCollection.image[0].fontFamily;
                                     (signatureImage as HTMLElement).style.fontSize = '15px';
@@ -896,8 +897,8 @@ export class AnnotationToolbar {
                     }
                     let addInitialSpan: HTMLElement = createElement('button');
                     addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
-                    addInitialSpan.textContent = 'ADD SIGNATURE';
-                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('HandwrittenSignatureDialogHeaderText');
+                    addInitialSpan.style.width = "130px";
                     addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
                     args.element.appendChild(addInitialSpan);
@@ -930,6 +931,7 @@ export class AnnotationToolbar {
                                 let signatureImage: any;
                                 if (signatureCollection.image[0].signatureType === 'SignatureText') {
                                     signatureImage = createElement('div');
+                                    signatureImage.classList.add('e-pv-align-border-div');
                                     (signatureImage as HTMLElement).innerText = collectionKey;
                                     (signatureImage as HTMLElement).style.fontFamily = signatureCollection.image[0].fontFamily;
                                     (signatureImage as HTMLElement).style.fontSize = '15px';
@@ -978,8 +980,8 @@ export class AnnotationToolbar {
                     this.isSignatureIteam = false;
                     let addInitialSpan: HTMLElement = createElement('button');
                     addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
-                    addInitialSpan.textContent = 'ADD INITIAL';
-                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('HandwrittenInitialDialogHeaderText');
+                    addInitialSpan.style.width = "130px";
                     addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
                     args.element.appendChild(addInitialSpan);
@@ -997,7 +999,9 @@ export class AnnotationToolbar {
             }
         };
         const drpDownBtn: DropDownButton = new DropDownButton(saveOptions);
-
+        if (this.pdfViewer.enableRtl) {
+            drpDownBtn.enableRtl = this.pdfViewer.enableRtl;
+        }
         drpDownBtn.appendTo(this.handWrittenSignatureItem);
 
     }
@@ -1159,7 +1163,7 @@ export class AnnotationToolbar {
         event.target.parentElement.remove();
     }
     private getTemplate(elementName: string, id: string, className: string): string {
-        const element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id, styles:'text-align:left' });
+        const element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id});
         if (className) {
             element.className = className;
         }
@@ -1176,7 +1180,7 @@ export class AnnotationToolbar {
 
         if (this.pdfViewer.stampSettings.dynamicStamps && this.pdfViewer.stampSettings.dynamicStamps.length > 0) {
             const dynamicStamps: Object[] = [];
-            items.push({ text: this.pdfViewer.localeObj.getConstant('Dynamic'), items: dynamicStamps });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Dynamic'), label: 'Dynamic', items: dynamicStamps });
             this.pdfViewer.stampSettings.dynamicStamps.forEach((stampItem: DynamicStampItem, index: number) => {
                 let name: string = DynamicStampItem[stampItem];
                 switch (name) {
@@ -1184,13 +1188,13 @@ export class AnnotationToolbar {
                         name = 'Not Approved';
                         break;
                 }
-                dynamicStamps.push({ text: name });
+                dynamicStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
             });
         }
 
         if (this.pdfViewer.stampSettings.signStamps && this.pdfViewer.stampSettings.signStamps.length > 0) {
             const signStamps: Object[] = [];
-            items.push({ text: this.pdfViewer.localeObj.getConstant('Sign Here'), items: signStamps });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Sign Here'), label: 'Sign Here', items: signStamps });
             this.pdfViewer.stampSettings.signStamps.forEach((stampItem: SignStampItem, index: number) => {
                 let name: string = SignStampItem[stampItem];
                 switch (name) {
@@ -1201,12 +1205,12 @@ export class AnnotationToolbar {
                         name = 'Sign Here';
                         break;
                 }
-                signStamps.push({ text: name });
+                signStamps.push({ text: this.pdfViewer.localeObj.getConstant(name) , label: name});
             });
         }
         if (this.pdfViewer.stampSettings.standardBusinessStamps && this.pdfViewer.stampSettings.standardBusinessStamps.length > 0) {
             const standardsBusinessStamps: Object[] = [];
-            items.push({ text: this.pdfViewer.localeObj.getConstant('Standard Business'), items: standardsBusinessStamps });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Standard Business'), label: 'Standard Business', items: standardsBusinessStamps });
             this.pdfViewer.stampSettings.standardBusinessStamps.forEach((stampItem: StandardBusinessStampItem, index: number) => {
                 let name: string = StandardBusinessStampItem[stampItem];
                 switch (name) {
@@ -1229,14 +1233,14 @@ export class AnnotationToolbar {
                         name = 'Information Only';
                         break;
                 }
-                standardsBusinessStamps.push({ text: name });
+                standardsBusinessStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
             });
         }
         if (this.pdfViewer.customStampSettings.enableCustomStamp && !Browser.isDevice) {
             if (items.length > 0) {
                 items.push({ separator: true });
             }
-            items.push({ text: this.pdfViewer.localeObj.getConstant('Custom Stamp'), items: [] });
+            items.push({ text: this.pdfViewer.localeObj.getConstant('Custom Stamp'), label: 'Custom Stamp', items: [] });
         }
         this.stampMenu = [
             {
@@ -1342,10 +1346,10 @@ export class AnnotationToolbar {
                     this.pdfViewerBase.stampAdded = true;
                     if (this.stampParentID === this.pdfViewer.localeObj.getConstant('Dynamic')) {
                         this.pdfViewerBase.isDynamicStamp = true;
-                        this.pdfViewer.annotationModule.stampAnnotationModule.retrieveDynamicStampAnnotation(args.item.text);
+                        this.pdfViewer.annotationModule.stampAnnotationModule.retrieveDynamicStampAnnotation((args.item as any).label);
                     } else {
                         this.pdfViewerBase.isDynamicStamp = false;
-                        this.pdfViewer.annotationModule.stampAnnotationModule.retrievestampAnnotation(args.item.text);
+                        this.pdfViewer.annotationModule.stampAnnotationModule.retrievestampAnnotation((args.item as any).label);
                     }
                     if (Browser.isDevice) {
                         this.stampToolMobileForMobile(this.pdfViewer.element.id + '_annotation_stamp');
@@ -1355,6 +1359,9 @@ export class AnnotationToolbar {
         };
         this.menuItems = new Menu(menuOptions,  '#' + this.pdfViewer.element.id + 'contextMenuElement');
         contextMenuElement.parentElement.classList.add('e-pv-stamp');
+        if (this.pdfViewer.enableRtl) {
+            this.menuItems.enableRtl = true;
+        }
         return contextMenuElement;
     }
     /**
@@ -1363,7 +1370,7 @@ export class AnnotationToolbar {
     public createCustomStampElement(): void {
         // eslint-disable-next-line
         let stampImage: any = createElement('input', { id: this.pdfViewer.element.id + '_stampElement', attrs: { 'type': 'file' } });
-        stampImage.setAttribute('accept', '.jpg,.jpeg');
+        stampImage.setAttribute('accept', '.jpg,.jpeg,.png');
         stampImage.style.position = 'absolute';
         stampImage.style.left = '0px';
         stampImage.style.top = '0px';
@@ -1462,7 +1469,7 @@ export class AnnotationToolbar {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.fontFamilyElement = this.pdfViewerBase.getElement('_annotation_fontname');
             this.createDropDownListForFamily(this.fontFamilyElement);
-            this.fontFamilyElement.style.textAlign = 'left';
+            //this.fontFamilyElement.style.textAlign = 'left';
             this.fontFamilyElement.addEventListener('change', (): void => {
                 this.onFontFamilyChange.bind(this);
             });
@@ -2422,9 +2429,9 @@ export class AnnotationToolbar {
         let items: any[] = [];
         items.push({ prefixIcon: 'e-pv-left-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_left_align', align: 'Left', value: 'Left', click: this.onClickTextAlignment.bind(this) });
         // eslint-disable-next-line max-len
-        items.push({ prefixIcon: 'e-pv-right-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_right_align', align: 'Left', value: 'Right', click: this.onClickTextAlignment.bind(this) });
-        // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-center-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_center_align', align: 'Left', value: 'Center', click: this.onClickTextAlignment.bind(this) });
+        // eslint-disable-next-line max-len
+        items.push({ prefixIcon: 'e-pv-right-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_right_align', align: 'Left', value: 'Right', click: this.onClickTextAlignment.bind(this) });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-justfiy-align-icon e-pv-icon', cssClass: '', id: this.pdfViewer.element.id + '_justify_align', align: 'Left', value: 'Justify', click: this.onClickTextAlignment.bind(this) });
         // eslint-disable-next-line max-len
@@ -2451,14 +2458,26 @@ export class AnnotationToolbar {
     private createDropDownListForSize(fontSelectElement: HTMLElement): void {
         // eslint-disable-next-line max-len
         const fontSize: string[] = ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '36px', '48px', '72px', '96px'];
-        this.fontSize = new ComboBox({
-            dataSource: fontSize,
-            cssClass: 'e-pv-prop-dropdown',
-            allowCustom: true,
-            showClearButton: false,
-            width: '80px',
-            popupWidth: '100px'
-        });
+        if(!this.pdfViewer.enableRtl){
+            this.fontSize = new ComboBox({
+                dataSource: fontSize,
+                cssClass: 'e-pv-prop-dropdown',
+                allowCustom: true,
+                showClearButton: false,
+                width: '80px',
+                popupWidth: '100px'
+            });
+        }else{
+            this.fontSize = new ComboBox({
+                dataSource: fontSize,
+                cssClass: 'e-pv-prop-dropdown-rtl',
+                allowCustom: true,
+                showClearButton: false,
+                width: '80px',
+                popupWidth: '100px',
+                enableRtl: true
+            });
+        }
         this.fontSize.value = '16px';
         this.fontSize.appendTo(fontSelectElement);
         this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font size'));
@@ -2470,17 +2489,32 @@ export class AnnotationToolbar {
     private createDropDownListForFamily(fontSelectElement: HTMLElement): void {
         const fontStyle: { [key: string]: Object }[] = [{ FontName: 'Helvetica' },
         { FontName: 'Courier' }, { FontName: 'Symbol' }, { FontName: 'Times New Roman' }];
-        this.fontFamily = new ComboBox({
-            dataSource: fontStyle,
-            query: new Query().select(['FontName']),
-            fields: { text: 'FontName', value: 'FontName' },
-            cssClass: 'e-pv-prop-dropdown',
-            itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
-            allowCustom: true,
-            showClearButton: false,
-            width: '100px',
-            popupWidth: '190px'
-        });
+        if(!this.pdfViewer.enableRtl){
+            this.fontFamily = new ComboBox({
+                dataSource: fontStyle,
+                query: new Query().select(['FontName']),
+                fields: { text: 'FontName', value: 'FontName' },
+                cssClass: 'e-pv-prop-dropdown',
+                itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
+                allowCustom: true,
+                showClearButton: false,
+                width: '110px',
+                popupWidth: '190px'
+            });
+        }else{
+            this.fontFamily = new ComboBox({
+                dataSource: fontStyle,
+                query: new Query().select(['FontName']),
+                fields: { text: 'FontName', value: 'FontName' },
+                cssClass: 'e-pv-prop-dropdown-rtl',
+                itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
+                allowCustom: true,
+                showClearButton: false,
+                width: '110px',
+                popupWidth: '190px',
+                enableRtl:true
+            });
+        }
         this.fontFamily.isStringTemplate = true;
         this.fontFamily.value = 'Helvetica';
         this.fontFamily.appendTo(fontSelectElement);
@@ -4374,5 +4408,10 @@ export class AnnotationToolbar {
         if (this.UnderlineElement.classList.contains('e-pv-select')) {
             this.primaryToolbar.deSelectItem(this.UnderlineElement);
         }
+    }
+    private AnnotationSliderOpened(): void {
+        let opacity: number = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.opacity * 100;
+        let thickness: number = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeWidth;
+        this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateAnnotationSlider', opacity, thickness);
     }
 }

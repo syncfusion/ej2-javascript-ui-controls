@@ -1,4 +1,4 @@
-import { Toast, ToastClickEventArgs, ToastOpenArgs, ToastBeforeOpenArgs, ToastCloseArgs, BeforeSanitizeHtmlArgs } from "../../src/index";
+import { Toast, ToastClickEventArgs, ToastOpenArgs, ToastBeforeOpenArgs, ToastCloseArgs, BeforeSanitizeHtmlArgs, ToastUtility } from "../../src/index";
 import { isNullOrUndefined as isNOU, MouseEventArgs } from "@syncfusion/ej2-base";
 import { isVisible, classList, TouchEventArgs, SwipeEventArgs, Browser } from "@syncfusion/ej2-base";
 import { profile, inMB, getMemoryProfile } from './common.spec';
@@ -29,6 +29,124 @@ const TOPCENTER: string = 'e-toast-top-center';
 
 let iosChromeUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) ' +
     'AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1';
+
+
+describe("Toast Util", () => {
+    let toastObj: Toast;
+    beforeAll(() => {
+        toastObj = ToastUtility.show({
+            title: 'Toast Title',
+            content: 'Toast Content',
+            timeOut: 5000,
+            showCloseButton: true,
+            buttons: [{
+                model: { content: 'Close Toast' }
+            }]
+        });
+    });
+    it("Toast Util using toast modal", () => {
+        debugger;
+        expect(!isNOU(document.querySelector('.e-toast-util'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-message'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-title'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-content'))).toBe(true);
+        expect(document.querySelector('.e-toast-content').innerHTML === 'Toast Content').toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-actions'))).toBe(true);
+        expect((document.querySelector('.e-toast-actions') as any).innerText === 'Close Toast').toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-close-icon'))).toBe(true);
+    });
+    afterAll(() => {
+        toastObj.destroy();
+        document.body.innerHTML = "";
+    });
+});
+
+describe("Toast Util", () => {
+    let toastObj: Toast;
+    beforeAll(() => {
+        toastObj = ToastUtility.show('Toast Content Message');
+    });
+    it("Toast Util using string value", () => {
+        expect(!isNOU(document.querySelector('.e-toast-util'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-message'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-content'))).toBe(true);
+        expect(document.querySelector('.e-toast-content').innerHTML === 'Toast Content Message').toBe(true);
+    });
+    afterAll(() => {
+        toastObj.destroy();
+        document.body.innerHTML = "";
+    });
+});
+
+describe("Toast Util", () => {
+    let toastObj: Toast;
+    beforeAll(() => {
+        toastObj = ToastUtility.show('Toast Content Success Message', 'Success');
+    });
+    it("Toast Util using string value with Success Type", () => {
+        expect(!isNOU(document.querySelector('.e-toast-util'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-success'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-success-icon'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-content'))).toBe(true);
+        expect(document.querySelector('.e-toast-content').innerHTML === 'Toast Content Success Message').toBe(true);
+    });
+    afterAll(() => {
+        toastObj.destroy();
+        document.body.innerHTML = "";
+    });
+});
+
+describe("Toast Util", () => {
+    let toastObj: Toast;
+    beforeAll(() => {
+        toastObj = ToastUtility.show('Toast Content Error Message', 'Error');
+    });
+    it("Toast Util using string value with Error Type", () => {
+        expect(!isNOU(document.querySelector('.e-toast-util'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-danger'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-error-icon'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-content'))).toBe(true);
+        expect(document.querySelector('.e-toast-content').innerHTML === 'Toast Content Error Message').toBe(true);
+    });
+    afterAll(() => {
+        toastObj.destroy();
+        document.body.innerHTML = "";
+    });
+});
+describe("Toast Util", () => {
+    let toastObj: Toast;
+    beforeAll(() => {
+        toastObj = ToastUtility.show('Toast Content Warning Message', 'Warning');
+    });
+    it("Toast Util using string value with warning type", () => {
+        expect(!isNOU(document.querySelector('.e-toast-util'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-warning'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-warning-icon'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-content'))).toBe(true);
+        expect(document.querySelector('.e-toast-content').innerHTML === 'Toast Content Warning Message').toBe(true);
+    });
+    afterAll(() => {
+        toastObj.destroy();
+        document.body.innerHTML = "";
+    });
+});
+describe("Toast Util", () => {
+    let toastObj: Toast;
+    beforeAll(() => {
+        toastObj = ToastUtility.show('Toast Content Information Message', 'Information');
+    });
+    it("Toast Util using string value with information type", () => {
+        expect(!isNOU(document.querySelector('.e-toast-util'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-info'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-info-icon'))).toBe(true);
+        expect(!isNOU(document.querySelector('.e-toast-content'))).toBe(true);
+        expect(document.querySelector('.e-toast-content').innerHTML === 'Toast Content Information Message').toBe(true);
+    });
+    afterAll(() => {
+        toastObj.destroy();
+        document.body.innerHTML = "";
+    });
+});
 
 describe("Toast Testing", () => {
     beforeAll(() => {
@@ -1923,4 +2041,3 @@ describe("EJ2-33526 XSS attack prevent with enableHtmlSanitizer as true", () => 
             }, 100);
         });
     });
-

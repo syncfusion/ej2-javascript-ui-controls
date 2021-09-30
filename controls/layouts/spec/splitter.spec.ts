@@ -4180,9 +4180,9 @@ describe('Splitter Control', () => {
         // keyboard accessibility testing
     describe('on key press', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
-        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
-        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 }, preventDefault: function () { }, };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 }, preventDefault: function () { }, };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4215,9 +4215,9 @@ describe('Splitter Control', () => {
 
     describe('on key press', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 } };
-        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38, keyCode: 38 } };
-        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40, keyCode: 40 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 }, preventDefault: function () { }, };
+        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38, keyCode: 38 }, preventDefault: function () { }, };
+        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40, keyCode: 40 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4249,7 +4249,7 @@ describe('Splitter Control', () => {
     });
     describe('on key press', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 },preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4271,7 +4271,7 @@ describe('Splitter Control', () => {
     });
     describe('on pane collapsed', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 },preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4294,9 +4294,9 @@ describe('Splitter Control', () => {
 
     describe('on key press when size %', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
-        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
-        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 }, preventDefault: function () { }, };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 }, preventDefault: function () { }, };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4328,9 +4328,9 @@ describe('Splitter Control', () => {
     });
     describe('on key press when size % vertical', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
-        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38 } };
-        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 }, preventDefault: function () { }, };
+        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38 }, preventDefault: function () { }, };
+        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4363,9 +4363,9 @@ describe('Splitter Control', () => {
 
     describe('on key press when no-size vertical', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
-        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38 } };
-        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 }, preventDefault: function () { }, };
+        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38 }, preventDefault: function () { }, };
+        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4398,9 +4398,9 @@ describe('Splitter Control', () => {
 
     describe('on key press when size % vertical', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
-        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
-        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 }, preventDefault: function () { }, };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 }, preventDefault: function () { }, };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -4433,9 +4433,9 @@ describe('Splitter Control', () => {
 
     describe('on key press when no-size horizont', () => {
         let splitterObj: any;
-        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
-        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
-        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 }, preventDefault: function () { }, };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 }, preventDefault: function () { }, };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');
@@ -5133,8 +5133,8 @@ describe('Splitter Control', () => {
 
      describe('EJ2-35884 Keyboasrd navigation', () => {
         let splitterObj: any;
-        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
-        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 }, preventDefault: function () { }, };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 }, preventDefault: function () { }, };
         beforeAll((): void => {
             let element: HTMLElement = createElement('div', { id: 'default' });
             let child1: HTMLElement = createElement('div');

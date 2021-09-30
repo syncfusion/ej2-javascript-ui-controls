@@ -785,9 +785,9 @@ export class MeasureAnnotation {
                 this.scaleRatioDialog.enableRtl = true;
             }
             this.scaleRatioDialog.appendTo(dialogDiv);
-            this.convertUnit.content = this.createContent(this.unit).outerHTML;
-            this.dispUnit.content = this.createContent(this.displayUnit).outerHTML;
-            this.depthUnit.content = this.createContent(this.displayUnit).outerHTML;
+            this.convertUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.unit)).outerHTML;
+            this.dispUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.displayUnit)).outerHTML;
+            this.depthUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.displayUnit)).outerHTML;
         } else {
             this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenScaleRatioDialog');
         }
@@ -797,7 +797,7 @@ export class MeasureAnnotation {
         const element: HTMLElement = createElement('div');
         const elementID: string = this.pdfViewer.element.id;
         // eslint-disable-next-line max-len
-        const items: { [key: string]: Object }[] = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }, { text: 'ft_in' }, { text: 'm' }];
+        const items: { [key: string]: Object }[] = [{ text: this.pdfViewer.localeObj.getConstant('pt'), label: 'pt' }, { text: this.pdfViewer.localeObj.getConstant('in'), label: 'in' }, { text: this.pdfViewer.localeObj.getConstant('mm'), label: 'mm' }, { text: this.pdfViewer.localeObj.getConstant('cm'), label: 'cm' }, { text: this.pdfViewer.localeObj.getConstant('p'), label: 'p' }, { text: this.pdfViewer.localeObj.getConstant('ft'), label: 'ft' }, { text: this.pdfViewer.localeObj.getConstant('ft_in'), label: 'ft_in' }, { text: this.pdfViewer.localeObj.getConstant('m'), label: 'm' }];
         const labelText: HTMLElement = createElement('div', { id: elementID + '_scale_ratio_label', className: 'e-pv-scale-ratio-text' });
         labelText.textContent = this.pdfViewer.localeObj.getConstant('Scale Ratio');
         element.appendChild(labelText);
@@ -897,8 +897,23 @@ export class MeasureAnnotation {
             this.volumeDepth = this.depthTextBox.value;
             this.scaleRatioString = this.sourceTextBox.value + ' ' + this.unit + ' = ' + this.destTextBox.value + ' ' + this.displayUnit;
             this.scaleRatioDialog.hide();
-            this.updateMeasureValues(this.scaleRatioString, this.displayUnit, this.unit, this.volumeDepth);
+            let originalUnit: CalibrationUnit; 
+            let originalDisplayUnit: CalibrationUnit; 
+            originalUnit = this.restoreUnit(this.convertUnit);
+            originalDisplayUnit = this.restoreUnit(this.dispUnit);
+            this.updateMeasureValues(this.scaleRatioString, originalDisplayUnit, originalUnit, this.volumeDepth);
         }
+    }
+
+    private restoreUnit(dropdownObject: DropDownButton): CalibrationUnit {
+        let calibUnit: CalibrationUnit;
+        for (let i: number = 0; i < dropdownObject.items.length; i++) {
+            let convertUnitItem = dropdownObject.items[i];
+            if(this.unit === convertUnitItem.text) {
+                calibUnit = (convertUnitItem as any).label; 
+            }
+        }
+        return calibUnit;
     }
 
     /**
@@ -1228,21 +1243,21 @@ export class MeasureAnnotation {
                         inchValue = calculateValue[1];
                     }
                     if (!inchValue) {
-                        return (calculateValue[0] + ' sq ft');
+                        return (calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('sq') + ' ' + this.pdfViewer.localeObj.getConstant('ft'));
                     } else {
-                        return (calculateValue[0] + ' sq ft ' + inchValue + ' in');
+                        return (calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('sq') + ' ' + this.pdfViewer.localeObj.getConstant('ft') + ' ' + inchValue + ' ' + this.pdfViewer.localeObj.getConstant('in'));
                     }
                 } else {
-                    return(calculateValue[0] + ' sq ft');
+                    return(calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('sq') + ' ' + this.pdfViewer.localeObj.getConstant('ft'));
                 }
             } else {
-                return (Math.round(area * 100) / 100) + ' sq in';
+                return (Math.round(area * 100) / 100) + ' ' + this.pdfViewer.localeObj.getConstant('sq') + ' ' + this.pdfViewer.localeObj.getConstant('in');
             }
         }
         if (values.unit === 'm') {
-            return ((area * 100) / 100) + ' sq ' + values.unit;
+            return ((area * 100) / 100) + ' ' + this.pdfViewer.localeObj.getConstant('sq') + ' ' + this.pdfViewer.localeObj.getConstant(values.unit);
         }
-        return (Math.round(area * 100) / 100) + ' sq ' + values.unit;
+        return (Math.round(area * 100) / 100) + ' ' + this.pdfViewer.localeObj.getConstant('sq') + ' ' + this.pdfViewer.localeObj.getConstant(values.unit);
     }
 
     private getArea(points: PointModel[], factor: number, unit: string): number {
@@ -1295,18 +1310,18 @@ export class MeasureAnnotation {
                         inchValue = calculateValue[1];
                     }
                     if (!inchValue) {
-                        return (calculateValue[0] + ' cu ft');
+                        return (calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('cu') + ' ' + this.pdfViewer.localeObj.getConstant('ft'));
                     } else {
-                        return (calculateValue[0] + ' cu ft ' + inchValue + ' in');
+                        return (calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('cu') + ' ' + this.pdfViewer.localeObj.getConstant('ft') + ' ' + inchValue + ' ' + this.pdfViewer.localeObj.getConstant('in'));
                     }
                 } else {
-                    return(calculateValue[0] + ' cu ft');
+                    return(calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('cu') + ' ' + this.pdfViewer.localeObj.getConstant('ft'));
                 }
             } else {
-                return (Math.round(volume * 100) / 100) + ' cu in';
+                return (Math.round(volume * 100) / 100) + ' ' + this.pdfViewer.localeObj.getConstant('cu') + ' ' + this.pdfViewer.localeObj.getConstant('in');
             }
         }
-        return (Math.round(volume * 100) / 100) + ' cu ' + values.unit;
+        return (Math.round(volume * 100) / 100) + ' ' + this.pdfViewer.localeObj.getConstant('cu') + ' ' + this.pdfViewer.localeObj.getConstant(values.unit);
     }
 
     /**
@@ -1368,18 +1383,18 @@ export class MeasureAnnotation {
                         inchValue = calculateValue[1];
                     }
                     if (!inchValue) {
-                        convertedValue = calculateValue[0] + ' ft';
+                        convertedValue = calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('ft');
                     } else {
-                        convertedValue = calculateValue[0] + ' ft ' + inchValue + ' in';
+                        convertedValue = calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('ft') + ' ' + inchValue + ' ' + this.pdfViewer.localeObj.getConstant('in');
                     }
                 } else {
-                    convertedValue = calculateValue[0] + ' ft';
+                    convertedValue = calculateValue[0] + ' ' + this.pdfViewer.localeObj.getConstant('ft');
                 }
             } else {
-                convertedValue = Math.round((value * factor) * 100) / 100 + '  in';
+                convertedValue = Math.round((value * factor) * 100) / 100 + ' ' + this.pdfViewer.localeObj.getConstant('in');
             }
         } else {
-            convertedValue = Math.round((value * factor) * 100) / 100 + ' ' + unit;
+            convertedValue = Math.round((value * factor) * 100) / 100 + ' ' + this.pdfViewer.localeObj.getConstant(unit);
         }
         return convertedValue;
     }
@@ -1737,10 +1752,10 @@ export class MeasureAnnotation {
                 if(annotationType == 'Volume')
                 {
                     area = area * ((values.depth * this.convertUnitToPoint(values.unit)) * values.factor) * values.ratio;
-                    notes = Math.round(area * 100) / 100 + 'cu '+ values.unit;
+                    notes = Math.round(area * 100) / 100 + this.pdfViewer.localeObj.getConstant('cu')+ ' ' + this.pdfViewer.localeObj.getConstant(values.unit);
                 }
                 else
-                    notes = Math.round(area * 100) / 100 + 'sq '+ values.unit;
+                    notes = Math.round(area * 100) / 100 + this.pdfViewer.localeObj.getConstant('sq')+ ' ' + this.pdfViewer.localeObj.getConstant(values.unit);
             }
         }       
 

@@ -3292,6 +3292,13 @@ export interface PdfViewerModel extends ComponentModel{
     enablePrint?: boolean;
 
     /**
+     * If it is set as FALSE, will suppress the page rotation of Landscape document on print action. By default it is TRUE.
+     *
+     * @default true
+     */
+    enablePrintRotation?: boolean;
+
+    /**
      * Enables or disables the thumbnail view in the PDF viewer
      *
      * @default true

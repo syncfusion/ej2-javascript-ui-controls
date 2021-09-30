@@ -4,7 +4,10 @@
  */
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, EJ2Instance, ScheduleModel } from '../../../src/schedule/index';
+import {
+    Schedule, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, EJ2Instance, ScheduleModel,
+    PopupOpenEventArgs, CellClickEventArgs
+} from '../../../src/schedule/index';
 import * as events from '../../../src/schedule/base/constant';
 import { defaultData, resourceData, resourceGroupData, testBlockData, generateAllDayData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
@@ -43,7 +46,7 @@ describe('Vertical View Event Render Module', () => {
         });
 
         it('Refreshing rendered events', () => {
-            schObj.notify(events.dataReady, {});
+            schObj.refreshEvents(false);
             const elements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(elements.length).toBeGreaterThan(0);
         });
@@ -208,6 +211,44 @@ describe('Vertical View Event Render Module', () => {
         it('Checking appointment element', () => {
             const dayWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(dayWrapper[0].childElementCount).toBeGreaterThan(0);
+        });
+    });
+
+    describe('Quick Popup and Editor Window in RTL Mode', () => {
+        let schObj: Schedule;
+        beforeEach((done: DoneFn) => {
+            const model: ScheduleModel = { height: '500px', enableRtl: true, selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(model, defaultData, done);
+        });
+        afterEach(() => {
+            util.destroy(schObj);
+        });
+        it('event double click when RTL enabled', () => {
+            let popupType: string;
+            expect(schObj.eventsData.length).toEqual(43);
+            schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                popupType = args.type;
+            };
+            const appElement: HTMLElement = schObj.element.querySelectorAll('[data-id ="Appointment_9"]')[0] as HTMLElement;
+            util.triggerMouseEvent(appElement, 'click');
+            expect(popupType).toEqual('QuickInfo');
+            util.triggerMouseEvent(appElement, 'dblclick');
+            expect(popupType).toEqual('Editor');
+        });
+        it('cell double click when RTL enabled', () => {
+            let cellStartTime: number;
+            let cellEndTime: number;
+            let eventName: string;
+            schObj.cellDoubleClick = (args: CellClickEventArgs) => {
+                cellStartTime = args.startTime.getTime();
+                cellEndTime = args.endTime.getTime();
+                eventName = args.name;
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[130] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[130] as HTMLElement, 'dblclick');
+            expect(cellStartTime).toEqual(new Date(2017, 10, 2, 9, 0).getTime());
+            expect(cellEndTime).toEqual(new Date(2017, 10, 2, 9, 30).getTime());
+            expect(eventName).toEqual('cellDoubleClick');
         });
     });
 
@@ -956,7 +997,7 @@ describe('Vertical View Event Render Module', () => {
         let schObj: Schedule;
         const eventData: Record<string, any>[] = [{
             Id: 1,
-            Subject: "Meeting",
+            Subject: 'Meeting',
             StartTime: new Date(2021, 2, 27, 11, 0),
             EndTime: new Date(2021, 2, 28, 7, 0)
         }];
@@ -973,6 +1014,29 @@ describe('Vertical View Event Render Module', () => {
             expect(eventNormalElementList.length).toEqual(2);
             expect((eventNormalElementList[0] as HTMLElement).style.height).toBe('936px');
             expect((eventNormalElementList[1] as HTMLElement).style.height).toBe('504px');
+        });
+    });
+
+    describe('Resize handler dimension checking', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Meeting',
+            StartTime: new Date(2021, 2, 27, 11, 0),
+            EndTime: new Date(2021, 2, 27, 11, 15)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '550px', selectedDate: new Date(2021, 2, 25) };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking appointment resize handler height', () => {
+            const appElement: HTMLElement = schObj.element.querySelector('.e-appointment');
+            expect((appElement.querySelector('.e-event-resize.e-top-handler') as HTMLElement).offsetHeight).toEqual(2);
+            expect((appElement.querySelector('.e-event-resize.e-bottom-handler') as HTMLElement).offsetHeight).toEqual(2);
         });
     });
 
@@ -1000,7 +1064,7 @@ describe('Vertical View Event Render Module', () => {
         let schObj: Schedule;
         let keyModule: any;
         beforeAll((done: Function) => {
-            let model: ScheduleModel = {
+            const model: ScheduleModel = {
                 currentView: 'Week', views: [
                     { option: 'Week' },
                     { option: 'TimelineWeek' },
@@ -1018,18 +1082,18 @@ describe('Vertical View Event Render Module', () => {
 
         it('Checking allowInline property', (done: Function) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(24);
-                expect((eventElementList[6].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing')
+                expect((eventElementList[6].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing');
                 expect(eventElementList[6].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(23);
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[126] as HTMLElement
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[126] as HTMLElement;
             workCell.click();
             expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
-            let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'Testing';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
@@ -1038,35 +1102,34 @@ describe('Vertical View Event Render Module', () => {
 
         it('Checking allowInline edit action', (done: Function) => {
             schObj.dataBound = () => {
-                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
                 expect(eventElement).toBeTruthy();
                 expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing - edited');
                 done();
             };
-            let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
+            const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
             expect(eventElement).toBeTruthy();
-            let subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            const subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
             subjectElement.click();
-            let inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            const inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'Testing - edited';
             keyModule.keyActionHandler({ action: 'enter', target: inputElement });
-
         });
 
         it('Checking allowInline allDay event', (done: Function) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(25);
-                expect((eventElementList[0].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('week')
+                expect((eventElementList[0].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('week');
                 expect(eventElementList[0].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
-            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(24);
             (schObj.element.querySelectorAll('.e-all-day-cells')[1] as HTMLElement).click();
             expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
-            let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'week';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
@@ -1080,15 +1143,15 @@ describe('Vertical View Event Render Module', () => {
 
         it('Checking allowInline event in timeline week view', (done: Function) => {
             schObj.dataBound = () => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(26);
-                expect((eventElementList[2].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('timeline')
+                expect((eventElementList[2].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('timeline');
                 expect(eventElementList[2].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
             (schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement).click();
             expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
-            let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'timeline';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
@@ -1098,23 +1161,23 @@ describe('Vertical View Event Render Module', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(23);
                 done();
-            }
+            };
             schObj.currentView = 'Agenda';
             schObj.dataBind();
         });
 
         it('Checking allowInline edit action in Agenda view', (done: Function) => {
             schObj.dataBound = () => {
-                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_19"]');
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_19"]');
                 expect(eventElement).toBeTruthy();
                 expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Agenda view testing');
                 done();
             };
-            let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_19"]');
+            const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_19"]');
             expect(eventElement).toBeTruthy();
-            let subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            const subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
             subjectElement.click();
-            let inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            const inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'Agenda view testing';
             keyModule.keyActionHandler({ action: 'enter', target: inputElement });
@@ -1124,21 +1187,21 @@ describe('Vertical View Event Render Module', () => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(30);
                 done();
-            }
+            };
             schObj.currentView = 'Month';
             schObj.dataBind();
         });
 
         xit('Checking allowInline add action in Month view', (done: Function) => {
             schObj.dataBound = () => {
-                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
                 expect(eventElement).toBeTruthy();
                 expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Month view testing');
                 done();
             };
-            let workCell: HTMLElement = schObj.element.querySelector('[data-date="1511461800000"]') as HTMLElement
+            const workCell: HTMLElement = schObj.element.querySelector('[data-date="1511461800000"]') as HTMLElement;
             workCell.click();
-            let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'Month view testing';
             keyModule.keyActionHandler({ action: 'enter', target: inputElement });
@@ -1146,16 +1209,16 @@ describe('Vertical View Event Render Module', () => {
 
         xit('Checking allowInline edit action in Month view', (done: Function) => {
             schObj.dataBound = () => {
-                let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
                 expect(eventElement).toBeTruthy();
                 expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Month view testing edited');
                 done();
             };
-            let eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+            const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
             expect(eventElement).toBeTruthy();
-            let subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            const subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
             subjectElement.click();
-            let inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            const inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'Month view testing edited';
             keyModule.keyActionHandler({ action: 'enter', target: inputElement });
@@ -1183,7 +1246,7 @@ describe('Vertical View Event Render Module', () => {
                         { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
                         { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' },
-                        { OwnerText: 'Smith', OwnerId: 4, OwnerGroupId: 3, color: '#5978ee' },
+                        { OwnerText: 'Smith', OwnerId: 4, OwnerGroupId: 3, color: '#5978ee' }
                     ],
                     textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }]
@@ -1288,6 +1351,85 @@ describe('Vertical View Event Render Module', () => {
             expect((eventNormalElementList[3] as HTMLElement).style.left).toBe('0%');
             expect((eventNormalElementList[4] as HTMLElement).style.left).toBe('47%');
         });
+    });
+
+    describe('EJ2-52479 - Appointment missing when showWeekend is false', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Burning Man',
+            StartTime: '2018-06-09T09:30:00.000Z',
+            EndTime: '2018-06-09T11:30:00.000Z',
+            OwnerId: 1,
+            IsBlock: false
+        },
+        {
+            Id: 2,
+            Subject: 'Marketing Forum',
+            StartTime: '2018-06-03T04:30:00.000Z',
+            EndTime: '2018-06-03T06:00:00.000Z',
+            OwnerId: 2,
+            IsBlock: true
+        }, {
+            Id: 3,
+            Subject: 'Business Factory',
+            StartTime: '2018-06-03T08:00:00.000Z',
+            EndTime: '2018-06-03T09:30:00.000Z',
+            OwnerId: 3,
+            IsBlock: true
+        }, {
+            Id: 4,
+            Subject: 'Burning Man1',
+            StartTime: '2018-06-04T06:00:00.000Z',
+            EndTime: '2018-06-04T07:30:00.000Z',
+            OwnerId: 1,
+            IsBlock: true
+        }, {
+            Id: 5,
+            Subject: 'Funnel Hacking',
+            StartTime: '2018-06-05T04:00:00.000Z',
+            EndTime: '2018-06-05T05:30:00.000Z',
+            OwnerId: 3,
+            IsBlock: true
+        }
+        ];
+        const ownerCollections: Record<string, any>[] = [
+            { OwnerText: 'Margaret', OwnerId: 1, Color: '#ea7a57', workDays: [1, 2, 3, 4, 5, 6] },
+            { OwnerText: 'Robert', OwnerId: 2, Color: '#df5286' },
+            { OwnerText: 'Laura', OwnerId: 3, Color: '#865fcf' }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                showWeekend: false,
+                selectedDate: new Date(2018, 5, 5),
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owners', name: 'Owners', allowMultiple: true,
+                        dataSource: ownerCollections, textField: 'OwnerText', idField: 'OwnerId',
+                        colorField: 'Color', workDaysField: 'workDays'
+                    }
+                ],
+                eventSettings: {
+                    dataSource: data
+                }
+            };
+            schObj = util.createSchedule(schOptions, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking appointment rendering', () => {
+            expect(schObj.eventsData.length).toEqual(5);
+            const eventList: Element = schObj.element.querySelector('.e-appointment');
+            expect(eventList.querySelector('.e-subject').innerHTML).toBe('Burning Man');
+        });
+
     });
 
     it('memory leak', () => {

@@ -148,7 +148,7 @@ export class SpreadsheetChart {
                     value: cell && cell.value, format: cell && cell.format ?
                         cell.format : 'General', formattedText: cell && cell.value,
                     onLoad: true, isRightAlign: false, cell: cell,
-                    rowIdx: rIdx.toString(), colIdx: cIdx.toString()
+                    rowIndex: rIdx.toString(), colIndex: cIdx.toString()
                 };
                 if (cell) {
                     this.parent.notify(getFormattedCellObject, formatObj);
@@ -320,7 +320,7 @@ export class SpreadsheetChart {
                         value: cell && cell.value, format: cell && cell.format ? cell.format : 'General',
                         formattedText: cell && cell.value, onLoad: true,
                         type: cell && getTypeFromFormat(cell.format),
-                        rowIdx: minr.toString(), colIdx: minc.toString(),
+                        rowIndex: minr.toString(), colIndex: minc.toString(),
                         isRightAlign: false, cell: cell
                     };
                     this.parent.notify(getFormattedCellObject, forArgs);

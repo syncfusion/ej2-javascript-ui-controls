@@ -66,9 +66,6 @@ export interface ComboBoxModel extends DropDownListModel{
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType int
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
      * @deprecated
      */
     index?: number;
@@ -78,7 +75,6 @@ export interface ComboBoxModel extends DropDownListModel{
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
      *
      * @default true
-     * @blazorOverrideType override
      */
     showClearButton?: boolean;
 
@@ -87,7 +83,6 @@ export interface ComboBoxModel extends DropDownListModel{
      *
      * @default false
      * @deprecated
-     * @blazorOverrideType override
      */
     enableRtl?: boolean;
 
@@ -96,7 +91,6 @@ export interface ComboBoxModel extends DropDownListModel{
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      *
      * @event customValueSpecifier
-     * @blazorProperty 'CustomValueSpecifier'
      */
     customValueSpecifier?: EmitType<CustomValueSpecifierEventArgs>;
 
@@ -105,7 +99,6 @@ export interface ComboBoxModel extends DropDownListModel{
      * > For more details about the filtering refer to [`Filtering`](../../combo-box/filtering) documentation.
      *
      * @event filtering
-     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 
@@ -131,7 +124,6 @@ export interface ComboBoxModel extends DropDownListModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @deprecated
      */
     floatLabelType?: FloatLabelType;
@@ -185,7 +177,6 @@ export interface ComboBoxModel extends DropDownListModel{
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      * @deprecated
      */
     width?: string | number;
@@ -197,7 +188,6 @@ export interface ComboBoxModel extends DropDownListModel{
      *
      * @default '300px'
      * @aspType string
-     * @blazorType string
      * @deprecated
      */
     popupHeight?: string | number;
@@ -210,7 +200,6 @@ export interface ComboBoxModel extends DropDownListModel{
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      * @deprecated
      */
     popupWidth?: string | number;

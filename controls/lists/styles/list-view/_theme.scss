@@ -14,10 +14,19 @@
       & .e-icons {
         color: $listview-icon-color;
 
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           &.e-but-back:hover,
           &.e-icon-collapsible:hover {
             color: $icon-color-hover;
+          }
+        }
+        @if ($skin-name == 'bootstrap5') {
+          & .e-but-back:hover {
+            color: $icon-color-hover;
+          }
+
+          & .e-but-back:active {
+            color: $icon-color-pressed;
           }
         }
       }
@@ -56,7 +65,7 @@
 
       & .e-list-item.e-focused .e-checkbox-wrapper .e-frame.e-check,
       & .e-list-item.e-focused .e-css.e-checkbox-wrapper .e-frame.e-check {
-        @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+        @if ($skin-name != 'tailwind') {
           background-color: $checkmark-bgcolor;
           border-color: $checkmark-border-color;
           color: $checkmark-color;
@@ -70,7 +79,7 @@
         font-size: $listview-groupheader-font-size;
       }
 
-      @if ($skin-name == 'bootstrap4') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
         & .e-list-item.e-focused .e-icon-wrapper .e-icon-collapsible {
           color: $listview-focused-collapsible-color;
         }
@@ -85,7 +94,7 @@
         &:not(.e-list-multi-line) {
           padding: $listview-template-padding;
 
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
             &.e-list-badge:not(.e-list-avatar) {
               padding: 0 10px 0 16px;
             }
@@ -99,7 +108,7 @@
             color: $listview-template-multiline-header-color;
             display: block;
             font-size: $listview-template-multiline-header-font-size;
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
               font-weight: $font-weight-normal;
               line-height: 22px;
             }
@@ -117,7 +126,7 @@
             color: $listview-template-multiline-content-color;
             display: block;
             font-size: $listview-template-multiline-content-font-size;
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
               font-weight: $font-weight-normal;
               line-height: 22px;
             }
@@ -140,7 +149,7 @@
             position: absolute;
             top: $listview-template-avatar-top;
             width: $listview-template-avatar-size;
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
               margin: $listview-template-avatar-margin;
             }
           }
@@ -187,7 +196,7 @@
             top: 50%;
             transform: translateY(-50%);
             width: $listview-template-badge-width;
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
               border-radius: 10px;
             }
           }
@@ -211,7 +220,7 @@
             padding: $listview-template-item-padding;
             text-overflow: ellipsis;
             white-space: nowrap;
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
               font-size: $listview-font-size;
               line-height: $listview-item-line-height;
             }
@@ -220,6 +229,22 @@
       }
 
       .e-list-item {
+        &.e-focused {
+          .e-list-wrapper.e-list-multi-line {
+            .e-list-item-header {
+              @if ($skin-name == 'bootstrap5') {
+                color: $content-text-color-selected;
+              }
+            }
+
+            .e-list-content {
+              @if ($skin-name == 'bootstrap5') {
+                color: $content-text-color-selected;
+              }
+            }
+          }
+        }
+
         &.e-hover .e-list-item-header {
           color: $listview-text-hover-color;
         }
@@ -243,7 +268,7 @@
         &.e-list-avatar {
           .e-avatar {
             left: inherit;
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
               margin: 7px 12px 7px 16px;
             }
             right: $listview-template-avatar-left;

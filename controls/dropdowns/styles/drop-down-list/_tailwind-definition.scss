@@ -1,23 +1,16 @@
 $ddl-input-font-size: $text-sm !default;
 $ddl-zero-value: 0 !default;
-$ddl-default-border-color: $border-light !default;
 $ddl-input-border: 1px $border-light !default;
 $ddl-input-font-family: inherit !default;
 $ddl-input-margin-bottom: 4px !default;
 $ddl-input-padding: 8px $ddl-zero-value 4px !default;
 $ddl-input-group-border-width: $ddl-zero-value !default;
-$ddl-active-font-color: $content-text-color-selected !default;
 $ddl-list-search-icon-padding: 12px 8px 8px !default;
 $ddl-list-filter-text-indent: 8px 16px 8px !default;
 $ddl-bigger-list-font-size: $text-base !default;
-$ddl-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
-$ddl-filter-box-shadow-color: rgba(0, 0, 0, .3) !default;
-$ddl-popup-background-color: $flyout-bg-color !default;
 $ddl-filter-border: 0 !default;
 $ddl-filter-top-border: 0 !default;
 $ddl-filter-padding: 0 !default;
-$ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
-$ddl-filter-background-color: $flyout-bg-color !default;
 $ddl-clear-icon-margin-right: 66px !default;
 $ddl-back-icon-margin: 0 10px 0 -52px !default;
 $ddl-back-icon-padding: 0 8px !default;
@@ -28,6 +21,16 @@ $ddl-small-list-font-size: $text-xs !default;
 
 // touch small
 $ddl-bigger-small-list-font-size: $text-sm !default;
+
+// color
+
+$ddl-default-border-color: $border-light !default;
+$ddl-active-font-color: $content-text-color-selected !default;
+$ddl-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
+$ddl-filter-box-shadow-color: rgba(0, 0, 0, .3) !default;
+$ddl-popup-background-color: $flyout-bg-color !default;
+$ddl-filter-background-color: $flyout-bg-color !default;
+$ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
 
 @include export-module('dropdownlist-tailwind') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {

@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { SortEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, BeforeSaveEventArgs, triggerDataChange } from '../../workbook/index';
 import { BeforeSortEventArgs } from '../../workbook/index';
-import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, beginAction } from '../common/index';
+import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, beginAction, positionAutoFillElement } from '../common/index';
 import { BeforePasteEventArgs, setActionData, updateUndoRedoCollection, BeforeChartEventArgs } from '../common/index';
 
 /**
@@ -76,7 +76,7 @@ export class ActionEvents {
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
             || args.action === 'beforeWrap' || args.action === 'beforeReplace'
             || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart'
-            || args.action === 'filter' || args.action === 'cellDelete') {
+            || args.action === 'filter' || args.action === 'cellDelete' || args.action === 'autofill') {
             this.parent.notify(setActionData, { args: args });
         }
     }
@@ -87,6 +87,7 @@ export class ActionEvents {
         if (args.action !== 'undoRedo' && args.action !== 'gotoSheet') {
             this.parent.notify(updateUndoRedoCollection, { args: args });
         }
+        this.parent.notify(positionAutoFillElement, null );
     }
 
     private addEventListener(): void {

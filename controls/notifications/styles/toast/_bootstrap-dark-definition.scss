@@ -8,7 +8,7 @@ $toast-icon-nrml-size: 12px !default;
 $toast-icon-nrml-right-margin: 14px !default;
 $toast-close-icon-nrml-height: 24px !default;
 $toast-close-icon-nrml-width: 24px !default;
-$toast-close-icon-nrml-size: 12px !default;
+$toast-close-icon-nrml-size: 14px !default;
 $toast-position-nrml-distance: 10px !default;
 $multitoast-nrml-gap-distance: 10px !default;
 $toast-nrml-min-height: 48px !default;
@@ -28,7 +28,7 @@ $toast-icon-bgr-size: 12px !default;
 $toast-icon-bgr-right-margin: 14px !default;
 $toast-close-icon-bgr-height: 24px !default;
 $toast-close-icon-bgr-width: 24px !default;
-$toast-close-icon-bgr-size: 12px !default;
+$toast-close-icon-bgr-size: 14px !default;
 $toast-position-bgr-distance: 10px !default;
 $multitoast-bgr-gap-distance: 10px !default;
 $toast-bgr-min-height: 48px !default;
@@ -109,4 +109,7 @@ $toast-danger-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;
 //icon variabels
 
 $toast-close-icon: '\e96c' !default;
+$toast-success-icon: '\ea84' !default;
+$toast-error-icon: '\e7e9' !default;
+$toast-info-icon: '\e607' !default;
 //enddefault

@@ -242,6 +242,26 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
+        it('Checking the dragging of the range with multiple range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void =>{
+                ele = document.getElementById("container_Axis_0_Range_10");
+                trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
+                trigger.mousemoveEvent(ele,812,197,813,265);
+                let path = document.getElementById("container_Axis_0_Range_10").getAttribute('d');
+                expect(path != null).toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                ranges:[
+                    {start: 0, end: 5},{start: 5, end: 10},{start: 10, end: 15},
+                    {start: 15, end: 20},{start: 20, end: 25},{start: 25, end: 30},
+                    {start: 30, end: 35},{start: 35, end: 40},{start: 40, end: 45},
+                    {start: 45, end: 50},{start: 50, end: 55}
+                ]
+            }] 
+            gauge.refresh();
+        });
+
     }),
 
     describe('Gauge axis Range properties checking when mouseupEvent occurs', () => {

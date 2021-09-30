@@ -5,7 +5,7 @@ import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data'
 import { ListBase, SortOrder } from '@syncfusion/ej2-lists';
 import { DropDownBaseModel, FieldSettingsModel } from './drop-down-base-model';
 import { Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, remove, select, selectAll } from '@syncfusion/ej2-base';
+import { remove, select, selectAll } from '@syncfusion/ej2-base';
 
 export type FilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 
@@ -99,7 +99,6 @@ export interface SelectEventArgs {
     /**
      * Returns the selected item as JSON Object from the data source.
      *
-     * @blazorType object
      */
     itemData: FieldSettingsModel
     /**
@@ -124,13 +123,11 @@ export interface ActionBeginEventArgs {
     /**
      * Specify the query to begin the data
      *
-     * @blazorType Syncfusion.Blazor.Data.Query
      */
     query: Query
     /**
      * Set the data source to action begin
      *
-     * @blazorType object
      */
     data: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[]
     /**
@@ -155,7 +152,6 @@ export interface ActionCompleteEventArgs {
     /**
      * Returns the selected items as JSON Object from the data source.
      *
-     * @blazorType object
      */
     result?: ResultData
     /**
@@ -173,7 +169,6 @@ export interface ActionCompleteEventArgs {
     /**
      * Specify the query to complete the data
      *
-     * @blazorType Syncfusion.Blazor.Data.Query
      */
     query?: Query
     /**
@@ -202,7 +197,6 @@ export interface DataBoundEventArgs {
     /**
      * Returns the selected items as JSON Object from the data source.
      *
-     * @blazorType object
      */
     items: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[]
     /**
@@ -429,8 +423,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers before fetching data from the remote server.
      *
      * @event actionBegin
-     * @blazorProperty 'OnActionBegin'
-     * @blazorType ActionBeginEventArgs
      */
     @Event()
     public actionBegin: EmitType<Object>;
@@ -438,8 +430,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers after data is fetched successfully from the remote server.
      *
      * @event actionComplete
-     * @blazorProperty 'OnActionComplete'
-     * @blazorType ActionCompleteEventArgs
      */
     @Event()
     public actionComplete: EmitType<Object>;
@@ -447,7 +437,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when the data fetch request from the remote server fails.
      *
      * @event actionFailure
-     * @blazorProperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<Object>;
@@ -455,7 +444,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
      *
      * @event select
-     * @blazorProperty 'OnValueSelect'
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
@@ -463,8 +451,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when data source is populated in the popup list..
      *
      * @event dataBound
-     * @blazorProperty 'DataBound'
-     * @blazorType DataBoundEventArgs
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -472,7 +458,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -480,7 +465,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when the component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -625,7 +609,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected l10nUpdate(actionFailure?: boolean): void {
         const ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No records found' || this.actionFailureTemplate !== 'Request failed') {
-            this.DropDownBaseresetBlazorTemplates(false, false, true, true);
             const template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
             const templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
@@ -645,7 +628,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 }
             }
             this.renderReactTemplates();
-            this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         } else {
             const l10nLocale: Object = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed'};
             const componentLocale: L10n = new L10n(this.getLocaleName(), {}, this.locale);
@@ -678,9 +660,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getFormattedValue(value: string): string | number | boolean {
         if (this.listData && this.listData.length) {
             const item: { [key: string]: Object } = this.typeOfData(this.listData);
-            if (isBlazor() && isNullOrUndefined(value) || value === 'null') {
-                return null;
-            }
             if (typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'number'
                 || item.typeof === 'number') {
                 return parseFloat(value);
@@ -724,84 +703,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 : !isNullOrUndefined(this.dataSource) ? true : false;
             if (!dataSource) {
                 this.renderItemsBySelect();
-            } else {
+            } else if (this.isDynamicDataChange) {
                 this.setListData(this.dataSource, this.fields, this.query);
             }
         } else {
             this.setListData(this.dataSource, this.fields, this.query);
-        }
-    }
-    
-    protected renderSelectElement(selectElement: HTMLElement, listData: { [key: string]: Object }[]): void {
-        let isDataSource: boolean = this.dataSource instanceof Array ? (this.dataSource.length > 0 ? true : false)
-                : !isNullOrUndefined(this.dataSource) ? true : false;
-        if (this.isDynamicDataChange && (this.dataSource === null || (this.dataSource instanceof Array && this.dataSource.length === 0))) 
-        {
-            selectElement.innerHTML = '';
-        }
-        if (isDataSource) {
-            selectElement.innerHTML = '';
-            for (let i: number = 0; i < listData.length; i++) {
-                var option = this.createElement('option');
-                option.value = listData[i][this.fields.value];
-                option.text = listData[i][this.fields.text];
-                selectElement.appendChild(option);
-            }
-        }
-    }
-
-    protected DropDownBaseupdateBlazorTemplates(
-        item: boolean, group: boolean, noRecord: boolean, action: boolean,
-        value?: boolean, header?: boolean, footer?: boolean, isEmpty?: boolean): void {
-        if (!this.isStringTemplate) {
-            if (this.itemTemplate && item) {
-                updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this, isEmpty);
-            }
-            if (this.groupTemplate && group) {
-                updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY, this, isEmpty);
-            }
-            if (this.noRecordsTemplate && noRecord) {
-                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY, this, isEmpty);
-            }
-            if (this.actionFailureTemplate && action) {
-                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this, isEmpty);
-            }
-            if (value) {
-                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this, isEmpty);
-            }
-            if (header) {
-                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY, this);
-            }
-            if (footer) {
-                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY, this);
-            }
-        }
-    }
-    protected DropDownBaseresetBlazorTemplates(
-        item: boolean, group: boolean, noRecord: boolean, action: boolean,
-        value?: boolean, header?: boolean, footer?: boolean): void {
-        if (!this.isStringTemplate) {
-            if (this.itemTemplate && item) {
-                resetBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
-            }
-            if (this.groupTemplate && group) {
-                resetBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
-            }
-            if (this.noRecordsTemplate && noRecord) {
-                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
-            }
-            if (this.actionFailureTemplate && action) {
-                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
-            }
-            if (value) {
-                resetBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
-            }
-            if (header) {
-                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
-            }
-            if (footer) {
-                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
-            }
         }
     }
     /**
@@ -983,7 +889,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 () => {
                     const childNode: HTMLElement[] = this.remainingItems(this.sortedData, fields);
                     append(childNode, ulElement);
-                    this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
                     this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
                     this.updateListValues();
                     this.raiseDataBound(listItems, e);
@@ -1068,16 +973,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         e?: Object): void {
     /* eslint-enable @typescript-eslint/no-unused-vars */
         this.listData = list;
-        if (isBlazor() && this.isServerRendered && this.getModuleName() === 'listbox') {
-            remove(this.list.querySelector('.e-list-parent'));
-            remove(this.list.querySelector('.e-hidden-select'));
-        } else  {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((this as any).isReact) {
-                this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
-            }
-            this.list.innerHTML = '';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((this as any).isReact) {
+            this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
         }
+        this.list.innerHTML = '';
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
         this.list.appendChild(ulElement);
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
@@ -1139,7 +1039,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     headerItems, option, this);
             }
             this.renderReactTemplates();
-            this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
     }
     /**
@@ -1247,8 +1146,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            const isTempEmpty: boolean = (this.getModuleName() === 'listbox') ? true : false;
-            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, isTempEmpty);
         } else {
             ulElement = this.createListItems(listData, fields);
         }
@@ -1256,7 +1153,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected templateListItem(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
-        this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         const option: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
         option.templateID = this.itemTemplateId;
         option.isStringTemplate = this.isStringTemplate;
@@ -1555,7 +1451,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 itemIndex = newList.indexOf(items as { [key: string]: Object });
             }
         }
-        this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         const itemsCount: number = this.getItems().length;
         const selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
         items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
@@ -1585,7 +1480,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 if (addItemTemplate) {
                     append(addItemTemplate, li);
                 }
-                this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             } else if (!isHeader) {
                 li.appendChild(document.createTextNode(itemText));
             }
@@ -1687,7 +1581,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      *
      * @param { string | number } value - Specifies the value of the list item.
      * @returns {Object}
-     * @blazorType object
      */
     public getDataByValue(value: string | number | boolean)
         : { [key: string]: Object } | string | number | boolean {

@@ -15,7 +15,7 @@ export interface TextSizeInfo {
 /**
  * @private
  */
-export interface FontSizeInfo {
+ export interface FontSizeInfo {
     HeightFactor?: number
     BaselineFactor?: number
 }
@@ -28,7 +28,7 @@ export interface TextHeightInfo {
 /**
  * @private
  */
-export interface FontHeightInfo {
+ export interface FontHeightInfo {
     [key: string]: FontSizeInfo
 }
 /**
@@ -168,9 +168,8 @@ export class TextHelper {
         const format: WCharacterFormat = new WCharacterFormat(undefined);
         const listCharacterFormat: WCharacterFormat = elementBox.listLevel.characterFormat;
         const breakCharacterFormat: WCharacterFormat = paragraph.characterFormat;
-        format.fontSize = listCharacterFormat.fontSize === 11 ? breakCharacterFormat.fontSize : listCharacterFormat.fontSize;
-        format.fontFamily = listCharacterFormat.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily
-            : listCharacterFormat.fontFamily;
+        format.fontSize = listCharacterFormat.hasValue('fontSize') ? listCharacterFormat.fontSize : breakCharacterFormat.fontSize;
+        format.fontFamily = listCharacterFormat.hasValue('fontFamily') ? listCharacterFormat.fontFamily : breakCharacterFormat.fontFamily;
         let bold: string = '';
         let italic: string = '';
         const baselineAlignment: BaselineAlignment = listCharacterFormat.baselineAlignment === 'Normal' ?

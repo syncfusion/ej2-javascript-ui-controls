@@ -51,7 +51,7 @@
 }
 
 .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' {
+  @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'bootstrap5' {
     font-size: $ddl-bigger-chip-close-font;
   }
 }
@@ -99,23 +99,29 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-item-focus {
-  @if $ddl-multiselect-skin-name != 'highcontrast' {
+  @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'bootstrap5' {
     color: $ddl-multi-list-default-font-color;
   }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-item-focus {
-  @if $ddl-multiselect-skin-name != 'highcontrast' {
+  @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'bootstrap5' {
     color: $ddl-multi-list-default-font-color;
   }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-hover {
   background-color: $ddl-multi-list-hover-bg-color;
+  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+    color: $ddl-multi-list-default-font-color;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-hover {
   background-color: $ddl-multi-list-hover-bg-color;
+  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+    color: $content-text-color-alt3;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active:first-child {
@@ -228,6 +234,10 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
     -webkit-text-fill-color: $gray-900;
     color: $gray-900;
   }
+  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+    -webkit-text-fill-color: $content-text-color;
+    color: $content-text-color;
+  }
 }
 
 .e-multi-select-wrapper .e-chips-close.e-close-hooker {
@@ -275,95 +285,95 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 // Multiselect Outline textbox configuration
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-chip-bg-color;
   }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips {
-  @if $skin-name == 'material' {
-    background-color: darken($grey-300, 7%);
+  @if $ddl-multiselect-skin-name == 'material' {
+    background-color: $filled-multiselect-chip-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips:hover {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-chip-hover-bg-color;
   }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips:hover {
-  @if $skin-name == 'material' {
-    background-color: darken($grey-300, 7%);
+  @if $ddl-multiselect-skin-name == 'material' {
+    background-color: $filled-multiselect-chip-hover-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-sel-chip-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected:hover,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected:hover {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-sel-hover-chip-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $ddl-chip-font-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent:hover,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent:hover {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $ddl-chip-font-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $outline-multiselect-close-icon-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker:hover,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker:hover {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $outline-multiselect-close-icon-hover-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected .e-chips-close::before,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected .e-chips-close::before {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $ddl-chip-close;
   }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close::before,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close::before {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $ddl-chip-mobile-font;
   }
 }
 
 .e-multiselect.e-outline:not(.e-disabled) .e-multi-select-wrapper .e-chips:not(.e-chip-selected) .e-chips-close:hover::before,
 .e-multiselect.e-filled:not(.e-disabled) .e-multi-select-wrapper .e-chips:not(.e-chip-selected) .e-chips-close:hover::before {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $outline-multiselect-close-icon-hover-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $outline-multiselect-remains-font-color;
   }
 }
@@ -373,20 +383,20 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips .e-chips-close::before,
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $outline-multiselect-disabled-font-color;
   }
 }
 
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-disabled-chip-bg-color;
   }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper.e-mob-wrapper .e-chips.e-mob-chip.e-chip-selected,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     background-color: $ddl-chip-mobile-bg;
     border-radius: 4px;
     box-sizing: border-box;
@@ -401,14 +411,14 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     width: 33px;
   }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chipcontent,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chipcontent {
-  @if $skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     color: $ddl-chip-mobile-font;
   }
 }

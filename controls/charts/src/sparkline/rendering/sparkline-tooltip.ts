@@ -174,10 +174,6 @@ export class SparklineTooltip {
                 color: textColor
             }
         };
-        if (spark.isBlazor) {
-            const  { ...blazorTooltipArgs}: ITooltipRenderingEventArgs =  tooltipEvent;
-            tooltipEvent = blazorTooltipArgs;
-        }
         spark.trigger('tooltipInitialize', tooltipEvent, () => {
             this.addTooltip(tooltipEvent, spark, backgroundColor, tooltip, location, div);
         });
@@ -213,8 +209,7 @@ export class SparklineTooltip {
             shared: false,
             availableSize: this.sparkline.availableSize,
             areaBounds: new Rect(0, 0, spark.availableSize.width, spark.availableSize.height),
-            theme: spark.theme,
-            blazorTemplate: { name: 'TooltipTemplate', parent: spark.tooltipSettings }
+            theme: spark.theme
         });
         element.opacity = spark.sparkTheme.tooltipFillOpacity || element.opacity;
         element.appendTo(div as HTMLElement);

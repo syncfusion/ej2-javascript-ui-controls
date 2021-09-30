@@ -100,6 +100,7 @@
       & .e-np,
       & .e-pp:hover,
       & .e-np:hover {
+        font-size: $pager-rtl-bigger-tripledot-font-size;
         margin-top: $pager-tripledot-rtl-bigger-margin-top;
         }
 
@@ -288,7 +289,7 @@
     .e-pagermessage,
     .e-pagerexternalmsg {
       display: block;
-      margin: 6px;
+      margin: $pager-external-msg-padding;
       overflow: hidden;
       text-overflow: ellipsis;
     }

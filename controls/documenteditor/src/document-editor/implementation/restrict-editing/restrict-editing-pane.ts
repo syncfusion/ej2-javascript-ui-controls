@@ -14,7 +14,6 @@ import { DropDownList } from '@syncfusion/ej2-dropdowns';
 export class RestrictEditing {
     private documentHelper: DocumentHelper;
     public restrictPane: HTMLElement;
-    public allowFormatting: CheckBox;
     private addUser: HTMLButtonElement;
     private enforceProtection: HTMLButtonElement;
     private allowFormat: CheckBox;
@@ -35,7 +34,6 @@ export class RestrictEditing {
     public restrictPaneWholeDiv: HTMLElement;
     private closeButton: HTMLButtonElement;
     public protectionType: ProtectionType = 'ReadOnly';
-    public restrictFormatting: boolean = false;
     private localObj: L10n;
 
     public currentHashValue: string;
@@ -269,7 +267,7 @@ export class RestrictEditing {
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private enableFormatting(args: any): void {
-        this.restrictFormatting = !args.checked;
+        this.documentHelper.restrictFormatting = !args.checked;
     }
     private stopProtectionTriggered(args: any): void {
         if ((isNullOrUndefined(this.documentHelper.saltValue) || this.documentHelper.saltValue === '')
@@ -315,10 +313,9 @@ export class RestrictEditing {
         this.enforceProtectionDialog.show();
     }
     public createCheckBox(label: string, element: HTMLInputElement): CheckBox {
-        let checkBox: CheckBox = new CheckBox({ label: label });
+        let checkBox: CheckBox = new CheckBox({ label: label, enableRtl: this.documentHelper.owner.enableRtl });
         checkBox.appendTo(element);
         return checkBox;
-
     }
 
     public loadPaneValue(): void {

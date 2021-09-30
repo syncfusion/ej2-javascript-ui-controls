@@ -3922,6 +3922,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enablePrint: boolean;
 
     /**
+     * If it is set as FALSE, will suppress the page rotation of Landscape document on print action. By default it is TRUE.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enablePrintRotation: boolean;
+
+    /**
      * Enables or disables the thumbnail view in the PDF viewer
      *
      * @default true
@@ -5844,7 +5852,34 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Delete Item': 'Delete',
         'Up': 'Up',
         'Down': 'Down',
-        'Multiline': 'Multiline'
+        'Multiline': 'Multiline',
+        'Revised': 'Revised',
+        'Reviewed': 'Reviewed',
+        'Received': 'Received',
+        'Confidential': 'Confidential',
+        'Approved': 'Approved',
+        'Not Approved': 'Not Approved',
+        'Witness': 'Witness',
+        'Initial Here': 'Initial Here',
+        'Draft': 'Draft',
+        'Final': 'Final',
+        'For Public Release': 'For Public Release',
+        'Not For Public Release': 'Not For Public Release',
+        'For Comment': 'For Comment',
+        'Void': 'Void',
+        'Preliminary Results': 'Preliminary Results',
+        'Information Only': 'Information Only',
+        'in': 'in',
+        'm': 'm',
+        'ft_in': 'ft_in',
+        'ft': 'ft',
+        'p': 'p',
+        'cm': 'cm',
+        'mm': 'mm',
+        'pt': 'pt',
+        'cu': 'cu',
+        'sq': 'sq',
+        'Initial': 'Initial'
     };
 
     /**
@@ -6225,7 +6260,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             let target: any = document.getElementById(field.id);
             target = target ? target : (document.getElementById(field.id + '_content_html_element') ? document.getElementById(field.id + '_content_html_element').children[0].children[0] : null);
             if (!this.signatureFieldSettings.isReadOnly && !eventArgs.cancel && target && (target as any).classList.contains('e-pdfviewer-signatureformfields')) {
-                this.viewerBase.isToolbarSignClicked = false;
                 this.viewerBase.signatureModule.showSignatureDialog(true);
             }
         }

@@ -492,7 +492,7 @@ describe('Immutable action', () => {
                 parentIdMapping: 'parentID',
                 treeColumnIndex: 1,
                 created: function(){
-                    this.grid.contentModule.mutableData = true;
+                    this.grid.enableDeepCompare = true;
                 },
                 enableImmutableMode: true,
                 editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: "Below" },
@@ -579,7 +579,7 @@ describe('Immutable action', () => {
         };
         gridObj.dataBound = dataBound;
         gridObj.rowDataBound = rowDataBound;
-        (gridObj.grid.contentModule as any).mutableData = true;
+        gridObj.grid.enableDeepCompare = true;
         gridObj.dataSource = sampleData2;
     });
     
@@ -633,7 +633,7 @@ describe('EJ2-49853 - Update the reordered data in immutable mode re-renders mul
       };
       gridObj.dataBound = dataBound;
       gridObj.rowDataBound = rowDataBound;
-      (gridObj.grid.contentModule as any).mutableData = true;
+      gridObj.grid.enableDeepCompare = true;
       gridObj.dataSource = sampleData2;
   });
   afterAll(() => {

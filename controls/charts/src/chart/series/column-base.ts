@@ -33,6 +33,9 @@ export class ColumnBase {
         if (series.chart.enableSideBySidePlacement && !series.position) {
             this.getSideBySidePositions(series);
         }
+        if (series.columnWidthInPixel) {
+            return new DoubleRange(0, 0);
+        }
         const position: number = !series.chart.enableSideBySidePlacement ? 0 : series.position;
         const rectCount: number = !series.chart.enableSideBySidePlacement ? 1 : series.rectCount;
         series.isRectSeries = true;

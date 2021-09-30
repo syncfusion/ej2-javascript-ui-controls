@@ -1,4 +1,4 @@
-import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, select } from '@syncfusion/ej2-base';import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, prepend, detach, classList, isBlazor } from '@syncfusion/ej2-base';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { incrementalSearch, resetIncrementalSearchValues } from '../common/incremental-search';import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
+import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, select } from '@syncfusion/ej2-base';import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, prepend, detach, classList } from '@syncfusion/ej2-base';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { incrementalSearch, resetIncrementalSearchValues } from '../common/incremental-search';import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import {ChangeEventArgs} from "./drop-down-list";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -20,7 +20,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      */
     width?: string | number;
 
@@ -31,7 +30,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      *
      * @default '300px'
      * @aspType string
-     * @blazorType string
      */
     popupHeight?: string | number;
 
@@ -43,7 +41,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      */
     popupWidth?: string | number;
 
@@ -157,9 +154,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * {% codeBlock src="dropdownlist/index-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType int
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
      */
     index?: number;
 
@@ -177,7 +171,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 
@@ -186,7 +179,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
      *
      * @default false
-     * @blazorOverrideType virtual
      */
     showClearButton?: boolean;
 
@@ -197,7 +189,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      *
      * @event filtering
-     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 
@@ -207,7 +198,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * [`Configure the Cascading DropDownList`](../../drop-down-list/how-to/cascading)
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
@@ -215,8 +205,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Triggers when the popup before opens.
      *
      * @event beforeOpen
-     * @blazorProperty 'OnOpen'
-     * @blazorType BeforeOpenEventArgs
      */
     beforeOpen?: EmitType<Object>;
 
@@ -224,7 +212,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Triggers when the popup opens.
      *
      * @event open
-     * @blazorProperty 'Opened'
      */
     open?: EmitType<PopupEventArgs>;
 
@@ -232,7 +219,6 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Triggers when the popup is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
      */
     close?: EmitType<PopupEventArgs>;
 

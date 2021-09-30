@@ -122,7 +122,7 @@ export class DataBind {
                                     if (!cell) {
                                         args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
                                             : { value: field };
-                                    } else if ((!cell.value || args.dataSourceChange) && !field.includes('emptyCell')) {
+                                    } else if (!field.includes('emptyCell')) {
                                         cell.value = field;
                                     }
                                 });
@@ -133,7 +133,7 @@ export class DataBind {
                                 for (let j: number = 0; j < flds.length; j++) {
                                     cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
                                     if (cell) {
-                                        if ((!cell.value || args.dataSourceChange) && !flds[j].includes('emptyCell')) {
+                                        if (!flds[j].includes('emptyCell')) {
                                             setCell(rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j]]), true);
                                         }
                                     } else {
@@ -150,7 +150,7 @@ export class DataBind {
                             flds = [];
                         }
                         args.sheet.usedRange.rowIndex = (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1;
-                        args.sheet.usedRange.colIndex = sColIdx + flds.length - 1;
+                        args.sheet.usedRange.colIndex = sColIdx + flds.length - 1 < 0 ? args.sheet.usedRange.colIndex: sColIdx + flds.length - 1;
                         if (insertRowCount) {
                             loadedInfo = this.getLoadedInfo(sRange, eRange, range);
                             sRange = loadedInfo.unloadedRange[0]; eRange = loadedInfo.unloadedRange[1];

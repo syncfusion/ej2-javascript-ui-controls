@@ -291,6 +291,11 @@
     font-family: 'e-icons';
   }
 
+  .e-pv-property-icon::before {
+    content: '\e199';
+    font-family: 'e-icons';
+  }
+
   .e-pv-comment-selection-icon::before {
     color: $pv-thumbnail-icon-selection-color;
     content: '\e680';

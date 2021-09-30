@@ -40,7 +40,7 @@
       border-top-color: transparent;
     }
 
-    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
       & .e-tab {
         & .e-tab-header .e-toolbar-item {
           &.e-active {

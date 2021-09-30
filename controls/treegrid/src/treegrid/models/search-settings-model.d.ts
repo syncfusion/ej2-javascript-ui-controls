@@ -51,8 +51,6 @@ export interface SearchSettingsModel {
      * </table>
      *
      * @default 'contains'
-     * @blazorType Syncfusion.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.Blazor.Operator.Contains
      */
     operator?: string;
 

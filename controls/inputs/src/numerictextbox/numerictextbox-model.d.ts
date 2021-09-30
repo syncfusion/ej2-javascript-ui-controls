@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, Browser, L10n, EmitType } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';import { Internationalization, NumberFormatOptions, getNumericObject, isBlazor } from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../input/input';
+import { Component, EventHandler, Property, Event, Browser, L10n, EmitType } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';import { Internationalization, NumberFormatOptions, getNumericObject } from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../input/input';
 import {ChangeEventArgs,NumericFocusEventArgs,NumericBlurEventArgs} from "./numerictextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -32,7 +32,6 @@ export interface NumericTextBoxModel extends ComponentModel{
      * @default null
      * @aspType object
      * @isGenericType true
-     * @blazorDefaultValue SfBase.GetNumericValue<TValue>("MinValue")
      * @deprecated
      */
     min?: number;
@@ -45,7 +44,6 @@ export interface NumericTextBoxModel extends ComponentModel{
      * @default null
      * @aspType object
      * @isGenericType true
-     * @blazorDefaultValue SfBase.GetNumericValue<TValue>("MaxValue")
      * @deprecated
      */
     max?: number;
@@ -57,7 +55,6 @@ export interface NumericTextBoxModel extends ComponentModel{
      *
      * @default 1
      * @isGenericType true
-     * @blazorDefaultValue SfBase.GetNumericValue<TValue>("Step")
      */
     step?: number;
 
@@ -137,9 +134,6 @@ export interface NumericTextBoxModel extends ComponentModel{
      * [decimals](../../numerictextbox/formats/#precision-of-numbers).
      *
      * @default null
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
-     * @blazorType int
      */
     decimals?: number;
 
@@ -195,7 +189,6 @@ export interface NumericTextBoxModel extends ComponentModel{
      * Triggers when the NumericTextBox component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -203,7 +196,6 @@ export interface NumericTextBoxModel extends ComponentModel{
      * Triggers when the NumericTextBox component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -211,7 +203,6 @@ export interface NumericTextBoxModel extends ComponentModel{
      * Triggers when the value of the NumericTextBox changes.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 

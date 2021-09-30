@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';
+import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation, createElement } from '@syncfusion/ej2-base';
 import { Browser, isNullOrUndefined as isNOU, getUniqueID, formatUnit, EventHandler, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel, L10n } from '@syncfusion/ej2-base';
 import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined } from '@syncfusion/ej2-base';
@@ -902,13 +902,20 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     }
   }
 
-  private clearContainerPos(): void {
+  private removeToastContainer(isClosed: boolean): void {
+    if (isClosed && this.toastContainer.classList.contains('e-toast-util')) {
+      detach(this.toastContainer);
+    }
+  }
+
+  private clearContainerPos(isClosed?: boolean): void {
     if (this.isBlazorServer()) {
       this.toastContainer = null;
       return;
     }
     if (this.customPosition) {
       setStyleAttribute(this.toastContainer, { 'left': '', 'top': '' });
+      this.removeToastContainer(isClosed);
       this.toastContainer = null;
       this.customPosition = false;
     } else {
@@ -923,6 +930,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           this.toastContainer.classList.remove(pos);
         }
       });
+      this.removeToastContainer(isClosed);
       this.toastContainer = null;
     }
     if (!isNOU(this.contentTemplate)) {
@@ -987,7 +995,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           }
           this.trigger('close', toastClose);
           if (this.toastContainer.childElementCount === 0) {
-            this.clearContainerPos();
+            this.clearContainerPos(true);
           }
         };
         new Animation({}).animate(toastEle, animate);
@@ -1028,6 +1036,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     const closeIconTitle: string = this.l10n.getConstant('close');
     const closeBtn: HTEle = this.createElement(
         'div', { className: CLOSEBTN + ' e-icons ', attrs: { tabindex: '0', 'aria-label': closeIconTitle } });
+    this.toastEle.classList.add('e-toast-header-close-icon');
     this.toastEle.appendChild(closeBtn);
   }
 
@@ -1086,6 +1095,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       return;
     }
     const iconEle: HTEle = this.createElement('div', { className: ICON + ' e-icons ' + this.icon });
+    this.toastEle.classList.add('e-toast-header-icon');
     this.toastEle.appendChild(iconEle);
   }
 
@@ -1276,4 +1286,77 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
   }
+}
+
+/**
+ * Base for creating Toast through utility method.
+ */
+// eslint-disable-next-line
+export namespace ToastUtility {
+    /**
+     * To display a simple toast using the 'ToastUtility' with 'ToastModal' or
+     * as string with toast content, type, timeOut.
+     * ```
+     * Eg : ToastUtility.show('Toast Content Message', 'Information', 7000);
+     *
+     * ```
+     */
+    /* istanbul ignore next */
+    /**
+     *
+     * @param { ToastModel | string } content - Specifies the toast modal or the content of the Toast.
+     * @param {string} type - Specifies the type of toast.
+     * @param { number } timeOut - Specifies the timeOut of the toast.
+     * @returns {Toast} - returns the element
+     */
+    export function show(content: ToastModel | string, type?: string, timeOut?: number): Toast {
+        let toastContainerElement: HTMLElement;
+        if (document.querySelector('.' + CONTAINER)) {
+            toastContainerElement = document.querySelector('.' + CONTAINER);
+        } else {
+            toastContainerElement = createElement('div', { 'className': ROOT + ' ' + CONTAINER + ' e-toast-util' });
+            document.body.appendChild(toastContainerElement);
+        }
+        let toastObj: Toast;
+        let untilToastsModel: ToastModel;
+        if (typeof(content) === 'string') {
+            let cssClass: string;
+            let icon: string;
+            if (!isNOU(type)) {
+                switch (type) {
+                    case 'Warning':
+                        cssClass = 'e-toast-warning';
+                        icon = 'e-toast-warning-icon';
+                        break;
+                    case 'Success':
+                        cssClass = 'e-toast-success';
+                        icon = 'e-toast-success-icon';
+                        break;
+                    case 'Error':
+                        cssClass = 'e-toast-danger';
+                        icon = 'e-toast-error-icon';
+                        break;
+                    case 'Information':
+                        cssClass = 'e-toast-info';
+                        icon = 'e-toast-info-icon';
+                        break;
+                }
+            } else {
+                cssClass = '';
+                icon = '';
+            }
+            untilToastsModel = {
+                content: content,
+                cssClass: cssClass,
+                icon: icon,
+                timeOut: !isNOU(timeOut) ? timeOut : 5000
+            };
+        } else {
+            untilToastsModel = content;
+        }
+        toastObj = new Toast(untilToastsModel);
+        toastObj.appendTo(toastContainerElement);
+        toastObj.show();
+        return toastObj;
+    }
 }

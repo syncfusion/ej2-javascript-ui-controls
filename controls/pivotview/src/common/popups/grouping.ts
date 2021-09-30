@@ -1,4 +1,4 @@
-import { createElement, remove, extend, getInstance, addClass, removeClass, isBlazor, select } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import * as cls from '../base/css-constant';
 import { GroupType, DateGroup } from '../../base/types';
@@ -181,11 +181,7 @@ export class Grouping implements IAction {
 
     private updateDateSource(groupFields: IGroupSettings[], type: string): void {
         if (this.isUpdate) {
-            if (isBlazor()) {
-                PivotUtil.setPivotProperties(this.parent, { dataSourceSettings: { groupSettings: groupFields } });
-            } else {
-                this.parent.setProperties({ dataSourceSettings: { groupSettings: groupFields } }, true);
-            }
+            this.parent.setProperties({ dataSourceSettings: { groupSettings: groupFields } }, true);
             this.parent.updateGroupingReport(groupFields, (type === 'date' ? 'Date' : type === 'custom' ? 'Custom' : 'Number'));
             this.parent.notify(events.initialLoad, {});
         }

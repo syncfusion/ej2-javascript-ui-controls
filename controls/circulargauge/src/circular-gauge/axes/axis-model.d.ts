@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Font, Border } from '../model/base';import { Position, PointerRangePosition, PointerType, GaugeDirection, HiddenLabel, GaugeShape} from '../utils/enum';import { FontModel, BorderModel } from '../model/base-model';import { LinearGradientModel, RadialGradientModel } from './gradient-model';import { Size, Rect, VisibleLabels } from '../utils/helper';import { Theme } from '../model/theme';
+import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Font, Border } from '../model/base';import { Position, PointerRangePosition, PointerType, GaugeDirection, HiddenLabel, GaugeShape} from '../utils/enum';import { FontModel, BorderModel } from '../model/base-model';import { LinearGradientModel, RadialGradientModel } from './gradient-model';import { VisibleLabels, Size, Rect } from '../utils/helper-common';import { Theme } from '../model/theme';
 
 /**
  * Interface for a class Line

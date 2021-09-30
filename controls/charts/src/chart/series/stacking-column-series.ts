@@ -32,6 +32,8 @@ export class StackingColumnSeries extends ColumnBase {
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 rect = this.getRectangle(point.xValue + sideBySideInfo.start, stackedValue.endValues[point.index],
                     point.xValue + sideBySideInfo.end, stackedValue.startValues[point.index], series);
+                rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : rect.width;
+                rect.x = series.columnWidthInPixel ? rect.x - (series.columnWidthInPixel / 2) : rect.x;
                 argsData = this.triggerEvent(series, point, series.interior,
                     { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {

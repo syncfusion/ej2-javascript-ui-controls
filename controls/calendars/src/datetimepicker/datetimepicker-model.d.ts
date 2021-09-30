@@ -1,4 +1,4 @@
-import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend, isBlazor, blazorCultureFormats } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import {MaskPlaceholderModel} from '../calendar/calendar-model'
+import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import {MaskPlaceholderModel} from '../calendar/calendar-model'
 import {DatePickerModel} from "../datepicker/datepicker-model";
 
 /**
@@ -17,7 +17,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Specifies the time interval between the two adjacent time values in the time popup list .
      *
      * @default 30
-     * @blazorType int
      */
     step?: number;
 
@@ -27,7 +26,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * {% codeBlock src='datetimepicker/scrollTo/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @isBlazorNullableType true
      */
     scrollTo?: Date;
 
@@ -36,7 +34,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     zIndex?: number;
 
@@ -184,7 +181,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * {% codeBlock src='datetimepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     keyConfigs?: { [key: string]: string };
 
@@ -271,7 +267,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Gets or sets the minimum date that can be selected in the DateTimePicker.
      *
      * @default new Date(1900, 00, 01)
-     * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
     min?: Date;
 
@@ -279,7 +274,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Gets or sets the maximum date that can be selected in the DateTimePicker.
      *
      * @default new Date(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     max?: Date;
 
@@ -288,7 +282,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      * > For more details about firstDayOfWeek refer to
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
@@ -417,8 +410,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Triggers when popup is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
-     * @blazorType PopupObjectArgs
      */
     open?: EmitType<Object>;
 
@@ -426,8 +417,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Triggers when popup is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
-     * @blazorType PopupObjectArgs
      */
     close?: EmitType<Object>;
 
@@ -456,7 +445,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Triggers when DateTimePicker is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -464,7 +452,6 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Triggers when DateTimePicker is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

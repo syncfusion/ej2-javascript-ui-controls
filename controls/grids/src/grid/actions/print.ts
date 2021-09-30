@@ -86,9 +86,6 @@ export class Print {
      */
     public print(): void {
         this.renderPrintGrid();
-        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWind.moveTo(0, 0);
-        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
     }
 
     private onEmpty(): void {
@@ -212,6 +209,9 @@ export class Print {
         if (gObj.isPrinting) {
             detach(gObj.element);
         }
+        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWind.moveTo(0, 0);
+        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
         this.printWind = printWindow(gObj.element, this.printWind);
     }
 

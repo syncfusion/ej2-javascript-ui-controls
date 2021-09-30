@@ -625,7 +625,7 @@
     min-height: 70px;
   }
 
-  @if $inplace-skin == 'tailwind' or $inplace-skin == 'tailwind-dark' {
+  @if $inplace-skin == 'tailwind' or $inplace-skin == 'bootstrap5' {
     .e-control .e-inplaceeditor,
     .e-tooltip-wrap.e-popup.e-inplaceeditor-tip.e-popup-open,
     .e-inplaceeditor .e-input-group.e-control-wrapper.e-editable-elements {
@@ -633,7 +633,7 @@
     }
   }
 
-  @if $inplace-skin == 'tailwind' or $inplace-skin == 'tailwind-dark' {
+  @if $inplace-skin == 'tailwind' or $inplace-skin == 'bootstrap5' {
     .e-bigger .e-inplaceeditor-tip.e-tooltip-wrap .e-tip-content {
       padding: 0;
     }

@@ -7,6 +7,7 @@
       #{if(&, '&', '*')} .e-list-group-item,
       #{if(&, '&', '*')} .e-fixed-head {
         line-height: $ddl-line-height;
+        text-indent: $ddl-bigger-text-indent;
       }
 
       #{if(&, '&', '*')} .e-list-item .e-list-icon {
@@ -81,17 +82,14 @@
 
   .e-small .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-small-padding-left;
-    text-indent: 0;
   }
 
   .e-bigger .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-bigger-padding-left;
-    text-indent: 0;
   }
 
   .e-small.e-bigger .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-bigger-small-padding-left;
-    text-indent: 0;
   }
 
   .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
@@ -107,6 +105,9 @@
     vertical-align: middle;
     white-space: nowrap;
     width: 100%;
+    @if $skin-name == 'bootstrap5' {
+      font-weight: 500;
+    }
   }
 
   .e-rtl.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-item {

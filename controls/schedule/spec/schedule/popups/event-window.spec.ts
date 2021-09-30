@@ -1177,7 +1177,7 @@ describe('Schedule event window initial load', () => {
         });
     });
 
-    xdescribe('Schedule custom editor window', () => {
+    describe('Schedule custom editor window', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const template: string = '<table class="custom-event-editor" width="100%" cellpadding="5"><tbody>' +
@@ -1292,7 +1292,7 @@ describe('Schedule event window initial load', () => {
         });
     });
 
-    xdescribe('Schedule custom editor template', () => {
+    describe('Schedule custom editor template', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const template: string = '<table class="custom-event-editor" width="100%" cellpadding="5"><tbody>' +
@@ -1367,7 +1367,7 @@ describe('Schedule event window initial load', () => {
         });
     });
 
-    xdescribe('Schedule custom editor template with recurrence events', () => {
+    describe('Schedule custom editor template with recurrence events', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const template: string = '<table class="custom-event-editor" width="100%" cellpadding="5"><tbody>' +
@@ -2243,9 +2243,9 @@ describe('Schedule event window initial load', () => {
             editButton.click();
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             const startDate: DateTimePicker =
-            (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             const endDate: DateTimePicker =
-            (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             startDate.value = new Date('11/4/2017');
             startDate.dataBind();
             endDate.value = new Date('11/4/2017');
@@ -2253,7 +2253,7 @@ describe('Schedule event window initial load', () => {
             const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
             expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
-            toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
             const okButton: HTMLElement = eventDialog.querySelector('.e-quick-alertok');
             okButton.click();
             startDate.value = new Date('10/31/2017');
@@ -2262,7 +2262,7 @@ describe('Schedule event window initial load', () => {
             endDate.dataBind();
             saveButton.click();
             expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
-            toEqual('Two occurrences of the same event cannot occur on the same day.');
+                toEqual('Two occurrences of the same event cannot occur on the same day.');
             okButton.click();
             const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
@@ -2275,7 +2275,7 @@ describe('Schedule event window initial load', () => {
             endDate.dataBind();
             saveButton.click();
             expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
-            toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
             okButton.click();
             startDate.value = new Date('11/2/2017');
             startDate.dataBind();
@@ -2283,7 +2283,7 @@ describe('Schedule event window initial load', () => {
             endDate.dataBind();
             saveButton.click();
             expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
-            toEqual('Two occurrences of the same event cannot occur on the same day.');
+                toEqual('Two occurrences of the same event cannot occur on the same day.');
             okButton.click();
             cancelButton.click();
         });
@@ -2296,9 +2296,9 @@ describe('Schedule event window initial load', () => {
             editButton.click();
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             const startDate: DateTimePicker =
-            (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             const endDate: DateTimePicker =
-            (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
             startDate.value = new Date('10/31/2017');
             startDate.dataBind();
             endDate.value = new Date('10/31/2017');
@@ -2306,7 +2306,7 @@ describe('Schedule event window initial load', () => {
             const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
             expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
-            toEqual('Two occurrences of the same event cannot occur on the same day.');
+                toEqual('Two occurrences of the same event cannot occur on the same day.');
             const okButton: HTMLElement = eventDialog.querySelector('.e-quick-alertok');
             okButton.click();
             startDate.value = new Date('11/4/2017');
@@ -2315,7 +2315,7 @@ describe('Schedule event window initial load', () => {
             endDate.dataBind();
             saveButton.click();
             expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
-            toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
             okButton.click();
             const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
@@ -2334,8 +2334,10 @@ describe('Schedule event window initial load', () => {
             RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
         }];
         beforeAll((done: DoneFn) => {
-            const model: ScheduleModel = { height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2019, 1, 5), 
-                eventSettings: { editFollowingEvents: true} };
+            const model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2019, 1, 5),
+                eventSettings: { editFollowingEvents: true }
+            };
             schObj = util.createSchedule(model, appointment, done);
         });
         afterAll(() => {
@@ -2365,7 +2367,7 @@ describe('Schedule event window initial load', () => {
 
         it('Event Click and Delete following series', (done: DoneFn) => {
             schObj.dataBound = () => {
-                expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2)
+                expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
                 done();
             };
             expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(5);
@@ -2381,7 +2383,7 @@ describe('Schedule event window initial load', () => {
             (<HTMLInputElement>document.querySelector('.e-quick-dialog-delete')).click();
         });
     });
-    
+
     describe('EJ2-51055 - Prevent enter key submitting the form', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -2399,7 +2401,7 @@ describe('Schedule event window initial load', () => {
             const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.focus();
             util.triggerKeyDownEvent(saveButton, 'Enter', 13);
-            saveButton.click()
+            saveButton.click();
             expect(dialogElement.classList.contains('e-popup-open')).toEqual(true);
             expect(dialogElement.classList.contains('e-popup-close')).toEqual(false);
         });
@@ -2409,7 +2411,7 @@ describe('Schedule event window initial load', () => {
             const deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS);
             deleteButton.focus();
             util.triggerKeyDownEvent(deleteButton, 'Enter', 13);
-            deleteButton.click()
+            deleteButton.click();
             expect(dialogElement.classList.contains('e-popup-open')).toEqual(true);
             expect(dialogElement.classList.contains('e-popup-close')).toEqual(false);
         });
@@ -2419,7 +2421,7 @@ describe('Schedule event window initial load', () => {
             const cancelButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement;
             cancelButton.focus();
             util.triggerKeyDownEvent(cancelButton, 'Enter', 13);
-            cancelButton.click()
+            cancelButton.click();
             expect(dialogElement.classList.contains('e-popup-open')).toEqual(true);
             expect(dialogElement.classList.contains('e-popup-close')).toEqual(false);
         });

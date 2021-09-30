@@ -66,6 +66,12 @@
         }
       }
 
+      @if $skin-name == 'bootstrap5' {
+        & .e-content .e-toolbar .e-toolbar-items {
+          height: 38px;
+        }
+      }
+
       @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         & .e-tab-header {
           margin-top: 10px;

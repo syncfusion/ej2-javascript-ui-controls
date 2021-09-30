@@ -247,6 +247,7 @@ export const addressHandle: string = 'addressHandle';
 export const initiateEdit: string = 'initiateEdit';
 /** @hidden */
 export const forRefSelRender: string = 'forRefSelRender';
+/** @hidden */
 export const blankWorkbook: string = 'blankWorkbook';
 /** @hidden */
 export const insertImage: string = 'insertImage';
@@ -308,3 +309,21 @@ export const freeze: string = 'freeze';
 export const overlayEleSize: string = 'overlayEleSize';
 /** @hidden */
 export const updateScroll: string = 'updateScroll';
+/** @hidden */
+export const positionAutoFillElement: string = 'positionAutoFillElement';
+/** @hidden */
+export const hideAutoFillOptions: string = 'hideAutoFillOptions';
+/** @hidden */
+export const performAutoFill: string = 'performAutoFill';
+/** @hidden */
+export const selectAutoFillRange: string = 'selectAutoFillRange';
+/** @hidden */
+export const autoFill: string = 'autoFill';
+/** @hidden */
+export const fillRange: string = 'fillRange';
+/** @hidden */
+export const UnProtectWorksheet: string = 'UnProtectWorksheet';
+/** @hidden */
+export const hideAutoFillElement: string = 'hideAutoFillElement';
+/** @hidden */
+export const unProtectSheetPassword: string = 'unProtectSheetPassword';

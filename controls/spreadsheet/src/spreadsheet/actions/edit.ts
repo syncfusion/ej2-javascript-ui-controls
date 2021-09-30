@@ -75,6 +75,9 @@ export class Edit {
      * @hidden
      */
     public destroy(): void {
+        if (this.isEdit) {
+            this.cancelEdit(true, false);
+        }
         this.removeEventListener();
         this.parent = null;
         this.editorElem = null;
@@ -329,7 +332,10 @@ export class Edit {
                     }
                     if (!this.parent.element.querySelector('.e-editAlert-dlg') && !e.ctrlKey && e.keyCode !== 70 &&
                         !trgtElem.parentElement.classList.contains('e-unprotectpwd-content') &&
-                        !trgtElem.parentElement.classList.contains('e-password-content')) {
+                        !trgtElem.parentElement.classList.contains('e-password-content') &&
+                        !trgtElem.parentElement.classList.contains('e-sheet-password-content') &&
+                        !trgtElem.parentElement.classList.contains('e-unprotectsheetpwd-content') &&
+                        !trgtElem.parentElement.classList.contains('e-reenterpwd-content')) {
                         this.parent.notify(editAlert, null);
                     }
                 }
@@ -361,14 +367,14 @@ export class Edit {
             this.editCellData.value = value;
         }
         const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
-        if (refreshEditorElem) {
+        if (refreshEditorElem && editorElem) {
             editorElem.textContent = value;
         }
         if (refreshFormulaBar) {
             this.parent.notify(
                 formulaBarOperation, { action: 'refreshFormulabar', value: value });
         }
-        if (trigEvent && this.editCellData.value === editorElem.textContent) {
+        if (editorElem && trigEvent && this.editCellData.value === editorElem.textContent) {
             if (this.triggerEvent('cellEditing')) {
                 this.cancelEdit();
             }
@@ -453,7 +459,6 @@ export class Edit {
                 this.parent.clearRange(address, null, true);
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
                 this.parent.notify(selectionComplete, {});
-                this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
                 const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
                 this.checkUniqueRange(args);
                 if (args.isUnique) {
@@ -814,18 +819,6 @@ export class Edit {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
         const column: ColumnModel = getColumn(sheet, cellIndex[1]);
-        if (oldCellValue && oldCellValue.toString().indexOf('=UNIQUE(') > - 1 && this.editCellData.value === '') {
-            this.parent.notify(removeUniquecol, null);
-        }
-        const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: cellIndex, isUnique: false };
-        this.checkUniqueRange(args);
-        const isUniqueRange: boolean = args.isUnique;
-        if (isUniqueRange && oldCellValue !== '' && this.editCellData.value === '') {
-            const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
-            if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.indexOf('#SPILL!') === - 1) {
-                return isValidate;
-            }
-        }
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
         if (this.parent.allowDataValidation && ((cell && cell.validation) || (column && column.validation)))  {
@@ -847,6 +840,18 @@ export class Edit {
             oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const cellIndex: number[] = getRangeIndexes(sheet.activeCell);
+            if (oldCellValue && oldCellValue.toString().indexOf('=UNIQUE(') > - 1 && this.editCellData.value === '') {
+                this.parent.notify(removeUniquecol, null);
+            }
+            const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: cellIndex, isUnique: false };
+            this.checkUniqueRange(args);
+            const isUniqueRange: boolean = args.isUnique;
+            if (isUniqueRange && oldCellValue !== '' && this.editCellData.value === '') {
+                const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
+                if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.indexOf('#SPILL!') === - 1) {
+                    return isValidate;
+                }
+            }
             if (oldCellValue && oldCellValue.toString().indexOf('UNIQUE') > - 1 &&
             this.editCellData.value && this.editCellData.value.toString().indexOf('UNIQUE') > - 1 && isUniqueRange) {
                 this.updateUniqueRange('');
@@ -855,7 +860,7 @@ export class Edit {
                 workbookEditOperation,
                 { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
-            const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell, cellIndex[0], cellIndex[1]);
+            const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
             this.editCellData.value = <string>eventArgs.value;
             if (cell && cell.formula) {
                 this.editCellData.formula = cell.formula;
@@ -864,6 +869,9 @@ export class Edit {
                 this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
             }
             if (tdRefresh) { this.parent.refreshNode(this.editCellData.element, eventArgs); }
+            if (cell && cell.hyperlink) {
+                this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIndex);
+            }
             if (isUniqueRange) {
                 const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
                 if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.indexOf('#SPILL!') > - 1) { this.isSpill = true; }
@@ -955,7 +963,6 @@ export class Edit {
             this.uniqueActCell = '';
         }
     }
-
     private refreshDependentCellValue(rowIdx: number, colIdx: number, sheetIdx: number): void {
         if (rowIdx && colIdx) {
             rowIdx--; colIdx--;
@@ -980,12 +987,14 @@ export class Edit {
         }
     }
 
-    private getRefreshNodeArgs(cell: CellModel, rowIdx: number, colIdx: number): RefreshValueArgs {
+    private getRefreshNodeArgs(cell: CellModel, rowIdx?: number, colIdx?: number): RefreshValueArgs {
         cell = cell ? cell : {};
         const fCode: string = (cell && cell.format) ? cell.format : '';
         const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-            value: cell.value, format: fCode, onLoad: true, rowIdx: rowIdx, colIdx: colIdx,
-            formattedText: '', isRightAlign: false, type: 'General', cell: cell
+            value: cell.value, format: fCode, onLoad: true,
+            formattedText: '', isRightAlign: false, type: 'General', cell: cell,
+            rowIndex: rowIdx === undefined ? this.editCellData.rowIndex : rowIdx,
+            colIndex: colIdx === undefined ? this.editCellData.colIndex : colIdx, isRowFill: false
         };
         this.parent.notify(getFormattedCellObject, eventArgs);
         eventArgs.formattedText = this.parent.allowNumberFormatting ? eventArgs.formattedText : eventArgs.value;
@@ -994,7 +1003,8 @@ export class Edit {
             result: <string>eventArgs.formattedText,
             type: <string>eventArgs.type,
             value: <string>eventArgs.value,
-            curSymbol: <string>eventArgs.curSymbol
+            curSymbol: <string>eventArgs.curSymbol,
+            isRowFill: <boolean>eventArgs.isRowFill
         };
         return args;
     }
@@ -1048,7 +1058,7 @@ export class Edit {
         const cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         const eventArgs: CellEditEventArgs | CellSaveEventArgs = {
             element: this.editCellData.element,
-            value: this.editCellData.value,
+            value: cell ? cell.value : this.editCellData.value,
             oldValue: this.editCellData.oldValue,
             address: this.editCellData.fullAddr,
             displayText: this.parent.getDisplayText(cell)
@@ -1102,7 +1112,7 @@ export class Edit {
     private resetEditState(elemRefresh: boolean = true): void {
         if (elemRefresh) {
             const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
-            if (checkIsFormula(editorElem.textContent)) {
+            if (checkIsFormula(editorElem.textContent) || editorElem.textContent === '') {
                 this.parent.notify(clearCellRef, null);
             }
             if (this.editCellData.element) {

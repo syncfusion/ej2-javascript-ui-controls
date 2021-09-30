@@ -992,6 +992,10 @@ export class CheckBoxFilterBase {
         this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
         if (data.length && !this.renderEmpty) {
             const selectAllValue: string = this.getLocalizedLabel('SelectAll');
+            const innerDiv: Element = this.cBox.querySelector('.e-checkfltrnmdiv');
+            if (innerDiv) {
+                innerDiv.classList.remove('e-checkfltrnmdiv');
+            }
             const checkBox: Element = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
             const selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');
@@ -1031,7 +1035,8 @@ export class CheckBoxFilterBase {
         } else {
             cBoxes.appendChild(this.parent.createElement('span', { innerHTML: this.getLocalizedLabel('NoResult') }));
             this.cBox.innerHTML = '';
-            appendChildren(this.cBox, [].slice.call(cBoxes.children));
+            this.cBox.appendChild(this.parent.createElement('div', { className: 'e-checkfltrnmdiv' }));
+            appendChildren(this.cBox.children[0], [].slice.call(cBoxes.children));
             if (btn) { btn.disabled = true; }
             disabled = true;
         }

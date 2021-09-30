@@ -63,7 +63,7 @@ export class Filter {
         }
         if (treeColumn) {
             treeColumn.allowFiltering = column.allowFiltering;
-            treeColumn.filter = column.filter;
+            treeColumn.filter = column.allowFiltering ? column.filter : {};
         }
     }
 

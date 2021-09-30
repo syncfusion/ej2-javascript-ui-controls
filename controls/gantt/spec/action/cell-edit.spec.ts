@@ -342,27 +342,27 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.currentViewData[1]['Customcol']).toBe('updated');
             expect(ganttObj.dataSource[0].subtasks[0]["Customcol"]).toBe('updated');
           });
-         //it('Editing parent task name with expand/collapse actions', () => {
-          //  ganttObj.dataBind();
-        //    let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
-        //    triggerMouseEvent(taskName, 'dblclick');
-        //    let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
-        //    triggerMouseEvent(element, 'click');
-        //    expect(ganttObj.currentViewData[0].expanded).toBe(true);
-        // });
-         //it('Editing parent task name with enter key', () => {
-         //   ganttObj.dataBind();
-         //   let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
-         //   triggerMouseEvent(taskName, 'dblclick');
-         //   let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
-         //   input.value = 'TaskName updated';
-         //   let args1: any = { action: 'saveRequest', preventDefault: preventDefault };
-         //   ganttObj.keyboardModule.keyAction(args1);
-         //   expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('TaskName updated');
-         //   let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
-         //   triggerMouseEvent(element, 'click');
-         //   expect(ganttObj.currentViewData[0].expanded).toBe(true);
-         //});
+         it('Editing parent task name with expand/collapse actions', () => {
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.currentViewData[0].expanded).toBe(true);
+         });
+         it('Editing parent task name with enter key', () => {
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let args1: any = { action: 'saveRequest', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args1);
+            expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('TaskName updated');
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.currentViewData[0].expanded).toBe(true);
+         });
          it('Editing parent taskbar', () => {
             ganttObj.dataBind();
             let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr.e-row.e-gridrowindex0level0 > td:nth-child(5)') as HTMLElement;
@@ -612,28 +612,28 @@ describe('Gantt Edit module', () => {
                 expect(ganttObj.currentViewData[2].ganttProperties.notes).toBe('changed');
             }
         });
-        //it('Editing with tab navigation', () => {
-        //    ganttObj.dataBind();
-        //    let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
-        //    triggerMouseEvent(taskName, 'dblclick');
-        //    let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
-        //    input.value = 'TaskName updated';
-        //    let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
-        //    ganttObj.keyboardModule.keyAction(args);
-        //    expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
-        //    expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
-        //    ganttObj.treeGrid.grid.endEdit();
-        //});
-        //it('Editing with tab navigation - next row', () => {
-        //    ganttObj.dataBind();
-        //    let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(12)') as HTMLElement;
-        //    triggerMouseEvent(customColumn, 'dblclick');
-        //    let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
-        //    ganttObj.keyboardModule.keyAction(args);
-        //    let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(1)') as HTMLElement };
-        //    ganttObj.keyboardModule.keyAction(args1);
-        //    expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
-        //});
+        it('Editing with tab navigation', () => {
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
+            expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
+            ganttObj.treeGrid.grid.endEdit();
+        });
+        it('Editing with tab navigation - next row', () => {
+            ganttObj.dataBind();
+            let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(12)') as HTMLElement;
+            triggerMouseEvent(customColumn, 'dblclick');
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(1)') as HTMLElement };
+            ganttObj.keyboardModule.keyAction(args1);
+            expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
+        });
     });
 });
 describe('Resource with unit', () => {

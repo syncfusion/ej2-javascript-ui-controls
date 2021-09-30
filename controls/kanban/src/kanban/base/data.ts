@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { extend } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, Query, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Kanban } from './kanban';
-import { ActionEventArgs, SaveChanges } from './interface';
+import { ActionEventArgs, SaveChanges, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from './interface';
 import { ReturnType } from './type';
 import * as events from './constant';
 
@@ -15,6 +15,8 @@ export class Data {
     public dataManager: DataManager;
     private query: Query;
     private keyField: string;
+    private isObservable: boolean;
+    protected dataState: PendingState = { isPending: false, resolver: null, isDataChanged: false };
 
     /**
      * Constructor for data module
@@ -24,12 +26,14 @@ export class Data {
     constructor(parent: Kanban) {
         this.parent = parent;
         this.keyField = this.parent.cardSettings.headerField;
+        this.dataState = { isDataChanged: false };
+        this.isObservable = false;
         this.initDataManager(parent.dataSource, parent.query);
         this.refreshDataManager();
     }
 
     /**
-     * The function used to initialize dataManager and query
+     * The function used to initialize dataManager` and query
      *
      * @param {Object[] | DataManager} dataSource Accepts the dataSource as collection of objects or Datamanager instance.
      * @param {Query} query Accepts the query to process the data from collections.
@@ -59,8 +63,69 @@ export class Data {
      * @returns {void}
      * @private
      */
-    private getData(query: Query): Promise<any> {
+    private getData(query?: Query): Promise<any> {
+        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
+            const def: Deferred = this.eventPromise({ requestType: '' }, query);
+            this.isObservable = true;
+            return def.promise;
+        }
         return this.dataManager.executeQuery(query);
+    }
+
+    public setState(state: PendingState): Object {
+        return this.dataState = state;
+    }
+
+    private getStateEventArgument(query: Query): PendingState {
+        const adaptr: UrlAdaptor = new UrlAdaptor();
+        const dm: DataManager = new DataManager({ url: '', adaptor: new UrlAdaptor });
+        const state: { data?: string, pvtData?: Object[] } = adaptr.processQuery(dm, query);
+        const data: Object = JSON.parse(state.data);
+        return extend(data, state.pvtData);
+    }
+
+    private eventPromise(args: ActionEventArgs, query?: Query, index?: number): Deferred {
+        const dataArgs: DataSourceChangedEventArgs = args;
+        const state: DataStateChangeEventArgs = <DataStateChangeEventArgs>this.getStateEventArgument(query);
+        const def: Deferred = new Deferred();
+        const deff: Deferred = new Deferred();
+        if (args.requestType !== undefined && this.dataState.isDataChanged !== false) {
+            state.action = <{}>args as ActionEventArgs;
+            if (args.requestType === 'cardChanged' || args.requestType === 'cardRemoved' || args.requestType === 'cardCreated') {
+                const editArgs: DataSourceChangedEventArgs = args;
+                editArgs.promise = deff.promise;
+                editArgs.state = state;
+                editArgs.index = index;
+                this.setState({ isPending: true, resolver: deff.resolve });
+                dataArgs.endEdit = deff.resolve;
+                dataArgs.cancelEdit = deff.reject;
+                this.parent.trigger(events.dataSourceChanged, editArgs);
+                deff.promise.then(() => {
+                    this.setState({ isPending: true, resolver: def.resolve });
+                    this.parent.trigger(events.dataStateChange, state);
+                    editArgs.addedRecords.forEach((data: Record<string, any>) => {
+                        this.parent.kanbanData.push(data);
+                    });
+                    editArgs.changedRecords.forEach((changedRecord: Record<string, any>) => {
+                        let cardObj: Record<string, any> = this.parent.kanbanData.filter((data: Record<string, any>) =>
+                        data[this.parent.cardSettings.headerField] === changedRecord[this.parent.cardSettings.headerField])[0] as Record<string, any>;
+                        extend(cardObj, changedRecord);
+                    });
+                    editArgs.deletedRecords.forEach((deletedRecord: Record<string, any>) => {
+                        const index: number = this.parent.kanbanData.findIndex((data: Record<string, any>) =>
+                                data[this.parent.cardSettings.headerField] === deletedRecord[this.parent.cardSettings.headerField]);
+                        this.parent.kanbanData.splice(index, 1);
+                   });
+                }).catch(() => { this.parent.hideSpinner(); void 0});
+            } else {
+                this.setState({ isPending: true, resolver: def.resolve });
+                this.parent.trigger(events.dataStateChange, state);
+            }
+        } else {
+            this.setState({});
+            def.resolve(this.parent.dataSource);
+        }
+        return def;
     }
 
     /**
@@ -141,6 +206,7 @@ export class Data {
             requestType: type, cancel: false, addedRecords: params.addedRecords,
             changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
         };
+        this.eventPromise(actionArgs, this.query, index);
         this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
             if (!offlineArgs.cancel) {
                 switch (updateType) {
@@ -157,15 +223,16 @@ export class Data {
                     promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery()) as Promise<any>;
                     break;
                 }
-
                 if (this.dataManager.dataSource.offline) {
-                    this.kanbanData = this.dataManager;
-                    this.parent.kanbanData = this.dataManager.dataSource.json as Record<string, any>[];
-                    this.refreshUI(offlineArgs, index);
+                    if (!this.isObservable) {
+                        this.kanbanData = this.dataManager;
+                        this.parent.kanbanData = this.dataManager.dataSource.json as Record<string, any>[];
+                        this.refreshUI(offlineArgs, index);
+                    }
                 } else {
                     promise.then((e: ReturnType) => {
-                    if (this.parent.isDestroyed) { return; }
-                       const dataManager: Promise<any> = this.getData(this.getQuery());
+                        if (this.parent.isDestroyed) { return; }
+                        const dataManager: Promise<any> = this.getData(this.getQuery());
                         dataManager.then((e: ReturnType) => this.dataManagerSuccess(e, 'DataSourceChange')).catch((e: ReturnType) => this.dataManagerFailure(e));
                         if (offlineArgs.requestType === "cardCreated") {
                             if (!Array.isArray(e)) {
@@ -204,15 +271,15 @@ export class Data {
         return onLineData;
     }
 
+
     /**
-     * The function is used to refresh the UI once the datamanager action is completed
+     * The function is used to refresh the UI once the data manager action is completed
      *
      * @param {ActionEventArgs} args Accepts the ActionEventArgs to refresh UI.
      * @param {number} position Accepts the index to refresh UI.
      * @returns {void}
-     * @private
      */
-    private refreshUI(args: ActionEventArgs, position: number): void {
+    public refreshUI(args: ActionEventArgs, position: number): void {
         this.parent.layoutModule.columnData = this.parent.layoutModule.getColumnCards();
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.layoutModule.kanbanRows = this.parent.layoutModule.getRows();
@@ -245,5 +312,5 @@ export class Data {
         this.parent.renderTemplates();
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.dataBound, args, () => this.parent.hideSpinner());
-    }  
+    }
 }

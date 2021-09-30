@@ -344,6 +344,7 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('isAutoSchedule', autoSchedule, ganttProperties, true);
         this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
         this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
+        this.parent.setRecordValue('indicators', data[taskSettings.indicators], ganttProperties, true);
         this.updateResourceName(ganttData);
         this.calculateScheduledValues(ganttData, data, isLoad);
         this.parent.setRecordValue('baselineStartDate', this.checkBaselineStartDate(baselineStartDate), ganttProperties, true);
@@ -355,7 +356,6 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('progress', progress, ganttProperties, true);
         this.parent.setRecordValue('totalProgress', progress, ganttProperties, true);
         this.parent.setRecordValue('predecessorsName', predecessors, ganttProperties, true);
-        this.parent.setRecordValue('indicators', data[taskSettings.indicators], ganttProperties, true);
         this.parent.setRecordValue('notes', notes, ganttProperties, true);
         this.parent.setRecordValue('cssClass', data[taskSettings.cssClass], ganttProperties, true);
         this.parent.setRecordValue('parentItem', this.getCloneParent(parentItem), ganttData);

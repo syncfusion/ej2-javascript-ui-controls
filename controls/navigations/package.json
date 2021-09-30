@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-navigations",
-	"version": "19.2.56",
+	"version": "19.24.0",
 	"description": "A package of Essential JS 2 navigation components such as Tree-view, Tab, Toolbar, Context-menu, and Accordion which is used to navigate from one page to another",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -114,7 +114,8 @@
 		"slide-panel",
 		"multiple-sidebar",
 		"slide-navigation",
-		"navigation-drawer"
+		"navigation-drawer",
+		"breadcrumb"
 	],
 	"repository": {
 		"type": "git",

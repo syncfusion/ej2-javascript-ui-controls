@@ -85,7 +85,8 @@ export namespace ListBase {
         urlAttributes: 'urlAttributes',
         imageAttributes: 'imageAttributes',
         imageUrl: 'imageUrl',
-        groupBy: null
+        groupBy: null,
+        sortBy: null
     };
 
     const defaultAriaAttributes: AriaAttributesMapping = {
@@ -656,7 +657,7 @@ export namespace ListBase {
         const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         const curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
         // eslint-disable-next-line
-        const compiledString: Function = compile(template);
+        const compiledString: Function = compileTemplate(template);
         const liCollection: HTMLElement[] = [];
         let value: string;
         const id: string = generateId(); // generate id for drop-down-list option.
@@ -765,7 +766,7 @@ export namespace ListBase {
         // eslint-disable-next-line
         headerItems: Element[], options?: ListBaseOptions, componentInstance?: any): Element[] {
         // eslint-disable-next-line @typescript-eslint/ban-types
-        const compiledString: Function = compile(groupTemplate);
+        const compiledString: Function = compileTemplate(groupTemplate);
         const curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
         const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         const category: string = curFields.groupBy;
@@ -969,7 +970,7 @@ export namespace ListBase {
         }
         if (grpLI && options && options.groupTemplate) {
             // eslint-disable-next-line @typescript-eslint/ban-types
-            const compiledString: Function = compile(options.groupTemplate);
+            const compiledString: Function = compileTemplate(options.groupTemplate);
             // eslint-disable-next-line
             const compiledElement: any = compiledString(
                 item,
@@ -984,7 +985,7 @@ export namespace ListBase {
             }
         } else if (!grpLI && options && options.template) {
             // eslint-disable-next-line @typescript-eslint/ban-types
-            const compiledString: Function = compile(options.template);
+            const compiledString: Function = compileTemplate(options.template);
             // eslint-disable-next-line
             const compiledElement: any = compiledString(
                 item,
@@ -1102,6 +1103,8 @@ export interface FieldsMapping {
     urlAttributes?: string;
     imageUrl?: string;
     imageAttributes?: string;
+    sortBy?: string
+
 }
 
 /**
@@ -1242,4 +1245,17 @@ export function getFieldValues(dataItem: { [key: string]: Object } | string | nu
         }
     }
     return fieldData;
+}
+
+function compileTemplate(template: string): Function {
+    if (template) {
+        try {
+            if (document.querySelector(template)) {
+                return compile(document.querySelector(template).innerHTML.trim());
+            }
+        } catch (e) {
+            return compile(template);
+        }
+    }
+    return undefined;
 }

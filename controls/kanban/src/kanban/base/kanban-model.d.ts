@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach, remove } from '@syncfusion/ej2-base';import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { Data } from './data';import { SwimlaneSettings } from '../models/swimlane-settings';import { CardSettings } from '../models/card-settings';import { DialogSettings } from '../models/dialog-settings';import { Columns } from '../models/columns';import { StackedHeaders } from '../models/stacked-headers';import { SortSettings } from '../models/sort-settings';import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel, DialogSettingsModel } from '../models/index';import { SortSettingsModel } from '../models/index';import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ScrollPosition } from './interface';import { QueryCellInfoEventArgs, DialogEventArgs } from './interface';import { ReturnType, ConstraintType, CurrentAction } from './type';import { Action } from '../actions/action';import { Crud } from '../actions/crud';import { DragAndDrop } from '../actions/drag';import { KanbanDialog } from '../actions/dialog';import { Keyboard } from '../actions/keyboard';import { KanbanTooltip } from '../actions/tooltip';import { KanbanTouch } from '../actions/touch';import { LayoutRender } from './layout-render';import * as events from '../base/constant';import * as cls from './css-constant';
+import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach, remove } from '@syncfusion/ej2-base';import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { Data } from './data';import { SwimlaneSettings } from '../models/swimlane-settings';import { CardSettings } from '../models/card-settings';import { DialogSettings } from '../models/dialog-settings';import { Columns } from '../models/columns';import { StackedHeaders } from '../models/stacked-headers';import { SortSettings } from '../models/sort-settings';import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel, DialogSettingsModel } from '../models/index';import { SortSettingsModel } from '../models/index';import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ScrollPosition } from './interface';import { QueryCellInfoEventArgs, DialogEventArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';import { ReturnType, ConstraintType, CurrentAction } from './type';import { Action } from '../actions/action';import { Crud } from '../actions/crud';import { DragAndDrop } from '../actions/drag';import { KanbanDialog } from '../actions/dialog';import { Keyboard } from '../actions/keyboard';import { KanbanTooltip } from '../actions/tooltip';import { KanbanTouch } from '../actions/touch';import { LayoutRender } from './layout-render';import * as events from '../base/constant';import * as cls from './css-constant';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -269,5 +269,21 @@ export interface KanbanModel extends ComponentModel{
      * @event 'dialogClose'
      */
     dialogClose?: EmitType<DialogEventArgs>;
+
+    /**
+     * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
+     * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
+     *
+     * @event dataStateChange
+     */
+    dataStateChange?: EmitType<DataStateChangeEventArgs>;
+
+    /**
+      * Triggers when the grid data is added, deleted and updated.
+      * Invoke the done method from the argument to start render after edit operation.
+      *
+      * @event dataSourceChanged
+      */
+    dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
 }

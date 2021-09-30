@@ -41,23 +41,23 @@ describe('Table Resize at simple case in table middle validation', () => {
             done();
         }, 1000);
     });
-    it('simple resizeColumn validation', () => {
-console.log('simple resizeColumn validation');
-        documentHelper = editor.documentHelper;
-        editor.editor.insertTable(2, 2);
-        let offsetX = 632;
-        let offsetY = 129;
-        let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.documentHelper.onMouseDownInternal(event);
-        expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
-        offsetX = documentHelper.currentPage.boundingRectangle.x + 662;
-        offsetY = documentHelper.currentPage.boundingRectangle.y + 16;
-        event = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        editor.documentHelper.onMouseMoveInternal(event);
-        expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
-        editor.documentHelper.onMouseUpInternal(event);
-        expect(editor.editorModule.tableResize.resizerPosition).toBe(-1);
-    });
+//     it('simple resizeColumn validation', () => {
+// console.log('simple resizeColumn validation');
+//         documentHelper = editor.documentHelper;
+//         editor.editor.insertTable(2, 2);
+//         let offsetX = 632;
+//         let offsetY = 129;
+//         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
+//         editor.documentHelper.onMouseDownInternal(event);
+//         expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+//         offsetX = documentHelper.currentPage.boundingRectangle.x + 662;
+//         offsetY = documentHelper.currentPage.boundingRectangle.y + 16;
+//         event = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 0 };
+//         editor.documentHelper.onMouseMoveInternal(event);
+//         expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+//         editor.documentHelper.onMouseUpInternal(event);
+//         expect(editor.editorModule.tableResize.resizerPosition).toBe(-1);
+//     });
     it('undo validation', () => {
 console.log('undo validation');
         editor.editorHistory.undo();

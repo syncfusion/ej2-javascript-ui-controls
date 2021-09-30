@@ -175,13 +175,13 @@ export class Zoom {
         const map: Maps = this.maps; let zoomArgs: IMapZoomEventArgs;
         if (!map.isTileMap) {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: type, maps: !map.isBlazor ? map : null,
+                cancel: false, name: 'zoom', type: type, maps: map,
                 tileTranslatePoint: {}, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: {}, scale: { previous: map.previousScale, current: map.scale }
             };
         } else {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: type, maps: !map.isBlazor ? map : null,
+                cancel: false, name: 'zoom', type: type, maps: map,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
             };
@@ -400,7 +400,7 @@ export class Zoom {
                             }
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
-                            if (!this.isPanning || this.maps.isBlazor) {
+                            if (!this.isPanning) {
                                 this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
                             }
                             currentEle = layerElement.childNodes[j] as Element;
@@ -516,7 +516,6 @@ export class Zoom {
                     }
                 }
                 this.maps.arrangeTemplate();
-                const blazor: void = this.maps.isBlazor ? this.maps.blazorTemplates() : null;
             }
             if (!isNullOrUndefined(this.currentLayer)) {
                 if (!animate || this.currentLayer.animationDuration === 0) {
@@ -572,18 +571,6 @@ export class Zoom {
                 };
                 eventArgs = markerShapeChoose(eventArgs, data);
                 eventArgs = markerColorChoose(eventArgs, data);
-                if (this.maps.isBlazor) {
-                    const {maps, marker, ...blazorEventArgs } : IMarkerRenderingEventArgs = eventArgs;
-                    eventArgs = blazorEventArgs;
-                    const latitudeValue: string = 'Latitude';
-                    const longitudeValue: string = 'Longitude';
-                    markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
-                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? longitudeValue :
-                            !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
-                    markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
-                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? latitudeValue :
-                            !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
-                }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
@@ -597,22 +584,6 @@ export class Zoom {
                     const long: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
                             parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? data['Longitude'] : 0;
-                    if (this.maps.isBlazor) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const data1: any = {};
-                        let j: number = 0;
-                        const text: string[] = [];
-                        for (let i: number = 0; i < Object.keys(data).length; i++) {
-                            if (Object.keys(data)[i].toLowerCase() !== 'text' && Object.keys(data)[i].toLowerCase() !== 'latitude'
-                                    && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid' && Object.keys(data)[i].toLowerCase() !== 'longitude'
-                                    && Object.keys(data)[i].toLowerCase() !== 'name') {
-                                data1['text'] = text;
-                                text[j] = data[Object.keys(data)[i].toLowerCase()];
-                                j++;
-                            }
-                        }
-                        data['text'] = data1['text'];
-                    }
                     const offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         const markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -825,28 +796,6 @@ export class Zoom {
         const layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         const marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
-            if (this.maps.isBlazor) {
-                marker.longitudeValuePath = !isNullOrUndefined(marker.longitudeValuePath) ?
-                    marker.longitudeValuePath : !isNullOrUndefined(marker.dataSource[dataIndex]['Longitude']) ? 'Longitude' :
-                        !isNullOrUndefined(marker.dataSource[dataIndex]['longitude']) ? 'longitude' : null;
-                marker.latitudeValuePath = !isNullOrUndefined(marker.latitudeValuePath) ?
-                    marker.latitudeValuePath : !isNullOrUndefined(marker.dataSource[dataIndex]['Latitude']) ? 'Latitude' :
-                        !isNullOrUndefined(marker.dataSource[dataIndex]['latitude']) ? 'latitude' : null;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const data1: any = {};
-                let j: number = 0;
-                const text: string[] = [];
-                for (let i: number = 0; i < Object.keys(marker.dataSource[dataIndex]).length; i++) {
-                    if (Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'text' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'longitude'
-                        && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'latitude' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'blazortemplateid'
-                        && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'name') {
-                        data1['text'] = text;
-                        text[j] = marker.dataSource[dataIndex][Object.keys(marker.dataSource[dataIndex])[i].toLowerCase()];
-                        j++;
-                    }
-                }
-                marker.dataSource[dataIndex]['text'] = data1['text'];
-            }
             const lng: number = (!isNullOrUndefined(marker.longitudeValuePath)) ?
                 Number(getValueFromObject(marker.dataSource[dataIndex], marker.longitudeValuePath)) :
                 !isNullOrUndefined(marker.dataSource[dataIndex]['longitude']) ? parseFloat(marker.dataSource[dataIndex]['longitude']) :
@@ -885,9 +834,19 @@ export class Zoom {
                 }
             } else {
                 if (type === 'Template') {
-                    const elementOffset: ClientRect = element.getBoundingClientRect();
-                     (<HTMLElement>element).style.left = ((location.x + x) * scale) + marker.offset.x - this.maps.mapAreaRect.x - (elementOffset.width / 2) + 'px';
-                     (<HTMLElement>element).style.top = ((location.y + y) * scale) + marker.offset.y - this.maps.mapAreaRect.y - (elementOffset.height / 2) + 'px';
+                    if (duration > 0) {
+                        location.x = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location.x)) * scale);
+                        location.y = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location.y)) * scale);
+                        const layerOffset: ClientRect = getElementByID(this.maps.element.id + '_Layer_Collections').getBoundingClientRect();
+                        const elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
+                        (<HTMLElement>element).style.left = (((location.x) + (layerOffset.left - elementOffset.left)) + marker.offset.x) + 'px';
+                        (<HTMLElement>element).style.top = (((location.y) + (layerOffset.top - elementOffset.top)) + marker.offset.y) + 'px';
+                        (<HTMLElement>element).style.transform = 'translate(-50%, -50%)';
+                    } else {
+                        const elementOffset: ClientRect = element.getBoundingClientRect();
+                        (<HTMLElement>element).style.left = ((location.x + x) * scale) + marker.offset.x - this.maps.mapAreaRect.x - (elementOffset.width / 2) + 'px';
+                        (<HTMLElement>element).style.top = ((location.y + y) * scale) + marker.offset.y - this.maps.mapAreaRect.y - (elementOffset.height / 2) + 'px';
+                    }
                 } else {
                     location.x = (((location.x + x) * scale) + marker.offset.x);
                     location.y = (((location.y + y) * scale) + marker.offset.y);
@@ -928,7 +887,7 @@ export class Zoom {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const location: any = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, mouseLocation['layerX'], mouseLocation['layerY']);
             panArgs = {
-                cancel: false, name: pan, maps: !map.isBlazor ? map : null,
+                cancel: false, name: pan, maps: map,
                 tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
                 scale: map.scale, tileZoomLevel: map.tileZoomLevel, latitude: location['latitude'], longitude: location['longitude']
             };
@@ -962,7 +921,7 @@ export class Zoom {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const location: any = this.maps.getTileGeoLocation(mouseLocation['layerX'], mouseLocation['layerY']);
             panArgs = {
-                cancel: false, name: pan, maps: !map.isBlazor ? map : null,
+                cancel: false, name: pan, maps: map,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
                 translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
                 tileZoomLevel: map.tileZoomLevel, latitude: location['latitude'], longitude: location['longitude']

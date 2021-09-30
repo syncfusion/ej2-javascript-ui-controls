@@ -330,3 +330,33 @@ describe('EJ2-52017-RichTextEditor hangs when pasting the word content after the
         expect((divElement as any).childNodes[0].parentElement.hasAttribute("contenteditable")).toBe(true);
     });
 });
+
+describe('EJ2-52641- Text inserted outside of the RichTextEditor after Shift + Enter Key pressed', function () {
+    let innervalue: string = '<p>Testing<br/></br/></p>';
+    let rangeNodes: Node[] = [];
+    let range: Range;
+    let nodeCutter: NodeCutter = new NodeCutter();
+    let divElement: HTMLElement = document.createElement('div');
+    let nonElement: HTMLElement = document.createElement('div');
+    let pasteElement: HTMLElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    pasteElement.innerHTML = "<p>NewWord</p>";
+    beforeAll(function () {
+        document.body.appendChild(divElement);
+        document.body.appendChild(nonElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Inserting HTML with shift + enter action', function () {
+        range = document.createRange();
+        range.setStart(divElement.childNodes[0], 2);
+        range.setEnd(divElement.childNodes[0], 2);
+        rangeNodes.push(divElement.childNodes[0].lastChild);
+        rangeNodes.push(nonElement);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect((divElement as any).childNodes[1].childNodes.length).toBe(1);
+    });
+});

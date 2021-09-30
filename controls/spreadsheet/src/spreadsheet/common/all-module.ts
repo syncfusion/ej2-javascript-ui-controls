@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../index';
 import { Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, CellFormat, WrapText, ProtectSheet } from '../actions/index';
-import { CollaborativeEditing, UndoRedo, Resize, SpreadsheetHyperlink, Insert, Delete, FindAndReplace, Merge } from '../actions/index';
+import { CollaborativeEditing, UndoRedo, Resize, SpreadsheetHyperlink, Insert, Delete, FindAndReplace, Merge, AutoFill } from '../actions/index';
 import { Ribbon, FormulaBar, SheetTabs, Open, Save, NumberFormat, Formula, Sort, Filter, SpreadsheetImage } from '../integrations/index';
 import { SpreadsheetChart } from '../integrations/index';
 import { DataBind } from '../../workbook/integrations/index';
@@ -24,7 +24,7 @@ export class AllModule {
             Ribbon, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open,
             Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText,
             Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, SpreadsheetImage, ConditionalFormatting,
-            SpreadsheetChart);
+            SpreadsheetChart, AutoFill);
     }
 
     /**

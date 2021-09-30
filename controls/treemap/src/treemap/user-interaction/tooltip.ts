@@ -86,24 +86,11 @@ export class TreeMapTooltip {
                     treemap: this.treemap,
                     element: target, eventArgs: e
                 };
-                if (this.treemap.isBlazor) {
-                    const tooltipArgs : ITreeMapTooltipArgs = {
-                        cancel : false,
-                        location : tootipArgs.options['location'],
-                        text : tootipArgs.options['text'],
-                        textStyle :  tootipArgs.options['textStyle'],
-                        data : tootipArgs.options['data'],
-                        template :  tootipArgs.options['template'],
-                        name : tooltipRendering
-                    };
-                    this.treemap.trigger(tooltipRendering, tooltipArgs, (args?: ITreeMapTooltipArgs) => {
-                        this.addTooltip(null, markerFill, tooltipEle, tooltipArgs);
-                    });
-                } else {
-                    this.treemap.trigger(tooltipRendering, tootipArgs, (args?: ITreeMapTooltipRenderEventArgs) => {
-                        this.addTooltip(tootipArgs, markerFill, tooltipEle);
-                    });
-                }
+
+                this.treemap.trigger(tooltipRendering, tootipArgs, (args?: ITreeMapTooltipRenderEventArgs) => {
+                    this.addTooltip(tootipArgs, markerFill, tooltipEle);
+                });
+
             }
         } else {
             this.removeTooltip();
@@ -139,8 +126,7 @@ export class TreeMapTooltip {
                 palette: [markerFill],
                 areaBounds: this.treemap.areaRect,
                 textStyle: args['textStyle'],
-				fill:this.treemap.tooltipSettings.fill ? this.treemap.tooltipSettings.fill : this.treemap.themeStyle.tooltipFillColor,
-                blazorTemplate: { name: 'TooltipTemplate', parent: this.treemap.tooltipSettings }
+				fill:this.treemap.tooltipSettings.fill ? this.treemap.tooltipSettings.fill : this.treemap.themeStyle.tooltipFillColor
             });
             this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
 			this.svgTooltip.appendTo(tooltipEle);

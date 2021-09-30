@@ -201,7 +201,15 @@ export type ChartTheme =
 /**  Render a chart with BootstrapDark theme. */
 'BootstrapDark' |
 /**  Render a chart with Bootstrap4 theme. */
-'Bootstrap4';
+'Bootstrap4'|
+/**  Render a chart with Bootstrap5Dark theme. */
+'Bootstrap5Dark'|
+/**  Render a chart with Bootstrap5 theme. */
+'Bootstrap5' |
+/**  Render a chart with Tailwind theme. */
+'Tailwind' | 
+/**  Render a chart with TailwindDark theme. */
+'TailwindDark' ;
 
 /**
  * Defines the position of the legend. They are
@@ -242,3 +250,12 @@ export type LabelPosition =
 'Middle' |
 /** Position the label based on series. */
 'Auto';
+
+/**
+ * Defines fill type options.
+ */
+ export type AutoFillType = 'FillSeries' | 'CopyCells' | 'FillFormattingOnly' | 'FillWithoutFormatting';
+ /**
+ * Defines Auto fill direction options.
+ */
+  export type AutoFillDirection = 'Down' | 'Right' | 'Up' | 'Left';

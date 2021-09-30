@@ -208,4 +208,44 @@
       transform: scale(1);
         }
     }
+
+  .e-calendar .e-btn.e-today.e-flat.e-primary,
+  .e-calendar .e-css.e-btn.e-today.e-flat.e-primary {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $today-buuton-bg;
+      border-color: $today-buuton-bg-border-color;
+      color: $today-buuton-text-color;
+    }
+  }
+
+  .e-calendar .e-btn.e-today.e-flat.e-primary:hover,
+  .e-calendar .e-css.e-btn.e-today.e-flat.e-primary:hover {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $today-buuton-hover-bg;
+      border-color: $today-buuton-bg-border-hover-color;
+      color: $today-buuton-text-hover-color;
+    }
+  }
+
+  .e-calendar .e-btn.e-today.e-flat.e-primary:active,
+  .e-calendar .e-btn.e-today.e-flat.e-primary.e-active,
+  .e-calendar .e-css.e-btn.e-today.e-flat.e-primary:active,
+  .e-calendar .e-css.e-btn.e-today.e-flat.e-primary.e-active {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $today-buuton-active-bg;
+      border-color: $today-buuton-bg-border-active-color;
+      color: $today-buuton-text-active-color;
+    }
+  }
+
+  .e-calendar .e-btn.e-today.e-flat.e-primary.e-disabled,
+  .e-calendar .e-btn.e-today.e-flat.e-primary.e-disabled,
+  .e-calendar .e-css.e-btn.e-today.e-flat.e-primary.e-disabled,
+  .e-calendar .e-css.e-btn.e-today.e-flat.e-primary.e-disabled {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $calendar-today-disabled-background-style;
+      border-color: $calendar-today-disabled-border-style;
+      color: $calendar-today-disabled-color;
+    }
+  }
 }

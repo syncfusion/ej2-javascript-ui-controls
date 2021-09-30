@@ -153,7 +153,7 @@ export class SparklineRenderer {
             lineWidth: spark.lineWidth,
             border: spark.border,
             fill: spark.fill,
-            sparkline: !this.sparkline.isBlazor ? spark : null
+            sparkline: spark
         };
         const seriesRenderingSuccess: Function = (args: ISeriesRenderingEventArgs) => {
             if (!this.visiblePoints || args.cancel) {
@@ -399,10 +399,6 @@ export class SparklineRenderer {
                 name: 'pointRendering', cancel: false, pointIndex: i, fill: rectOptions.fill,
                 border: { color: rectOptions.stroke, width: args.border.width }
             };
-            if (this.sparkline.isBlazor) {
-                const { ...blazorpointArgs }: ISparklinePointEventArgs = pointArgs;
-                pointArgs = blazorpointArgs;
-            }
             this.sparkline.trigger('pointRendering', pointArgs, () => {
                 temp = points[i];
                 rectOptions.id = id + i;
@@ -494,13 +490,9 @@ export class SparklineRenderer {
                 name: 'markerRendering', cancel: false,
                 border: { color: option.stroke, width: marker.border.width },
                 fill: option.fill, pointIndex: i,
-                sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
+                sparkline: this.sparkline,
                 x: option.cx, y: option.cy, size: marker.size
             };
-            if (this.sparkline.isBlazor) {
-                const { ...blazormarkerArgs }: IMarkerRenderingEventArgs = markerArgs;
-                markerArgs = blazormarkerArgs;
-            }
             this.sparkline.trigger('markerRendering', markerArgs, () => {
                 if (render && !markerArgs.cancel) {
                     option.id = id + i;
@@ -594,13 +586,9 @@ export class SparklineRenderer {
             let labelArgs: IDataLabelRenderingEventArgs = {
                 name: 'dataLabelRendering', cancel: false,
                 border: dataLabel.border, fill: dataLabel.fill, pointIndex: i,
-                sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
+                sparkline: this.sparkline,
                 x: option.x, y: option.y, text: option.text, color: color
             };
-            if (this.sparkline.isBlazor) {
-                const {...blazordataLabelArgs}: IDataLabelRenderingEventArgs = labelArgs;
-                labelArgs = blazordataLabelArgs;
-            }
             this.sparkline.trigger('dataLabelRendering', labelArgs, () => {
                 size = measureText(labelArgs.text, labelStyle);
                 option.text = labelArgs.text;
@@ -797,7 +785,7 @@ export class SparklineRenderer {
             min = isNullOrUndefined(axis.minY) ? min : axis.minY;
             const color: string = axis.lineSettings.color || this.sparkline.sparkTheme.axisLineColor;
             const eventArgs: IAxisRenderingEventArgs = {
-                name: 'axisRendering', cancel: false, sparkline: !this.sparkline.isBlazor ? model : null,
+                name: 'axisRendering', cancel: false, sparkline: model,
                 maxX: maxX, minX: minX, maxY: max, minY: min, value: axis.value,
                 lineColor: color, lineWidth: axis.lineSettings.width
             };
@@ -927,7 +915,7 @@ export class SparklineRenderer {
         const args: ISparklinePointEventArgs = {
             name: name, cancel: false,
             border: border, fill: fill,
-            sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
+            sparkline: this.sparkline,
             pointIndex: i
         };
         this.sparkline.trigger(name, args);

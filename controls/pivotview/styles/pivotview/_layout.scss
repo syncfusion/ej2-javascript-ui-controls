@@ -55,11 +55,11 @@
         font-weight: 500;
         width: 100%;
 
-        @if ($pivotgrid-skin == 'tailwind') {
+        @if ($skin-name == 'tailwind') {
           padding-bottom: 4px;
         }
 
-        @if ($pivotgrid-skin == 'tailwind-dark') {
+        @if ($skin-name == 'bootstrap5') {
           padding-bottom: 4px;
         }
       }
@@ -99,15 +99,6 @@
         padding-top: $pivotgrid-editor-search-padding-size;
       }
 
-      .e-checkbox-wrapper .e-frame {
-        height: 18px;
-        width: 18px;
-        @if ($pivotgrid-skin == 'bootstrap4') {
-          height: 14px;
-          width: 14px;
-        }
-      }
-
       .e-group-field-div-content {
         margin-bottom: 10px;
       }
@@ -120,6 +111,38 @@
       .e-editor-search-container {
         display: flex;
         padding: 0 $pivotgrid-editor-search-padding-size 10px;
+
+        .e-clear-icon-hide {
+          display: inline-block;
+          visibility: hidden;
+        }
+      }
+
+      @if ($pivotgrid-skin == 'bootstrap4') {
+        &:not(.e-excel-filter) {
+          .e-editor-search-wrapper, 
+          .e-editor-search-container {
+            padding: 5px $pivotgrid-editor-search-padding-size 10px;
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap5') or ($skin-name == 'tailwind') {
+        &:not(.e-excel-filter) {
+          .e-editor-search-wrapper, 
+          .e-editor-search-container {
+            padding: 5px $pivotgrid-editor-search-padding-size 10px;
+          }
+        }
+      }
+
+      @if ($skin-name == 'tailwind') {
+        &:not(.e-excel-filter) {
+          .e-editor-search-wrapper, 
+          .e-editor-search-container {
+            padding: 5px $pivotgrid-editor-search-padding-size 10px;
+          }
+        }
       }
 
       .e-filter-sort {
@@ -136,9 +159,9 @@
 
           &:hover {
             @if ($pivotgrid-skin == 'bootstrap4') {
-              background-color: #6c757d;
-              border-color: #6c757d;
-              color: #fff;
+              background-color: #6c757d !important;
+              border-color: #6c757d !important;
+              color: #fff !important;
             }
           }
 
@@ -149,6 +172,9 @@
               color: $pivotgrid-sort-select-color;
               outline: none;
             }
+            @if ($skin-name == 'bootstrap5') {
+              box-shadow: none !important;
+            }         
           }
 
           .e-sort-ascend-icon,
@@ -158,9 +184,9 @@
 
           &:focus {
             @if ($pivotgrid-skin == 'bootstrap4') {
-              background-color: #6c757d;
-              border-color: #6c757d;
-              color: #fff;
+              background-color: #6c757d !important;
+              border-color: #6c757d !important;
+              color: #fff !important;
             }
 
             &.e-active {
@@ -168,6 +194,9 @@
               border-color: $pivotgrid-sort-select-border-color;
               color: $pivotgrid-sort-select-color;
               outline: none;
+              @if ($skin-name == 'bootstrap5') {
+                box-shadow: none !important;
+              }
             }
           }
         }
@@ -189,7 +218,6 @@
 
       .e-member-editor-container {
         display: inline-table;
-        height: 100%;
         width: 100%;
 
         &.e-olap-field-list-tree {
@@ -232,11 +260,7 @@
       .e-excelfilter {
         padding-top: 20px;
 
-        @if ($pivotgrid-skin == 'tailwind') {
-          padding-top: 12px;
-        }
-
-        @if ($pivotgrid-skin == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           padding-top: 12px;
         }
 
@@ -280,13 +304,10 @@
           display: none;
         }
 
-        @if ($pivotgrid-skin == 'tailwind') {
+        @if ($skin-name == 'tailwind') {
           padding-top: 0;
         }
 
-        @if ($pivotgrid-skin == 'tailwind-dark') {
-          padding-top: 0;
-        }
       }
 
       .e-filter-tab-wrapper,
@@ -528,11 +549,7 @@
       .e-dlg-content {
         overflow: auto;
 
-        @if ($pivotgrid-skin == 'tailwind') {
-          padding-top: 12px;
-        }
-
-        @if ($pivotgrid-skin == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           padding-top: 12px;
         }
       }
@@ -566,11 +583,6 @@
       .e-dialog-show-legend {
         width: 49%;
       }
-
-      .e-icons.e-frame {
-        height: $pivotgrid-checkbox-frame-size;
-        width: $pivotgrid-checkbox-frame-size;
-      }
     }
 
     .e-pivot-format-dialog {
@@ -586,11 +598,7 @@
         .e-pivot-format-grouping-lable,
         .e-pivot-format-decimal-lable {
           font-weight: 500;
-          @if ($pivotgrid-skin == 'tailwind') {
-            padding-bottom: 4px;
-          }
-  
-          @if ($pivotgrid-skin == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             padding-bottom: 4px;
           }
         }
@@ -601,11 +609,7 @@
         .e-pivot-format-grouping-drop,
         .e-pivot-format-decimal-drop {
           margin-bottom: 20px;
-          @if ($pivotgrid-skin == 'tailwind') {
-            margin-bottom: 12px;
-          }
-  
-          @if ($pivotgrid-skin == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             margin-bottom: 12px;
           }
         }
@@ -616,9 +620,16 @@
       border-bottom: 0;
       border-style: solid;
 
+      @if ($skin-name == 'bootstrap5') ($skin-name == 'tailwind') {
+        border-top: 1px solid $pivotgrid-border;
+        border-left: 1px solid $pivotgrid-border;
+        border-right: 1px solid $pivotgrid-border;
+      }
+
       .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon {
         font-size: 16px;
       }
+
 
       .e-menu-wrapper,
       .e-menu-container {
@@ -632,6 +643,7 @@
         // sass-lint:disable-all
         ul .e-menu-item {
           height: $pivotgrid-menubar-height;
+          overflow: hidden;
           padding-left: 10px;
           @if ($pivotgrid-skin == 'bootstrap4') {
             background-color: #f8f9fa;
@@ -645,11 +657,19 @@
             @if ($pivotgrid-skin == 'bootstrap4') {
               color: #495057;
             }
+
+            @if ($skin-name == 'bootstrap5') {
+              line-height: 32px;
+            }
           }
 
           .e-caret {
             @if ($pivotgrid-skin == 'bootstrap4') {
               color: #495057;
+            }
+
+            @if ($skin-name == 'bootstrap5') {
+              line-height: 32px;
             }
           }
         }
@@ -722,7 +742,7 @@
 
   .e-mdx-query-content {
     background-color: $pivotgrid-table-background-color;
-    color: $field-list-default-formula-font-color;
+    color: $pivotgrid-default-font-color;
     font-size: 14px;
     font-weight: 500;
     height: 200px;
@@ -783,6 +803,11 @@
   .e-drillthrough-dialog {
     .e-drillthrough-body-header-container {
       margin-bottom: 20px;
+
+      @if ($skin-name == 'bootstrap5') {
+        margin-bottom: 18px;
+      }
+
     }
 
     .e-drillthrough-body-header {
@@ -856,7 +881,6 @@
         }
       }
     }
-    // sass-lint:enable-all
 
     .e-member-editor-dialog {
       .e-filter-tab-wrapper,
@@ -878,12 +902,9 @@
 
       .e-excelfilter {
         .e-member-editor-container-outer-div {
-          height: $pivotgrid-excel-member-filter-bigger-height;
+          height: $pivotgrid-excel-member-filter-bigger-height !important;
         }
-        @if ($pivotgrid-skin == 'tailwind') {
-          padding-top: 16px;
-        }
-        @if ($pivotgrid-skin == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           padding-top: 16px;
         }
       }
@@ -925,6 +946,11 @@
       }
     }
 
+    .e-value-field-settings {
+      max-height: 510px !important;
+    }
+    // sass-lint:enable-all
+
     .e-pivot-format-dialog {
       .e-pivot-format-dialog-outer {
         padding: 0 20px 10px;
@@ -932,15 +958,6 @@
     }
 
     .e-group-field-settings {
-      .e-checkbox-wrapper .e-frame {
-        height: 22px;
-        width: 22px;
-        @if ($pivotgrid-skin == 'bootstrap4') {
-          height: 18px;
-          width: 18px;
-        }
-      }
-
       .e-caption-option-text,
       .e-checkbox-wrapper .e-label {
         font-size: 14px;
@@ -1012,14 +1029,6 @@
   .e-bigger.e-pivotview-report-dialog {
     .e-pivotview-report-label {
       margin-top: $pivotgrid-bigger-report-label-margin-top;
-    }
-  }
-
-  .e-bigger .e-pivotchart-type-dialog,
-  .e-bigger.e-pivotchart-type-dialog {
-    .e-icons.e-frame {
-      height: $pivotgrid-bigger-checkbox-frame-size;
-      width: $pivotgrid-bigger-checkbox-frame-size;
     }
   }
 }

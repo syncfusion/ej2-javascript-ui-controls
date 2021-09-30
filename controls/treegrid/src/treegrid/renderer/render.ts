@@ -148,16 +148,30 @@ export class Render {
         } else if (this.templateResult) {
             this.templateResult = null;
         }
-        if (frozenColumns > this.parent.treeColumnIndex && frozenColumns > 0 &&
-            grid.getColumnIndexByUid(args.column.uid) === frozenColumns) {
-            addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
-        } else if (frozenColumns < this.parent.treeColumnIndex && frozenColumns > 0 &&
-            (grid.getColumnIndexByUid(args.column.uid) === frozenColumns
-                || grid.getColumnIndexByUid(args.column.uid) === frozenColumns - 1)) {
-            addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
-        } else if (frozenColumns === this.parent.treeColumnIndex && frozenColumns > 0 &&
-            grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex - 1) {
-            addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+        let freeze: boolean = (grid.getFrozenLeftColumnsCount() > 0 || grid.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (!freeze) {
+            if (frozenColumns > this.parent.treeColumnIndex && frozenColumns > 0 &&
+                grid.getColumnIndexByUid(args.column.uid) === frozenColumns) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+            } else if (frozenColumns < this.parent.treeColumnIndex && frozenColumns > 0 &&
+                (grid.getColumnIndexByUid(args.column.uid) === frozenColumns
+                    || grid.getColumnIndexByUid(args.column.uid) === frozenColumns - 1)) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+            } else if (frozenColumns === this.parent.treeColumnIndex && frozenColumns > 0 &&
+                grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex - 1) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+            }
+        } else {
+            let freezerightColumns = grid.getFrozenRightColumns();
+            let freezeLeftColumns = grid.getFrozenLeftColumns();
+            let movableColumns = grid.getMovableColumns(); 
+            if ((freezerightColumns.length > 0) && freezerightColumns[0].field === args.column.field) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+            } else if ((freezeLeftColumns.length > 0) && freezeLeftColumns[0].field === args.column.field) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+            } else if ((movableColumns.length > 0) && movableColumns[0].field === args.column.field) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+            }
         }
         if (!isNullOrUndefined(column) && column.showCheckbox) {
             this.parent.notify('columnCheckbox', args);

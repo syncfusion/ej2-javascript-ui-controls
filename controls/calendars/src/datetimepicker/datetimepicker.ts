@@ -4,7 +4,7 @@ import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Br
 import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, extend, isBlazor, blazorCultureFormats } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';
@@ -100,7 +100,6 @@ export class DateTimePicker extends DatePicker {
      * Specifies the time interval between the two adjacent time values in the time popup list .
      *
      * @default 30
-     * @blazorType int
      */
     @Property(30)
     public step: number;
@@ -110,7 +109,6 @@ export class DateTimePicker extends DatePicker {
      * {% codeBlock src='datetimepicker/scrollTo/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public scrollTo: Date;
@@ -119,7 +117,6 @@ export class DateTimePicker extends DatePicker {
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -267,7 +264,6 @@ export class DateTimePicker extends DatePicker {
      * {% codeBlock src='datetimepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
@@ -354,7 +350,6 @@ export class DateTimePicker extends DatePicker {
      * Gets or sets the minimum date that can be selected in the DateTimePicker.
      *
      * @default new Date(1900, 00, 01)
-     * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
     @Property(new Date(1900, 0, 1))
     public min: Date;
@@ -362,7 +357,6 @@ export class DateTimePicker extends DatePicker {
      * Gets or sets the maximum date that can be selected in the DateTimePicker.
      *
      * @default new Date(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
@@ -371,7 +365,6 @@ export class DateTimePicker extends DatePicker {
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      * > For more details about firstDayOfWeek refer to
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
@@ -502,8 +495,6 @@ export class DateTimePicker extends DatePicker {
      * Triggers when popup is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
-     * @blazorType PopupObjectArgs
      */
     @Event()
     public open: EmitType<Object>;
@@ -511,8 +502,6 @@ export class DateTimePicker extends DatePicker {
      * Triggers when popup is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
-     * @blazorType PopupObjectArgs
      */
     @Event()
     public close: EmitType<Object>;
@@ -541,7 +530,6 @@ export class DateTimePicker extends DatePicker {
      * Triggers when DateTimePicker is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -549,7 +537,6 @@ export class DateTimePicker extends DatePicker {
      * Triggers when DateTimePicker is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -604,7 +591,7 @@ export class DateTimePicker extends DatePicker {
         }
         removeClass([this.inputWrapper.container], INPUTFOCUS);
         const blurArguments: BlurEventArgs = {
-            model: (isBlazor() && this.isServerRendered) ? null : this
+            model: this
         };
         if (this.isTimePopupOpen()) {
             this.hide(e);
@@ -778,7 +765,7 @@ export class DateTimePicker extends DatePicker {
         let dateOptions: object;
         if (!isNullOrUndefined(value)) {
             if (this.calendarMode === 'Gregorian') {
-                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
             } else {
                 dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
@@ -830,8 +817,7 @@ export class DateTimePicker extends DatePicker {
         let cldrTime: string;
         if (this.isNullOrEmpty(this.timeFormat)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = isBlazor() ? (<string>(getValue('t', getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a') :
-                <string>(getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
             } else {
                 cldrTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
             }
@@ -843,7 +829,7 @@ export class DateTimePicker extends DatePicker {
     private cldrDateTimeFormat(): string {
         let cldrTime: string;
         const culture: Internationalization = new Internationalization(this.locale);
-        const dateFormat: string = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
+        const dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         } else {
@@ -855,8 +841,7 @@ export class DateTimePicker extends DatePicker {
     private getCldrFormat(type: string): string {
         let cldrDateTime: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTime = isBlazor() ? (<string>(getValue('t', getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a') :
-            <string>(getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
         } else {
             cldrDateTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
         }
@@ -872,8 +857,7 @@ export class DateTimePicker extends DatePicker {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected getCultureTimeObject(ld: Object, c: string): Object {
         if (this.calendarMode === 'Gregorian') {
-            return isBlazor() ? (<string>(getValue('t', getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a') :
-                (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld));
+            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
         } else {
             return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.timeFormats.short', ld);
         }
@@ -1018,7 +1002,7 @@ export class DateTimePicker extends DatePicker {
     private openPopup(e: KeyboardEvent | MouseEvent | Event): void {
         this.preventArgs = {
             cancel: false,
-            popup: (isBlazor() && this.isServerRendered) ? null : this.popupObject,
+            popup: this.popupObject,
             event: e || null
         };
         const eventArgs: PopupObjectArgs = this.preventArgs;
@@ -1410,7 +1394,7 @@ export class DateTimePicker extends DatePicker {
         if (this.popupObj || this.dateTimeWrapper) {
             this.preventArgs = {
                 cancel: false,
-                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || this.popupObject,
+                popup: this.popupObj || this.popupObject,
                 event: e || null
             };
             const eventArgs: PopupObjectArgs = this.preventArgs;
@@ -1650,7 +1634,7 @@ export class DateTimePicker extends DatePicker {
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
                 format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
-                type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+                type: 'dateTime', skeleton: 'yMd'
             });
         } else {
             dateString = this.globalize.formatDate(time, {

@@ -3,7 +3,7 @@
  */
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { OpenOptions, OpenFailureArgs } from '../common/interface';
-import { refreshSheetTabs, completeAction } from '../common/event';
+import { refreshSheetTabs, completeAction, unProtectSheetPassword } from '../common/event';
 import { dialog, importProtectWorkbook, locale } from '../common/index';
 import { Dialog } from '../services/index';
 import { openSuccess, openFailure } from '../../workbook/index';
@@ -12,6 +12,8 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 export class Open {
     private parent: Spreadsheet;
+    public isImportedFile:boolean = false;
+    public unProtectSheetIdx: number[] = [];
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -84,7 +86,7 @@ export class Open {
      * @returns {void} - File open success event declaration.
      */
     private openSuccess(response: JsonData): void {
-        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword'];
+        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword', 'CorrectSheetPassword'];
         if (openError.indexOf(response.data) > -1) {
             if (openError[2] === response.data) {
                 if (!this.parent.element.querySelector('.e-importprotectworkbook-dlg')) {
@@ -97,7 +99,21 @@ export class Open {
                     innerHTML: l10n.getConstant('InCorrectPassword')
                 });
                 (this.parent.element.querySelector('.e-importprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
-            } else  {
+            } else if(openError[4] === response.data) {
+                const l10n: L10n = this.parent.serviceLocator.getService(locale);
+                const alertSpan: Element = this.parent.createElement('span', {
+                    className: 'e-unprotectsheetpwd-alert-span',
+                    innerHTML: l10n.getConstant('InCorrectPassword')
+                });
+                (this.parent.element.querySelector('.e-unprotectworksheet-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
+            } else if(openError[5] === response.data){
+                this.parent.isOpen = false;
+                this.parent.notify(unProtectSheetPassword, null);
+                const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+                dialogInst.hide();
+                this.parent.hideSpinner();
+            } 
+            else  {
                 const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
                 dialogInst.hide();
                 (this.parent.serviceLocator.getService(dialog) as Dialog).show({
@@ -126,11 +142,15 @@ export class Open {
         if (!this.parent.element) {
             return;
         }
-        this.parent.trigger('openComplete', { response: response });
-        this.parent.notify(completeAction, {response: response, action: 'import'});
-        this.parent.renderModule.refreshSheet(response.isOpenFromJson);
-        this.parent.notify(refreshSheetTabs, this);
-        this.parent.hideSpinner();
+        if (openError[5] != response.data) {
+            this.parent.trigger('openComplete', { response: response });
+            this.parent.notify(completeAction, { response: response, action: 'import' });
+            this.parent.renderModule.refreshSheet(response.isOpenFromJson);
+            this.parent.notify(refreshSheetTabs, this);
+            this.isImportedFile = true;
+            this.unProtectSheetIdx = [];
+            this.parent.hideSpinner();
+        }
     }
 
     /**

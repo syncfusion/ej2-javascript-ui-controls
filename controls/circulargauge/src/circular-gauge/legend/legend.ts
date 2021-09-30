@@ -1,8 +1,8 @@
 /* eslint-disable brace-style */
 /* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
-import { appendPath, textElement, PathOption, TextOption, calculateShapes, textTrim, removeElement } from '../utils/helper';
-import { Rect, Size, GaugeLocation, stringToNumber, measureText, RectOption, getElement, showTooltip } from '../utils/helper';
+import { removeElement, getElement, stringToNumber, measureText, textElement, appendPath, calculateShapes, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption } from '../utils/helper-common';
+import { textTrim, showTooltip } from '../utils/helper-legend';
 import { Property, Complex, ChildProperty, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BorderModel, FontModel, MarginModel } from '../model/base-model';
 import { Font, Border, Margin } from '../model/base';
@@ -659,6 +659,14 @@ export class Legend {
      */
     private setStyles(toggledIndexes: Index[]): void {
         for (let i: number = 0; i < toggledIndexes.length; i++) {
+            let count: number = 0;
+            for(let j:number = 0; j < toggledIndexes[i].rangeIndex; j++){
+                const rangeStart:number = this.gauge.axes[toggledIndexes[i].axisIndex].ranges[j].start;
+                const rangeEnd:number = this.gauge.axes[toggledIndexes[i].axisIndex].ranges[j].end;
+                if(rangeStart == rangeEnd){
+                    count++;
+                }
+            }
             const rangeID: string = this.gauge.element.id + '_Axis_' + toggledIndexes[i].axisIndex + '_Range_' + toggledIndexes[i].rangeIndex;
             const shapeID: string = this.legendID + '_Axis_' + toggledIndexes[i].axisIndex + '_Shape_' + toggledIndexes[i].rangeIndex;
             const textID: string = this.legendID + '_Axis_' + toggledIndexes[i].axisIndex + '_text_' + toggledIndexes[i].rangeIndex;
@@ -666,14 +674,18 @@ export class Legend {
             const shapeElement: HTMLElement = this.gauge.svgObject.querySelector('#' + shapeID);
             const textElement: HTMLElement = this.gauge.svgObject.querySelector('#' + textID);
             if (toggledIndexes[i].isToggled) {
-                rangeElement.style.visibility = 'visible';
-                shapeElement.setAttribute('fill', this.legendCollection[toggledIndexes[i].rangeIndex].fill);
-                textElement.setAttribute('fill', this.legend.textStyle.color || this.gauge.themeStyle.labelColor);
+                if (!isNullOrUndefined(rangeElement)) {
+                    rangeElement.style.visibility = 'visible';
+                    shapeElement.setAttribute('fill', this.legendCollection[toggledIndexes[i].rangeIndex - count].fill);
+                    textElement.setAttribute('fill', this.legend.textStyle.color || this.gauge.themeStyle.labelColor);
+                }
             } else {
                 const hiddenColor: string = '#D3D3D3';
-                rangeElement.style.visibility = 'hidden';
-                shapeElement.setAttribute('fill', hiddenColor);
-                textElement.setAttribute('fill', hiddenColor);
+                if (!isNullOrUndefined(rangeElement)) {
+                    rangeElement.style.visibility = 'hidden';
+                    shapeElement.setAttribute('fill', hiddenColor);
+                    textElement.setAttribute('fill', hiddenColor);
+                }
             }
         }
     }

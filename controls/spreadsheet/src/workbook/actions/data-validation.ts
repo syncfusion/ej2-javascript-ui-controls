@@ -1,4 +1,4 @@
-import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet, getColumn, ColumnModel } from '../base/index';
+import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet, getColumn, ColumnModel, isHiddenRow } from '../base/index';
 import { setValidation, applyCellFormat, isValidation, removeValidation, addHighlight, CellStyleModel, getCellAddress, validationHighlight } from '../common/index';
 import { removeHighlight } from '../common/index';
 import { getRangeIndexes } from '../common/index';
@@ -61,6 +61,7 @@ export class WorkbookDataValidation {
         let cell: CellModel;
         let onlyRange: string = range;
         let sheetName: string = '';
+        let column: ColumnModel;
         if (range.indexOf('!') > -1) {
             onlyRange = range.split('!')[1];
             sheetName = range.split('!')[0];
@@ -86,22 +87,30 @@ export class WorkbookDataValidation {
         const indexes: number[] = getRangeIndexes(range);
         if (isfullCol) {
             for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                const column: ColumnModel = getColumn(sheet, colIdx);
+                column = getColumn(sheet, colIdx);
+                isfullCol = isfullCol && isRemoveValidation && column && !column.validation ? false : true;
+            }
+        }
+        if (isfullCol) {
+            for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                column = getColumn(sheet, colIdx);
                 if (isRemoveValidation && column && column.validation) {
                     delete (sheet.columns[colIdx].validation);
                 } else {
-                    if (isNullOrUndefined(column)) {
-                        sheet.columns[colIdx] = getColumn(sheet, colIdx);
+                    if (!isRemoveValidation) {
+                        if (isNullOrUndefined(column)) {
+                            sheet.columns[colIdx] = getColumn(sheet, colIdx);
+                        }
+                        sheet.columns[colIdx].validation = {
+                            operator: rules.operator as ValidationOperator,
+                            type: rules.type as ValidationType,
+                            value1: (rules.type === 'List' && rules.value1.length > 256) ?
+                                (rules.value1 as string).substring(0, 255) : rules.value1 as string,
+                            value2: rules.value2 as string,
+                            inCellDropDown: rules.inCellDropDown,
+                            ignoreBlank: rules.ignoreBlank
+                        };
                     }
-                    sheet.columns[colIdx].validation = {
-                        operator: rules.operator as ValidationOperator,
-                        type: rules.type as ValidationType,
-                        value1: (rules.type === 'List' && rules.value1.length > 256) ?
-                            (rules.value1 as string).substring(0, 255) : rules.value1 as string,
-                        value2: rules.value2 as string,
-                        inCellDropDown: rules.inCellDropDown,
-                        ignoreBlank: rules.ignoreBlank
-                    };
                 }
             }
         } else {
@@ -212,10 +221,11 @@ export class WorkbookDataValidation {
                             const isValid: boolean = this.parent.allowDataValidation;
                             this.parent.allowDataValidation = true;
                             if (!isValid) {
+                                if(!isHiddenRow(sheet, rowIdx)){
                                 this.parent.notify(validationHighlight, {
                                     isRemoveHighlightedData: isRemoveHighlightedData, rowIdx: rowIdx, colIdx: colIdx, td: td
                                 });
-                            }
+                            }}
                         }
                     }
                 }

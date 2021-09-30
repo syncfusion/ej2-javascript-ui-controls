@@ -1,4 +1,4 @@
-import { getDPRValue, Spreadsheet } from '../index';
+import { getDPRValue, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
 import { closest, EventHandler } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { colWidthChanged, rowHeightChanged, contentLoaded, hideShow, getFilterRange } from '../common/index';
@@ -6,6 +6,7 @@ import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, se
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
 import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs } from '../../workbook/common/index';
+import { rowFillHandler } from '../../workbook/common/event';
 
 /**
  * The `Resize` module is used to handle the resizing functionalities in Spreadsheet.
@@ -59,7 +60,8 @@ export class Resize {
 
     private unWireResizeCursorEvent(): void {
         EventHandler.remove(this.parent.getRowHeaderContent(), 'mousemove', this.setTarget);
-        EventHandler.remove(this.parent.element.getElementsByClassName('e-header-panel')[0], 'mousemove', this.setTarget);
+        const headerPanel: Element = this.parent.element.getElementsByClassName('e-header-panel')[0];
+        if (headerPanel) { EventHandler.remove(headerPanel, 'mousemove', this.setTarget); }
     }
 
     private unwireEvents(): void {
@@ -135,6 +137,8 @@ export class Resize {
         EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
         this.wireResizeCursorEvent(this.parent.getRowHeaderContent(), this.parent.element.getElementsByClassName('e-header-panel')[0]);
+        this.parent.notify(positionAutoFillElement, null );
+        this.parent.notify(hideAutoFillOptions, null );
     }
 
     private dblClickHandler(e?: MouseEvent & TouchEvent): void {
@@ -154,6 +158,7 @@ export class Resize {
             const prevHeight: string = `${getRowHeight(this.parent.getActiveSheet(), rowIndx)}px`;
             this.setAutofit(rowIndx, false, prevHeight);
         }
+        this.parent.notify(positionAutoFillElement, null );
     }
 
     private setTarget(e: MouseEvent): void {
@@ -605,6 +610,10 @@ export class Resize {
                 const td: HTMLElement = this.parent.getCell(activeCell[0], activeCell[1]);
                 (this.parent.element.querySelector('.e-active-cell') as HTMLElement).style.width = td.offsetWidth +  'px';
             }
+        }
+        if (CellElem && CellElem.format && CellElem.format.indexOf('*') > -1) {
+            this.parent.notify(rowFillHandler, { cell: CellElem, value: CellElem.format[CellElem.format.indexOf('*') + 1].toString(),
+                rowIdx: activeCell[0], colIdx: activeCell[1] });
         }
     }
 

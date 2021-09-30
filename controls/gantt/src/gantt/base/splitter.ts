@@ -90,9 +90,13 @@ export class Splitter {
             if (!isNullOrUndefined(splitter.position) && splitter.position !== '') {
                 return this.getSpliterPositionInPercentage(splitter.position);
             } else if (!isNullOrUndefined(splitter.columnIndex) && splitter.columnIndex >= 0) {
-                return isDynamic ? this.getSpliterPositionInPercentage(
-                    this.getTotalColumnWidthByIndex(splitter.columnIndex).toString() + 'px') :
-                    this.getSpliterPositionInPercentage((splitter.columnIndex * 150) + 'px');
+                if ((splitter.columnIndex * 150) < this.parent.ganttWidth || !this.parent.element.classList.contains('e-device')) {
+                   return isDynamic ? this.getSpliterPositionInPercentage(
+                        this.getTotalColumnWidthByIndex(splitter.columnIndex).toString() + 'px') :
+                        this.getSpliterPositionInPercentage((splitter.columnIndex * 150) + 'px');
+                } else {
+                    return this.getSpliterPositionInPercentage((splitter.columnIndex * 130) + 'px');
+                }
             } else {
                 return this.getSpliterPositionInPercentage('250px');
             }

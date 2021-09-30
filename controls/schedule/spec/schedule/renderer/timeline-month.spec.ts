@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, Browser, closest } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import {
@@ -17,12 +18,10 @@ Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Schedule Timeline Month view', () => {
     beforeAll(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // eslint-disable-next-line no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
@@ -3970,7 +3969,6 @@ describe('Schedule Timeline Month view', () => {
 
         it('horizontal scroll', (done: DoneFn) => {
             const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (schObj.activeView as any).onContentScroll({ target: contentArea });
 
             expect(contentArea.scrollLeft).toEqual(1602);
@@ -3989,7 +3987,7 @@ describe('Schedule Timeline Month view', () => {
                 views: ['TimelineMonth'], selectedDate: new Date(2017, 9, 1),
                 dataBound: () => {
                     const contentArea: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-                    const isVerticalScrollBar = contentArea.scrollHeight > contentArea.clientHeight;
+                    const isVerticalScrollBar: boolean = contentArea.scrollHeight > contentArea.clientHeight;
                     expect(isVerticalScrollBar).toBeFalsy();
                     done();
                 }
@@ -4003,7 +4001,7 @@ describe('Schedule Timeline Month view', () => {
         beforeAll((done: DoneFn) => {
             const monthData: Record<string, any>[] = [{
                 Id: 1,
-                Subject: "Short Event",
+                Subject: 'Short Event',
                 StartTime: new Date(2019, 1, 1, 10, 0, 0),
                 EndTime: new Date(2019, 1, 5, 10, 0, 0),
                 IsAllDay: true,
@@ -4051,7 +4049,7 @@ describe('Schedule Timeline Month view', () => {
             };
             schObj.addEvent([{
                 Id: 2,
-                Subject: "Long Event",
+                Subject: 'Long Event',
                 StartTime: new Date(2019, 1, 2, 10, 0, 0),
                 EndTime: new Date(2019, 1, 10, 10, 0, 0),
                 IsAllDay: true,
@@ -4086,7 +4084,7 @@ describe('Schedule Timeline Month view', () => {
                     { option: 'TimelineWeek', eventTemplate: eventTemplate, allowVirtualScrolling: false }
                 ],
                 group: {
-                    resources: ["Resources"]
+                    resources: ['Resources']
                 },
                 resources: [
                     {
@@ -4098,13 +4096,12 @@ describe('Schedule Timeline Month view', () => {
                 ],
                 selectedDate: startDate,
                 eventSettings: { dataSource: events },
-                dataBinding: function () {
+                dataBinding: () => {
                     eventStartTime = window.performance.now();
                 },
-                dataBound: function () {
-                    let eventEndTime: number = window.performance.now();
-                    const sec: number = Math.floor((eventEndTime - eventStartTime)/60000);
-                    // ~ 250 - 300ms
+                dataBound: () => {
+                    const eventEndTime: number = window.performance.now();
+                    const sec: number = Math.floor((eventEndTime - eventStartTime) / 60000);
                     expect(sec).toBeLessThan(1);
                     done();
                 }

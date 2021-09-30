@@ -381,12 +381,13 @@ describe('ICS calendar import', () => {
                     field: 'CalendarId', title: 'Calendars', name: 'Calendars', allowMultiple: true,
                     textField: 'CalendarText', idField: 'CalendarId', colorField: 'CalendarColor',
                     dataSource: [
-                { CalendarText: 'My Calendar', CalendarId: 1, CalendarColor: '#c43081' },
-                { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
-                { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
-                { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }],
-                }],
-                };
+                        { CalendarText: 'My Calendar', CalendarId: 1, CalendarColor: '#c43081' },
+                        { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
+                        { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
+                        { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }
+                    ]
+                }]
+            };
             schObj = createSchedule(options, events, done);
         });
         afterAll(() => {
@@ -421,7 +422,7 @@ describe('ICS calendar import', () => {
                 Id: 12,
                 Subject: 'event 2',
                 StartTime: new Date(2017, 9, 20, 11, 0),
-                EndTime: new Date(2017, 9, 20, 12, 30),
+                EndTime: new Date(2017, 9, 20, 12, 30)
             }];
             const options: ScheduleModel = { selectedDate: new Date(2017, 1, 7) };
             schObj = createSchedule(options, events, done);
@@ -442,16 +443,16 @@ describe('ICS calendar import', () => {
 
         it('Import checking with readonly event', () => {
             schObj.dataBound = () => {
-            expect(schObj.eventsData.length).toEqual(16);
-            const events: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(events[1].classList).toContain('e-read-only');
-            expect(events[1].getAttribute('aria-readonly')).toEqual('true');
-            }
+                expect(schObj.eventsData.length).toEqual(16);
+                const events: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(events[1].classList).toContain('e-read-only');
+                expect(events[1].getAttribute('aria-readonly')).toEqual('true');
+            };
         });
     });
 
     describe('EJ2-51402 - Issue with importing recurrence events', () => {
-        let schObj: Schedule;        
+        let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const events: Record<string, any>[] = [{
                 Id: 10,
@@ -469,7 +470,7 @@ describe('ICS calendar import', () => {
                 Id: 12,
                 Subject: 'event 2',
                 StartTime: new Date(2017, 9, 20, 11, 0),
-                EndTime: new Date(2017, 9, 20, 12, 30),
+                EndTime: new Date(2017, 9, 20, 12, 30)
             }];
             const options: ScheduleModel = { selectedDate: new Date(2017, 1, 7), currentView: 'Month' };
             schObj = createSchedule(options, events, done);
@@ -490,9 +491,9 @@ describe('ICS calendar import', () => {
 
         it('Import checking with readonly event', () => {
             schObj.dataBound = () => {
-            expect(schObj.eventsData.length).toEqual(6);
-            expect(schObj.element.querySelectorAll('.e-appointment')[1].querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('event');
-            }
+                expect(schObj.eventsData.length).toEqual(6);
+                expect(schObj.element.querySelectorAll('.e-appointment')[1].querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('event');
+            };
             (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();

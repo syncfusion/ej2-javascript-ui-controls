@@ -63,8 +63,7 @@ export class StockEvents extends BaseTooltip {
                     stockEventElement = sChart.renderer.createGroup(
                         { id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i }
                     );
-                    const stockEventDate: number = this.stockChart.isBlazor ? Date.parse((stockEvent.date).toString()) :
-                            this.dateParse(stockEvent.date).getTime();
+                    const stockEventDate: number = this.dateParse(stockEvent.date).getTime();
                     if (withIn(stockEventDate , series.xAxis.visibleRange)) {
                         if (stockEvent.seriesIndexes.length > 0) {
                             for (let j: number = 0; j < stockEvent.seriesIndexes.length; j++) {
@@ -96,8 +95,7 @@ export class StockEvents extends BaseTooltip {
     }
 
     private findClosePoint(series: Series, sEvent: StockEventsSettingsModel): ChartLocation {
-        const stockEventDate: number = this.stockChart.isBlazor ? Date.parse((sEvent.date).toString()) :
-                            this.dateParse(sEvent.date).getTime();
+        const stockEventDate: number = this.dateParse(sEvent.date).getTime();
         const closeIndex: number = this.getClosest(series, stockEventDate );
         let pointData: PointData;
         let point: Points;

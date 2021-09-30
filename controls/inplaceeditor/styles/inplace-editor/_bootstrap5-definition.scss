@@ -1,0 +1,67 @@
+$inplace-skin: 'bootstrap5' !default;
+//Layout Variable Start
+$editor-big-value-text-font-size: $text-base !default;
+$editor-nrml-value-text-font-size: $text-sm !default;
+$editor-big-value-container-padding: 7px 12px 7px 12px !default;
+$editor-nrml-value-container-padding: 3px 8px 5px 8px !default;
+$editor-big-value-container-spin-padding: 8px !default;
+$editor-nrml-value-container-spin-padding: 8px !default;
+$editor-big-value-margin: 0 30px 0 0 !default;
+$editor-nrml-value-margin: 0 28px 0 0 !default;
+$editor-rtl-big-value-margin: 0 0 0  30px !default;
+$editor-rtl-nrml-value-margin: 0 0 0 28px !default;
+$editor-big-overlay-icon-size: $text-base !default;
+$editor-nrml-overlay-icon-size: $text-sm !default;
+$editor-big-overlay-icon-container-size: 20px !default;
+$editor-nrml-overlay-icon-container-size: 20px !default;
+$editor-big-overlay-icon-left-right: 8px !default;
+$editor-nrml-overlay-icon-left-right: 8px !default;
+$editor-tip-content-bdr-radius: 4px !default;
+$editor-tip-title-font-weight: $font-weight-medium !default;
+$editor-big-tip-title-font-size: $text-sm !default;
+$editor-nrml-tip-title-font-size: $text-xs !default;
+$editor-big-tip-title-padding: 12px 16px 12px 16px !default;
+$editor-nrml-tip-title-padding: 9px 12px 9px 12px !default;
+$editor-rtl-big-tip-title-padding: 12px 16px 12px 16px !default;
+$editor-rtl-nrml-tip-title-padding: 9px 12px 9px 12px !default;
+$editor-big-tip-title-container-size: 46px !default;
+$editor-nrml-tip-title-container-size: 36px !default;
+$editor-big-tip-wrapper-padding: 16px !default;
+$editor-nrml-tip-wrapper-padding: 12px !default;
+$editor-big-wrapper-title-with-padding: 16px !default;
+$editor-nrml-wrapper-title-with-padding: 12px !default;
+$editor-component-bottom-margin: 4px !default;
+$editor-buttons-top-margin: 4px !default;
+$editor-btn-save-icon-size: 16px !default;
+$editor-btn-cancel-icon-size: 16px !default;
+$editor-big-btn-save-margin: 0 4px 0 0 !default;
+$editor-nrml-btn-save-margin: 0 4px 0 0 !default;
+$editor-big-btn-cancel-margin: 0 0 0 4px !default;
+$editor-nrml-btn-cancel-margin: 0 0 0 4px !default;
+$editor-rtl-big-btn-save-margin: 0 0 0 4px !default;
+$editor-rtl-nrml-btn-save-margin: 0 0 0 4px !default;
+$editor-rtl-big-btn-cancel-margin: 0 4px 0 0 !default;
+$editor-rtl-nrml-btn-cancel-margin: 0 4px 0 0 !default;
+//Layout Variable End
+
+//Theme Variable Start
+$editor-value-hover-bg: $content-bg-color-alt2 !default;
+$editor-value-text-color: $content-text-color !default;
+$editor-overlay-icon-color: $icon-color !default;
+$editor-value-text-border: 1px dashed $content-text-color !default;
+$editor-background-color: $transparent !default;
+$wrapper-background-color: $flyout-bg-color !default;
+$editor-tip-border: 1px solid $border !default;
+$editor-tip-bg: $content-bg-color !default;
+$editor-tip-arrow-icon-color: $content-bg-color-alt1 !default;
+$editor-tip-title-arrow-icon-color: $content-bg-color-alt1 !default;
+$editor-tip-arrow-bdr-color: $content-bg-color-alt1 !default;
+$editor-tip-title-arrow-bdr-color: $border !default;
+$editor-tip-box-shadow: $shadow-lg !default;
+$editor-tip-title-bg: $content-bg-color-alt1 !default;
+$editor-tio-title-border-bottom: 0 !default;
+$editor-tip-title-color: $content-text-color !default;
+$editable-overlay-icon-height: inherit !default;
+$editable-overlay-icon: 0 !default;
+$editor-btn-icon-color: $icon-color !default;
+//Theme Variable End

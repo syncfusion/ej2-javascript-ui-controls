@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, compile, isNullOrUndefined} from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, select, selectAll } from '@syncfusion/ej2-base';
+import { Component, Property, Event, EmitType, EventHandler, L10n, compile, isNullOrUndefined} from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { select, selectAll } from '@syncfusion/ej2-base';
 import {DropEffect,ActionCompleteEventArgs,RenderingEventArgs,BeforeUploadEventArgs,FileListRenderingEventArgs,SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,BeforeRemoveEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -270,7 +270,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -278,7 +277,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers after all the selected files has processed to upload successfully or failed to server.
      *
      * @event actionComplete
-     * @blazorProperty 'OnActionComplete'
      */
     actionComplete?: EmitType<ActionCompleteEventArgs>;
 
@@ -294,7 +292,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers when the upload process before. This event is used to add additional parameter with upload request.
      *
      * @event beforeUpload
-     * @blazorProperty 'BeforeUpload'
      */
     beforeUpload?: EmitType<BeforeUploadEventArgs>;
 
@@ -303,7 +300,6 @@ export interface UploaderModel extends ComponentModel{
      * It helps to customize specific file item structure.
      *
      * @event fileListRendering
-     * @blazorProperty 'OnFileListRender'
      */
     fileListRendering?: EmitType<FileListRenderingEventArgs>;
 
@@ -311,7 +307,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers after selecting or dropping the files by adding the files in upload queue.
      *
      * @event selected
-     * @blazorProperty 'FileSelected'
      */
     selected?: EmitType<SelectedEventArgs>;
 
@@ -319,7 +314,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers when the upload process gets started. This event is used to add additional parameter with upload request.
      *
      * @event uploading
-     * @blazorProperty 'OnUploadStart'
      */
     uploading?: EmitType<UploadingEventArgs>;
 
@@ -350,8 +344,6 @@ export interface UploaderModel extends ComponentModel{
      * </table>
      *
      * @event success
-     * @blazorProperty 'Success'
-     * @blazorType SuccessEventArgs
      */
     success?: EmitType<Object>;
 
@@ -382,8 +374,6 @@ export interface UploaderModel extends ComponentModel{
      * </table>
      *
      * @event failure
-     * @blazorProperty 'OnFailured'
-     * @blazorType FailureEventArgs
      */
     failure?: EmitType<Object>;
 
@@ -391,7 +381,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers on removing the uploaded file. The event used to get confirm before removing the file from server.
      *
      * @event removing
-     * @blazorProperty 'OnRemove'
      */
     removing?: EmitType<RemovingEventArgs>;
 
@@ -399,7 +388,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers on remove the uploaded file. The event used to get confirm before remove the file from server.
      *
      * @event beforeRemove
-     * @blazorProperty 'BeforeRemove'
      */
     beforeRemove?: EmitType<BeforeRemoveEventArgs>;
 
@@ -407,7 +395,6 @@ export interface UploaderModel extends ComponentModel{
      * Triggers before clearing the items in file list when clicking “clear”.
      *
      * @event clearing
-     * @blazorProperty 'OnClear'
      */
     clearing?: EmitType<ClearingEventArgs>;
 
@@ -434,8 +421,6 @@ export interface UploaderModel extends ComponentModel{
      * </table>
      *
      * @event progress
-     * @blazorProperty 'Progressing'
-     * @blazorType ProgressEventArgs
      */
     progress?: EmitType<Object>;
 
@@ -458,8 +443,6 @@ export interface UploaderModel extends ComponentModel{
      * </table>
      *
      * @event change
-     * @blazorProperty 'ValueChange'
-     * @blazorType UploadChangeEventArgs
      */
     change?: EmitType<Object>;
 
@@ -490,8 +473,6 @@ export interface UploaderModel extends ComponentModel{
      * </table>
      *
      * @event chunkSuccess
-     * @blazorProperty 'OnChunkSuccess'
-     * @blazorType SuccessEventArgs
      */
     chunkSuccess?: EmitType<Object>;
 
@@ -530,8 +511,6 @@ export interface UploaderModel extends ComponentModel{
      * </table>
      *
      * @event chunkFailure
-     * @blazorProperty 'OnChunkFailured'
-     * @blazorType FailureEventArgs
      */
     chunkFailure?: EmitType<Object>;
 
@@ -539,7 +518,6 @@ export interface UploaderModel extends ComponentModel{
      * Fires when every chunk upload process gets started. This event is used to add additional parameter with upload request.
      *
      * @event chunkUploading
-     * @blazorProperty 'OnChunkUploadStart'
      */
     chunkUploading?: EmitType<UploadingEventArgs>;
 
@@ -547,7 +525,6 @@ export interface UploaderModel extends ComponentModel{
      * Fires if cancel the chunk file uploading.
      *
      * @event canceling
-     * @blazorProperty 'OnCancel'
      */
     canceling?: EmitType<CancelEventArgs>;
 
@@ -555,7 +532,6 @@ export interface UploaderModel extends ComponentModel{
      * Fires if pause the chunk file uploading.
      *
      * @event pausing
-     * @blazorProperty 'Paused'
      */
     pausing?: EmitType<PauseResumeEventArgs>;
 
@@ -563,7 +539,6 @@ export interface UploaderModel extends ComponentModel{
      * Fires if resume the paused chunk file upload.
      *
      * @event resuming
-     * @blazorProperty 'OnResume'
      */
     resuming?: EmitType<PauseResumeEventArgs>;
 

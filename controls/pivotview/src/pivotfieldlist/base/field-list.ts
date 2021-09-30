@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend, isBlazor } from '@syncfusion/ej2-base';
+import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';
 import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration, getInstance } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';
@@ -118,11 +118,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private staticPivotGridModule: PivotView;
     /** @hidden */
     public enableValueSorting: boolean = false;
+    /** @hidden */
+    public guid: string;
     private request: XMLHttpRequest = new XMLHttpRequest();
     private savedDataSourceSettings: DataSourceSettingsModel;
     private remoteData: string[][] | IDataSet[] = [];
-    /** @hidden */
-    public guid: string;
     //Property Declarations
 
     /* eslint-disable */
@@ -827,9 +827,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     dataSource = [];
                 }
             }
-            if (isBlazor() && dataSource && dataSource.length > 0) {
-                this.remoteData = dataSource;
-            } else if (dataSource && dataSource.length > 0) {
+            if (dataSource && dataSource.length > 0) {
                 this.setProperties({ dataSourceSettings: { dataSource: dataSource } }, true);
             }
             this.initialLoad();
@@ -837,10 +835,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     private initialLoad(): void {
-        this.trigger(events.load, { dataSourceSettings: isBlazor() ? PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings) : this.dataSourceSettings }, (observedArgs: LoadEventArgs) => {
-            if (isBlazor()) {
-                observedArgs.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
-            }
+        this.trigger(events.load, { dataSourceSettings: this.dataSourceSettings }, (observedArgs: LoadEventArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             addClass([this.element], cls.ROOT);
             if (this.enableRtl) {
@@ -858,9 +853,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             }
             this.notify(events.initialLoad, {});
         });
-        if (isBlazor()) {
-            this.renderComplete();
-        }
     }
 
     /**
@@ -909,11 +901,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'locale':
-                    if (isBlazor()) {
-                        break;
-                    } else {
-                        super.refresh();
-                    }
+                    super.refresh();
                     break;
                 case 'dataSourceSettings':
                     if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
@@ -975,6 +963,16 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         this.pivotGridModule.axisFieldModule.render();
                     }
                     break;
+                case 'showValuesButton':
+                    if (this.axisFieldModule) {
+                        this.axisFieldModule.render();
+                    }
+                    if (this.pivotGridModule && this.pivotGridModule.showGroupingBar &&
+                        this.pivotGridModule.groupingBarModule && this.pivotGridModule.axisFieldModule) {
+                        this.pivotGridModule.setProperties({ showValuesButton: newProp.showValuesButton }, true);
+                        this.pivotGridModule.axisFieldModule.render();
+                    }
+                    break;
                 case 'enableRtl':
                     if (this.enableRtl) {
                         addClass([this.element], cls.RTL);
@@ -1016,19 +1014,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
                     let pivotDataSet: IDataSet[];
-                    if (isBlazor()) {
-                        pivotDataSet = this.engineModule.data as IDataSet[];
-                    } else {
-                        pivotDataSet = this.dataSourceSettings.dataSource as IDataSet[];
-                    }
+                    pivotDataSet = this.dataSourceSettings.dataSource as IDataSet[];
                     this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet)) as IDataSet[];
-                    if (isBlazor()) {
-                        this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
-                    } else {
-                        let dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
-                        dataSourceSettings.dataSource = [];
-                        this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
-                    }
+                    let dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
+                    dataSourceSettings.dataSource = [];
+                    this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
                 }
                 let customProperties: ICustomProperties = this.frameCustomProperties();
                 customProperties.enableValueSorting = this.staticPivotGridModule ?
@@ -1044,7 +1034,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 const this$: PivotFieldList = this;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
-                    this$.engineModule.pivotValues = isBlazor() ? this.engineModule.pivotValues : observedArgs.pivotValues;
+                    this$.engineModule.pivotValues = observedArgs.pivotValues;
                     this$.notify(events.dataReady, {});
                     this$.trigger(events.dataBound);
                 });
@@ -1059,7 +1049,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 const this$: PivotFieldList = this;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
-                    this$.olapEngineModule.pivotValues = isBlazor() ? this.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                    this$.olapEngineModule.pivotValues = observedArgs.pivotValues;
                     this$.notify(events.dataReady, {});
                     this$.trigger(events.dataBound);
                 });
@@ -1085,9 +1075,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     setTimeout(this.getData.bind(this), 100);
                 }
             }
-        } else if (isBlazor() && this.dataType === 'pivot' &&
-            this.engineModule.data && this.engineModule.data.length > 0) {
-            this.initEngine();
         } else {
             this.notify(events.dataReady, {});
             this.trigger(events.dataBound);
@@ -1218,6 +1205,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             pivot.staticPivotGridModule.enableValueSorting : pivot.enableValueSorting;
                     }
                     else {
+                        if (pivot.pivotGridModule) {
+                            pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true)
+                        }
                         pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                         customProperties.enableValueSorting = false;
                     }
@@ -1226,9 +1216,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         let interopArguments: any = {};
                         if (isSorted) {
                             pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                            if ((isBlazor())) {
-                                interopArguments = { 'key': 'onSort', 'arg': pivot.lastSortInfo };
-                            } else if (control.dataSourceSettings.mode === 'Server') {
+                            if (control.dataSourceSettings.mode === 'Server') {
                                 control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
                             } else {
                                 pivot.engineModule.onSort(pivot.lastSortInfo);
@@ -1236,15 +1224,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             pivot.lastSortInfo = {};
                         }
                         if (isFiltered) {
-                            if (isBlazor()) {
-                                let dataArgs: any =
-                                    (window as any)['sfBlazor'].copyWithoutCircularReferences(
-                                        [pivot.dataSourceSettings.filterSettings], pivot.dataSourceSettings.filterSettings);
-                                interopArguments = {
-                                    'key': 'onFilter',
-                                    'arg': { 'lastFilterInfo': pivot.lastFilterInfo, 'filterSettings': dataArgs }
-                                };
-                            } else if (control.dataSourceSettings.mode === 'Server') {
+                            if (control.dataSourceSettings.mode === 'Server') {
                                 control.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
                             } else {
                                 pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings as IDataOptions);
@@ -1252,9 +1232,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             pivot.lastFilterInfo = {};
                         }
                         if (isAggChange) {
-                            if (isBlazor()) {
-                                interopArguments = { 'key': 'onAggregation', 'arg': pivot.lastAggregationInfo };
-                            } else if (control.dataSourceSettings.mode === 'Server') {
+                            if (control.dataSourceSettings.mode === 'Server') {
                                 control.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
                             } else {
                                 pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
@@ -1262,64 +1240,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             pivot.lastAggregationInfo = {};
                         }
                         if (isCalcChange) {
-                            if (isBlazor()) {
-                                interopArguments = {
-                                    'key': 'onCalcOperation',
-                                    'arg': {
-                                        lastCalcFieldInfo: pivot.lastCalcFieldInfo,
-                                        values: pivot.dataSourceSettings.values,
-                                        calculatedFieldSettings: pivot.dataSourceSettings.calculatedFieldSettings
-                                    }
-                                };
-                            } else if (control.dataSourceSettings.mode === 'Server') {
+                            if (control.dataSourceSettings.mode === 'Server') {
                                 control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
                             } else {
                                 pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
                             }
                             pivot.lastCalcFieldInfo = {};
                         }
-                        if (isBlazor()) {
-                            let args: any = (window as any)['sfBlazor'].copyWithoutCircularReferences([interopArguments['arg']],
-                                interopArguments['arg']);
-                            (pivot.pivotGridModule as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod",
-                                interopArguments['key'], args
-                            ).then(
-                                (data: any) => {
-                                    if (data === 0) {
-                                        this.pivotCommon.errorDialog.createErrorDialog(
-                                            this.localeObj.getConstant('error'), (pivot.dataSourceSettings.type === 'CSV' ?
-                                                this.localeObj.getConstant('invalidCSV') : this.localeObj.getConstant('invalidJSON')));
-                                        return;
-                                    } else {
-                                        pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
-                                        pivot.getFieldCaption(pivot.dataSourceSettings);
-                                        pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
-                                        if (pivot.calculatedFieldModule && pivot.calculatedFieldModule.isRequireUpdate) {
-                                            pivot.calculatedFieldModule.endDialog();
-                                            pivot.calculatedFieldModule.isRequireUpdate = false;
-                                        }
-                                    }
-                                });
-                        }
                     } else {
-                        if (isBlazor() && pageSettings) {
-                            let dataArgs: any = (window as any)['sfBlazor'].copyWithoutCircularReferences(
-                                [(pivot.dataSourceSettings as any).properties], (pivot.dataSourceSettings as any).properties);
-                            (pivot.pivotGridModule as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'renderEngine',
-                                { 'dataSourceSettings': dataArgs, 'customProperties': customProperties }).then(
-                                    (data: any) => {
-                                        if (data === 0) {
-                                            this.pivotCommon.errorDialog.createErrorDialog(
-                                                this.localeObj.getConstant('error'), (pivot.dataSourceSettings.type === 'CSV' ?
-                                                    this.localeObj.getConstant('invalidCSV') : this.localeObj.getConstant('invalidJSON')));
-                                            return;
-                                        } else {
-                                            pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
-                                            pivot.getFieldCaption(pivot.dataSourceSettings);
-                                            pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
-                                        }
-                                    });
-                        } else if (pivot.dataSourceSettings.mode === 'Server') {
+                        if (pivot.dataSourceSettings.mode === 'Server') {
                             if (isSorted)
                                 control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
                             else if (isAggChange)
@@ -1341,16 +1270,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 } else {
                     isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed);
                 }
-                if (!(isBlazor() && pageSettings)) {
-                    pivot.getFieldCaption(pivot.dataSourceSettings);
-                }
+                pivot.getFieldCaption(pivot.dataSourceSettings);
             } else {
                 pivot.axisFieldModule.render();
                 pivot.isRequiredUpdate = false;
             }
-            if (!(isBlazor() && pageSettings)) {
-                pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
-            }
+            pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
         });
         //});
     }
@@ -1364,17 +1289,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         };
         control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
             let dataSource: IDataSet[] | DataManager | string[][] = pivot.dataSourceSettings.dataSource;
-            if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
-                observedArgs.dataSourceSettings.dataSource = dataSource;
-            }
             pivot.dataSourceSettings = observedArgs.dataSourceSettings;
             pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings as IDataOptions;
             pivot.pivotFieldList = observedArgs.pivotFieldList;
             if (pivot.dataType === 'olap') {
-                pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                pivot.olapEngineModule.pivotValues = observedArgs.pivotValues;
                 pivot.pivotCommon.engineModule = pivot.olapEngineModule;
             } else {
-                pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
+                pivot.engineModule.pivotValues = observedArgs.pivotValues;
                 pivot.pivotCommon.engineModule = pivot.engineModule;
             }
             if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
@@ -1437,20 +1359,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public update(control: PivotView): void {
-        if (isBlazor() && control !== undefined) {
-            /* eslint-disable */
-            let pivotId: string = (<any>control).ID as string
-            let pivotInstance: PivotView = getInstance('#' + pivotId, PivotView) as PivotView;
-            control = pivotInstance;
-            /* eslint-enable */
-        }
         if (control) {
             this.clonedDataSet = control.clonedDataSet;
-            if (isBlazor() && !this.isPopupView) {
-                PivotUtil.updateDataSourceSettings(this, PivotUtil.getClonedDataSourceSettings(control.dataSourceSettings));
-            } else {
-                this.setProperties({ dataSourceSettings: control.dataSourceSettings }, true);
-            }
+            this.setProperties({ dataSourceSettings: control.dataSourceSettings, showValuesButton: control.showValuesButton }, true);
             this.engineModule = control.engineModule;
             this.olapEngineModule = control.olapEngineModule;
             this.dataType = control.dataType;
@@ -1482,20 +1393,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public updateView(control: PivotView): void {
-        if (isBlazor() && control !== undefined) {
-            /* eslint-disable */
-            let pivotId: string = (<any>control).ID as string
-            let pivotInstance: PivotView = getInstance('#' + pivotId, PivotView) as PivotView;
-            control = pivotInstance;
-            /* eslint-enable */
-        }
         if (control) {
             control.clonedDataSet = this.clonedDataSet;
-            if (isBlazor()) {
-                PivotUtil.updateDataSourceSettings(control, PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings));
-            } else {
-                control.setProperties({ dataSourceSettings: this.dataSourceSettings }, true);
-            }
+            control.setProperties({ dataSourceSettings: this.dataSourceSettings, showValuesButton: this.showValuesButton }, true);
             control.engineModule = this.engineModule;
             control.olapEngineModule = this.olapEngineModule;
             control.dataType = this.dataType;
@@ -1511,11 +1411,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.staticPivotGridModule = control;
                 control.isStaticRefresh = true;
             }
-            if (control.enableVirtualization && isBlazor()) {
-                control.renderPivotGrid();
-            } else {
-                control.dataBind();
-            }
+            control.dataBind();
         }
     }
 
@@ -1535,9 +1431,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             this.pivotFieldList = observedArgs.pivotFieldList;
             if (this.dataType === 'olap') {
-                this.olapEngineModule.pivotValues = isBlazor() ? this.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                this.olapEngineModule.pivotValues = observedArgs.pivotValues;
             } else {
-                this.engineModule.pivotValues = isBlazor() ? this.engineModule.pivotValues : observedArgs.pivotValues;
+                this.engineModule.pivotValues = observedArgs.pivotValues;
             }
         });
     }

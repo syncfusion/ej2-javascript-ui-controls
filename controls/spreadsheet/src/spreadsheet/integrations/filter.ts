@@ -399,6 +399,9 @@ export class Filter {
     private refreshFilterRange(filterRange?: number[], remove?: boolean, sIdx?: number): void {
         let sheetIdx: number = sIdx;
         if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
+        if (!filterRange && !this.filterRange.get(sheetIdx)) {
+             filterRange  = [0,0,0,0];
+        }
         const range: number[] = filterRange || this.filterRange.get(sheetIdx).slice();
         for (let index: number = range[1]; index <= range[3]; index++) {
             const cell: HTMLElement = this.parent.getCell(range[0], index);

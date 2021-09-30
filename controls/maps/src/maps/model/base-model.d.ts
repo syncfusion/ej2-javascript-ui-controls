@@ -375,7 +375,6 @@ export interface ColorMappingSettingsModel {
      *
      * @aspDefaultValueIgnore
      * @default null
-     * @isBlazorNullableType true
      */
     from?: number;
 
@@ -384,7 +383,6 @@ export interface ColorMappingSettingsModel {
      *
      * @aspDefaultValueIgnore
      * @default null
-     * @isBlazorNullableType true
      */
     to?: number;
 
@@ -834,7 +832,6 @@ export interface ZoomSettingsModel {
      * Sets and gets the orientation of the zoom toolbar.
      *
      * @default Horizontal
-     * @blazorProperty 'ToolbarOrientation'
      */
     toolBarOrientation?: Orientation;
 
@@ -883,7 +880,6 @@ export interface ZoomSettingsModel {
      * Enables or disables the double click zooming in maps.
      *
      * @default false
-     * @blazorProperty 'ZoomOnDoubleClick'
      */
     doubleClickZoom?: boolean;
 
@@ -1142,7 +1138,6 @@ export interface LegendSettingsModel {
      * Sets and gets the path for the legend from the data source to be shown.
      *
      * @default null
-     * @blazorProperty 'LegendPath'
      */
     showLegendPath?: string;
 

@@ -15,7 +15,7 @@ import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
 import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
-import { ConditionalFormatModel, getUpdatedFormula, ModelType } from '../../workbook/index';
+import { ConditionalFormatModel, getUpdatedFormula, ModelType, getRow, ExtendedRowModel } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -151,7 +151,7 @@ export class Clipboard {
         range: number[], sIdx: number, type: PasteSpecialType, isClick?: boolean,
         isAction?: boolean, isInternal?: boolean
     } & ClipboardEvent): void {
-        if (this.parent.isEdit || this.parent.element.getElementsByClassName('e-dialog').length > 0) {
+        if (this.parent.isEdit || this.parent.element.getElementsByClassName('e-dlg-overlay').length > 0) {
             return;
         }
         let rfshRange: number[];
@@ -327,18 +327,7 @@ export class Clipboard {
                         const conditionalFormats: ConditionalFormatModel[] = this.getConditionalFormats(i, j, prevSheet);
                         if (isRepeative) {
                             for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
-                                let toSkip: boolean = false;
-                                if (!copyInfo.isCut && this.parent.filteredRows && this.parent.filteredRows.rowIdxColl &&
-                                    this.parent.filteredRows.sheetIdxColl) {
-                                    for (let i: number = 0, len: number =
-                                        this.parent.filteredRows.sheetIdxColl.length; i < len; i++) {
-                                        if (this.parent.filteredRows.sheetIdxColl[i] === cSIdx && this.parent.filteredRows.rowIdxColl[i] ===
-                                            x + l) {
-                                            toSkip = true; break;
-                                        }
-                                    }
-                                }
-                                if (toSkip) { continue; }
+                                if (!copyInfo.isCut && ((getRow(curSheet, x) || {}) as ExtendedRowModel).isFiltered) { continue; };
                                 for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
                                     prevCell = getCell(x + l, y + k, curSheet) || {};
                                     if (!isExternal && (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined)) {

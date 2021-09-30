@@ -1,14 +1,15 @@
 /*! calendar bootstrap theme variables */
 
-
 //month view
 $calendar-normal-month-view-height: 28px !default;
+$calendar-normal-month-view-line-height: $calendar-normal-month-view-height !default;
 $calendar-normal-month-view-width: 34px !default;
 $calendar-normal-month-cell-padding: 0 !default;
 $calendar-bigger-table-month-padding: 0 !default;
 $calendar-bigger-month-font-size: 15px !default;
 $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 30px !default;
+$calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 36px !default;
 
 //header dimension
@@ -211,6 +212,7 @@ $calendar-small-icon-padding: 6px !default;
 $calendar-small-header-height: 32px !default;
 $calendar-small-day-header-height: 24px !default;
 $calendar-small-month-view-height: 24px !default;
+$calendar-small-month-view-line-height: $calendar-small-month-view-height !default;
 $calendar-small-date-font-size: 12px !default;
 $calendar-small-month-view-width: 34px !default;
 $calendar-small-popup-padding: 10px !default;

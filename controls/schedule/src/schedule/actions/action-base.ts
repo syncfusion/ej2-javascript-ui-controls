@@ -111,7 +111,7 @@ export class ActionBase {
         const viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let trElement: HTMLElement[] = [].slice.call(viewElement.querySelector('tr').children);
         if (!this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0 &&
-            !this.parent.isAdaptive) {
+            !this.parent.isAdaptive && !this.parent.enableAdaptiveUI) {
             trElement = this.getResourceElements(trElement as HTMLTableCellElement[]);
         }
         const leftOffset: ClientRect = trElement[0].getBoundingClientRect();

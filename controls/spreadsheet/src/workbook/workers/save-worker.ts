@@ -1,5 +1,5 @@
 import { Workbook } from '../base';
-import { SaveOptions } from '../common/index';
+import { pdfLayoutSettings, SaveOptions } from '../common/index';
 
 /**
  * @hidden
@@ -44,12 +44,13 @@ export class SaveWorker {
      * @param {Object} saveJSON - specify the object
      * @param {SaveOptions | Object} saveSettings - specify the saveSettings
      * @param {Object} customParams - specify the customParams
+     * @param {Object} pdfLayoutSettings - specify the pdfLayoutSettings
      * @returns {void} - Process save action.
      * @hidden
      */
     protected processSave(
         saveJSON: Object, saveSettings: SaveOptions | { [key: string]: string },
-        customParams: Object): void {
+        customParams: Object, pdfLayoutSettings: pdfLayoutSettings): void {
         const formData: FormData = new FormData();
         let i: number;
         let keys: string[] = Object.keys(saveSettings);
@@ -63,6 +64,9 @@ export class SaveWorker {
         for (i = 0; i < keys.length; i++) {
             formData.append(keys[i], customParams[keys[i]]);
         }
+
+        formData.append('pdfLayoutSettings', JSON.stringify(pdfLayoutSettings));
+
         fetch(saveSettings.url, { method: 'POST', body: formData })
             .then((response: Response) => {
                 if (response.ok) {

@@ -452,3 +452,56 @@ describe('Destroy Method', () => {
         });
     });
 });
+
+describe('Dropdown Tree With Id starts with number', () => {
+    let ddtreeObj: DropDownTree;
+    let mouseEventArgs: any;
+    let tapEvent: any;
+
+    beforeEach((): void => {
+        mouseEventArgs = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false,
+            originalEvent: { target: null }
+        };
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        ddtreeObj = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: '11ddtree' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (ddtreeObj)
+            ddtreeObj.destroy();
+        document.body.innerHTML = '';
+    });
+    it('mouse hover and mouse leave testing', () => {
+        ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } });
+        ddtreeObj.appendTo( '#11ddtree');
+        let ele = ddtreeObj.element;
+        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+        ele.dispatchEvent(e);
+        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+        ele.dispatchEvent(e);
+        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+        ele.dispatchEvent(e);
+        expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+        expect((ddtreeObj as any).inputWrapper.getAttribute("aria-expanded")).toBe('true');
+        expect(document.querySelector('.e-popup').querySelector('.e-treeview')).not.toBe(null);
+        var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+        tapEvent.tapCount = 1;
+        (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+        expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(false);
+        expect((ddtreeObj as any).element.value).toBe("Australia")
+        expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
+        expect((ddtreeObj as any).inputWrapper.getAttribute("aria-expanded")).toBe('false');
+        (ddtreeObj as any).onFocusOut();
+    });
+});

@@ -386,7 +386,7 @@ export class BordersAndShadingDialog {
         }
         this.shadingContiner = createElement('div', {
             /* eslint-disable max-len */
-            styles: 'display:inline-block;position:absolute;' + shadingContainerPosition + ';width:400px;height:100px;padding:0px;border-style: none;margin-left:10px;',
+            styles: 'display:inline-block;position:absolute;' + shadingContainerPosition + ';width:400px;height:100px;padding:0px;border-style: none;',
             id: this.target.id + '_shading_preview', className: 'e-de-table-shading-preview'
         }) as HTMLDivElement;
         const shadingText: HTMLDivElement = <HTMLDivElement>createElement('div', {

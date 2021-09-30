@@ -48,7 +48,7 @@ export class PdfExport {
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
             if (!isNullOrUndefined(backgroundElement)) {
                 const backgroundColor: string = backgroundElement.getAttribute('fill');
-                if ((this.control.theme === 'Tailwind' || this.control.theme === 'TailwindDark')
+                if ((this.control.theme === 'Tailwind' || this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Bootstrap5Dark')
                     && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                     (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
                 }

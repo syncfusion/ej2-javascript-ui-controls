@@ -177,29 +177,29 @@ describe('Update TOC validation', () => {
         editor.editor.updateToc();
         expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(5);
     });
-    it('Insert table of contents by Toc pane', () => {
-        editor.open(JSON.stringify(tocwithstyle));
-        let tocSetting: TableOfContentsSettings = {'endLevel': 3,
-            'includeHyperlink': true,
-            'includePageNumber': true,
-            'rightAlign': true,
-            'startLevel': 1,
-            'tabLeader': 'Dot'};
-        editor.selection.moveDown();
-        editor.editor.insertTableOfContents(tocSetting);
-        expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(4);
-    });
-    it('Field link validation', () => {
-        editor.open(JSON.stringify(tocwithstyle));
-        let tocSetting: TableOfContentsSettings = {'endLevel': 3,
-            'includeHyperlink': true,
-            'includePageNumber': true,
-            'rightAlign': true,
-            'startLevel': 1,
-            'tabLeader': 'Dot'}
-        editor.selection.moveDown();
-        editor.editor.insertTableOfContents(tocSetting);
-        let isLinked = HelperMethods.isLinkedFieldCharacter((editor.selection.start.paragraph.lastChild as LineWidget).children[0] as FieldElementBox);
-        expect(isLinked).toBe(true);
-    });
+    // it('Insert table of contents by Toc pane', () => {
+    //     editor.open(JSON.stringify(tocwithstyle));
+    //     let tocSetting: TableOfContentsSettings = {'endLevel': 3,
+    //         'includeHyperlink': true,
+    //         'includePageNumber': true,
+    //         'rightAlign': true,
+    //         'startLevel': 1,
+    //         'tabLeader': 'Dot'};
+    //     editor.selection.moveDown();
+    //     editor.editor.insertTableOfContents(tocSetting);
+    //     expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(4);
+    // });
+    // it('Field link validation', () => {
+    //     editor.open(JSON.stringify(tocwithstyle));
+    //     let tocSetting: TableOfContentsSettings = {'endLevel': 3,
+    //         'includeHyperlink': true,
+    //         'includePageNumber': true,
+    //         'rightAlign': true,
+    //         'startLevel': 1,
+    //         'tabLeader': 'Dot'}
+    //     editor.selection.moveDown();
+    //     editor.editor.insertTableOfContents(tocSetting);
+    //     let isLinked = HelperMethods.isLinkedFieldCharacter((editor.selection.start.paragraph.lastChild as LineWidget).children[0] as FieldElementBox);
+    //     expect(isLinked).toBe(true);
+    // });
 });

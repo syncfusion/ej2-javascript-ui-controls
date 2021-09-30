@@ -3,7 +3,7 @@
 import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';
 import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';
 import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';
 import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -278,7 +278,6 @@ export class DateRangePicker extends CalendarBase {
      * Gets or sets the minimum date that can be selected in the calendar-popup.
      *
      * @default new Date(1900, 00, 01)
-     * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
     @Property(new Date(1900, 0, 1))
     public min: Date;
@@ -286,7 +285,6 @@ export class DateRangePicker extends CalendarBase {
      * Gets or sets the maximum date that can be selected in the calendar-popup.
      *
      * @default new Date(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
@@ -336,7 +334,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when Calendar is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -344,7 +341,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when Calendar is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -352,7 +348,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when the Calendar value is changed.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<RangeEventArgs>;
@@ -368,7 +363,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when the Calendar is navigated to another view or within the same level of view.
      *
      * @event navigated
-     * @blazorProperty 'Navigated'
      */
     @Event()
     public navigated: EmitType<NavigatedEventArgs>;
@@ -376,7 +370,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when each day cell of the Calendar is rendered.
      *
      * @event renderDayCell
-     * @blazorProperty 'OnRenderDayCell'
      */
 
     @Event()
@@ -385,7 +378,6 @@ export class DateRangePicker extends CalendarBase {
      * Gets or sets the start date of the date range selection.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public startDate: Date;
@@ -393,7 +385,6 @@ export class DateRangePicker extends CalendarBase {
      * Gets or sets the end date of the date range selection.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public endDate: Date;
@@ -419,7 +410,6 @@ export class DateRangePicker extends CalendarBase {
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -478,7 +468,6 @@ export class DateRangePicker extends CalendarBase {
      *
      * @default null
      * @aspType int
-     * @blazorType int
      */
     @Property(null)
     public minDays: number;
@@ -489,8 +478,6 @@ export class DateRangePicker extends CalendarBase {
      *
      * @default null
      * @aspType int
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     @Property(null)
     public maxDays: number;
@@ -619,7 +606,6 @@ export class DateRangePicker extends CalendarBase {
      * {% codeBlock src='daterangepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
@@ -631,7 +617,6 @@ export class DateRangePicker extends CalendarBase {
      * @aspType string
      * {% codeBlock src='daterangepicker/format/index.md' %}{% endcodeBlock %}
      * @default null
-     * @blazorType string
      */
     @Property(null)
     public format: string | RangeFormatObject;
@@ -670,7 +655,6 @@ export class DateRangePicker extends CalendarBase {
      *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     @Property('Never')
@@ -695,8 +679,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when the DateRangePicker is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
-     * @blazorType RangePopupEventArgs
      */
     @Event()
     public open: EmitType<Object>;
@@ -705,8 +687,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when the DateRangePicker is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
-     * @blazorType RangePopupEventArgs
      */
     @Event()
     public close: EmitType<Object>;
@@ -714,8 +694,6 @@ export class DateRangePicker extends CalendarBase {
      * Triggers on selecting the start and end date.
      *
      * @event select
-     * @blazorProperty 'RangeSelected'
-     * @blazorType RangeEventArgs
      */
     @Event()
     public select: EmitType<Object>;
@@ -1105,7 +1083,7 @@ export class DateRangePicker extends CalendarBase {
 
     private updateHiddenInput(): void {
         if (this.firstHiddenChild && this.secondHiddenChild) {
-            const format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
+            const format: Object = { type: 'datetime', skeleton: 'yMd' };
             if (typeof this.startDate === 'string') {
                 this.startDate = this.globalize.parseDate(this.startDate, format);
             }
@@ -1247,7 +1225,7 @@ export class DateRangePicker extends CalendarBase {
         const attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder',
                 'type', 'value'];
-        const format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+        const format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (const prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
@@ -1503,7 +1481,7 @@ export class DateRangePicker extends CalendarBase {
         }
         this.preventBlur = false;
         const focusArguments: FocusEventArgs = {
-            model: (isBlazor() && this.isServerRendered) ? null : this
+            model: this
         };
         if (!this.preventFocus) {
             this.trigger('focus', focusArguments);
@@ -1534,7 +1512,7 @@ export class DateRangePicker extends CalendarBase {
                 const range: string[] = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
                     this.invalidValueString = null;
-                    const dateOptions: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
                     const startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
                     const endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -1550,7 +1528,7 @@ export class DateRangePicker extends CalendarBase {
                         if (!this.preventBlur && document.activeElement !== this.inputElement) {
                             this.preventFocus = false;
                             const blurArguments: BlurEventArgs = {
-                                model: (isBlazor() && this.isServerRendered) ? null : this
+                                model: this
                             };
                             this.trigger('blur', blurArguments);
                         }
@@ -1598,7 +1576,7 @@ export class DateRangePicker extends CalendarBase {
             if (!this.preventBlur && document.activeElement !== this.inputElement) {
                 this.preventFocus = false;
                 const blurArguments: BlurEventArgs = {
-                    model: (isBlazor() && this.isServerRendered) ? null : this
+                    model: this
                 };
                 this.trigger('blur', blurArguments);
             }
@@ -2124,11 +2102,11 @@ export class DateRangePicker extends CalendarBase {
         let range: number;
         const startDate: string = !isNullOrUndefined(this.startValue) ?
             this.globalize.formatDate(this.startValue, {
-                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+                format: this.formatString, type: 'date', skeleton: 'yMd'
             }) : null;
         const endDate: string = !isNullOrUndefined(this.endValue) ?
             this.globalize.formatDate(this.endValue, {
-                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+                format: this.formatString, type: 'date', skeleton: 'yMd'
             }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
@@ -2472,7 +2450,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private updateHeader(): void {
-        const format: Object = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
+        const format: Object = { type: 'date', skeleton: 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             let range: number = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
             this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -2550,7 +2528,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private addSelectedAttributes(ele: Element, date: Date, isStartDate: boolean, sameDate?: boolean): void {
         if (ele) {
-            const title: string = this.globalize.formatDate(date, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
+            const title: string = this.globalize.formatDate(date, { type: 'date', skeleton: 'full' });
             if (!isNullOrUndefined(sameDate) && sameDate) {
                 ele.setAttribute('aria-label', 'The current start and end date is ' + '' + title);
             } else {
@@ -3815,7 +3793,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateInput(): void {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            const formatOption: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+            const formatOption: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
             const startDate: string = this.globalize.formatDate(this.startValue, formatOption);
             const endDate: string = this.globalize.formatDate(this.endValue, formatOption);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -3920,7 +3898,7 @@ export class DateRangePicker extends CalendarBase {
         const valueString: string = value;
         let invalid: boolean = false;
         let formatOpt: object = null;
-        formatOpt = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+        formatOpt = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         if (typeof valueString !== 'string') {
             invalid = true;
         } else {
@@ -4289,10 +4267,10 @@ export class DateRangePicker extends CalendarBase {
                     document.body.appendChild(this.mobileRangePopupWrap);
                 }
                 this.openEventArgs = {
-                    popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || null,
+                    popup: this.popupObj || null,
                     cancel: false,
                     date: this.inputElement.value,
-                    model: (isBlazor() && this.isServerRendered) ? null : this,
+                    model: this,
                     event: event ? event : null,
                     appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
@@ -4354,9 +4332,9 @@ export class DateRangePicker extends CalendarBase {
             if (this.isPopupOpen()) {
                 this.closeEventArgs = {
                     cancel: false,
-                    popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj,
+                    popup: this.popupObj,
                     date: this.inputElement.value,
-                    model: (isBlazor() && this.isServerRendered) ? null : this,
+                    model: this,
                     event: event ? event : null
                 };
                 const eventArgs: RangePopupEventArgs = this.closeEventArgs;
@@ -4477,7 +4455,7 @@ export class DateRangePicker extends CalendarBase {
         attributes(this.secondHiddenChild, {
             'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class' : HIDDENELEMENT
         });
-        const format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
+        const format: Object = { type: 'datetime', skeleton: 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
@@ -4507,7 +4485,7 @@ export class DateRangePicker extends CalendarBase {
      * @private
      */
     public onPropertyChanged(newProp: DateRangePickerModel, oldProp: DateRangePickerModel): void {
-        const format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
+        const format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (const prop of Object.keys(newProp)) {
             const openPopup: string[] = ['maxDays', 'minDays', 'value'];
             if (openPopup.indexOf(prop) < 0) {

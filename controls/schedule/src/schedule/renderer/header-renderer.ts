@@ -175,6 +175,12 @@ export class HeaderRenderer {
         if (selEle) {
             selEle.setAttribute('aria-label', text);
             selEle.querySelector('.e-tbar-btn-text').innerHTML = text;
+            this.refresh();
+        }
+    }
+
+    public refresh(): void {
+        if (this.toolbarObj) {
             this.toolbarObj.refreshOverflow();
         }
     }
@@ -434,7 +440,7 @@ export class HeaderRenderer {
             this.parent.changeView('TimelineYear', args.originalEvent, undefined, this.calculateViewIndex(args));
             break;
         case 'e-today':
-            if (!this.parent.isSelectedDate(util.resetTime(this.parent.getCurrentTime()))) {
+            if (this.parent.currentView === 'Agenda' || !this.parent.isSelectedDate(util.resetTime(this.parent.getCurrentTime()))) {
                 this.parent.changeDate(util.resetTime(this.parent.getCurrentTime()), args.originalEvent);
             }
             break;

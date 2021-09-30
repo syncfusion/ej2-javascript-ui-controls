@@ -1,6 +1,6 @@
 import { Workbook } from '../base/index';
 import { executeTaskAsync } from '../common/worker';
-import { SaveOptions } from '../common/index';
+import { pdfLayoutSettings, SaveOptions } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
 import { SaveCompleteEventArgs } from '../common/index';
@@ -17,6 +17,7 @@ export class WorkbookSave extends SaveWorker {
     private isFullPost: boolean = false;
     private needBlobData: boolean = false;
     private customParams: Object = null;
+    private pdfLayoutSettings: pdfLayoutSettings = {fitSheetOnOnePage: false};
 
     /**
      * Constructor for WorkbookSave module in Workbook library.
@@ -88,6 +89,7 @@ export class WorkbookSave extends SaveWorker {
         this.needBlobData = args.needBlobData as boolean;
         if (this.needBlobData) { this.isFullPost = false; }
         this.customParams = args.customParams;
+        this.pdfLayoutSettings = args.pdfLayoutSettings;
         this.updateBasicSettings();
         this.processSheets();
     }
@@ -169,7 +171,7 @@ export class WorkbookSave extends SaveWorker {
             } else {
                 executeTaskAsync(
                     this, { 'workerTask': this.processSave },
-                    this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams], true);
+                    this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams, this.pdfLayoutSettings], true);
             }
         }
         this.saveJSON = {};
@@ -244,6 +246,11 @@ export class WorkbookSave extends SaveWorker {
             inputElem.value = this.customParams[keys[i]];
             formElem.appendChild(inputElem);
         }
+
+        inputElem = this.parent.createElement(
+            'input', { attrs: { type: 'hidden', name: 'pdfLayoutSettings' } }) as HTMLInputElement;
+            inputElem.value = JSON.stringify(this.pdfLayoutSettings);
+        formElem.appendChild(inputElem);
 
         document.body.appendChild(formElem);
         formElem.submit();

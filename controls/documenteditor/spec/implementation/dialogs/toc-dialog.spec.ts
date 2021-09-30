@@ -437,17 +437,17 @@ console.log('On cancel Button testing');
     //     let fieldCode: any = childWidgets.paragraph.childWidgets[0].children[5];
     //     expect(fieldCode.text).toBe(' PAGEREF_Toc512292613 \\h ');
     // });
-    it('undo and redo testing', () => {
-console.log('undo and redo testing');
-        editor.editorHistory.undo();
-        let childWidgets: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
-        let fieldCode: any = childWidgets.paragraph.childWidgets[0].children[9];
-        expect(fieldCode.text.match('PAGEREF')).not.toBe(true);
-        editor.editorHistory.redo();
-        let childWidget: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
-        let fieldCodes: any = childWidget.paragraph.childWidgets[0].children[6];
-        expect(fieldCode.text.match('PAGEREF')).not.toBe(true);
-    });
+//     it('undo and redo testing', () => {
+// console.log('undo and redo testing');
+//         editor.editorHistory.undo();
+//         let childWidgets: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
+//         let fieldCode: any = childWidgets.paragraph.childWidgets[0].children[9];
+//         expect(fieldCode.text.match('PAGEREF')).not.toBe(true);
+//         editor.editorHistory.redo();
+//         let childWidget: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
+//         let fieldCodes: any = childWidget.paragraph.childWidgets[0].children[6];
+//         expect(fieldCode.text.match('PAGEREF')).not.toBe(true);
+//     });
 });
 describe('TOC test case validation - 3', () => {
     let editor: DocumentEditor;

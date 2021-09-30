@@ -3,12 +3,13 @@ import { addClass, removeClass } from './dom';
 import { Observer } from './observer';
 
 export interface DomElements extends HTMLElement {
+    // eslint-disable-next-line
     ej2_instances: Object[];
 }
 
-const isColEName: RegExp = new RegExp('\]');
+const isColEName: RegExp = new RegExp(']');
 
-/* tslint:disable:no-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export interface AngularEventEmitter {
     subscribe?: (generatorOrNext?: any, error?: any, complete?: any) => any;
@@ -25,7 +26,8 @@ export interface BlazorDotnetObject {
 
 
 /**
- * Base library module is common module for Framework modules like touch,keyboard and etc., 
+ * Base library module is common module for Framework modules like touch,keyboard and etc.,
+ *
  * @private
  */
 export abstract class Base<ElementType extends HTMLElement> {
@@ -42,7 +44,7 @@ export abstract class Base<ElementType extends HTMLElement> {
     protected bulkChanges: { [key: string]: Object } = {};
     protected refreshing: boolean = false;
     public ignoreCollectionWatch : boolean = false;
-    // tslint:disable-next-line:no-empty
+    // eslint-disable-next-line
     protected finalUpdate: Function = (): void => { };
     protected modelObserver: Observer;
     protected childChangedProperties: { [key: string]: Object } = {};
@@ -51,12 +53,14 @@ export abstract class Base<ElementType extends HTMLElement> {
     /** Property base section */
     /**
      * Function used to set bunch of property at a time.
+     *
      * @private
      * @param  {Object} prop - JSON object which holds components properties.
-     * @param  {boolean} muteOnChange? - Specifies to true when we set properties.
+     * @param  {boolean} muteOnChange ? - Specifies to true when we set properties.
+     * @returns {void} ?
      */
     public setProperties(prop: Object, muteOnChange?: boolean): void {
-        let prevDetection: boolean = this.isProtectedOnChange;
+        const prevDetection: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = !!muteOnChange;
         merge(this, prop);
         if (muteOnChange !== true) {
@@ -69,19 +73,20 @@ export abstract class Base<ElementType extends HTMLElement> {
         this.changedProperties = {};
         this.oldProperties = {};
         this.isProtectedOnChange = prevDetection;
-    };
+    }
     /**
      * Calls for child element data bind
-     * @param {Object} obj 
-     * @param {Object} parent 
-     * @returns {void}
+     *
+     * @param {Object} obj ?
+     * @param {Object} parent ?
+     * @returns {void} ?
      */
     // tslint:disable-next-line:no-any
     private static callChildDataBind(obj: Object, parent: { [key: string]: any }): void {
-        let keys: string[] = Object.keys(obj);
-        for (let key of keys) {
+        const keys: string[] = Object.keys(obj);
+        for (const key of keys) {
             if (parent[key] instanceof Array) {
-                for (let obj of parent[key]) {
+                for (const obj of parent[key]) {
                     if (obj.dataBind !== undefined) {
                         obj.dataBind();
                     }
@@ -101,19 +106,21 @@ export abstract class Base<ElementType extends HTMLElement> {
 
     /**
      * Bind property changes immediately to components
+     *
+     * @returns {void} ?
      */
     public dataBind(): void {
         Base.callChildDataBind(this.childChangedProperties, this);
         if (Object.getOwnPropertyNames(this.changedProperties).length) {
-            let prevDetection: boolean = this.isProtectedOnChange;
-            let newChanges: Object = this.changedProperties;
-            let oldChanges: Object = this.oldProperties;
+            const prevDetection: boolean = this.isProtectedOnChange;
+            const newChanges: Object = this.changedProperties;
+            const oldChanges: Object = this.oldProperties;
             this.clearChanges();
             this.isProtectedOnChange = true;
             this.onPropertyChanged(newChanges, oldChanges);
             this.isProtectedOnChange = prevDetection;
         }
-    };
+    }
 
     /* tslint:disable:no-any */
     public serverDataBind(newChanges?: { [key: string]: any }): void {
@@ -122,7 +129,7 @@ export abstract class Base<ElementType extends HTMLElement> {
         }
         newChanges = newChanges ? newChanges : {};
         extend(this.bulkChanges, {}, newChanges, true);
-        let sfBlazor: string = 'sfBlazor';
+        const sfBlazor: string = 'sfBlazor';
         if (this.allowServerDataBinding && (window as any)[sfBlazor].updateModel) {
             (window as any)[sfBlazor].updateModel(this);
             this.bulkChanges = {};
@@ -133,7 +140,7 @@ export abstract class Base<ElementType extends HTMLElement> {
     protected saveChanges(key: string, newValue: string, oldValue: string): void {
         if (isBlazor()) {
             // tslint:disable-next-line:no-any
-            let newChanges: any = {};
+            const newChanges: any = {};
             newChanges[key] = newValue;
             this.serverDataBind(newChanges);
         }
@@ -144,36 +151,40 @@ export abstract class Base<ElementType extends HTMLElement> {
         this.changedProperties[key] = newValue;
         this.finalUpdate();
         this.finalUpdate = setImmediate(this.dataBind.bind(this));
-    };
+    }
 
     /** Event Base Section */
     /**
      * Adds the handler to the given event listener.
+     *
      * @param {string} eventName - A String that specifies the name of the event
-     * @param {Function} listener - Specifies the call to run when the event occurs.
-     * @return {void}
+     * @param {Function} handler - Specifies the call to run when the event occurs.
+     * @returns {void} ?
      */
     public addEventListener(eventName: string, handler: Function): void {
         this.modelObserver.on(eventName, handler);
     }
+
     /**
      * Removes the handler from the given event listener.
+     *
      * @param {string} eventName - A String that specifies the name of the event to remove
-     * @param {Function} listener - Specifies the function to remove
-     * @return {void}
+     * @param {Function} handler - Specifies the function to remove
+     * @returns {void} ?
      */
     public removeEventListener(eventName: string, handler: Function): void {
         this.modelObserver.off(eventName, handler);
     }
     /**
      * Triggers the handlers in the specified event.
+     *
      * @private
-     * @param {string} eventName - Specifies the event to trigger for the specified component properties. 
+     * @param {string} eventName - Specifies the event to trigger for the specified component properties.
      * Can be a custom event, or any of the standard events.
      * @param {Event} eventProp - Additional parameters to pass on to the event properties
      * @param {Function} successHandler - this function will invoke after event successfully triggered
      * @param {Function} errorHandler - this function will invoke after event if it failured to call.
-     * @return {void}
+     * @returns {void} ?
      */
     public trigger(
         eventName: string,
@@ -181,15 +192,15 @@ export abstract class Base<ElementType extends HTMLElement> {
         successHandler?: Function,
         errorHandler?: Function): void | object {
         if (this.isDestroyed !== true) {
-            let prevDetection: boolean = this.isProtectedOnChange;
+            const prevDetection: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = false;
             let data: object = this.modelObserver.notify(eventName, eventProp, successHandler, errorHandler) as object;
             if (isColEName.test(eventName)) {
-                let handler: Function = getValue(eventName, this);
+                const handler: Function = getValue(eventName, this);
                 if (handler) {
-                    let blazor: string = 'Blazor';
+                    const blazor: string = 'Blazor';
                     if (window[blazor]) {
-                        let promise: Promise<object> = handler.call(this, eventProp);
+                        const promise: Promise<object> = handler.call(this, eventProp);
                         if (promise && typeof promise.then === 'function') {
                             if (!successHandler) {
                                 data = promise;
@@ -226,7 +237,10 @@ export abstract class Base<ElementType extends HTMLElement> {
     }
 
     /**
-     * Base constructor accept options and element 
+     * Base constructor accept options and element
+     *
+     * @param {Object} options ?
+     * @param {string} element ?
      */
     constructor(options: Object, element: ElementType | string) {
         this.modelObserver = new Observer(this);
@@ -249,10 +263,12 @@ export abstract class Base<ElementType extends HTMLElement> {
 
     /**
      * To maintain instance in base class
+     *
+     * @returns {void} ?
      */
     protected addInstance(): void {
         // Add module class to the root element
-        let moduleClass: string = 'e-' + this.getModuleName().toLowerCase();
+        const moduleClass: string = 'e-' + this.getModuleName().toLowerCase();
         addClass([this.element], ['e-lib', moduleClass]);
         if (!isNullOrUndefined((<DomElements>(this.element as HTMLElement)).ej2_instances)) {
             (<DomElements>(this.element as HTMLElement)).ej2_instances.push(this);
@@ -262,8 +278,11 @@ export abstract class Base<ElementType extends HTMLElement> {
     }
     /**
      * To remove the instance from the element
+     *
+     * @returns {void} ?
      */
     protected destroy(): void {
+        // eslint-disable-next-line
         (<DomElements>(this.element as HTMLElement)).ej2_instances =
             (<DomElements>(this.element as HTMLElement)).ej2_instances.filter((i: Object) => { return i !== this; });
         removeClass([this.element], ['e-' + this.getModuleName()]);
@@ -279,18 +298,20 @@ export abstract class Base<ElementType extends HTMLElement> {
 
 /**
  * Global function to get the component instance from the rendered element.
- * @param elem Specifies the HTMLElement or element id string.
- * @param comp Specifies the component module name or Component.
+ *
+ * @param {HTMLElement} elem Specifies the HTMLElement or element id string.
+ * @param {string} comp Specifies the component module name or Component.
+ * @returns {any} ?
  */
 // tslint:disable-next-line:no-any
 export function getComponent<T>(elem: HTMLElement | string, comp: string | any | T): T {
     let instance: T;
     let i: number;
-    let ele: HTMLElement = typeof elem === 'string' ? document.getElementById(elem) : elem;
+    const ele: HTMLElement = typeof elem === 'string' ? document.getElementById(elem) : elem;
     for (i = 0; i < (<DomElements>(ele as HTMLElement)).ej2_instances.length; i++) {
         instance = <T>(ele as DomElements).ej2_instances[i];
         if (typeof comp === 'string') {
-            let compName: string = (instance as { getModuleName: () => string } & T).getModuleName();
+            const compName: string = (instance as { getModuleName: () => string } & T).getModuleName();
             if (comp === compName) {
                 return instance;
             }
@@ -306,17 +327,19 @@ export function getComponent<T>(elem: HTMLElement | string, comp: string | any |
 
 /**
  * Function to remove the child instances.
+ *
+ * @param {HTMLElement} element ?
  * @return {void}
  * @private
  */
 // tslint:disable-next-line:no-any
 export function removeChildInstance(element: HTMLElement): void {
     // tslint:disable-next-line:no-any
-    let childEle: any = [].slice.call(element.getElementsByClassName('e-control'));
+    const childEle: any = [].slice.call(element.getElementsByClassName('e-control'));
     for (let i: number = 0; i < childEle.length; i++) {
-        let compName: string = childEle[i].classList[1].split('e-')[1];
+        const compName: string = childEle[i].classList[1].split('e-')[1];
         // tslint:disable-next-line:no-any
-        let compInstance: any = getComponent(childEle[i], compName);
+        const compInstance: any = getComponent(childEle[i], compName);
         if (!isUndefined(compInstance)) {
             compInstance.destroy();
         }

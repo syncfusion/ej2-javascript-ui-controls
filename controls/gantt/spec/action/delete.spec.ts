@@ -116,7 +116,8 @@ describe('Gantt delete support', () => {
         //     ganttObj.refresh();
         // }, 3000);
     });
-         describe('Selection maintaining after Gantt delete action', () => {
+    
+             describe('Selection maintaining after Gantt delete action', () => {
         Gantt.Inject(Edit, Toolbar, Selection);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {

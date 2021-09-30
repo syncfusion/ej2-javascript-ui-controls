@@ -199,7 +199,11 @@ export type TreeMapTheme =
 	/**  Render a treemap with Tailwind theme. */
     'Tailwind' |
     /**  Render a treemap with TailwindDark theme. */
-    'TailwindDark';
+    'TailwindDark' |
+    /** Render a treemap with Bootstrap5 theme. */
+    'Bootstrap5' |
+    /**  Render a treemap with Bootstrap5 dark theme. */
+    'Bootstrap5Dark';
 /**
  * Defines the rendering directions to render the treemap items in the treemap.
  */

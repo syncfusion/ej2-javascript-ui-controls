@@ -768,7 +768,6 @@ export class Edit {
      */
     private validateTaskEvent(editedEventArgs: ITaskbarEditedEventArgs): IValidateArgs {
         const newArgs: IValidateArgs = {};
-        let blazorArgs: IValidateArgs = {};
         this.resetValidateArgs();
         this.parent.currentEditedArgs = newArgs;
         newArgs.cancel = false;
@@ -1720,6 +1719,7 @@ export class Edit {
     private deleteRow(tasks: IGanttData[]): void {
         let rowItems: IGanttData[] = tasks && tasks.length ? tasks :
             this.parent.selectionModule.getSelectedRecords();
+        this.parent.addDeleteRecord = true;
         if (rowItems.length) {
             this.parent.isOnDelete = true;
             rowItems.forEach((item: IGanttData): void => {
@@ -1944,7 +1944,6 @@ export class Edit {
         eventArgs.data = args.deletedRecordCollection;
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
-        const blazorArgs: IActionBeginEventArgs = {};
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             if (eventArg.cancel) {
                 const deleteRecords: IGanttData[] = this.deletedTaskDetails;
@@ -2448,6 +2447,7 @@ export class Edit {
         // this.parent.connectorLineIds = [];
         // this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
+        this.parent.addDeleteRecord = true;
         this.parent.selectedRowIndex = 0;
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
@@ -2561,7 +2561,6 @@ export class Edit {
             let args: ITaskAddedEventArgs = {};
             args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
             this.parent.showSpinner();
-            let blazorArgs: ITaskAddedEventArgs = {};
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
                 if (!args.cancel) {
                     if (isRemoteData(this.parent.dataSource)) {
@@ -2710,7 +2709,11 @@ export class Edit {
         switch (rowPosition) {
         case 'Top':
         case 'Bottom':
-            level = 0;
+            if (this.parent.viewType === "ResourceView") {
+                level = 1;
+            } else {
+                level = 0;
+            }
             break;
         case 'Above':
         case 'Below':

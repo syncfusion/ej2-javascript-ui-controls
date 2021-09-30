@@ -197,7 +197,18 @@ export class ViewSource {
             baseToolbar: this.parent.getBaseToolbarObject()
         });
         const serializeValue: string = this.parent.serializeValue(editHTML.value);
-        const value: string = (serializeValue === null || serializeValue === '') ? '<p><br/></p>' : serializeValue;
+        let value: string;
+        if (serializeValue === null || serializeValue === '') {
+            if (this.parent.enterKey === 'DIV') {
+                value = '<div><br/></div>';
+            } else if (this.parent.enterKey === 'BR') {
+                value = '<br/>';
+            } else {
+                value = '<p><br/></p>';
+            }
+        } else {
+            value = serializeValue;
+        }
         if (this.parent.iframeSettings.enable) {
             editHTML.parentElement.style.display = 'none';
             editHTML.style.display = 'none';
@@ -229,9 +240,13 @@ export class ViewSource {
 
     private getTextAreaValue(): string {
         return (this.contentModule.getEditPanel().innerHTML === '<p><br></p>') ||
+        (this.contentModule.getEditPanel().innerHTML === '<div><br></div>') ||
+        (this.contentModule.getEditPanel().innerHTML === '<br>') ||
             (this.contentModule.getEditPanel().childNodes.length === 1 &&
-            (this.contentModule.getEditPanel().childNodes[0] as HTMLElement).tagName === 'P' &&
-            this.contentModule.getEditPanel().innerHTML.length === 7) ? '' : this.parent.value;
+            ((this.contentModule.getEditPanel().childNodes[0] as HTMLElement).tagName === 'P' &&
+            this.contentModule.getEditPanel().innerHTML.length === 7) ||
+            ((this.contentModule.getEditPanel().childNodes[0] as HTMLElement).tagName === 'DIV' &&
+            this.contentModule.getEditPanel().innerHTML.length === 11)) ? '' : this.parent.value;
     }
 
     /**

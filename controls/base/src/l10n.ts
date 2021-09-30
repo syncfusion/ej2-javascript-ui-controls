@@ -30,9 +30,13 @@ export class L10n {
     private localeStrings: Object;
     private currentLocale: Object;
     /**
-     * Constructor 
+     * Constructor
+     *
+     * @param {string} controlName ?
+     * @param {Object} localeStrings ?
+     * @param {string} locale ?
      */
-    constructor(controlName: string, localeStrings: Object, locale?: string, ) {
+    constructor(controlName: string, localeStrings: Object, locale?: string) {
         this.controlName = controlName;
         this.localeStrings = localeStrings;
         this.setLocale(locale || defaultCulture);
@@ -40,25 +44,29 @@ export class L10n {
 
     /**
      * Sets the locale text
-     * @param {string} locale 
-     * @returns {void}
+     *
+     * @param {string} locale ?
+     * @returns {void} ?
      */
 
     public setLocale(locale: string): void {
-        let intLocale: Object = this.intGetControlConstant(L10n.locale, locale);
+        const intLocale: Object = this.intGetControlConstant(L10n.locale, locale);
         this.currentLocale = intLocale || this.localeStrings;
     }
     /**
      * Sets the global locale for all components.
+     *
      * @param {Object} localeObject - specifies the localeObject to be set as global locale.
+     * @returns {void} ?
      */
     public static load(localeObject: Object): void {
         this.locale = extend(this.locale, localeObject, {}, true);
     }
     /**
      * Returns current locale text for the property based on the culture name and control name.
-     * @param {string} propertyName - specifies the property for which localize text to be returned.
-     * @return string
+     *
+     * @param {string} prop - specifies the property for which localize text to be returned.
+     * @returns {string} ?
      */
     public getConstant(prop: string): string {
         // Removed conditional operator because this method does not return correct value when passing 0 as value in localization
@@ -71,9 +79,10 @@ export class L10n {
 
     /**
      * Returns the control constant object for current object and the locale specified.
-     * @param {Object} curObject 
-     * @param {string} locale 
-     * @returns {Object}
+     *
+     * @param {Object} curObject ?
+     * @param {string} locale ?
+     * @returns {Object} ?
      */
 
     private intGetControlConstant(curObject: Object, locale: string): Object {

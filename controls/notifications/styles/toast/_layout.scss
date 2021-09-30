@@ -92,20 +92,42 @@
 
           &:first-child {
             padding: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 8px;
+              padding-left: 48px;
+              padding-right: 12px;
+              padding-top: 8px;
+            }
           }
 
           &:last-child {
             padding-bottom: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 8px;
+            }
           }
 
           + .e-toast-actions {
             padding: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding: $toast-action-btn-bgr-padding;
+            }
+          }
+          @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+            + .e-toast-actions {
+              padding: $toast-action-btn-bgr-padding;
+            }
           }
         }
 
         .e-toast-actions {
           padding: $toast-action-btn-bgr-padding;
           text-align: right;
+          @if $skin-name == 'bootstrap5' {
+            border-top: 1px solid $border;
+            margin-left: 16px;
+            margin-right: 16px;
+          }
 
           > * {
             margin-left: $toast-action-btn-bgr-margin;
@@ -117,6 +139,11 @@
         font-size: $toast-close-icon-bgr-size;
         height: $toast-close-icon-bgr-height;
         width: $toast-close-icon-bgr-width;
+        @if $skin-name == 'bootstrap5' {
+          margin-top: 13px;
+          position: absolute;
+          right: 12px;
+        }
       }
 
       .e-toast-icon {
@@ -124,6 +151,11 @@
         height: $toast-icon-bgr-height;
         margin-right: $toast-icon-bgr-right-margin;
         width: $toast-icon-bgr-width;
+        @if $skin-name == 'bootstrap5' {
+          left: 18px;
+          margin-top: 13px;
+          position: absolute;
+        }
       }
 
       .e-toast-progress {
@@ -256,10 +288,19 @@
 
           &:first-child {
             padding: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 12px;
+              padding-left: 12px;
+              padding-right: 12px;
+              padding-top: 12px;
+            }
           }
 
           &:last-child {
             padding-bottom: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 12px;
+            }
           }
 
           > * {
@@ -272,6 +313,9 @@
           font-size: $toast-title-font-nrml-size;
           font-weight: $toast-title-font-weight;
           letter-spacing: .5px;
+          @if $skin-name == 'bootstrap5' {
+            border-bottom: 1px solid $border;
+          }
         }
 
         .e-toast-content {
@@ -281,6 +325,9 @@
 
           + .e-toast-actions {
             padding-top: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding: $toast-action-btn-bgr-padding;
+            }
           }
         }
 
@@ -291,11 +338,42 @@
           @else {
             margin: 1px;
           }
+          @if $skin-name == 'bootstrap5' {
+            border-top: 1px solid $border;
+            margin-left: 12px;
+            margin-right: 12px;
+          }
           padding: $toast-action-btn-nrml-padding;
           text-align: right;
 
           > * {
             margin-left: $toast-action-btn-nrml-margin;
+          }
+        }
+      }
+
+      &.e-toast-header-icon {
+        .e-toast-message {
+          .e-toast-title,
+          .e-toast-content {
+            &:first-child {
+              @if $skin-name == 'bootstrap5' {
+                padding-left: 48px;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-toast-header-close-icon {
+        .e-toast-message {
+          .e-toast-title,
+          .e-toast-content {
+            &:first-child {
+              @if $skin-name == 'bootstrap5' {
+                padding-right: 30px;
+              }
+            }
           }
         }
       }
@@ -312,6 +390,11 @@
         @if $skin-name == 'material' {
           opacity: .7;
         }
+        @if $skin-name == 'bootstrap5' {
+          margin-top: 13px;
+          position: absolute;
+          right: 8px;
+        }
       }
 
       .e-toast-icon {
@@ -321,6 +404,11 @@
         justify-content: center;
         margin-right: $toast-icon-nrml-right-margin;
         width: $toast-icon-nrml-width;
+        @if $skin-name == 'bootstrap5' {
+          left: 16px;
+          margin-top: 13px;
+          position: absolute;
+        }
       }
 
       .e-toast-progress {
@@ -355,5 +443,16 @@
     height: 20px;
     position: relative;
     width: 22px;
+  }
+
+  @if $skin-name == 'tailwind' {
+    .e-bigger.e-toast,
+    .e-toast .e-toast {
+      padding: 20px;
+    }
+
+    .e-bigger .e-toast-container .e-toast .e-toast-message .e-toast-title {
+      font-size: 16px;
+    }
   }
 }

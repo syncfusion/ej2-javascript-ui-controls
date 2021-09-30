@@ -362,7 +362,8 @@ export class RowDD {
         const middleRowSegment: number = topRowSegment + divide;
         const bottomRowSegment: number = middleRowSegment + divide;
         const mouseEvent: MouseEvent = getObject('originalEvent.event', args);
-        const posy: number = mouseEvent.pageY;
+        const touchEvent: TouchEvent = getObject('originalEvent.event', args);
+        const posy: number = (mouseEvent.type == "mousemove") ? mouseEvent.pageY: ((!isNullOrUndefined(touchEvent) && !isNullOrUndefined(touchEvent.changedTouches)) ? touchEvent.changedTouches[0].pageY: null);
         const isTopSegment: boolean = posy <= topRowSegment;
         const isMiddleRowSegment: boolean = (posy > topRowSegment && posy <= middleRowSegment);
         const isBottomRowSegment: boolean = (posy > middleRowSegment && posy <= bottomRowSegment);

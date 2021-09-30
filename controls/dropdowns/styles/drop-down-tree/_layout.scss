@@ -30,7 +30,7 @@
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {
         box-sizing: content-box;
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
           min-height: $ddt-close-icon-min-height;
         }
       }
@@ -40,6 +40,9 @@
 
         @if $ddt-skin-name == 'bootstrap4' {
           font-size: 8px;
+        }
+        @if $ddt-skin-name == 'bootstrap5' {
+          font-size: 20px;
         }
       }
 
@@ -56,8 +59,8 @@
         }
 
         &.e-show-dd-icon .e-clear-icon {
-          @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
-            right: 25px;
+          @if $ddt-skin-name == 'tailwind' {
+            right: 28px;
           }
           @else {
             right: $ddt-dd-icon-width;
@@ -85,7 +88,7 @@
     &.e-show-chip {
 
       .e-chips-close {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
           line-height: $ddt-chip-icon-line-height;
         }
         min-height: $ddt-chip-close-height;
@@ -94,7 +97,9 @@
 
         &::before {
           font-size: $ddt-chip-close-font;
-          vertical-align: middle;
+          @if $ddt-skin-name != 'bootstrap5' {
+            vertical-align: middle;
+          }
         }
       }
 
@@ -132,12 +137,15 @@
 
       &.e-show-text {
         padding: $ddt-delim-padding;
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           line-height: 22px;
 
           .e-remain {
             padding-left: 8px;
           }
+        }
+        @if $ddt-skin-name == 'bootstrap5' {
+          line-height: 30px;
         }
       }
 
@@ -148,12 +156,19 @@
         text-overflow: ellipsis;
 
         .e-remain {
-          padding: $ddt-rtl-remains-padding;
+          @if $ddt-skin-name == 'bootstrap5' {
+            line-height: 30px;
+          }
+          @else {
+            padding: $ddt-rtl-remains-padding;
+          }
         }
       }
 
       &.e-wrap-count {
-        padding-top: $ddt-remains-count-padding-top;
+        @if $ddt-skin-name != 'bootstrap5' {
+          padding-top: $ddt-remains-count-padding-top;
+        }
       }
 
       .e-remain {
@@ -163,7 +178,12 @@
         padding: $ddt-remains-padding;
 
         &.e-wrap-count {
-          padding-top: $ddt-overflow-count-padding-top;
+          @if $ddt-skin-name == 'bootstrap5' {
+            padding: $ddt-overflow-count-padding;
+          }
+          @else {
+            padding-top: $ddt-overflow-count-padding-top;
+          }
         }
       }
     }
@@ -179,7 +199,7 @@
     }
 
     &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+      @if $ddt-skin-name == 'tailwind' {
         margin-right: 18px;
       }
       @else {
@@ -189,7 +209,7 @@
     }
 
     &.e-show-clear .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+      @if $ddt-skin-name == 'tailwind' {
         margin-right: 18px;
       }
       @else {
@@ -218,7 +238,7 @@
         border: 1px solid $ddt-popup-border-color;
       }
 
-      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
         border-radius: 4px;
         margin-top: 4px;
       }
@@ -234,7 +254,7 @@
         border-bottom: 1px solid;
         cursor: pointer;
         display: block;
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+        @if $ddt-skin-name != 'tailwind' {
           line-height: $ddt-select-all-height;
         }
         overflow: hidden;
@@ -242,8 +262,11 @@
         text-indent: $ddt-select-all-text-indent;
         white-space: nowrap;
         width: 100%;
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           padding: 8px 12px;
+        }
+        @else if $ddt-skin-name == 'bootstrap5' {
+          padding: 0 8px;
         }
 
         &.e-hide-selectall {
@@ -255,7 +278,7 @@
           text-indent: 0;
 
           .e-frame {
-            @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+            @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
               margin-top: -3px;
             }
           }
@@ -265,7 +288,7 @@
           font-family: inherit;
           font-size: 14px;
           margin: $ddt-select-all-checkbox-margin;
-          @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+          @if $ddt-skin-name == 'tailwind' {
             line-height: $ddt-select-all-height;
           }
         }
@@ -273,13 +296,13 @@
 
       & .e-filter-wrap .e-input,
       & .e-filter-wrap .e-input:focus {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
           padding: $ddt-list-filter-text-indent;
         }
       }
 
       .e-filter-wrap {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           border-bottom: $ddt-filter-border;
         }
         @else {
@@ -318,7 +341,7 @@
       .e-filter-wrap .e-input-group {
         margin-bottom: 0;
 
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           border: 1px solid $border;
           border-radius: 4px;
         }
@@ -349,8 +372,11 @@
           cursor: default;
           font-family: inherit;
           font-size: 14px;
-          @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+          @if $ddt-skin-name == 'tailwind' {
             padding: 8px 16px;
+          }
+          @else if $ddt-skin-name == 'bootstrap5' {
+            padding: 7px 16px;
           }
           @else {
             padding: 14px 16px;
@@ -363,7 +389,7 @@
 
           .e-ddt-nodata {
             display: block;
-            @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+            @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5'  {
               line-height: 22px;
             }
           }
@@ -387,20 +413,20 @@
           @if $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
             border-width: 2px;
           }
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
             height: $ddt-treeview-fullrow-height;
           }
         }
 
         & > .e-ul {
           overflow: hidden;
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+          @if $ddt-skin-name != 'tailwind' {
             padding: $ddt-treeview-padding;
           }
         }
 
         &.e-fullrow-wrap .e-text-content {
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
             padding-bottom: $ddt-treeview-content-padding-top;
             padding-top: $ddt-treeview-content-padding-bottom;
           }
@@ -417,7 +443,7 @@
       &.e-show-chip {
         .e-chips {
           float: right;
-          @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+          @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
             & > .e-chipcontent {
               padding: $ddt-rtl-chip-content-padding;
             }
@@ -432,7 +458,12 @@
             padding: $ddt-rtl-remains-padding;
 
             &.e-wrap-count {
-              padding-top: $ddt-remains-count-padding-top;
+              @if $ddt-skin-name == 'bootstrap5' {
+                padding-top: 5px;
+              }
+              @else {
+                padding-top: $ddt-remains-count-padding-top;
+              }
             }
           }
 
@@ -457,7 +488,7 @@
         .e-overflow {
           &.e-wrap-count {
             .e-remain {
-              @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+              @if $ddt-skin-name == 'tailwind' {
                 padding-right: 8px;
               }
             }
@@ -476,7 +507,7 @@
       }
 
       &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           margin-left: 18px;
           margin-right: 4px;
         }
@@ -487,7 +518,7 @@
       }
 
       &.e-show-clear .e-chips-wrapper .e-chips:last-child {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           margin-left: 18px;
           margin-right: 4px;
         }
@@ -499,7 +530,7 @@
 
       &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
         margin-left: $ddt-last-chip-right-margin;
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           margin-right: 4px;
         }
         @else {
@@ -520,8 +551,8 @@
           }
 
           &.e-show-dd-icon .e-clear-icon {
-            @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
-              left: 25px;
+            @if $ddt-skin-name == 'tailwind' {
+              left: 28px;
             }
             @else {
               left: $ddt-dd-icon-width;
@@ -539,13 +570,17 @@
     }
   }
 
+  .e-ddt-icon-hide {
+    display: none;
+  }
+
   .e-bigger .e-ddt,
   .e-ddt.e-bigger {
 
     .e-chips {
       height: $ddt-chip-bigger-height;
 
-      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+      @if $ddt-skin-name == 'tailwind' {
         padding: 3px 8px;
 
         & > .e-chipcontent {
@@ -560,11 +595,15 @@
       &.e-show-chip,
       &.e-show-text  {
         &.e-show-dd-icon .e-clear-icon {
-          @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+          @if $ddt-skin-name == 'tailwind' {
             bottom: 3px;
-            right: 25px;
+            right: 32px;
           }
           @else if $ddt-skin-name == 'bootstrap4' {
+            right: 33px;
+          }
+          @else if $ddt-skin-name == 'bootstrap5' {
+            bottom: 6px;
             right: 33px;
           }
           @else {
@@ -584,7 +623,7 @@
       }
 
       .e-clear-icon {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           min-width: 0;
           padding: 6px;
         }
@@ -605,13 +644,22 @@
             font-size: 10px;
           }
         }
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           line-height: 18px;
           min-height: 24px;
           min-width: 24px;
 
           &::before {
             font-size: 20px;
+          }
+        }
+        @if $ddt-skin-name == 'bootstrap5' {
+          min-height: 24px;
+          min-width: 24px;
+
+          &::before {
+            font-size: 12px;
+            vertical-align: middle;
           }
         }
       }
@@ -621,27 +669,36 @@
 
       &.e-show-text {
         padding: $ddt-delim-bigger-padding;
+        @if $ddt-skin-name == 'bootstrap5' {
+          line-height: 37px;
+        }
       }
 
       .e-remain {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           font-size: $text-base;
         }
       }
     }
 
-    @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
-      &.e-show-chip {
-        .e-overflow {
-          .e-remain {
-            &.e-wrap-count {
+    &.e-show-chip {
+      .e-overflow {
+        .e-remain {
+          &.e-wrap-count {
+            @if $ddt-skin-name == 'tailwind' {
               line-height: 22px;
               padding-top: 7px;
             }
           }
+        }
 
-          &.e-total-count {
-            .e-remain {
+        &.e-total-count {
+          .e-remain {
+            @if $ddt-skin-name == 'bootstrap5' {
+              line-height: 36px;
+              padding: 0 12px;
+            }
+            @else if $ddt-skin-name == 'tailwind' {
               padding: 8px 12px;
             }
           }
@@ -650,14 +707,14 @@
     }
 
     &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
         margin-right: $ddt-dd-icon-bigger-width;
       }
       max-width: $ddt-big-chip-ddi-width;
     }
 
     &.e-show-clear .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
         margin-right: $ddt-close-icon-bigger-width;
       }
       max-width: $ddt-big-chip-ci-width;
@@ -669,27 +726,45 @@
     }
 
     &.e-popup {
-      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+      @if $ddt-skin-name == 'tailwind' {
         margin-top: 8px;
+      }
+      @else if $ddt-skin-name == 'bootstrap5' {
+        margin-top: 4px;
       }
 
       .e-selectall-parent {
         text-indent: $ddt-select-all-bigger-text-indent;
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
-          padding: 12px 16px;
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
+          @if $ddt-skin-name == 'bootstrap5' {
+            padding: 3px 12px;
+          }
+          @else {
+            padding: 12px 16px;
+          }
 
           .e-all-text {
             font-size: $text-base;
             line-height: 24px;
-            margin: 0 16px;
+            @if $ddt-skin-name == 'bootstrap5' {
+              margin: 0 12px;
+            }
+            @else {
+              margin: 0 16px;
+            }
           }
         }
       }
 
-      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
         .e-popup-content {
           &.e-no-data {
-            padding: 10px 16px;
+            @if $ddt-skin-name == 'bootstrap5' {
+              padding: 9px 16px;
+            }
+            @else {
+              padding: 10px 16px;
+            }
 
             .e-ddt-nodata {
               font-size: $text-base;
@@ -704,15 +779,21 @@
       }
 
       .e-treeview .e-fullrow {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
           height: $ddt-treeview-fullrow-bigger-height;
+        }
+      }
+
+      .e-treeview > .e-ul {
+        @if $ddt-skin-name == 'bootstrap5' {
+          padding: 0 16px;
         }
       }
     }
 
     &.e-rtl {
       .e-chips {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           & > .e-chipcontent {
             padding: $ddt-rtl-big-chip-content-padding;
           }
@@ -720,7 +801,7 @@
       }
 
       &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           margin-right: 4px;
         }
         @else {
@@ -730,7 +811,7 @@
       }
 
       &.e-show-clear .e-chips-wrapper .e-chips:last-child {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           margin-right: 4px;
         }
         @else {
@@ -741,7 +822,7 @@
 
       &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
         margin-left: $ddt-last-chip-bigger-right-margin;
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
           margin-right: 4px;
         }
         @else {
@@ -752,7 +833,7 @@
       &.e-show-chip,
       &.e-show-text  {
         &.e-input-group.e-show-dd-icon .e-clear-icon {
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
             left: $ddt-dd-icon-bigger-width;
           }
           right: auto;

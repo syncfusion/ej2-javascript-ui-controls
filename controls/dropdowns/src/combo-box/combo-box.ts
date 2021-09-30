@@ -95,9 +95,6 @@ export class ComboBox extends DropDownList {
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType int
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
      * @deprecated
      */
     @Property(null)
@@ -107,7 +104,6 @@ export class ComboBox extends DropDownList {
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
      *
      * @default true
-     * @blazorOverrideType override
      */
     @Property(true)
     public showClearButton: boolean;
@@ -116,7 +112,6 @@ export class ComboBox extends DropDownList {
      *
      * @default false
      * @deprecated
-     * @blazorOverrideType override
      */
     @Property(false)
     public enableRtl: boolean;
@@ -125,7 +120,6 @@ export class ComboBox extends DropDownList {
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      *
      * @event customValueSpecifier
-     * @blazorProperty 'CustomValueSpecifier'
      */
     @Event()
     public customValueSpecifier: EmitType<CustomValueSpecifierEventArgs>;
@@ -135,7 +129,6 @@ export class ComboBox extends DropDownList {
      * > For more details about the filtering refer to [`Filtering`](../../combo-box/filtering) documentation.
      *
      * @event filtering
-     * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -162,7 +155,6 @@ export class ComboBox extends DropDownList {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @deprecated
      */
     @Property('Never')
@@ -216,7 +208,6 @@ export class ComboBox extends DropDownList {
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      * @deprecated
      */
     @Property('100%')
@@ -228,7 +219,6 @@ export class ComboBox extends DropDownList {
      *
      * @default '300px'
      * @aspType string
-     * @blazorType string
      * @deprecated
      */
     @Property('300px')
@@ -241,7 +231,6 @@ export class ComboBox extends DropDownList {
      *
      * @default '100%'
      * @aspType string
-     * @blazorType string
      * @deprecated
      */
     @Property('100%')
@@ -443,9 +432,7 @@ export class ComboBox extends DropDownList {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
-        if (!this.isServerBlazor) {
-            super.onActionComplete(ulElement, list, e);
-        }
+        super.onActionComplete(ulElement, list, e);
         if (this.isSelectCustom) {
             this.removeSelection();
         }
@@ -590,10 +577,6 @@ export class ComboBox extends DropDownList {
     protected clearAll(e?: MouseEvent | KeyboardEventArgs, property?: ComboBoxModel): void {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
             super.clearAll(e);
-            if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', this.beforePopupOpen, true);
-            }
         }
         if (this.isFiltering() && !isNullOrUndefined(e) && e.target === this.inputWrapper.clearButton) {
             this.searchLists(e);
@@ -721,7 +704,7 @@ export class ComboBox extends DropDownList {
     }
     protected dropDownClick(e: MouseEvent): void {
         e.preventDefault();
-        if (Browser.isDevice && !this.allowFiltering) {
+        if (Browser.isDevice && !this.isFiltering()) {
             this.preventFocus = true;
         }
         super.dropDownClick(e);
@@ -959,7 +942,7 @@ export class ComboBox extends DropDownList {
         if (!this.enabled) {
             return;
         }
-        if (Browser.isDevice && !this.allowFiltering) {
+        if (Browser.isDevice && !this.isFiltering()) {
             this.preventFocus = true;
         }
         super.focusIn();
@@ -999,7 +982,6 @@ export class ComboBox extends DropDownList {
      *
      * @param { string | number } value - Specifies the value of the list item.
      * @returns {Object}
-     * @blazorType object
      * @deprecated
      */
     public getDataByValue(value: string | number | boolean)
@@ -1019,7 +1001,6 @@ export interface CustomValueSpecifierEventArgs {
     /**
      * Sets the text custom format data for set a `value` and `text`.
      *
-     * @blazorType object
      */
     item: { [key: string]: string | Object }
 }

@@ -105,8 +105,7 @@ export class TooltipRender {
                 palette: [series.fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]],
                 shapes: ['Circle'],
                 availableSize: smithchart.availableSize,
-                theme: smithchart.theme,
-                blazorTemplate: { name: 'TooltipTemplate', parent: smithchart.series[seriesindex].tooltip }
+                theme: smithchart.theme
             });
             this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
             this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';

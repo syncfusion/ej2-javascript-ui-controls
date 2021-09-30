@@ -50,8 +50,7 @@ export class Crud {
             const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
             this.parent.eventsData = resultData.filter((data: Record<string, any>) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data: Record<string, any>) => data[this.parent.eventFields.isBlock]);
-            const processed: Record<string, any>[] = this.parent.eventBase.processData(resultData);
-            this.parent.notify(events.dataReady, { processedData: processed });
+            this.parent.refreshEvents(false);
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }

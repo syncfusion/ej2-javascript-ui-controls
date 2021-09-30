@@ -11,7 +11,6 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * @default Syncfusion.EJ2.Grids.SelectionMode.Row
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionMode
      */
     @Property('Row')
     public mode: SelectionMode;
@@ -22,7 +21,6 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectionMode
      */
     @Property('Flow')
     public cellSelectionMode: CellSelectionMode;
@@ -34,10 +32,8 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      *
      * @default Syncfusion.EJ2.Grids.SelectionType.Single
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionType
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionType
      */
     @Property('Single')
     public type: SelectionType;

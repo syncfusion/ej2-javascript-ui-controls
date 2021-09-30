@@ -226,7 +226,6 @@ export class AxisSettings extends ChildProperty<AxisSettings> {
      * To configure Sparkline x axis min value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     @Property(null)
     public minX: number;
@@ -234,7 +233,6 @@ export class AxisSettings extends ChildProperty<AxisSettings> {
      * To configure Sparkline x axis max value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     @Property(null)
     public maxX: number;
@@ -242,7 +240,6 @@ export class AxisSettings extends ChildProperty<AxisSettings> {
      * To configure Sparkline y axis min value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     @Property(null)
     public minY: number;
@@ -250,7 +247,6 @@ export class AxisSettings extends ChildProperty<AxisSettings> {
      * To configure Sparkline y axis max value.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     @Property(null)
     public maxY: number;
@@ -258,7 +254,6 @@ export class AxisSettings extends ChildProperty<AxisSettings> {
      * To configure Sparkline horizontal axis line position.
      *
      * @default 0
-     * @blazorDefaultValue 0
      */
     @Property(0)
     public value: number;

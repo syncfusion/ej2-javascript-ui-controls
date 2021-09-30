@@ -512,8 +512,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     private chartid: number = 57725;
     /** @private */
     public stockChart: StockChart;
-    /** @private */
-    public isBlazor: boolean;
+
     /**
      * Constructor for creating the widget
      *
@@ -528,7 +527,6 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     public preRender(): void {
         const blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.setCulture();
         this.allowServerDataBinding = false;
@@ -575,11 +573,11 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     public render(): void {
         const loadEventData: IRangeLoadedEventArgs = {
-            name: 'load', rangeNavigator: this.isBlazor ? {} as RangeNavigator : this,
+            name: 'load', rangeNavigator: this,
             theme: this.theme
         };
         this.trigger('load', loadEventData, () => {
-            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.theme = this.theme;
             this.setTheme();
             this.initPrivateVariables();
             this.createRangeSvg();
@@ -621,7 +619,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         const isLeightWeight: boolean = !this.series.length;
         const tooltipSpace: number = (!this.disableRangeSelector) &&
             isLeightWeight && this.tooltip.enable ? 35 : 0;
-        if (this.isBlazor && !this.periodSelectorModule && this.periodSelectorSettings.periods.length && !this.stockChart) {
+        if (!this.periodSelectorModule && this.periodSelectorSettings.periods.length && !this.stockChart) {
             this.periodSelectorModule = new PeriodSelector(this);
         }
         const selector: PeriodSelector = this.periodSelectorModule;
@@ -678,7 +676,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
-        this.trigger('loaded', { rangeNavigator: this.isBlazor ? {} : this });
+        this.trigger('loaded', { rangeNavigator: this });
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, false,
             this.tooltip.enable && this.tooltip.displayMode === 'Always'

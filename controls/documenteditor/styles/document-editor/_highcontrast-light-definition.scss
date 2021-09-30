@@ -844,6 +844,9 @@ $de-de-rtl-btn-div-e-de-rtl-margin-right: 24px !default;
 $de-de-rtl-btn-div-e-de-rtl-margin-left: 12px !default;
 $de-para-dlg-spacing-div-mrgn-left: 40px !default;
 
+// Table properties
+$de-row-height-bottom-margin: 8px;
+
 @include export-module('documenteditor-icons') {
   .e-documenteditor {
     .e-close::before {

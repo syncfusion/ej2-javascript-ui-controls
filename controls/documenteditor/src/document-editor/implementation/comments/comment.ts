@@ -151,7 +151,6 @@ export class CommentReviewPane {
         }
         this.reviewTab.enablePersistence = true;
         this.parentPaneElement.appendChild(this.element);
-
         if (this.owner.enableRtl) {
             this.closeButton = createElement('button', {
                 className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
@@ -163,7 +162,6 @@ export class CommentReviewPane {
                 attrs: { type: 'button', style: 'position:absolute;top:6px;right:1px' }
             }) as HTMLButtonElement;
         }
-
         this.closeButton.title = localValue.getConstant('Close');
         const closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);

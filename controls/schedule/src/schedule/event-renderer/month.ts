@@ -55,6 +55,9 @@ export class MonthEvent extends EventBase {
     }
 
     public renderAppointments(): void {
+        if (this.parent.dragAndDropModule) {
+            this.parent.dragAndDropModule.setDragArea();
+        }
         const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         if (this.parent.rowAutoHeight) {
             this.parent.uiStateValues.top = conWrap.scrollTop;
@@ -81,6 +84,13 @@ export class MonthEvent extends EventBase {
         this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
         if (!this.element.querySelector('.' + cls.WORK_CELLS_CLASS)) {
             return;
+        }
+        if (this.parent.currentView === 'Month') {
+            const wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
+            const cellTd: HTMLTableCellElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS);
+            cellTd.appendChild(wrapper);
+            this.monthHeaderHeight = wrapper.offsetTop - cellTd.offsetTop;
+            cellTd.removeChild(wrapper);
         }
         this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
         const scrollTop: number = conWrap.scrollTop;
@@ -151,7 +161,9 @@ export class MonthEvent extends EventBase {
         this.sortByDateTime(blockList);
         if (this.parent.currentView === 'Month' && this.parent.rowAutoHeight && this.parent.activeViewOptions.group.resources.length === 0) {
             const totalCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
-            const height: number = this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
+            const height: number = this.parent.height === 'auto' ? (this.parent.element.querySelector('.e-content-wrap').clientHeight +
+                this.parent.element.querySelector('.e-date-header-wrap').clientHeight) / totalCells.length
+                : this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
             totalCells.forEach((cell: HTMLElement) => {
                 setStyleAttribute(cell, { 'height': height + 'px' });
             });
@@ -242,7 +254,6 @@ export class MonthEvent extends EventBase {
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth;
             const appLeft: number = (this.parent.enableRtl) ? 0 : position;
             const appRight: number = (this.parent.enableRtl) ? position : 0;
-            this.renderWrapperElement(cellTd as HTMLElement);
             const appHeight: number = this.cellHeight - this.monthHeaderHeight;
             const appTop: number = this.getRowTop(resIndex);
             const blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex);
@@ -356,18 +367,20 @@ export class MonthEvent extends EventBase {
         const eventSubject: string = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default ||
             this.parent.localeObj.getConstant('addTitle')) as string;
         const newRecord: Record<string, any> = extend({}, record, record.data, true) as Record<string, any>;
-        const appointmentWrapper: HTMLElement = createElement('div', {
-            className: cls.APPOINTMENT_CLASS,
-            attrs: {
-                'data-id': 'Appointment_' + record[this.fields.id],
-                'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnouncementString(newRecord, eventSubject)
-            }
-        });
+        const attrs: { [key: string]: string } = {
+            'data-id': 'Appointment_' + record[this.fields.id],
+            'role': 'button', 'tabindex': '0',
+            'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+            'aria-label': this.parent.getAnnouncementString(newRecord, eventSubject)
+        };
         if (!isCloneElement) {
-            appointmentWrapper.setAttribute('data-guid', record.Guid as string);
+            attrs['data-guid'] = record.Guid;
         }
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            attrs['data-group-index'] = resIndex.toString();
+        }
+        const appointmentWrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_CLASS, attrs: attrs});
+
         if (!isNullOrUndefined(this.cssClass)) {
             addClass([appointmentWrapper], this.cssClass);
         }
@@ -376,9 +389,6 @@ export class MonthEvent extends EventBase {
         }
         const appointmentDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            appointmentWrapper.setAttribute('data-group-index', resIndex.toString());
-        }
         let templateElement: HTMLElement[];
         const eventData: Record<string, any> = record.data as Record<string, any>;
         const eventObj: Record<string, any> = this.getEventData(record);
@@ -488,7 +498,6 @@ export class MonthEvent extends EventBase {
             const appWidth: number = (diffInDays * this.cellWidth) - 5;
             const cellTd: Element = this.workCells[day];
             const appTop: number = (overlapCount * (appHeight + EVENT_GAP));
-            this.renderWrapperElement(cellTd as HTMLElement);
             const height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             const enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
@@ -524,7 +533,7 @@ export class MonthEvent extends EventBase {
                             moreIndicatorElement.setAttribute('data-group-index', groupIndex);
                         }
                         moreIndicatorElement.style.top = appArea + 'px';
-                        moreIndicatorElement.style.width = cellTd.offsetWidth - 2 + 'px';
+                        moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
                         this.renderElement(cellTd, moreIndicatorElement);
                         EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
                     }
@@ -566,8 +575,9 @@ export class MonthEvent extends EventBase {
     public getOverlapEvents(date: Date, appointments: Record<string, any>[]): Record<string, any>[] {
         const appointmentsList: Record<string, any>[] = [];
         for (const app of appointments) {
-            if ((util.resetTime(<Date>app[this.fields.startTime]).getTime() <= util.resetTime(date).getTime()) &&
-                (util.resetTime(<Date>app[this.fields.endTime]).getTime() >= util.resetTime(date).getTime())) {
+            const dateTime: number = util.resetTime(date).getTime();
+            if ((util.resetTime(<Date>app[this.fields.startTime]).getTime() <= dateTime) &&
+                (util.resetTime(<Date>app[this.fields.endTime]).getTime() >= dateTime)) {
                 appointmentsList.push(app);
             }
         }
@@ -636,23 +646,13 @@ export class MonthEvent extends EventBase {
         if (this.maxOrIndicator && isAppointment) {
             this.setMaxEventHeight(element, cellTd as HTMLElement);
         }
-        if (cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS)) {
-            cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS).appendChild(element);
+        const wrapperEle: HTMLElement = cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
+        if (wrapperEle) {
+            wrapperEle.appendChild(element);
         } else {
             const wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(element);
             cellTd.appendChild(wrapper);
-        }
-    }
-
-    private renderWrapperElement(cellTd: HTMLElement): void {
-        const element: HTMLElement = cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
-        if (!isNullOrUndefined(element)) {
-            this.monthHeaderHeight = element.offsetTop - (<HTMLElement>cellTd).offsetTop;
-        } else {
-            const wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
-            cellTd.appendChild(wrapper);
-            this.monthHeaderHeight = wrapper.offsetTop - (<HTMLElement>cellTd).offsetTop;
         }
     }
 

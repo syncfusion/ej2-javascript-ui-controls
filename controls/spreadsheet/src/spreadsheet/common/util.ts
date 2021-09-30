@@ -1,13 +1,15 @@
-import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, getSheet, cFInitialCheck, cFUndo } from '../../workbook/index';
-import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
-import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge, isLocked } from '../../workbook/index';
-import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
+import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
+import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
+import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
+import { ValidationModel, setValidation, removeValidation, clearCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged } from './index';
-import { getCellIndexes, getCell, ChartModel, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
+import { getCell, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
+import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel } from '../../workbook/index';
+import { workbookFormulaOperation, DefineNameModel } from '../../workbook/index';
 import { deleteChart } from '../../spreadsheet/index';
 import { initiateFilterUI } from './event';
 
@@ -224,9 +226,72 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                 locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol);
             }
             if (ele.style.display) { ele.style.display = ''; }
-            removeRangeEle(parent.getSelectAllContent(), content, true);
-            removeRangeEle(parent.getColumnHeaderContent(), content, true);
-            removeRangeEle(parent.getRowHeaderContent(), content, true);
+            removeRangeEle(parent.getSelectAllContent(), content, 'e-active-cell');
+            removeRangeEle(parent.getColumnHeaderContent(), content, 'e-active-cell');
+            removeRangeEle(parent.getRowHeaderContent(), content, 'e-active-cell');
+        } 
+        else if (cls === 'e-autofill') {
+            let contentElem: HTMLElement;
+            const freezeRow: number = parent.frozenRowCount(sheet); const freezeCol: number = parent.frozenColCount(sheet);
+            if (range[0] < freezeRow || range[1] < freezeCol) {
+                ele.style.display = 'none';
+                contentElem = range[0] < freezeRow && range[1] < freezeCol ? parent.getSelectAllContent() :
+                    (range[0] < freezeRow ? parent.getColumnHeaderContent() : parent.getRowHeaderContent());
+                let rangeEle: HTMLElement = contentElem.querySelector('.' + cls);
+                if (!rangeEle) { rangeEle = ele.cloneNode(true) as HTMLElement; contentElem.appendChild(rangeEle); }
+                ele = rangeEle;
+                locateElem(
+                    ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, true, parent.viewport.beforeFreezeHeight,
+                    parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-autofill');
+            }
+            else {
+                locateElem(ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-autofill');
+            }
+            if (ele.style.display) { ele.style.display = ''; }
+            removeRangeEle(parent.getSelectAllContent(), contentElem, 'e-autofill');
+            removeRangeEle(parent.getColumnHeaderContent(), contentElem, 'e-autofill');
+            removeRangeEle(parent.getRowHeaderContent(), contentElem, 'e-autofill');
+
+        } else if (cls === 'e-filloption') {
+            let contentElem: HTMLElement;
+            const freezeRow: number = parent.frozenRowCount(sheet); const freezeCol: number = parent.frozenColCount(sheet);
+            if ((range[0] < freezeRow || range[1] < freezeCol)) {
+                if (range[3] + 1 == freezeCol && range[2] + 1 > freezeRow) {
+                    locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
+                } else if (range[2] + 1 == freezeRow && range[3] + 1 > freezeCol) {
+                    locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4 });
+                } else if (range[3] + 1 == freezeCol && range[2] + 1 < freezeRow) { // for upper side 
+                    contentElem = parent.getColumnHeaderContent();
+                    let rangeElem: HTMLElement = contentElem.querySelector('.' + cls);
+                    if (!rangeElem) {
+                        parent.notify(getautofillDDB, { id: parent.element.id + '_autofilloptionbtn', appendElem: contentElem });
+                    }
+                    ele = parent.autofillModule.autoFillDropDown.element;
+                    locateElem(ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
+                } else if (range[2] + 1 == freezeRow && range[3] + 1 == freezeCol) { // corner cell
+                    locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4, left: -4 });
+                }
+                else {
+                    contentElem = range[0] < freezeRow && range[1] < freezeCol ? parent.getSelectAllContent() :
+                        (range[0] < freezeRow ? parent.getColumnHeaderContent() : parent.getRowHeaderContent());
+                    let rangeEle: HTMLElement = contentElem.querySelector('.' + cls);
+                    if (!rangeEle) {
+                        parent.notify(getautofillDDB, { id: parent.element.id + '_autofilloptionbtn', appendElem: contentElem });
+                    }
+                    ele = parent.autofillModule.autoFillDropDown.element;
+                    locateElem(
+                        ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, true, parent.viewport.beforeFreezeHeight,
+                        parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-filloption', true);
+                }
+            }
+            else {
+                locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true);
+            }
+            if (ele.style.display) { ele.style.display = ''; }
+            removeRangeEle(parent.getSelectAllContent(), contentElem, 'e-filloption');
+            removeRangeEle(parent.getColumnHeaderContent(), contentElem, 'e-filloption');
+            removeRangeEle(parent.getRowHeaderContent(), contentElem, 'e-filloption');
+
         } else {
             const swapRange: number[] = getSwapRange(range);
             if (swapRange[0] < frozenRow || swapRange[1] < frozenCol) {
@@ -235,11 +300,11 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                 if (swapRange[0] < frozenRow && swapRange[1] < frozenCol) {
                     if (swapRange[2] < frozenRow && swapRange[3] < frozenCol) {
                         ranges.push(range);
-                        removeRangeEle(parent.getColumnHeaderContent(), content, false);
-                        removeRangeEle(parent.getRowHeaderContent(), content, false);
+                        removeRangeEle(parent.getColumnHeaderContent(), content, 'e-selection');
+                        removeRangeEle(parent.getRowHeaderContent(), content, 'e-selection');
                     } else if (swapRange[2] > frozenRow - 1) {
                         if (swapRange[3] < frozenCol) {
-                            removeRangeEle(parent.getColumnHeaderContent(), content, false);
+                            removeRangeEle(parent.getColumnHeaderContent(), content, 'e-selection');
                             ranges.push([swapRange[0], swapRange[1], frozenRow - 1, swapRange[3]]);
                             ranges.push([frozenRow, swapRange[1], swapRange[2], swapRange[3]]);
                         } else {
@@ -252,7 +317,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                         if (swapRange[2] < frozenRow) {
                             ranges.push([swapRange[0], swapRange[1], swapRange[2], frozenCol - 1]);
                             ranges.push([swapRange[0], frozenCol, swapRange[2], swapRange[3]]);
-                            removeRangeEle(parent.getRowHeaderContent(), content, false);
+                            removeRangeEle(parent.getRowHeaderContent(), content, 'e-selection');
                         } else {
                             ranges.push([frozenRow, swapRange[1], swapRange[2], frozenCol - 1]);
                             ranges.push([swapRange[0], swapRange[1], frozenRow - 1, frozenCol - 1]);
@@ -266,8 +331,8 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                     } else {
                         ranges.push([swapRange[0], swapRange[1], frozenRow - 1, swapRange[3]]);
                         ranges.push([frozenRow, swapRange[1], swapRange[2], swapRange[3]]);
-                        removeRangeEle(parent.getSelectAllContent(), content, false);
-                        removeRangeEle(parent.getRowHeaderContent(), content, false);
+                        removeRangeEle(parent.getSelectAllContent(), content, 'e-selection');
+                        removeRangeEle(parent.getRowHeaderContent(), content, 'e-selection');
                     }
                 } else {
                     if (swapRange[3] < frozenCol) {
@@ -275,8 +340,8 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                     } else {
                         ranges.push([swapRange[0], swapRange[1], swapRange[2], frozenCol - 1]);
                         ranges.push([swapRange[0], frozenCol, swapRange[2], swapRange[3]]);
-                        removeRangeEle(parent.getSelectAllContent(), content, false);
-                        removeRangeEle(parent.getColumnHeaderContent(), content, false);
+                        removeRangeEle(parent.getSelectAllContent(), content, 'e-selection');
+                        removeRangeEle(parent.getColumnHeaderContent(), content, 'e-selection');
                     }
                 }
                 let removeEle: Element;
@@ -335,16 +400,16 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                     if (rangeEle.classList.contains('e-hide')) { rangeEle.classList.remove('e-hide'); }
                 });
             } else {
-                removeRangeEle(parent.getSelectAllContent(), null, false);
-                removeRangeEle(parent.getColumnHeaderContent(), null, false);
-                removeRangeEle(parent.getRowHeaderContent(), null, false);
+                removeRangeEle(parent.getSelectAllContent(), null, 'e-selection');
+                removeRangeEle(parent.getColumnHeaderContent(), null, 'e-selection');
+                removeRangeEle(parent.getRowHeaderContent(), null, 'e-selection');
                 locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol);
                 if (cls === 'e-range-indicator' || !parent.getMainContent().querySelector('.' + cls)) {
                     parent.getMainContent().appendChild(ele);
                 }
             }
         }
-    } else {
+    }  else {
         locateElem(ele, range, sheet, parent.enableRtl, 0, 0);
         if (ele && !parent.getMainContent().querySelector('.' + cls)) { parent.getMainContent().appendChild(ele); }
     }
@@ -355,14 +420,25 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
  * @param {boolean} checkActiveCell - Specify the boolean value.
  * @returns {void} - remove element with given range
  */
-export function removeRangeEle(content: Element, checkElement: HTMLElement, checkActiveCell: boolean): void {
+export function removeRangeEle(content: Element, checkElement: HTMLElement, clsName: string): void {
     let ele: HTMLElement;
-    if (checkActiveCell) {
+    if (clsName === 'e-active-cell') {
         if (content !== checkElement) {
             ele = content.querySelector('.e-active-cell');
             if (ele) { detach(ele); }
         }
-    } else {
+    } else if(clsName ==='e-autofill') {
+        if (content !== checkElement) {
+        ele = content.querySelector('.e-autofill');
+        if (ele) { detach(ele); }
+        }
+    } else if(clsName ==='e-filloption') {
+        if (content !== checkElement) {
+        ele = content.querySelector('.e-filloption');
+        if (ele) { detach(ele); }
+        }
+    }
+    else {
         ele = content.querySelector('.e-selection');
         if (ele) { detach(ele); }
     }
@@ -386,21 +462,66 @@ export function removeRangeEle(content: Element, checkElement: HTMLElement, chec
  */
 export function locateElem(
     ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow?: number, frozenColumn?: number,
-    isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number): void {
+    isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number, cls?: string, isFillOptShow?: boolean, freezeFillOpt?:{top?:number; left?:number}): void {
     const swapRange: number[] = getSwapRange(range);
     const cellPosition: { top: number, left: number } = getCellPosition(
         sheet, swapRange, frozenRow, frozenColumn, freezeScrollHeight, freezeScrollWidth, rowHdrWidth);
     const startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     const height: number = getRowsHeight(sheet, range[0], range[2], true);
     const width: number = getColumnsWidth(sheet, range[1], range[3], true);
-    const attrs: { [key: string]: string } = {
-        'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - getDPRValue(1)) + 'px',
-        'height': height && height + (swapRange[0] === startIndex[0] ? 0 : getDPRValue(1)) + 'px',
-        'width': width && width + (swapRange[1] === startIndex[1] ? 0 : getDPRValue(1)) + (isActiveCell
-            && frozenColumn && swapRange[1] < frozenColumn && swapRange[3] >= frozenColumn ? 1 : 0) + 'px'
-    };
-    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
-    if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
+    let isRowSelected: boolean = (range[1] === 0 && range[3] === sheet.colCount - 1);
+    let isColSelected: boolean = (range[0] === 0 && range[2] === sheet.rowCount - 1);
+    let top: number = 0; let tdiff: number = -5;
+    let ldiff: number = -5;
+    let left: number = 0;
+    let otdiff: number = 6;
+    let oldiff: number = 6;
+    if (isNullOrUndefined(cls)) {
+        const attrs: { [key: string]: string } = {
+            'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - getDPRValue(1)) + 'px',
+            'height': height && height + (swapRange[0] === startIndex[0] ? 0 : getDPRValue(1)) + 'px',
+            'width': width && width + (swapRange[1] === startIndex[1] ? 0 : getDPRValue(1)) + (isActiveCell
+                && frozenColumn && swapRange[1] < frozenColumn && swapRange[3] >= frozenColumn ? 1 : 0) + 'px'
+        };
+        attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
+        if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
+    } else {
+        if (isRowSelected) {
+            tdiff = -5;
+            ldiff = -2;
+            otdiff = 6;
+            oldiff = 3;
+        }
+        if (isColSelected) {
+            ldiff = -5;
+            tdiff = 0;
+            otdiff = 1;
+            oldiff = 6;
+        }
+        if (!isColSelected)
+            top += height;
+        if (!isRowSelected)
+            left += width;
+        top += Math.round(cellPosition.top) + tdiff;
+        left += Math.round(cellPosition.left) + ldiff;
+        let attrs: { [key: string]: string } = {};
+        if (isFillOptShow) {
+            removeClass([ele], 'e-hide');
+            top = freezeFillOpt && freezeFillOpt.top ? freezeFillOpt.top : top;
+            left = freezeFillOpt && freezeFillOpt.left ? freezeFillOpt.left : left;
+            attrs = {
+                'top': top + otdiff + 'px',
+                'left': left + oldiff + 'px'
+            };
+            if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
+        } else {
+            attrs = {
+                'top': top + 'px',
+            };
+            attrs[isRtl ? 'right' : 'left'] = left + 'px';
+            if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
+        }
+    }
 }
 
 /**
@@ -1257,6 +1378,35 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             });
         }
         break;
+        case 'autofill':
+            if (isRedo) {
+                spreadsheet.notify(setAutoFill, {
+                    fillRange: options.eventArgs.fillRange, dataRange: options.eventArgs.dataRange, fillType: options.eventArgs.fillType, direction:options.eventArgs.direction
+                });
+            } 
+        break;
+        case 'addDefinedName':
+            if (isRedo === false) {
+                const removeArgs: { [key: string]: Object } = {
+                    action: 'removeDefinedName',
+                    isRemoved: false,
+                    definedName: eventArgs.name,
+                    scope: eventArgs.scope,
+                    isEventTrigger: true
+                };
+                spreadsheet.notify(workbookFormulaOperation, removeArgs);
+            } else {
+                const definedName: DefineNameModel =
+                    { name: eventArgs.name, refersTo: eventArgs.refersTo, scope: eventArgs.scope, comment: eventArgs.comment };
+                const addArgs: { [key: string]: Object } = {
+                    action: 'addDefinedName',
+                    isAdded: false,
+                    definedName: definedName,
+                    isEventTrigger: true
+                };
+                spreadsheet.notify(workbookFormulaOperation, addArgs);
+            }
+        break;
     }
 }
 
@@ -1377,6 +1527,7 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
     const spaceWidth: number = getTextWidth(' ', style, parentStyle);
     let lines: number;
     let cnt: number = 0;
+    let lineCnt: number = 0; let maxCnt: number = 0;
     textArr.forEach((txt: string) => {
         let lWidth: number = 0;
         let cWidth: number = 0;
@@ -1407,7 +1558,9 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
         }
     });
     if (prevWidth) {
-        cnt += Math.ceil((prevWidth - spaceWidth) / colwidth);
+        lineCnt = (prevWidth - spaceWidth) / colwidth;
+        maxCnt = parseFloat((lineCnt).toString().split('.')[0])
+        cnt += (lineCnt + 0.05 >= maxCnt + 1 ?  Math.ceil(lineCnt) + 1 : Math.ceil(lineCnt));
     }
     return cnt;
 }

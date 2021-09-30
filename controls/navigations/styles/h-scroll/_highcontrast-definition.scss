@@ -22,7 +22,7 @@ $hscroll-focus-border: 0 !default;
 $hscroll-active-border: 0 !default;
 $hscroll-hover-border: 0 !default;
 $hscroll-active-box-shadow: none !default;
-$hscroll-default-icon-color: $selection-bg !default;
+$hscroll-default-icon-color: $bg-base-100 !default;
 $hscroll-overlay-opacity: .5 !default;
 $hscroll-overlay-bg: $bg-base-10 !default;
 $hscroll-overlay-start: rgba($hscroll-overlay-bg, 0) !default;

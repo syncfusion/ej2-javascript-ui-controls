@@ -453,7 +453,7 @@ export class StockLegend extends BaseLegend {
         const targetLegend: LegendOptions = this.legendCollections[index];
         const legendClickArgs: IStockLegendClickEventArgs = {
             legendText: targetLegend.text, legendShape: targetLegend.shape,
-            chart: chart.isBlazor ? {} as StockChart : chart, series: targetSeries, name: legendClick, cancel: false
+            chart: chart, series: targetSeries, name: legendClick, cancel: false
         };
         this.chart.trigger(legendClick, legendClickArgs);
         targetSeries.legendShape = legendClickArgs.legendShape;

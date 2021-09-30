@@ -59,7 +59,7 @@
         }
 
     &.e-right {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         border-left: 0 solid $sidebar-border;
       }
       @else {
@@ -71,7 +71,7 @@
         }
 
     &.e-left {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         border-right: 0 solid $sidebar-border;
       }
       @else {
@@ -162,7 +162,7 @@
     background-color: $sidebar-overlay;
     height: 100%;
     left: 0;
-    @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+    @if ($skin-name != 'tailwind' and  $skin-name != 'bootstrap5') {
       opacity: .5;
     }
     pointer-events: auto;

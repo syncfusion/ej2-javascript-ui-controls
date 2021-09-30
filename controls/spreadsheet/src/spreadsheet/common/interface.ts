@@ -1,4 +1,4 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType } from './../../workbook/index';
 import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel, TopBottom } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -159,6 +159,10 @@ export interface OpenOptions {
     file?: FileList | string | File;
     /** Defines the password. */
     password?: string;
+    /** Defines the sheet password. */
+    sheetPassword?: string;
+    /** Defines the sheetIndex. */
+    sheetIndex?: number;
 }
 
 /**
@@ -340,6 +344,8 @@ export interface HideShowEventArgs {
     isCol?: boolean;
     actionUpdate?: boolean;
     mergeCollection?: MergeArgs[];
+    isFiltering?: true;
+    aboveViewport?: boolean;
 }
 
 /** @hidden */
@@ -376,6 +382,11 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     isUndoRedo?: boolean;
     pasteSheetIndex: number;
     pastedPictureElement: HTMLElement;
+    fillRange?:string;
+    dataRange?: string;
+    direction?: AutoFillDirection;
+    fillType?: AutoFillType;
+    selectedRange?: string;
     cFColor?: CFColor;
     sheetIdx?: number;
 }

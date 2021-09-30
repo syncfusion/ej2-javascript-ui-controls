@@ -20,7 +20,7 @@ export class SwipeSettings extends ChildProperty<SwipeSettings> {
 const swipeRegex: RegExp = /(Up|Down)/;
 
 /**
- * Touch class provides support to handle the touch event like tap, double tap, tap hold, etc..,  
+ * Touch class provides support to handle the touch event like tap, double tap, tap hold, etc..,
  * ```typescript
  *    let node: HTMLElement;
  * let touchObj: Touch = new Touch({
@@ -38,7 +38,7 @@ const swipeRegex: RegExp = /(Up|Down)/;
  *        // swipe handler function code
  *    }
  * });
- * ```   
+ * ```
  */
 @NotifyPropertyChanges
 export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
@@ -60,44 +60,50 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     private movedDirection: string;
     private tStampStart: number;
     private touchAction: boolean = true;
-    /* tslint:disable no-any */
+    // eslint-disable-next-line
     private timeOutTap: any;
+    // eslint-disable-next-line
     private modeClear: any;
+    // eslint-disable-next-line
     private timeOutTapHold: any;
-    /* tslint:enable no-any */
 
     /* Properties */
 
     /**
      * Specifies the callback function for tap event.
-     * @event
+     *
+     * @event tap
      */
     @Event()
     public tap: EmitType<TapEventArgs>;
 
     /**
      * Specifies the callback function for tapHold event.
-     * @event
+     *
+     * @event tapHold
      */
     @Event()
     public tapHold: EmitType<TapEventArgs>;
 
     /**
      * Specifies the callback function for swipe event.
-     * @event
+     *
+     * @event swipe
      */
     @Event()
     public swipe: EmitType<SwipeEventArgs>;
 
     /**
      * Specifies the callback function for scroll event.
-     * @event
+     *
+     * @event scroll
      */
     @Event()
     public scroll: EmitType<ScrollEventArgs>;
 
     /**
      * Specifies the time delay for tap.
+     *
      * @default 350
      */
     @Property(350)
@@ -105,6 +111,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     /**
      * Specifies the time delay for tap hold.
+     *
      * @default 750
      */
     @Property(750)
@@ -112,6 +119,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     /**
      * Customize the swipe event configuration.
+     *
      * @default { swipeThresholdDistance: 50 }
      */
     @Complex<SwipeSettingsModel>({}, SwipeSettings)
@@ -125,12 +133,15 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         this.bind();
     }
 
-    // triggers when property changed 
+    // triggers when property changed
     /**
+     *
      * @private
-     * @param newProp 
-     * @param oldProp 
+     * @param {TouchModel} newProp ?
+     * @param {TouchModel} oldProp ?
+     * @returns {void} ?
      */
+    // eslint-disable-next-line
     public onPropertyChanged(newProp: TouchModel, oldProp: TouchModel): void {
         //No Code to handle
     }
@@ -142,7 +153,8 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     /**
      * To destroy the touch instance.
-     * @return {void}
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.unwireEvents();
@@ -160,7 +172,8 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     /**
      * Returns module name as touch
-     * @returns {string}
+     *
+     * @returns {string} ?
      * @private
      */
     public getModuleName(): string {
@@ -169,19 +182,25 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     /**
      * Returns if the HTML element is Scrollable.
+     *
      * @param {HTMLElement} element - HTML Element to check if Scrollable.
-     * @returns {boolean}
+     * @returns {boolean} ?
      */
     private isScrollable(element: HTMLElement): boolean {
-        let eleStyle: CSSStyleDeclaration = getComputedStyle(element);
-        let style: string = eleStyle.overflow + eleStyle.overflowX + eleStyle.overflowY;
+        const eleStyle: CSSStyleDeclaration = getComputedStyle(element);
+        const style: string = eleStyle.overflow + eleStyle.overflowX + eleStyle.overflowY;
         if ((/(auto|scroll)/).test(style)) { return true; }
         return false;
     }
 
+    /**
+     *
+     * @param {MouseEventArgs | TouchEventArgs} evt ?
+     * @returns {void} ?
+     */
     private startEvent: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
         if (this.touchAction === true) {
-            let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
+            const point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
             if (evt.changedTouches !== undefined) {
                 this.touchAction = false;
             }
@@ -198,15 +217,20 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         }
     }
 
+    /**
+     *
+     * @param {MouseEventArgs | TouchEventArgs} evt ?
+     * @returns {void} ?
+     */
     private moveEvent: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
-        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
+        const point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         this.movedPoint = point;
         this.isTouchMoved = !(point.clientX === this.startPoint.clientX && point.clientY === this.startPoint.clientY);
         let eScrollArgs: Object = {};
         if (this.isTouchMoved) {
             clearTimeout(this.timeOutTapHold);
             this.calcScrollPoints(evt);
-            let scrollArg: ScrollEventArgs = {
+            const scrollArg: ScrollEventArgs = {
                 startEvents: this.startEventData,
                 originalEvent: evt, startX: this.startPoint.clientX,
                 startY: this.startPoint.clientY, distanceX: this.distanceX,
@@ -219,6 +243,11 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         }
     }
 
+    /**
+     *
+     * @param {MouseEventArgs | TouchEventArgs} evt ?
+     * @returns {void} ?
+     */
     private cancelEvent: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
         clearTimeout(this.timeOutTapHold);
         clearTimeout(this.timeOutTap);
@@ -227,17 +256,28 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         EventHandler.remove(this.element, Browser.touchCancelEvent, this.cancelEvent);
     }
 
+    /**
+     *
+     * @param {MouseEventArgs | TouchEventArgs} evt ?
+     * @returns {void} ?
+     */
     private tapHoldEvent(evt: MouseEvent | TouchEventArgs): void {
         this.tapCount = 0;
         this.touchAction = true;
         let eTapArgs: TapEventArgs;
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.moveEvent);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.endEvent);
+        // eslint-disable-next-line
         eTapArgs = { originalEvent: <TouchEventArgs>evt };
         this.trigger('tapHold', eTapArgs);
         EventHandler.remove(this.element, Browser.touchCancelEvent, this.cancelEvent);
     }
 
+    /**
+     *
+     * @param {MouseEventArgs | TouchEventArgs} evt ?
+     * @returns {void} ?
+     */
     private endEvent: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
         this.swipeFn(evt);
         if (!this.isTouchMoved) {
@@ -253,23 +293,23 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         this.modeclear();
     }
 
+    /**
+     *
+     * @param {MouseEventArgs | TouchEventArgs} evt ?
+     * @returns {void} ?
+     */
     private swipeFn: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
         clearTimeout(this.timeOutTapHold);
         clearTimeout(this.timeOutTap);
-        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
+        const point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         let diffX: number = point.clientX - this.startPoint.clientX;
         let diffY: number = point.clientY - this.startPoint.clientY;
         diffX = Math.floor(diffX < 0 ? -1 * diffX : diffX);
         diffY = Math.floor(diffY < 0 ? -1 * diffY : diffX);
         this.isTouchMoved = diffX > 1 || diffY > 1;
-        // tslint:disable-next-line:no-any
-        const isFirefox: boolean = (/Mozilla|Firefox/).test(Browser.userAgent);
-        if (isFirefox && point.clientX === 0 && point.clientY === 0 && evt.type === 'mouseup') {
-            this.isTouchMoved = false;
-        }
         this.endPoint = point;
         this.calcPoints(evt);
-        let swipeArgs: SwipeEventArgs = {
+        const swipeArgs: SwipeEventArgs = {
             originalEvent: evt,
             startEvents: this.startEventData,
             startX: this.startPoint.clientX,
@@ -280,12 +320,13 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         };
         if (this.isTouchMoved) {
             let eSwipeArgs: Object;
-            let tDistance: number = this.swipeSettings.swipeThresholdDistance;
+            const tDistance: number = this.swipeSettings.swipeThresholdDistance;
+            // eslint-disable-next-line
             eSwipeArgs = extend(eSwipeArgs, this.defaultArgs, swipeArgs);
             let canTrigger: boolean = false;
-            let ele: HTMLElement = this.element;
-            let scrollBool: boolean = this.isScrollable(ele);
-            let moved: boolean = swipeRegex.test(this.movedDirection);
+            const ele: HTMLElement = this.element;
+            const scrollBool: boolean = this.isScrollable(ele);
+            const moved: boolean = swipeRegex.test(this.movedDirection);
             if ((tDistance < this.distanceX && !moved) || (tDistance < this.distanceY && moved)) {
                 if (!scrollBool) {
                     canTrigger = true;
@@ -313,7 +354,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     }
 
     private calcPoints(evt: MouseEventArgs | TouchEventArgs): void {
-        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
+        const point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.startPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.startPoint.clientY)));
@@ -325,7 +366,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     }
 
     private calcScrollPoints(evt: MouseEventArgs | TouchEventArgs): void {
-        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
+        const point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.lastMovedPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.lastMovedPoint.clientY)));
@@ -339,19 +380,19 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     }
 
     private getVelocity(pnt: MouseEventArgs | TouchEventArgs): number {
-        let newX: number = pnt.clientX;
-        let newY: number = pnt.clientY;
-        let newT: number = Date.now();
-        let xDist: number = newX - this.startPoint.clientX;
-        let yDist: number = newY - this.startPoint.clientX;
-        let interval: number = newT - this.tStampStart;
+        const newX: number = pnt.clientX;
+        const newY: number = pnt.clientY;
+        const newT: number = Date.now();
+        const xDist: number = newX - this.startPoint.clientX;
+        const yDist: number = newY - this.startPoint.clientX;
+        const interval: number = newT - this.tStampStart;
         return Math.sqrt(xDist * xDist + yDist * yDist) / interval;
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     private checkSwipe(ele: any, flag: boolean): boolean {
-        let keys: string[] = ['scroll', 'offset'];
-        let temp: string[] = flag ? ['Height', 'Top'] : ['Width', 'Left'];
+        const keys: string[] = ['scroll', 'offset'];
+        const temp: string[] = flag ? ['Height', 'Top'] : ['Width', 'Left'];
         if ((ele[keys[0] + temp[0]] <= ele[keys[1] + temp[0]])) {
             return true;
         }
@@ -360,8 +401,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     }
 
     private updateChangeTouches(evt: MouseEventArgs | TouchEventArgs): MouseEventArgs | TouchEventArgs {
-        // tslint:disable-next-line:max-line-length
-        let point: MouseEventArgs | TouchEventArgs = evt.changedTouches && evt.changedTouches.length !== 0 ? evt.changedTouches[0] : evt;
+        const point: MouseEventArgs | TouchEventArgs = evt.changedTouches && evt.changedTouches.length !== 0 ? evt.changedTouches[0] : evt;
         return point;
     }
 }

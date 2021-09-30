@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.3.43 (2021-09-30)
+
+### Chart
+
+#### New Features
+
+- `#328985, #327703` - Provide pixel support for data points in rectangular chart types such as bar, range column, and column.
+
 ## 19.2.62 (2021-09-14)
 
 ### Chart

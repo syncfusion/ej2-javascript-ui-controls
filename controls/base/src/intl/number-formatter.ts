@@ -4,6 +4,7 @@ import { IntlBase as base } from './intl-base';
 import { ParserBase as parser, NumberMapper } from './parser-base';
 /**
  * Interface for default formatting options
+ *
  * @private
  */
 export interface FormatParts extends base.NumericSkeleton, NumberFormatOptions {
@@ -53,33 +54,35 @@ const infinity: string = 'infinity';
 const nan: string = 'nan';
 /**
  * Module for number formatting.
+ *
  * @private
  */
 export class NumberFormat {
     /**
      * Returns the formatter function for given skeleton.
+     *
      * @param {string} culture -  Specifies the culture name to be which formatting.
      * @param {NumberFormatOptions} option - Specific the format in which number  will format.
-     * @param {Object} object- Specifies the global cldr data collection.
-     * @return Function.  
+     * @param {Object} cldr - Specifies the global cldr data collection.
+     * @returns {Function} ?
      */
     public static numberFormatter(culture: string, option: NumberFormatOptions, cldr: Object): Function {
-        let fOptions: FormatParts = extend({}, option);
+        const fOptions: FormatParts = extend({}, option);
         let cOptions: base.GenericFormatOptions = {};
-        let dOptions: CommonOptions = {};
+        const dOptions: CommonOptions = {};
         let symbolPattern: string;
-        let dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
-        let numObject: Object = dependable.numericObject;
+        const dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
+        const numObject: Object = dependable.numericObject;
         dOptions.numberMapper = isBlazor() ? extend({}, numObject) :
             parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
         dOptions.currencySymbol = isBlazor() ? getValue('currencySymbol', numObject) : base.getCurrencySymbol(
             dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol);
-        /* tslint:disable no-any */
+        /* eslint-disable  @typescript-eslint/no-explicit-any */
         dOptions.percentSymbol = isBlazor() ? getValue('numberSymbols.percentSign', numObject) :
             (<any>dOptions).numberMapper.numberSymbols[percentSign];
         dOptions.minusSymbol = isBlazor() ? getValue('numberSymbols.minusSign', numObject) :
             (<any>dOptions).numberMapper.numberSymbols[minusSign];
-        let symbols: any = dOptions.numberMapper.numberSymbols;
+        const symbols: any = dOptions.numberMapper.numberSymbols;
         if ((option.format) && !(base.formatRegex.test(option.format))) {
             cOptions = base.customFormat(option.format, dOptions, dependable.numericObject);
         } else {
@@ -102,7 +105,7 @@ export class NumberFormat {
                 symbolPattern = symbolPattern.replace(/\u00A4/g, base.defaultCurrency);
             }
             if (!isBlazor()) {
-                let split: string[] = symbolPattern.split(';');
+                const split: string[] = symbolPattern.split(';');
                 cOptions.nData = base.getFormatData(split[1] || '-' + split[0], true, dOptions.currencySymbol);
                 cOptions.pData = base.getFormatData(split[0], false, dOptions.currencySymbol);
                 if (fOptions.useGrouping) {
@@ -116,16 +119,16 @@ export class NumberFormat {
                     base.replaceBlazorCurrency([cOptions.pData, cOptions.nData], dOptions.currencySymbol, option.currency);
                 }
             }
-            let minFrac: boolean = isUndefined(fOptions.minimumFractionDigits);
+            const minFrac: boolean = isUndefined(fOptions.minimumFractionDigits);
             if (minFrac) {
                 fOptions.minimumFractionDigits = cOptions.nData.minimumFraction;
             }
             if (isUndefined(fOptions.maximumFractionDigits)) {
-                let mval: number = cOptions.nData.maximumFraction;
+                const mval: number = cOptions.nData.maximumFraction;
                 fOptions.maximumFractionDigits = isUndefined(mval) && fOptions.isPercent ? 0 : mval;
             }
-            let mfrac: number = fOptions.minimumFractionDigits;
-            let lfrac: number = fOptions.maximumFractionDigits;
+            const mfrac: number = fOptions.minimumFractionDigits;
+            const lfrac: number = fOptions.maximumFractionDigits;
             if (!isUndefined(mfrac) && !isUndefined(lfrac)) {
                 if (mfrac > lfrac) {
                     fOptions.maximumFractionDigits = mfrac;
@@ -145,19 +148,20 @@ export class NumberFormat {
     }
     /**
      * Returns grouping details for the pattern provided
-     * @param {string} pattern 
-     * @returns {GroupDetails}
+     *
+     * @param {string} pattern ?
+     * @returns {GroupDetails} ?
      */
     public static getGroupingDetails(pattern: string): GroupDetails {
-        let ret: GroupDetails = {};
-        let match: string[] = pattern.match(base.negativeDataRegex);
+        const ret: GroupDetails = {};
+        const match: string[] = pattern.match(base.negativeDataRegex);
         if (match && match[4]) {
-            let pattern: string = match[4];
-            let p: number = pattern.lastIndexOf(',');
+            const pattern: string = match[4];
+            const p: number = pattern.lastIndexOf(',');
             if (p !== -1) {
-                let temp: string = pattern.split('.')[0];
+                const temp: string = pattern.split('.')[0];
                 ret.primary = (temp.length - p) - 1;
-                let s: number = pattern.lastIndexOf(',', p - 1);
+                const s: number = pattern.lastIndexOf(',', p - 1);
                 if (s !== -1) {
                     ret.secondary = p - 1 - s;
                 }
@@ -167,16 +171,18 @@ export class NumberFormat {
     }
     /**
      * Returns if the provided integer range is valid.
-     * @param {number} val1 
-     * @param {number} val2 
-     * @param {boolean} checkbothExist 
-     * @param {boolean} isFraction 
-     * @returns {boolean}
+     *
+     * @param {number} val1 ?
+     * @param {number} val2 ?
+     * @param {boolean} checkbothExist ?
+     * @param {boolean} isFraction ?
+     * @returns {boolean} ?
      */
     private static checkValueRange(val1: number, val2: number, checkbothExist: boolean, isFraction?: true): boolean {
-        let decide: string = isFraction ? 'f' : 's';
+        const decide: string = isFraction ? 'f' : 's';
         let dint: number = 0;
-        let str1: string = (<any>errorText)['l' + decide];
+        const str1: string = (<any>errorText)['l' + decide];
+        // eslint-disable-next-line
         let str2: string = (<any>errorText)['m' + decide];
         if (!isUndefined(val1)) {
             this.checkRange(val1, str1, isFraction);
@@ -199,23 +205,25 @@ export class NumberFormat {
     }
     /**
      * Check if the provided fraction range is valid
-     * @param {number} val 
-     * @param {string} text 
-     * @param {boolean} isFraction 
-     * @returns {void}
+     *
+     * @param {number} val ?
+     * @param {string} text ?
+     * @param {boolean} isFraction ?
+     * @returns {void} ?
      */
     private static checkRange(val: number, text: string, isFraction?: boolean): void {
-        let range: number[] = isFraction ? [0, 20] : [1, 21];
+        const range: number[] = isFraction ? [0, 20] : [1, 21];
         if (val < range[0] || val > range[1]) {
             throwError(text + 'value must be within the range' + range[0] + 'to' + range[1]);
         }
     }
     /**
      * Returns formatted numeric string for provided formatting options
-     * @param {number} value 
-     * @param {base.GenericFormatOptions} fOptions 
-     * @param {CommonOptions} dOptions 
-     * @returns {string}
+     *
+     * @param {number} value ?
+     * @param {base.GenericFormatOptions} fOptions ?
+     * @param {CommonOptions} dOptions ?
+     * @returns {string} ?
      */
     private static intNumberFormatter(value: number, fOptions: base.GenericFormatOptions, dOptions: CommonOptions): string {
         let curData: base.NegativeData;
@@ -248,6 +256,7 @@ export class NumberFormat {
             }
             fValue = fValue.replace('.', (<any>dOptions).numberMapper.numberSymbols[mapper[3]]);
             if (curData.useGrouping) {
+                /* eslint-disable  @typescript-eslint/no-explicit-any */
                 fValue = this.groupNumbers(
                     fValue, curData.groupData.primary, curData.groupSeparator || ',',
                     (<any>dOptions).numberMapper.numberSymbols[mapper[3]] || '.', curData.groupData.secondary);
@@ -262,15 +271,16 @@ export class NumberFormat {
     }
     /**
      * Returns significant digits processed numeric string
-     * @param {number} value 
-     * @param {number} min 
-     * @param {number} max 
-     * @returns {string}
+     *
+     * @param {number} value ?
+     * @param {number} min ?
+     * @param {number} max ?
+     * @returns {string} ?
      */
     private static processSignificantDigits(value: number, min: number, max: number): string {
         let temp: string = value + '';
         let tn: number;
-        let length: number = temp.length;
+        const length: number = temp.length;
         if (length < min) {
             return value.toPrecision(min);
         } else {
@@ -281,17 +291,18 @@ export class NumberFormat {
     }
     /**
      * Returns grouped numeric string
-     * @param {string} val 
-     * @param {number} level1 
-     * @param {string} sep 
-     * @param {string} decimalSymbol 
-     * @param {number} level2 
-     * @returns {string}
+     *
+     * @param {string} val ?
+     * @param {number} level1 ?
+     * @param {string} sep ?
+     * @param {string} decimalSymbol ?
+     * @param {number} level2 ?
+     * @returns {string} ?
      */
     private static groupNumbers(val: string, level1: number, sep: string, decimalSymbol: string, level2?: number): string {
         let flag: boolean = !isNullOrUndefined(level2) && level2 !== 0;
-        let split: string[] = val.split(decimalSymbol);
-        let prefix: string = split[0];
+        const split: string[] = val.split(decimalSymbol);
+        const prefix: string = split[0];
         let length: number = prefix.length;
         let str: string = '';
         while (length > level1) {
@@ -308,14 +319,15 @@ export class NumberFormat {
     }
     /**
      * Returns fraction processed numeric string
-     * @param {number} value 
-     * @param {number} min 
-     * @param {number} max 
-     * @returns {string}
+     *
+     * @param {number} value ?
+     * @param {number} min ?
+     * @param {number} max ?
+     * @returns {string} ?
      */
     private static processFraction(value: number, min: number, max: number): string {
-        let temp: string = (value + '').split('.')[1];
-        let length: number = temp ? temp.length : 0;
+        const temp: string = (value + '').split('.')[1];
+        const length: number = temp ? temp.length : 0;
         if (min && length < min) {
             let ret: string = '';
             if (length === 0) {
@@ -335,14 +347,15 @@ export class NumberFormat {
     }
     /**
      * Returns integer processed numeric string
-     * @param {string} value 
-     * @param {number} min 
-     * @returns {string}
+     *
+     * @param {string} value ?
+     * @param {number} min ?
+     * @returns {string} ?
      */
     private static processMinimumIntegers(value: string, min: number): string {
-        let temp: string[] = value.split('.');
+        const temp: string[] = value.split('.');
         let lead: string = temp[0];
-        let len: number = lead.length;
+        const len: number = lead.length;
         if (len < min) {
             for (let i: number = 0; i < min - len; i++) {
                 lead = '0' + lead;

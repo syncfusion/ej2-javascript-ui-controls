@@ -98,15 +98,11 @@
       float: left;
       margin-top: 6px;
 
-      @if ($field-list-skin == 'tailwind') {
+      @if ($skin-name == 'tailwind') {
         margin: 0;
         padding: 5px;
       }
 
-      @if ($field-list-skin == 'tailwind-dark') {
-        margin: 0;
-        padding: 5px;
-      }
     }
 
     &.e-rtl {
@@ -147,6 +143,19 @@
       border: 0;
     }
 
+    .e-dlg-header-content {
+      @if ($skin-name == 'bootstrap5') {
+        border-bottom: 1px solid $field-list-border;
+      }
+    }
+
+    .e-footer-content {
+      @if ($skin-name == 'bootstrap5') {
+        border-top: 1px solid $field-list-border;
+      }
+
+    }
+
     .e-field-list-title {
       display: flex;
       font-size: $field-list-title-font-size;
@@ -166,10 +175,7 @@
 
       .e-title-content {
         font-size: $field-list-title-font-size;
-        @if ($field-list-skin == 'tailwind') {
-          line-height: $field-list-title-line-height;
-        }
-        @if ($field-list-skin == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           line-height: $field-list-title-line-height;
         }
         flex: auto;
@@ -289,6 +295,15 @@
                 vertical-align: bottom;
                 width: 20px;
 
+                @if ($skin-name == 'bootstrap5') {
+                  margin-right: 4px;
+                }
+
+                @if ($skin-name == 'tailwind') {
+                  margin-bottom: 0;
+                  vertical-align: middle;
+                }
+
                 &.e-disable-drag {
                   cursor: not-allowed;
                   opacity: .4;
@@ -398,13 +413,10 @@
             height: $field-list-header-height;
             padding: 2px $field-list-header-padding 5px;
 
-            @if ($field-list-skin == 'tailwind') {
+            @if ($skin-name == 'tailwind') {
               padding: 5px $field-list-header-padding 5px;
             }
 
-            @if ($field-list-skin == 'tailwind-dark') {
-              padding: 5px $field-list-header-padding 5px;
-            }
 
             .e-axis-icon-wrapper {
               height: 20px;
@@ -435,6 +447,10 @@
             @if ($field-list-skin == 'bootstrap4') {
               margin-top: 3px;
             }
+
+            @if ($skin-name == 'bootstrap5') {
+              margin-top: 3px;
+            }
           }
 
           .e-axis-content {
@@ -456,13 +472,14 @@
                 &.e-drop-hover {
                   border-top: 2px dashed $field-list-drop-hover-color;
                   margin-top: -2px;
-                  @if ($field-list-skin == 'tailwind') {
+                  @if ($skin-name == 'tailwind') {
                     border-top: 2px solid $field-list-drop-hover-color;
                   }
 
-                  @if ($field-list-skin == 'tailwind-dark') {
+                  @if ($skin-name == 'bootstrap5') {
                     border-top: 2px solid $field-list-drop-hover-color;
                   }
+
                 }
               }
 
@@ -495,6 +512,10 @@
                   color: $field-list-button-font-color;
                 }
 
+                @if ($skin-name == 'bootstrap5') {
+                  color: $field-list-button-font-color;
+                }
+
                 &.e-list-selected {
                   color: $field-list-button-font-color;
                   opacity: .5;
@@ -523,6 +544,12 @@
                   .e-dropdown-icon,
                   .e-edit {
                     color: $field-list-button-active-color;
+                  }
+
+                  .e-drag {
+                    @if ($skin-name == 'tailwind') {
+                      color: $field-list-button-active-color;
+                    }
                   }
                 }
 
@@ -653,15 +680,11 @@
 
     // sass-lint:disable-all
     .e-calculated-field {
-      color: $field-list-default-font-color;
+      color: $field-list-cal-button-text-color;
       font-size: $field-list-button-font-size;
       font-weight: $field-list-button-font-weight;
       max-width: 160px;
       min-width: 145px;
-
-      @if ($field-list-skin == 'bootstrap4') {
-        color: #f8f9fa;
-      }
 
       &.e-disable {
         display: none;
@@ -940,6 +963,11 @@
                 text-transform: none;
                 width: 100%;
 
+                @if($skin-name == 'bootstrap5') {
+                  background-color: $field-list-button-color;
+                  color: $field-list-default-font-color;
+                }
+                
                 &.e-list-selected {
                   opacity: .5;
                 }
@@ -978,6 +1006,10 @@
                     color: #fff;
                   }
 
+                  @if ($skin-name == 'bootstrap5') {
+                    color: $field-list-default-font-color;
+                  }
+
                   &:hover {
                     color: $field-list-icon-hover-color;
                   }
@@ -986,12 +1018,7 @@
                     display: none;
                   }
 
-                  @if ($field-list-skin == 'tailwind') {
-                    padding-left: 0;
-                    margin-left: 8px;
-                  }
-
-                  @if ($field-list-skin == 'tailwind-dark') {
+                  @if ($skin-name == 'tailwind') {
                     padding-left: 0;
                     margin-left: 8px;
                   }
@@ -1027,12 +1054,7 @@
                     padding-left: 0;
                     padding-right: 10px;
 
-                    @if ($field-list-skin == 'tailwind') {
-                      padding-right: 0;
-                      margin-right: 8px;
-                    }
-  
-                    @if ($field-list-skin == 'tailwind-dark') {
+                    @if ($skin-name == 'tailwind') {
                       padding-right: 0;
                       margin-right: 8px;
                     }
@@ -1059,6 +1081,11 @@
               top: 25%;
               vertical-align: middle;
               width: 70%;
+
+              @if ($skin-name == 'bootstrap5') {
+                color: $field-list-default-font-color;
+              }
+
             }
           }
 
@@ -1208,16 +1235,6 @@
                     transform: rotateX(0deg) rotateY(180deg);
                   }
                 }
-              }
-            }
-
-            .e-checkbox-wrapper .e-icons {
-              height: 18px;
-              width: 18px;
-
-              @if ($field-list-skin == 'bootstrap4') {
-                height: 14px;
-                width: 14px;
               }
             }
 
@@ -1390,12 +1407,7 @@
       float: left;
       margin-top: 6px;
 
-      @if ($field-list-skin == 'tailwind') {
-        margin: 0;
-        padding: 5px;
-      }
-
-      @if ($field-list-skin == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         margin: 0;
         padding: 5px;
       }
@@ -1439,6 +1451,19 @@
       border: 0;
     }
 
+    .e-dlg-header-content {
+      @if ($skin-name == 'bootstrap5') {
+        border-bottom: 1px solid $field-list-border;
+      }
+    }
+
+    .e-footer-content {
+      @if ($skin-name == 'bootstrap5') {
+        border-top: 1px solid $field-list-border;
+      }
+
+    }
+    
     .e-field-list-title {
       display: flex;
       font-size: $field-list-title-font-size;
@@ -1572,6 +1597,15 @@
                 vertical-align: bottom;
                 width: 20px;
 
+                @if ($skin-name == 'bootstrap5') {
+                  margin-right: 4px;
+                }
+
+                @if ($skin-name == 'tailwind') {
+                  margin-bottom: 0;
+                  vertical-align: middle;
+                }
+
                 &.e-disable-drag {
                   cursor: not-allowed;
                   opacity: .4;
@@ -1681,13 +1715,10 @@
             height: $field-list-header-height;
             padding: 2px $field-list-header-padding 5px;
 
-            @if ($field-list-skin == 'tailwind') {
+            @if ($skin-name == 'tailwind') {
               padding: 5px $field-list-header-padding 5px;
             }
 
-            @if ($field-list-skin == 'tailwind-dark') {
-              padding: 5px $field-list-header-padding 5px;
-            }
 
             .e-axis-icon-container {
               height: 20px;
@@ -1718,6 +1749,10 @@
             @if ($field-list-skin == 'bootstrap4') {
               margin-top: 3px;
             }
+
+            @if ($skin-name == 'bootstrap5') {
+              margin-top: 4px;
+            }
           }
 
           .e-axis-content {
@@ -1739,10 +1774,11 @@
                 &.e-drop-hover {
                   border-top: 2px dashed $field-list-drop-hover-color;
                   margin-top: -2px;
-                  @if ($field-list-skin == 'tailwind') {
+                  @if ($skin-name == 'tailwind') {
                     border-top: 2px solid $field-list-drop-hover-color;
                   }
-                  @if ($field-list-skin == 'tailwind-dark') {
+
+                  @if ($skin-name == 'bootstrap5') {
                     border-top: 2px solid $field-list-drop-hover-color;
                   }
                 }
@@ -1777,6 +1813,10 @@
                   color: $field-list-button-font-color;
                 }
 
+                @if ($skin-name == 'bootstrap5') {
+                  color: $field-list-button-font-color;
+                }
+
                 &.e-list-selected {
                   color: $field-list-button-font-color;
                   opacity: .5;
@@ -1805,6 +1845,12 @@
                   .e-dropdown-icon,
                   .e-edit {
                     color: $field-list-button-active-color;
+                  }
+
+                  .e-drag {
+                    @if ($skin-name == 'tailwind') {
+                      color: $field-list-button-active-color;
+                    }
                   }
                 }
 
@@ -1935,15 +1981,11 @@
 
     // sass-lint:disable-all
     .e-calculated-field {
-      color: $field-list-default-font-color;
+      color: $field-list-cal-button-text-color;
       font-size: $field-list-button-font-size;
       font-weight: $field-list-button-font-weight;
       max-width: 160px;
       min-width: 145px;
-
-      @if ($field-list-skin == 'bootstrap4') {
-        color: #f8f9fa;
-      }
 
       &.e-disable {
         display: none;
@@ -2222,6 +2264,11 @@
                 text-transform: none;
                 width: 100%;
 
+                @if ($skin-name == 'bootstrap5') {
+                  color: $field-list-default-font-color !important;
+                  background-color: $field-list-default-bg-color !important;
+                }
+
                 &.e-list-selected {
                   opacity: .5;
                 }
@@ -2258,6 +2305,10 @@
 
                   @if ($field-list-skin == 'bootstrap4') {
                     color: #fff;
+                  }
+
+                  @if ($skin-name == 'bootstrap5') {
+                    color: $field-list-button-icon-color;
                   }
 
                   &:hover {
@@ -2299,15 +2350,11 @@
                     padding-left: 0;
                     padding-right: 10px;
 
-                    @if ($field-list-skin == 'tailwind') {
+                    @if ($skin-name == 'tailwind') {
                       padding-right: 0;
                       margin-right: 8px;
                     }
   
-                    @if ($field-list-skin == 'tailwind-dark') {
-                      padding-right: 0;
-                      margin-right: 8px;
-                    }
                   }
                 }
               }
@@ -2331,6 +2378,11 @@
               top: 25%;
               vertical-align: middle;
               width: 70%;
+
+              @if ($skin-name == 'bootstrap5') {
+                color: $field-list-default-font-color;
+              }
+
             }
           }
 
@@ -2439,6 +2491,11 @@
 
                 .e-list-icon {
                   color: $field-list-tree-icon-color;
+
+                  @if($skin-name == 'bootstrap5') { 
+                    color: $field-list-default-fill-color;
+                  }
+
                 }
 
                 .e-calcfieldmember .e-list-text {
@@ -2480,16 +2537,6 @@
                     transform: rotateX(0deg) rotateY(180deg);
                   }
                 }
-              }
-            }
-
-            .e-checkbox-wrapper .e-icons {
-              height: 18px;
-              width: 18px;
-
-              @if ($field-list-skin == 'bootstrap4') {
-                height: 14px;
-                width: 14px;
               }
             }
 
@@ -2679,6 +2726,10 @@
           margin-bottom: $field-list-treeview-drag-bigger-padding !important;
           margin-right: 4px !important;
           width: 24px !important;
+
+          @if ($skin-name == 'tailwind') {
+            margin-bottom: 0 !important;
+          }
         }
 
         // sass-lint:disable-all

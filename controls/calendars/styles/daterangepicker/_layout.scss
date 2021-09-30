@@ -240,13 +240,13 @@
           max-height: $range-value-none;
         }
       }#{if(&, '&', '*')} .e-range-header {
-        @if $skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
           margin: $range-control-bigger-header-margin;
         }
         width: $range-control-header-width;
 
         #{if(&, '&', '*')} .e-change-icon {
-          @if $skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
             font-size: $range-bigger-change-icon-size;
           }
         }

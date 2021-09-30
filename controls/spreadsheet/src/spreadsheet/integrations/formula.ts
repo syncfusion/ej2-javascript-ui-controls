@@ -206,7 +206,6 @@ export class Formula {
             }
             this.isPopupOpened = false;
         }
-    
     }
 
     private onSuggestionComplete(args: { result: string[], cancel: boolean }): void {

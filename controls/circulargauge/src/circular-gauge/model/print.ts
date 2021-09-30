@@ -1,6 +1,6 @@
 import { print as printWindow, createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../index';
-import { getElement } from '../utils/helper';
+import { getElement } from '../utils/helper-common';
 import { IPrintEventArgs } from './interface';
 import { beforePrint } from './constants';
 

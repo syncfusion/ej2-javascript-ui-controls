@@ -3,7 +3,7 @@ import { isNullOrUndefined, extend, setValue, getValue, merge } from '@syncfusio
 import { TreeGrid } from '../base';
 import * as events from '../base/constant';
 import { DataManager } from '@syncfusion/ej2-data';
-import { findChildrenRecords, getParentData, extendArray, isCountRequired } from '../utils';
+import { findChildrenRecords, getParentData, extendArray } from '../utils';
 import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, BatchChanges } from '@syncfusion/ej2-grids';
 import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
@@ -127,7 +127,16 @@ export class BatchEdit {
         if (frozenCols && args.columnObject.index > frozenCols) {
             actualCellIndex = actualCellIndex + frozenCols;
         }
-        if (actualCellIndex === this.parent.treeColumnIndex) {
+        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (freeze) {
+            let colCount: number = this.parent.getFrozenLeftColumnsCount() + actualCellIndex;
+            if (colCount == this.parent.treeColumnIndex) {
+                this.parent.renderModule.cellRender({ data: args.rowData, cell: args.cell,
+                    column: this.parent.grid.getColumnByIndex((<HTMLTableCellElement>args.cell).cellIndex)
+                });
+            }
+        }
+        else if (actualCellIndex === this.parent.treeColumnIndex) {
             this.parent.renderModule.cellRender({ data: args.rowData, cell: args.cell,
                 column: this.parent.grid.getColumnByIndex((<HTMLTableCellElement>args.cell).cellIndex)
             });
@@ -318,10 +327,15 @@ export class BatchEdit {
         for (let i: number = 0 ; i < rows.length; i++) {
             rows[i].setAttribute('aria-rowindex', i.toString());
         }
-        if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns) {
+        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns || freeze) {
             const mRows: Element[] = this.parent.grid.getMovableDataRows();
+            const freezeRightRows: Element[] = this.parent.grid.getFrozenRightDataRows();
             for (let i: number = 0 ; i < mRows.length; i++) {
                 mRows[i].setAttribute('aria-rowindex', i.toString());
+                if (freeze) {
+                    freezeRightRows[i].setAttribute('aria-rowindex', i.toString());
+                }
             }
         }
     }
@@ -424,7 +438,7 @@ export class BatchEdit {
         if (this.parent.editSettings.mode === 'Batch') {
             let i: number; const batchChanges: Object = Object.hasOwnProperty.call(args, 'updatedRecords') ? args.updatedRecords : this.parent.getBatchChanges(); const deletedRecords: string = 'deletedRecords';
             const addedRecords: string = 'addedRecords'; const index: string = 'index'; const uniqueID: string = 'uniqueID';
-            let data: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
+            const data: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
                 this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
             let currentViewRecords: Object[] = this.parent.grid.getCurrentViewRecords();
             const primarykey: string = this.parent.grid.getPrimaryKeyFieldNames()[0]; const level: string = 'level';
@@ -435,9 +449,6 @@ export class BatchEdit {
                 addRecords.reverse();
             }
             if (this.parent.editSettings.newRowPosition !== 'Bottom' && !Object.hasOwnProperty.call(args, 'updatedRecords')) {
-                if (isCountRequired(this.parent)) {
-                    data = getValue('result', data);
-                }
                 data.splice(data.length - addRecords.length, addRecords.length);
                 if (!this.parent.allowPaging && data.length !== currentViewRecords.length) {
                     if (currentViewRecords.length > addRecords.length) {

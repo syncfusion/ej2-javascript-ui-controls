@@ -2,7 +2,6 @@ import { Popup } from '@syncfusion/ej2-popups';
 import { CLS_QUICK_POP } from '../base/classes';
 import { IRenderer, IRichTextEditor, QuickToolbarEventArgs } from '../base/interface';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
-import { isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
@@ -25,7 +24,7 @@ export class PopupRenderer implements IRenderer {
     }
 
     private quickToolbarOpen(): void {
-        const args: QuickToolbarEventArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
+        const args: QuickToolbarEventArgs | Popup = this.popupObj;
         this.parent.trigger(events.quickToolbarOpen, args);
     }
 

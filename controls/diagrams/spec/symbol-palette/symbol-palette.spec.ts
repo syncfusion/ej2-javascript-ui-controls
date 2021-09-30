@@ -791,7 +791,8 @@ describe('Symbol Palette', () => {
 
             let symboleelem = document.querySelector('.e-symbolpalette .e-symbol-selected');
             let symboleelemstyle = getComputedStyle(symboleelem);
-            expect(symboleelemstyle.backgroundColor === 'rgb(224, 224, 224)').toBe(true);
+            console.log(symboleelemstyle.backgroundColor);
+            expect(symboleelemstyle.backgroundColor === 'rgb(224, 224, 224)' || symboleelemstyle.backgroundColor === 'rgb(189, 189, 189)').toBe(true);
             done();
         });
 
@@ -946,16 +947,16 @@ describe('Symbol Palette', () => {
         it('Themes TestCases resize andd rotate', (done: Function) => {
             let resizeelem = document.querySelector('.e-diagram-resize-handle');
             let resizeelemstyle = getComputedStyle(resizeelem);
-            expect(resizeelemstyle.fill === 'rgb(227, 22, 91)' || resizeelemstyle.fill === 'rgb(255, 64, 129)').toBe(true);
+            expect(resizeelemstyle.fill === 'rgb(63, 81, 181)' || resizeelemstyle.fill === 'rgb(227, 22, 91)').toBe(true);
             let rotateelem = document.querySelector('.e-diagram-rotate-handle');
             let rotateelemstyle = getComputedStyle(rotateelem);
-            expect(resizeelemstyle.fill === 'rgb(227, 22, 91)' || resizeelemstyle.fill === 'rgb(255, 64, 129)').toBe(true);
+            expect(resizeelemstyle.fill === 'rgb(63, 81, 181)' || resizeelemstyle.fill === 'rgb(227, 22, 91)').toBe(true);
             done();
         })
         it('Themes TestCases for pivot and border', (done: Function) => {
             let pivotelem = document.querySelector('.e-diagram-pivot-line');
             let pivotelemstyle = getComputedStyle(pivotelem);
-            expect(pivotelemstyle.stroke === 'rgb(227, 22, 91)' || pivotelemstyle.stroke === 'rgb(255, 64, 129)').toBe(true);
+            expect(pivotelemstyle.stroke === 'rgb(63, 81, 181)' || pivotelemstyle.stroke === 'rgb(227, 22, 91)').toBe(true);
             let events: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             events.clickEvent(diagramCanvas, 450, 100);

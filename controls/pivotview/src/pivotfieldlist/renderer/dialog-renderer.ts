@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, addClass, removeClass, closest, isBlazor, select, remove } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, addClass, removeClass, closest, select, remove } from '@syncfusion/ej2-base';
 import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
@@ -195,14 +195,10 @@ export class DialogRenderer {
         parent.clonedFieldList = extend({}, parent.pivotFieldList, null, true) as IFieldListOptions;
     }
     private cancelButtonClick(): void {
-        if (isBlazor() && !this.parent.isPopupView) {
-            PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings((<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions));   /* eslint-disable-line */
-        } else {
-            this.parent.
-                setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
-                }, true);
-        }
+        this.parent.
+            setProperties({
+                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
+            }, true);
         /* eslint-enable @typescript-eslint/indent */
         if (this.parent.dataType === 'olap') {
             this.parent.olapEngineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;

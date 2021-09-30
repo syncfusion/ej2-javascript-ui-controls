@@ -3,7 +3,7 @@
  */
 import { getValue } from '@syncfusion/ej2-base';
 import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, indentOutdentData } from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 interface EJ2Instance extends HTMLElement {
@@ -1056,6 +1056,51 @@ describe('Gantt dialog module', () => {
                 expect(ganttObj.currentViewData[0]['StartDate'].getDate()).toBe(28);
                 expect(ganttObj.currentViewData[0]['EndDate'].getDate()).toBe(4);
             }, 100);
+        });
+    });
+     describe('MT-issues', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                },
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                allowSelection: true
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Selection maintain after adding record', () => {
+            ganttObj.selectRow(1);
+            let addToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+            triggerMouseEvent(addToolbar, 'click');
+            let saveRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(1);
         });
     });
 });

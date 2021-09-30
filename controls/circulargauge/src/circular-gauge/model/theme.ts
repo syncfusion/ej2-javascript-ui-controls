@@ -36,6 +36,14 @@ export function getRangePalette(theme: string): string[] {
             palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
                 '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
             break;
+        case 'bootstrap5':
+            palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+                '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+            break;
+        case 'bootstrap5dark':
+            palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+                '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+            break;
     }
     return palette;
 }
@@ -150,6 +158,50 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'Inter',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
+            titleFontWeight: '500'
+        };
+        break;
+    case 'bootstrap5':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#343A40',
+            tooltipFillColor: '#212529',
+            tooltipFontColor: '#F9FAFB',
+            labelColor: '#495057',
+            lineColor: '#E5E7EB',
+            majorTickColor: '#9CA3AF',
+            minorTickColor: '#9CA3AF',
+            pointerColor: '#1F2937',
+            capColor: '#1F2937',
+            needleColor: '#1F2937',
+            needleTailColor: '#1F2937',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            labelFontFamily: 'Helvetica Neue',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            titleFontWeight: '500'
+        };
+        break;
+    case 'bootstrap5dark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#E9ECEF',
+            tooltipFillColor: '#E9ECEF',
+            tooltipFontColor: '#212529',
+            labelColor: '#CED4DA',
+            lineColor: '#343A40',
+            majorTickColor: '#6C757D',
+            minorTickColor: '#6C757D',
+            pointerColor: '#ADB5BD',
+            capColor: '#ADB5BD',
+            needleColor: '#ADB5BD',
+            needleTailColor: '#ADB5BD',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            labelFontFamily: 'Helvetica Neue',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
             titleFontWeight: '500'
         };
         break;

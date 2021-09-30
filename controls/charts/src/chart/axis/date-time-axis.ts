@@ -296,6 +296,7 @@ export class DateTime extends NiceInterval {
         let tempInterval: number = axis.visibleRange.min;
         let labelStyle: Font;
         let previousValue: number;
+        const isBlazor: boolean = chart.getModuleName () === 'chart' ? (chart as Chart).isBlazor : false;
         const axisLabels: VisibleLabels[] = axis.visibleLabels;
         if (!setRange(axis)) {
             tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval).getTime();
@@ -306,7 +307,7 @@ export class DateTime extends NiceInterval {
             axis.format = chart.intl.getDateFormat({
                 format: this.findCustomFormats(axis, tempInterval, previousValue) || this.blazorCustomFormat(axis),
                 type: firstToLowerCase(axis.skeletonType),
-                skeleton: this.getSkeleton(axis, tempInterval, previousValue, chart.isBlazor)
+                skeleton: this.getSkeleton(axis, tempInterval, previousValue, isBlazor)
             });
             axis.startLabel = axis.format(new Date(axis.visibleRange.min));
             axis.endLabel = axis.format(new Date(axis.visibleRange.max));

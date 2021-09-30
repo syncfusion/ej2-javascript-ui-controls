@@ -30,7 +30,6 @@ export interface TreeGridModel extends ComponentModel{
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @aspType Syncfusion.EJ2.Grids.ClipMode
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Grids.ClipMode
      */
     clipMode?: ClipMode;
 
@@ -117,7 +116,6 @@ export interface TreeGridModel extends ComponentModel{
      * that will be executed along with data processing.
      *
      * @default null
-     * @blazorType Syncfusion.Blazor.Data.Query
      */
     query?: Query;
 
@@ -134,7 +132,6 @@ export interface TreeGridModel extends ComponentModel{
      * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.PrintMode
-     * @blazorType Syncfusion.Blazor.Grids.PrintMode
      */
     printMode?: PrintMode;
 
@@ -332,7 +329,6 @@ export interface TreeGridModel extends ComponentModel{
      * @default Syncfusion.EJ2.Grids.GridLine.Default
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.GridLine
-     * @blazorType Syncfusion.Blazor.Grids.GridLine
      */
     gridLines?: GridLine;
 
@@ -497,7 +493,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -505,7 +500,6 @@ export interface TreeGridModel extends ComponentModel{
      * This event allows customization of TreeGrid properties before rendering.
      *
      * @event load
-     * @blazorproperty 'OnLoad'
      */
     load?: EmitType<Object>;
 
@@ -513,7 +507,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers while expanding the TreeGrid record
      *
      * @event expanding
-     * @blazorproperty 'Expanding'
      */
     expanding?: EmitType<RowExpandingEventArgs>;
 
@@ -521,7 +514,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers after the record is expanded
      *
      * @event expanded
-     * @blazorproperty 'Expanded'
      */
     expanded?: EmitType<RowExpandedEventArgs>;
 
@@ -529,7 +521,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers while collapsing the TreeGrid record
      *
      * @event collapsing
-     * @blazorproperty 'Collapsing'
      */
     collapsing?: EmitType<RowExpandingEventArgs>;
 
@@ -537,7 +528,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers after the record is collapsed.
      *
      * @event collapsed
-     * @blazorproperty 'Collapsed'
      */
     collapsed?: EmitType<RowExpandingEventArgs>;
 
@@ -545,8 +535,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when cell is saved.
      *
      * @event cellSave
-     * @blazorproperty 'OnCellSave'
-     * @blazorType Syncfusion.Blazor.Grids.CellSaveArgs<TValue>
      */
     cellSave?: EmitType<CellSaveArgs>;
 
@@ -554,24 +542,18 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when cell is saved.
      *
      * @event cellSaved
-     * @blazorproperty 'CellSaved'
-     * @blazorType Syncfusion.Blazor.Grids.CellSaveArgs<TValue>
      */
     cellSaved?: EmitType<CellSaveArgs>;
 
     /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
    * @event actionBegin
-   * @blazorproperty 'OnActionBegin'
-   * @blazorType Syncfusion.Blazor.Grids.ActionEventArgs<TValue>
    */
     actionBegin?: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
 
     /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
    * @event actionComplete
-   * @blazorproperty 'OnActionComplete'
-   * @blazorType Syncfusion.Blazor.Grids.ActionEventArgs<TValue>
    */
 
     actionComplete?: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs| SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | CellSaveEventArgs>;
@@ -579,8 +561,6 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers before the record is to be edit.
    * @event beginEdit
-   * @blazorproperty 'OnBeginEdit'
-   * @blazorType Syncfusion.Blazor.Grids.BeginEditArgs<TValue>
    */
     beginEdit?: EmitType<BeginEditArgs>;
 
@@ -623,8 +603,6 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers when the cell is being edited.
    * @event cellEdit
-   * @blazorproperty 'OnCellEdit'
-   * @blazorType Syncfusion.Blazor.Grids.CellEditArgs<TValue>
    */
     cellEdit?: EmitType<CellEditArgs>;
 
@@ -632,8 +610,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when any TreeGrid action failed to achieve the desired results.
      *
      * @event actionFailure
-     * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.Blazor.Grids.FailureEventArgs
      */
     actionFailure?: EmitType<FailureEventArgs>;
 
@@ -641,7 +617,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when data source is populated in the TreeGrid.
      *
      * @event dataBound
-     * @blazorproperty 'DataBound'
      */
     dataBound?: EmitType<Object>;
 
@@ -651,8 +626,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event dataSourceChanged
      * @deprecated
-     * @blazorProperty 'dataSourceUpdated'
-     * @blazorType Syncfusion.Blazor.Grids.DataSourceChangedEventArgs
      */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
@@ -662,7 +635,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event dataStateChange
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.DataStateChangeEventArgs
      */
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 
@@ -670,8 +642,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when record is double clicked.
      *
      * @event recordDoubleClick
-     * @blazorproperty 'OnRecordDoubleClick'
-     * @blazorType Syncfusion.Blazor.Grids.RecordDoubleClickEventArgs<TValue>
      */
     recordDoubleClick?: EmitType<RecordDoubleClickEventArgs>;
 
@@ -680,8 +650,6 @@ export interface TreeGridModel extends ComponentModel{
      * This will be triggered before the row element is appended to the TreeGrid element.
      *
      * @event rowDataBound
-     * @blazorproperty 'RowDataBound'
-     * @blazorType Syncfusion.Blazor.Grids.RowDataBoundEventArgs<TValue>
      */
     rowDataBound?: EmitType<RowDataBoundEventArgs>;
 
@@ -690,8 +658,6 @@ export interface TreeGridModel extends ComponentModel{
      * > This event triggers at initial expand.
      *
      * @event detailDataBound
-     * @blazorproperty 'DetailDataBound'
-     * @blazorType Syncfusion.Blazor.Grids.DetailDataBoundEventArgs<TValue>
      */
     detailDataBound?: EmitType<DetailDataBoundEventArgs>;
 
@@ -700,8 +666,6 @@ export interface TreeGridModel extends ComponentModel{
      * This will be triggered before the cell element is appended to the TreeGrid element.
      *
      * @event queryCellInfo
-     * @blazorproperty 'QueryCellInfo'
-     * @blazorType Syncfusion.Blazor.Grids.QueryCellInfoEventArgs<TValue>
      */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
 
@@ -716,8 +680,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers before row selection occurs.
      *
      * @event rowSelecting
-     * @blazorproperty 'RowSelecting'
-     * @blazorType Syncfusion.Blazor.Grids.RowSelectingEventArgs<TValue>
      */
     rowSelecting?: EmitType<RowSelectingEventArgs>;
 
@@ -725,8 +687,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers after a row is selected.
      *
      * @event rowSelected
-     * @blazorproperty 'RowSelected'
-     * @blazorType Syncfusion.Blazor.Grids.RowSelectEventArgs<TValue>
      */
     rowSelected?: EmitType<RowSelectEventArgs>;
 
@@ -735,7 +695,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event rowSelected
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.RowDeselectEventArgs<TValue>
      */
     rowDeselecting?: EmitType<RowDeselectEventArgs>;
 
@@ -743,8 +702,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when a selected row is deselected.
      *
      * @event rowDeselected
-     * @blazorproperty 'RowDeselected'
-     * @blazorType Syncfusion.Blazor.Grids.RowDeselectEventArgs<TValue>
      */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
 
@@ -752,8 +709,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggered for stacked header.
      *
      * @event headerCellInfo
-     * @blazorproperty 'HeaderCellInfo'
-     * @blazorType Syncfusion.Blazor.Grids.HeaderCellInfoEventArgs
      */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
@@ -761,8 +716,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers before any cell selection occurs.
      *
      * @event cellSelecting
-     * @blazorproperty 'CellSelecting'
-     * @blazorType Syncfusion.Blazor.Grids.CellSelectingEventArgs<TValue>
      */
     cellSelecting?: EmitType<CellSelectingEventArgs>;
 
@@ -771,7 +724,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event columnMenuOpen
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnMenuOpenEventArgs
      */
     columnMenuOpen?: EmitType<ColumnMenuOpenEventArgs>;
 
@@ -779,8 +731,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when click on column menu.
      *
      * @event columnMenuClick
-     * @blazorproperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     columnMenuClick?: EmitType<MenuEventArgs>;
 
@@ -788,8 +738,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers after a cell is selected.
      *
      * @event cellSelected
-     * @blazorproperty 'CellSelected'
-     * @blazorType Syncfusion.Blazor.Grids.CellSelectEventArgs<TValue>
      */
     cellSelected?: EmitType<CellSelectEventArgs>;
 
@@ -798,7 +746,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event cellDeselecting
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.CellDeselectEventArgs
      */
     cellDeselecting?: EmitType<CellDeselectEventArgs>;
 
@@ -807,7 +754,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event cellDeselected
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.CellDeselectEventArgs
      */
     cellDeselected?: EmitType<CellDeselectEventArgs>;
 
@@ -840,7 +786,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event columnDragStart
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnDragEventArgs
      */
     columnDragStart?: EmitType<ColumnDragEventArgs>;
 
@@ -849,7 +794,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event columnDrag
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnDragEventArgs
      */
     columnDrag?: EmitType<ColumnDragEventArgs>;
 
@@ -858,7 +802,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event columnDrop
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnDragEventArgs
      */
     columnDrop?: EmitType<ColumnDragEventArgs>;
 
@@ -875,7 +818,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event printComplete
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PrintEventArgs
      */
     printComplete?: EmitType<PrintEventArgs>;
 
@@ -884,7 +826,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event beforePrint
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PrintEventArgs
      */
     beforePrint?: EmitType<PrintEventArgs>;
 
@@ -892,8 +833,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when toolbar item is clicked.
      *
      * @event toolbarClick
-     * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 
@@ -901,8 +840,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers before data is bound to Tree Grid.
      *
      * @event beforeDataBound
-     * @blazorproperty 'OnDataBound'
-     * @blazorType Syncfusion.Blazor.Grids.BeforeDataBoundArgs<TValue>
      */
     beforeDataBound?: EmitType<BeforeDataBoundArgs>;
 
@@ -911,7 +848,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event contextMenuOpen
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Navigations.BeforeOpenCloseMenuEventArgs
      */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -919,8 +855,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers when click on context menu.
      *
      * @event contextMenuClick
-     * @blazorproperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     contextMenuClick?: EmitType<MenuEventArgs>;
 
@@ -1011,7 +945,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event pdfQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PdfQueryCellInfoEventArgs
      */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
 
@@ -1021,7 +954,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event pdfHeaderQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PdfHeaderQueryCellInfoEventArgs
      */
     pdfHeaderQueryCellInfo?: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
@@ -1031,7 +963,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event excelQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ExcelQueryCellInfoEventArgs
      */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
 
@@ -1041,7 +972,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event excelHeaderQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ExcelHeaderQueryCellInfoEventArgs
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
@@ -1049,7 +979,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers before TreeGrid data is exported to Excel file.
      *
      * @event beforeExcelExport
-     * @blazorproperty 'OnExcelExport'
      */
     beforeExcelExport?: EmitType<Object>;
 
@@ -1058,7 +987,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event excelExportComplete
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ExcelExportCompleteArgs
      */
     excelExportComplete?: EmitType<ExcelExportCompleteArgs>;
 
@@ -1066,7 +994,6 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers before TreeGrid data is exported to PDF document.
      *
      * @event beforePdfExport
-     * @blazorproperty 'OnPdfExport'
      */
     beforePdfExport?: EmitType<Object>;
 
@@ -1075,7 +1002,6 @@ export interface TreeGridModel extends ComponentModel{
      *
      * @event pdfExportComplete
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PdfExportCompleteArgs
      */
     pdfExportComplete?: EmitType<PdfExportCompleteArgs>;
 

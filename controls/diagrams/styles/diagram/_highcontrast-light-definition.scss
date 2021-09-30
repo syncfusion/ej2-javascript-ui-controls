@@ -18,6 +18,8 @@ $diagram-resize-handle-color: $hc-theme-primary;
 $diagram-resize-handle-stroke: $hc-theme-dark-font;
 $diagram-border-stroke: $hc-theme-dark;
 
+$palette-background-color: #fff;
+
 $diagram-resize-handle-disable-color: $hc-neutral-tertiary;
 $diagram-resize-handle-disable-stroke: $hc-grey-dark-font;
 $diagram-border-stroke-disabled: $hc-neutral-tertiary;
@@ -31,11 +33,13 @@ $diagram-highlighter-stroke: $hc-theme-dark;
 $diagram-selected-region-stroke: $hc-theme-primary;
 $diagram-pivot-line-stroke: $hc-theme-primary;
 
+$diagram-helper-stroke: $hc-theme-dark;
+
 $diagram-text-edit-selection-color: $hc-theme-dark-font;
 $diagram-text-edit-selection-background: $hc-theme-primary;
 
-$diagram-symbolpalette-hover: $hc-neutral-light;
-$diagram-symbolpalette-shape-radius: 00px;
+$diagram-symbolpalette-hover: #685708;
+$diagram-symbolpalette-shape-radius: 4px;
 $diagram-symbolpalette-selected: $hc-theme-light;
 
 $diagram-tooltip: none;

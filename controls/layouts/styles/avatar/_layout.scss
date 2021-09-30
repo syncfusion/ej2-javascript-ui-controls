@@ -17,7 +17,7 @@
     overflow: hidden;
     position: relative;
     width: $avatar-base-width;
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
       line-height: $avatar-base-line-height;
     }
 
@@ -32,7 +32,7 @@
 
     &.e-avatar-xsmall {
       font-size: $avatar-xsmall-font-size;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
         height: 24px;
         line-height: $avatar-base-xsmall-line-height;
         width: 24px;
@@ -41,7 +41,7 @@
 
     &.e-avatar-small {
       font-size: $avatar-small-font-size;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
         height: 32px;
         line-height: $avatar-base-small-line-height;
         width: 32px;
@@ -50,7 +50,7 @@
 
     &.e-avatar-large {
       font-size: $avatar-large-font-size;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
         height: 48px;
         line-height: $avatar-base-large-line-height;
         width: 48px;
@@ -59,7 +59,7 @@
 
     &.e-avatar-xlarge {
       font-size: $avatar-xlarge-font-size;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark'or $skin-name == 'bootstrap5') {
         height: 56px;
         line-height: $avatar-base-xlarge-line-height;
         width: 56px;

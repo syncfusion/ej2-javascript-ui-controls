@@ -851,7 +851,7 @@ export class Toolbar {
         const zoomDropDownTemplateString: string = this.createZoomDropdownElement();
         // eslint-disable-next-line
         let items: any[] = [];
-        const submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn" style="font-size:15px"> Submit Form</button>';
+        const submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn" style="font-size:15px"><span class="e-tbar-btn-text e-pv-submitform-text">'+ this.pdfViewer.localeObj.getConstant('SubmitForm') + '</span></button>';
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-open-document-icon e-pv-icon', cssClass: 'e-pv-open-document-container', id: this.pdfViewer.element.id + '_open', text: this.pdfViewer.localeObj.getConstant('Open text'), align: 'Left' });
         items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-open-separator-container' });
@@ -1020,12 +1020,21 @@ export class Toolbar {
             { percent: '150%', id: '6' }, { percent: '200%', id: '7' }, { percent: '400%', id: '8' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Page'), id: '9' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Width'), id: '10' }, { percent: this.pdfViewer.localeObj.getConstant('Automatic'), id: '11' }
         ];
         // eslint-disable-next-line max-len
-        this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, open: this.openZoomDropdown.bind(this), select: function(args){
-            if (args.e.type == 'keydown' && args.itemData.text !== this.zoomDropDown.element.value) {
-                args.cancel = true;
-              }
-            } 
-        });
+        if(!this.pdfViewer.enableRtl){
+            this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, open: this.openZoomDropdown.bind(this), select: function(args){
+                if (args.e.type == 'keydown' && args.itemData.text !== this.zoomDropDown.element.value) {
+                    args.cancel = true;
+                  }
+                } 
+            });
+        }else{
+            this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', enableRtl:true, fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down-rtl', popupHeight: '450px', showClearButton: false, open: this.openZoomDropdown.bind(this), select: function(args){
+                if (args.e.type == 'keydown' && args.itemData.text !== this.zoomDropDown.element.value) {
+                    args.cancel = true;
+                  }
+                } 
+            });
+        }
         this.zoomDropDown.appendTo(this.pdfViewerBase.getElement('_zoomDropDown'));
     }
 
@@ -1932,7 +1941,7 @@ export class Toolbar {
             this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
             // eslint-disable-next-line
             let stampImage: any = createElement('input', { id: this.pdfViewer.element.id + '_stampElement', attrs: { 'type': 'file' } });
-            stampImage.setAttribute('accept', '.jpg,.jpeg');
+            stampImage.setAttribute('accept', '.jpg,.jpeg,.png');
             stampImage.style.position = 'absolute';
             stampImage.style.left = '0px';
             stampImage.style.top = '0px';

@@ -54,14 +54,14 @@ describe('Keyboard module', () => {
         it('first card selection testing', () => {
             const card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             expect(card.classList.contains('e-selection')).not.toBe(true);
-            keyModule.keyActionHandler({ action: 'firstCardSelection' });
+            keyModule.keyActionHandler({ action: 'firstCardSelection', preventDefault: function () { } });
             expect(card.classList.contains('e-selection')).toBe(true);
         });
 
         it('last card selection testing', () => {
             const card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="54"]').item(0) as HTMLElement;
             expect(card.classList.contains('e-selection')).toEqual(false);
-            keyModule.keyActionHandler({ action: 'lastCardSelection' });
+            keyModule.keyActionHandler({ action: 'lastCardSelection', preventDefault: function () { } });
             expect(card.classList.contains('e-selection')).toEqual(true);
             const card1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             expect(card1.classList.contains('e-selection')).toEqual(false);
@@ -99,7 +99,7 @@ describe('Keyboard module', () => {
             kanbanObj.element.focus();
             const card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="54"]').item(0) as HTMLElement;
             expect(card.classList.contains('e-selection')).toEqual(false);
-            keyModule.keyActionHandler({ action: 'lastCardSelection' });
+            keyModule.keyActionHandler({ action: 'lastCardSelection', preventDefault: function () { } });
             expect(card.classList.contains('e-selection')).toEqual(true);
         });
     });
@@ -141,7 +141,7 @@ describe('Keyboard module', () => {
             util.triggerMouseEvent(card, 'click'); card.focus();
             expect(card.classList.contains('e-selection')).toBe(true);
             expect(card == document.activeElement).toBe(true);
-            keyModule.keyActionHandler({ action: 'downArrow' });
+            keyModule.keyActionHandler({ action: 'downArrow', preventDefault: function () { } });
             expect(card.nextElementSibling.classList.contains('e-selection')).not.toBe(true);
             expect(card == document.activeElement).toBe(false);
             expect(card.nextElementSibling == document.activeElement).toBe(true);
@@ -152,7 +152,7 @@ describe('Keyboard module', () => {
             util.triggerMouseEvent(card, 'click'); card.focus();
             expect(card.classList.contains('e-selection')).toBe(true);
             expect(card == document.activeElement).toBe(true);
-            keyModule.keyActionHandler({ action: 'upArrow' });
+            keyModule.keyActionHandler({ action: 'upArrow', preventDefault: function () { } });
             expect(card.previousElementSibling.classList.contains('e-selection')).not.toBe(true);
             expect(card == document.activeElement).toBe(false);
             expect(card.previousElementSibling == document.activeElement).toBe(true);
@@ -162,7 +162,7 @@ describe('Keyboard module', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             contentEle.focus();
             expect(contentEle == document.activeElement).toBe(true);
-            keyModule.keyActionHandler({ action: 'rightArrow' });
+            keyModule.keyActionHandler({ action: 'rightArrow', preventDefault: function () { } });
             expect(contentEle == document.activeElement).toBe(false);
             expect(contentEle.nextElementSibling == document.activeElement).toBe(true);
         });
@@ -171,7 +171,7 @@ describe('Keyboard module', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(1) as HTMLElement;
             contentEle.focus();
             expect(contentEle == document.activeElement).toBe(true);
-            keyModule.keyActionHandler({ action: 'leftArrow' });
+            keyModule.keyActionHandler({ action: 'leftArrow', preventDefault: function () { } });
             expect(contentEle == document.activeElement).toBe(false);
             expect(contentEle.previousElementSibling == document.activeElement).toBe(true);
         });
@@ -180,17 +180,17 @@ describe('Keyboard module', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card, 'click'); card.focus();
             expect(card.classList.contains('e-selection')).toBe(true);
-            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.keyActionHandler({ action: 'escape', preventDefault: function () { } });
             expect(card.classList.contains('e-selection')).not.toBe(true);
         });
 
         it('Enter Key ', () => {
             let swimlaneIcon: HTMLElement = kanbanObj.element.querySelector('.e-swimlane-row-expand');
             swimlaneIcon.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon });
+            keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon, preventDefault: function () { } });
             expect(swimlaneIcon.classList.contains('e-swimlane-row-expand')).toBe(false);
             expect(swimlaneIcon.classList.contains('e-swimlane-row-collapse')).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon });
+            keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon, preventDefault: function () { } });
             expect(swimlaneIcon.classList.contains('e-swimlane-row-expand')).toBe(true);
             expect(swimlaneIcon.classList.contains('e-swimlane-row-collapse')).toBe(false);
         });
@@ -198,10 +198,10 @@ describe('Keyboard module', () => {
         it('Space Key ', () => {
             let swimlaneIcon: HTMLElement = kanbanObj.element.querySelector('.e-swimlane-row-expand');
             swimlaneIcon.focus();
-            keyModule.keyActionHandler({ action: 'space', target: swimlaneIcon });
+            keyModule.keyActionHandler({ action: 'space', target: swimlaneIcon, preventDefault: function () { } });
             expect(swimlaneIcon.classList.contains('e-swimlane-row-expand')).toBe(false);
             expect(swimlaneIcon.classList.contains('e-swimlane-row-collapse')).toBe(true);
-            keyModule.keyActionHandler({ action: 'space', target: swimlaneIcon });
+            keyModule.keyActionHandler({ action: 'space', target: swimlaneIcon, preventDefault: function () { } });
             expect(swimlaneIcon.classList.contains('e-swimlane-row-expand')).toBe(true);
             expect(swimlaneIcon.classList.contains('e-swimlane-row-collapse')).toBe(false);
         });
@@ -241,12 +241,12 @@ describe('Keyboard module', () => {
         it('Up key with add card button', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle });
+            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
         });
 
         it('Up key with add card button next step', () => {
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
-            keyModule.keyActionHandler({ action: 'upArrow' });
+            keyModule.keyActionHandler({ action: 'upArrow', preventDefault: function () { } });
             expect(document.activeElement.getAttribute('tabindex')).toEqual('0');
             expect(document.activeElement.classList.contains('e-show-add-button')).not.toBe(true);
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
@@ -256,9 +256,9 @@ describe('Keyboard module', () => {
         it('Show add button with escape key', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle });
+            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
-            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.keyActionHandler({ action: 'escape', preventDefault: function () { } });
             expect(document.activeElement == contentEle).toBe(true);
         });
 
@@ -283,14 +283,14 @@ describe('Keyboard module', () => {
         it('multiSelection enter', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card, 'click'); card.focus();
-            keyModule.keyActionHandler({ action: 'multiSelectionEnter' });
+            keyModule.keyActionHandler({ action: 'multiSelectionEnter', preventDefault: function () { } });
             expect(card.getAttribute('tabindex')).toEqual('0');
             expect(card.getAttribute('aria-selected')).toEqual('true');
         });
         it('multiSelection space', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card, 'click'); card.focus();
-            keyModule.keyActionHandler({ action: 'multiSelectionSpace' });
+            keyModule.keyActionHandler({ action: 'multiSelectionSpace', preventDefault: function () { } });
             expect(card.getAttribute('tabindex')).toEqual('0');
             expect(card.getAttribute('aria-selected')).toEqual('true');
         });
@@ -301,13 +301,13 @@ describe('Keyboard module', () => {
             expect(card.nextElementSibling != null).toBe(true);
             expect(card.classList.contains('e-selection')).toBe(true);
             expect(card.nextElementSibling.classList.contains('e-selection')).toBe(false);
-            keyModule.keyActionHandler({ action: 'multiSelectionByDownArrow' });
+            keyModule.keyActionHandler({ action: 'multiSelectionByDownArrow', preventDefault: function () { } });
             expect(card.nextElementSibling != null).toBe(true);
             expect(card.classList.contains('e-selection')).toBe(true);
             expect(card.nextElementSibling.classList.contains('e-selection')).toBe(true);
             let card_1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="61"]').item(0) as HTMLElement;
             expect(card_1.classList.contains('e-selection')).toBe(false);
-            keyModule.keyActionHandler({ action: 'multiSelectionByDownArrow' });
+            keyModule.keyActionHandler({ action: 'multiSelectionByDownArrow', preventDefault: function () { } });
             expect(card_1.classList.contains('e-selection')).toBe(true);
         });
 
@@ -317,19 +317,19 @@ describe('Keyboard module', () => {
             expect(card.previousElementSibling != null).toBe(true);
             expect(card.classList.contains('e-selection')).toBe(true);
             expect(card.previousElementSibling.classList.contains('e-selection')).toBe(false);
-            keyModule.keyActionHandler({ action: 'multiSelectionByUpArrow' });
+            keyModule.keyActionHandler({ action: 'multiSelectionByUpArrow', preventDefault: function () { } });
             expect(card.previousElementSibling != null).toBe(true);
             expect(card.classList.contains('e-selection')).toBe(true);
             expect(card.previousElementSibling.classList.contains('e-selection')).toBe(true);
             let card_1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="49"]').item(0) as HTMLElement;
             expect(card_1.classList.contains('e-selection')).toBe(false);
-            keyModule.keyActionHandler({ action: 'multiSelectionByUpArrow' });
+            keyModule.keyActionHandler({ action: 'multiSelectionByUpArrow', preventDefault: function () { } });
             expect(card_1.classList.contains('e-selection')).toBe(true);
         });
 
         it('remove selection multiselection', () => {
             expect(kanbanObj.getSelectedCards().length).toEqual(3);
-            keyModule.keyActionHandler({ action: 'downArrow' });
+            keyModule.keyActionHandler({ action: 'downArrow', preventDefault: function () { } });
             expect(kanbanObj.getSelectedCards().length).toEqual(0);
         });
 
@@ -347,7 +347,7 @@ describe('Keyboard module', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(false);
-            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement });
+            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
             keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: false, preventDefault: (): void => { /** Null */ } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
@@ -357,7 +357,7 @@ describe('Keyboard module', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(false);
-            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement });
+            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
             keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: true, preventDefault: (): void => { /** Null */ } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
@@ -369,7 +369,7 @@ describe('Keyboard module', () => {
             expect(headerEle.classList.contains('e-column-collapse')).toBe(true);
             expect(headerEle.classList.contains('e-column-expand')).toBe(false);
             expect(document.activeElement == headerEle).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: headerEle });
+            keyModule.keyActionHandler({ action: 'enter', target: headerEle, preventDefault: function () { } });
             expect(headerEle.classList.contains('e-column-collapse')).toBe(false);
             expect(headerEle.classList.contains('e-column-expand')).toBe(true);
         });
@@ -378,7 +378,7 @@ describe('Keyboard module', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card, 'click'); card.focus();
             expect(document.activeElement == card).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: card });
+            keyModule.keyActionHandler({ action: 'enter', target: card, preventDefault: function () { } });
             setTimeout(() => { done(); }, 500);
         });
 
@@ -393,9 +393,9 @@ describe('Keyboard module', () => {
         it('enter key in add card button', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle });
+            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement });
+            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
         });
 
         it('enter key in add card button', () => {
@@ -408,7 +408,7 @@ describe('Keyboard module', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card, 'click');
             expect(card.classList.contains('e-selection')).toBe(true);
-            keyModule.keyActionHandler({ action: 'delete' });
+            keyModule.keyActionHandler({ action: 'delete', preventDefault: function () { } });
             let card_1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0) as HTMLElement;
             expect(card_1 == null).toBe(true);
         });
@@ -416,7 +416,7 @@ describe('Keyboard module', () => {
         it('tab key focus on show add button', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(2) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle });
+            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
             keyModule.keyActionHandler({ action: 'tab', target: contentEle, shiftKey: false, preventDefault: (): void => { /** Null */ } });
             expect(contentEle.querySelector('e-card') == null).toBe(true);
         });
@@ -432,7 +432,7 @@ describe('Keyboard module', () => {
             let popupEle: HTMLElement = document.querySelector('.e-dialog.e-kanban-dialog.e-popup');
             addButton.focus();
             expect(popupEle == null).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: addButton });
+            keyModule.keyActionHandler({ action: 'enter', target: addButton, preventDefault: function () { } });
             setTimeout(() => { done(); }, 500);
         });
 

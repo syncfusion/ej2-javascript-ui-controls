@@ -10,7 +10,7 @@ import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation } fro
 import { SeriesModel, ExportType, Axis, FontModel, Alignment } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
-import { PivotView } from '../../pivotview';
+import { PivotView } from '../../pivotview/base/pivotview';
 import { OlapEngine } from '../../base/olap/engine';
 
 /**
@@ -435,7 +435,7 @@ export interface PivotColumn {
      */
     width: string | number;
     /**
-     * If `autoFit` set to true, then the particular column content width will be
+     * If `autoFit` set to true, then the column width will be
      * adjusted based on its content in the initial rendering itself.
      *
      * @default false

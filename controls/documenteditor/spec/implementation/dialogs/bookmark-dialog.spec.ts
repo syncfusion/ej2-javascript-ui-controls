@@ -240,52 +240,53 @@ console.log('Book Mark insert validation');
         editor.editorModule.insertText('sample 1');
         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
-    it('Backspace at bookmark start validation', () => {
-console.log('Backspace at bookmark start validation');
-        editor.selection.handleLeftKey();
-        editor.selection.handleLeftKey();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.editorModule.onBackSpace();
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('undo validation', () => {
-console.log('undo validation');
-        editor.editorHistory.undo();
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('redo validation', () => {
-console.log('redo validation');
-        editor.editorHistory.redo();
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('undo and redo validation', () => {
-console.log('undo and redo validation');
-        let i: number = 1;
-        while (i <= 5) {
-            editor.editorHistory.undo();
-            editor.editorHistory.redo();
-            i++;
-        }
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('undo and redo validation', () => {
-console.log('undo and redo validation');
-        let i: number = 1;
-        while (i <= 5) {
-            editor.editorHistory.undo();
-            editor.editorHistory.redo();
-            i++;
-        }
-        editor.editorHistory.undo();
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
+//     it('Backspace at bookmark start validation', () => {
+// console.log('Backspace at bookmark start validation');
+//         editor.selection.handleLeftKey();
+//         editor.selection.handleLeftKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.editorModule.onBackSpace();
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+//     it('undo validation', () => {
+// console.log('undo validation');
+//         editor.editorHistory.undo();
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+//     it('redo validation', () => {
+// console.log('redo validation');
+//         editor.editorHistory.redo();
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+//     it('undo and redo validation', () => {
+// console.log('undo and redo validation');
+//         let i: number = 1;
+//         while (i <= 5) {
+//             editor.editorHistory.undo();
+//             editor.editorHistory.redo();
+//             i++;
+//         }
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+
+//     it('undo and redo validation', () => {
+// console.log('undo and redo validation');
+//         let i: number = 1;
+//         while (i <= 5) {
+//             editor.editorHistory.undo();
+//             editor.editorHistory.redo();
+//             i++;
+//         }
+//         editor.editorHistory.undo();
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
 });
 describe('DeleteSelected content on backspace at bookmar end', () => {
     let editor: DocumentEditor = undefined;
@@ -404,52 +405,52 @@ console.log('Book Mark insert validation');
         editor.editorModule.insertText('sample 1');
         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
-    it('Backspace at bookmark start validation', () => {
-console.log('Backspace at bookmark start validation');
-        editor.selection.handleLeftKey();
-        editor.selection.handleLeftKey();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.editorModule.delete();
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('undo validation', () => {
-console.log('undo validation');
-        editor.editorHistory.undo();
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('redo validation', () => {
-console.log('redo validation');
-        editor.editorHistory.redo();
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('undo and redo validation', () => {
-console.log('undo and redo validation');
-        let i: number = 1;
-        while (i <= 5) {
-            editor.editorHistory.undo();
-            editor.editorHistory.redo();
-            i++;
-        }
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
-    it('undo and redo validation', () => {
-console.log('undo and redo validation');
-        let i: number = 1;
-        while (i <= 5) {
-            editor.editorHistory.undo();
-            editor.editorHistory.redo();
-            i++;
-        }
-        editor.editorHistory.undo();
-        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
-    });
+//     it('Backspace at bookmark start validation', () => {
+// console.log('Backspace at bookmark start validation');
+//         editor.selection.handleLeftKey();
+//         editor.selection.handleLeftKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.editorModule.delete();
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+//     it('undo validation', () => {
+// console.log('undo validation');
+//         editor.editorHistory.undo();
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+//     it('redo validation', () => {
+// console.log('redo validation');
+//         editor.editorHistory.redo();
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+//     it('undo and redo validation', () => {
+// console.log('undo and redo validation');
+//         let i: number = 1;
+//         while (i <= 5) {
+//             editor.editorHistory.undo();
+//             editor.editorHistory.redo();
+//             i++;
+//         }
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
+//     it('undo and redo validation', () => {
+// console.log('undo and redo validation');
+//         let i: number = 1;
+//         while (i <= 5) {
+//             editor.editorHistory.undo();
+//             editor.editorHistory.redo();
+//             i++;
+//         }
+//         editor.editorHistory.undo();
+//         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+//         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+//     });
 });
 describe('DeleteSelected content on onDelete at bookmar end', () => {
     let editor: DocumentEditor = undefined;

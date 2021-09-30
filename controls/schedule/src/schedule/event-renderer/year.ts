@@ -23,6 +23,9 @@ export class YearEvent extends TimelineEvent {
     }
 
     public renderAppointments(): void {
+        if (this.parent.dragAndDropModule) {
+            this.parent.dragAndDropModule.setDragArea();
+        }
         this.fields = this.parent.eventFields;
         const elementSelector: string = (this.parent.currentView === 'Year') ? '.' + cls.APPOINTMENT_CLASS :
             '.' + cls.APPOINTMENT_WRAPPER_CLASS + ',.' + cls.MORE_INDICATOR_CLASS;
@@ -208,7 +211,7 @@ export class YearEvent extends TimelineEvent {
                 const monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), months[month], 1);
                 for (let i: number = 0, len: number = resources.length; i < len; i++) {
                     this.renderedEvents = [];
-                    this.renderResourceEvent(wrapperCollection[i], resources[i], month, i, monthStart);
+                    this.renderResourceEvent(wrapperCollection[month], resources[i], month, i, monthStart);
                 }
             }
         } else {

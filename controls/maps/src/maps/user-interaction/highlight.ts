@@ -166,10 +166,6 @@ export class Highlight {
             data: data,
             maps: this.maps
         };
-        if (this.maps.isBlazor) {
-            const { shapeData, maps, ...blazorEventArgs }: ISelectionEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger(itemHighlight, eventArgs, () => {
             eventArgs.border.opacity = isNullOrUndefined(this.highlightSettings.border.opacity) ? this.highlightSettings.opacity : this.highlightSettings.border.opacity;
             this.highlightMap(targetEle, eventArgs);

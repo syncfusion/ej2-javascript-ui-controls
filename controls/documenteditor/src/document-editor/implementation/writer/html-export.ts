@@ -214,7 +214,10 @@ export class HtmlExport {
                 blockStyle += this.serializeImageContainer(inline);
             } else if (inline.hasOwnProperty('fieldType')) {
                 if (inline.fieldType === 0) {
-                    const fieldCode: any = paragraph.inlines[i + 1];
+                    let fieldCode: any = paragraph.inlines[i + 1];
+                    if (isNullOrUndefined(fieldCode.text)) {
+                        fieldCode = paragraph.inlines[i + 2];
+                    }
                     if (!isNullOrUndefined(fieldCode) && !isNullOrUndefined(fieldCode.text) &&
                         (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
                         this.fieldCheck = 1;

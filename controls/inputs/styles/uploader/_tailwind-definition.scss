@@ -1,6 +1,5 @@
 // uploader bootstrap theme 
 $zero-value: 0 !default;
-$skin-name: 'tailwind' !default;
 $upload-root-font-family: $font-family !default;
 $upload-element-opacity: $zero-value !default;
 $upload-element-width: $zero-value !default;
@@ -68,7 +67,6 @@ $file-container-top: $zero-value !default;
 
 // themes files
 $progress-bar-transition: width 2s !default;
-$remove-icon-disabled-color:  $zero-value !default;
 $progress-text-rtl-smaller: 0 !default;
 $pause-play-button-right-value: 36px !default;
 $pause-play-button-right-value-bigger: 45px !default;
@@ -80,17 +78,12 @@ $ie-abort-icon-position-value: 12px !default;
 $upload-font-family: inherit !default;
 $drop-area-font-size-smaller: $text-sm !default;
 $drop-area-font-size: 15px !default;
-$drop-text-color: $content-text-color !default;
-$file-drop-text-color: $content-text-color-alt2 !default;
-$progress-text-color: $content-text-color-alt3 !default;
-$drag-hover-border: 2px dashed $primary !default;
 $drop-zone-margin: 3px !default;
 $header-padding: 12px 0 12px 12px !default;
 $drop-area-padding-left: 15px !default;
 $drop-area-padding-left-smaller: 12px !default;
 $file-name-font-size-smaller: $text-sm !default;
 $file-name-font-size: 15px !default;
-$file-size-color: $content-text-color-alt3 !default;
 $list-item-status-font-size-smaller: $text-xs !default;
 $list-item-status-font-size: $text-xs !default;
 $list-item-status-bigger-font-size: $text-sm !default;
@@ -101,7 +94,6 @@ $remove-icon-margin: 15px !default;
 $remove-icon-margin-smaller: 12px !default;
 $action-buttons-margin-smaller: 8px !default;
 $footer-buttons-margin: 15px !default;
-$list-bottom-border: 1px solid $border-light !default;
 $delete-icon-padding-smaller: 15px !default;
 $delete-icon-padding: 24px !default;
 $remove-icon-right: $zero-value !default;
@@ -123,10 +115,6 @@ $inner-wrap-radius: 4px !default;
 $progress-bar-radius: 4px !default;
 $progress-inner-wrap-height-smaller: 4px !default;
 $progress-bar-height-smaller: 4px !default;
-$upload-success-color: $success !default;
-$upload-failure-color: $danger !default;
-$upload-in-progress-color: $primary !default;
-$progress-background-color: $content-bg-color-alt3 !default;
 $remove-icon-before-left-bigger: 12px !default;
 $remove-icon-before-top-bigger: 12px !default;
 $list-items-height: 108px !default;
@@ -146,26 +134,18 @@ $left: $zero-value !default;
 $rtl-progress-top: -32px !default;
 $remove-icon-rtl-top-smaller: 50% !default;
 $file-name-font-family: inherit !default;
-$progress-text-color: $content-text-color-alt2 !default;
 $remove-icon-top: 50% !default;
-$clear-icon-focus-color: transparent !default;
-
 $remove-icon-font-size-smaller: 18px !default;
 $remove-icon-font-size: 22px !default;
 $delete-icon-font-size: 22px !default;
 $abort-icon-font-size: 22px !default;
 $delete-icon-font-size-smaller: 18px !default;
 $abort-icon-font-size-smaller: 18px !default;
-$upload-border: 1px dashed $border-dark !default;
 $upload-border-radius: 6px !default;
 $remove-icon-padding-smaller: 10px !default;
 $remove-icon-margin-top-smaller: -9px !default;
-
-$remove-icon-color: $icon-color !default;
-$upload-hover-icon-color: $icon-color-hover !default;
-$disabled-state: $icon-color-disabled !default;
-
 $uploader-icons-hover-radius: 50% !default;
+
 // mouse small
 $header-padding-small: 12px 0 12px 12px !default;
 $drop-area-small-font-size: 13px !default;
@@ -208,6 +188,26 @@ $form-upload-small-file-list-padding-top: $file-small-name-padding-top - 4 !defa
 $form-upload-small-file-list-padding-bottom: $file-small-name-padding-top !default;
 $form-upload-small-file-name-padding: 4px !default;
 $form-upload-small-file-status-font-size: $list-item-status-font-size-smaller !default;
+
+// color
+
+$remove-icon-color: $icon-color !default;
+$upload-hover-icon-color: $icon-color-hover !default;
+$disabled-state: $icon-color-disabled !default;
+$remove-icon-disabled-color:  $zero-value !default;
+$drop-text-color: $content-text-color !default;
+$file-drop-text-color: $content-text-color-alt2 !default;
+$progress-text-color: $content-text-color-alt3 !default;
+$file-size-color: $content-text-color-alt3 !default;
+$upload-success-color: $success !default;
+$upload-failure-color: $danger !default;
+$upload-in-progress-color: $primary !default;
+$progress-background-color: $content-bg-color-alt3 !default;
+$progress-text-color: $content-text-color-alt2 !default;
+$clear-icon-focus-color: transparent !default;
+$list-bottom-border: 1px solid $border-light !default;
+$upload-border: 1px dashed $border-dark !default;
+$drag-hover-border: 2px dashed $primary !default;
 
 .e-upload .e-upload-actions,
 .e-bigger.e-small .e-upload .e-upload-actions {

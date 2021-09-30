@@ -557,6 +557,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Heading 4': 'Heading 4',
         'Heading 5': 'Heading 5',
         'Heading 6': 'Heading 6'
+
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 

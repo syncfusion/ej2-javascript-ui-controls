@@ -58,6 +58,7 @@ export class Keyboard {
         case 'downArrow':
         case 'multiSelectionByUpArrow':
         case 'multiSelectionByDownArrow':
+            e.preventDefault();
             this.processUpDownArrow(e.action, selectedCard);
             break;
         case 'rightArrow':
@@ -213,7 +214,8 @@ export class Keyboard {
         });
     }
 
-    private processEnter(e: Event, selectedCard: Element): void {
+    private processEnter(e: KeyboardEventArgs, selectedCard: Element): void {
+        if (e.action === 'space') { e.preventDefault(); }
         const element: Element = (e.target) as HTMLElement;
         if (element.classList.contains(cls.HEADER_ICON_CLASS)) {
             this.parent.actionModule.columnExpandCollapse(e);

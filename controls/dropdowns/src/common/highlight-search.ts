@@ -9,7 +9,7 @@ export type HightLightType = 'Contains' | 'StartsWith' | 'EndsWith';
  * @param  {HightLightType} type - Specifies the type of highlight.
  * @returns {void}
  */
-export function highlightSearch(element: HTMLElement, query: string, ignoreCase: boolean, type?: HightLightType, isBlazor?: boolean): void {
+export function highlightSearch(element: HTMLElement, query: string, ignoreCase: boolean, type?: HightLightType): void {
     if (query === '') {
         return;
     } else {
@@ -18,7 +18,7 @@ export function highlightSearch(element: HTMLElement, query: string, ignoreCase:
         query = /^[a-zA-Z0-9- ]*$/.test(query) ? query : query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
         const replaceQuery: string = type === 'StartsWith' ? '^(' + query + ')' : type === 'EndsWith' ?
             '(' + query + ')$' : '(' + query + ')';
-        findTextNode(element, new RegExp(replaceQuery, ignoreRegex), isBlazor);
+        findTextNode(element, new RegExp(replaceQuery, ignoreRegex));
     }
 }
 /* eslint-enable jsdoc/require-param, valid-jsdoc */
@@ -26,23 +26,17 @@ export function highlightSearch(element: HTMLElement, query: string, ignoreCase:
  *
  * @param {HTMLElement} element - Specifies the element.
  * @param {RegExp} pattern - Specifies the regex to match the searched text.
- * @param {boolean} isBlazor - Specifies the platform is Blazor or not.
  * @returns {void}
  */
-function findTextNode(element: HTMLElement, pattern: RegExp, isBlazor?: boolean): void {
+function findTextNode(element: HTMLElement, pattern: RegExp): void {
     for (let index: number = 0; element.childNodes && (index < element.childNodes.length); index++) {
         if (element.childNodes[index].nodeType === 3 && element.childNodes[index].textContent.trim() !== '') {
-            element = (isBlazor && element.classList.contains('e-highlight')) ? element.parentElement : element;
-            if (isBlazor && element.getAttribute('data-value')) {
-                element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
-            } else {
-                const value: string = element.childNodes[index].nodeValue.trim().replace(pattern, '<span class="e-highlight">$1</span>');
-                element.childNodes[index].nodeValue = '';
-                element.innerHTML = element.innerHTML.trim() + value;
-            }
+            const value: string = element.childNodes[index].nodeValue.trim().replace(pattern, '<span class="e-highlight">$1</span>');
+            element.childNodes[index].nodeValue = '';
+            element.innerHTML = element.innerHTML.trim() + value;
             break;
         } else {
-            findTextNode(element.childNodes[index] as HTMLElement, pattern, isBlazor);
+            findTextNode(element.childNodes[index] as HTMLElement, pattern);
         }
     }
 }

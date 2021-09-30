@@ -291,7 +291,7 @@ describe('Bullet Chart Scale', () => {
             bullet.theme = 'BootstrapDark';
             bullet.refresh();
             svg = document.getElementById('container_ChartBorder');
-            expect(svg.getAttribute('fill') == '#000000').toBe(true);
+            expect(svg.getAttribute('fill') == '#1b1b1b').toBe(true);
             expect(svg.getAttribute('stroke') == 'transparent').toBe(true);
             done();
         });
@@ -299,7 +299,7 @@ describe('Bullet Chart Scale', () => {
             bullet.theme = 'MaterialDark';
             bullet.refresh();
             svg = document.getElementById('container_ChartBorder');
-            expect(svg.getAttribute('fill') == '#000000').toBe(true);
+            expect(svg.getAttribute('fill') == '#383838').toBe(true);
             expect(svg.getAttribute('stroke') == 'transparent').toBe(true);
             done();
         });
@@ -307,7 +307,7 @@ describe('Bullet Chart Scale', () => {
             bullet.theme = 'FabricDark';
             bullet.refresh();
             svg = document.getElementById('container_ChartBorder');
-            expect(svg.getAttribute('fill') == '#000000').toBe(true);
+            expect(svg.getAttribute('fill') == '#242424').toBe(true);
             expect(svg.getAttribute('stroke') == 'transparent').toBe(true);
             done();
         });

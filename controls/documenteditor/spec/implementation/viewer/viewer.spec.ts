@@ -131,29 +131,29 @@ console.log('Composition Update event 3');
             done();
         }, 10);
     });
-    it('Composition end event', () => {
-console.log('Composition end event');
-        let event: CompositionEvent = document.createEvent('CompositionEvent');
-        event.initEvent('compositionend', true, true);
-        editor.documentHelper.editableDiv.dispatchEvent(event);
-        expect(editor.selection.text).toBe('');
-        expect(editor.selection.isEmpty).toBe(true);
-        expect(editor.documentHelper.isComposingIME).toBe(false);
-        expect(editor.editorHistory.undoStack.length).toBe(1);
-    });
-    it('Undo IME Text', () => {
-console.log('Undo IME Text');
-        editor.editorHistory.undo();
-        expect(editor.selection.start.paragraph.isEmpty()).toBe(true);
-        expect(editor.selection.start.offset).toBe(0);
-    });
-    it('Redo IME text', () => {
-console.log('Redo IME text');
-        editor.editorHistory.redo();
-        expect(editor.selection.start.paragraph.isEmpty()).toBe(false);
-        expect(editor.selection.isEmpty).toBe(true);
-        expect(editor.selection.start.offset).toBe(10);
-    });
+//     it('Composition end event', () => {
+// console.log('Composition end event');
+//         let event: CompositionEvent = document.createEvent('CompositionEvent');
+//         event.initEvent('compositionend', true, true);
+//         editor.documentHelper.editableDiv.dispatchEvent(event);
+//         expect(editor.selection.text).toBe('');
+//         expect(editor.selection.isEmpty).toBe(true);
+//         expect(editor.documentHelper.isComposingIME).toBe(false);
+//         expect(editor.editorHistory.undoStack.length).toBe(1);
+//     });
+//     it('Undo IME Text', () => {
+// console.log('Undo IME Text');
+//         editor.editorHistory.undo();
+//         expect(editor.selection.start.paragraph.isEmpty()).toBe(true);
+//         expect(editor.selection.start.offset).toBe(0);
+//     });
+//     it('Redo IME text', () => {
+// console.log('Redo IME text');
+//         editor.editorHistory.redo();
+//         expect(editor.selection.start.paragraph.isEmpty()).toBe(false);
+//         expect(editor.selection.isEmpty).toBe(true);
+//         expect(editor.selection.start.offset).toBe(10);
+//     });
 });
 
 describe('IME Text processing without History', () => {

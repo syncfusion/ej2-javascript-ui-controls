@@ -150,13 +150,13 @@ console.log('custom header validation');
        let httpRequest:XMLHttpRequest=new XMLHttpRequest();
         expect(() => { (editor.spellChecker as any).setCustomHeaders(httpRequest) }).toThrowError();
     });
-    it('Public API Spell checker dialog validation', () => {
-console.log('Public API Spell checker dialog validation');
-        editor.openBlank();
-        editor.spellChecker.languageID = 1;
-        editor.serviceUrl='';
-        editor.spellChecker.allowSpellCheckAndSuggestion = true;
-        editor.editor.insertTextInternal('eacock', false);
-        expect(() => { editor.showSpellCheckDialog(); }).not.toThrowError();
-    });
+//     it('Public API Spell checker dialog validation', () => {
+// console.log('Public API Spell checker dialog validation');
+//         editor.openBlank();
+//         editor.spellChecker.languageID = 1;
+//         editor.serviceUrl='';
+//         editor.spellChecker.allowSpellCheckAndSuggestion = true;
+//         editor.editor.insertTextInternal('eacock', false);
+//         expect(() => { editor.showSpellCheckDialog(); }).not.toThrowError();
+//     });
 }); 

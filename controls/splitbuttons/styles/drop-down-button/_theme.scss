@@ -20,7 +20,12 @@
         }
 
         &:hover {
-          background-color: $drop-down-btn-li-bgcolor;
+          @if $skin-name == 'bootstrap5' {
+            background-color: $drop-down-btn-li-hover-bgcolor;
+          }
+          @else {
+            background-color: $drop-down-btn-li-bgcolor;
+          }
           color: $drop-down-btn-li-selection-font-color;
         }
 

@@ -1,7 +1,7 @@
 /*! Schedule component's bootstrap4 theme definitions and variables */
 $border-type: solid !default;
 $border-size: 1px !default;
-$schedule-skin: 'bootstrap4' !default;
+$schedule-skin: $skin-name !default;
 $schedule-header-bg-color: $content-bg !default;
 $schedule-header-border-color: $gray-300 !default;
 $schedule-header-font-color: $gray-900 !default;
@@ -12,7 +12,7 @@ $schedule-primary-content-font-color: $gray-900 !default;
 $schedule-secondary-content-font-color: $gray-600 !default;
 $schedule-select-font-color: $schedule-primary-content-font-color !default;
 $schedule-select-bg-color: $gray-200 !default;
-$schedule-work-cells-bg-color: $gray-100  !default;
+$schedule-work-cells-bg-color: $gray-100 !default;
 $schedule-current-date-bg-color: $primary !default;
 $schedule-disable-dates-color: rgba($black, .08) !default;
 $schedule-disable-font-color: $primary-font !default;
@@ -21,7 +21,7 @@ $schedule-hover-bg-color: darken($gray-100, 2%) !default;
 $schedule-hover-font-color: $gray-900 !default;
 $schedule-active-color: $primary-font !default;
 $schedule-active-border-color: $primary !default;
-$schedule-active-font-color: $primary  !default;
+$schedule-active-font-color: $primary !default;
 
 $schedule-timezone-enable-nrml-height: 60px !default;
 $schedule-timezone-enable-bgr-height: 64px !default;
@@ -47,7 +47,7 @@ $schedule-date-header-wrap-bgr-font-size: 16px !default;
 $schedule-date-header-wrap-device-font-size: 14px !default;
 
 $schedule-appointment-details-padding: 4px 8px 0 !default;
-$schedule-appointment-bg-color:  $primary  !default;
+$schedule-appointment-bg-color: $primary !default;
 $schedule-appointment-font-color: $primary-font !default;
 $schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%) !default;
 $schedule-appointment-border-radius: 4px !default;
@@ -166,7 +166,7 @@ $schedule-timeline-work-cells-border: 0 0 1px 1px !default;
 $schedule-rtl-timeline-work-cells-border: 0 1px 1px 0 !default;
 $schedule-timeline-resources-width: 224px !default;
 $schedule-timeline-appointment-height: 38px !default;
-$schedule-timeline-year-work-cells-height: 70px !default;
+$schedule-timeline-year-work-cells-height: 75px !default;
 $schedule-timeline-year-work-cells-width: 100px !default;
 
 $schedule-tree-bg-color: $gray-100 !default;
@@ -190,4 +190,5 @@ $schedule-bigger-resource-color-size: 16px !default;
 @mixin tbar-btn-animation-after {
   content: '';
 }
+
 $schedule-tbar-border-hover-color: darken($gray-600, 12.5%) !default;

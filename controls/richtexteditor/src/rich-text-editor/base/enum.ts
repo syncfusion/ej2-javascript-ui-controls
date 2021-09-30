@@ -50,11 +50,11 @@ Expand = 'Expand',
 export enum DialogType {
 /* eslint-disable */
 /** Defines ToolbarType as Standard */
-        InsertLink = 'InsertLink',
+    InsertLink = 'InsertLink',
 /** Defines ToolbarType as MultiRow */
-        InsertImage = 'InsertImage',
+    InsertImage = 'InsertImage',
 /** Defines ToolbarType as Scrollable */
-        InsertTable = 'InsertTable'
+    InsertTable = 'InsertTable'
 /* eslint-enable */
 }
 

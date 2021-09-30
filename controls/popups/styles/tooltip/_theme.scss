@@ -3,7 +3,7 @@
   .e-tooltip-wrap {
     border-radius: $tooltip-border-radius;
 
-    @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+    @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
       filter: $tooltip-drop-shadow;
       opacity: $tooltip-opacity;
     }
@@ -71,7 +71,7 @@
     .e-tooltip-close {
       background-color: $tooltip-icon-bg-normal;
       border-color: $tooltip-icon-border-color;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         border-radius: 9px;
       }
       @else {
@@ -84,18 +84,21 @@
         height: 16px;
         width: 16px;
       }
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         border: $tooltip-close-icon-border;
       }
     }
 
     .e-tooltip-close:hover {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         color: $tooltip-hover-icon-color;
       }
       @else {
         background-color: $tooltip-icon-bg-hover;
         color: $tooltip-hover-icon-color;
+      }
+      @if($skin-name == 'bootstrap5') {
+        border-color: $tooltip-close-icon-border-hover;
       }
     }
 

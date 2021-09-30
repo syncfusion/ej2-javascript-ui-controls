@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, clearViewer, beginAction, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook} from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook, isNumber, clearFormulaDependentCells} from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -60,6 +60,11 @@ export class CellFormat {
                         args.style.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell,
                         args.manualUpdate);
                 }
+                // if (currCell.format && currCell.format.indexOf('[') > -1 && !isNumber(currCell.value)) { 
+                //     //do nothing
+                // } else {
+                //     Object.assign(cell.style, args.style);
+                // }
                 Object.assign(cell.style, args.style);
                 if (cell.firstElementChild && cell.firstElementChild.classList.contains('e-wrap-content')){
                     const wrapEle: HTMLElement = cell.firstElementChild as HTMLElement;
@@ -292,6 +297,9 @@ export class CellFormat {
                     const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
                     const cellElem: HTMLElement = this.parent.getCell(sRIdx, sCIdx);
                     if (cell) {
+                        if (cell.formula) {
+                            this.parent.notify(clearFormulaDependentCells, { cellRef: getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]) });
+                        }
                         if (cell.wrap) {
                             this.parent.notify(wrapEvent, { range: [sRIdx, sCIdx, sRIdx, sCIdx], wrap: false, sheet: sheet });
                         }

@@ -285,7 +285,7 @@ export class ScrollBar {
     public scrollMouseMove(e: PointerEvent): void {
         const target: Element = <Element>e.target;
         const elem: ScrollElements = this.scrollElements;
-	if (!getElement(this.svgObject.id)) {
+        if (!getElement(this.svgObject.id)) {
             return null;
         }
         this.getMouseXY(e);

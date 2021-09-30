@@ -1,4 +1,4 @@
-import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor, extend } from '@syncfusion/ej2-base';
+import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
 import { IDropDownItemModel } from './../base/interface';
@@ -308,7 +308,7 @@ export class Link {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                const args: Dialog = isBlazor() ? null : this.dialogObj;
+                const args: Dialog = this.dialogObj;
                 this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             }
@@ -401,7 +401,8 @@ export class Link {
             proxy.parent.formatter.saveData();
         }
         let argsValue: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent | Object;
-        if (((this as NotifyArgs).args as KeyboardEvent).code === 'KeyK') {
+        if (!isNullOrUndefined((this as NotifyArgs).args as KeyboardEvent) &&
+            ((this as NotifyArgs).args as KeyboardEvent).code === 'KeyK') {
             const originalEvent: KeyboardEventArgs = (this as NotifyArgs).args as KeyboardEventArgs;
             extend(
                 (this as NotifyArgs).args,

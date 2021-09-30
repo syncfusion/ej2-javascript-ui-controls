@@ -322,8 +322,8 @@ export class FormDesignerToolbar {
                     args.element.innerHTML = '';
                     let addInitialSpan: HTMLElement = createElement('button');
                     addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
-                    addInitialSpan.textContent = 'ADD SIGNATURE';
-                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('SignatureFieldDialogHeaderText');
+                    addInitialSpan.style.width = "130px";
                     addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
                     args.element.appendChild(addInitialSpan);
@@ -339,8 +339,8 @@ export class FormDesignerToolbar {
                     args.element.innerHTML = ''; 
                     let addInitialSpan: HTMLElement = createElement('button');
                     addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
-                    addInitialSpan.textContent = 'ADD INITIAL';
-                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('InitialFieldDialogHeaderText');
+                    addInitialSpan.style.width = "130px";
                     addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
                     args.element.appendChild(addInitialSpan);
@@ -354,6 +354,9 @@ export class FormDesignerToolbar {
             },
         };
         const drpDownBtn: DropDownButton = new DropDownButton(saveOptions); 
+        if (this.pdfViewer.enableRtl) {
+            drpDownBtn.enableRtl = this.pdfViewer.enableRtl;
+        }
         drpDownBtn.appendTo(this.handWrittenSignatureItem); 
     }
 
@@ -438,9 +441,8 @@ export class FormDesignerToolbar {
     }
 
     public showHideDeleteIcon(isEnable: boolean): void {
-        if (this.toolbar) {
+        if (this.toolbar)
             this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
-        }
     }
 
     private applyFormDesignerToolbarSettings(): void {

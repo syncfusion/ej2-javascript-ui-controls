@@ -23,10 +23,14 @@ export type SmithchartTheme =
     'BootstrapDark'|
     /** Render a smithchart with Bootstrap4 theme. */
     'Bootstrap4'|
-	/**  Render a smithchart with Tailwind theme. */
+    /**  Render a smithchart with Tailwind theme. */
     'Tailwind' |
     /**  Render a smithchart with TailwindDark theme. */
-    'TailwindDark';
+    'TailwindDark' |
+    /**  Render a smithchart with Bootstrap5 theme. */
+    'Bootstrap5' |
+    /**  Render a smithchart with Bootstrap5Dark theme. */
+    'Bootstrap5Dark';
 
 /**
  * Defines render type of smithchart. They are

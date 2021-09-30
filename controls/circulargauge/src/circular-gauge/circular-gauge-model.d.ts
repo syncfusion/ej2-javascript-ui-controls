@@ -1,4 +1,4 @@
-import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged, isBlazor } from '@syncfusion/ej2-base';import { Complex, Browser, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, createElement } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer } from './model/interface';import { IVisibleRange, IThemeStyle } from './model/interface';import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs, IPointerDragEventArgs, IResizeEventArgs } from './model/interface';import { ITooltipRenderEventArgs, ILegendRenderEventArgs, IAnnotationRenderEventArgs }from './model/interface';import { IMouseEventArgs, IPrintEventArgs } from './model/interface';import { TextOption, textElement, RectOption, getAngleFromLocation }from './utils/helper';import { getValueFromAngle, removeElement, getRange } from './utils/helper';import { Size, stringToNumber, measureText, Rect, GaugeLocation, getElement, getPointer, setStyles, toPixel } from './utils/helper';import { getAngleFromValue, getPathArc } from './utils/helper';import { GaugeTheme } from './utils/enum';import { Border, Margin, Font, TooltipSettings } from './model/base';import { BorderModel, MarginModel, FontModel, TooltipSettingsModel } from './model/base-model';import { Axis, Range, Pointer, Annotation, VisibleRangeModel } from './axes/axis';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { AxisModel } from './axes/axis-model';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, pointerMove } from './model/constants';import {  rangeMove, pointerStart, rangeStart, pointerEnd, rangeEnd } from './model/constants';import { gaugeMouseUp, dragEnd, dragMove, dragStart, resized } from './model/constants';import { AxisLayoutPanel } from './axes/axis-panel';import { getThemeStyle } from './model/theme';import { LegendSettingsModel } from './legend/legend-model';import { LegendSettings, Legend } from './legend/legend';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../circular-gauge/utils/enum';import { PdfExport } from  './model/pdf-export';import { ImageExport } from './model/image-export';import { Print } from './model/print';import { Gradient } from './axes/gradient';
+import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';import { Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, createElement } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer } from './model/interface';import { IVisibleRange, IThemeStyle } from './model/interface';import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs, IPointerDragEventArgs, IResizeEventArgs } from './model/interface';import { ITooltipRenderEventArgs, ILegendRenderEventArgs, IAnnotationRenderEventArgs }from './model/interface';import { IMouseEventArgs, IPrintEventArgs } from './model/interface';import { removeElement, getElement, stringToNumber, measureText, toPixel, textElement, getAngleFromValue, getAngleFromLocation, getPathArc, getPointer, RectOption, Size, GaugeLocation, Rect, TextOption } from './utils/helper-common';import { setStyles, getValueFromAngle, getRange } from './utils/helper-circular-gauge';import { GaugeTheme } from './utils/enum';import { Border, Margin, Font, TooltipSettings } from './model/base';import { BorderModel, MarginModel, FontModel, TooltipSettingsModel } from './model/base-model';import { Axis, Range, Pointer, Annotation, VisibleRangeModel } from './axes/axis';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { AxisModel } from './axes/axis-model';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, pointerMove } from './model/constants';import {  rangeMove, pointerStart, rangeStart, pointerEnd, rangeEnd } from './model/constants';import { gaugeMouseUp, dragEnd, dragMove, dragStart, resized } from './model/constants';import { AxisLayoutPanel } from './axes/axis-panel';import { getThemeStyle } from './model/theme';import { LegendSettingsModel } from './legend/legend-model';import { LegendSettings, Legend } from './legend/legend';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../circular-gauge/utils/enum';import { PdfExport } from  './model/pdf-export';import { ImageExport } from './model/image-export';import { Print } from './model/print';import { Gradient } from './axes/gradient';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -165,7 +165,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers after the circular gauge gets loaded.
      *
      * @event
-     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
@@ -173,7 +172,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers before the circular gauge gets loaded.
      *
      * @event
-     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadedEventArgs>;
 
@@ -181,7 +179,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers after the animation gets completed for pointers.
      *
      * @event
-     * @blazorProperty 'AnimationCompleted'
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
@@ -189,7 +186,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers before each axis label gets rendered.
      *
      * @event
-     * @blazorProperty 'AxisLabelRendering'
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
@@ -197,7 +193,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers before the radius for the circular gauge gets calculated.
      *
      * @event
-     * @blazorProperty 'OnRadiusCalculate'
      */
     radiusCalculate?: EmitType<IRadiusCalculateEventArgs>;
 
@@ -205,7 +200,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers before each annotation for the circular gauge gets rendered.
      *
      * @event
-     * @blazorProperty 'AnnotationRendering'
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
@@ -214,7 +208,6 @@ export interface CircularGaugeModel extends ComponentModel{
      *
      * @event
      * @deprecated
-     * @blazorProperty 'legendRender'
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 
@@ -222,7 +215,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers before the tooltip for pointer of the circular gauge gets rendered.
      *
      * @event
-     * @blazorProperty 'TooltipRendering'
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -231,7 +223,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers before the pointer is dragged.
      *
      * @event
-     * @blazorProperty 'OnDragStart'
      */
 
     dragStart?: EmitType<IPointerDragEventArgs>;
@@ -240,7 +231,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers while dragging the pointers.
      *
      * @event
-     * @blazorProperty 'OnDragMove'
      */
 
     dragMove?: EmitType<IPointerDragEventArgs>;
@@ -249,7 +239,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers after the pointer is dragged.
      *
      * @event
-     * @blazorProperty 'OnDragEnd'
      */
     dragEnd?: EmitType<IPointerDragEventArgs>;
 
@@ -257,7 +246,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers on hovering the circular gauge.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseMove'
      */
 
     gaugeMouseMove?: EmitType<IMouseEventArgs>;
@@ -266,7 +254,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers while cursor leaves the circular gauge.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseLeave'
      */
 
     gaugeMouseLeave?: EmitType<IMouseEventArgs>;
@@ -275,7 +262,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers on mouse down.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseDown'
      */
 
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
@@ -284,7 +270,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers on mouse up.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseUp'
      */
 
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
@@ -293,7 +278,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers after window resize.
      *
      * @event
-     * @blazorProperty 'Resizing'
      */
 
     resized?: EmitType<IResizeEventArgs>;
@@ -302,7 +286,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * Triggers before the prints gets started.
      *
      * @event
-     * @blazorProperty 'OnPrint'
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;

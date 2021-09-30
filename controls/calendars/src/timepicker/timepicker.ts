@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';
 import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, blazorCultureFormats, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -226,7 +226,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private cursorDetails: CursorPositionDetails;
     private activeIndex: number;
     private timeCollections: number[] = [];
-    private blazorTimeCollections: string[] = [];
     private isNavigate: boolean;
     private disableItemCollection: string[] = [];
     protected isPreventBlur: boolean;
@@ -249,7 +248,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected keyConfigure: { [key: string]: string };
     private timeOptions : TimePickerModel;
     private mobileTimePopupWrap: HTMLElement;
-    private isBlazorServer: boolean = false;
     protected isAngular: boolean = false;
     protected preventChange: boolean = false;
     protected maskedDateValue: string = '';
@@ -337,7 +335,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * {% codeBlock src='timepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
@@ -350,7 +347,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     @Property(null)
     public format: string | TimeFormatObject;
@@ -386,7 +382,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     @Property('Never')
@@ -403,7 +398,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -428,7 +422,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * [`Format`](../../timepicker/getting-started#setting-the-time-format)documentation.
      *
      * @default 30
-     * @blazorType int
      *
      */
     @Property(30)
@@ -441,7 +434,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * {% codeBlock src='timepicker/scrollTo/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public scrollTo: Date;
@@ -459,7 +451,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * [`Time Range`](../../timepicker/time-range/) documentation.
      *
      * @default 00:00
-     * @blazorDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
      */
     @Property(null)
     public min: Date;
@@ -469,7 +460,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * [`Time Range`](../../timepicker/time-range/) documentation.
      *
      * @default 00:00
-     * @blazorDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
      */
     @Property(null)
     public max: Date;
@@ -514,7 +504,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Triggers when the value is changed.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -523,7 +512,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -532,7 +520,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Triggers when the component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -540,7 +527,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Triggers when the popup is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
      */
     @Event()
     public open: EmitType<PopupEventArgs>;
@@ -548,7 +534,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Triggers while rendering the each popup list item.
      *
      * @event itemRender
-     * @blazorProperty 'OnItemRender'
      */
     @Event()
     public itemRender: EmitType<ItemEventArgs>;
@@ -556,7 +541,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Triggers when the popup is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
      */
     @Event()
     public close: EmitType<PopupEventArgs>;
@@ -619,61 +603,35 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.inputElement = <HTMLInputElement>this.element;
         this.angularTag = null;
         this.formElement = closest(this.element, 'form');
-        this.isBlazorServer = (isBlazor() && this.isServerRendered && this.getModuleName() === 'timepicker') ? true : false;
-        if (!this.isBlazorServer) {
-            if (this.element.tagName === 'EJS-TIMEPICKER') {
-                this.angularTag = this.element.tagName;
-                this.inputElement = <HTMLInputElement>this.createElement('input');
-                this.element.appendChild(this.inputElement);
-            }
-            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-            this.element.removeAttribute('tabindex');
-            this.openPopupEventArgs = {
-                appendTo: document.body
-            };
+        if (this.element.tagName === 'EJS-TIMEPICKER') {
+            this.angularTag = this.element.tagName;
+            this.inputElement = <HTMLInputElement>this.createElement('input');
+            this.element.appendChild(this.inputElement);
         }
+        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+        this.element.removeAttribute('tabindex');
+        this.openPopupEventArgs = {
+            appendTo: document.body
+        };
     }
     // element creation
     protected render(): void {
-        if (!this.isBlazorServer) {
-            this.initialize();
-            this.createInputElement();
-            this.updateHtmlAttributeToWrapper();
-            this.setTimeAllowEdit();
-            this.setEnable();
-            this.validateInterval();
-        } else {
-            this.globalize = new Internationalization(this.locale);
-            this.defaultCulture = new Internationalization('en');
-            this.checkTimeFormat();
-            const parentElement: HTMLElement = this.element.parentElement as HTMLElement;
-            this.inputWrapper = {
-                container: parentElement,
-                clearButton: parentElement.querySelector('.' + CLEARICON),
-                buttons: [parentElement.querySelector('.' + TIMEICON)]
-            };
-            Input.bindInitialEvent({
-                element: this.inputElement,
-                floatLabelType: this.floatLabelType
-            });
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                Input.wireClearBtnEvents(this.inputElement, this.inputWrapper.clearButton, this.inputWrapper.container);
-            }
-        }
+        this.initialize();
+        this.createInputElement();
+        this.updateHtmlAttributeToWrapper();
+        this.setTimeAllowEdit();
+        this.setEnable();
+        this.validateInterval();
         this.bindEvents();
-        if (!this.isBlazorServer) {
-            this.validateDisable();
-            this.setValue(this.getFormattedValue(this.value));
-            if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
-                this.updateInputValue(this.maskedDateValue);
-                this.checkErrorState(this.maskedDateValue);
-            }
+        this.validateDisable();
+        this.setValue(this.getFormattedValue(this.value));
+        if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
+            this.updateInputValue(this.maskedDateValue);
+            this.checkErrorState(this.maskedDateValue);
         }
         this.anchor = this.inputElement;
         this.inputElement.setAttribute('value', this.inputElement.value);
-        if (!this.isBlazorServer) {
-            this.inputEleValue = this.getDateObject(this.inputElement.value);
-        }
+        this.inputEleValue = this.getDateObject(this.inputElement.value);
         this.renderComplete();
     }
     private setTimeAllowEdit(): void {
@@ -829,7 +787,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private getCldrDateTimeFormat(): string {
         const culture: Internationalization = new Internationalization(this.locale);
         let cldrTime: string;
-        const dateFormat: string = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
+        const dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.cldrFormat('time');
         } else {
@@ -857,7 +815,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
                             }));
                         }
                     }
@@ -905,8 +863,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private cldrFormat(type: string): string {
         let cldrDateTimeString: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTimeString = isBlazor() ? this.getBlazorCultureFormat('t') :
-                <string>(getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTimeString = <string>(getValue('timeFormats.short', getDefaultDateObject()));
         } else {
             cldrDateTimeString = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
         }
@@ -914,45 +871,41 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     // destroy function
     public destroy(): void {
-        if (this.isBlazorServer) {
-            this.unBindEvents();
-        } else {
-            this.hide();
-            this.unBindEvents();
-            const ariaAttribute: object = {
-                'aria-haspopup': 'true', 'aria-autocomplete': 'list', 'tabindex': '0', 'aria-activedescendant': 'null',
-                'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-                'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-disabled': 'true', 'aria-invalid': 'false'
-            };
-            if (this.inputElement) {
-                Input.removeAttributes(<{ [key: string]: string }>ariaAttribute, this.inputElement);
-                if (this.angularTag === null) {
-                    this.inputWrapper.container.parentElement.appendChild(this.inputElement);
-                }
-                if (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) {
-                    this.inputElement.setAttribute('tabindex', this.tabIndex);
-                } else {
-                    this.inputElement.removeAttribute('tabindex');
-                }
-                this.ensureInputAttribute();
-                this.enableElement([this.inputElement]);
-                this.inputElement.classList.remove('e-input');
-                if (isNullOrUndefined(this.cloneElement.getAttribute('disabled'))) {
-                    Input.setEnabled(true, this.inputElement, this.floatLabelType);
-                }
+        this.hide();
+        this.unBindEvents();
+        const ariaAttribute: object = {
+            'aria-haspopup': 'true', 'aria-autocomplete': 'list', 'tabindex': '0', 'aria-activedescendant': 'null',
+            'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
+            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-disabled': 'true', 'aria-invalid': 'false'
+        };
+        if (this.inputElement) {
+            Input.removeAttributes(<{ [key: string]: string }>ariaAttribute, this.inputElement);
+            if (this.angularTag === null) {
+                this.inputWrapper.container.parentElement.appendChild(this.inputElement);
             }
-            if (this.inputWrapper.container) {
-                detach(this.inputWrapper.container);
+            if (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) {
+                this.inputElement.setAttribute('tabindex', this.tabIndex);
+            } else {
+                this.inputElement.removeAttribute('tabindex');
             }
-            this.inputWrapper = this.popupWrapper = this.cloneElement = undefined;
-            this.liCollections = this.timeCollections = this.disableItemCollection = [];
-            if (!isNullOrUndefined(this.rippleFn)) {
-                this.rippleFn();
+            this.ensureInputAttribute();
+            this.enableElement([this.inputElement]);
+            this.inputElement.classList.remove('e-input');
+            if (isNullOrUndefined(this.cloneElement.getAttribute('disabled'))) {
+                Input.setEnabled(true, this.inputElement, this.floatLabelType);
             }
-            super.destroy();
-            if (this.formElement) {
-                EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-            }
+        }
+        if (this.inputWrapper.container) {
+            detach(this.inputWrapper.container);
+        }
+        this.inputWrapper = this.popupWrapper = this.cloneElement = undefined;
+        this.liCollections = this.timeCollections = this.disableItemCollection = [];
+        if (!isNullOrUndefined(this.rippleFn)) {
+            this.rippleFn();
+        }
+        super.destroy();
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
     }
     protected ensureInputAttribute(): void {
@@ -976,23 +929,18 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     //popup creation
     private popupCreation(): void {
-        if (!this.isBlazorServer) {
-            this.popupWrapper = this.createElement('div', {
-                className: ROOT + ' ' + POPUP,
-                attrs: { 'id': this.element.id + '_popup', 'style': 'visibility:hidden' }
-            });
-            if (!isNullOrUndefined(this.cssClass)) {
-                this.popupWrapper.className += ' ' + this.cssClass;
-            }
-            if (!isNullOrUndefined(this.step) && this.step > 0) {
-                this.generateList();
-                append([this.listWrapper], this.popupWrapper);
-            }
-            this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
-        } else {
-            this.popupWrapper = this.inputWrapper.container.nextElementSibling as HTMLElement;
-            this.generateList();
+        this.popupWrapper = this.createElement('div', {
+            className: ROOT + ' ' + POPUP,
+            attrs: { 'id': this.element.id + '_popup', 'style': 'visibility:hidden' }
+        });
+        if (!isNullOrUndefined(this.cssClass)) {
+            this.popupWrapper.className += ' ' + this.cssClass;
         }
+        if (!isNullOrUndefined(this.step) && this.step > 0) {
+            this.generateList();
+            append([this.listWrapper], this.popupWrapper);
+        }
+        this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         this.addSelection();
         this.renderPopup();
         detach(this.popupWrapper);
@@ -1003,21 +951,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return popupHeight > height ? height : popupHeight;
     }
     private generateList(): void {
-        if (!this.isBlazorServer) {
-            this.createListItems();
-        } else {
-            this.listWrapper = this.popupWrapper.querySelector('.e-content');
-        }
+        this.createListItems();
         this.wireListEvents();
         const rippleModel: RippleOptions = { duration: 300, selector: '.' + LISTCLASS };
         this.rippleFn = rippleEffect(this.listWrapper, rippleModel);
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.listWrapper.querySelectorAll('.' + LISTCLASS);
-        if (this.isBlazorServer) {
-            this.blazorTimeCollections = [];
-            for (let index: number = 0; index < this.liCollections.length; index++) {
-                this.blazorTimeCollections.push(this.liCollections[index].getAttribute('data-value'));
-            }
-        }
     }
     private renderPopup(): void {
         this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
@@ -1037,11 +975,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 removeClass([this.inputWrapper.buttons[0]], SELECTED);
                 this.unWireListEvents();
                 this.inputElement.setAttribute('aria-activedescendant', 'null');
-                if (!this.isBlazorServer) {
-                    remove(this.popupObj.element);
-                    this.popupObj.destroy();
-                    this.popupWrapper.innerHTML = '';
-                }
+                remove(this.popupObj.element);
+                this.popupObj.destroy();
+                this.popupWrapper.innerHTML = '';
                 this.listWrapper = this.popupWrapper = this.listTag = undefined;
             }, targetExitViewport: () => {
                 if (!Browser.isDevice) {
@@ -1060,7 +996,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (isNullOrUndefined(this.checkDateValue(value))) {
             return null;
         } else {
-            return this.globalize.formatDate(value, { skeleton: isBlazor() ? 't' : 'medium', type: 'time' });
+            return this.globalize.formatDate(value, { skeleton: 'medium', type: 'time' });
         }
     }
     private getDateObject(text: string | Date): Date {
@@ -1159,11 +1095,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private getMeridianText(): MeridianText {
         let meridian: MeridianText;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            meridian = getValue((isBlazor() ? 'dayPeriods.wide' : 'dayPeriods.format.wide'), getDefaultDateObject());
+            meridian = getValue('dayPeriods.format.wide', getDefaultDateObject());
         } else {
-            const gregorianFormat: string = (isBlazor() ? '.dates.dayPeriods.abbreviated'  :
-                '.dates.calendars.gregorian.dayPeriods.format.abbreviated');
-            const mainVal: string = isBlazor() ? '' : 'main.';
+            const gregorianFormat: string = '.dates.calendars.gregorian.dayPeriods.format.abbreviated';
+            const mainVal: string = 'main.';
             meridian = getValue(mainVal + '' + this.locale + gregorianFormat, cldrData);
         }
         return meridian;
@@ -1234,11 +1169,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (!isNullOrUndefined(this.popupWrapper)) {
             const items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.popupWrapper.querySelectorAll('.' + LISTCLASS);
             if (items.length) {
-                const initialTime: number = this.isBlazorServer ? new Date(new Date().toDateString() + ' ' +
-                    this.blazorTimeCollections[0]).setMilliseconds(0) : this.timeCollections[0];
-                const scrollTime: number = this.isBlazorServer ? new Date(new Date().toDateString() + ' ' +
-                    this.scrollTo.toLocaleTimeString()).setMilliseconds(0) :
-                    this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
+                const initialTime: number = this.timeCollections[0];
+                const scrollTime: number = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
                 element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
             }
         } else {
@@ -1261,22 +1193,17 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private cldrDateFormat(): string {
         let cldrDate: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDate = isBlazor() ? <string>(getValue('d', getValue(this.locale, blazorCultureFormats))) :
-                <string>(getValue('dateFormats.short', getDefaultDateObject()));
+            cldrDate = <string>(getValue('dateFormats.short', getDefaultDateObject()));
         } else {
             cldrDate = <string>(this.getCultureDateObject(cldrData, '' + this.locale));
         }
         return cldrDate;
     }
-    private getBlazorCultureFormat(formatVal: string): string {
-        return (<string>(getValue(formatVal, getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a');
-    }
     private cldrTimeFormat(): string {
         let cldrTime: string;
         if (this.isNullOrEmpty(this.formatString)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = isBlazor() ?  this.getBlazorCultureFormat('t') :
-                    <string>(getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
             } else {
                 cldrTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
             }
@@ -1288,11 +1215,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private dateToNumeric(): string {
         let cldrTime: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
-                <string>(getValue('timeFormats.medium', getDefaultDateObject()));
+            cldrTime = <string>(getValue('timeFormats.medium', getDefaultDateObject()));
         } else {
-            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
-                <string>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
+            cldrTime = <string>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
         }
         return cldrTime;
     }
@@ -1341,10 +1266,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         (this as any).interopAdaptor.invokeMethodAsync('OnTimeIconClick');
     }
 
-    private updateBlazorTimeCollections(listData?: string[]): void {
-        this.blazorTimeCollections = listData;
-    }
-
     private popupHandler(e: MouseEvent): void {
         if (!this.enabled) {
             return;
@@ -1352,10 +1273,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
-        if (!this.isBlazorServer) {
-            e.preventDefault();
-        }
-        if (this.isPopupOpen() && !this.isBlazorServer) {
+        e.preventDefault();
+        if (this.isPopupOpen()) {
             this.closePopup(0, e);
         } else {
             (<HTMLElement>this.inputElement).focus();
@@ -1455,19 +1374,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             case 'enter':
                 if (this.isNavigate) {
                     this.selectedElement = this.liCollections[this.activeIndex];
-                    if (!this.isBlazorServer) {
-                        this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
-                        this.updateValue(this.valueWithMinutes, event);
-                    } else {
-                        this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
-                        (this as any).interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
-                    }
+                    this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
+                    this.updateValue(this.valueWithMinutes, event);
                 } else {
-                    if (!this.isBlazorServer) {
-                        this.updateValue(this.inputElement.value, event);
-                    } else {
-                        (this as any).interopAdaptor.invokeMethodAsync('OnStrictMode', this.inputElement.value);
-                    }
+                    this.updateValue(this.inputElement.value, event);
                 }
                 this.hide();
                 this.isNavigate = false;
@@ -1476,25 +1386,19 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 }
                 break;
             case 'open':
-                if (this.isBlazorServer) {
-                    (this as any).interopAdaptor.invokeMethodAsync('OnPopupHide', true);
-                } else {
-                    this.show(event);
-                }
+                this.show(event);
                 break;
             case 'escape':
-                if (!this.isBlazorServer) {
-                    this.updateInputValue(this.objToString(this.value));
-                    if(this.enableMask)
+                this.updateInputValue(this.objToString(this.value));
+                if(this.enableMask)
+                {
+                    if(!this.value)
                     {
-                        if(!this.value)
-                        {
-                            this.updateInputValue(this.maskedDateValue);
-                        }
-                        this.createMask();
+                        this.updateInputValue(this.maskedDateValue);
                     }
-                    this.previousState(this.value);
+                    this.createMask();
                 }
+                this.previousState(this.value);
                 this.hide();
                 break;
             case 'close':
@@ -1534,7 +1438,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private closePopup(delay?: number, e?: MouseEvent | KeyboardEvent | Event): void {
         if (this.isPopupOpen() && this.popupWrapper) {
             const args: PopupEventArgs = {
-                popup: this.isBlazorServer ? null : this.popupObj,
+                popup: this.popupObj,
                 event: e || null,
                 cancel: false,
                 name: 'open'
@@ -1552,13 +1456,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     removeClass([this.inputWrapper.container], [ICONANIMATION]);
                     attributes(this.inputElement, { 'aria-expanded': 'false' });
                     EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
-                    if (this.isBlazorServer) {
-                        this.disposeServerPopup();
-                        this.inputWrapper.container.parentElement.insertBefore(
-                            this.popupWrapper, this.inputWrapper.container.nextElementSibling);
-                        (this as any).interopAdaptor.invokeMethodAsync('OnPopupHide', false);
-                        this.popupWrapper = this.popupObj = null;
-                    }
                 }
                 if (Browser.isDevice && this.modal) {
                     this.modal.style.display = 'none';
@@ -1630,29 +1527,19 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private setSelection(li: HTMLElement, event: MouseEvent): void {
         if (this.isValidLI(li) && !li.classList.contains(SELECTED)) {
-            if (!this.isBlazorServer) {
-                this.checkValue(li.getAttribute('data-value'));
-                if(this.enableMask)
-                {
-                this.notify("setMaskSelection", {
-                    module: "MaskedDateTime"
-                  });
-                }
-                this.selectedElement = li;
-                this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
-                this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
-                addClass([this.selectedElement], SELECTED);
-                this.selectedElement.setAttribute('aria-selected', 'true');
-                this.checkValueChange(event, true);
-            } else {
-                this.selectedElement = li;
-                this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
-                addClass([this.selectedElement], SELECTED);
-                this.selectedElement.setAttribute('aria-selected', 'true');
-                this.inputElement.setAttribute('value', li.getAttribute('data-value'));
-                (this as any).interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, false);
-                this.addSelection();
+            this.checkValue(li.getAttribute('data-value'));
+            if(this.enableMask)
+            {
+            this.notify("setMaskSelection", {
+                module: "MaskedDateTime"
+                });
             }
+            this.selectedElement = li;
+            this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
+            this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
+            addClass([this.selectedElement], SELECTED);
+            this.selectedElement.setAttribute('aria-selected', 'true');
+            this.checkValueChange(event, true);
         }
     }
     private onMouseLeave(): void {
@@ -1754,12 +1641,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return dateVal;
     }
     protected bindEvents(): void {
-        EventHandler.add(
-            this.inputWrapper.buttons[0],
-            'mousedown',
-            (this.isBlazorServer ? this.preventEventBubbling : this.popupHandler),
-            this
-        );
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.popupHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
@@ -1808,18 +1690,16 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
         if (!this.inputElement.disabled) {
             let timeValue: string = this.inputElement.getAttribute('value');
-            let val: Date = this.isBlazorServer ? this.inputEleValue : this.checkDateValue(this.inputEleValue);
+            let val: Date = this.checkDateValue(this.inputEleValue);
             if (this.element.tagName === 'EJS-TIMEPICKER') {
                 val = null;
                 timeValue = '';
                 this.inputElement.setAttribute('value', '');
             }
-            if (!this.isBlazorServer) {
-                this.setProperties({ value: val }, true);
-                this.prevDate = this.value;
-                this.valueWithMinutes = this.value;
-                this.initValue = this.value;
-            }
+            this.setProperties({ value: val }, true);
+            this.prevDate = this.value;
+            this.valueWithMinutes = this.value;
+            this.initValue = this.value;
             if (this.inputElement) {
                 this.updateInputValue(timeValue);
                 if(this.enableMask)
@@ -1830,9 +1710,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     this.createMask();
                 }
-                if (!this.isBlazorServer) {
-                    this.checkErrorState(timeValue);
-                }
+                this.checkErrorState(timeValue);
                 this.prevValue = this.inputElement.value;
             }
         }
@@ -1853,11 +1731,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      }
     protected unBindEvents(): void {
         if (this.inputWrapper) {
-            EventHandler.remove(
-                this.inputWrapper.buttons[0],
-                'mousedown touchstart',
-                (this.isBlazorServer ? this.preventEventBubbling : this.popupHandler)
-            );
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
         }
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
@@ -1897,9 +1771,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.resetState();
             this.raiseClearedEvent(e);
         }
-        if (this.isBlazorServer) {
-            (this as any).interopAdaptor.invokeMethodAsync('OnValueCleared');
-        }
         if (this.popupWrapper) {
             this.popupWrapper.scrollTop = 0;
         }
@@ -1911,15 +1782,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
     }
     private clear(event: MouseEvent): void {
-        if (!this.isBlazorServer) {
-            this.setProperties({ value: null }, true);
-        }
+        this.setProperties({ value: null }, true);
         this.initValue = null;
         this.resetState();
         this.raiseClearedEvent(event);
-        if (!this.isBlazorServer) {
-            this.changeEvent(event);
-        }
+        this.changeEvent(event);
     }
     protected setZIndex(): void {
         if (this.popupObj) {
@@ -1963,34 +1830,28 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     break;
                 case 'min':
-                    if (!this.isBlazorServer) {
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ min: value }, !isDynamic);
-                            }
+                    if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || isDynamic) {
+                        value = new Date(this.inputElement.getAttribute(prop));
+                        if (!isNullOrUndefined(this.checkDateValue(value))) {
+                            this.setProperties({ min: value }, !isDynamic);
                         }
                     }
                     break;
                 case 'max':
-                    if (!this.isBlazorServer) {
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ max: value }, !isDynamic);
-                            }
+                    if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || isDynamic) {
+                        value = new Date(this.inputElement.getAttribute(prop));
+                        if (!isNullOrUndefined(this.checkDateValue(value))) {
+                            this.setProperties({ max: value }, !isDynamic);
                         }
                     }
                     break;
                 case 'value':
-                    if (!this.isBlazorServer) {
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.initValue = value;
-                                this.updateInput(false, this.initValue);
-                                this.setProperties({ value: value }, !isDynamic);
-                            }
+                    if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || isDynamic) {
+                        value = new Date(this.inputElement.getAttribute(prop));
+                        if (!isNullOrUndefined(this.checkDateValue(value))) {
+                            this.initValue = value;
+                            this.updateInput(false, this.initValue);
+                            this.setProperties({ value: value }, !isDynamic);
                         }
                     }
                     break;
@@ -2059,7 +1920,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.removeSelection();
         Input.setValue('', this.inputElement, this.floatLabelType, false);
         this.valueWithMinutes = this.activeIndex = null;
-        if (!this.strictMode && !this.isBlazorServer) {
+        if (!this.strictMode) {
             this.checkErrorState(null);
         }
     }
@@ -2124,60 +1985,45 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     protected findNextElement(event: KeyboardEventArgs): void {
         const textVal: string = (this.inputElement).value;
-        const value: Date = isNullOrUndefined(this.valueWithMinutes) || this.isBlazorServer ? this.createDateObj(textVal) :
+        const value: Date = isNullOrUndefined(this.valueWithMinutes) ? this.createDateObj(textVal) :
             this.getDateObject(this.valueWithMinutes);
         let timeVal: number = null;
         const count: number = this.liCollections.length;
-        const collections: string[] | number[] = this.isBlazorServer ? (isNullOrUndefined(this.blazorTimeCollections) ? [] :
-            this.blazorTimeCollections) : this.timeCollections;
+        const collections: string[] | number[] = this.timeCollections;
         if (!isNullOrUndefined(this.checkDateValue(value)) || !isNullOrUndefined(this.activeIndex)) {
             if (event.action === 'home') {
                 const index: number = this.validLiElement(0);
-                if (!this.isBlazorServer) {
-                    timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
-                }
+                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
                 this.activeIndex = index;
             } else if (event.action === 'end') {
                 const index: number = this.validLiElement(collections.length - 1, true);
-                if (!this.isBlazorServer) {
-                    timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
-                }
+                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
                 this.activeIndex = index;
             } else {
                 if (event.action === 'down') {
                     for (let i: number = 0; i < count; i++) {
-                        if (this.isBlazorServer ? (+value < +this.createDateObj(this.blazorTimeCollections[i])) :
-                            (+value < this.timeCollections[i])) {
+                        if (+value < this.timeCollections[i]) {
                             const index: number = this.validLiElement(i);
-                            if (!this.isBlazorServer) {
-                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
-                            }
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
                             this.activeIndex = index;
                             break;
                         } else if (i === count - 1) {
                             const index: number = this.validLiElement(0);
-                            if (!this.isBlazorServer) {
-                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
-                            }
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
                             this.activeIndex = index;
                             break;
                         }
                     }
                 } else {
                     for (let i: number = count - 1; i >= 0; i--) {
-                        if (this.isBlazorServer ? (+value > +this.createDateObj(this.blazorTimeCollections[i])) :
-                            (+value > this.timeCollections[i])) {
+                        if (+value > this.timeCollections[i]) {
                             const index: number = this.validLiElement(i, true);
-                            if (!this.isBlazorServer) {
-                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
-                            }
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
                             this.activeIndex = index;
                             break;
                         } else if (i === 0) {
                             const index: number = this.validLiElement(count - 1);
-                            if (!this.isBlazorServer) {
-                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
-                            }
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
                             this.activeIndex = index;
                             break;
                         }
@@ -2185,12 +2031,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 }
             }
             this.selectedElement = this.liCollections[this.activeIndex];
-            if (this.isBlazorServer) {
-                this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
-                (this as any).interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
-            } else {
-                this.elementValue(isNullOrUndefined(timeVal) ? null : new Date(timeVal));
-            }
+            this.elementValue(isNullOrUndefined(timeVal) ? null : new Date(timeVal));
         } else {
             this.selectNextItem(event);
         }
@@ -2199,55 +2040,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         const index: number = this.validLiElement(0, event.action === 'down' ? false : true);
         this.activeIndex = index;
         this.selectedElement = this.liCollections[index];
-        if (this.isBlazorServer) {
-            this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
-            (this as any).interopAdaptor.invokeMethodAsync('OnListItemClick', index, true);
-        } else {
-            this.elementValue(new Date(this.timeCollections[index]));
-        }
-    }
-    private findNextInBlazor(event: KeyboardEventArgs): void {
-        const count: number = isNullOrUndefined(this.blazorTimeCollections) ? 0 : this.blazorTimeCollections.length;
-        let index: number = 0;
-        const value: Date = this.createDateObj(this.inputElement.value);
-        switch (event.action) {
-        case 'home':
-            this.activeIndex = index;
-            break;
-        case 'end':
-            index = count - 1;
-            this.activeIndex = index;
-            break;
-        case 'down':
-            for (let i: number = 0; i < count; i++) {
-                if (this.isBlazorServer ? (+value < +this.createDateObj(this.blazorTimeCollections[i])) :
-                    (+value < this.timeCollections[i])) {
-                    const index: number = this.validLiElement(i);
-                    this.activeIndex = index;
-                    break;
-                } else if (i === count - 1) {
-                    const index: number = this.validLiElement(0);
-                    this.activeIndex = index;
-                    break;
-                }
-            }
-            break;
-        case 'up':
-            for (let i: number = count - 1; i >= 0; i--) {
-                if (this.isBlazorServer ? (+value > +this.createDateObj(this.blazorTimeCollections[i])) :
-                    (+value > this.timeCollections[i])) {
-                    const index: number = this.validLiElement(i, true);
-                    this.activeIndex = index;
-                    break;
-                } else if (i === 0) {
-                    const index: number = this.validLiElement(count - 1);
-                    this.activeIndex = index;
-                    break;
-                }
-            }
-            break;
-        }
-        (this as any).interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
+        this.elementValue(new Date(this.timeCollections[index]));
     }
     protected elementValue(value: Date): void {
         if (!isNullOrUndefined(this.checkDateValue(value))) {
@@ -2256,48 +2049,31 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private validLiElement(index: number, backward?: boolean): number {
         let elementIndex: number = null;
-        if (this.isBlazorServer && isNullOrUndefined(this.popupWrapper)) {
-            const items: string[] = this.blazorTimeCollections;
-            if (items.length) {
-                if (backward) {
-                    for (let i: number = index; i >= 0; i--) {
+        const items: HTMLElement[] = isNullOrUndefined(this.popupWrapper) ? this.liCollections :
+            <NodeListOf<HTMLLIElement> & HTMLElement[]>this.popupWrapper.querySelectorAll('.' + LISTCLASS);
+        let isCheck: boolean = true;
+        if (items.length) {
+            if (backward) {
+                for (let i: number = index; i >= 0; i--) {
+                    if (!items[i].classList.contains(DISABLED)) {
                         elementIndex = i;
                         break;
-                    }
-                } else {
-                    for (let i: number = index; i <= items.length - 1; i++) {
-                        elementIndex = i;
-                        break;
-                    }
-                }
-            }
-        } else {
-            const items: HTMLElement[] = isNullOrUndefined(this.popupWrapper) ? this.liCollections :
-                <NodeListOf<HTMLLIElement> & HTMLElement[]>this.popupWrapper.querySelectorAll('.' + LISTCLASS);
-            let isCheck: boolean = true;
-            if (items.length) {
-                if (backward) {
-                    for (let i: number = index; i >= 0; i--) {
-                        if (!items[i].classList.contains(DISABLED)) {
-                            elementIndex = i;
-                            break;
-                        } else if (i === 0) {
-                            if (isCheck) {
-                                index = i = items.length;
-                                isCheck = false;
-                            }
+                    } else if (i === 0) {
+                        if (isCheck) {
+                            index = i = items.length;
+                            isCheck = false;
                         }
                     }
-                } else {
-                    for (let i: number = index; i <= items.length - 1; i++) {
-                        if (!items[i].classList.contains(DISABLED)) {
-                            elementIndex = i;
-                            break;
-                        } else if (i === items.length - 1) {
-                            if (isCheck) {
-                                index = i = -1;
-                                isCheck = false;
-                            }
+                }
+            } else {
+                for (let i: number = index; i <= items.length - 1; i++) {
+                    if (!items[i].classList.contains(DISABLED)) {
+                        elementIndex = i;
+                        break;
+                    } else if (i === items.length - 1) {
+                        if (isCheck) {
+                            index = i = -1;
+                            isCheck = false;
                         }
                     }
                 }
@@ -2306,32 +2082,17 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return elementIndex;
     }
     protected keyHandler(event: KeyboardEventArgs): void {
-        if (isNullOrUndefined(this.step) || this.step <= 0 || this.inputWrapper.buttons[0].classList.contains(DISABLED)) {
-            return;
-        }
-        const count: number = this.isBlazorServer ? (isNullOrUndefined(this.blazorTimeCollections) ? 0 :
-            this.blazorTimeCollections.length) : this.timeCollections.length;
+        if (isNullOrUndefined(this.step) || this.step <= 0 || this.inputWrapper.buttons[0].classList.contains(DISABLED)) { return; }
+        const count: number = this.timeCollections.length;
         if (isNullOrUndefined(this.getActiveElement()) || this.getActiveElement().length === 0) {
-            if (isNullOrUndefined(this.popupObj) && this.isBlazorServer) {
-                if (isNullOrUndefined(this.activeIndex)) {
+            if (this.liCollections.length > 0) {
+                if (isNullOrUndefined(this.value) && isNullOrUndefined(this.activeIndex)) {
                     const index: number = this.validLiElement(0, event.action === 'down' ? false : true);
                     this.activeIndex = index;
-                    (this as any).interopAdaptor.invokeMethodAsync('OnListItemClick', index, true);
-                } else {
-                    this.findNextInBlazor(event);
-                }
-            } else {
-                if (this.liCollections.length > 0) {
-                    if (this.isBlazorServer ? (isNullOrUndefined(this.activeIndex)) : (isNullOrUndefined(this.value) &&
-                        isNullOrUndefined(this.activeIndex))) {
-                        this.selectNextItem(event);
-                    } else {
-                        this.findNextElement(event);
-                    }
-                } else {
-                    this.findNextElement(event);
-                }
-            }
+                    this.selectedElement = this.liCollections[index];
+                    this.elementValue(new Date(this.timeCollections[index]));
+                } else { this.findNextElement(event); }
+            } else { this.findNextElement(event); }
         } else {
             let nextItem: number;
             if ((event.keyCode >= 37) && (event.keyCode <= 40)) {
@@ -2340,47 +2101,30 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.activeIndex = index = this.activeIndex < 0 ? (count - 1) : this.activeIndex;
                 this.activeIndex = index = this.validLiElement(this.activeIndex, (event.keyCode === 40 || event.keyCode === 39) ?
                     false : true);
-                if (!this.isBlazorServer) {
-                    nextItem = isNullOrUndefined(this.timeCollections[index]) ? this.timeCollections[0] : this.timeCollections[index];
-                }
+                nextItem = isNullOrUndefined(this.timeCollections[index]) ? this.timeCollections[0] : this.timeCollections[index];
             } else if (event.action === 'home') {
                 const index: number = this.validLiElement(0);
                 this.activeIndex = index;
-                if (!this.isBlazorServer) {
-                    nextItem = this.timeCollections[index];
-                }
+                nextItem = this.timeCollections[index];
             } else if (event.action === 'end') {
                 const index: number = this.validLiElement(count - 1, true);
                 this.activeIndex = index;
-                if (!this.isBlazorServer) {
-                    nextItem = this.timeCollections[index];
-                }
+                nextItem = this.timeCollections[index];
             }
             this.selectedElement = this.liCollections[this.activeIndex];
-            if (this.isBlazorServer) {
-                this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
-                (this as any).interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
-            } else {
-                this.elementValue(new Date(nextItem));
-            }
+            this.elementValue(new Date(nextItem));
         }
         this.isNavigate = true;
         this.setHover(this.selectedElement, NAVIGATION);
         this.setActiveDescendant();
-        if (!this.isBlazorServer) {
-            this.selectInputText();
-        }
-        if (this.isPopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) {
-            this.setScrollPosition();
-        }
+        this.selectInputText();
+        if (this.isPopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) { this.setScrollPosition(); }
     }
     protected getCultureTimeObject(ld: Object, c: string): Object {
-        return isBlazor() ? (<string>(getValue('t', getValue(c, blazorCultureFormats)))).replace(/tt/, 'a') :
-            getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
+        return getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
     }
     protected getCultureDateObject(ld: Object, c: string): Object {
-        return isBlazor() ? <string>(getValue('d', getValue(c, blazorCultureFormats))) :
-            getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
+        return getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
     }
     protected wireListEvents(): void {
         EventHandler.add(this.listWrapper, 'click', this.onMouseClick, this);
@@ -2483,8 +2227,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             const items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.popupWrapper.querySelectorAll('.' + LISTCLASS);
             if (items.length) {
                 for (let i: number = 0; i < items.length; i++) {
-                    if ((!this.isBlazorServer && this.timeCollections[i] === +this.getDateObject(this.valueWithMinutes))
-                        || (this.isBlazorServer && this.blazorTimeCollections[i] === this.blazorTimeCollections[this.activeIndex])) {
+                    if ((this.timeCollections[i] === +this.getDateObject(this.valueWithMinutes))) {
                         items[i].setAttribute('aria-selected', 'true');
                         this.selectedElement = items[i];
                         this.activeIndex = i;
@@ -2507,9 +2250,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return (li && li.classList.contains(LISTCLASS) && !li.classList.contains(DISABLED));
     }
     protected createDateObj(val: Date | string): Date {
-        const formatStr: string = isBlazor() ?
-            'M' + (getDefaultDateObject() as any).dateSeperator + 'd' + (getDefaultDateObject() as any).dateSeperator + 'yy'
-            : null;
+        const formatStr: string = null;
         let today: string = this.globalize.formatDate(new Date(), { format: formatStr, skeleton: 'short', type: 'date' });
         let value: Date = null;
         if (typeof val === 'string') {
@@ -2649,16 +2390,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
          }
         removeClass([this.inputWrapper.container], [FOCUS]);
         const blurArguments: BlurEventArgs = {
-            model: this.isBlazorServer ? null : this
+            model: this
         };
         this.trigger('blur', blurArguments);
-        if (!this.isBlazorServer && this.getText() !== this.inputElement.value) {
+        if (this.getText() !== this.inputElement.value) {
             this.updateValue((this.inputElement).value, e);
         } else if (this.inputElement.value.trim().length === 0) {
             this.resetState();
-        }
-        if (this.isBlazorServer) {
-            (this as any).interopAdaptor.invokeMethodAsync('OnStrictMode', this.inputElement.value);
         }
         this.cursorDetails = null;
         this.isNavigate = false;
@@ -2678,7 +2416,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.inputElement.blur();
             removeClass([this.inputWrapper.container], [FOCUS]);
             const blurArguments: BlurEventArgs = {
-                model: this.isBlazorServer ? null : this
+                model: this
             };
             this.trigger('blur', blurArguments);
         }
@@ -2694,7 +2432,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             return;
         }
         const focusArguments: FocusEventArgs = {
-            model: this.isBlazorServer ? null : this
+            model: this
         };
         if (!this.readonly && !Browser.isDevice && !this.enableMask) {
             this.selectInputText();
@@ -2757,7 +2495,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 document.body.appendChild(this.mobileTimePopupWrap);
             }
             this.openPopupEventArgs = {
-                popup: this.isBlazorServer ? null : (this.popupObj || null),
+                popup: this.popupObj || null,
                 cancel: false,
                 event: event || null,
                 name: 'open',
@@ -2765,19 +2503,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             };
             const eventArgs: PopupEventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
-                if ((isBlazor() && this.isServerRendered)) {
-                    eventArgs.popup = this.popupObj || null;
-                }
                 this.openPopupEventArgs = eventArgs;
                 if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED)) {
-                    if (this.isBlazorServer) {
-                        this.popupWrapper.style.visibility = '';
-                        this.popupWrapper.style.width = this.inputWrapper.container.offsetWidth + 'px';
-                        this.popupWrapper.style.height = 'auto';
-                    }
-                    if (this.isBlazorServer) {
-                        this.openPopupEventArgs.popup = this.popupObj;
-                    }
                     this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
                     this.popupAlignment(this.openPopupEventArgs);
                     this.setScrollPosition();
@@ -2801,12 +2528,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.setOverlayIndex(this.mobileTimePopupWrap, this.popupObj.element, this.modal, Browser.isDevice as any);
                 } else {
                     this.popupObj.destroy();
-                    if (this.isBlazorServer) {
-                        this.disposeServerPopup();
-                        this.inputWrapper.container.parentElement.insertBefore(
-                            this.popupWrapper, this.inputWrapper.container.nextElementSibling);
-                        (this as any).interopAdaptor.invokeMethodAsync('OnPopupHide', false);
-                    }
                     this.popupWrapper = this.listTag = undefined;
                     this.liCollections = this.timeCollections = this.disableItemCollection = [];
                     this.popupObj = null;
@@ -2929,10 +2650,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.setTimeAllowEdit();
                 break;
             case 'enableRtl':
-                if (!this.isBlazorServer) {
-                    this.setProperties({ enableRtl: newProp.enableRtl }, true);
-                    this.setEnableRtl();
-                }
+                this.setProperties({ enableRtl: newProp.enableRtl }, true);
+                this.setEnableRtl();
                 break;
             case 'cssClass':
                 this.updateCssClass(newProp.cssClass, oldProp.cssClass);
@@ -2948,9 +2667,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 break;
             case 'min':
             case 'max':
-                if (!this.isBlazorServer) {
-                    this.getProperty(newProp, prop);
-                }
+                this.getProperty(newProp, prop);
                 break;
             case 'showClearButton':
                 Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
@@ -2961,14 +2678,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.globalize = new Internationalization(this.locale);
                 this.l10n.setLocale(this.locale);
                 this.updatePlaceHolder();
-                if (!this.isBlazorServer) {
-                    this.setValue(this.value);
-                    if (this.enableMask) {
-                        this.notify("createMask", {
-                          module: "MaskedDateTime",
-                        });
-                      }
-                }
+                this.setValue(this.value);
+                if (this.enableMask) {
+                    this.notify("createMask", {
+                        module: "MaskedDateTime",
+                    });
+                    }
                 break;
             case 'width':
                 setStyleAttribute(this.inputWrapper.container, { 'width': this.setWidth(newProp.width) });
@@ -2977,50 +2692,45 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             case 'format':
                 this.setProperties({ format: newProp.format }, true);
                 this.checkTimeFormat();
-                if (!this.isBlazorServer) {
-                    this.setValue(this.value);
-                    if(this.enableMask) {
-                        this.createMask();
-                        if(!this.value)
-                        {
-                            this.updateInputValue(this.maskedDateValue);
-                        }
+                this.setValue(this.value);
+                if(this.enableMask) {
+                    this.createMask();
+                    if(!this.value)
+                    {
+                        this.updateInputValue(this.maskedDateValue);
                     }
                 }
                 break;
             case 'value':
-                if (!this.isBlazorServer) {
-                    this.invalidValueString = null;
-                    this.checkInvalidValue(newProp.value);
-                    newProp.value = this.value;
-                    if (!this.invalidValueString) {
-                        if (typeof newProp.value === 'string') {
-                            this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
-                            newProp.value = this.value;
-                        } else {
-                            if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
-                                newProp.value = this.checkDateValue(new Date('' + newProp.value));
-                            }
-                        }
-                        this.initValue = newProp.value;
-                        newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
+                this.invalidValueString = null;
+                this.checkInvalidValue(newProp.value);
+                newProp.value = this.value;
+                if (!this.invalidValueString) {
+                    if (typeof newProp.value === 'string') {
+                        this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
+                        newProp.value = this.value;
                     } else {
-                        this.updateInputValue(this.invalidValueString);
-                        this.checkErrorState(this.invalidValueString);
+                        if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
+                            newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        }
                     }
-                    this.checkValueChange(null, false);
-                    if (this.isPopupOpen()) {
-                        this.setScrollPosition();
-                    }
-                    if (this.isAngular && this.preventChange) {
-                        this.preventChange = false;
-                    }
-                    if (this.enableMask) {
-                        this.notify("createMask", {
-                          module: "MaskedDateTime",
-                        });
-                      }
-    
+                    this.initValue = newProp.value;
+                    newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
+                } else {
+                    this.updateInputValue(this.invalidValueString);
+                    this.checkErrorState(this.invalidValueString);
+                }
+                this.checkValueChange(null, false);
+                if (this.isPopupOpen()) {
+                    this.setScrollPosition();
+                }
+                if (this.isAngular && this.preventChange) {
+                    this.preventChange = false;
+                }
+                if (this.enableMask) {
+                    this.notify("createMask", {
+                        module: "MaskedDateTime",
+                    });
                 }
                 break;
             case 'floatLabelType':
@@ -3029,30 +2739,22 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
                 break;
             case 'strictMode':
-                if (!this.isBlazorServer) {
-                    this.invalidValueString = null;
-                    if (newProp.strictMode) {
-                        this.checkErrorState(null);
-                    }
-                    this.setProperties({ strictMode: newProp.strictMode }, true);
-                    this.checkValue((this.inputElement).value);
-                    this.checkValueChange(null, false);
+                this.invalidValueString = null;
+                if (newProp.strictMode) {
+                    this.checkErrorState(null);
                 }
+                this.setProperties({ strictMode: newProp.strictMode }, true);
+                this.checkValue((this.inputElement).value);
+                this.checkValueChange(null, false);
                 break;
             case 'scrollTo':
-                if (!this.isBlazorServer) {
-                    if (this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo)))) {
-                        if (this.popupWrapper) {
-                            this.setScrollTo();
-                        }
-                        this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo))) }, true);
-                    } else {
-                        this.setProperties({ scrollTo: null }, true);
-                    }
-                } else {
+                if (this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo)))) {
                     if (this.popupWrapper) {
                         this.setScrollTo();
                     }
+                    this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo))) }, true);
+                } else {
+                    this.setProperties({ scrollTo: null }, true);
                 }
                 break;
                 case 'enableMask':

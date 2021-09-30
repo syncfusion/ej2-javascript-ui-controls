@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-base",
-	"version": "19.2.60",
+	"version": "18.39.0",
 	"description": "A common package of Essential JS 2 base libraries, methods and class definitions",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -51,7 +51,7 @@
 		"gulp-sass": "^3.1.0",
 		"gulp-typescript": "^3.1.6",
 		"requirejs": "^2.3.3",
-		"typescript": "3.3.1",
+		"typescript": "2.3.4",
 		"canteen": "^1.0.5",
 		"jasmine-ajax": "^3.3.1",
 		"jasmine-core": "^2.6.1",
@@ -68,5 +68,6 @@
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

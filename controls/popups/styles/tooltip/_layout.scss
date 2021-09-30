@@ -49,7 +49,7 @@
       right: -9px;
       top: -9px;
       z-index: inherit;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         border-radius: 9px;
         border-width: 1px;
         box-shadow: $shadow-sm;
@@ -75,14 +75,14 @@
       @if $skin-name == 'bootstrap4' {
         border-radius: inherit;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         font-weight: 500;
       }
     }
 
     &.e-rtl {
       .e-tooltip-close::before {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           font-size: 9px;
           margin-right: 2px;
         }
@@ -93,7 +93,7 @@
   /*! Bigger Style */
   .e-bigger .e-tooltip-wrap .e-tip-content,
   .e-tooltip-wrap.e-bigger .e-tip-content {
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+    @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
       line-height: 22px;
     }
     @else {
@@ -109,7 +109,7 @@
   .e-tooltip-wrap.e-bigger {
 
     .e-tooltip-close {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
         border-radius: 10px;
         border-width: 1px;
         height: 20px;
@@ -118,16 +118,21 @@
     }
 
     .e-tooltip-close::before {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         font-size: 11px;
         margin-left: 4px;
         vertical-align: middle;
+      }
+
+      @if($skin-name == 'bootstrap5') {
+        font-size: 11px;
+        left: calc(50% - 6px);
       }
     }
 
     &.e-rtl {
       .e-tooltip-close::before {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           font-size: 11px;
           margin-right: 3px;
         }

@@ -34,6 +34,7 @@ export class Size {
  *
  * @private
  */
+// tslint:disable-next-line:max-func-body-length
 export function getThemeColor(theme: SparklineTheme): IThemes {
     let themeColors: IThemes;
     switch (theme.toLowerCase()) {
@@ -66,13 +67,13 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             labelFontFamily: 'HelveticaNeue'
         };
         break;
-	case 'tailwind':
+    case 'tailwind':
         themeColors = {
-			axisLineColor: '#4B5563',
+            axisLineColor: '#4B5563',
             dataLabelColor: '#212529',
             rangeBandColor: '#212529',
             background: '#FFFFFF',
-			tooltipFill: '#111827',
+            tooltipFill: '#111827',
             tooltipFontColor: '#F9FAFB',
             trackerLineColor: '#1F2937',
             fontFamily: 'Inter',
@@ -81,13 +82,13 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             labelFontFamily: 'Inter'
         };
         break;
-	case 'tailwinddark':
+    case 'tailwinddark':
         themeColors = {
             axisLineColor: '#D1D5DB',
             dataLabelColor: '#F9FAFB',
             rangeBandColor: '#F9FAFB',
             background: 'transparent',
-			tooltipFill: '#F9FAFB',
+            tooltipFill: '#F9FAFB',
             tooltipFontColor: '#1F2937',
             trackerLineColor: '#9CA3AF',
             fontFamily: 'Inter',
@@ -95,7 +96,37 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Inter'
         };
-        break;	
+        break;
+    case 'bootstrap5':
+        themeColors = {
+            axisLineColor: '#D1D5DB',
+            dataLabelColor: '#343A40',
+            rangeBandColor: '#212529',
+            background: 'rgba(255, 255, 255, 0.0)',
+            tooltipFill: '#212529',
+            tooltipFontColor: '#F9FAFB',
+            trackerLineColor: '#1F2937',
+            fontFamily: 'Helvetica Neue',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Helvetica Neue'
+        };
+        break;
+    case 'bootstrap5dark':
+        themeColors = {
+            axisLineColor: '#D1D5DB',
+            dataLabelColor: '#E9ECEF',
+            rangeBandColor: '#ADB5BD',
+            background: 'rgba(255, 255, 255, 0.0)',
+            tooltipFill: '#E9ECEF',
+            tooltipFontColor: '#212529',
+            trackerLineColor: '#ADB5BD',
+            fontFamily: 'Helvetica Neue',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Helvetica Neue'
+        };
+        break;
     default: {
         themeColors = {
             axisLineColor: '#000000',

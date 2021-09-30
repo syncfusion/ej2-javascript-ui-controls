@@ -8,8 +8,8 @@
  */
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax } from '@syncfusion/ej2-base';
 import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement, setValue, extend } from '@syncfusion/ej2-base';
-import { Event, remove, L10n, Collection, Internationalization, Complex, isBlazor } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
+import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition } from './utils/helper';
 import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';
@@ -283,7 +283,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when the map is on load.
      *
      * @event load
-     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
@@ -291,7 +290,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the print gets started.
      *
      * @event beforePrint
-     * @blazorProperty 'OnPrint'
      */
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
@@ -299,7 +297,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers after the maps gets rendered.
      *
      * @event loaded
-     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -307,7 +304,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when clicking an element in maps.
      *
      * @event click
-     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<IMouseEventArgs>;
@@ -315,7 +311,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when performing the double click operation on an element in maps.
      *
      * @event doubleClick
-     * @blazorProperty 'OnDoubleClick'
      */
     @Event()
     public doubleClick: EmitType<IMouseEventArgs>;
@@ -323,7 +318,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when performing the right click operation on an element in maps.
      *
      * @event rightClick
-     * @blazorProperty 'OnRightClick'
      */
     @Event()
     public rightClick: EmitType<IMouseEventArgs>;
@@ -331,7 +325,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when resizing the maps.
      *
      * @event resize
-     * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
@@ -339,7 +332,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the maps tooltip gets rendered.
      *
      * @event tooltipRender
-     * @blazorProperty 'TooltipRendering'
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
@@ -348,7 +340,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @event legendRendering
      * @deprecated
-     * @blazorProperty 'LegendRendering'
      */
     @Event()
     public legendRendering: EmitType<ILegendRenderingEventArgs>;
@@ -357,7 +348,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @deprecated
      * @event tooltipRenderComplete
-     * @blazorProperty 'TooltipRenderComplete'
      */
     @Event()
     public tooltipRenderComplete: EmitType<ITooltipRenderCompleteEventArgs>;
@@ -365,7 +355,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when clicking a shape in maps.
      *
      * @event shapeSelected
-     * @blazorProperty 'ShapeSelected'
      */
     @Event()
     public shapeSelected: EmitType<IShapeSelectedEventArgs>;
@@ -373,7 +362,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when clicking the shape on maps and before the selection is applied.
      *
      * @event itemSelection
-     * @blazorProperty 'OnItemSelect'
      */
     @Event()
     public itemSelection: EmitType<ISelectionEventArgs>;
@@ -381,7 +369,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Trigger when mouse move on the shape in maps and before the shape gets highlighted.
      *
      * @event itemHighlight
-     * @blazorProperty 'OnItemHighlight'
      */
     @Event()
     public itemHighlight: EmitType<ISelectionEventArgs>;
@@ -389,7 +376,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when mouse move on the shape in maps and before the shape gets highlighted.
      *
      * @event shapeHighlight
-     * @blazorProperty 'ShapeHighlighted'
      */
     @Event()
     public shapeHighlight: EmitType<IShapeSelectedEventArgs>;
@@ -397,7 +383,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the maps layer gets rendered.
      *
      * @event layerRendering
-     * @blazorProperty 'LayerRendering'
      */
     @Event()
     public layerRendering: EmitType<ILayerRenderingEventArgs>;
@@ -406,7 +391,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the maps shape gets rendered.
      *
      * @event shapeRendering
-     * @blazorProperty 'ShapeRendering'
      */
     @Event()
     public shapeRendering: EmitType<IShapeRenderingEventArgs>;
@@ -415,7 +399,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the maps marker gets rendered.
      *
      * @event markerRendering
-     * @blazorProperty 'MarkerRendering'
      */
     @Event()
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
@@ -431,7 +414,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when clicking on the maps marker element.
      *
      * @event markerClick
-     * @blazorProperty 'OnMarkerClick'
      */
     @Event()
     public markerClick: EmitType<IMarkerClickEventArgs>;
@@ -456,7 +438,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when moving the mouse over the marker element in maps.
      *
      * @event markerMouseMove
-     * @blazorProperty 'OnMarkerMouseMove'
      */
     @Event()
     public markerMouseMove: EmitType<IMarkerMoveEventArgs>;
@@ -465,7 +446,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the data-label gets rendered.
      *
      * @event dataLabelRendering
-     * @blazorProperty 'DataLabelRendering'
      */
     @Event()
     public dataLabelRendering: EmitType<ILabelRenderingEventArgs>;
@@ -474,7 +454,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the bubble element gets rendered on the map.
      *
      * @event bubbleRendering
-     * @blazorProperty 'BubbleRendering'
      */
     @Event()
     public bubbleRendering: EmitType<IBubbleRenderingEventArgs>;
@@ -483,7 +462,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when performing the click operation on the bubble element in maps.
      *
      * @event bubbleClick
-     * @blazorProperty 'OnBubbleClick'
      */
     @Event()
     public bubbleClick: EmitType<IBubbleClickEventArgs>;
@@ -492,7 +470,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when hovering the mouse on the bubble element in maps.
      *
      * @event bubbleMouseMove
-     * @blazorProperty 'OnBubbleMouseMove'
      */
     @Event()
     public bubbleMouseMove: EmitType<IBubbleMoveEventArgs>;
@@ -501,7 +478,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers after the animation completed in the maps component.
      *
      * @event animationComplete
-     * @blazorProperty 'AnimationCompleted'
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -510,7 +486,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before rendering the annotation in maps.
      *
      * @event annotationRendering
-     * @blazorProperty 'AnnotationRendering'
      */
     @Event()
     public annotationRendering: EmitType<IAnnotationRenderingEventArgs>;
@@ -519,7 +494,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before the zoom operations in the maps such as zoom in and zoom out.
      *
      * @event zoom
-     * @blazorProperty 'OnZoom'
      */
     @Event()
     public zoom: EmitType<IMapZoomEventArgs>;
@@ -528,7 +502,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before performing the panning operation.
      *
      * @event pan
-     * @blazorProperty 'OnPan'
      */
     @Event()
     public pan: EmitType<IMapPanEventArgs>;
@@ -740,8 +713,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoomLabelPositions: object[] = [];
     public mouseDownEvent: Object = { x: null, y: null };
     public mouseClickEvent: Object = { x: null, y: null };
-    /** @private */
-    public isBlazor: boolean;
+
     /** @private */
     public shapeSelectionClass: Element;
     /** @private */
@@ -858,23 +830,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     protected preRender(): void {
-
         this.isDevice = Browser.isDevice;
-        this.isBlazor = isBlazor();
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.unWireEVents();
         this.wireEVents();
         this.setCulture();
     }
-
-    /**
-     * To Initialize the control rendering.
-     *
-     * @returns {void}
-     */
-    protected render(): void {
-        this.trigger(load, this.isBlazor ? {} : { maps: this });
+    private renderElements(): void {
+        this.trigger(load, { maps: this });
         this.createSVG();
         this.findBaseAndSubLayers();
         this.createSecondaryElement();
@@ -886,6 +850,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.processRequestJsonData();
         this.renderComplete();
     }
+    /**
+     * To Initialize the control rendering.
+     *
+     * @returns {void}
+     */
+    protected render(): void {
+        this.renderElements();
+    }
 
     protected processRequestJsonData(): void {
         const length: number = this.layersCollection.length - 1;
@@ -895,7 +867,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (layer.shapeData instanceof DataManager) {
                 this.serverProcess['request']++;
                 dataModule = layer.shapeData;
-                queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
+                queryModule = layer.query instanceof Query ? layer.query : new Query();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -910,7 +882,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (layer.dataSource instanceof DataManager) {
                 this.serverProcess['request']++;
                 dataModule = layer.dataSource as DataManager;
-                queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
+                queryModule = layer.query instanceof Query ? layer.query : new Query();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -924,8 +896,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     if (layer.markerSettings[i].dataSource instanceof DataManager) {
                         this.serverProcess['request']++;
                         dataModule = layer.markerSettings[i].dataSource as DataManager;
-                        queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : this.isBlazor ?
-                            (new Query().requiresCount()) : new Query();
+                        queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : new Query();
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -941,8 +912,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     if (layer.bubbleSettings[i].dataSource instanceof DataManager) {
                         this.serverProcess['request']++;
                         dataModule = layer.bubbleSettings[i].dataSource as DataManager;
-                        queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : this.isBlazor ?
-                            (new Query().requiresCount()) : new Query();
+                        queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : new Query();
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1100,8 +1070,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.arrangeTemplate();
 
-        const blazor: void = this.isBlazor ? this.blazorTemplates() : null;
-
         if (this.annotationsModule) {
             if (this.width !== '0px' && this.height !== '0px' && this.width !== '0%' && this.height !== '0%') {
                 this.annotationsModule.renderAnnotationElements();
@@ -1114,7 +1082,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.zoomingChange();
-        this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { maps: this, isResized: this.isResize });
+        this.trigger(loaded, { maps: this, isResized: this.isResize });
         this.isResize = false;
     }
 
@@ -1182,39 +1150,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     const targetId : string = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
                     '_dataIndex_' + i;
                     this.markerSelection(selectionSettings, this, getElement(targetId), data);
-                }
-            }
-        }
-    }
-
-    /**
-     * To append blazor templates
-     *
-     * @returns {void}
-     * @private
-     */
-    public blazorTemplates(): void {
-        for (let i: number = 0; i < this.layers.length; i++) {
-            const markerLength: number = this.layers[i].markerSettings.length - 1;
-            if (markerLength >= 0) {
-                if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
-                    updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
-                    for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
-                        const markerRendered: any = () => {
-                            for (let x: number = 0; x < this.layers.length; x++) {
-                                const markerTemplateEle: HTMLElement =
-                                    document.getElementById(this.element.id + '_LayerIndex_' + x + '_Markers_Template_Group');
-                                if (!isNullOrUndefined(markerTemplateEle)) {
-                                    for (let z : number = 0; z < markerTemplateEle.childElementCount; z++) {
-                                        const markerTemplate: Element = <Element>markerTemplateEle.childNodes[z];
-                                        markerTemplate['style']['transform'] = 'translate(-50%, -50%)';
-                                    }
-                                }
-                            }
-                        };
-                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate',
-                                             this.layers[i].markerSettings[j], undefined, markerRendered);
-                    }
                 }
             }
         }
@@ -1510,12 +1445,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     private createSVG(): void {
-        resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
-        for (let i: number = 0; i < this.layers.length; i++) {
-            for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
-                resetBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate');
-            }
-        }
         this.removeSvg();
         createSvg(this);
     }
@@ -1525,9 +1454,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     private removeSvg(): void {
-        for (let i: number = 0; i < this.annotations.length; i++) {
-            resetBlazorTemplate(this.element.id + '_ContentTemplate_' + i, 'ContentTemplate');
-        }
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
         removeElement(this.element.id + '_tiles');
@@ -1614,7 +1540,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method is used to perform the operations when a click operation is performed on maps.
      *
      * @param {PointerEvent} e - Specifies the pointer event on maps.
-     * @blazorProperty 'PerformClick'
      */
     public mapsOnClick(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
@@ -1761,7 +1686,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.notify(Browser.touchEndEvent, e);
-        e.preventDefault();
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         return false;
     }
     /**
@@ -1815,7 +1742,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method is used to perform operations when performing the double click operation on maps.
      *
      * @param {PointerEvent} e - Specifies the pointer event.
-     * @blazorProperty 'PerformDoubleClick'
      */
     public mapsOnDoubleClick(e: PointerEvent): void {
         this.notify('dblclick', e);
@@ -1837,9 +1763,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
             const doubleClickArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
                 target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
-            const doubleClickBlazorArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
-                target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
-            this.trigger('doubleClick', this.isBlazor ? doubleClickBlazorArgs : doubleClickArgs);
+            this.trigger('doubleClick', doubleClickArgs);
         }
     }
 
@@ -1952,7 +1876,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             name: resize,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            maps: !this.isBlazor ? this : null
+            maps: this
         };
 
         if (this.resizeTo) {
@@ -2233,7 +2157,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
                                                        this.mapAreaRect.width, this.mapAreaRect.height, this);
         const zoomArgs: IMapZoomEventArgs = {
-            cancel: false, name: 'zoom', type: zoomIn, maps: !this.isBlazor ? this : null,
+            cancel: false, name: 'zoom', type: zoomIn, maps: this,
             tileTranslatePoint: {}, translatePoint: {},
             tileZoomLevel: this.isTileMap ? { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation } : {},
             scale: !this.isTileMap ? { previous: this.scale, current: this.scaleOfGivenLocation } :
@@ -2387,16 +2311,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 render = true;
                 break;
             case 'zoomSettings':
-                if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor) {
-                    render = false;
-                } else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {
-                    this.zoomSettings.zoomFactor = 1;
-                    render = true;
-                } else if (newProp.zoomSettings.enable !== oldProp.zoomSettings.enable) {
-                    this.zoomSettings.zoomFactor = 1;
-                    render = true;
-                } else {
-                    render = true;
+                if(!isNullOrUndefined(oldProp.zoomSettings)) {
+                    if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor) {
+                        render = false;
+                    }
+                    else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {
+                        this.zoomSettings.zoomFactor = 1;
+                        render = true;
+                    } else if (newProp.zoomSettings.enable !== oldProp.zoomSettings.enable) {
+                        this.zoomSettings.zoomFactor = 1;
+                        render = true;
+                    }
+                    else {
+                        render = true;
+                    }
                 }
                 break;
             case 'locale':
@@ -2408,19 +2336,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
-                    if (this.isBlazor) {
-                        this.render();
-                    } else {
-                        this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
-                    }
-                } else {
+                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                }
+				else {
                     this.render();
                 }
             } else if (newProp.layers && isStaticMapType) {
                 this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);
             } else {
                 this.createSVG();
-                this.render();
+                this.renderElements();
             }
         }
     }

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Query, DataManager } from '@syncfusion/ej2-data';
+import { SortComparerFunction } from '../base/interface';
 import { Field } from './fields';
 import { FieldModel } from './fields-model';
 
@@ -133,4 +134,13 @@ export class EventSettings extends ChildProperty<EventSettings> {
     @Property(false)
     public ignoreWhitespace: boolean;
 
+    /**
+     * Defines the custom sort comparer function.
+     * The sort comparer function has the same functionality like
+     * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
+     *
+     * @default null
+     */
+    @Property()
+    public sortComparer: SortComparerFunction;
 }

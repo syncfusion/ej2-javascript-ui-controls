@@ -68,8 +68,6 @@ export interface PredicateModel {
      * </table>
      *
      * @default null
-     * @blazorType Syncfusion.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.Blazor.Operator.None
      */
     operator?: string;
 
@@ -169,7 +167,6 @@ export interface FilterSettingsModel {
      * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.FilterBarMode
-     * @blazorType Syncfusion.Blazor.Grids.FilterBarMode
      */
     mode?: FilterBarMode;
 

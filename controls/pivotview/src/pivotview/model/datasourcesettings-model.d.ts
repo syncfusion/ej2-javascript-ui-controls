@@ -747,6 +747,14 @@ export interface DataSourceSettingsModel {
     valueAxis?: string;
 
     /**
+     * Allows you to display the value headers based on the index position in row or column axis in the pivot table.
+     * By default, the value headers are displayed at last index position based on the `valueAxis` property.
+     * > It is applicale only for relational data source.
+     * @default '-1'
+     */
+    valueIndex?: number;
+
+    /**
      * Allows specific fields associated with either selective or conditional-based filter members that used to be displayed in the pivot table.
      * @default []
      */

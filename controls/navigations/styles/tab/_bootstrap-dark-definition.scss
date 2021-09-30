@@ -371,9 +371,9 @@ $tab-alt-focused-active-wrap-focus-or-hover-color: lighten($brand-primary-font, 
 $tab-alt-focused-active-wrap-focus-and-hover-color: $brand-primary-darken-25 !default;
 $tab-even-active-item-bottom-border-color: $grey-dd !default;
 $tab-fill-focused-active-wrap-focus-color: $brand-primary-darken-25 !default;
-$tab-alt-active-wrap-hover-close-color: $grey-light !default;
+$tab-alt-active-wrap-hover-close-color: $brand-primary-font !default;
 $tab-alt-pop-wrap-hover-color: $brand-primary !default;
-$tab-alt-wrap-hover-color: $brand-primary-darken-25 !default;
+$tab-alt-wrap-hover-color: $brand-primary-font !default;
 $tab-nav-active-box-shadow: none !default;
 $tab-nav-focus-border-color: $grey-e6 !default;
 $tab-alt-nav-hover-bg-color: $grey-e6 !default;

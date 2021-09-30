@@ -139,17 +139,17 @@ describe('Year and TimelineYear View Event Render Module', () => {
                 expect(appointments.length).toEqual(35);
                 const allDayApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]');
                 expect(allDayApp.offsetWidth).toEqual(100);
-                expect(allDayApp.offsetTop).toEqual(459);
+                expect(allDayApp.offsetTop).toEqual(474);
                 const allDayAppWithNonEqualDates: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]');
                 expect(allDayAppWithNonEqualDates.offsetWidth).toEqual(500);
-                expect(allDayAppWithNonEqualDates.offsetTop).toEqual(237);
+                expect(allDayAppWithNonEqualDates.offsetTop).toEqual(252);
                 const spannedApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_6"]');
                 expect(spannedApp.offsetWidth).toEqual(700);
-                expect(spannedApp.offsetTop).toEqual(415);
+                expect(spannedApp.offsetTop).toEqual(430);
                 done();
-            }
+            };
             schObj.rowAutoHeight = true;
-            schObj.dataBind();            
+            schObj.dataBind();
         });
     });
 
@@ -201,7 +201,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             expect(otherMonthCells.length).toEqual(67);
             const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(workCell.offsetWidth).toEqual(100);
-            expect(workCell.offsetHeight).toEqual(70);
+            expect(workCell.offsetHeight).toEqual(75);
         });
 
         it('decade calendar testing', () => {
@@ -286,7 +286,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             expect(otherMonthCells.length).toEqual(67);
             const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(workCell.offsetWidth).toEqual(100);
-            expect(workCell.offsetHeight).toEqual(70);
+            expect(workCell.offsetHeight).toEqual(75);
         });
 
         it('ScrollTo check', (done: DoneFn) => {
@@ -296,7 +296,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             setTimeout(
                 () => {
                     expect(contentArea.scrollLeft).toEqual(100);
-                    expect(contentArea.scrollTop).toEqual(490);
+                    expect(contentArea.scrollTop).toEqual(525);
                     done();
                 },
                 400);
@@ -385,7 +385,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
         beforeAll((done: DoneFn) => {
             const yearData: Record<string, any>[] = [{
                 Id: 1,
-                Subject: "Short Event",
+                Subject: 'Short Event',
                 StartTime: new Date(2019, 1, 1, 10, 0, 0),
                 EndTime: new Date(2019, 1, 5, 10, 0, 0),
                 IsAllDay: true
@@ -412,7 +412,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             };
             schObj.addEvent([{
                 Id: 2,
-                Subject: "Long Event",
+                Subject: 'Long Event',
                 StartTime: new Date(2019, 1, 2, 10, 0, 0),
                 EndTime: new Date(2019, 1, 10, 10, 0, 0),
                 IsAllDay: true

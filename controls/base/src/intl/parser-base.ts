@@ -1,5 +1,5 @@
 /**
- * Parser 
+ * Parser
  */
 
 const defaultNumberingSystem: Object = {
@@ -10,7 +10,6 @@ const defaultNumberingSystem: Object = {
 };
 
 import { isUndefined, getValue, isBlazor } from '../util';
-const latnRegex: RegExp = /^[0-9]*$/;
 const defaultNumberSymbols: Object = {
     'decimal': '.',
     'group': ',',
@@ -51,6 +50,7 @@ export interface NumberMapper {
 }
 /**
  * Interface for parser base
+ *
  * @private
  */
 export class ParserBase {
@@ -59,34 +59,38 @@ export class ParserBase {
     public static numberingSystems: Object = defaultNumberingSystem;
     /**
      * Returns the cldr object for the culture specifies
+     *
      * @param {Object} obj - Specifies the object from which culture object to be acquired.
      * @param {string} cName - Specifies the culture name.
-     * @returns {Object}
+     * @returns {Object} ?
      */
     public static getMainObject(obj: Object, cName: string): Object {
-        let value: string = isBlazor() ? cName : 'main.' + cName;
+        const value: string = isBlazor() ? cName : 'main.' + cName;
         return getValue(value, obj);
     }
     /**
      * Returns the numbering system object from given cldr data.
+     *
      * @param {Object} obj - Specifies the object from which number system is acquired.
-     * @returns {Object}
+     * @returns {Object} ?
      */
     public static getNumberingSystem(obj: Object): Object {
         return getValue('supplemental.numberingSystems', obj) || this.numberingSystems;
     }
     /**
      * Returns the reverse of given object keys or keys specified.
+     *
      * @param {Object} prop - Specifies the object to be reversed.
      * @param {number[]} keys - Optional parameter specifies the custom keyList for reversal.
-     * @returns {Object}
+     * @returns {Object} ?
      */
     public static reverseObject(prop: Object, keys?: number[]): Object {
-        let propKeys: string[] | number[] = keys || Object.keys(prop);
-        let res: Object = {};
-        for (let key of propKeys) {
-            /* tslint:disable no-any */
+        const propKeys: string[] | number[] = keys || Object.keys(prop);
+        const res: Object = {};
+        for (const key of propKeys) {
+            // eslint-disable-next-line
             if (!res.hasOwnProperty((<any>prop)[key])) {
+                // eslint-disable-next-line
                 (<any>res)[(<any>prop)[key]] = key;
             }
         }
@@ -94,30 +98,38 @@ export class ParserBase {
     }
     /**
      * Returns the symbol regex by skipping the escape sequence.
+     *
      * @param {string[]} props - Specifies the array values to be skipped.
-     * @returns {RegExp}
+     * @returns {RegExp} ?
      */
     public static getSymbolRegex(props: string[]): RegExp {
-        let regexStr: string = props.map((str: string): string => {
-            return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+        const regexStr: string = props.map((str: string): string => {
+            return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1');
         }).join('|');
         return new RegExp(regexStr, 'g');
     }
+    /**
+     *
+     * @param {Object} prop ?
+     * @returns {Object} ?
+     */
     private static getSymbolMatch(prop: Object): Object {
-        let matchKeys: string[] = Object.keys(defaultNumberSymbols);
-        let ret: Object = {};
-        for (let key of matchKeys) {
+        const matchKeys: string[] = Object.keys(defaultNumberSymbols);
+        const ret: Object = {};
+        for (const key of matchKeys) {
+            // eslint-disable-next-line
             (<any>ret)[(<any>prop)[key]] = (<any>defaultNumberSymbols)[key];
         }
         return ret;
     }
     /**
      * Returns regex string for provided value
-     * @param {string} val 
-     * @returns {string}
+     *
+     * @param {string} val ?
+     * @returns {string} ?
      */
     private static constructRegex(val: string): string {
-        let len: number = val.length;
+        const len: number = val.length;
         let ret: string = '';
         for (let i: number = 0; i < len; i++) {
             if (i !== len - 1) {
@@ -130,35 +142,44 @@ export class ParserBase {
     }
     /**
      * Returns the replaced value of matching regex and obj mapper.
+     *
      * @param {string} value - Specifies the  values to be replaced.
      * @param {RegExp} regex - Specifies the  regex to search.
      * @param {Object} obj - Specifies the  object matcher to be replace value parts.
-     * @returns {string}
+     * @returns {string} ?
      */
     public static convertValueParts(value: string, regex: RegExp, obj: Object): string {
         return value.replace(regex, (str: string): string => {
+            // eslint-disable-next-line
             return (<any>obj)[str];
         });
     }
     /**
      * Returns default numbering system object for formatting from cldr data
-     * @param {Object} obj 
-     * @returns {NumericObject}
+     *
+     * @param {Object} obj ?
+     * @returns {NumericObject} ?
      */
     public static getDefaultNumberingSystem(obj: Object): NumericObject {
-        let ret: NumericObject = {};
+        const ret: NumericObject = {};
         ret.obj = getValue('numbers', obj);
         ret.nSystem = getValue('defaultNumberingSystem', ret.obj);
         return ret;
     }
     /**
      * Returns the replaced value of matching regex and obj mapper.
+     *
+     * @param {Object} curObj ?
+     * @param {Object} numberSystem ?
+     * @param {boolean} needSymbols ?
+     * @param {boolean} blazorMode ?
+     * @returns {Object} ?
      */
     public static getCurrentNumericOptions(curObj: Object, numberSystem: Object, needSymbols?: boolean, blazorMode?: boolean): Object {
-        let ret: NumericOptions = {};
-        let cur: NumericObject = this.getDefaultNumberingSystem(curObj);
+        const ret: NumericOptions = {};
+        const cur: NumericObject = this.getDefaultNumberingSystem(curObj);
         if (!isUndefined(cur.nSystem) || blazorMode) {
-            let digits: string = blazorMode ? getValue('obj.mapperDigits', cur) : getValue(cur.nSystem + '._digits', numberSystem);
+            const digits: string = blazorMode ? getValue('obj.mapperDigits', cur) : getValue(cur.nSystem + '._digits', numberSystem);
             if (!isUndefined(digits)) {
                 ret.numericPair = this.reverseObject(digits, latnNumberSystem);
                 ret.numberParseRegex = new RegExp(this.constructRegex(digits), 'g');
@@ -175,21 +196,24 @@ export class ParserBase {
     }
     /**
      * Returns number mapper object for the provided cldr data
-     * @param {Object} curObj
-     * @param {Object} numberSystem
-     * @param {boolean} isNumber
-     * @returns {NumberMapper}
+     *
+     * @param {Object} curObj ?
+     * @param {Object} numberSystem ?
+     * @param {boolean} isNumber ?
+     * @returns {NumberMapper} ?
      */
+    // eslint-disable-next-line
     public static getNumberMapper(curObj: Object, numberSystem: Object, isNumber?: boolean): NumberMapper {
-        let ret: NumberMapper = { mapper: {} };
-        let cur: NumericObject = this.getDefaultNumberingSystem(curObj);
+        const ret: NumberMapper = { mapper: {} };
+        const cur: NumericObject = this.getDefaultNumberingSystem(curObj);
         if (!isUndefined(cur.nSystem)) {
             ret.numberSystem = cur.nSystem;
             ret.numberSymbols = getValue('symbols-numberSystem-' + cur.nSystem, cur.obj);
             ret.timeSeparator = getValue('timeSeparator', ret.numberSymbols);
-            let digits: string = getValue(cur.nSystem + '._digits', numberSystem);
+            const digits: string = getValue(cur.nSystem + '._digits', numberSystem);
             if (!isUndefined(digits)) {
-                for (let i of latnNumberSystem) {
+                for (const i of latnNumberSystem) {
+                    // eslint-disable-next-line
                     (<any>ret).mapper[i] = digits[i];
                 }
             }
@@ -357,6 +381,11 @@ const blazorCurrencyData: Object = {
     'TWD': 'NT$'
 };
 
+/**
+ *
+ * @param {string} currencyCode ?
+ * @returns {string} ?
+ */
 export function getBlazorCurrencySymbol(currencyCode: string): string {
     return getValue(currencyCode || '', blazorCurrencyData);
 }

@@ -2149,7 +2149,11 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
         if (this.isEdit) {
-            this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
+            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
+                this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
+            } else {
+                this.parent.setRecordValue('notes', rte.getText(), this.rowData.ganttProperties, true);
+            }
             ganttObj.dataOperation.updateMappingData(this.rowData, 'notes');
         } else {
             this.addedRecord[this.parent.taskFields.notes] = rte.getHtml();

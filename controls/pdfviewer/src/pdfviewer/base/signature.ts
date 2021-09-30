@@ -140,7 +140,7 @@ export class Signature {
             } else {
                 this.signatureDialog = new Dialog({
                     // eslint-disable-next-line max-len
-                    showCloseIcon: true, closeOnEscape: false, isModal: true, header: signaturePanelHeader,
+                    showCloseIcon: true, closeOnEscape: false, isModal: true, header: signaturePanelHeader, cssClass: 'e-pv-signature-dialog-height',
                     target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true, allowDragging: true,
                     beforeClose: (): void => {
                         this.clearSignatureCanvas();
@@ -178,10 +178,10 @@ export class Signature {
                 this.signatureDialog.enableRtl = this.pdfViewer.enableRtl;
             }
             let checkboxItem: any = (this.signatureDialog.content as any).ej2_instances[0].items[0];
-            if(checkboxItem.header.text === 'DRAW') {
+            if(checkboxItem.header.label === 'DRAW') {
                 let drawCheckbox: HTMLElement = document.getElementById("checkbox");
                 this.hideSignatureCheckbox(drawCheckbox);
-            } else if(checkboxItem.header.text === 'TYPE') {
+            } else if(checkboxItem.header.label === 'TYPE') {
                 let typeCheckbox: HTMLElement = document.getElementById("checkbox1");
                 this.hideSignatureCheckbox(typeCheckbox);
             } else {
@@ -564,18 +564,17 @@ export class Signature {
             field.remove();
         }
         // eslint-disable-next-line max-len
-        const appearanceDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_appearance', className: 'e-pv-signature-apperance' });
+        const appearanceDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_appearance', className: 'e-pv-signature-apperance', styles:'margin-top:30px' });
         // eslint-disable-next-line max-len
         const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_signatureCanvas_', className: 'e-pv-signature-canvas' }) as HTMLCanvasElement;
         if (this.pdfViewer.element.offsetWidth > 750) {
-            canvas.width = 715;
-            canvas.style.width = '715px';
+            canvas.width = 714; 
         } else {
             canvas.width = this.pdfViewer.element.offsetWidth - 35;
-            canvas.style.width = canvas.width + 'px';
         }
-        canvas.height = 335;
-        canvas.style.height = '335px';
+        canvas.classList.add('e-pv-canvas-signature');
+        canvas.height = 305;
+        canvas.style.height = '305px';
         canvas.style.border = '1px dotted #bdbdbd';
         canvas.style.backgroundColor = 'white';
         canvas.style.boxSizing = 'border-box';
@@ -612,7 +611,7 @@ export class Signature {
         }
         //if (!this.pdfViewerBase.isToolbarSignClicked) {
         // eslint-disable-next-line
-        let typeDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'type_appearance', className: 'e-pv-signature-apperance' });
+        let typeDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'type_appearance', className: 'e-pv-signature-apperance', styles:'margin-top:6px' });
         // eslint-disable-next-line
         let inputText: any = document.createElement('input');
         inputText.type = 'text';
@@ -625,14 +624,15 @@ export class Signature {
         });
         inputobj.appendTo(inputText);
         // eslint-disable-next-line
-        let fontDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_font_appearance' });
-        fontDiv.style.width = '715px';
+        let fontDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_font_appearance', className: 'e-pv-font-appearance-style' });
+        fontDiv.classList.add('e-pv-canvas-signature');
         fontDiv.style.height = '270px';
         fontDiv.style.border = '1px dotted #bdbdbd';
         fontDiv.style.boxSizing = 'border-box';
         fontDiv.style.borderRadius = '2px';
         fontDiv.style.backgroundColor = 'white';
         fontDiv.style.color = 'black';
+        fontDiv.style.marginTop = '8px'
         typeDiv.appendChild(fontDiv);
         input = document.createElement('input');
         input.type = 'checkbox';
@@ -645,7 +645,7 @@ export class Signature {
 
         // eslint-disable-next-line
         let tab: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_tab' });
-        const uploadDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'upload_appearance', className: 'e-pv-signature-apperance' });
+        const uploadDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'upload_appearance', className: 'e-pv-signature-apperance', styles:'padding-top:30px' });
 
         // eslint-disable-next-line
         let button: any = document.createElement('div');
@@ -659,16 +659,15 @@ export class Signature {
         // eslint-disable-next-line max-len
         const uploadCanvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_signatureuploadCanvas_', className: 'e-pv-signature-uploadcanvas' }) as HTMLCanvasElement;
         if (this.pdfViewer.element.offsetWidth > 750) {
-            uploadCanvas.width = 715;
-            uploadCanvas.style.width = '715px';
+            uploadCanvas.width = 714;
         } else {
-            uploadCanvas.width = this.pdfViewer.element.offsetWidth - 35;
-            uploadCanvas.style.width = canvas.width + 'px';
+            uploadCanvas.width = this.pdfViewer.element.offsetWidth - 35; 
         }
-        uploadCanvas.height = 335;
-        uploadCanvas.style.height = '335px';
-        uploadButton.element.style.left = ((parseFloat(uploadCanvas.style.width) / 2) - 50) + 'px';
-        uploadButton.element.style.top = ((parseFloat(uploadCanvas.style.height) / 2) - 10) + 'px';
+        uploadCanvas.classList.add('e-pv-canvas-signature');
+        uploadCanvas.height = 305;
+        uploadCanvas.style.height = '305px';
+        uploadButton.element.style.left = ((uploadCanvas.width / 2) - 50) + 'px';
+        uploadButton.element.style.top = ((parseFloat(uploadCanvas.style.height) / 2) + 20) + 'px';
         uploadCanvas.style.border = '1px dotted #bdbdbd';
         uploadCanvas.style.backgroundColor = 'white';
         uploadCanvas.style.boxSizing = 'border-box';
@@ -724,9 +723,12 @@ export class Signature {
             items: items
         });
         this.tabObj.appendTo(tab);
-        if(items[0].header.text === 'DRAW') {
+        if(tab && tab.lastElementChild) {
+            (tab.lastElementChild as any).style.overflow = 'hidden';
+        }
+        if(items[0].header.label === 'DRAW') {
             this.signaturetype = 'Draw';
-        } else if(items[0].header.text === 'TYPE') {
+        } else if(items[0].header.label === 'TYPE') {
             this.signaturetype = 'Type';
         } else {
             this.signaturetype = 'Image';
@@ -739,6 +741,18 @@ export class Signature {
     }
     private handleSelectEvent(e: SelectEventArgs): void {
         // eslint-disable-next-line
+        let headerText: string = '';
+        let tabInstance = (document.getElementById(this.pdfViewer.element.id + 'Signature_tab') as any).ej2_instances[0];
+        if(tabInstance) {
+            if (tabInstance.items.length > 0) {
+                for (let i: number = 0; i < tabInstance.items.length; i++) {
+                     let headerValue = tabInstance.items[i].header.text;
+                     if (headerValue === e.selectedItem.textContent) {
+                         headerText = tabInstance.items[i].header.label;
+                     }
+                }
+            }
+        }
         let checkbox: any = document.getElementById('checkbox');
         if (checkbox && checkbox.checked) {
             if (e.previousIndex === 0 && this.outputString !== '') {
@@ -759,21 +773,21 @@ export class Signature {
             this.clearSignatureCanvas();
         }
         // eslint-disable-next-line
-        if (e.selectedItem.textContent.toLocaleLowerCase() === 'draw') {
+        if (headerText.toLocaleLowerCase() === 'draw') {
             this.signaturetype = 'Draw';
             if (this.isSaveSignature) {
                 this.enableCreateButton(false);
             }
             let drawCheckbox = document.getElementById("checkbox");
             this.hideSignatureCheckbox(drawCheckbox);
-        } else if (e.selectedItem.textContent.toLocaleLowerCase() === 'type') {
+        } else if (headerText.toLocaleLowerCase() === 'type') {
             this.outputString = '';
             this.signaturetype = 'Type';
             // eslint-disable-next-line
             this.enableCreateButton(true);
             let typeCheckbox = document.getElementById("checkbox1");
             this.hideSignatureCheckbox(typeCheckbox);
-        } else if (e.selectedItem.textContent.toLocaleLowerCase() === 'upload') {
+        } else if (headerText.toLocaleLowerCase() === 'upload') {
             this.signaturetype = 'Image';
             this.enableCreateButton(true);
             let imageCheckbox = document.getElementById("checkbox2");
@@ -785,19 +799,19 @@ export class Signature {
         let items: any = [];
         if(displayMode & DisplayMode.Draw) {
             items.push({
-                header: { 'text': this.pdfViewer.localeObj.getConstant('Draw-hand Signature') },
+                header: { 'text': this.pdfViewer.localeObj.getConstant('Draw-hand Signature'), 'label': 'DRAW' },
                 content: appearanceDiv
             })
         }
         if(displayMode & DisplayMode.Text) {
             items.push({
-                header: { 'text': this.pdfViewer.localeObj.getConstant('Type Signature') },
+                header: { 'text': this.pdfViewer.localeObj.getConstant('Type Signature'), 'label': 'TYPE' },
                 content: typeDiv
             })
         }
         if(displayMode & DisplayMode.Upload) {
             items.push({
-                header: { 'text': this.pdfViewer.localeObj.getConstant('Upload Signature') },
+                header: { 'text': this.pdfViewer.localeObj.getConstant('Upload Signature'), 'label': 'UPLOAD' },
                 content: uploadDiv
             })
         }
@@ -810,7 +824,7 @@ export class Signature {
     public createSignatureFileElement(): void {
         // eslint-disable-next-line
         let signImage: any = createElement('input', { id: this.pdfViewer.element.id + '_signElement', attrs: { 'type': 'file' } });
-        signImage.setAttribute('accept', '.jpg,.jpeg');
+        signImage.setAttribute('accept', '.jpg,.jpeg,.png');
         signImage.style.position = 'absolute';
         signImage.style.left = '0px';
         signImage.style.top = '0px';
@@ -1118,8 +1132,8 @@ export class Signature {
         let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
         if (canvas && this.signatureDialog && this.signatureDialog.visible) {
             if (this.pdfViewer.element.offsetWidth > 750) {
-                canvas.width = 715;
-                canvas.style.width = '715px';
+                canvas.width = 714;
+                canvas.style.width = '714px';
             } else {
                 canvas.width = this.pdfViewer.element.offsetWidth - 35;
                 canvas.style.width = canvas.width + 'px';

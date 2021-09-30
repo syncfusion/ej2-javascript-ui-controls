@@ -11,7 +11,7 @@ export interface KeyboardEventArgs extends KeyboardEvent {
     action: string;
 }
 
-let keyCode: { [key: string]: number } = {
+const keyCode: { [key: string]: number } = {
     'backspace': 8,
     'tab': 9,
     'enter': 13,
@@ -66,18 +66,19 @@ let keyCode: { [key: string]: number } = {
  *   let kbInstance = new KeyboardEvents({
  *       element: node,
  *       keyConfigs:{ selectAll : 'ctrl+a' },
- *       keyAction: function (e:KeyboardEvent, action:string) { 
+ *       keyAction: function (e:KeyboardEvent, action:string) {
  *           // handler function code
  *       }
  *   });
  * </script>
- * ```   
+ * ```
  */
 @NotifyPropertyChanges
 export class KeyboardEvents extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     /**
      * Specifies key combination and it respective action name.
+     *
      * @default null
      */
     @Property({})
@@ -85,22 +86,25 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies on which event keyboardEvents class should listen for key press. For ex., `keyup`, `keydown` or `keypress`
+     *
      * @default keyup
      */
     @Property('keyup')
     public eventName: string;
 
     /**
-     * Specifies the listener when keyboard actions is performed. 
-     * @event
+     * Specifies the listener when keyboard actions is performed.
+     *
+     * @event keyAction
      */
     @Event()
     public keyAction: EmitType<KeyboardEventArgs>;
 
     /**
      * Initializes the KeyboardEvents
-     * @param {HTMLElement} element 
-     * @param {KeyboardEventsModel} options 
+     *
+     * @param {HTMLElement} element ?
+     * @param {KeyboardEventsModel} options ?
      */
     constructor(element: HTMLElement, options?: KeyboardEventsModel) {
         super(options, element);
@@ -109,7 +113,8 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Unwire bound events and destroy the instance.
-     * @return {void}
+     *
+     * @returns {void} ?
      */
     public destroy(): void {
         this.unwireEvents();
@@ -118,14 +123,16 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Function can be used to specify certain action if a property is changed
-     * @param newProp 
-     * @param oldProp 
-     * @returns {void}
+     *
+     * @param {KeyboardEventsModel} newProp ?
+     * @param {KeyboardEventsModel} oldProp ?
+     * @returns {void} ?
      * @private
      */
+    // eslint-disable-next-line
     public onPropertyChanged(newProp: KeyboardEventsModel, oldProp?: KeyboardEventsModel): void {
         // No code are needed
-    };
+    }
 
     protected bind(): void {
         this.wireEvents();
@@ -133,6 +140,8 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * To get the module name, returns 'keyboard'.
+     *
+     * @returns {string} ?
      * @private
      */
     public getModuleName(): string {
@@ -141,6 +150,9 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Wiring event handlers to events
+     *
+     * @returns {void} ?
+     * @private
      */
     private wireEvents(): void {
         this.element.addEventListener(this.eventName, this.keyPressHandler);
@@ -148,6 +160,9 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Unwiring event handlers to events
+     *
+     * @returns {void} ?
+     * @private
      */
 
     private unwireEvents(): void {
@@ -156,18 +171,21 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * To handle a key press event returns null
+     *
+     * @param {KeyboardEventArgs} e ?
+     * @returns {void} ?
      */
 
     private keyPressHandler: EventListener = (e: KeyboardEventArgs): void => {
-        let isAltKey: Boolean = e.altKey;
-        let isCtrlKey: Boolean = e.ctrlKey;
-        let isShiftKey: Boolean = e.shiftKey;
-        let curkeyCode: number = e.which;
-        let keys: string[] = Object.keys(this.keyConfigs);
-        for (let key of keys) {
-            let configCollection: string[] = this.keyConfigs[key].split(',');
-            for (let rconfig of configCollection) {
-                let rKeyObj: KeyData = KeyboardEvents.getKeyConfigData(rconfig.trim());
+        const isAltKey: boolean = e.altKey;
+        const isCtrlKey: boolean = e.ctrlKey;
+        const isShiftKey: boolean = e.shiftKey;
+        const curkeyCode: number = e.which;
+        const keys: string[] = Object.keys(this.keyConfigs);
+        for (const key of keys) {
+            const configCollection: string[] = this.keyConfigs[key].split(',');
+            for (const rconfig of configCollection) {
+                const rKeyObj: KeyData = KeyboardEvents.getKeyConfigData(rconfig.trim());
                 if (isAltKey === rKeyObj.altKey && isCtrlKey === rKeyObj.ctrlKey &&
                     isShiftKey === rKeyObj.shiftKey && curkeyCode === rKeyObj.keyCode) {
                     e.action = key;
@@ -181,14 +199,15 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * To get the key configuration data
+     *
      * @param {string} config - configuration data
-     * returns {KeyData}
+     * @returns {KeyData} ?
      */
 
     private static getKeyConfigData(config: string): KeyData {
         if (config in this.configCache) { return this.configCache[config]; }
-        let keys: string[] = config.toLowerCase().split('+');
-        let keyData: KeyData = {
+        const keys: string[] = config.toLowerCase().split('+');
+        const keyData: KeyData = {
             altKey: (keys.indexOf('alt') !== -1 ? true : false),
             ctrlKey: (keys.indexOf('ctrl') !== -1 ? true : false),
             shiftKey: (keys.indexOf('shift') !== -1 ? true : false),
@@ -204,16 +223,16 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
         return keyData;
     }
 
-    // Return the keycode value as string 
+    // Return the keycode value as string
     private static getKeyCode(keyVal: string): number {
         return keyCode[keyVal] || keyVal.toUpperCase().charCodeAt(0);
     }
 }
 
 interface KeyData {
-    altKey: Boolean;
-    ctrlKey: Boolean;
-    shiftKey: Boolean;
+    altKey: boolean;
+    ctrlKey: boolean;
+    shiftKey: boolean;
     keyCode: number | string;
 }
 

@@ -1,12 +1,12 @@
 import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId } from '../base/index';
 import { getSingleSelectedRange, getCell, getSheetIndex } from '../base/index';
-import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes } from '../common/index';
+import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference } from '../common/index';
-import { getUniqueRange, DefineName, selectionComplete } from '../common/index';
+import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula } from '../common/index';
 
 
 /**
@@ -67,6 +67,8 @@ export class WorkbookFormula {
         this.parent.on(aggregateComputation, this.aggregateComputation, this);
         this.parent.on(getUniqueRange, this.getUniqueRange, this);
         this.parent.on(removeUniquecol, this.removeUniquecol, this);
+        this.parent.on(clearFormulaDependentCells, this.clearFormulaDependentCells, this);
+        this.parent.on(formulaInValidation, this.formulaInValidation, this);
     }
 
     private removeEventListener(): void {
@@ -75,6 +77,8 @@ export class WorkbookFormula {
             this.parent.off(aggregateComputation, this.aggregateComputation);
             this.parent.off(getUniqueRange, this.getUniqueRange);
             this.parent.off(removeUniquecol, this.removeUniquecol);
+            this.parent.off(clearFormulaDependentCells, this.clearFormulaDependentCells);
+            this.parent.off(formulaInValidation, this.formulaInValidation);
         }
     }
 
@@ -93,6 +97,18 @@ export class WorkbookFormula {
         this.calcID = this.calculateInstance.createSheetFamilyID();
         this.calculateInstance.setTreatEmptyStringAsZero(true);
         this.calculateInstance.grid = this.parent.getActiveSheet().id.toString();
+    }
+
+    private clearFormulaDependentCells(args: { [key: string]: string }): void {
+        let cellRef: string = args.cellRef;
+        cellRef = cellRef.split(':')[0];
+        cellRef = '!' + this.parent.activeSheetIndex + '!' + cellRef;
+        this.calculateInstance.clearFormulaDependentCells(cellRef);
+    }
+
+    private formulaInValidation(args: InvalidFormula): void {
+        const col: IFormulaColl = this.calculateInstance.getLibraryFormulas().get(args.value);
+        args.skip = isNullOrUndefined(col);
     }
     private performFormulaOperation(args: { [key: string]: Object }): void {
         const action: string = <string>args.action;
@@ -152,10 +168,10 @@ export class WorkbookFormula {
             args.argumentSeparator = this.calculateInstance.getParseArgumentSeparator();
             break;
         case 'addDefinedName':
-            args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName, false, <number>args.index);
+            args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName, false, <number>args.index, <boolean>args.isEventTrigger);
             break;
         case 'removeDefinedName':
-            args.isRemoved = this.removeDefinedName(<string>args.definedName, <string>args.scope);
+            args.isRemoved = this.removeDefinedName(<string>args.definedName, <string>args.scope, <boolean>args.isEventTrigger);
             break;
         case 'initiateDefinedNames':
             this.initiateDefinedNames();
@@ -219,27 +235,6 @@ export class WorkbookFormula {
         this.parent.sheets.forEach((sheet: SheetModel) => {
             this.sheetInfo.push({ visibleName: sheet.name, sheet: 'Sheet' + sheet.id, index: sheet.id });
         });
-    }
-
-    private getUniqueRange(args: { [key: string]: string[] }): void {
-        args.range = this.calculateInstance.uniqueRange;
-    }
-
-    private removeUniquecol(): void {
-        const cellAddr: string = this.parent.getActiveSheet().activeCell;
-        for (let i: number = 0; i < this.calculateInstance.uniqueRange.length; i++) {
-            if (this.calculateInstance.uniqueRange[i].split(':')[0] === cellAddr) {
-                const range: number[] = getRangeIndexes(this.calculateInstance.uniqueRange[i]);
-                this.calculateInstance.uniqueRange.splice(i, 1);
-                for (let j: number = range[0]; j <= range[2]; j++) {
-                    for (let k: number = range[1]; k <= range[3]; k++) {
-                        const cell: CellModel = getCell(j, k, this.parent.getActiveSheet());
-                        cell.formula = '';
-                        this.parent.updateCell({ value: '', formula: ''}, getRangeAddress([j, k]));
-                    }
-                }
-            }
-        }
     }
 
     private sheetDeletion(delSheetName: string, sheetId: string): void {
@@ -387,6 +382,26 @@ export class WorkbookFormula {
         }
     }
 
+    private getUniqueRange(args: { [key: string]: string[] }): void {
+        args.range = this.calculateInstance.uniqueRange;
+    }
+
+    private removeUniquecol(): void {
+        const cellAddr: string = this.parent.getActiveSheet().activeCell;
+        for (let i: number = 0; i < this.calculateInstance.uniqueRange.length; i++) {
+            if (this.calculateInstance.uniqueRange[i].split(':')[0] === cellAddr) {
+                const range: number[] = getRangeIndexes(this.calculateInstance.uniqueRange[i]);
+                this.calculateInstance.uniqueRange.splice(i, 1);
+                for (let j: number = range[0]; j <= range[2]; j++) {
+                    for (let k: number = range[1]; k <= range[3]; k++) {
+                        const cell: CellModel = getCell(j, k, this.parent.getActiveSheet());
+                        cell.formula = '';
+                        this.parent.updateCell({ value: '', formula: ''}, getRangeAddress([j, k]));
+                    }
+                }
+            }
+        }
+    }
     private refreshCalculate(
         rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): void {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
@@ -531,7 +546,7 @@ export class WorkbookFormula {
      * @param {boolean} isValidate - Specify the boolean value.
      * @returns {boolean} - Used to add defined name to workbook.
      */
-    private addDefinedName(definedName: DefineNameModel, isValidate: boolean, index?: number): boolean {
+    private addDefinedName(definedName: DefineNameModel, isValidate: boolean, index?: number, isEventTrigger?: boolean): boolean {
         if (index === undefined || index < -1) { index = this.parent.definedNames.length; }
         let isAdded: boolean = true;
         let sheetIdx: number;
@@ -565,6 +580,10 @@ export class WorkbookFormula {
                 this.parent.definedNames.splice(index, 0, definedName);
             }
         }
+        const eventArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment, refersTo: definedName.refersTo, cancel: false };
+        if (!isEventTrigger) {
+            this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'addDefinedName' });
+        }
         return isAdded;
     }
 
@@ -576,7 +595,7 @@ export class WorkbookFormula {
      * @param {string} scope - Specifies the scope of the define name.
      * @returns {boolean} - To Return the bool value.
      */
-    private removeDefinedName(name: string, scope: string): boolean {
+    private removeDefinedName(name: string, scope: string, isEventTrigger?: boolean): boolean {
         let isRemoved: boolean = false;
         const index: number = this.getIndexFromNameColl(name, scope);
         if (index > -1) {
@@ -589,6 +608,10 @@ export class WorkbookFormula {
             }
             this.calculateInstance.removeNamedRange(calcName);
             this.parent.definedNames.splice(index, 1);
+            if (!isEventTrigger) {
+                const eventArgs: DefinedNameEventArgs = { name: name, scope: scope, cancel: false };
+                this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'removeDefinedName' });
+            }
             isRemoved = true;
         }
         return isRemoved;
@@ -891,7 +914,14 @@ export class WorkbookFormula {
         args?: InsertDeleteEventArgs): void {
         if (!changed) { return; }
         const index: number = this.parent.definedNames.indexOf(definedName);
-        this.parent.removeDefinedName(definedName.name, definedName.scope);
+        const eventArgs: { [key: string]: Object } = {
+            action: 'removeDefinedName',
+            isRemoved: false,
+            definedName: definedName.name,
+            scope: definedName.scope,
+            isEventTrigger: true
+        };
+        this.parent.notify(workbookFormulaOperation, eventArgs);
         if (idx) {
             let oldDefinedName: DefineNameModel = { name: definedName.name, comment: definedName.comment, refersTo: definedName.refersTo,
                 scope: definedName.scope };
@@ -905,6 +935,8 @@ export class WorkbookFormula {
             if (idx[1] < idx[0]) { return; }
         }
         definedName.refersTo = sheetName + '!' + getRangeAddress(range);
-        this.parent.notify(workbookFormulaOperation, { action: 'addDefinedName', definedName: definedName, isAdded: false, index: index });
+        this.parent.notify(workbookFormulaOperation, { action: 'addDefinedName', definedName: definedName, isAdded: false, index: index, isEventTrigger: true });
+        const refreshArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment, refersTo: definedName.refersTo, cancel: false };
+        this.parent.notify('actionComplete', { eventArgs: refreshArgs, action: 'refreshNamedRange' });
     }
 }

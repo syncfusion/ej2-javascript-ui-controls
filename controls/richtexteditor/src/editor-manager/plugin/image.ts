@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined as isNOU, detach, closest, addClass, removeClass, select, Browser } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined as isNOU, detach, closest, addClass, removeClass, select, Browser, formatUnit } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
@@ -246,8 +246,10 @@ export class ImageCommand {
         const selectNode: HTMLImageElement = e.item.selectNode[0] as HTMLImageElement;
         selectNode.style.height = '';
         selectNode.style.width = '';
-        selectNode.width = e.item.width as number;
-        selectNode.height = e.item.height as number;
+        e.item.width !== 'auto' ? selectNode.style.width = formatUnit(e.item.width as number) :
+            selectNode.removeAttribute('width');
+        e.item.height !== 'auto' ? selectNode.style.height = formatUnit(e.item.height as number) :
+            selectNode.removeAttribute('height');
         this.callBack(e);
     }
     private imageCaption(e: IHtmlItem): void {
@@ -256,56 +258,62 @@ export class ImageCommand {
     }
     private imageJustifyLeft(e: IHtmlItem): void {
         const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], 'e-rte-image');
-        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
-            addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
+        if (!isNOU(selectNode)) {
+            selectNode.removeAttribute('class');
+            addClass([selectNode], 'e-rte-image');
+            if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+                removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
+                addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
+            }
+            if (selectNode.parentElement.nodeName === 'A') {
+                removeClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
+                addClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
+                addClass([selectNode], classes.CLASS_IMAGE_LEFT);
+            } else {
+                addClass([selectNode], classes.CLASS_IMAGE_LEFT);
+            }
+            this.callBack(e);
         }
-        if (selectNode.parentElement.nodeName === 'A') {
-            removeClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
-            addClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
-            addClass([selectNode], classes.CLASS_IMAGE_LEFT);
-        } else {
-            addClass([selectNode], classes.CLASS_IMAGE_LEFT);
-        }
-        this.callBack(e);
     }
     private imageJustifyCenter(e: IHtmlItem): void {
         const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], 'e-rte-image');
-        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
-            removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
-            addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_CENTER);
+        if (!isNOU(selectNode)) {
+            selectNode.removeAttribute('class');
+            addClass([selectNode], 'e-rte-image');
+            if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+                removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
+                removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
+                addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_CENTER);
+            }
+            if (selectNode.parentElement.nodeName === 'A') {
+                removeClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
+                removeClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
+                addClass([selectNode.parentElement], classes.CLASS_IMAGE_CENTER);
+                addClass([selectNode], classes.CLASS_IMAGE_CENTER);
+            } else {
+                addClass([selectNode], classes.CLASS_IMAGE_CENTER);
+            }
+            this.callBack(e);
         }
-        if (selectNode.parentElement.nodeName === 'A') {
-            removeClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
-            removeClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
-            addClass([selectNode.parentElement], classes.CLASS_IMAGE_CENTER);
-            addClass([selectNode], classes.CLASS_IMAGE_CENTER);
-        } else {
-            addClass([selectNode], classes.CLASS_IMAGE_CENTER);
-        }
-        this.callBack(e);
     }
     private imageJustifyRight(e: IHtmlItem): void {
         const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], 'e-rte-image');
-        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
-            addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
+        if (!isNOU(selectNode)) {
+            selectNode.removeAttribute('class');
+            addClass([selectNode], 'e-rte-image');
+            if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+                removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
+                addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
+            }
+            if (selectNode.parentElement.nodeName === 'A') {
+                removeClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
+                addClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
+                addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
+            } else {
+                addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
+            }
+            this.callBack(e);
         }
-        if (selectNode.parentElement.nodeName === 'A') {
-            removeClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
-            addClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
-            addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
-        } else {
-            addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
-        }
-        this.callBack(e);
     }
     private imageInline(e: IHtmlItem): void {
         const selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;

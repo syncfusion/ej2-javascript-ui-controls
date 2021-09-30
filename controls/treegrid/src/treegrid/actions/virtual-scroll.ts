@@ -123,6 +123,7 @@ export class VirtualScroll {
                     endIndex = this.parent.grid.pageSettings.pageSize - 1;
                     this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
                 }
+                this.expandCollapseRec = null;
             }
             //}
             if (!isNullOrUndefined(this.expandCollapseRec) && this.parent.enableCollapseAll) {
@@ -132,7 +133,6 @@ export class VirtualScroll {
                     startIndex = this.prevstartIndex === -1 ? 0 : this.prevstartIndex;
                 }
             }
-            this.expandCollapseRec = null;
             pageingDetails.result = visualData.slice(startIndex, endIndex);
             this.prevstartIndex = startIndex;
             this.prevendIndex = endIndex;

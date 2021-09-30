@@ -7,6 +7,7 @@ interface BeforeSanitizeHtml {
     /** Illustrates whether the current action needs to be prevented or not. */
     cancel?: boolean;
     /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+     *
      * @function
      * @param {string} value - Returns the value.
      * @returns {string}
@@ -151,10 +152,10 @@ export class SanitizeHtmlHelper {
                 attributes: removeAttrs
             }
         };
-    };
+    }
     public static sanitize(value: string): string {
-        let item: BeforeSanitizeHtml = this.beforeSanitize();
-        let output: string = this.serializeValue(item, value);
+        const item: BeforeSanitizeHtml = this.beforeSanitize();
+        const output: string = this.serializeValue(item, value);
         return output;
     }
 
@@ -166,24 +167,24 @@ export class SanitizeHtmlHelper {
         this.removeXssTags();
         this.removeJsEvents();
         this.removeXssAttrs();
-        let tempEleValue: string = this.wrapElement.innerHTML;
+        const tempEleValue: string = this.wrapElement.innerHTML;
         this.removeElement();
         return tempEleValue;
     }
 
     private static removeElement(): void {
-         // Removes an element's attibute to avoid html tag validation
-         let nodes: HTMLCollection = this.wrapElement.children;
-         for (let j: number = 0; j < nodes.length; j++) {
-             let attribute: NamedNodeMap = nodes[j].attributes;
-             for (let i: number = 0; i < attribute.length; i++) {
-                 this.wrapElement.children[j].removeAttribute(attribute[i].localName);
-             }
-         }
+        // Removes an element's attibute to avoid html tag validation
+        const nodes: HTMLCollection = this.wrapElement.children;
+        for (let j: number = 0; j < nodes.length; j++) {
+            const attribute: NamedNodeMap = nodes[j].attributes;
+            for (let i: number = 0; i < attribute.length; i++) {
+                this.wrapElement.children[j].removeAttribute(attribute[i].localName);
+            }
+        }
     }
 
     private static removeXssTags(): void {
-        let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeTags.join(','));
+        const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeTags.join(','));
         if (elements.length > 0) {
             elements.forEach((element: Element) => {
                 detach(element);
@@ -194,7 +195,7 @@ export class SanitizeHtmlHelper {
     }
 
     private static removeJsEvents(): void {
-        let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
+        const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
         if (elements.length > 0) {
             elements.forEach((element: Element) => {
                 jsEvents.forEach((attr: string) => {
@@ -209,8 +210,9 @@ export class SanitizeHtmlHelper {
     }
 
     private static removeXssAttrs(): void {
+        // eslint-disable-next-line
         this.removeAttrs.forEach((item: { [key: string]: string }, index: number) => {
-            let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(item.selector);
+            const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(item.selector);
             if (elements.length > 0) {
                 elements.forEach((element: Element) => {
                     element.removeAttribute(item.attribute);

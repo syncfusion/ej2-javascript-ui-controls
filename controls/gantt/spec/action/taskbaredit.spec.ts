@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
-import { baselineData, scheduleModeData, splitTasksData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 describe('Gantt taskbar editing', () => {
     describe('Gantt taskbar edit action', () => {
@@ -469,6 +469,44 @@ describe('Gantt taskbar editing', () => {
             }
         });
     });
+    describe('Disable progress resizer', () => {
+        let ganttObj: Gantt
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: editingData,
+                 taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Progress Resizer disable when progress not mapped',() => {
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 5, dragElement.offsetTop + 5);
+            expect((ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody >tr:nth-child(3) > td > div.e-taskbar-main-container> div.e-child-progress-resizer').classList.contains('e-progress-resize-gripper'))).toBe(false);
+        });
+    });   
     describe('Schedule mode', () => {
         let ganttObj: Gantt;
 

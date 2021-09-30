@@ -75,6 +75,15 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
             args: [context]
         });
     }
+    if (context.allowAutoFill) {
+        modules.push({ member: 'autofill', args: [context] });
+    }
+    if (context.autoFillSettings) {
+        modules.push({
+            member: 'autofill',
+            args: [context]
+        });
+    }
     if (context.selectionSettings.mode !== 'None') {
         modules.push({
             member: 'selection',
@@ -170,4 +179,5 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     if (context.allowChart) {
         modules.push({ member: 'spreadsheetChart', args: [context] });
     }
+    
 }

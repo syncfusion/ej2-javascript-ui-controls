@@ -1,4 +1,5 @@
-import { EventHandler, formatUnit, isNullOrUndefined, createElement, addClass, append, prepend } from '@syncfusion/ej2-base';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { EventHandler, formatUnit, isNullOrUndefined, createElement, addClass, append, prepend, remove } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs, CallbackFunction } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { ViewBase } from './view-base';
@@ -75,19 +76,13 @@ export class Month extends ViewBase implements IRenderer {
             this.setContentHeight(content, leftPanel, height);
         }
         const scrollBarWidth: number = util.getScrollBarWidth();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         header.style[<any>args.cssProperties.rtlPadding] = '';
         if (content.offsetWidth - content.clientWidth > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (<HTMLElement>header.firstElementChild).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             header.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (<HTMLElement>header.firstElementChild).style[<any>args.cssProperties.border] = '';
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             header.style[<any>args.cssProperties.padding] = '';
         }
         this.setColWidth(content);
@@ -189,6 +184,11 @@ export class Month extends ViewBase implements IRenderer {
         if (this.parent.uiStateValues.isGroupAdaptive && !target.querySelector('.' + cls.RESOURCE_TOOLBAR_CONTAINER)) {
             this.renderResourceMobileLayout();
         }
+        this.parent.notify(event.contentReady, {});
+    }
+    public refreshHeader(): void {
+        remove(this.element.querySelector('tbody tr'));
+        this.renderHeader();
         this.parent.notify(event.contentReady, {});
     }
 

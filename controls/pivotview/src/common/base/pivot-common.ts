@@ -8,8 +8,8 @@ import { NodeStateModified } from '../actions/node-state-modified';
 import { DataSourceUpdate } from '../actions/dataSource-update';
 import { ErrorDialog } from '../popups/error-dialog';
 import { FilterDialog } from '../popups/filter-dialog';
-import { PivotView } from '../../pivotview';
-import { PivotFieldList } from '../../pivotfieldlist';
+import { PivotView } from '../../pivotview/base/pivotview';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { OlapEngine } from '../../base/olap/engine';
 
 /**

@@ -1,6 +1,7 @@
 import { NodeSelection } from './../../selection/index';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IHtmlFormatterCallBack, IAdvanceListItem } from '../../common/interface';
+import { EnterKeyAction } from '../../rich-text-editor/actions/enter-key';
 /**
  * Specifies  Command models interfaces.
  *
@@ -54,6 +55,7 @@ export interface IHtmlSubCommands {
      * Specifies if the icon click is from dropdown or direct toolbarclick.
      */
     exeValue?: { [key: string]: string }
+    enterAction?: string
 }
 
 /**
@@ -83,7 +85,8 @@ export interface IHtmlItem {
     subCommand: string
     value: string
     selector: string
-    callBack(args: IHtmlFormatterCallBack): () => void
+    callBack(args: IHtmlFormatterCallBack): () => void,
+    enterAction?: string
 }
 /**
  * @deprecated
@@ -100,7 +103,7 @@ export interface IHtmlItemArgs {
     width?: { minWidth?: string | number, maxWidth?: string | number; width?: string | number }
     height?: { minHeight?: string | number, maxHeight?: string | number; height?: string | number }
     altText?: string
-    row?: number
+    rows?: number
     columns?: number
     subCommand?: string
     tableCell?: HTMLElement
@@ -140,4 +143,8 @@ export interface IHtmlKeyboardEvent {
      * Specifies the notifier name.
      */
     name?: string
+    /**
+     * Specifies the enter key configuration.
+     */
+    enterAction?: string
 }

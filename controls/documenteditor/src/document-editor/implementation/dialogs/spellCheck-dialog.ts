@@ -255,18 +255,18 @@ export class SpellCheckDialog {
         const buttonDiv: HTMLElement = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
         spellContainer.appendChild(buttonDiv);
 
-        const ignoreButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore'), id: 'ignore' });
+        const ignoreButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore') });
         buttonDiv.appendChild(ignoreButtonElement);
         const ignorebutton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
         ignorebutton.appendTo(ignoreButtonElement);
         ignoreButtonElement.addEventListener('click', this.onIgnoreClicked);
 
-        const ignoreAllButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore all'), id: 'new' });
+        const ignoreAllButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore All') });
         buttonDiv.appendChild(ignoreAllButtonElement);
         const ignoreAllbutton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
         ignoreAllbutton.appendTo(ignoreAllButtonElement);
         ignoreAllButtonElement.addEventListener('click', this.onIgnoreAllClicked);
-        const addDictButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Add to Dictionary'), id: 'new' });
+        const addDictButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Add to Dictionary') });
         buttonDiv.appendChild(addDictButtonElement);
         const addDictButton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
         addDictButton.appendTo(addDictButtonElement);

@@ -8,7 +8,6 @@ import { unscheduledData, projectResources, resourceGanttData, dragSelfReference
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-
 Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
 describe('Gantt - Base', () => {
 
@@ -365,7 +364,7 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
-         describe('Empty datasource', () => {
+       describe('Empty datasource', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(

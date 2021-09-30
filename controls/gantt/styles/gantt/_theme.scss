@@ -1,10 +1,16 @@
 
 @include export-module('gantt-theme') {
   /*! Gantt theme */
+
   .e-gantt {
+
     .e-gantt-splitter {
       border-color: $gantt-header-border-color;
       border-radius: $gantt-header-border-radius;
+    }
+
+    .e-gantt-splitter-height {
+      height: $gantt-splitter-height;
     }
 
     .e-cloneproperties.e-draganddrop {
@@ -136,6 +142,7 @@
 
       .e-grid td.e-active {
         background: $gantt-active-background;
+        opacity: $gantt-active-color-opacity;
       }
     }
 
@@ -644,7 +651,7 @@
     }
 
     .e-grid .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {
-      color: $gantt-header-color !important; // sass-lint:disable-line no-important
+      color: $gantt-context-menu-icon-color !important; // sass-lint:disable-line no-important
     }
 
   }

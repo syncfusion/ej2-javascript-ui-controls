@@ -38,7 +38,7 @@ $hscroll-focus-border: 0 !default;
 $hscroll-active-border: 0 !default;
 $hscroll-hover-border: 0 !default;
 $hscroll-active-box-shadow: none !default;
-$hscroll-default-icon-color: $theme-light-font !default;
+$hscroll-default-icon-color: $theme-primary-font !default;
 
 @mixin hscroll-btn-animation {
   content: '';

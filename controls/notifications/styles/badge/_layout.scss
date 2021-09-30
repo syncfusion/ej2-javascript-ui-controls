@@ -11,7 +11,7 @@
     font-size: $badge-base-font-size;
     font-weight: $badge-base-font-weight;
     line-height: $badge-base-line-height;
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
       height: $badge-base-height;
     }
     overflow: hidden;
@@ -27,13 +27,13 @@
 
     &.e-badge-pill {
       border-radius: $badge-pill-border-radius;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
         padding: $badge-pill-padding;
        }
     }
 
     &.e-badge-ghost {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
         line-height: $badge-ghost-line-height;
         padding: $badge-ghost-padding;
       }
@@ -66,7 +66,7 @@
 
       &.e-badge-ghost {
         line-height: $badge-circle-ghost-line-height;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           padding: $badge-circle-ghost-padding;
         }
       }
@@ -109,7 +109,7 @@
 
     @at-root {
       button#{''} .e-badge {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
           line-height: $leading-none;
         }
         @else {
@@ -133,7 +133,7 @@
 
   .e-bigger .e-badge,
   .e-badge.e-bigger {
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
       border-radius: $badge-touch-base-border-radius;
       font-size: $badge-touch-base-font-size;
       font-weight: $badge-touch-base-font-weight;

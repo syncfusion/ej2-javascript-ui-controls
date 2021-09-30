@@ -9,6 +9,7 @@ import { InsertMethods } from './insert-methods';
  * @deprecated
  */
 export class NodeCutter {
+    public enterAction: string = 'P'
     public position: number = -1;
     private nodeSelection: NodeSelection = new NodeSelection();
     // Split Selection Node

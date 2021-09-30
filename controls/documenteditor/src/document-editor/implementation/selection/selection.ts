@@ -7094,12 +7094,9 @@ export class Selection {
             let offset: number = currentElement.line.getOffset(currentElement, (currentElement.length));
             eleEndPosition = new TextPosition(this.owner);
             eleEndPosition.setPositionParagraph(currentElement.line, offset);
-            if (end.offset === eleEndPosition.offset) {
+            if (end.offset === eleEndPosition.offset && !isNullOrUndefined(currentElement.nextElement)) {
                 return undefined;
             }
-        }
-        if (nextOffsetElement !== currentElement) {
-            currentElement = nextOffsetElement;
         }
         if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
             return currentElement.revisions;

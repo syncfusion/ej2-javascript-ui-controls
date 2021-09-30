@@ -233,6 +233,8 @@
         line-height: $calendar-normal-month-view-height;
         width: $calendar-normal-month-view-width;
       }
+}#{if(&, '&', '*')} .e-content.e-month td.e-today span.e-day {
+      line-height: $calendar-normal-month-view-line-height;
 }#{if(&, '&', '*')} .e-content.e-year table,
     #{if(&, '&', '*')} .e-content.e-decade table {
       border-spacing: 0;
@@ -353,6 +355,8 @@
         line-height: $calendar-bigger-month-view-height;
         width: $calendar-bigger-month-view-width;
   }
+  }#{if(&, '&', '*')} .e-content.e-month td.e-today span.e-day {
+      line-height: $calendar-bigger-month-view-line-height;
   }#{if(&, '&', '*')} .e-content.e-month td {
       height: $calendar-bigger-month-view-padding;
       padding: $calendar-bigger-month-view-padding;
@@ -393,6 +397,10 @@
         height: $calendar-small-month-view-height;
         line-height: $calendar-small-month-view-height;
         width: $calendar-small-month-view-width;
+      }
+
+      #{if(&, '&', '*')}.e-month td.e-today span.e-day {
+        line-height: $calendar-small-month-view-line-height;
       }
     }
 

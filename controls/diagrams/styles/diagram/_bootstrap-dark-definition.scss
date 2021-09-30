@@ -1,51 +1,62 @@
 @import 'definition.scss';
 
-$diagram-endpoint-handle-color: $brand-primary;
-$diagram-endpoint-handle-connected-border: $brand-primary;
-$diagram-endpoint-handle-connected-color: $brand-primary-font;
+$skin-name: 'bootstrap-dark';
+
+//layout variables
+$diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
+$diagram-symbolpalette-shape-radius: 4px;
+$diagram-ruler-font-size: 10px;
+$diagram-tooltip: none;
+
+//normal
+$diagram-resize-handle-disable-color: $grey-cc;
+$diagram-border-stroke-disabled: $grey-cc;
+$diagram-resize-handle-disable-stroke: $brand-primary-font;
+$diagram-rotate-handle-color: $brand-primary;
+$diagram-bezier-handle-color: $brand-primary-font;
+
+$diagram-symbolpalette-hover: lighten($grey-cc, 5%);
+$diagram-symbolpalette-selected: $grey-cc;
+
+$diagram-ruler-color: $grey-dark-font;
+$diagram-ruler-marker-stroke: $brand-primary;
+$diagram-ruler-marker-background-color: $grey;
+$diagram-ruler-label-fill: lighten($grey-cc, 10%);
+$diagram-ruler-tick-stroke: $grey-f8;
+//end normal
+
+//primary
+$diagram-endpoint-handle-color: $brand-primary-font;
+$diagram-endpoint-handle-connected-border: $brand-primary-font;
+$diagram-endpoint-handle-connected-color: $brand-primary;
 
 $diagram-resize-handle-color: $brand-primary;
-$diagram-resize-handle-stroke: $brand-primary-font;
+$diagram-resize-handle-stroke: $brand-primary;
 $diagram-border-stroke: $brand-primary-darken-10;
 
-$diagram-resize-handle-disable-color: $grey-ad;
-$diagram-resize-handle-disable-stroke: $grey-dark-font;
-$diagram-border-stroke-disabled: $grey-ad;
+$diagram-bezier-line-color: $brand-primary;
 
-$diagram-rotate-handle-color: #000;
-
-$diagram-bezier-handle-color: $brand-primary;
-$diagram-bezier-line-color: $brand-primary-darken-10;
+$palette-background-color: lighten($grey-cc, 20%);
 
 $diagram-highlighter-stroke: $brand-primary;
 $diagram-selected-region-stroke: $brand-primary;
-$diagram-pivot-line-stroke: $brand-primary-font;
+$diagram-pivot-line-stroke: $brand-primary;
+
+$diagram-helper-stroke: $brand-primary;
 
 $diagram-text-edit-selection-color: $brand-primary-font;
 $diagram-text-edit-selection-background: $brand-primary;
 
-$diagram-symbolpalette-hover: $grey-e6;
-$diagram-symbolpalette-shape-radius: 00px;
-$diagram-symbolpalette-selected: $grey-ad;
+$diagram-background-color: $brand-primary-font;
 
-$diagram-tooltip: none;
+$diagram-editbox-background: $brand-primary-font;
+$diagram-editbox-fontcolor: $gray-base;
 
-$diagram-ruler-color: $grey-8c;
-$diagram-ruler-font-size: 10px;
-$diagram-ruler-marker-stroke: $brand-primary;
-$diagram-ruler-marker-background-color: $grey-white;
-$diagram-ruler-label-fill: $grey-8c;
-$diagram-ruler-tick-stroke: $grey-ad;
-
-$diagram-background-color: transparent;
-
-$diagram-editbox-background: #fff;
-$diagram-editbox-fontcolor: #000;
-$diagram-border-stroke-width: 2;
-$diagram-lane-border-stroke-width: 2;
-$diagram-highlighter-border-stroke-width: 2;
 $diagram-border-strokes: $brand-primary-darken-10;
-$diagram-lane-border-strokes: #0078ff;
+$diagram-lane-border-strokes: $brand-primary;
+//end primary
 
 .e-icons {
   font-family: 'e-icons';

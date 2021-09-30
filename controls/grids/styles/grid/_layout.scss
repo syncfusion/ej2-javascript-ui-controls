@@ -98,7 +98,8 @@
     }
 
     .e-rowcell,
-    .e-summarycell {
+    .e-summarycell,
+    .e-groupcaption {
       font-size: $grid-bigger-content-font-size;
       padding: $grid-bigger-content-padding $grid-bigger-content-right-padding;
     }
@@ -223,11 +224,11 @@
       display: inline-block;
       float: right;
       font-size: 9px;
-      height: 15px;
+      height: $grid-sort-number-size;
       line-height: $grid-sortnumer-line-height;
       margin: $grid-bigger-sortnumber-margin;
       text-align: center;
-      width: 15px;
+      width: $grid-sort-number-size;
     }
 
     .e-gridheader .e-rightalign.e-fltr-icon .e-sortfilterdiv {
@@ -286,6 +287,10 @@
 
     .e-cloneproperties {
       padding: $grid-bigger-clone-padding;
+    }
+
+    .e-cloneproperties.e-draganddrop {
+      padding: $grid-bigger-draganddrop-clone-padding;
     }
 
     .e-headerclone {
@@ -561,10 +566,10 @@
       line-height: normal;
       margin-left: -8px;
       min-width: 12px;
-      padding: 3px 7px 4px;
+      padding: $grid-bigger-drag-count-padding;
       position: absolute;
       text-align: center;
-      top: -10px;
+      top: $grid-bigger-drag-count-top;
       z-index: 5;
     }
 
@@ -649,6 +654,15 @@
       border-bottom-color: $grid-header-border-color;
       & .e-toolbar-items {
           min-height: initial;
+
+          & .e-tbar-btn:hover,
+          & .e-tbar-btn:active, 
+          & .e-tbar-btn:focus,
+          & .e-search-icon:hover,
+          & .e-search-icon:active,
+          & .e-search-icon:focus {
+            background: none;
+          }
 
           & .e-icons {
             color: $grid-responsive-toolbar-icon-color;
@@ -894,6 +908,11 @@
       width: 4px;
     }
 
+    & .e-gridheader .e-frozenheader .e-headercell .e-rhandler:last-of-type,
+    & .e-gridheader .e-frozenheader .e-headercell .e-rsuppress:last-of-type {
+      right: -1px;
+    }
+
     & .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rhandler,
     & .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rsuppress {
       left: 0;
@@ -1089,7 +1108,7 @@
       font-weight: $grid-header-font-weight;
       height: $grid-headercell-line-height;
       overflow: hidden;
-      padding: 0 $grid-header-padding $grid-header-bottom-padding;
+      padding: $grid-header-top-padding $grid-header-padding $grid-header-bottom-padding;
       position: relative;
       text-align: left;
     }
@@ -1442,11 +1461,11 @@
       display: inline-block;
       float: right;
       font-size: $grid-sortnumber-font-size;
-      height: 15px;
+      height: $grid-sort-number-size;
       line-height: $grid-sortnumer-line-height;
       margin: $grid-sortnumber-margin;
       text-align: center;
-      width: 15px;
+      width: $grid-sort-number-size;
     }
 
     .e-gridheader .e-rightalign .e-sortnumber {
@@ -1506,6 +1525,11 @@
 
     [class^='e-'] {
       box-sizing: border-box;
+    }
+
+    .e-rowdragdropcell {
+      border-style: $grid-border-type;
+      border-width: $grid-rowcell-broder-width;
     }
 
     .e-detailrowcollapse,
@@ -1646,7 +1670,6 @@
     &.e-rtl .e-searchclear {
       float: left;
       position: relative;
-      top: $grid-rtl-searchclear;
     }
 
     .e-checkboxlist {
@@ -1654,6 +1677,16 @@
       margin-top: 5px;
       min-height: 160px;
       overflow-y: auto;
+    }
+
+    .e-checkfltrnmdiv {
+      height: 60px;
+      padding: 23px;
+      text-align: center;
+    }
+
+    .e-checkboxlist > span {
+      padding-left: $grid-checkbox-padding-topbottom;
     }
 
     .e-chk-hidden {
@@ -1680,6 +1713,10 @@
     .e-dialog.e-checkboxfilter,
     .e-dialog.e-flmenu {
       min-width: 250px;
+
+      & .e-dlg-content {
+        border-radius: $grid-filter-border-radius;
+      }
     }
 
     .e-dialog.e-checkboxfilter {
@@ -2090,6 +2127,10 @@
     .e-toolbar .e-btn-icon.e-icons.e-columnchooser-btn {
       font-size: $grid-columnchooser-btn-font-size;
       line-height: $grid-columnchooser-btn-line-height;
+    }
+
+    .e-toolbar .e-toolbar-items .e-toolbar-right .e-cc-toolbar .e-tbar-btn .e-columnchooser-btn {
+      margin-top: $grid-cc-margin-top;
     }
 
     .e-toolbar-item.e-cc.e-ccdiv.e-cc-toolbar {
@@ -2512,7 +2553,7 @@
         &.e-leftalign {
           & .e-sortfilterdiv {
             float: right;
-            margin: -14px 3px;
+            margin: $grid-bigger-sort-margin;
           }
 
           & .e-headercelldiv {
@@ -2520,7 +2561,7 @@
 
             & .e-sortnumber {
               float: right;
-              margin: 0 2px 0 0;
+              margin: $grid-bigger-sort-right-margin;
             }
 
           }
@@ -2596,6 +2637,7 @@
 
       & .e-groupheadercell span {
         float: right;
+        padding: $grid-bigger-rtl-group-span-padding;
       }
 
       &.e-horizontallines .e-grouptopleftcell {
@@ -3068,6 +3110,30 @@
   }
 }
 
+.e-bigger .e-grid,
+.e-bigger.e-grid {
+  .e-gridheader .e-headercontent .e-reorderuparrow,
+  .e-gridheader .e-headercontent .e-reorderdownarrow {
+    font-size: $grid-biggerreorderarrow-font-size;
+    margin-top: $grid-bigger-reorderarrow-margin-top;
+  }
+
+  .e-gridheader thead .e-icons {
+    font-size: $grid-bigger-check-select-all-font-size;
+  }
+
+  .e-ccdlg {
+    .e-cc-searchdiv {
+      padding-left: 0;
+      padding-right: $grid-bigger-searchdiv-padding-left;
+    }
+  }
+
+  &.e-rtl .e-columnmenu {
+    margin: $grid-bigger-rtl-cm-margin;
+  }
+}
+
 #{&}.e-grid-min-height {
   .e-rowcell {
     line-height: 0;
@@ -3211,6 +3277,22 @@
 .e-bigger .e-grid.e-row-responsive,
 .e-bigger.e-grid.e-row-responsive {
 
+  & .e-toolbar {
+    .e-tbar-btn:hover,
+    .e-tbar-btn:active,
+    .e-tbar-btn:focus {
+      background: none;
+
+      .e-icons {
+        padding-bottom: $grid-adaptive-toolbar-icon-hover-bottom;
+      }
+    }
+
+    .e-search-icon {
+      background: none;
+    }
+  }
+
   & .e-responsive-header {
     border-top: 1px solid;
     border-top-color: $grid-header-border-color;
@@ -3260,11 +3342,6 @@
       height: auto;
     }
 
-    & td.e-lastrowcell:last-of-type {
-      border-bottom: 1px solid;
-      border-bottom-color: $grid-header-border-color;
-    }
-
     & .e-emptyrow {
       & td.e-lastrowcell {
         border-bottom: 0;
@@ -3309,6 +3386,13 @@
     & .e-rowcell:last-child {
       border: 0;
     }
+  }
+}
+
+.e-bigger .e-responsive-dialog.e-customfilter,
+.e-bigger.e-responsive-dialog.e-customfilter {
+  .e-responsivecoldiv {
+    cursor: pointer;
   }
 }
 
@@ -3377,7 +3461,7 @@
           color: $grid-responsive-filter-reset-color;
           font-size: $grid-responsive-sort-clear-btn-font-size;
           font-weight: 500;
-          padding-top: 5px;
+          padding-top: $grid-adaptive-sort-clear-button-padding;
         }
 
         & .e-res-apply-btn {
@@ -3390,7 +3474,7 @@
         }
 
         & .e-res-apply-btn:disabled {
-          color: $btn-disabled-bgcolor;
+          color: $grid-btn-disabled-bgcolor;
         }
 
         & .e-btn {
@@ -3408,9 +3492,18 @@
     }
   }
 
+  &.e-rtl .e-dlg-header-content .e-res-back-btn {
+    padding-left: 15px;
+    padding-right: 0;
+  }
+
   & .e-dlg-content {
     padding: 16px;
     padding-top: 0;
+
+    .e-checkfltrnmdiv {
+      text-align: center;
+    }
 
     & .e-filtersetdiv {
       float: right;
@@ -3427,13 +3520,22 @@
     }
 
     & .e-excelfilter {
+      border: transparent;
+
       & .e-dlg-content {
-        padding: 0;
+        background-color: $grid-responsive-header-background;
+        padding: 8px;
         padding-right: 16px;
+      }
+
+      .e-checkboxlist > span {
+        padding-left: 9px;
       }
     }
 
     & .e-xlflmenu {
+      border: transparent;
+
       & .e-dlg-content {
         padding: 16px;
       }
@@ -3464,13 +3566,23 @@
         // sass-lint:disable-all
         & .e-contextmenu-wrapper {
           ul {
+            background-color: $grid-responsive-header-background;
             max-width: 100%;
+
+            li {
+              color: $grid-rowcell-color;
+            }
+
+            & .e-submenu.e-selected {
+              background-color: $grid-responsive-header-background;
+            }
 
             & .e-submenu {
               padding: 0;
 
               & .e-menu-icon {
                 margin-right: 4px;
+                margin-left: 15px;
               }
 
               & .e-caret {
@@ -3485,7 +3597,16 @@
           height: 88%;
 
           & .e-searchbox {
-            padding-left: 20px;
+            padding-left: 10px;
+
+            & .e-search-icon:focus,
+            & .e-search-icon:active,
+            & .e-search-icon:hover {
+              background: none;
+              @if $grid-skin == 'bootstrap5' {
+                color: $grid-responsive-btn-background;
+              }
+            }
           }
 
           & .e-spinner {
@@ -3535,7 +3656,10 @@
 
   & .e-res-contextmenu-wrapper {
     & .e-contextmenu {
+      background-color: $grid-responsive-header-background;
+      border: transparent;
       box-shadow: none;
+      margin-top: 23px;
       max-width: 100%;
       min-width: 100%;
       overflow-y: auto;
@@ -3547,8 +3671,33 @@
       }
 
       & .e-menu-item.e-focused {
-        background-color: $grid-responsive-header-background;
+        background-color: transparent;
       }
     }
+  }
+}
+
+.e-bigger .e-responsive-dialog.e-ressortdiv,
+.e-bigger.e-responsive-dialog.e-ressortdiv {
+  .e-dlg-header-content .e-dlg-header .e-res-custom-element .e-res-apply-btn {
+    padding-top: 0;  
+  }
+}
+
+.e-bigger .e-responsive-dialog.e-rtl,
+.e-bigger.e-responsive-dialog.e-rtl {
+  & .e-btn.e-dlg-closeicon-btn {
+    float: right;
+    padding-left: 40px;
+    padding-right: 0;
+  }
+
+  & .e-res-apply-btn {
+    padding-left: 0;
+    padding-right: 20px;
+  }
+
+  & .e-ressortbutton-parent {
+    float: left;
   }
 }

@@ -1,4 +1,58 @@
-//General
+// layout variables
+$chip-list-padding: 0 !default;
+$chip-height: 22px !default;
+$chip-border-radius: 0 !default;
+$chip-box-shadow: none !default;
+$chip-avatar-wrapper-border-radius: 0 !default;
+$chip-avatar-border-radius: 0 !default;
+$chip-leading-icon-border-radius: 50% !default;
+$chip-delete-icon-border-radius: 50% !default;
+$chip-padding: 0 8px !default;
+$chip-margin: 4px !default;
+$chip-overflow: hidden !default;
+$chip-border-size: 0 !default;
+$chip-font-size: $text-sm !default;
+$chip-line-height: 22px !default;
+$chip-font-weight: 400 !default;
+$chip-avatar-size: 20px !default;
+$chip-avatar-margin: 0 3px 0 -8px !default;
+$chip-avatar-content-font-size: $text-xs !default;
+$chip-leading-icon-font-size: 12px !default;
+$chip-leading-icon-size: 16px !default;
+$chip-leading-icon-margin: 0 8px 0 -4px !default;
+$chip-multiselection-icon-margin-top: 0 !default;
+$chip-delete-icon-font-size: 14px !default;
+$chip-delete-icon-size: 16px !default;
+$chip-delete-icon-margin: 0 -4px 0 4px !default;
+//RTL
+$chip-rtl-avatar-wrapper-border-radius: 0 !default;
+$chip-rtl-avatar-margin: 0 -7px 0 3px !default;
+$chip-rtl-leading-icon-margin: 0 -4px 0 8px !default;
+$chip-rtl-delete-icon-margin: 0 4px 0 -4px !default;
+//Touch
+$chip-touch-border-radius: 0 !default;
+$chip-touch-avatar-wrapper-border-radius: 0 !default;
+$chip-touch-font-size: $text-base !default;
+$chip-touch-height: 30px !default;
+$chip-touch-text-line-height: 24px !default;
+$chip-touch-text-height: 24px !default;
+$chip-touch-padding: 0 12px !default;
+$chip-touch-avatar-size: 28px !default;
+$chip-touch-avatar-margin: 0 8px 0 -12px !default;
+$chip-touch-avatar-content-font-size: $text-base !default;
+$chip-touch-leading-icon-font-size: 16px !default;
+$chip-touch-leading-icon-size: 20px !default;
+$chip-touch-leading-icon-margin: 0 8px 0 -4px !default;
+$chip-touch-delete-icon-font-size: 16px !default;
+$chip-touch-delete-icon-size: 24px !default;
+$chip-touch-delete-icon-margin: 0 -4px 0 8px !default;
+//Touch-RTL
+$chip-touch-rtl-avatar-wrapper-border-radius: 0 !default;
+$chip-touch-rtl-avatar-margin: 0 -12px 0 8px !default;
+$chip-touch-rtl-leading-icon-margin: 0 -4px 0 8px !default;
+$chip-touch-rtl-delete-icon-margin: 0 8px 0 -4px !default;
+
+//normal
 $chip-bg-color: $content-bg-color-alt3 !default;
 $chip-hover-bg-color: $content-bg-color-alt4 !default;
 $chip-focus-bg-color: $content-bg-color-alt4 !default;
@@ -29,7 +83,7 @@ $chip-pressed-font-color: $content-text-color !default;
 $chip-disabled-font-color: $content-text-color-disabled !default;
 $chip-close-icon-font-color: $icon-color !default;
 $chip-close-icon-hover-font-color: $icon-color-hover !default;
-$chip-close-icon-pressed-font-color: $icon-color-pressed !default;
+$chip-close-icon-pressed-font-color: $content-text-color !default;
 $chip-icon-font-color: $icon-color !default;
 $chip-icon-hover-font-color: $icon-color !default;
 $chip-icon-focus-font-color: $icon-color !default;
@@ -58,59 +112,8 @@ $chip-pressed-border-color: $chip-pressed-bg-color !default;
 $chip-disabled-border-color: $chip-disabled-bg-color !default;
 $chip-focus-box-shadow: none !default;
 $chip-pressed-box-shadow: none !default;
-$chip-list-padding: 0 !default;
-$chip-height: 22px !default;
-$chip-border-radius: 0 !default;
-$chip-box-shadow: none !default;
-$chip-avatar-wrapper-border-radius: 0 !default;
-$chip-avatar-border-radius: 0 !default;
-$chip-leading-icon-border-radius: 50% !default;
-$chip-delete-icon-border-radius: 50% !default;
-$chip-padding: 0 8px !default;
-$chip-margin: 0 4px !default;
-$chip-overflow: hidden !default;
-$chip-border-size: 0 !default;
-$chip-font-size: $text-sm !default;
-$chip-line-height: 22px !default;
-$chip-font-weight: 400 !default;
-$chip-avatar-size: 20px !default;
-$chip-avatar-margin: 0 3px 0 -8px !default;
-$chip-avatar-content-font-size: $text-xs !default;
-$chip-leading-icon-font-size: 12px !default;
-$chip-leading-icon-size: 16px !default;
-$chip-leading-icon-margin: 0 8px 0 -4px !default;
-$chip-multiselection-icon-margin-top: 0 !default;
-$chip-delete-icon-font-size: 14px !default;
-$chip-delete-icon-size: 16px !default;
-$chip-delete-icon-margin: 0 -4px 0 4px !default;
 $chip-focus-active-border-color: $content-bg-color-alt5 !default;
-//RTL
-$chip-rtl-avatar-wrapper-border-radius: 0 !default;
-$chip-rtl-avatar-margin: 0 -7px 0 3px !default;
-$chip-rtl-leading-icon-margin: 0 -4px 0 8px !default;
-$chip-rtl-delete-icon-margin: 0 4px 0 -4px !default;
-//Touch
-$chip-touch-border-radius: 0 !default;
-$chip-touch-avatar-wrapper-border-radius: 0 !default;
-$chip-touch-font-size: $text-base !default;
-$chip-touch-height: 30px !default;
-$chip-touch-text-line-height: 24px !default;
-$chip-touch-text-height: 24px !default;
-$chip-touch-padding: 0 12px !default;
-$chip-touch-avatar-size: 28px !default;
-$chip-touch-avatar-margin: 0 8px 0 -12px !default;
-$chip-touch-avatar-content-font-size: $text-base !default;
-$chip-touch-leading-icon-font-size: 16px !default;
-$chip-touch-leading-icon-size: 20px !default;
-$chip-touch-leading-icon-margin: 0 8px 0 -4px !default;
-$chip-touch-delete-icon-font-size: 16px !default;
-$chip-touch-delete-icon-size: 24px !default;
-$chip-touch-delete-icon-margin: 0 -4px 0 8px !default;
-//Touch-RTL
-$chip-touch-rtl-avatar-wrapper-border-radius: 0 !default;
-$chip-touch-rtl-avatar-margin: 0 -12px 0 8px !default;
-$chip-touch-rtl-leading-icon-margin: 0 -4px 0 8px !default;
-$chip-touch-rtl-delete-icon-margin: 0 8px 0 -4px !default;
+
 //outline
 $chip-outline-bg-color: transparent !default;
 $chip-outline-hover-bg-color: $content-bg-color-alt4 !default;
@@ -149,7 +152,7 @@ $chip-outline-icon-hover-font-color: $icon-color !default;
 $chip-outline-icon-focus-font-color: $icon-color !default;
 $chip-outline-icon-active-font-color: $icon-color-pressed !default;
 $chip-outline-icon-focus-active-font-color: $icon-color-pressed !default;
-$chip-outline-choice-icon-focus-active-font-color: $icon-color !default;
+$chip-outline-choice-icon-focus-active-font-color: $primary-text-color !default;
 $chip-outline-icon-pressed-font-color: $icon-color-pressed !default;
 $chip-outline-avatar-font-color: $content-text-color !default;
 $chip-outline-avatar-hover-font-color: $content-text-color !default;

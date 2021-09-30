@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Axis, Label } from '../../../src/circular-gauge/axes/axis';
-import { getAngleFromLocation, GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { getAngleFromLocation, GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/circular-gauge/model/interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { axisLabelRender } from '../../../src/circular-gauge/model/constants';

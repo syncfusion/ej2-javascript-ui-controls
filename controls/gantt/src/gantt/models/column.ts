@@ -1,6 +1,7 @@
 import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-base';
 import { TextAlign, ClipMode, ValueAccessor, IEditCell, IFilter } from '@syncfusion/ej2-grids';
 import { IGanttCellFormatter } from '../base/interface';
+import { SortComparer} from '@syncfusion/ej2-grids';
 /**
  * Configures column collection in Gantt.
  */
@@ -66,7 +67,6 @@ export class Column {
      * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode
      */
     public clipMode: ClipMode;
 
@@ -97,6 +97,12 @@ export class Column {
      * @default 'stringedit'
      */
     public editType: string;
+                
+    /**
+     * Defines the custom sort comparer function.
+     */
+    public sortComparer: SortComparer | string;
+    
     /**
      * Defines the field name of column which is mapped with mapping name of DataSource.
      * The `field` name must be a valid JavaScript identifier,
@@ -112,7 +118,6 @@ export class Column {
      *
      * @default null
      * @aspType string
-     * @blazorType object
      */
     public format: string | NumberFormatOptions | DateFormatOptions;
 
@@ -290,7 +295,6 @@ export interface ColumnModel {
      * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode
      */
     clipMode?: ClipMode;
 
@@ -339,7 +343,6 @@ export interface ColumnModel {
      *
      * @default null
      * @aspType string
-     * @blazorType object
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 
@@ -372,7 +375,6 @@ export interface ColumnModel {
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
      */
     headerTextAlign?: TextAlign;
 
@@ -412,7 +414,6 @@ export interface ColumnModel {
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
      */
     textAlign?: TextAlign;
 
@@ -454,4 +455,10 @@ export interface ColumnModel {
      * @private
      */
     type?: string;
+    /**
+     * Defines the sort comparer property.
+     *
+     * @default null
+     */
+     sortComparer?: SortComparer | string;
 }

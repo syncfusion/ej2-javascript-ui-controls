@@ -7,6 +7,12 @@
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
         }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
+        }
       }
 
       &.e-split-bar-vertical {
@@ -15,6 +21,12 @@
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
           transform: rotate(90deg);
+        }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
         }
       }
     }

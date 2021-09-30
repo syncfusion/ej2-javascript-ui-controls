@@ -158,6 +158,7 @@ export class QuickPopups {
         });
         buttonObj.appendTo(element);
         EventHandler.add(element, 'click', clickEvent, this);
+        removeClass([element], cls.ICON);
     }
 
     private quickDialogClass(action: string): void {
@@ -402,10 +403,16 @@ export class QuickPopups {
         const closeIcon: HTMLButtonElement = this.quickPopup.element.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
         this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.closeClick);
         const readonly: boolean = this.parent.activeViewOptions.readonly || eventObj[this.parent.eventFields.isReadonly] as boolean;
+        const editAction: boolean = !this.parent.eventSettings.allowEditing || readonly;
+        const deleteAction: boolean = !this.parent.eventSettings.allowDeleting || readonly;
         const editIcon: HTMLButtonElement = this.quickPopup.element.querySelector('.' + cls.EDIT_CLASS) as HTMLButtonElement;
-        this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.EDIT_ICON_CLASS, readonly, editIcon, this.editClick);
+        if (editIcon) {
+            this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.EDIT_ICON_CLASS, editAction, editIcon, this.editClick);
+        }
         const deleteIcon: HTMLButtonElement = this.quickPopup.element.querySelector('.' + cls.DELETE_CLASS) as HTMLButtonElement;
-        this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.DELETE_ICON_CLASS, readonly, deleteIcon, this.deleteClick);
+        if (deleteIcon) {
+            this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.DELETE_ICON_CLASS, deleteAction, deleteIcon, this.deleteClick);
+        }
         this.beforeQuickPopupOpen(target);
     }
 
@@ -1058,7 +1065,7 @@ export class QuickPopups {
                 } else {
                     this.quickPopup.offsetX = 10;
                     this.quickPopup.collision = { X: this.parent.enableRtl ? 'flip' : 'none', Y: 'fit' };
-                    this.quickPopup.position = { X: this.parent.enableRtl ? 'left' : 'right', Y: 'top' };
+                    this.quickPopup.position = { X: this.parent.enableRtl ? 'left' : 'right', Y: this.parent.enableRtl ? 'bottom' : 'top' };
                     this.quickPopup.dataBind();
                     this.quickPopup.refreshPosition(null, true);
                     const collide: string[] = isCollide(this.quickPopup.element, this.parent.element);

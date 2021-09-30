@@ -3,6 +3,7 @@ import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer }
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base'
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
@@ -15,7 +16,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
-import { getTextNodesUnder, sanitizeHelper } from '../base/util';
+import { getTextNodesUnder, sanitizeHelper, getDefaultValue } from '../base/util';
 import { isIDevice } from '../../common/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { XhtmlValidation } from './xhtml-validation';
@@ -117,33 +118,40 @@ export class HtmlEditor {
 
     private onKeyDown(e: NotifyArgs): void {
         let currentRange: Range;
+        let args: KeyboardEvent = e.args as KeyboardEvent;
         if (Browser.info.name === 'chrome') {
             currentRange = this.parent.getRange();
             this.backSpaceCleanup(e, currentRange);
             this.deleteCleanup(e, currentRange);
         }
-        if ((e.args as KeyboardEvent).keyCode === 9 && this.parent.enableTabKey) {
-            const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
-            const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
-            if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0] as HTMLElement, 'li') ||
-                closest(parentNode[0] as HTMLElement, 'table')) && range.startOffset === 0)) {
-                (e.args as KeyboardEvent).preventDefault();
-                if (!(e.args as KeyboardEvent).shiftKey) {
-                    InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
-                    this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
-                } else if (this.rangeCollection.length > 0 &&
-                    this.rangeCollection[this.rangeCollection.length - 1].startContainer.textContent.length === 4) {
-                    const textCont: Node = this.rangeCollection[this.rangeCollection.length - 1].startContainer;
-                    this.nodeSelectionObj.setSelectionText(
-                        this.contentRenderer.getDocument(), textCont, textCont, 0, textCont.textContent.length);
-                    InsertHtml.Insert(this.contentRenderer.getDocument(), document.createTextNode(''));
-                    this.rangeCollection.pop();
+        if (args.keyCode === 9 && this.parent.enableTabKey) {
+            if (!isNOU(args.target) && isNullOrUndefined(closest(args.target as Element, '.e-rte-toolbar'))) {
+                const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
+                const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
+                if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0] as HTMLElement, 'li') ||
+                    closest(parentNode[0] as HTMLElement, 'table')) && range.startOffset === 0)) {
+                    args.preventDefault();
+                    if (!args.shiftKey) {
+                        InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
+                        this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
+                    } else if (this.rangeCollection.length > 0 &&
+                        this.rangeCollection[this.rangeCollection.length - 1].startContainer.textContent.length === 4) {
+                        const textCont: Node = this.rangeCollection[this.rangeCollection.length - 1].startContainer;
+                        this.nodeSelectionObj.setSelectionText(
+                            this.contentRenderer.getDocument(), textCont, textCont, 0, textCont.textContent.length);
+                        InsertHtml.Insert(this.contentRenderer.getDocument(), document.createTextNode(''));
+                        this.rangeCollection.pop();
+                    }
                 }
             }
         }
         if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space' ||
-            ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter') {
+            ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter' ||
+            ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
             this.spaceLink(e.args as KeyboardEvent);
+            if (this.parent.editorMode === 'HTML' && !((this.parent.shiftEnterKey === 'BR' && ((e as NotifyArgs).args as KeyboardEventArgs).shiftKey))) {
+                this.parent.notify(events.enterHandler, { args: (e.args as KeyboardEvent) });
+            }
         }
         if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space') {
             const currentRange: Range = this.parent.getRange();
@@ -185,10 +193,11 @@ export class HtmlEditor {
             this.oldRangeElement = null;
             this.deleteRangeElement = null;
             this.deleteOldRangeElement = null;
-            (e.args as KeyboardEvent).preventDefault();
+            args.preventDefault();
         }
     }
     private isOrderedList(editorValue: string): boolean {
+        editorValue = editorValue.replace(/\u200B/g, '');
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
         if (!isNullOrUndefined(editorValue)) {
             for (let i: number = 0; i < olListStartRegex.length; i++) {
@@ -200,6 +209,7 @@ export class HtmlEditor {
         return false;
     }
     private isUnOrderedList(editorValue: string): boolean {
+        editorValue = editorValue.replace(/\u200B/g, '');
         const ulListStartRegex: RegExp[] = [/^[*]$/, /^[-]$/ ];
         if (!isNullOrUndefined(editorValue)) {
             for (let i: number = 0; i < ulListStartRegex.length; i++) {
@@ -376,7 +386,7 @@ export class HtmlEditor {
             let contentInnerElem: string = '';
             for (let i: number = 0; i < enterSplitText.length; i++) {
                 if (enterSplitText[i].trim() === '') {
-                    contentInnerElem += '<p><br></p>';
+                    contentInnerElem += getDefaultValue(this.parent);
                 } else {
                     let contentWithSpace: string = '';
                     let spaceBetweenContent: boolean = true;

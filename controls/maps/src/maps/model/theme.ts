@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Maps Themes doc
  */
@@ -169,7 +168,6 @@ export namespace BootstrapTheme {
  * @param {MapsTheme} theme Specifies the theme of the maps
  * @returns {string[]} Returns the shape color
  */
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export function getShapeColor(theme: MapsTheme): string[] {
     let themePalette: string[];
     switch (theme.toLowerCase()) {
@@ -180,6 +178,14 @@ export function getShapeColor(theme: MapsTheme): string[] {
     case 'tailwinddark':
         themePalette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
             '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
+        break;
+    case 'bootstrap5':
+        themePalette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+        break;
+    case 'bootstrap5dark':
+        themePalette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
         break;
     default:
         themePalette = ['#B5E485', '#7BC1E8', '#DF819C', '#EC9B79', '#78D0D3',
@@ -416,6 +422,52 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: '500',
             zoomSelectionColor: '#F3F4F6',
             shapeFill: '#374151'
+        };
+        break;
+    case 'bootstrap5':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            areaBackgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#212529',
+            subTitleFontColor: '#212529',
+            legendTitleFontColor: '#212529',
+            legendTextColor: '#212529',
+            dataLabelFontColor: '#212529',
+            tooltipFontColor: '#F9FAFB',
+            tooltipFillColor: '#212529',
+            zoomFillColor: '#6C757D',
+            fontFamily: 'Helvetica Neue',
+            titleFontSize: '14px',
+            legendFontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Helvetica Neue',
+            titleFontWeight: 'normal',
+            zoomSelectionColor: '#343A40',
+            shapeFill: '#E9ECEF'
+        };
+        break;
+    case 'bootstrap5dark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            areaBackgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#FFFFFF',
+            subTitleFontColor: '#FFFFFF',
+            legendTitleFontColor: '#FFFFFF',
+            legendTextColor: '#FFFFFF',
+            dataLabelFontColor: '#FFFFFF',
+            tooltipFontColor: '#212529',
+            tooltipFillColor: '#E9ECEF',
+            zoomFillColor: '#B5BABE',
+            fontFamily: 'Helvetica Neue',
+            titleFontSize: '14px',
+            legendFontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Helvetica Neue',
+            titleFontWeight: 'normal',
+            zoomSelectionColor: '#DEE2E6',
+            shapeFill: '#495057'
         };
         break;
     default:

@@ -76,7 +76,6 @@ export class AutoComplete extends ComboBox {
      * of list items on the suggestion popup.
      *
      * @default 20
-     * @blazorType int
      */
     @Property(20)
     public suggestionCount: number;
@@ -108,7 +107,6 @@ export class AutoComplete extends ComboBox {
      * the search action will perform after typed minimum characters.
      *
      * @default 1
-     * @blazorType int
      */
     @Property(1)
     public minLength: number;
@@ -147,7 +145,6 @@ export class AutoComplete extends ComboBox {
      * The default value set to `Contains`, all the suggestion items which contain typed characters to listed in the suggestion popup.
      *
      * @default 'Contains'
-     * @blazorOverrideType override
      */
     @Property('Contains')
     public filterType: FilterType;
@@ -155,7 +152,6 @@ export class AutoComplete extends ComboBox {
      * Triggers on typing a character in the component.
      *
      * @event filtering
-     * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -164,9 +160,6 @@ export class AutoComplete extends ComboBox {
      *
      * @default null
      * @private
-     * @blazorType int
-     * @isBlazorNullableType true
-     * @blazorDefaultValue
      * @deprecated
      */
     @Property(null)
@@ -185,7 +178,6 @@ export class AutoComplete extends ComboBox {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @deprecated
      */
     @Property('Never')
@@ -286,49 +278,38 @@ export class AutoComplete extends ComboBox {
     protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         this.isDataFetched = this.isSelectCustom = false;
-        if (this.isServerBlazor) {
-            this.beforePopupOpen = (this.isFiltering() && !this.beforePopupOpen) ? !this.beforePopupOpen : this.beforePopupOpen;
-            this.queryString = this.filterInput.value;
-            if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this as any).interopAdaptor.invokeMethodAsync('OnServerFilter', this.filterInput.value);
-            } else {
-                this.hidePopup();
-            }
-        } else {
-            if (isNullOrUndefined(this.list)) {
-                super.renderList(true);
-            }
-            this.queryString = this.filterInput.value;
-            if (e.type !== 'mousedown' && ((<KeyboardEventArgs>e).keyCode === 40 || (<KeyboardEventArgs>e).keyCode === 38)) {
-                this.queryString = this.queryString === '' ? null : this.queryString;
-                this.beforePopupOpen = true;
-                this.resetList(this.dataSource, this.fields);
-                return;
-            }
-            this.isSelected = false;
-            this.activeIndex = null;
-            const eventArgs: { [key: string]: Object } = {
-                preventDefaultAction: false,
-                text: this.filterInput.value,
-                updateData: (
-                    dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
-                    fields?: FieldSettingsModel) => {
-                    if (eventArgs.cancel) {
-                        return;
-                    }
-                    this.isFiltered = true;
-                    this.filterAction(dataSource, query, fields);
-                },
-                cancel: false
-            };
-            this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-                if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
-                    this.searchList = true;
-                    this.filterAction(this.dataSource, null, this.fields);
-                }
-            });
+        if (isNullOrUndefined(this.list)) {
+            super.renderList(true);
         }
+        this.queryString = this.filterInput.value;
+        if (e.type !== 'mousedown' && ((<KeyboardEventArgs>e).keyCode === 40 || (<KeyboardEventArgs>e).keyCode === 38)) {
+            this.queryString = this.queryString === '' ? null : this.queryString;
+            this.beforePopupOpen = true;
+            this.resetList(this.dataSource, this.fields);
+            return;
+        }
+        this.isSelected = false;
+        this.activeIndex = null;
+        const eventArgs: { [key: string]: Object } = {
+            preventDefaultAction: false,
+            text: this.filterInput.value,
+            updateData: (
+                dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
+                fields?: FieldSettingsModel) => {
+                if (eventArgs.cancel) {
+                    return;
+                }
+                this.isFiltered = true;
+                this.filterAction(dataSource, query, fields);
+            },
+            cancel: false
+        };
+        this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+            if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
+                this.searchList = true;
+                this.filterAction(this.dataSource, null, this.fields);
+            }
+        });
     }
 
     /**
@@ -399,9 +380,6 @@ export class AutoComplete extends ComboBox {
         && (e as KeyboardEventArgs).action !== 'tab' && this.isValidLI(li)) {
             const value: string | number | boolean = this.getFormattedValue(li.getAttribute('data-value'));
             this.activeIndex = this.getIndexByValue(value);
-            if (this.isServerBlazor) {
-                this.removeHover();
-            }
             this.setHoverList(li);
             this.selectedLI = <HTMLElement>li;
             this.setScrollPosition(e as KeyboardEventArgs);
@@ -472,13 +450,13 @@ export class AutoComplete extends ComboBox {
         if (!this.enabled) {
             return;
         }
-        if (this.beforePopupOpen && !this.isServerBlazor) {
+        if (this.beforePopupOpen) {
             this.refreshPopup();
             return;
         }
         this.beforePopupOpen = true;
         this.preventAutoFill = true;
-        if (isNullOrUndefined(this.list) || this.isServerBlazor) {
+        if (isNullOrUndefined(this.list)) {
             this.renderList();
         } else {
             this.resetList(this.dataSource, this.fields);
@@ -490,7 +468,6 @@ export class AutoComplete extends ComboBox {
      * @returns {void}
      */
     public hidePopup(): void {
-        this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         super.hidePopup();
         this.activeIndex = -1;
     }
@@ -510,20 +487,15 @@ export class AutoComplete extends ComboBox {
             switch (prop) {
             case 'showPopupButton':
                 if (this.showPopupButton) {
-                    if (!this.isServerBlazor) {
-                        const button: HTMLElement = Input.appendSpan(
-                            dropDownListClasses.icon,
-                            this.inputWrapper.container,
-                            this.createElement);
-                        this.inputWrapper.buttons[0] = button;
-                    } else if (this.inputWrapper && this.inputWrapper.container) {
-                        const button: HTMLElement = this.inputWrapper.container.querySelector('.e-input-group-icon.e-ddl-icon');
-                        this.inputWrapper.buttons[0] = button;
-                    }
+                    const button: HTMLElement = Input.appendSpan(
+                        dropDownListClasses.icon,
+                        this.inputWrapper.container,
+                        this.createElement);
+                    this.inputWrapper.buttons[0] = button;
                     if (this.inputWrapper && this.inputWrapper.buttons && this.inputWrapper.buttons[0]) {
                         EventHandler.add(this.inputWrapper.buttons[0], 'click', this.dropDownClick, this);
                     }
-                } else if (!this.isServerBlazor) {
+                } else {
                     detach(this.inputWrapper.buttons[0]);
                     this.inputWrapper.buttons[0] = null;
                 }
@@ -543,7 +515,7 @@ export class AutoComplete extends ComboBox {
                 const isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
                     revertHighlightSearch(this.liCollections[i]);
-                    highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType, this.isServerBlazor);
+                    highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType);
                 }
             }
         }

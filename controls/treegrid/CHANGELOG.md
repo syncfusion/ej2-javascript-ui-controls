@@ -2,84 +2,21 @@
 
 ## [Unreleased]
 
-## 19.2.62 (2021-09-14)
+## 19.3.43 (2021-09-30)
+
+### Tree Grid
+
+#### New Features
+
+- `#314841` - Provided support to freeze the columns on right, left or both sides.
+
+## 19.2.44 (2021-06-30)
 
 ### Tree Grid
 
 #### Bug Fixes
 
-- `#I339350` - Text content is displayed properly when allowTextWrap and checkbox column is enabled.
-
-## 19.2.59 (2021-08-31)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F168235` -  Adding a new row as a child using context menu works fine.
-
-## 19.2.56 (2021-08-17)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I335989` - Resolved the issue of dragged rows getting deleted while using drag and drop.
-- `#I337766` - expandAtLevel and collapseAtLevel methods works fine when enableCollapseAll is true.
-- `#I334273` - Resolved white space issue while using single root node with Virtualization and enableCollapseAll.
-- `#I335120` - Drag and drop of newly added records works fine.
-- `#I336436` - RefreshColumns method works properly when we access the column from the getColumnByUid method.
-- `#I337393` - Select all checkbox works fine with filtering.
-
-## 19.2.51 (2021-08-03)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I334818` - Issue in `addRecord` method with `newRowPosition` `Child` and Virtualization enabled has been resolved.
-- `#I334589` - Row drag and drop works fine between the detail template enabled tree grids.
-- `#I336758` - Pressing tab key to a non-editable cell works fine in cell edit mode.
-
-## 19.2.49 (2021-07-27)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I333305` - Resolved the script error while rendering tree grid inside a tab.
-- `#I335120` - Resolved duplicate records issue while drag and drop records between tree grids.
-
-## 19.2.48 (2021-07-20)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I334684` - Issue in `addRecord` method with `newRowPosition` `Child` and InfiniteScrolling enabled has been resolved.
-- `#I334273` - Resolved issue in row position when we expand/collapse a row with Virtualization and collapseAll enabled.
-- `#I334442` - Expand/Collapse action works fine after cell save using Enter key.
-
-## 19.2.47 (2021-07-13)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I328508` - Resolved white space issue while Virtualization and collapse all property is enabled.
-- `#334818` - Issue in `addRecord` method with `newRowPosition` `Child` and Virtualization enabled has been resolved.
-
-## 19.2.46 (2021-07-06)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I331724` - Child summary values are updated properly after editing a record.
 - `#332604` - Resolved white space issue while using less number of records with Virtualization.
-- `#I328508` - Selecting a row using selectRow method at load time works properly with Virtualization.
-- `#332847` - Batch Edit mode works properly with custom data binding.
-- `#333663` - Cancelling the edit action works properly when using escape key.
 
 ## 18.4.30 (2020-12-17)
 

@@ -161,22 +161,22 @@ console.log('dot character with replace back slash validation');
         expect(resultCount).toBe(10);
     });
 
-    it('dot character with replace back slash undo validation', () => {
-console.log('dot character with replace back slash undo validation');
-        editor.open(getJson());
-        let optionsPane = editor.optionsPaneModule;
-        optionsPane.showHideOptionsPane(true);
-        (optionsPane as any).searchInput.value = '.';
-        let replaceelementbox: any = (optionsPane as any).replaceWith;
-        replaceelementbox.value = '\\';
-        optionsPane.onReplaceAllButtonClick();
-        (optionsPane as any).searchInput.value = '\\';
-        optionsPane.onKeyDownInternal();
-        editor.editorHistory.undo();
-        optionsPane.onKeyDownInternal();
-        let resultCount = (optionsPane as any).resultsListBlock.children.length;
-        expect(resultCount).toBe(0);
-    });
+//     it('dot character with replace back slash undo validation', () => {
+// console.log('dot character with replace back slash undo validation');
+//         editor.open(getJson());
+//         let optionsPane = editor.optionsPaneModule;
+//         optionsPane.showHideOptionsPane(true);
+//         (optionsPane as any).searchInput.value = '.';
+//         let replaceelementbox: any = (optionsPane as any).replaceWith;
+//         replaceelementbox.value = '\\';
+//         optionsPane.onReplaceAllButtonClick();
+//         (optionsPane as any).searchInput.value = '\\';
+//         optionsPane.onKeyDownInternal();
+//         editor.editorHistory.undo();
+//         optionsPane.onKeyDownInternal();
+//         let resultCount = (optionsPane as any).resultsListBlock.children.length;
+//         expect(resultCount).toBe(0);
+//     });
     it('back slash character validation', () => {
 console.log('back slash character validation');
         editor.open(getJson());

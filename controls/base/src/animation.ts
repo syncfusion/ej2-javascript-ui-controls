@@ -9,18 +9,18 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event } from '
  * Animation effect names
  */
 export type Effect = 'FadeIn' | 'FadeOut' | 'FadeZoomIn' | 'FadeZoomOut' | 'FlipLeftDownIn' | 'FlipLeftDownOut' | 'FlipLeftUpIn' |
-    'FlipLeftUpOut' | 'FlipRightDownIn' | 'FlipRightDownOut' | 'FlipRightUpIn' | 'FlipRightUpOut' | 'FlipXDownIn' | 'FlipXDownOut' |
-    'FlipXUpIn' | 'FlipXUpOut' | 'FlipYLeftIn' | 'FlipYLeftOut' | 'FlipYRightIn' | 'FlipYRightOut' | 'SlideBottomIn' | 'SlideBottomOut' |
-    'SlideDown' | 'SlideLeft' | 'SlideLeftIn' | 'SlideLeftOut' | 'SlideRight' | 'SlideRightIn' | 'SlideRightOut' | 'SlideTopIn' |
-    'SlideTopOut' | 'SlideUp' | 'ZoomIn' | 'ZoomOut';
+'FlipLeftUpOut' | 'FlipRightDownIn' | 'FlipRightDownOut' | 'FlipRightUpIn' | 'FlipRightUpOut' | 'FlipXDownIn' | 'FlipXDownOut' |
+'FlipXUpIn' | 'FlipXUpOut' | 'FlipYLeftIn' | 'FlipYLeftOut' | 'FlipYRightIn' | 'FlipYRightOut' | 'SlideBottomIn' | 'SlideBottomOut' |
+'SlideDown' | 'SlideLeft' | 'SlideLeftIn' | 'SlideLeftOut' | 'SlideRight' | 'SlideRightIn' | 'SlideRightOut' | 'SlideTopIn' |
+'SlideTopOut' | 'SlideUp' | 'ZoomIn' | 'ZoomOut';
 
 /**
  * The Animation framework provide options to animate the html DOM elements
  * ```typescript
  *   let animeObject = new Animation({
- *      name: 'SlideLeftIn', 
+ *      name: 'SlideLeftIn',
  *      duration: 1000
- *   }); 
+ *   });
  *   animeObject.animate('#anime1');
  *   animeObject.animate('#anime2', { duration: 500 });
  * ```
@@ -29,51 +29,59 @@ export type Effect = 'FadeIn' | 'FadeOut' | 'FadeZoomIn' | 'FadeZoomOut' | 'Flip
 export class Animation extends Base<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Specify the type of animation
+     *
      * @default : 'FadeIn';
      */
     @Property('FadeIn')
     public name: Effect;
     /**
      * Specify the duration to animate
+     *
      * @default : 400;
      */
     @Property(400)
     public duration: number;
     /**
      * Specify the animation timing function
+     *
      * @default : 'ease';
      */
     @Property('ease')
     public timingFunction: string;
     /**
      * Specify the delay to start animation
+     *
      * @default : 0;
      */
     @Property(0)
     public delay: number;
     /**
      * Triggers when animation is in-progress
-     * @event
+     *
+     * @event progress
      */
     @Event()
     public progress: EmitType<AnimationOptions>;
     /**
      * Triggers when the animation is started
-     * @event
+     *
+     * @event begin
      */
     @Event()
     public begin: EmitType<AnimationOptions>;
 
     /**
      * Triggers when animation is completed
-     * @event
+     *
+     * @event end
      */
     @Event()
     public end: EmitType<AnimationOptions>;
 
     /**
      * Triggers when animation is failed due to any scripts
-     * @event
+     *
+     * @event fail
      */
     @Event()
     public fail: EmitType<AnimationOptions>;
@@ -97,17 +105,18 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Applies animation to the current element.  
+     * Applies animation to the current element.
+     *
      * @param {string | HTMLElement} element - Element which needs to be animated.
      * @param {AnimationModel} options - Overriding default animation settings.
-     * @return {void}
+     * @returns {void} ?
      */
     public animate(element: string | HTMLElement, options?: AnimationModel): void {
         options = !options ? {} : options;
-        let model: AnimationOptions = this.getModel(options);
+        const model: AnimationOptions = this.getModel(options);
         if (typeof element === 'string') {
-            let elements: HTMLElement[] = Array.prototype.slice.call(selectAll(element, document));
-            for (let element of elements) {
+            const elements: HTMLElement[] = Array.prototype.slice.call(selectAll(element, document));
+            for (const element of elements) {
                 model.element = element;
                 Animation.delayAnimation(model);
             }
@@ -118,17 +127,19 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Stop the animation effect on animated element.  
+     * Stop the animation effect on animated element.
+     *
      * @param {HTMLElement} element - Element which needs to be stop the animation.
      * @param {AnimationOptions} model - Handling the animation model at stop function.
      * @return {void}
      */
+
     public static stop(element: HTMLElement, model?: AnimationOptions): void {
         element.style.animation = '';
         element.removeAttribute('e-animate');
-        let animationId: string = element.getAttribute('e-animation-id');
+        const animationId: string = element.getAttribute('e-animation-id');
         if (animationId) {
-            let frameId: number = parseInt(animationId, 10);
+            const frameId: number = parseInt(animationId, 10);
             cancelAnimationFrame(frameId);
             element.removeAttribute('e-animation-id');
         }
@@ -139,9 +150,11 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Set delay to animation element
-     * @param {AnimationModel} model 
+     *
+     * @param {AnimationModel} model ?
      * @returns {void}
      */
+
     private static delayAnimation(model: AnimationModel): void {
         if (model.delay) {
             setTimeout(() => { Animation.applyAnimation(model); }, model.delay);
@@ -151,19 +164,20 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Triggers animation 
-     * @param {AnimationModel} model 
+     * Triggers animation
+     *
+     * @param {AnimationModel} model ?
      * @returns {void}
      */
+
     private static applyAnimation(model: AnimationOptions): void {
         model.timeStamp = 0;
         let step: number = 0;
         let timerId: number = 0;
-        let startTime: number = 0;
         let prevTimeStamp: number = 0;
-        let duration: number = model.duration;
+        const duration: number = model.duration;
         model.element.setAttribute('e-animate', 'true');
-        let startAnimation: (timeStamp?: number) => void = (timeStamp?: number): void => {
+        const startAnimation: (timeStamp?: number) => void = (timeStamp?: number): void => {
             try {
                 if (timeStamp) {
                     // let step: number = model.timeStamp = timeStamp - startTime;
@@ -177,14 +191,14 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
                         model.begin.call(this, model);
                     }
                     step = step + 1;
-                    let avg: number = model.timeStamp / step;
+                    const avg: number = model.timeStamp / step;
                     if (model.timeStamp < duration && model.timeStamp + avg < duration && model.element.getAttribute('e-animate')) {
-                        // apply animation effect to the current element                
+                        // apply animation effect to the current element
                         model.element.style.animation = model.name + ' ' + model.duration + 'ms ' + model.timingFunction;
                         if (model.progress) {
                             model.progress.call(this, model);
                         }
-                        // repeat requestAnimationFrame 
+                        // repeat requestAnimationFrame
                         requestAnimationFrame(startAnimation);
                     } else {
                         // clear requestAnimationFrame
@@ -197,7 +211,7 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
                         }
                     }
                 } else {
-                    startTime = performance.now();
+                    //startTime = performance.now();
                     // set initial requestAnimationFrame
                     timerId = requestAnimationFrame(startAnimation);
                     model.element.setAttribute('e-animation-id', timerId.toString());
@@ -215,9 +229,11 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Returns Animation Model
-     * @param {AnimationModel} options 
-     * @returns {AnimationModel}
+     *
+     * @param {AnimationModel} options ?
+     * @returns {AnimationModel} ?
      */
+
     private getModel(options: AnimationModel): AnimationModel {
         return {
             name: options.name || this.name,
@@ -232,22 +248,30 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
         };
     }
 
-    /** 
+    /**
      * @private
+     * @param {AnimationModel} newProp ?
+     * @param {AnimationModel} oldProp ?
+     * @returns {void} ?
      */
+    // eslint-disable-next-line
     public onPropertyChanged(newProp: AnimationModel, oldProp: AnimationModel): void {
         // no code needed
     }
     /**
      * Returns module name as animation
+     *
      * @private
+     * @returns {void} ?
      */
     public getModuleName(): string {
         return 'animation';
     }
 
     /**
+     *
      * @private
+     * @returns {void} ?
      */
     public destroy(): void {
         //Override base destroy;
@@ -276,14 +300,17 @@ export interface AnimationOptions extends AnimationModel {
  *   rippleEffect(document.getElementById('ripple'));
  * </script>
  * ```
+ *
  * @private
- * @param HTMLElement element - Target element
- * @param RippleOptions rippleOptions - Ripple options .
+ * @param {HTMLElement} element - Target element
+ * @param {RippleOptions} rippleOptions - Ripple options .
+ * @param {Function} done .
+ * @returns {void} .
  */
 export function rippleEffect(element: HTMLElement, rippleOptions?: RippleOptions, done?: Function): () => void {
-    let rippleModel: RippleOptions = getRippleModel(rippleOptions);
+    const rippleModel: RippleOptions = getRippleModel(rippleOptions);
     if (rippleModel.rippleFlag === false || (rippleModel.rippleFlag === undefined && !isRippleEnabled)) {
-        return (() => {});
+        return Function;
     }
     element.setAttribute('data-ripple', 'true');
     EventHandler.add(element, 'mousedown', rippleHandler, { parent: element, rippleOptions: rippleModel });
@@ -304,6 +331,7 @@ export function rippleEffect(element: HTMLElement, rippleOptions?: RippleOptions
 
 /**
  * Ripple method arguments to handle ripple effect
+ *
  * @private
  */
 export interface RippleOptions {
@@ -329,8 +357,14 @@ export interface RippleOptions {
     duration?: number;
 }
 
+/**
+ * Handler for ripple model
+ *
+ * @param {RippleOptions} rippleOptions ?
+ * @returns {RippleOptions} ?
+ */
 function getRippleModel(rippleOptions?: RippleOptions): RippleOptions {
-    let rippleModel: RippleOptions = {
+    const rippleModel: RippleOptions = {
         selector: rippleOptions && rippleOptions.selector ? rippleOptions.selector : null,
         ignore: rippleOptions && rippleOptions.ignore ? rippleOptions.ignore : null,
         rippleFlag: rippleOptions && rippleOptions.rippleFlag,
@@ -342,24 +376,25 @@ function getRippleModel(rippleOptions?: RippleOptions): RippleOptions {
 
 /**
  * Handler for ripple event
- * @param {MouseEvent} e 
- * @returns {void}
+ *
+ * @param {MouseEvent} e ?
+ * @returns {void} ?
  * @private
  */
 function rippleHandler(e: MouseEvent): void {
-    let target: HTMLElement = <HTMLElement>(e.target);
-    let selector: string = this.rippleOptions.selector;
-    let element: HTMLElement = selector ? <HTMLElement>closest(target, selector) : target;
+    const target: HTMLElement = <HTMLElement>(e.target);
+    const selector: string = this.rippleOptions.selector;
+    const element: HTMLElement = selector ? <HTMLElement>closest(target, selector) : target;
     if (!element || (this.rippleOptions && closest(target, this.rippleOptions.ignore))) {
         return;
     }
-    let offset: ClientRect = element.getBoundingClientRect();
-    let offsetX: number = e.pageX - document.body.scrollLeft;
-    let offsetY: number = e.pageY - ((!document.body.scrollTop && document.documentElement) ?
+    const offset: ClientRect = element.getBoundingClientRect();
+    const offsetX: number = e.pageX - document.body.scrollLeft;
+    const offsetY: number = e.pageY - ((!document.body.scrollTop && document.documentElement) ?
         document.documentElement.scrollTop : document.body.scrollTop);
-    let pageX: number = Math.max(Math.abs(offsetX - offset.left), Math.abs(offsetX - offset.right));
-    let pageY: number = Math.max(Math.abs(offsetY - offset.top), Math.abs(offsetY - offset.bottom));
-    let radius: number = Math.sqrt(pageX * pageX + pageY * pageY);
+    const pageX: number = Math.max(Math.abs(offsetX - offset.left), Math.abs(offsetX - offset.right));
+    const pageY: number = Math.max(Math.abs(offsetY - offset.top), Math.abs(offsetY - offset.bottom));
+    const radius: number = Math.sqrt(pageX * pageX + pageY * pageY);
     let diameter: string = radius * 2 + 'px';
     let x: number = offsetX - offset.left - radius;
     let y: number = offsetY - offset.top - radius;
@@ -369,10 +404,10 @@ function rippleHandler(e: MouseEvent): void {
         diameter = '100%';
     }
     element.classList.add('e-ripple');
-    let duration: string = this.rippleOptions.duration.toString();
-    let styles: string = 'width: ' + diameter + ';height: ' + diameter + ';left: ' + x + 'px;top: ' + y + 'px;' +
+    const duration: string = this.rippleOptions.duration.toString();
+    const styles: string = 'width: ' + diameter + ';height: ' + diameter + ';left: ' + x + 'px;top: ' + y + 'px;' +
         'transition-duration: ' + duration + 'ms;';
-    let rippleElement: HTMLElement = createElement('div', { className: 'e-ripple-element', styles: styles });
+    const rippleElement: HTMLElement = createElement('div', { className: 'e-ripple-element', styles: styles });
     element.appendChild(rippleElement);
     window.getComputedStyle(rippleElement).getPropertyValue('opacity');
     rippleElement.style.transform = 'scale(1)';
@@ -384,8 +419,9 @@ function rippleHandler(e: MouseEvent): void {
 
 /**
  * Handler for ripple element mouse up event
- * @param {MouseEvent} e 
- * @returns {void}
+ *
+ * @param {MouseEvent} e ?
+ * @returns {void} ?
  * @private
  */
 function rippleUpHandler(e: MouseEvent): void {
@@ -394,8 +430,9 @@ function rippleUpHandler(e: MouseEvent): void {
 
 /**
  * Handler for ripple element mouse move event
- * @param {MouseEvent} e 
- * @returns {void}
+ *
+ * @param {MouseEvent} e ?
+ * @returns {void} ?
  * @private
  */
 function rippleLeaveHandler(e: MouseEvent): void {
@@ -404,21 +441,22 @@ function rippleLeaveHandler(e: MouseEvent): void {
 
 /**
  * Handler for removing ripple element
- * @param {MouseEvent} e 
- * @param {rippleArgs} eventArgs
- * @returns {void}
+ *
+ * @param {MouseEvent} e ?
+ * @param {RippleArgs} eventArgs ?
+ * @returns {void} ?
  * @private
  */
 function removeRipple(e: MouseEvent, eventArgs: RippleArgs): void {
-    let duration: number = eventArgs.rippleOptions.duration;
-    let target: HTMLElement = <HTMLElement>(e.target);
-    let selector: string = eventArgs.rippleOptions.selector;
-    let element: HTMLElement = selector ? <HTMLElement>closest(target, selector) : target;
+    const duration: number = eventArgs.rippleOptions.duration;
+    const target: HTMLElement = <HTMLElement>(e.target);
+    const selector: string = eventArgs.rippleOptions.selector;
+    const element: HTMLElement = selector ? <HTMLElement>closest(target, selector) : target;
     if (!element || (element && element.className.indexOf('e-ripple') === -1)) {
         return;
     }
-    let rippleElements: HTMLElement[] = selectAll('.e-ripple-element', element);
-    let rippleElement: HTMLElement = rippleElements[rippleElements.length - 1];
+    const rippleElements: HTMLElement[] = selectAll('.e-ripple-element', element);
+    const rippleElement: HTMLElement = rippleElements[rippleElements.length - 1];
     if (rippleElement) {
         rippleElement.style.opacity = '0.5';
     }
@@ -449,8 +487,9 @@ export let isRippleEnabled: boolean = false;
 
 /**
  * Animation Module provides support to enable ripple effect functionality to Essential JS 2 components.
+ *
  * @param {boolean} isRipple Specifies the boolean value to enable or disable ripple effect.
- * @returns {boolean}
+ * @returns {boolean} ?
  */
 export function enableRipple(isRipple: boolean): boolean {
     isRippleEnabled = isRipple;

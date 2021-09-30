@@ -117,6 +117,40 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             labelFontFamily: 'Inter'  
         };
         break;
+    case 'bootstrap5':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#212529',
+            subTitleFontColor: '#212529',
+            tooltipFillColor: '#212529',
+            tooltipFontColor: '#F9FAFB',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            legendTitleColor: '#212529',
+            legendTextColor: '#212529',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            legendFontSize: '12px',
+            labelFontFamily: 'Helvetica Neue'  
+        };
+        break;
+    case 'bootstrap5dark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#FFFFFF',
+            subTitleFontColor: '#FFFFFF',
+            tooltipFillColor: '#E9ECEF',
+            tooltipFontColor: '#212529',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            legendTitleColor: '#FFFFFF',
+            legendTextColor: '#FFFFFF',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            legendFontSize: '12px',
+            labelFontFamily: 'Helvetica Neue'  
+        };
+        break;
 	default:
         style = {
             backgroundColor: '#FFFFFF',

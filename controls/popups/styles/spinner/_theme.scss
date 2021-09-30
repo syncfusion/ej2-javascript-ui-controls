@@ -36,7 +36,7 @@
         }
       }
 
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark'  {
+      @if $skin-name == 'tailwind' {
         .e-spin-tailwind {
 
           .e-path-circle {
@@ -46,6 +46,12 @@
           .e-path-arc {
             stroke: $spin-tailwind-arc-color;
         }
+      }
+    }
+
+      @if $skin-name == 'bootstrap5'  {
+        .e-spin-bootstrap5 {
+          stroke: $spin-boot5-stroke-color;
       }
     }
 

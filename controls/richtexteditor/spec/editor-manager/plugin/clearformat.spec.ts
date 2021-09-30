@@ -5,6 +5,33 @@ import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { ClearFormat } from '../../../src/editor-manager/plugin/clearformat';
 
+// describe('Clear multiple formats', () => {
+//     let innervalue: string = '<p>Th<strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span id="selectId" style="background-color: rgb(255, 255, 0);">is is a rich text editor content with style formats to be cleare</span></span></span></span></em></strong>d</p>'
+//     let domSelection: NodeSelection = new NodeSelection();
+//     let divElement: HTMLDivElement = document.createElement('div');
+//     divElement.id = 'divElement';
+//     divElement.contentEditable = 'true';
+//     divElement.innerHTML = innervalue;
+
+//     beforeAll(() => {
+//         document.body.appendChild(divElement);
+//     });
+//     afterAll(() => {
+//         detach(divElement);
+//     });
+    
+//     it(' - Clear format when multiple style formats are applied', () => {
+//         new ClearFormat();
+//         let node1: Node = document.getElementById('selectId');
+//         let node2: HTMLElement = document.getElementById('paragraph10');
+//         domSelection.setSelectionText(document, node1.childNodes[0], node1.childNodes[0], 3, node1.childNodes[0].textContent.length - 2);
+//         ClearFormat.clear(document, divElement, 'P');
+//         setTimeout(() => {
+//             expect(divElement.innerHTML === '<p>Th<strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span id="selectId" style="background-color: rgb(255, 255, 0);">is </span></span></span></span></em></strong>is a rich text editor content with style formats to be clea<strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span id="selectId" style="background-color: rgb(255, 255, 0);">re</span></span></span></span></em></strong>d</p>').toBe(true);
+//         }, 100);
+//     });
+// });
+
 describe('Clear Format commands', () => {
     //HTML value
     let innervalue: string = '<div id="div1">'+
@@ -92,21 +119,21 @@ describe('Clear Format commands', () => {
         let node1: Node = document.getElementById('paragraph4');
         let node2: HTMLElement = document.getElementById('paragraph10');
         domSelection.setSelectionText(document, node1, node2, 0, 2);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('div2').childNodes[0].nodeName.toLowerCase()).toEqual('p');
     });
     it('Clear OL LI textnode element', () => {
         let node1: Node = document.getElementById('paragraph11');
         let node2: HTMLElement = document.getElementById('paragraph17');
         domSelection.setSelectionText(document, node1, node2, 0, 1);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('div3').childNodes[0].nodeName.toLowerCase()).toEqual('p');
     });
     it('Clear inline element', () => {
         let node1: Node = document.getElementById('div5');
         let node2: HTMLElement = document.getElementById('paragraph26');
         domSelection.setSelectionText(document, node1.childNodes[0], node2, 2, node2.childNodes.length - 1);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('div5').childNodes[1].nodeName.toLowerCase()).toEqual('#text');
         expect(document.getElementById('div5').querySelectorAll('b').length).toEqual(0);
     });
@@ -115,7 +142,7 @@ describe('Clear Format commands', () => {
         let node1: Node = document.getElementById('paragraph18');
         let node2: HTMLElement = document.getElementById('paragraph23');
         domSelection.setSelectionText(document, node1, node2, 0, node2.childNodes.length);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('div4').childNodes[0].nodeName.toLowerCase()).toEqual('p');
         expect(document.getElementById('div4').querySelectorAll("p")[5].nextElementSibling.nodeName.toLowerCase()).toEqual('ol');
     });
@@ -124,7 +151,7 @@ describe('Clear Format commands', () => {
         let node: Node = document.getElementById('paragraph3').childNodes[0];
         domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 11,
             node.childNodes[0].textContent.length);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('paragraph3').childNodes[0].nodeName.toLowerCase()).toEqual('b');
     });
     it('Paragraph with bold  element Complete selection', () => {
@@ -132,7 +159,7 @@ describe('Clear Format commands', () => {
         let node: Node = document.getElementById('paragraph3');
         domSelection.setSelectionText(document, node, node, 0,
             node.childNodes.length);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('paragraph3') === null).toBe(true);
     });
     it('mulitple Paragraph with specific selection', () => {
@@ -141,7 +168,7 @@ describe('Clear Format commands', () => {
         let node2: Node = document.getElementById('paragraph2');
         domSelection.setSelectionText(document, node1.childNodes[0], node2, 6,
             node2.childNodes.length);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('paragraph1').childNodes[1].nodeName.toLowerCase()).toEqual('#text');
     });
     it('mulitple Paragraph with Complete selection', () => {
@@ -150,14 +177,14 @@ describe('Clear Format commands', () => {
         let node2: Node = document.getElementById('paragraph31');
         domSelection.setSelectionText(document, node1, node2, 0,
             node2.childNodes.length);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.getElementById('paragraph1') === null).toBe(true);
     });
     it('OL with Complete selection append paragraph', () => {
         new ClearFormat();
         let node1: Node = document.getElementById('div21');
         domSelection.setSelectionText(document, node1.childNodes[0], node1.childNodes[0], 0, 1);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(node1.childNodes[0].nodeName.toLocaleLowerCase()).toBe('p');
     });
 });
@@ -182,7 +209,32 @@ describe('Clear Format commands', () => {
         let node1: Node = document.getElementById('divElement');
         let node2: HTMLElement = document.getElementById('paragraph10');
         domSelection.setSelectionText(document, node1, node1, 0, 1);
-        ClearFormat.clear(document, divElement);
+        ClearFormat.clear(document, divElement, 'P');
         expect(document.querySelectorAll('table').length === 1).toBe(true);
+    });
+});
+
+describe('Clear Format commands', () => {
+    let innervalue: string = '<div><b>Content</b></div>'
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    
+    it('Clear format when enter key is configured as `div` - ', () => {
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0].childNodes[0].childNodes[0];
+        domSelection.setSelectionText(document, node1, node1, 0, node1.textContent.length);
+        ClearFormat.clear(document, divElement, 'DIV');
+        expect(document.getElementById('divElement').children[0].nodeName !== 'P').toBe(true);
+        expect(document.getElementById('divElement').children[0].nodeName === 'DIV').toBe(true);
     });
 });

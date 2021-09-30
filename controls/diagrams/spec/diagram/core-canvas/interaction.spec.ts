@@ -11,6 +11,8 @@ import { rotatePoint } from '../../../src/diagram/utility/base-util';
 import { MouseEvents } from './../interaction/mouseevents.spec'
 import { SnapConstraints, SelectorConstraints } from '../../../src/diagram/index';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { IHistoryChangeArgs } from '../../../src/diagram/objects/interface/IElement'
+
 Diagram.Inject(BpmnDiagrams);
 /**
  * Interaction Specification Document
@@ -401,8 +403,7 @@ describe('Diagram Control', () => {
                 && offsetY - diagram.selectedItems.connectors[0].wrapper.offsetY == 200).toBe(true);
             done();
         });
-         });
-
+    });
 
     describe('Testing Rotation (50) Resizing', () => {
         let diagram: Diagram;
@@ -773,7 +774,71 @@ describe('Diagram Control', () => {
                 Math.round(diagram.nodes[0].height) == Math.round(resize260[corner].height)).toBe(true);
             done();
         });
-      });
+    });
+
+    function historyChange(args: IHistoryChangeArgs): void {
+        let instance: any = document.getElementById('diagram5');
+        let digaramInstance = instance.ej2_instances[0];
+        if ((args.change as any).type === "PositionChanged" && args.source && args.source[0].annotations && args.source[0].annotations[0].content) {
+            digaramInstance.selectAll();
+            digaramInstance.selectedItems.nodes[0].annotations[0].content = 'history change triggred';
+            digaramInstance.refresh();
+        }
+    }
+
+    describe('Checking history change event', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram5' });
+            document.body.appendChild(ele);
+
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 300, annotations: [{ content: 'node1' }], offsetY: 300 };
+
+            diagram = new Diagram({
+                mode: 'Canvas',
+                width: 550, height: 550, nodes: [node], historyChange: historyChange, snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+
+            diagram.appendTo('#diagram5');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('After Rotating Single Node', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.nodes[0].rotateAngle = 0;
+            diagram.dataBind();
+            diagram.clearSelection();
+            mouseEvents.clickEvent(diagramCanvas, 300, 300);
+            let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
+            let rotator: PointModel = { x: bounds.center.x, y: bounds.y - 30 };
+            let matrix: Matrix = identityMatrix();
+            rotateMatrix(matrix, 130, bounds.center.x, bounds.center.y);
+            let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
+            mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + diagram.element.offsetLeft, rotator.y + diagram.element.offsetTop, endPoint.x + diagram.element.offsetLeft, endPoint.y + diagram.element.offsetTop);
+            diagram.nodes[0].rotateAngle = Math.round(diagram.nodes[0].rotateAngle);
+            let refPoint: PointModel = transformPointByMatrix(matrix, bounds.topLeft); refPoint.x += 8; refPoint.y += 8;
+            mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 5, refPoint.y - 10);
+            mouseEvents.mouseDownEvent(diagramCanvas, 300, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 155, 100);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.selectedItems.nodes[0].annotations[0].content === 'history change triggred').toBe(true);
+            done();
+        });
+    });
 
     describe('Testing Resizing', () => {
         let diagram: Diagram;

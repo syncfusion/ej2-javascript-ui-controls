@@ -8,6 +8,11 @@ export interface SaveOptions {
     fileName?: string;
     saveType?: SaveType;
     //passWord?: string;
+    pdfLayoutSettings?: pdfLayoutSettings;
+}
+
+export interface pdfLayoutSettings {
+    fitSheetOnOnePage?: boolean;
 }
 
 export interface BeforeSaveEventArgs extends SaveOptions {
@@ -56,6 +61,12 @@ export interface FindAllArgs {
     isEMatch?: boolean;
     findCollection?: string[];
 }
+
+export interface InvalidFormula {
+    value: string;
+    skip: boolean;
+}
+
 /**
  * Specifies find next arguments.
  */
@@ -362,4 +373,22 @@ export interface DataSourceChangedEventArgs {
     action?: string;
     rangeIndex?: number;
     sheetIndex?: number;
+}
+
+/**
+ * Specifies the defineName arguments.
+ *
+ * @hidden
+ */
+ export interface DefinedNameEventArgs {
+    name?: string;
+    scope?: string;
+    comment?: string;
+    refersTo?: string;
+    cancel: boolean;
+}
+
+/** @hidden */
+export interface ExtendedRowModel extends RowModel {
+    isFiltered?: boolean;
 }

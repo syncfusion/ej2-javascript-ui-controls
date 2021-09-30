@@ -629,10 +629,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private wireEvents(): void {
         this.setEnableGestures();
-        window.addEventListener('resize', this.resize.bind(this));
+        EventHandler.add(window as any, 'resize', this.resize, this);
     }
     private unWireEvents(): void {
-        window.removeEventListener('resize', this.resize.bind(this));
+        EventHandler.remove(window as any, 'resize', this.resize);
         EventHandler.remove(document, 'mousedown touchstart', this.documentclickHandler);
         if (this.mainContentEle) { this.mainContentEle.destroy(); }
         if (this.sidebarEle) { this.sidebarEle.destroy(); }

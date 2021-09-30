@@ -20,8 +20,8 @@ import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
 import * as events from '../base/constant';
 import { MemberEditorOpenEventArgs } from '../base/interface';
-import { PivotView } from '../../pivotview';
-import { PivotFieldList } from '../../pivotfieldlist';
+import { PivotView } from '../../pivotview/base/pivotview';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { Button } from '@syncfusion/ej2-buttons';
 
 /**

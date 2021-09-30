@@ -22,7 +22,7 @@
           }
         }
 
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           .e-chips-close::before {
             color: $icon-color-hover;
           }
@@ -34,7 +34,7 @@
       }
     }
 
-    @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+    @if $ddt-skin-name == 'tailwind' {
       &.e-disabled {
         .e-chips {
           background-color: $content-bg-color-alt3;
@@ -60,13 +60,7 @@
     &.e-input-group.e-control-wrapper,
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
-          background-color: $ddt-icon-bg-color;
-        }
-      }
-
-      .e-input-group-icon.e-ddt-icon {
-        @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and  $ddt-skin-name != 'material-dark' {
           background-color: $ddt-icon-bg-color;
         }
       }
@@ -74,12 +68,19 @@
 
     &.e-input-group.e-control-wrapper .e-input[readonly],
     &.e-float-input.e-control-wrapper input[readonly] {
-      @if $ddt-skin-name == 'bootstrap4' {
+      @if $ddt-skin-name == 'bootstrap4' or $ddt-skin-name == 'bootstrap5' {
         background: $ddt-readonly-input-bg-color;
+
+        @if $ddt-skin-name == 'bootstrap5' {
+          ~ span.e-input-group-icon.e-ddt-icon {
+            background: transparent;
+            color: $icon-color;
+          }
+        }
       }
 
       &.e-disabled {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+        @if $ddt-skin-name == 'tailwind' {
           background-color: $content-bg-color-alt1;
           color: $content-text-color-disabled;
         }

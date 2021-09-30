@@ -165,10 +165,15 @@ export class GroupingBar implements IAction {
                             width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
                         });
                         this.parent.element.insertBefore(
-                            this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));  
+                            this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));
                         if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
-                            this.chartPanel.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                            let chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                            this.chartPanel.width = chartPanelWidth < 400 ? '398px' : chartPanelWidth;
                             this.chartPanel.refreshOverflow();
+                            if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
+                                clearTimeout(this.timeOutObj);
+                                this.timeOutObj = setTimeout(this.alignIcon.bind(this));
+                            }
                         }
                     } else {
                         this.groupingChartTable = undefined;
@@ -209,7 +214,8 @@ export class GroupingBar implements IAction {
                         width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
                     });
                     if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
-                        this.gridPanel.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                        let gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                        this.gridPanel.width = gridPanelWidth < 400 ? '398px' : gridPanelWidth;
                         this.gridPanel.refreshOverflow();
                     }
                     this.groupingTable.style.minWidth = '400px';
@@ -251,6 +257,7 @@ export class GroupingBar implements IAction {
                     }
                 } else {
                     this.parent.axisFieldModule.render();
+                    this.updateChartAxisHeight();
                 }
                 if (this.parent.showToolbar && this.parent.displayOption.view === 'Both') {
                     if (this.parent.currentView === 'Table') {
@@ -263,6 +270,34 @@ export class GroupingBar implements IAction {
             }
         }
     }
+
+    private updateChartAxisHeight(): void {
+        if (this.groupingChartTable && select('#' + this.parent.element.id + '_chart', this.parent.element)) {
+            let rowPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS) as HTMLElement;
+            let valuePanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS) as HTMLElement;
+            let filterPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_FILTER_CLASS) as HTMLElement;
+            let columnPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS) as HTMLElement;
+            if (rowPanel && columnPanel) {
+                rowPanel.style.height = 'auto';
+                columnPanel.style.height = 'auto';
+                if (rowPanel.offsetHeight > 0 && columnPanel.offsetHeight > 0) {
+                    let maxHeight: number = rowPanel.offsetHeight > columnPanel.offsetHeight ? rowPanel.offsetHeight : columnPanel.offsetHeight;
+                    setStyleAttribute(rowPanel, { height: formatUnit(maxHeight) });
+                    setStyleAttribute(columnPanel, { height: formatUnit(maxHeight) });
+                }
+            }
+            if (valuePanel && filterPanel) {
+                valuePanel.style.height = 'auto';
+                filterPanel.style.height = 'auto';
+                if (valuePanel.offsetHeight > 0 && filterPanel.offsetHeight > 0) {
+                    let maxHeight: number = valuePanel.offsetHeight > filterPanel.offsetHeight ? valuePanel.offsetHeight : filterPanel.offsetHeight;
+                    setStyleAttribute(valuePanel, { height: formatUnit(maxHeight) });
+                    setStyleAttribute(filterPanel, { height: formatUnit(maxHeight) });
+                }
+            }
+        }
+    }
+
     /**
      * @hidden
      */
@@ -272,8 +307,14 @@ export class GroupingBar implements IAction {
                 width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
             });
             if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
-                this.chartPanel.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
-                this.chartPanel.refreshOverflow();
+                let chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                this.chartPanel.width = chartPanelWidth < 400 ? '398px' : chartPanelWidth;
+                    this.chartPanel.refreshOverflow();
+            }
+            this.updateChartAxisHeight();
+            if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
+                clearTimeout(this.timeOutObj);
+                this.timeOutObj = setTimeout(this.alignIcon.bind(this));
             }
         }
         if (this.groupingTable) {
@@ -281,8 +322,9 @@ export class GroupingBar implements IAction {
                 width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
             });
             if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
-                this.gridPanel.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
-                this.gridPanel.refreshOverflow();
+                let gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                this.gridPanel.width = gridPanelWidth < 400 ? '398px' : gridPanelWidth;
+                    this.gridPanel.refreshOverflow();
             }
             this.groupingTable.style.minWidth = '400px';
             let colGroupElement: HTMLElement =
@@ -341,7 +383,7 @@ export class GroupingBar implements IAction {
         if (this.parent.currentView === 'Table') {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
         } else {
-            currentWidth = this.parent.chart ? this.parent.chartModule.calculatedWidth : currentWidth;
+            currentWidth = this.parent.chart ? this.parent.chartModule.getCalulatedWidth() : currentWidth;
         }
         if (currentWidth) {
             let actWidth: number = currentWidth < 400 ? 400 : currentWidth;
@@ -350,7 +392,9 @@ export class GroupingBar implements IAction {
                     -Math.abs((actWidth) -
                         (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
                     (actWidth) -
-                    (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
+                    (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
+
+                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ""
             });
         }
     }

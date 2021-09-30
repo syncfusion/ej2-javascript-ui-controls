@@ -1,7 +1,7 @@
 import { Smithchart, SmithchartLegend, TooltipRender, ISmithchartLoadedEventArgs } from '../../../src/smithchart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Smithchart.Inject(SmithchartLegend, TooltipRender);
 
@@ -29,43 +29,43 @@ describe('Smithchart legend properties tesing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-                title:{
-                    text:'Impedance Transmission'
+                title: {
+                    text: 'Impedance Transmission'
                 },
                 horizontalAxis: {
                     minorGridLines: {
                         visible: true
                     },
-                    majorGridLines:{
+                    majorGridLines: {
                         visible: true
                     }
                 },
-            series: [{
-                points: [
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                    { resistance: 1.0, reactance: 0.4 },
-                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-                ],
-                name: 'Transmission1',
-                tooltip: { visible: true },
-                marker: {
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                    ],
+                    name: 'Transmission1',
+                    tooltip: { visible: true },
+                    marker: {
+                        visible: true,
+                        dataLabel: {
+                            visible: true
+                        }
+                    }
+                }],
+                legendSettings: {
                     visible: true,
-                   dataLabel:{
-                       visible: true
-                   }
                 }
-            }],
-            legendSettings: {
-                visible: true,
-            }
             }, '#' + id);
         });
         afterAll(() => {
@@ -155,7 +155,7 @@ describe('Smithchart legend properties tesing', () => {
         //     };
         //     smithchart.refresh();
         // });
-        
+
     });
     describe('Material themes testing', () => {
         let id: string = 'smithchart';
@@ -169,44 +169,44 @@ describe('Smithchart legend properties tesing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-                theme :'MaterialDark',
-                title:{
-                    text:'Impedance Transmission'
+                theme: 'MaterialDark',
+                title: {
+                    text: 'Impedance Transmission'
                 },
                 horizontalAxis: {
                     minorGridLines: {
                         visible: true
                     },
-                    majorGridLines:{
+                    majorGridLines: {
                         visible: true
                     }
                 },
-            series: [{
-                points: [
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                    { resistance: 1.0, reactance: 0.4 },
-                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-                ],
-                name: 'Transmission1',
-                tooltip: { visible: true },
-                marker: {
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                    ],
+                    name: 'Transmission1',
+                    tooltip: { visible: true },
+                    marker: {
+                        visible: true,
+                        dataLabel: {
+                            visible: true
+                        }
+                    }
+                }],
+                legendSettings: {
                     visible: true,
-                   dataLabel:{
-                       visible: true
-                   }
                 }
-            }],
-            legendSettings: {
-                visible: true,
-            }
             }, '#' + id);
         });
         afterAll(() => {
@@ -224,7 +224,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with axis Line', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
-                expect(element.getAttribute('stroke')).toEqual('#00bdae');
+                expect(element.getAttribute('stroke')).toEqual('#9ECB08');
             };
             smithchart.refresh();
         });
@@ -259,14 +259,14 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with background', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_SmithchartBorder');
-                expect(element.getAttribute('fill')).toEqual('#000000');
+                expect(element.getAttribute('fill')).toEqual('#383838');
             };
             smithchart.refresh();
         });
         it('Checking with data label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_symbol0');
-                expect(element.getAttribute('fill')).toEqual('#00bdae');
+                expect(element.getAttribute('fill')).toEqual('#9ECB08');
             };
             smithchart.refresh();
         });
@@ -296,7 +296,7 @@ describe('Smithchart legend properties tesing', () => {
         //     };
         //     smithchart.refresh();
         // });
-        
+
     });
     describe('High Contrast themes testing', () => {
         let id: string = 'smithchart';
@@ -310,44 +310,44 @@ describe('Smithchart legend properties tesing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-                theme :'HighContrast',
-                title:{
-                    text:'Impedance Transmission'
+                theme: 'HighContrast',
+                title: {
+                    text: 'Impedance Transmission'
                 },
                 horizontalAxis: {
                     minorGridLines: {
                         visible: true
                     },
-                    majorGridLines:{
+                    majorGridLines: {
                         visible: true
                     }
                 },
-            series: [{
-                points: [
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                    { resistance: 1.0, reactance: 0.4 },
-                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-                ],
-                name: 'Transmission1',
-                tooltip: { visible: true },
-                marker: {
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                    ],
+                    name: 'Transmission1',
+                    tooltip: { visible: true },
+                    marker: {
+                        visible: true,
+                        dataLabel: {
+                            visible: true
+                        }
+                    }
+                }],
+                legendSettings: {
                     visible: true,
-                   dataLabel:{
-                       visible: true
-                   }
                 }
-            }],
-            legendSettings: {
-                visible: true,
-            }
             }, '#' + id);
         });
         afterAll(() => {
@@ -365,7 +365,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with axis Line', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
-                expect(element.getAttribute('stroke')).toEqual('#00bdae');
+                expect(element.getAttribute('stroke')).toEqual('#79ECE4');
             };
             smithchart.refresh();
         });
@@ -407,7 +407,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_symbol0');
-                expect(element.getAttribute('fill')).toEqual('#00bdae');
+                expect(element.getAttribute('fill')).toEqual('#79ECE4');
             };
             smithchart.refresh();
         });
@@ -437,7 +437,7 @@ describe('Smithchart legend properties tesing', () => {
         //     };
         //     smithchart.refresh();
         // });
-        
+
     });
     describe('Bootstrap4 themes testing', () => {
         let id: string = 'smithchart';
@@ -451,44 +451,44 @@ describe('Smithchart legend properties tesing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-                theme :'Bootstrap4',
-                title:{
-                    text:'Impedance Transmission'
+                theme: 'Bootstrap4',
+                title: {
+                    text: 'Impedance Transmission'
                 },
                 horizontalAxis: {
                     minorGridLines: {
                         visible: true
                     },
-                    majorGridLines:{
+                    majorGridLines: {
                         visible: true
                     }
                 },
-            series: [{
-                points: [
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                    { resistance: 1.0, reactance: 0.4 },
-                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-                ],
-                name: 'Transmission1',
-                tooltip: { visible: true },
-                marker: {
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                    ],
+                    name: 'Transmission1',
+                    tooltip: { visible: true },
+                    marker: {
+                        visible: true,
+                        dataLabel: {
+                            visible: true
+                        }
+                    }
+                }],
+                legendSettings: {
                     visible: true,
-                   dataLabel:{
-                       visible: true
-                   }
                 }
-            }],
-            legendSettings: {
-                visible: true,
-            }
             }, '#' + id);
         });
         afterAll(() => {
@@ -506,7 +506,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with axis Line', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
-                expect(element.getAttribute('stroke')).toEqual('#00bdae');
+                expect(element.getAttribute('stroke')).toEqual('#a16ee5');
             };
             smithchart.refresh();
         });
@@ -548,7 +548,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_symbol0');
-                expect(element.getAttribute('fill')).toEqual('#00bdae');
+                expect(element.getAttribute('fill')).toEqual('#a16ee5');
             };
             smithchart.refresh();
         });
@@ -578,9 +578,9 @@ describe('Smithchart legend properties tesing', () => {
         //     };
         //     smithchart.refresh();
         // });
-        
+
     });
-	describe('Tailwind themes testing', () => {
+    describe('Tailwind themes testing', () => {
         let id: string = 'smithchart';
         let smithchart: Smithchart;
         let ele: HTMLDivElement;
@@ -592,44 +592,44 @@ describe('Smithchart legend properties tesing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-                theme :'Tailwind',
-                title:{
-                    text:'Impedance Transmission'
+                theme: 'Tailwind',
+                title: {
+                    text: 'Impedance Transmission'
                 },
                 horizontalAxis: {
                     minorGridLines: {
                         visible: true
                     },
-                    majorGridLines:{
+                    majorGridLines: {
                         visible: true
                     }
                 },
-            series: [{
-                points: [
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                    { resistance: 1.0, reactance: 0.4 },
-                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-                ],
-                name: 'Transmission1',
-                tooltip: { visible: true },
-                marker: {
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                    ],
+                    name: 'Transmission1',
+                    tooltip: { visible: true },
+                    marker: {
+                        visible: true,
+                        dataLabel: {
+                            visible: true
+                        }
+                    }
+                }],
+                legendSettings: {
                     visible: true,
-                   dataLabel:{
-                       visible: true
-                   }
                 }
-            }],
-            legendSettings: {
-                visible: true,
-            }
             }, '#' + id);
         });
         afterAll(() => {
@@ -700,10 +700,10 @@ describe('Smithchart legend properties tesing', () => {
             };
             smithchart.refresh();
         });
-        
-        
+
+
     });
-	describe('TailwindDark themes testing', () => {
+    describe('TailwindDark themes testing', () => {
         let id: string = 'smithchart';
         let smithchart: Smithchart;
         let ele: HTMLDivElement;
@@ -715,44 +715,44 @@ describe('Smithchart legend properties tesing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-                theme :'TailwindDark',
-                title:{
-                    text:'Impedance Transmission'
+                theme: 'TailwindDark',
+                title: {
+                    text: 'Impedance Transmission'
                 },
                 horizontalAxis: {
                     minorGridLines: {
                         visible: true
                     },
-                    majorGridLines:{
+                    majorGridLines: {
                         visible: true
                     }
                 },
-            series: [{
-                points: [
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                    { resistance: 1.0, reactance: 0.4 },
-                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-                ],
-                name: 'Transmission1',
-                tooltip: { visible: true },
-                marker: {
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                    ],
+                    name: 'Transmission1',
+                    tooltip: { visible: true },
+                    marker: {
+                        visible: true,
+                        dataLabel: {
+                            visible: true
+                        }
+                    }
+                }],
+                legendSettings: {
                     visible: true,
-                   dataLabel:{
-                       visible: true
-                   }
                 }
-            }],
-            legendSettings: {
-                visible: true,
-            }
             }, '#' + id);
         });
         afterAll(() => {
@@ -798,7 +798,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with background', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_SmithchartBorder');
-                expect(element.getAttribute('fill')).toEqual('transprent');
+                expect(element.getAttribute('fill')).toEqual('#1f2937');
             };
             smithchart.refresh();
         });
@@ -823,7 +823,7 @@ describe('Smithchart legend properties tesing', () => {
             };
             smithchart.refresh();
         });
-        
-        
+
+
     });
 });

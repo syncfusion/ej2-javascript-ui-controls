@@ -1,4 +1,4 @@
-import { Component, EventHandler, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';
@@ -152,7 +152,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected calendarElement: HTMLElement;
     protected isPopupClicked: boolean = false;
     protected isDateSelected: boolean = true;
-    private blazorRef: object;
     private serverModuleName: string;
     protected timezone: string;
     protected defaultKeyConfigs: { [key: string]: string };
@@ -165,7 +164,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Gets or sets the minimum date that can be selected in the Calendar.
      *
      * @default new Date(1900, 00, 01)
-     * @blazorDefaultValue new DateTime(1900, 01, 01)
      * @deprecated
      */
     @Property(new Date(1900, 0, 1))
@@ -189,7 +187,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Gets or sets the maximum date that can be selected in the Calendar.
      *
      * @default new Date(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      * @deprecated
      */
     @Property(new Date(2099, 11, 31))
@@ -199,7 +196,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      * @deprecated
      * > For more details about firstDayOfWeek refer to
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
@@ -413,7 +409,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * {% codeBlock src='calendar/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      * @deprecated
      */
     @Property(null)
@@ -432,7 +427,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when Calendar is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -440,7 +434,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when Calendar is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -449,7 +442,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when the Calendar is navigated to another level or within the same level of view.
      *
      * @event navigated
-     * @blazorProperty 'Navigated'
      */
     @Event()
     public navigated: EmitType<NavigatedEventArgs>;
@@ -457,7 +449,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when each day cell of the Calendar is rendered.
      *
      * @event renderDayCell
-     * @blazorProperty 'OnRenderDayCell'
      */
     @Event()
     public renderDayCell: EmitType<RenderDayCellEventArgs>;
@@ -664,7 +655,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getCultureValues(): string[] {
         const culShortNames: string[] = [];
         let cldrObj: string[];
-        const dayFormat: string = (isBlazor() ? 'days.' : 'days.stand-alone.') + this.dayHeaderFormat.toLowerCase();
+        const dayFormat: string = 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase();
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = <string[]>(getValue(dayFormat, getDefaultDateObject()));
         } else {
@@ -746,7 +737,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.todayElement = this.createElement('button', { attrs: { role: 'button' } });
             rippleEffect(this.todayElement);
             this.updateFooter();
-            addClass([this.todayElement], [BTN, TODAY, FLAT, PRIMARY, CSS]);
+            addClass([this.todayElement], [BTN, TODAY, FLAT, PRIMARY, CSS]);            
             if ((!(+new Date(minimum.setHours(0, 0, 0, 0)) <= +this.todayDate &&
                 +this.todayDate <= +new Date(maximum.setHours(0, 0, 0, 0)))) || (this.todayDisabled)) {
                 addClass([this.todayElement], DISABLED);
@@ -768,16 +759,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected wireEvents(id?: string, ref?: object, keyConfig?: { [key: string]: string }, moduleName?: string): void {
-        if (!(isBlazor() && ref)) {
-            EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
-            this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
-        } else {
-            this.element = document.getElementById(id);
-            this.defaultKeyConfigs = this.getDefaultKeyConfig();
-            this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, keyConfig) as { [key: string]: string });
-            this.blazorRef = ref;
-            this.serverModuleName = moduleName;
-        }
+        EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
+        this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
         if (this.getModuleName() === 'calendar') {
             this.keyboardModule = new KeyboardEvents(
                 <HTMLElement>this.element,
@@ -799,7 +782,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected dateWireEvents(id?: string, ref?: object, keyConfig?: { [key: string]: string }, moduleName?: string): void {
         this.defaultKeyConfigs = this.getDefaultKeyConfig();
         this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, keyConfig) as { [key: string]: string });
-        this.blazorRef = ref;
         this.serverModuleName = moduleName;
     }
     protected todayButtonClick(e?: MouseEvent | KeyboardEvent, value?: Date, isCustomDate?: boolean): void {
@@ -828,21 +810,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.renderDayCellArgs = null;
         this.calendarElement = this.tableBodyElement = this.footer = this.tableHeadElement = this.nextIcon = this.previousIcon = this.table = null;
     }
-    protected checkDeviceMode(ref?: object): void {
-        if (Browser.isDevice && isBlazor() && ref) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (ref as any).invokeMethodAsync('OnDevice', true);
-        }
-    }
     protected keyActionHandle(e: KeyboardEventArgs, value?: Date, multiSelection?: boolean): void {
-        if (isBlazor() && this.blazorRef) {
-            e.preventDefault();
-            if (!this.tableBodyElement) {
-                this.element = closest((e.target as Element), '.' + 'e-calendar') as HTMLElement;
-                this.tableBodyElement = this.element.querySelector('tbody');
-            }
-            multiSelection = false;
-        }
         const focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
         let selectedDate: Element;
         if (multiSelection) {
@@ -854,138 +822,116 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             selectedDate = this.tableBodyElement.querySelector('tr td.e-selected');
         }
-        if (isBlazor() && this.blazorRef) {
-            (this.tableBodyElement as HTMLElement).focus();
-            const targetEle: HTMLElement = e.target as HTMLElement;
-            const args: object = {
-                Action: e.action, Key: e.key, Events: e,
-                SelectDate: selectedDate ? selectedDate.id : null,
-                FocusedDate: focusedDate ? focusedDate.id : null,
-                classList: selectedDate ? selectedDate.classList.toString() : focusedDate ? focusedDate.classList.toString() : 'e-cell',
-                Id: focusedDate ? focusedDate.id : selectedDate ? selectedDate.id : null,
-                TargetClassList: targetEle.classList.toString()
-            };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.blazorRef as any).invokeMethodAsync('OnCalendarKeyboardEvent', args);
-            if (targetEle.classList.contains('e-today')) {
-                targetEle.blur();
-                (this.tableBodyElement as HTMLElement).focus();
+        let view: number = this.getViewNumber(this.currentView());
+        const depthValue: number = this.getViewNumber(this.depth);
+        const levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
+        this.effect = '';
+        switch (e.action) {
+        case 'moveLeft':
+            this.keyboardNavigate(-1, view, e, this.max, this.min);
+            e.preventDefault();
+            break;
+        case 'moveRight':
+            this.keyboardNavigate(1, view, e, this.max, this.min);
+            e.preventDefault();
+            break;
+        case 'moveUp':
+            if (view === 0) {
+                this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
+            } else {
+                this.keyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
             }
-            if (this.serverModuleName === 'sf.calendars.Calendar') {
-                this.tableBodyElement = null;
+            e.preventDefault();
+            break;
+        case 'moveDown':
+            if (view === 0) {
+                this.keyboardNavigate(7, view, e, this.max, this.min);
+            } else {
+                this.keyboardNavigate(4, view, e, this.max, this.min);
             }
-        } else {
-            let view: number = this.getViewNumber(this.currentView());
-            const depthValue: number = this.getViewNumber(this.depth);
-            const levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
-            this.effect = '';
-            switch (e.action) {
-            case 'moveLeft':
-                this.keyboardNavigate(-1, view, e, this.max, this.min);
-                e.preventDefault();
-                break;
-            case 'moveRight':
-                this.keyboardNavigate(1, view, e, this.max, this.min);
-                e.preventDefault();
-                break;
-            case 'moveUp':
-                if (view === 0) {
-                    this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
-                } else {
-                    this.keyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
-                }
-                e.preventDefault();
-                break;
-            case 'moveDown':
-                if (view === 0) {
-                    this.keyboardNavigate(7, view, e, this.max, this.min);
-                } else {
-                    this.keyboardNavigate(4, view, e, this.max, this.min);
-                }
-                e.preventDefault();
-                break;
-            case 'select':
-                if (e.target === this.todayElement) {
-                    this.todayButtonClick(e, value);
-                } else {
-                    const element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
-                    if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
-                        if (levelRestrict) {
-                            // eslint-disable-next-line radix
-                            const d: Date = new Date(parseInt('' + (element).id, 0));
-                            this.selectDate(e, d, (element));
-                        } else {
-                            this.contentClick(null, --view, (element), value);
-                        }
+            e.preventDefault();
+            break;
+        case 'select':
+            if (e.target === this.todayElement) {
+                this.todayButtonClick(e, value);
+            } else {
+                const element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
+                if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
+                    if (levelRestrict) {
+                        // eslint-disable-next-line radix
+                        const d: Date = new Date(parseInt('' + (element).id, 0));
+                        this.selectDate(e, d, (element));
+                    } else {
+                        this.contentClick(null, --view, (element), value);
                     }
                 }
-                break;
-            case 'controlUp':
-                this.title();
-                e.preventDefault();
-                break;
-            case 'controlDown':
-                if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
-                    this.contentClick(null, --view, (focusedDate || selectedDate), value);
-                }
-                e.preventDefault();
-                break;
-            case 'home':
-                this.currentDate = this.firstDay(this.currentDate);
-                detach(this.tableBodyElement);
-                if (view === 0) {
-                    this.renderMonths(e);
-                } else if (view === 1) {
-                    this.renderYears(e);
-                } else {
-                    this.renderDecades(e);
-                }
-                e.preventDefault();
-                break;
-            case 'end':
-                this.currentDate = this.lastDay(this.currentDate, view);
-                detach(this.tableBodyElement);
-                if (view === 0) {
-                    this.renderMonths(e);
-                } else if (view === 1) {
-                    this.renderYears(e);
-                } else {
-                    this.renderDecades(e);
-                }
-                e.preventDefault();
-                break;
-            case 'pageUp':
-                this.addMonths(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'pageDown':
-                this.addMonths(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'shiftPageUp':
-                this.addYears(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'shiftPageDown':
-                this.addYears(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'controlHome':
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
-                e.preventDefault();
-                break;
-            case 'controlEnd':
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
-                e.preventDefault();
-                break;
             }
-            if (this.getModuleName() === 'calendar') {
-                this.table.focus();
+            break;
+        case 'controlUp':
+            this.title();
+            e.preventDefault();
+            break;
+        case 'controlDown':
+            if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
+                this.contentClick(null, --view, (focusedDate || selectedDate), value);
             }
+            e.preventDefault();
+            break;
+        case 'home':
+            this.currentDate = this.firstDay(this.currentDate);
+            detach(this.tableBodyElement);
+            if (view === 0) {
+                this.renderMonths(e);
+            } else if (view === 1) {
+                this.renderYears(e);
+            } else {
+                this.renderDecades(e);
+            }
+            e.preventDefault();
+            break;
+        case 'end':
+            this.currentDate = this.lastDay(this.currentDate, view);
+            detach(this.tableBodyElement);
+            if (view === 0) {
+                this.renderMonths(e);
+            } else if (view === 1) {
+                this.renderYears(e);
+            } else {
+                this.renderDecades(e);
+            }
+            e.preventDefault();
+            break;
+        case 'pageUp':
+            this.addMonths(this.currentDate, -1);
+            this.navigateTo('Month', this.currentDate);
+            e.preventDefault();
+            break;
+        case 'pageDown':
+            this.addMonths(this.currentDate, 1);
+            this.navigateTo('Month', this.currentDate);
+            e.preventDefault();
+            break;
+        case 'shiftPageUp':
+            this.addYears(this.currentDate, -1);
+            this.navigateTo('Month', this.currentDate);
+            e.preventDefault();
+            break;
+        case 'shiftPageDown':
+            this.addYears(this.currentDate, 1);
+            this.navigateTo('Month', this.currentDate);
+            e.preventDefault();
+            break;
+        case 'controlHome':
+            this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
+            e.preventDefault();
+            break;
+        case 'controlEnd':
+            this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
+            e.preventDefault();
+            break;
+        }
+        if (this.getModuleName() === 'calendar') {
+            this.table.focus();
         }
     }
 
@@ -1103,12 +1049,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             minMaxDate = new Date(+localDate);
             localDate = this.minMaxDate(localDate);
-            const dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'D' : 'full' };
+            const dateFormatOptions: object = { type: 'dateTime', skeleton: 'full' };
             const date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
             const tdEle: HTMLElement = this.dayCell(localDate);
-            const title: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
+            const title: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'full' });
             const dayLink: HTMLElement = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'});
+            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: 'yMd'});
             const disabled: boolean = (this.min > localDate) || (this.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
@@ -1138,9 +1084,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (let index: number = 0; index < values.length; index++) {
                             const localDateString: number =
-                                +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
+                                +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: 'yMd' }));
                             const tempDateString: number =
-                                +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
+                                +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: 'yMd' }));
                             if (localDateString === tempDateString) {
                                 values.splice(index, 1);
                                 index = -1;
@@ -1170,7 +1116,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < values.length; tempValue++) {
                     const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    const formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
+                    const formatOptions: object = { format: null, type: 'date', skeleton: 'short', calendar: type };
                     const localDateString: string = this.globalize.formatDate(localDate, formatOptions);
                     const tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
@@ -1234,7 +1180,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             const localMonth: boolean = (value && (value).getMonth() === localDate.getMonth());
             const select: boolean = (value && (value).getFullYear() === yr && localMonth);
             dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, {
-                format: isBlazor() ? 'MMM' : null, type: 'dateTime', skeleton: 'MMM'
+                format: null, type: 'dateTime', skeleton: 'MMM'
             }));
             if ((this.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (
                 this.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
@@ -1270,9 +1216,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const startFullYr: number = startYr.getFullYear();
         const endFullYr: number = endYr.getFullYear();
         const startHdrYr: string = this.globalize.formatDate(startYr, {
-            format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+            format: null, type: 'dateTime', skeleton: 'y'
         });
-        const endHdrYr: string = this.globalize.formatDate(endYr, { format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y' });
+        const endHdrYr: string = this.globalize.formatDate(endYr, { format: null, type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
         const start: Date = new Date(localYr - (localYr % 10) - 1, 0, 1);
         const startYear: number = start.getFullYear();
@@ -1283,7 +1229,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             attributes(tdEle, { 'role': 'gridcell' });
             const dayLink: HTMLElement = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, {
-                format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+                format: null, type: 'dateTime', skeleton: 'y'
             });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
@@ -1314,7 +1260,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected dayCell(localDate: Date): HTMLElement {
         const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        const dateFormatOptions: object = { skeleton: isBlazor() ? 'F' : 'full', type: 'dateTime', calendar: type };
+        const dateFormatOptions: object = { skeleton: 'full', type: 'dateTime', calendar: type };
         const date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         const value: number = date.valueOf();
         const attrs: Object = {
@@ -1687,14 +1633,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                 let tempValueString: string;
                 if (this.calendarMode === 'Gregorian') {
-                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' });
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
                 } else {
                     tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
                 }
-                const minFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
+                const minFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
                 const minStringValue: string = this.globalize.formatDate(this.min, minFormatOption);
                 const minString: string = minStringValue;
-                const maxFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
+                const maxFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
                 const maxStringValue: string = this.globalize.formatDate(this.max, maxFormatOption);
                 const maxString: string = maxStringValue;
                 if (+new Date(tempValueString) < +new Date(minString) ||
@@ -1728,9 +1674,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let monthFormatOptions: string;
         const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
         if (this.calendarMode === 'Gregorian') {
-            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM', calendar: type });
             monthFormatOptions = globalize.formatDate(date, {
-                format: isBlazor() ? 'yyyy' : null,  type: 'dateTime', skeleton: 'y', calendar: type
+                format: null,  type: 'dateTime', skeleton: 'y', calendar: type
             });
         } else {
 
@@ -1753,16 +1699,16 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let title: string;
         const view: string = this.currentView();
         if (view === 'Month') {
-            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full', calendar: type });
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full', calendar: type });
         } else if (view === 'Year') {
             if (type !== 'islamic') {
-                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'yMMMM', calendar: type });
             } else {
                 title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'GyMMM', calendar: type });
             }
         } else {
             title = this.globalize.formatDate(this.currentDate, {
-                format: isBlazor() ? 'yyyy' : null, type: 'date', skeleton: 'y', calendar: type
+                format: null, type: 'date', skeleton: 'y', calendar: type
             });
         }
         if (selectedEle || focusedEle) {
@@ -1954,11 +1900,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected getCultureObjects(ld: Object, c: string): Object {
-        const gregorianFormat: string = (isBlazor() ? '.dates.days.' :
-            '.dates.calendars.gregorian.days.format.') + this.dayHeaderFormat.toLowerCase();
-        const islamicFormat: string = (isBlazor() ? '.dates.days.' :
-            '.dates.calendars.islamic.days.format.') + this.dayHeaderFormat.toLowerCase();
-        const mainVal: string = isBlazor() ? '' : 'main.';
+        const gregorianFormat: string = '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase();
+        const islamicFormat: string = '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase();
+        const mainVal: string = 'main.';
         if (this.calendarMode === 'Gregorian') {
             return getValue(mainVal + '' + this.locale + gregorianFormat, ld);
         } else {
@@ -2006,7 +1950,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             eve = element;
         }
         const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        const dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'F' : 'full', calendar: type };
+        const dateFormatOptions: object = { type: 'dateTime', skeleton: 'full', calendar: type };
         // eslint-disable-next-line radix
         const dateString: string = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
         const date: Date = this.globalize.parseDate(dateString, dateFormatOptions);
@@ -2070,7 +2014,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 removeClass([element], SELECTED);
                 for (let i: number = 0; i < copyValues.length; i++) {
                     const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    const formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
+                    const formatOptions: object = { format: null, type: 'date', skeleton: 'short', calendar: type };
                     const localDateString: string = this.globalize.formatDate(date, formatOptions);
                     const tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
                     if (localDateString === tempDateString) {
@@ -2088,22 +2032,16 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         this.isDateSelected = true;
     }
-    private getFromatStringValue(): string {
-        return isBlazor() ?
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            'M' + (getDefaultDateObject() as any).dateSeperator + 'd' + (getDefaultDateObject() as any).dateSeperator + 'yy'
-            : null;
-    }
     protected checkPresentDate(dates: Date, values: Date[]): boolean {
         let previousValue: boolean = false;
         if (!isNullOrUndefined(values)) {
             for (let checkPrevious: number = 0; checkPrevious < values.length; checkPrevious++) {
                 const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                 const localDateString: string = this.globalize.formatDate(dates, {
-                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                    format: null, type: 'date', skeleton: 'short', calendar: type
                 });
                 const tempDateString: string = this.globalize.formatDate(values[checkPrevious], {
-                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                    format: null, type: 'date', skeleton: 'short', calendar: type
                 });
                 if (localDateString === tempDateString) {
                     previousValue = true;
@@ -2355,7 +2293,6 @@ export class Calendar extends CalendarBase {
      * Triggers when the Calendar value is changed.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangedEventArgs>;

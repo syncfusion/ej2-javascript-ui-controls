@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { formatUnit, isNullOrUndefined, closest, extend, append, prepend } from '@syncfusion/ej2-base';
+import { formatUnit, isNullOrUndefined, closest, extend, append, prepend, remove } from '@syncfusion/ej2-base';
 import { createElement, addClass, EventHandler } from '@syncfusion/ej2-base';
 import { IRenderer, NotifyEventArgs, EventFieldsMapping, TdData } from '../base/interface';
 import { AgendaBase } from '../event-renderer/agenda-base';
@@ -89,6 +89,22 @@ export class Agenda extends AgendaBase implements IRenderer {
             }
         }
         this.parent.eventsProcessed = this.parent.eventsProcessed.concat(this.processAgendaEvents(processedData));
+    }
+
+    public refreshHeader(): void {
+        const tBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
+        if (this.parent.activeViewOptions.group.byDate) {
+            util.removeChildren(tBody);
+        } else {
+            remove(tBody.firstElementChild);
+        }
+        const agendaDate: Date = util.resetTime(this.parent.selectedDate);
+        const emptyTBody: Element = createElement('tbody');
+        const firstDate: Date = new Date(agendaDate.getTime());
+        const lastDate: Date = (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) ?
+            this.getEndDateFromStartDate(firstDate) : util.addDays(firstDate, this.parent.agendaDaysCount);
+        this.renderContent(emptyTBody, firstDate, lastDate);
+        append([].slice.call(emptyTBody.childNodes), tBody);
     }
 
     private renderInitialContent(tBody: Element, agendaDate: Date): void {
@@ -214,7 +230,7 @@ export class Agenda extends AgendaBase implements IRenderer {
                 }
                 this.updateHeaderText(scrollDate);
             }
-        } else if (totalHeight === scrollHeight) {
+        } else if (totalHeight >= (scrollHeight - 5)) {
             filterDate = this.getPreviousNextDate(util.addDays(scrollDate, 1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {

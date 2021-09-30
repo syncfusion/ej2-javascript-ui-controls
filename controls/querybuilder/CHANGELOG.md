@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.62 (2021-09-14)
+## 19.3.43 (2021-09-30)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided Dropdown Tree component support in Complex data binding.
+
+## 19.2.59 (2021-08-31)
 
 ### QueryBuilder
 

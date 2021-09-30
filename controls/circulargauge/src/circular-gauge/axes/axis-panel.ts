@@ -1,7 +1,7 @@
 import { CircularGauge } from '../circular-gauge';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { calculateSum, VisibleLabels, measureText, isCompleteAngle, GaugeLocation, getLocationFromAngle } from '../utils/helper';
-import { Size, Rect, stringToNumber, getLabelFormat } from '../utils/helper';
+import { stringToNumber, measureText, getLocationFromAngle, getLabelFormat, VisibleLabels, isCompleteAngle, Size, GaugeLocation, Rect } from '../utils/helper-common';
+import { calculateSum } from '../utils/helper-axis-panel';
 import { Axis, Range, Label, Pointer } from './axis';
 import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs } from '../model/interface';
 import { axisLabelRender, radiusCalculate } from '../model/constants';
@@ -62,7 +62,7 @@ export class AxisLayoutPanel {
                 (currentRadius * 100) / rangeMaximumRadius : currentRadius;
             axis.currentRadius = currentRadius - axis.nearSize;
             if (this.gauge.moveToCenter && this.gauge.axes.length === 1 &&
-                isNullOrUndefined(this.gauge.centerX) && isNullOrUndefined(this.gauge.centerY)) {
+                isNullOrUndefined(this.gauge.centerXpoint) && isNullOrUndefined(this.gauge.centerYpoint)) {
                 let endAngle: number;
                 const startAngle: number = axis.startAngle;
                 let startPoint: GaugeLocation = getLocationFromAngle(startAngle - 90, currentRadius, this.gauge.midPoint);
@@ -136,16 +136,10 @@ export class AxisLayoutPanel {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
-            if (this.gauge.isBlazor) {
-                const { cancel, name, currentRadius, midPoint } : IRadiusCalculateEventArgs = args;
-                args = { cancel, name, currentRadius, midPoint };
-            }
             this.gauge.trigger('radiusCalculate', args, () => {
                 axis.currentRadius = args.currentRadius;
                 this.gauge.midPoint = args.midPoint;
-                if (!this.gauge.isBlazor) {
-                    this.calculateVisibleLabels(axis);
-                }
+                this.calculateVisibleLabels(axis);
             });
         }
     }
@@ -217,8 +211,8 @@ export class AxisLayoutPanel {
      */
 
     private calculateNumericInterval(axis: Axis, rect: Rect): number {
-        const allowComponentRender: boolean = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
-        if (!allowComponentRender) {
+        const isComponentRender: boolean = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
+        if (!isComponentRender) {
             return 0;
         } else if (axis.majorTicks.interval !== null) {
             return axis.majorTicks.interval;
@@ -283,29 +277,12 @@ export class AxisLayoutPanel {
                         format(roundValue),
                     value: roundValue
                 };
-                if (this.gauge.isBlazor) {
-                    const { axis, ...blazorArgsData }: IAxisLabelRenderEventArgs = argsData;
-                    argsData = blazorArgsData;
-                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
                     if (!argsData.cancel) {
                         axis.visibleLabels.push(new VisibleLabels(
                             argsData.text, i
                         ));
-                        if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
-                            const currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
-                                : null;
-                            if (currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
-                                this.getMaxLabelWidth(this.gauge, axis);
-                                axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
-                                axis.farSize = axis.farSize + axis.maxLabelSize.height;
-                                this.axisRenderer.drawAxisLabels(
-                                    axis, this.gauge.axes.length - 1,
-                                    (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))),
-                                    this.gauge);
-                            }
-                        }
                     }
                 };
                 axisLabelRenderSuccess.bind(this);
@@ -321,24 +298,12 @@ export class AxisLayoutPanel {
                     format(maxVal),
                 value: maxVal
             };
-            if (this.gauge.isBlazor) {
-                const { axis, ...blazorArgsData } : IAxisLabelRenderEventArgs = argsData;
-                argsData = blazorArgsData;
-            }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, maxVal
                     ));
-                    if (this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
-                        this.getMaxLabelWidth(this.gauge, axis);
-                        axis.farSize = axis.farSize + axis.maxLabelSize.height;
-                        axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
-                        this.axisRenderer.drawAxisLabels(
-                            axis, this.gauge.axes.length - 1,
-                            (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))), this.gauge);
-                    }
                 }
             };
             axisLabelRenderSuccess.bind(this);
@@ -431,7 +396,7 @@ export class AxisLayoutPanel {
             element = gauge.renderer.createGroup({
                 id: gauge.element.id + '_Axis_Group_' + index
             });
-            this.gauge.allowComponentRender = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
+            this.gauge.isComponentRender = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
             renderer.checkAngles(axis);
             renderer.drawAxisOuterLine(axis, index, element, gauge);
             renderer.drawAxisRange(axis, index, element);

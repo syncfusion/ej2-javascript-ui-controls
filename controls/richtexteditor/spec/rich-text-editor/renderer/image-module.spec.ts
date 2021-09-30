@@ -214,6 +214,7 @@ describe('insert image', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
@@ -347,6 +348,7 @@ describe('insert image', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
 
@@ -513,6 +515,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.contentModule.getDocument().body.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
             clickEvent = document.createEvent("MouseEvents");
@@ -574,6 +577,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
         });
@@ -636,6 +640,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = document.body.querySelector('.e-rte-img-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
             (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
@@ -663,6 +668,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = document.body.querySelector('.e-rte-img-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
             (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
@@ -924,6 +930,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
@@ -1002,6 +1009,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             dialogEle = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
@@ -1011,6 +1019,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             dialogEle = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
@@ -1212,6 +1221,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -1237,6 +1247,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
@@ -1293,6 +1304,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -1363,6 +1375,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             (document.querySelector('.e-insertImage') as HTMLElement).click();
             (<any>rteObj).element.querySelector('.e-rte-image').click();
             let args: any = {
@@ -1487,6 +1500,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
@@ -1577,6 +1591,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
@@ -1668,6 +1683,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
 
@@ -1891,6 +1907,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let urlInput: HTMLInputElement = dialog.querySelector('.e-img-url');
                 urlInput.value = png;
                 let insertButton: HTMLElement = dialog.querySelector('.e-insertImage.e-primary');
+                urlInput.dispatchEvent(new Event("input"));
                 insertButton.click();
                 let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
                 expect(updateImage.src === png).toBe(true);
@@ -1898,6 +1915,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+
     describe(' ActionComplete event triggered twice when replace the inserted image using quicktoolbar - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -1930,6 +1948,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let dialog: HTMLElement = document.getElementById(controlId + "_image");
                 let urlInput: HTMLInputElement = dialog.querySelector('.e-img-url');
                 urlInput.value = png;
+                urlInput.dispatchEvent(new Event("input"));
                 let insertButton: HTMLElement = dialog.querySelector('.e-insertImage.e-primary');
                 insertButton.click();
                 let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
@@ -1939,6 +1958,102 @@ client side. Customer easy to edit the contents and get the HTML content for
                     done();
                 }, 40);
             }, 100);
+        });
+    });
+
+    describe('EJ2-37798 - Disable the insert image dialog button when the image is uploading.', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p>Testing Image Dialog</p>`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(' Initial insert image button disabled', (done) => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+            item.click();
+            let dialog: HTMLElement = document.getElementById(controlId + "_image");
+            let insertButton: HTMLElement = dialog.querySelector('.e-insertImage.e-primary');
+            expect(insertButton.hasAttribute('disabled')).toBe(true);
+            done();
+        });
+    });
+    describe('EJ2-37798 - Disable the insert image dialog button when the image is uploading', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    allowedTypes: ['.png'],
+                    saveUrl:"uploadbox/Save",
+                    path: "../Images/"
+                }
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Button disabled with improper file extension', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
+                done();
+            }, 4000);
+        });
+    });
+    describe('EJ2-37798 - Disable the insert image dialog button when the image is uploading', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                insertImageSettings: {
+                    saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+                    path: "../Images/"
+                }
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Button enabled with image upload Success', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
+                done();
+            }, 4000);
         });
     });
     describe(' EJ2-20297: RTE Image insert link  - ', () => {
@@ -2042,6 +2157,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 let dialogEle: any = rteObj.element.querySelector('.e-dialog');
                 (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
                 expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
                 (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
                 let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -2476,6 +2592,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
             (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
@@ -2510,6 +2627,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
             (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
@@ -2548,6 +2666,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
             (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
@@ -2593,6 +2712,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
             (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
@@ -2852,6 +2972,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
                 let dialogEle: any = rteObj.element.querySelector('.e-dialog');
                 (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
                 expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
                 (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
                 let trg = (iframeBody.querySelector('.e-rte-image') as HTMLElement);
@@ -2873,6 +2994,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                         (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[0] as HTMLElement).click();
                         dialogEle = rteObj.element.querySelector('.e-dialog');
                         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
+                        (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
                         expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
                         (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
                         expect((iframeBody.querySelector('img') as HTMLImageElement).src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');

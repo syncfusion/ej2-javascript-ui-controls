@@ -34,6 +34,7 @@ export class ParagraphDialog {
     private contextSpacing: CheckBox;
     private keepWithNext: CheckBox;
     private keepLinesTogether: CheckBox;
+    private widowControlIn: CheckBox;
 
     //paragraph Format properties
 
@@ -52,7 +53,9 @@ export class ParagraphDialog {
     private directionDiv: HTMLElement = undefined;
     public keepWithNextValue: boolean = undefined;
     public keepLineTogetherValue: boolean = undefined;
+    public widowControlValue: boolean = undefined;
     private tabObj: Tab = undefined;
+    private paginationDiv: HTMLElement;
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -281,11 +284,15 @@ export class ParagraphDialog {
             lineTypeDiv.classList.add('e-de-rtl');
         }
         let lineBreakContainer: HTMLDivElement = createElement('div') as HTMLDivElement;
-        let paginationDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
 
+        let paginationDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
+        this.paginationDiv = paginationDiv;
         let paginationLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Pagination') });
         paginationDiv.appendChild(paginationLabel);
 
+        
+        let widowContorlContainer: HTMLElement = createElement('div', { styles: 'display:block' });
+        paginationDiv.appendChild(widowContorlContainer);
         let keepNextContainer: HTMLElement = createElement('div', { styles: 'display:block' });
         paginationDiv.appendChild(keepNextContainer);
         let keepLines: HTMLElement = createElement('div', { styles: 'display:block' });
@@ -316,11 +323,24 @@ export class ParagraphDialog {
         });
         this.keepLinesTogether.appendTo(keepLinesTogether);
 
+        let widowControl: HTMLInputElement = createElement('input', {
+            attrs: { type: 'checkbox' },
+        }) as HTMLInputElement;
+        widowContorlContainer.appendChild(widowControl);
+
+        this.widowControlIn = new CheckBox({
+            change: this.changeWidowControl,
+            label: locale.getConstant('WidowControl'),
+            enableRtl: isRtl,
+            cssClass: 'e-de-para-dlg-cs-check-box'
+        });
+        this.widowControlIn.appendTo(widowControl);
+
         lineBreakContainer.appendChild(paginationDiv);
         const items: TabItemModel[] = [
             { header: { text: locale.getConstant('Indents and Spacing') }, content: indentContainer },
-            { header: { text: locale.getConstant('Line and Page breaks') }, content: lineBreakContainer }];
-        this.tabObj = new Tab({ items: items, enableRtl: isRtl }, ejtab);
+            { header: { text: locale.getConstant('Line and Page Breaks') }, content: lineBreakContainer }];
+        this.tabObj = new Tab({ items: items, enableRtl: isRtl, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } }, ejtab);
         this.tabObj.isStringTemplate = true;
     }
     /**
@@ -435,6 +455,15 @@ export class ParagraphDialog {
     private changeKeepLinesTogether = (args: ChangeEventArgs): void => {
         this.keepLineTogetherValue = args.checked;
     };
+    
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies change event args.
+     * @returns {void}
+     */
+    private changeWidowControl= (args: ChangeEventArgs): void => {
+        this.widowControlValue = args.checked;
+    };
 
     private changeAlignmentByBidi(): void {
         if (this.textAlignment === 'Left') {
@@ -539,6 +568,7 @@ export class ParagraphDialog {
         let lineSpaceValue: number = this.lineSpacing.index;
         this.keepWithNextValue = undefined;
         this.keepLineTogetherValue = undefined;
+        this.widowControlValue = undefined;
 
         if (selectionFormat.firstLineIndent > 0) {
             this.special.index = 1;
@@ -565,17 +595,21 @@ export class ParagraphDialog {
             this.ltrButton.checked = true;
             this.rtlButton.checked = false;
         }
-        if (isNullOrUndefined(this.keepWithNext)) {
+        if (isNullOrUndefined(selectionFormat.keepWithNext)) {
             this.keepWithNext.indeterminate = true;
         } else {
             this.keepWithNext.checked = selectionFormat.keepWithNext;
         }
-        if (isNullOrUndefined(this.keepLinesTogether)) {
+        if (isNullOrUndefined(selectionFormat.keepLinesTogether)) {
             this.keepLinesTogether.indeterminate = true;
         } else {
             this.keepLinesTogether.checked = selectionFormat.keepLinesTogether;
         }
-
+        if (isNullOrUndefined(selectionFormat.widowControl)) {
+            this.widowControlIn.indeterminate = true;
+        } else {
+            this.widowControlIn.checked = selectionFormat.widowControl;
+        }
         this.contextSpacing.checked = selectionFormat.contextualSpacing;
     };
 
@@ -650,7 +684,11 @@ export class ParagraphDialog {
         } else if (this.documentHelper.selection.paragraphFormat.keepLinesTogether) {
             paraFormat.keepLinesTogether = this.documentHelper.selection.paragraphFormat.keepLinesTogether;
         }
-
+        if (!isNullOrUndefined(this.widowControlValue)) {
+            paraFormat.widowControl = this.widowControlValue;
+        } else if (this.documentHelper.selection.paragraphFormat.widowControl) {
+            paraFormat.widowControl = this.documentHelper.selection.paragraphFormat.widowControl;
+        }
         if (isApply) {
             this.onParagraphFormat(paraFormat);
         } else {
@@ -735,6 +773,32 @@ export class ParagraphDialog {
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
+        let dialogElement: HTMLElement = this.documentHelper.dialog.element;
+        if (dialogElement) {
+            //Update dialog height
+            let header: HTMLElement = dialogElement.getElementsByClassName('e-dlg-header-content')[0] as HTMLElement;
+            let contentElement: HTMLElement = dialogElement.getElementsByClassName('e-dlg-content')[0] as HTMLElement;
+            let footer: HTMLElement = dialogElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+            let contentStyle: CSSStyleDeclaration = getComputedStyle(contentElement);
+            let dialogStyle: CSSStyleDeclaration = getComputedStyle(dialogElement);
+            let paddingTop: number = parseInt(contentStyle.paddingTop);
+            let paddingBottom: number = parseInt(contentStyle.paddingBottom);
+            let paddingVertical: number = (isNaN(paddingTop) ? 0 : paddingTop) + (isNaN(paddingBottom) ? 0 : paddingBottom);
+            let borderTop: number = parseInt(dialogStyle.borderTop);
+            let borderBottom: number = parseInt(dialogStyle.borderBottom);
+            let borderVertical: number = (isNaN(borderTop) ? 0 : borderTop) + (isNaN(borderBottom) ? 0 : borderBottom);
+            let contentHeight: number = dialogElement.offsetHeight - (header.offsetHeight + footer.offsetHeight + paddingVertical + borderVertical);
+            this.target.style.height = contentHeight + 'px';
+            //Update dialog width
+            let paddingLeft: number = parseInt(contentStyle.paddingLeft);
+            let paddingRight = parseInt(contentStyle.paddingRight);
+            let paddingHorizontal: number = (isNaN(paddingLeft) ? 0 : paddingLeft) + (isNaN(paddingRight) ? 0 : paddingRight);
+            let borderLeft: number = parseInt(dialogStyle.borderLeft);
+            let borderRight = parseInt(dialogStyle.borderRight);
+            let borderHorizontal: number = (isNaN(borderLeft) ? 0 : borderLeft) + (isNaN(borderRight) ? 0 : borderRight);
+            let contentWidth: number = dialogElement.offsetWidth - (paddingHorizontal + borderHorizontal);
+            this.paginationDiv.style.width = contentWidth + 'px';
+        }
     }
     /**
      * @private

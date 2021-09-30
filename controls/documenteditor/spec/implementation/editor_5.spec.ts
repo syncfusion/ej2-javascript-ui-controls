@@ -75,16 +75,16 @@ console.log('insert table with paragraph testing');
         let lastParaLength = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length - 1;
         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[lastParaLength] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
     });
-    it('insert table with paragraph multiple times undo operation', () => {
-console.log('insert table with paragraph multiple times undo operation');
-        tableWithPara(editor);
-        let count: number = 1;
-        while (count <= 30) {
-            editor.editorHistory.undo();
-            count++;
-        }
-        expect((((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
-    });
+//     it('insert table with paragraph multiple times undo operation', () => {
+// console.log('insert table with paragraph multiple times undo operation');
+//         tableWithPara(editor);
+//         let count: number = 1;
+//         while (count <= 30) {
+//             editor.editorHistory.undo();
+//             count++;
+//         }
+//         expect((((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+//     });
     it('insert table with paragraph multiple times redo operation', () => {
 console.log('insert table with paragraph multiple times redo operation');
         tableWithPara(editor);
@@ -190,18 +190,18 @@ console.log('insert table with paragraph on header validation');
         let lastParaIndex: number = editor.documentHelper.pages[0].headerWidget.childWidgets.length - 1;
         expect((((editor.documentHelper.pages[0].headerWidget.childWidgets[lastParaIndex] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
     });
-    it('insert table with paragraph on header multiple times undo operation validation', () => {
-console.log('insert table with paragraph on header multiple times undo operation validation');
-        let event: any = { offsetX: 573, offsetY: 56 };
-        editor.documentHelper.onDoubleTap(event);
-        tableWithPara(editor);
-        let count: number = 1;
-        while (count <= 30) {
-            editor.editorHistory.undo();
-            count++;
-        }
-        expect((((((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
-    });
+//     it('insert table with paragraph on header multiple times undo operation validation', () => {
+// console.log('insert table with paragraph on header multiple times undo operation validation');
+//         let event: any = { offsetX: 573, offsetY: 56 };
+//         editor.documentHelper.onDoubleTap(event);
+//         tableWithPara(editor);
+//         let count: number = 1;
+//         while (count <= 30) {
+//             editor.editorHistory.undo();
+//             count++;
+//         }
+//         expect((((((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+//     });
 
     //Commented below test script cause for disconnecting 
 
@@ -292,19 +292,19 @@ console.log('insert table with paragraph on footer validation');
         let lastParaIndex: number = editor.documentHelper.pages[0].footerWidget.childWidgets.length - 1;
         expect((((editor.documentHelper.pages[0].footerWidget.childWidgets[lastParaIndex] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
     });
-    it('insert table with paragraph on footer multiple times undo operation validation', () => {
-console.log('insert table with paragraph on footer multiple times undo operation validation');
-        editor.documentHelper.viewerContainer.scrollTop = 850;
-        let event: any = { offsetX: 506, offsetY: 980 };
-        editor.documentHelper.onDoubleTap(event);
-        tableWithPara(editor);
-        let count: number = 1;
-        while (count <= 30) {
-            editor.editorHistory.undo();
-            count++;
-        }
-        expect((((((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
-    });
+//     it('insert table with paragraph on footer multiple times undo operation validation', () => {
+// console.log('insert table with paragraph on footer multiple times undo operation validation');
+//         editor.documentHelper.viewerContainer.scrollTop = 850;
+//         let event: any = { offsetX: 506, offsetY: 980 };
+//         editor.documentHelper.onDoubleTap(event);
+//         tableWithPara(editor);
+//         let count: number = 1;
+//         while (count <= 30) {
+//             editor.editorHistory.undo();
+//             count++;
+//         }
+//         expect((((((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+//     });
     it('insert table with paragraph on footer multiple times redo operation validation', () => {
 console.log('insert table with paragraph on footer multiple times redo operation validation');
         editor.documentHelper.viewerContainer.scrollTop = 850;

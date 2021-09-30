@@ -753,7 +753,7 @@ export class Drawing {
         }
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
         return obj;
-    }   
+    }
     /**
      * @private
      * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
@@ -3207,8 +3207,11 @@ export class Drawing {
             for (const item of selectedItems) {
                 // eslint-disable-next-line
                 if ((this.pdfViewer.nameTable as any)[item.id]) {
-                    if (!item.formFieldAnnotationType) {
-                        this.pdfViewer.annotationModule.deleteAnnotationById((item as PdfAnnotationBaseModel).annotName);
+                    if(!item.formFieldAnnotationType) { 
+                        if((item as PdfAnnotationBaseModel).annotName)
+                            this.pdfViewer.annotationModule.deleteAnnotationById((item as PdfAnnotationBaseModel).annotName);
+                        else
+                           this.pdfViewer.annotationModule.deleteAnnotation();
                     } else {
                         this.pdfViewer.clearSelection(item.pageIndex);
                         this.pdfViewer.formDesignerModule.deleteFormField((item as PdfFormFieldBaseModel).id);

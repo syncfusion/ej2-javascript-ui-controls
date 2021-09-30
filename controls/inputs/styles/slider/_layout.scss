@@ -257,7 +257,7 @@
         }
       }
 
-      @if ($skin-name == 'bootstrap4') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
         .e-slider-button {
           height: 18px;
           width: 18px;
@@ -265,15 +265,22 @@
 
         &.e-vertical {
           &.e-slider-btn {
-            padding: 34px 0;
+            @if ($skin-name == 'bootstrap5') {
+              padding: 36px 0;
+            }
+            @else {
+              padding: 34px 0;
+            }
           }
 
-          .e-first-button {
-            margin-right: -9px;
-          }
-
+          .e-first-button,
           .e-second-button {
-            margin-right: -9px;
+            @if ($skin-name == 'bootstrap5') {
+              margin-right: -12px;
+            }
+            @else {
+              margin-right: -9px;
+            }
           }
 
           .e-slider {
@@ -293,6 +300,9 @@
           .e-limits {
             height: 8px;
             top: calc(50% - 4px);
+            @if ($skin-name == 'bootstrap5') {
+              border-radius: $slider-range-border-radius;
+            }
           }
         }
 
@@ -300,11 +310,138 @@
           .e-limits {
             left: calc(50% - 4px);
             width: 8px;
+            @if ($skin-name == 'bootstrap5') {
+              border-radius: $slider-range-border-radius;
+            }
           }
         }
       }
 
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'bootstrap5') {
+
+        &.e-horizontal,
+        &.e-vertical {
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            border-radius: 12px;
+            height: 24px;
+            width: 24px;
+
+            .e-button-icon::before {
+              font-size: 22px;
+            }
+          }
+        }
+
+        &.e-horizontal {
+
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            margin-top: -12px;
+          }
+
+          .e-tick-both {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: 24px;
+                  top: -14px;
+                }
+
+                .e-large {
+                  height: 32px;
+                  top: -10px;
+                }
+              }
+            }
+          }
+
+          .e-tick-before {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: $tick-after-mobile-height;
+                  top: $tick-before-mobile-top;
+                }
+
+                .e-large {
+                  height: $largetick-before-mobile-height;
+                  top: $tick-before-mobile-top;
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: $tick-after-mobile-height;
+                  top: $tick-after-mobile-top;
+                }
+
+                .e-large {
+                  height: $largetick-before-mobile-height;
+                  top: $largetick-after-mobile-top;
+                }
+              }
+            }
+          }
+        }
+
+        &.e-vertical {
+
+          .e-tick-both {
+            &.e-scale {
+              .e-tick {
+                left: 2px;
+                width: 24px;
+              }
+
+              .e-large {
+                left: -2px;
+                width: 32px;
+              }
+            }
+          }
+
+          .e-tick-before {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  left: $tick-before-mobile-left;
+                  width: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  left: $largetick-before-mobile-left;
+                  width: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  left: $tick-after-mobile-left;
+                  width: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  left: $tick-after-mobile-left;
+                  width: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'tailwind') {
         .e-scale.e-h-scale {
           &.e-tick-after {
             top: 7px;
@@ -474,6 +611,11 @@
       }
 
       &.e-horizontal {
+        @if ($skin-name == 'bootstrap5') {
+          &.e-slider-btn {
+            padding: 0 36px;
+          }
+        }
         @if ($skin-name == 'bootstrap4') {
           &.e-slider-btn {
             padding: 0 34px;
@@ -486,7 +628,7 @@
           }
         }
 
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           .e-slider-track {
             height: 6px;
           }
@@ -497,7 +639,7 @@
         }
 
         .e-slider {
-          @if ($skin-name == 'bootstrap4') {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
             .e-slider-track {
               height: 8px;
               top: calc(50% - 4px);
@@ -512,7 +654,7 @@
           .e-handle {
             margin-left: -9px;
             top: calc(50% - 9px);
-            @if($skin-name == 'bootstrap4') {
+            @if($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
               margin-left: $slider-handle-mobile-margin-left;
               top: $slider-handle-mobile-handle-top;
             }
@@ -534,20 +676,20 @@
       &.e-vertical {
         .e-slider {
           .e-handle {
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'tailwind') {
               left: calc(50% - 5px);
             }
             @else {
               left: calc(50% - 9px);
             }
             margin-bottom: -9px;
-            @if $skin-name == 'bootstrap4' {
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
               left: calc(50% - 8px);
               margin-bottom: -8px;
             }
           }
 
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             .e-range {
               width: 6px;
             }
@@ -569,7 +711,7 @@
           }
         }
 
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           .e-slider-track {
             width: 6px;
           }
@@ -584,7 +726,7 @@
         &.e-horizontal {
           .e-slider {
             .e-handle {
-              @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
                 margin: 0 -8px 0 0;
               }
             }
@@ -654,7 +796,7 @@
                 left: 0;
               }
 
-              @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
                 background-position: right center;
                 left: 0;
               }
@@ -678,7 +820,7 @@
           @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
             margin-top: -7px;
           }
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind'  or $skin-name == 'bootstrap5') {
             margin-top: -13px;
 
             .e-button-icon::before {
@@ -694,9 +836,12 @@
     }
 
     &.e-disabled {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         filter: alpha(Opacity=100);
         opacity: 1;
+      }
+      @if ($skin-name == 'bootstrap5') {
+        opacity: .5;
       }
       @if ($skin-name == 'material' or $skin-name == 'material-dark') {
         &.e-material-slider .e-slider .e-handle.e-handle-first {
@@ -862,7 +1007,7 @@
           margin-top: $slider-btn-center-align;
           top: 50%;
 
-          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
             .e-button-icon {
               background-image: $slider-button-hleft-bg-image;
               background-repeat: no-repeat;
@@ -874,11 +1019,22 @@
               width: 8px;
             }
           }
+          @else if($skin-name == 'bootstrap5') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              content: '\e738';
+              font-size: 17px;
+            }
+          }
           @else {
             .e-button-icon::before {
               content: '\e761';
               font-size: 17px;
-              @if ($skin-name == 'tailwind-dark') {
+              @if ($skin-name == 'tailwind') {
                 color: $slider-button-icon-bg-color;
               }
             }
@@ -890,7 +1046,7 @@
           right: 0;
           top: 50%;
 
-          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
             .e-button-icon {
               background-image: $slider-button-hright-bg-image;
               background-repeat: no-repeat;
@@ -902,11 +1058,23 @@
               width: 8px;
             }
           }
+          @else if($skin-name == 'bootstrap5') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              content: '\e75c';
+              font-size: 17px;
+              margin-left: 1px;
+            }
+          }
           @else {
             .e-button-icon::before {
               content: '\e707';
               font-size: 18px;
-              @if ($skin-name == 'tailwind-dark') {
+              @if ($skin-name == 'tailwind') {
                 color: $slider-button-icon-bg-color;
               }
             }
@@ -981,11 +1149,14 @@
           overflow: hidden;
           top: calc(50% - 2px);
         }
-        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           background: $slider-track-color;
           border-radius: 4px;
           overflow: hidden;
           top: calc(50% - 4px);
+        }
+        @if($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+          top: calc(50% - 3px);
         }
         @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
           background: $slider-handle-start-border-color;
@@ -998,12 +1169,11 @@
           background: $slider-handle-start-border-color;
           border-radius: 6px;
           overflow: hidden;
-          top: calc(50% - 3px);
         }
       }
 
       .e-handle {
-        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'bootstrap5') {
           margin-left: -6px;
           top: calc(50% - 6px);
         }
@@ -1012,7 +1182,7 @@
           top: calc(50% - 7px);
         }
         @else {
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             margin-left: -6px;
           }
           @else {
@@ -1046,14 +1216,11 @@
         @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           top: calc(50% - 2px);
         }
-        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
           top: calc(50% - 3px);
         }
-        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'tailwind') {
           top: calc(50% - 4px);
-        }
-        @if ($skin-name == 'bootstrap4') {
-          top: calc(50% - 3px);
         }
       }
 
@@ -1062,12 +1229,15 @@
         height: $slider-limit-bar-horizontal-height;
         position: absolute;
         top: $slider-limit-bar-top;
+        @if ($skin-name == 'bootstrap5') {
+          border-radius: 4px;
+        }
       }
     }
 
     &.e-vertical {
       height: inherit;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      @if ($skin-name == 'tailwind') {
         padding: 28px 0;
       }
       @else {
@@ -1076,6 +1246,10 @@
       width: 48px;
       @if ($skin-name == 'bootstrap4') {
         padding: 30px 0;
+      }
+
+      @if ($skin-name == 'bootstrap5') {
+        padding: 28px 0;
       }
 
       .e-slider {
@@ -1095,9 +1269,8 @@
         bottom: 0;
         height: 100%;
         position: absolute;
-        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-            border-radius: 4px;
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind') {
+          @if ($skin-name == 'tailwind') {
             left: calc(50%);
           }
           @else {
@@ -1107,7 +1280,6 @@
           width: 4px;
         }
         @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
-          border-radius: 4px;
           left: calc(50% - 4px);
           overflow: hidden;
           width: 8px;
@@ -1119,16 +1291,21 @@
           overflow: hidden;
           width: 10px;
         }
-        @if ($skin-name == 'bootstrap4') {
-          border-radius: 6px;
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
           left: calc(50% - 3px);
           overflow: hidden;
           width: 6px;
+        }
+        @if ($skin-name == 'bootstrap4') {
+          border-radius: 6px;
         }
         @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           left: calc(50% - 1px);
           overflow: hidden;
           width: 2px;
+        }
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+          border-radius: 4px;
         }
       }
 
@@ -1187,7 +1364,7 @@
           margin-right: $slider-btn-center-align;
           right: 50%;
 
-          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
             .e-button-icon {
               background-image: $slider-button-vdown-bg-image;
               background-repeat: no-repeat;
@@ -1200,11 +1377,22 @@
               width: 8px;
             }
           }
+          @else if ($skin-name == 'bootstrap5') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              content: '\e734';
+              font-size: 18px;
+            }
+          }
           @else {
             .e-button-icon::before {
               content: '\e7b3';
               font-size: 18px;
-              @if ($skin-name == 'tailwind-dark') {
+              @if ($skin-name == 'tailwind') {
                 color: $slider-button-icon-bg-color;
               }
             }
@@ -1216,7 +1404,7 @@
           right: 50%;
           top: 0;
 
-          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
             .e-button-icon {
               background-image: $slider-button-vup-bg-image;
               background-repeat: no-repeat;
@@ -1229,11 +1417,22 @@
               width: 8px;
             }
           }
+          @else if ($skin-name == 'bootstrap5') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              content: '\e7dd';
+              font-size: 18px;
+            }
+          }
           @else {
             .e-button-icon::before {
               content: '\e7a0';
               font-size: 18px;
-              @if ($skin-name == 'tailwind-dark') {
+              @if ($skin-name == 'tailwind') {
                 color: $slider-button-icon-bg-color;
               }
             }
@@ -1298,13 +1497,13 @@
       .e-slider {
         .e-handle {
           margin-bottom: $slider-v-handle-margin;
-          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'bootstrap5') {
             left: calc(50% - 6px);
           }
           @else if($skin-name == 'bootstrap4') {
             left: calc(50% - 7px);
           }
-          @else if($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @else if($skin-name == 'tailwind') {
             left: calc(50% - 4px);
           }
           @else {
@@ -1317,18 +1516,23 @@
             left: calc(50% - 4px);
             width: 8px;
           }
-          @if ($skin-name == 'bootstrap4') {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
             left: calc(50% - 3px);
             width: 6px;
           }
-          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind') {
+            @if ($skin-name == 'tailwind') {
               left: calc(50%);
             }
             @else {
               left: calc(50% - 2px);
             }
-            width: 4px;
+            @if ($skin-name == 'bootstrap5') {
+              width: 6px;
+            }
+            @else {
+              width: 4px;
+            }
           }
           @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             left: calc(50% - 3px);
@@ -1345,6 +1549,9 @@
           left: $slider-limit-bar-left;
           position: absolute;
           width: $slider-limit-bar-vertical-width;
+          @if ($skin-name == 'bootstrap5') {
+            border-radius: 4px;
+          }
         }
       }
     }
@@ -1356,11 +1563,11 @@
       height 300ms ease-out;
 
       &.e-drag-horizontal {
-        cursor: ew-resize;
+        cursor: pointer;
       }
 
       &.e-drag-vertical {
-        cursor: ns-resize;
+        cursor: pointer;
       }
     }
 
@@ -1374,7 +1581,7 @@
 
       .e-handle {
         border-radius: $slider-border-radius-handle;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           box-shadow: $slider-handle-box-shadow;
         }
         box-sizing: border-box;
@@ -1464,7 +1671,7 @@
             border-color: $slider-tab-border-color;
             box-shadow: $slider-tab-active-box-shadow;
           }
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
             background-color: $slider-tab-background;
             border: $slider-tab-border;
             box-shadow: $slider-tab-active-box-shadow;
@@ -1604,7 +1811,11 @@
               height: 16px;
               top: -8px;
             }
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if($skin-name == 'bootstrap5') {
+              height: 18px;
+              top: -11px;
+            }
+            @if ($skin-name == 'tailwind') {
               height: 16px;
               top: -16px;
             }
@@ -1630,8 +1841,13 @@
             @if ($skin-name == 'bootstrap4') {
               height: 22px;
               top: -5px;
+
             }
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'bootstrap5') {
+              height: 26px;
+              top: -7px;
+            }
+            @if ($skin-name == 'tailwind') {
               height: 24px;
               top: -12px;
             }
@@ -1657,7 +1873,12 @@
               left: 6px;
               width: calc(100% - 12px);
             }
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if($skin-name == 'bootstrap5') {
+              background-position: center;
+              left: 5px;
+              width: 18px;
+            }
+            @if ($skin-name == 'tailwind') {
               left: 6px;
               width: 16px;
             }
@@ -1679,11 +1900,15 @@
             @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               width: 100%;
             }
-            @if $skin-name == 'bootstrap4' {
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
               left: 3px;
               width: calc(100% - 6px);
             }
-            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+              left: 1px;
+              width: 26px;
+            }
+            @if ($skin-name == 'tailwind') {
               left: 3px;
               width: 24px;
             }
@@ -1737,7 +1962,7 @@
           background-position: center center;
         }
 
-        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           &.e-large {
             background-image: $slider-small-scale-tick-image;
           }
@@ -1751,10 +1976,10 @@
           position: absolute;
           user-select: none;
           white-space: nowrap;
-          @if $skin-name == 'bootstrap4' {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
             line-height: 1.5;
           }
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             line-height: 18px;
           }
         }
@@ -1762,7 +1987,7 @@
 
       &.e-v-scale {
         height: 100%;
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           left: calc(50% - 12px);
         }
         @else {
@@ -1771,7 +1996,7 @@
 
         top: 0;
         width: 28px;
-        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
           margin-top: -2px;
         }
 
@@ -1797,7 +2022,7 @@
             @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               background-position-y: bottom;
               margin-top: 2px;
-              @if ($skin-name == 'tailwind' or $skin-name != 'tailwind-dark') {
+              @if ($skin-name == 'tailwind') {
                 margin-top: 3px;
               }
             }
@@ -1810,13 +2035,13 @@
 
       &.e-h-scale {
         &.e-tick-after {
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             top: 3px;
           }
         }
 
         &.e-tick-before {
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             top: 15px;
           }
         }
@@ -1878,7 +2103,7 @@
           @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
             top: 12px;
           }
-          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
             top: 15px;
           }
         }
@@ -1981,13 +2206,13 @@
 
     .e-scale.e-v-scale {
       &.e-tick-after {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           left: calc(50% - 17px);
         }
       }
 
       &.e-tick-before {
-        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        @if ($skin-name == 'tailwind') {
           left: calc(50% - 7px);
         }
       }

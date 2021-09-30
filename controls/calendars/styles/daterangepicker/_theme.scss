@@ -125,4 +125,86 @@
       color: $range-primary-font-color;
     }
   }
+
+  // apply button override style changes
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $apply-buuton-bg;
+      border-color: $apply-buuton-bg-border-color;
+      color: $apply-buuton-text-color;
+    }
+  }
+
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary:hover,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:hover {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $apply-buuton-hover-bg;
+      border-color: $apply-buuton-bg-border-hover-color;
+      color: $apply-buuton-text-hover-color;
+    }
+  }
+
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary:active,
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary.e-active,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:active,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary.e-active {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $apply-buuton-active-bg;
+      border-color: $apply-buuton-bg-border-active-color;
+      color: $apply-buuton-text-active-color;
+    }
+  }
+
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary:disabled,
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary:disabled,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:disabled,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:disabled {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $range-apply-disabled-background-style;
+      border-color: $range-apply-disabled-border-style;
+      color: $range-apply-disabled-color;
+    }
+  }
+
+  // cancel button override style changes
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-flat,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $cancel-buuton-bg;
+      border-color: $cancel-buuton-bg-border-color;
+      color: $cancel-buuton-text-color;
+    }
+  }
+
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-flat:hover,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:hover {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $cancel-buuton-hover-bg;
+      border-color: $cancel-buuton-bg-border-hover-color;
+      color: $cancel-buuton-text-hover-color;
+    }
+  }
+
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-flat:active,
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-flat.e-active,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:active,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat.e-active {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $cancel-buuton-active-bg;
+      border-color: $cancel-buuton-bg-border-active-color;
+      color: $cancel-buuton-text-active-color;
+    }
+  }
+
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-flat:disabled,
+  .e-daterangepicker.e-popup .e-footer .e-btn.e-flat:disabled,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:disabled,
+  .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:disabled {
+    @if $skin-name == 'bootstrap5' {
+      background-color: $range-cancel-disabled-background-style;
+      border-color: $range-cancel-disabled-border-style;
+      color: $range-cancel-disabled-color;
+    }
+  }
 }

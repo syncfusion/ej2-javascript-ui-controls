@@ -2,23 +2,20 @@
   /*! drop-down button layout */
   .e-dropdown-btn,
   .e-dropdown-btn.e-btn {
-    @if $skin-name != 'bootstrap4' {
+    @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
       box-shadow: none;
     }
     text-transform: none;
     white-space: normal;
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-      padding: 6px 11px;
-    }
 
     &:hover {
-      @if $skin-name != 'bootstrap4' {
+      @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
         box-shadow: none;
     }
   }
 
     &:focus {
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
         box-shadow: $drop-down-btn-box-shadow;
       }
       @else {
@@ -66,13 +63,6 @@
   }
 
   .e-bigger .e-dropdown-btn,
-  .e-bigger .e-dropdown-btn.e-btn {
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-      padding: 8px 11px;
-    }
-  }
-
-  .e-bigger .e-dropdown-btn,
   .e-bigger.e-dropdown-btn {
     .e-btn-icon {
       font-size: $drop-down-btn-icon-font-size-bigger;
@@ -97,7 +87,7 @@
 
   .e-dropdown-popup {
     position: absolute;
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
       margin-top: $drop-down-btn-popup-margin-top;
     }
 
@@ -184,6 +174,12 @@
     }
   }
 
+  #{if(&, '&', '*')}.e-bigger .e-dropdown-popup {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+      background-color: transparent;
+    }
+  }
+
   #{if(&, '&', '*')}.e-bigger .e-dropdown-popup ul,
   #{if(&, '&', '*')}.e-bigger.e-dropdown-popup ul {
     box-shadow: $drop-down-btn-parent-ul-box-shadow;
@@ -191,7 +187,8 @@
     max-width: $drop-down-btn-bigger-max-width;
     min-width: $drop-down-btn-bigger-min-width;
     padding: $drop-down-btn-ul-bigger-padding;
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+      background-color: $drop-down-btn-ul-bgcolor;
       margin-top: $drop-down-btn-bigger-popup-margin-top;
     }
 

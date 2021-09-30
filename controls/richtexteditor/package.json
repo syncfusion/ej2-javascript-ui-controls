@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-richtexteditor",
-	"version": "19.2.60",
+	"version": "18.56.3",
 	"description": "Essential JS 2 RichTextEditor component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -58,5 +58,6 @@
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

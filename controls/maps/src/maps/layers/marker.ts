@@ -305,10 +305,6 @@ export class Marker {
             longitude: options.data['longitude'] || options.data['Longitude'],
             value: options.data['name']
         };
-        if (this.maps.isBlazor) {
-            const { maps, marker, ...blazorEventArgs }: IMarkerClickEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger(markerClick, eventArgs);
     }
     /**
@@ -386,7 +382,6 @@ export class Marker {
                     collection = [];
                     for (const i of indexes) {
                         collection.push({ data: marker.dataSource[i], index: i });
-                        if (this.maps.isBlazor) { marker.dataSource[i]['text'] = ''; }
                         markCollection.push(marker.dataSource[i]);
                     }
                     isClusterSame = false;

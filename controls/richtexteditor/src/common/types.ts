@@ -8,3 +8,13 @@ export type EditorMode = 'HTML' | 'Markdown';
  * Defines types to be used to save the image.
  */
 export type SaveFormat = 'Base64' | 'Blob';
+
+/**
+ * Defines tag to be used when enter key is pressed.
+ */
+export type EnterKey = 'P' | 'DIV' | 'BR';
+
+/**
+ * Defines tag to be used when shift + enter key is pressed.
+ */
+export type ShiftEnterKey = 'P' | 'DIV' | 'BR';

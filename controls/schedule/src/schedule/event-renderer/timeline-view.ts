@@ -69,6 +69,36 @@ export class TimelineEvent extends MonthEvent {
         return appointmentsList;
     }
 
+    public getSortComparerIndex(startDate: Date, endDate: Date): number {
+        let appIndex: number = -1;
+        const appointments: Record<string, any>[] = <Record<string, any>[]>this.renderedEvents;
+        if (appointments.length > 0) {
+            const appointmentsList: Record<string, any>[] = this.getOverlapSortComparerEvents(startDate, endDate, appointments);
+            const appLevel: number[] = appointmentsList.map((obj: Record<string, any>) => obj.Index) as number[];
+            appIndex = (appLevel.length > 0) ? this.getSmallestMissingNumber(appLevel) : 0;
+        }
+        return (appIndex === -1) ? 0 : appIndex;
+    }
+
+    public getOverlapSortComparerEvents(startDate: Date, endDate: Date, appointmentsCollection: Record<string, any>[]): Record<string, any>[] {
+        const appointments: Record<string, any>[] = [];
+        for (const app of appointmentsCollection) {
+            if (this.renderType === 'day') {
+                if ((util.resetTime(<Date>app[this.fields.startTime]).getTime() <= util.resetTime(new Date(startDate.getTime())).getTime()) &&
+                    (util.resetTime(<Date>app[this.fields.endTime]).getTime() >= util.resetTime(new Date(startDate.getTime())).getTime())) {
+                    appointments.push(app);
+                }
+            } else {
+                const eventData: Record<string, any> = app.data as Record<string, any>;
+                if (((eventData.trimStartTime.getTime() <= startDate.getTime()) && (startDate.getTime() < eventData.trimEndTime.getTime())) ||
+                    ((startDate.getTime() <= eventData.trimStartTime.getTime()) && (eventData.trimStartTime.getTime() < endDate.getTime()))) {
+                    appointments.push(app);
+                }
+            }
+        }
+        return appointments;
+    }
+
     public renderResourceEvents(): void {
         this.removeHeightProperty(cls.RESOURCE_COLUMN_TABLE_CLASS);
         const resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
@@ -109,7 +139,7 @@ export class TimelineEvent extends MonthEvent {
             return;
         }
         const cellTd: HTMLElement = this.getCellTd();
-        const overlapCount: number = this.getIndex(startTime);
+        const overlapCount: number = (isNullOrUndefined(this.parent.eventSettings.sortComparer)) ? this.getIndex(startTime) : this.getSortComparerIndex(startTime, endTime);
         event.Index = overlapCount;
         const elem: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_CLASS);
         const eleHeight: number = (elem) ? elem.getBoundingClientRect().height : 0;

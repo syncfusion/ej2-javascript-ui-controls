@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.62 (2021-09-14)
+## 19.3.43 (2021-09-30)
+
+### Kanban
+
+#### New Features
+
+- `#I299672` - Provided support to bind the `ObservableCollection` data to the Kanban board.
+
+## 19.2.60 (2021-09-07)
 
 ### Kanban
 

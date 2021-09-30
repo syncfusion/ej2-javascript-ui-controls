@@ -1,7 +1,7 @@
 import { Dialog } from '@syncfusion/ej2-popups';
-import { PivotView } from '../../pivotview';
+import { PivotView } from '../../pivotview/base/pivotview';
 import { DrillThroughEventArgs, EditCompletedEventArgs } from '../base/interface';
-import { createElement, setStyleAttribute, remove, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, remove, isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, closest } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar, ExcelExport, PdfExport } from '@syncfusion/ej2-grids';
 import { VirtualScroll, Selection, Edit, Page, CommandColumn } from '@syncfusion/ej2-grids';
@@ -29,6 +29,11 @@ export class DrillThroughDialog {
     private gridData: IDataSet[] = [];
     private numericTextBox: NumericTextBox;
     private formatList: { [key: string]: string } = {};
+    private drillKeyConfigs: { [key: string]: string } = {
+        escape: 'escape'
+    };
+    private drillthroughKeyboardModule: KeyboardEvents;
+
     /* eslint-disable-next-line */
     /**
      * Constructor for the dialog action.
@@ -58,7 +63,7 @@ export class DrillThroughDialog {
             this.clonedData.push(this.frameHeaderWithKeys(eventArgs.rawData[i]));
         }
         let actualText: string = eventArgs.currentCell.actualText.toString();
-        if (this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
+        if (this.parent.currentView === 'Table' && this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
             this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
             this.engine.fieldList[actualText].aggregateType !== 'DistinctCount' && typeof (eventArgs.rawData[0][actualText]) !== 'string') {
             this.editCell(eventArgs);
@@ -106,9 +111,6 @@ export class DrillThroughDialog {
                                 delete item['__index'];
                                 addItems.push(item);
                             } else if (count > 0) {
-                                if (isBlazor() && this.parent.editSettings.allowCommandColumns) {
-                                    this.parent.engineModule.data[Number(item['__index'])] = item;
-                                }
                                 delete this.gridIndexObjects[item['__index'].toString()];
                                 prevItems.push(item);
                                 count--;
@@ -124,23 +126,7 @@ export class DrillThroughDialog {
                             index++;
                         }
                         count = 0;
-                        if (isBlazor() && this.parent.enableVirtualization) {
-                            let currModule: DrillThroughDialog = this;  /* eslint-disable-line */
-                            /* eslint-disable @typescript-eslint/no-explicit-any */
-                            (currModule.parent as any).interopAdaptor.invokeMethodAsync(
-                                'PivotInteropMethod', 'updateRawData', {
-                                'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData /* eslint-disable-line */
-                            }).then((data: any) => {
-                                currModule.parent.updateBlazorData(data, currModule.parent);
-                                currModule.parent.allowServerDataBinding = false;
-                                currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
-                                delete (currModule.parent as any).bulkChanges.pivotValues;
-                                currModule.parent.allowServerDataBinding = true;
-                                currModule.isUpdated = false;
-                                currModule.gridIndexObjects = {};
-                            });
-                            /* eslint-enable @typescript-eslint/no-explicit-any */
-                        } else if (this.parent.dataSourceSettings.mode === 'Server') {
+                        if (this.parent.dataSourceSettings.mode === 'Server') {
                             let gridIndex: object[] = [];   /* eslint-disable-line */
                             let keys: string[] = Object.keys(this.gridIndexObjects);
                             for (let len: number = 0; len < keys.length; len++) {
@@ -180,10 +166,8 @@ export class DrillThroughDialog {
                             }
                         }
                     }
-                    if (!(isBlazor() && this.parent.enableVirtualization)) {
-                        this.isUpdated = false;
-                        this.gridIndexObjects = {};
-                    }
+                    this.isUpdated = false;
+                    this.gridIndexObjects = {};
                 },
                 isModal: true,
                 visible: true,
@@ -192,7 +176,7 @@ export class DrillThroughDialog {
                 enableRtl: this.parent.enableRtl,
                 width: this.parent.isAdaptive ? '100%' : '60%',
                 position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
-                closeOnEscape: true,
+                closeOnEscape: !this.parent.editSettings.allowEditing,
                 target: document.body,
                 close: this.removeDrillThroughDialog.bind(this)
             });
@@ -200,6 +184,13 @@ export class DrillThroughDialog {
             this.dialogPopUp.appendTo(drillThroughDialog);
             // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
             setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+            if (this.parent.editSettings.allowEditing) {
+                this.drillthroughKeyboardModule = new KeyboardEvents(this.dialogPopUp.element, {
+                    keyAction: this.drillthroughKeyActionHandler.bind(this),
+                    keyConfigs: this.drillKeyConfigs,
+                    eventName: 'keydown'
+                });
+            }
         }
     }
 
@@ -354,16 +345,13 @@ export class DrillThroughDialog {
             pageSettings: { pageSize: 20 },
             rowHeight: this.parent.gridSettings.rowHeight
         });
-        if (isBlazor()) {
-            (this.drillThroughGrid as any)['isJsComponent'] = true;
-        }
         if (this.parent.dataType === 'olap') {
             this.formatData();
         }
         let dialogModule: DrillThroughDialog = this;
         this.parent.trigger(events.beginDrillThrough, {
             cellInfo: eventArgs,
-            gridObj: isBlazor() ? undefined : this.drillThroughGrid,
+            gridObj: this.drillThroughGrid,
             type: 'editing'
         });
         if (this.drillThroughGrid.allowExcelExport) {
@@ -514,5 +502,52 @@ export class DrillThroughDialog {
             count++;
         }
         return rawData;
+    }
+
+    private drillthroughKeyActionHandler(e: KeyboardEventArgs): void {
+        switch (e.action) {
+            case 'escape':
+                this.processClose(e);
+                break;
+        }
+    }
+
+    private processClose(e: Event): void {
+        let target: Element = e.target as Element;
+        if (target && closest(target, '.e-popup.e-popup-open')) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            let dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
+            if (dialogInstance && !dialogInstance.closeOnEscape) {
+                let button: string = dialogInstance.element.getAttribute('data-fieldName');
+                dialogInstance.hide();
+                if (this.parent.element) {
+                    let pivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-pivot-button'));
+                    for (let item of pivotButtons) {
+                        if (item.getAttribute('data-uid') === button) {
+                            item.focus();
+                            break;
+                        }
+                    }
+                }
+                e.preventDefault();
+                return;
+            }
+        }
+    }
+
+    /**
+     * To destroy the drillthrough keyboard module.
+     * @returns  {void}
+     * @hidden
+     */
+    public destroy(): void {
+        if (this.parent.isDestroyed) { return; }
+        if (this.drillthroughKeyboardModule && !this.drillthroughKeyboardModule.isDestroyed) {
+            this.drillthroughKeyboardModule.destroy();
+            this.drillthroughKeyboardModule = null;
+        }
+        else {
+            return;
+        }
     }
 }

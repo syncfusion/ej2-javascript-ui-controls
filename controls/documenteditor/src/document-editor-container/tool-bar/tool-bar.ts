@@ -157,7 +157,7 @@ export class Toolbar {
             const locale: L10n = this.container.localObj;
             const id: string = this.container.element.id + TOOLBAR_ID;
             if (this.toolbarItems.indexOf('Image') >= 0) {
-                this.imgDropDwn = new DropDownButton({
+                 this.imgDropDwn = new DropDownButton({
                     items: [
                         {
                             text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',

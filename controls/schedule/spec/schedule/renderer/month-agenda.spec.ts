@@ -538,6 +538,25 @@ describe('Month-agenda view rendering', () => {
         });
     });
 
+    describe('EJ2-52001 - Week Number rendered not properly when height is auto in MonthAgenda view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: 'auto', selectedDate: new Date(2018, 3, 1),
+                views: ['MonthAgenda'],
+                showWeekNumber: true
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Week number testing for when height is auto', () => {
+            expect((schObj.element.querySelector('.e-week-number-wrapper') as HTMLElement).offsetHeight).toBe(202);
+            expect((schObj.element.querySelector('.e-week-number-wrapper .e-week-number') as HTMLElement).offsetHeight).toBe(40);
+        });
+    });
+
     describe('Events rendering', () => {
         let schObj: Schedule;
         let keyModule: any;

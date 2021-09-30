@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getValue, INotifyPropertyChanged, EmitType, Event, ModuleDeclaration, NotifyPropertyChanges, Base, Property, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
+import { getValue, INotifyPropertyChanged, EmitType, Event, ModuleDeclaration, NotifyPropertyChanges, Base, Property, isNullOrUndefined, isUndefined, Internationalization } from '@syncfusion/ej2-base';
 import { BasicFormulas } from './../formulas/index';
 import { CalculateModel } from './calculate-model';
 import { getModules, ModuleLoader } from '../common/index';
@@ -113,7 +113,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         'Missing sheet',
         'cannot_parse',
         'expression_cannot_end_with_an_operator',
-        '#SPILL!'
+        '#SPILL!',
+        '#DIV/0!'
     ];
     private errorStrings: string[] = null;
     /** @hidden */
@@ -2053,6 +2054,28 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             days = this.toOADate(new Date(dateTime));
         }
         return days;
+    }
+
+    /**
+     * @hidden
+     * @param {string | number} value - Specify the Time
+     * @returns {string} -  returns to time.
+     */
+    public intToTime(value: string | number): string {
+        if (isNullOrUndefined(value)) {
+            return '';
+        }
+        const val: string[] | number[] = value.toString().split('.');
+        if (!isNullOrUndefined(val[1])) {
+            value = parseFloat(val[0] + 1 + '.' + val[1]) || value;
+        }
+        const time: Date = this.intToDate(value.toString());
+        const intl: Internationalization = new Internationalization();
+        return intl.formatDate(time, {
+            type: 'time',
+            skeleton: 'medium',
+            format: 'h:mm:ss a'
+        });
     }
 
     /**

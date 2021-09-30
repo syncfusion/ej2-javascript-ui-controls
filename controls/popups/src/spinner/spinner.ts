@@ -7,6 +7,7 @@ const DEFT_FAB_WIDTH: number = 30;
 const DEFT_TAIL_WIDTH: number = 24;
 const DEFT_BOOT_WIDTH: number = 30;
 const DEFT_BOOT4_WIDTH: number = 36;
+const DEFT_BOOT5_WIDTH: number = 36;
 const CLS_SHOWSPIN: string = 'e-spin-show';
 const CLS_HIDESPIN: string = 'e-spin-hide';
 const CLS_MATERIALSPIN: string = 'e-spin-material';
@@ -14,6 +15,7 @@ const CLS_FABRICSPIN: string = 'e-spin-fabric';
 const CLS_TAILWINDSPIN: string = 'e-spin-tailwind';
 const CLS_BOOTSPIN: string = 'e-spin-bootstrap';
 const CLS_BOOT4SPIN: string = 'e-spin-bootstrap4';
+const CLS_BOOT5SPIN: string = 'e-spin-bootstrap5';
 const CLS_HIGHCONTRASTSPIN: string = 'e-spin-high-contrast';
 const CLS_SPINWRAP: string = 'e-spinner-pane';
 const CLS_SPININWRAP: string = 'e-spinner-inner';
@@ -33,7 +35,7 @@ export type createElementParams = (
 /**
   * Defines the type of spinner.
   */
-export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4' | 'Tailwind';
+export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4' | 'Tailwind' | 'Bootstrap5';
 
 // eslint-disable-next-line
 /**
@@ -157,6 +159,19 @@ function createBootstrap4Spinner(container: HTMLElement, radius: number, makeEle
 /**
  *
  * @param {HTMLElement} container - specifies the element
+ * @param {number} radius - specifies the radius
+ * @param {createElementParams} makeElement - specifies the element
+ * @returns {void}
+ */
+function createBootstrap5Spinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+    const uniqueID: string = random_generator();
+    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap5', radius: radius };
+    create_material_element (container, uniqueID, makeElement, CLS_BOOT5SPIN);
+    mat_calculate_attributes(radius, container, 'Bootstrap5', CLS_BOOT5SPIN);
+}
+/**
+ *
+ * @param {HTMLElement} container - specifies the element
  * @param {string} uniqueID - specifies the id.
  * @param {number} radius - specifies the radius
  * @returns {void}
@@ -245,6 +260,9 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
         break;
     case 'Bootstrap4':
         createBootstrap4Spinner(innerContainer, radius, makeElement );
+        break;
+    case 'Bootstrap5':
+        createBootstrap5Spinner(innerContainer, radius, makeElement );
         break;
     case 'Tailwind':
     case 'Tailwind-dark':
@@ -433,6 +451,9 @@ function calculateRadius(width: string | number, theme: string): number {
         break;
     case 'Bootstrap4':
         defaultSize = DEFT_BOOT4_WIDTH;
+        break;
+    case 'Bootstrap5':
+        defaultSize = DEFT_BOOT5_WIDTH;
         break;
     default:
         defaultSize = DEFT_BOOT_WIDTH;

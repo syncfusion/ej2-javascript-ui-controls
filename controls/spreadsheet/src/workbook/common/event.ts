@@ -16,19 +16,11 @@ export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';
 /** @hidden */
-export const checkUniqueRange: string = 'checkUniqueRange';
-/** @hidden */
-export const reApplyFormula: string = 'reApplyFormula';
-/** @hidden */
 export const sortImport: string = 'sortImport';
 /** @hidden */
 export const ribbonFind: string = 'ribbonFind';
 /** @hidden */
 export const getFilteredCollection: string = 'getFilteredCollection';
-/** @hidden */
-export const getUniqueRange: string = 'getUniqueRange';
-/** @hidden */
-export const removeUniquecol: string = 'removeUniquecol';
 /** @hidden */
 export const saveCompleted: string = 'saveCompleted';
 /** @hidden */
@@ -67,6 +59,18 @@ export const sheetCreated: string = 'sheetCreated';
 export const sheetsDestroyed: string = 'sheetsDestroyed';
 /** @hidden */
 export const aggregateComputation: string = 'aggregateComputation';
+/** @hidden */
+export const getUniqueRange: string = 'getUniqueRange';
+/** @hidden */
+export const removeUniquecol: string = 'removeUniquecol';
+/** @hidden */
+export const checkUniqueRange: string = 'checkUniqueRange';
+/** @hidden */
+export const reApplyFormula: string = 'reApplyFormula';
+/** @hidden */
+export const clearFormulaDependentCells: string = 'clearFormulaDependentCells';
+/** @hidden */
+export const formulaInValidation: string = 'formulaInValidation';
 /** @hidden */
 export const beforeSort: string = 'beforeSort';
 /** @hidden */
@@ -230,6 +234,20 @@ export const beforeDelete: string = 'beforeDelete';
 export const deleteHyperlink: string = 'deleteHyperlink';
 /** @hidden */
 export const moveOrDuplicateSheet: string = 'moveOrDuplicateSheet';
+/** @hidden */
+export const setAutoFill: string = 'setAutoFill';
+/** @hidden */
+export const refreshCell: string = 'refreshCell';
+/** @hidden */
+export const getFillInfo: string = 'getFillInfo';
+/** @hidden */
+export const getautofillDDB: string = 'getautofillDDB';
+/** @hidden */
+export const rowFillHandler: string = 'rowFillHandler';
+/** @hidden */
+export const getTextSpace: string = 'getTextSpace';
+/** @hidden */
+export const updateCustomFormatsFromImport: string = 'updateCustomFormatsFromImport';
 /** @hidden */
 export const cFUndo: string = 'cFUndo';
 /** @hidden */

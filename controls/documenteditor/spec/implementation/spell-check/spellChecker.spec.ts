@@ -512,20 +512,20 @@ console.log('Spell check CheckTextElementError API testing 2');
         editor.spellChecker.checktextElementHasErrors((lineInfo.line.children[0] as TextElementBox).text, lineInfo.line.children[0], 96);
         expect(lineInfo.line.children[0].ischangeDetected).toBe(true);
     });
-    it('Spell check add error collection API testing', () => {
-console.log('Spell check add error collection API testing');
-        editor.openBlank();
-        editor.editorModule.insertTextInternal('Helo', false);
-        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
-        let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
-        let jsonData: any = { "HasSpellingError": true, "Suggestions": [] }
-        editor.spellChecker.handleWordByWordSpellCheck(jsonData, element, 196, 196, 11, undefined, true);
-        editor.editorModule.insertTextInternal('Helo', false);
-        let textElement: TextElementBox = lineInfo.line.children[1] as TextElementBox;
-        editor.spellChecker.handleWordByWordSpellCheck(jsonData, element, 196, 196, 11, undefined, true);
-        expect(editor.spellChecker.errorWordCollection.length).toBe(2);
-    });
+//     it('Spell check add error collection API testing', () => {
+// console.log('Spell check add error collection API testing');
+//         editor.openBlank();
+//         editor.editorModule.insertTextInternal('Helo', false);
+//         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+//         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
+//         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
+//         let jsonData: any = { "HasSpellingError": true, "Suggestions": [] }
+//         editor.spellChecker.handleWordByWordSpellCheck(jsonData, element, 196, 196, 11, undefined, true);
+//         editor.editorModule.insertTextInternal('Helo', false);
+//         let textElement: TextElementBox = lineInfo.line.children[1] as TextElementBox;
+//         editor.spellChecker.handleWordByWordSpellCheck(jsonData, element, 196, 196, 11, undefined, true);
+//         expect(editor.spellChecker.errorWordCollection.length).toBe(2);
+//     });
     it('Spell check checkNextError API testing', () => {
 console.log('Spell check checkNextError API testing');
         editor.openBlank();
@@ -716,8 +716,7 @@ console.log('Find validation');
         expect(editor.search.textSearchResults.length).not.toBe(0);
     });
     it('Check uniqueWordcount validation', () => {
-        console.log('Check uniqueWordcount validation');
+console.log('Check uniqueWordcount validation');
         expect(editor.spellChecker.uniqueWordsCount).toBe(15000);
     });
-        
 });

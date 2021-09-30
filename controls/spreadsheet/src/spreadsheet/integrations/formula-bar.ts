@@ -233,9 +233,19 @@ export class FormulaBar {
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
                     const addressRange: number[] = getRangeIndexes(address);
                     const cellEle: HTMLElement = this.parent.getCell(addressRange[0], addressRange[1]);
-                    if (cell && !cell.formula && cellEle && (!cell.validation || cell.validation.type !== 'List') && (type !== 'Time' ||
-                        !value)) {
-                        formulaInp.value = cellEle.textContent;
+                    if (cell && !cell.formula && cellEle && (type !== 'Time' || !value)) {
+                        if (cell.value === undefined || this.isDateTimeType(cell.format) || isNullOrUndefined(cell.format)) {
+                            const key: string = this.isDateTimeType(cell.format);
+                            if (key) {
+                                const intl: Internationalization = new Internationalization();
+                                const format: string = key === 'date' ? 'M/d/yyyy' : 'h:mm:ss a';
+                                formulaInp.value = intl.formatDate(intToDate(parseFloat(cell.value)), { type: key, format: format});
+                            } else {
+                                formulaInp.value = cellEle.textContent;
+                            }
+                        } else {
+                            formulaInp.value = cell.value;
+                        }
                     } else {
                         formulaInp.value = value;
                     }
@@ -254,6 +264,26 @@ export class FormulaBar {
             });
         }
         this.updateComboBoxValue(address);
+    }
+    private isDateTimeType(format: string): string {
+        const dateCodes: string[] = ['/', '-d', '-m', '-y', 'dd', 'mm', 'yy'];
+        const timeCodes: string[] = [':', 'hh', 'h', 'mm:ss', 'h:mm:ss'];
+        let result: string;
+        timeCodes.forEach((code: string) => {
+            if (format && format.indexOf(code) > -1) {
+                result = 'time';
+            }
+        });
+        if (result) {
+            return result;
+        } else {
+            dateCodes.forEach((code: string) => {
+                if (format && format.indexOf(code) > -1) {
+                    result = 'date';
+                }
+            });
+        }
+        return result;
     }
     private UpdateValueAfterMouseUp(): void {
         this.updateComboBoxValue(this.parent.getActiveSheet().selectedRange.split(':')[0]);
@@ -420,7 +450,8 @@ export class FormulaBar {
 
     private dialogBeforeClose(): void {
         EventHandler.remove(this.formulaList.element, 'dblclick', this.formulaClickHandler);
-        const dialogContentEle: HTMLElement = document.getElementById('_dialog-content');
+        const dialogContentEle: HTMLElement = document.getElementsByClassName('e-spreadsheet-function-dlg')[0].
+        querySelector('.e-dlg-content');
         dialogContentEle.parentNode.removeChild(dialogContentEle);
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (this.dialog.dialogInstance as any).storeActiveElement = document.getElementById(this.parent.element.id + '_edit');
@@ -469,7 +500,7 @@ export class FormulaBar {
         this.formulaList.dataSource = this.formulaCollection.sort();
     }
     private focusOkButton(): void {
-        const focusEle: Element = document.getElementById('_dialog-content');
+        const focusEle: Element = document.getElementsByClassName('e-spreadsheet-function-dlg')[0].querySelector('.e-dlg-content');
         ((focusEle.nextElementSibling.firstElementChild) as HTMLElement).focus();
     }
     private activeListFormula(): void {

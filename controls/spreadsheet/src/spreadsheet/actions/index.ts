@@ -22,3 +22,4 @@ export * from './protect-sheet';
 export * from './find-and-replace';
 export * from './merge';
 export * from './conditional-formatting';
+export * from './auto-fill';

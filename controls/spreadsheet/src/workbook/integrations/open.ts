@@ -35,7 +35,12 @@ export class WorkbookOpen {
         const formData: FormData = new FormData();
         if (options.file) {
             formData.append('file', options.file as string);
-        } else {
+        } 
+        else if (options.sheetIndex >=0) {
+            formData.append('sheetPassword', options.sheetPassword as string);
+            formData.append('sheetIndex', options.sheetIndex.toString());
+        }
+        else {
             this.parent.isOpen = false;
             return;
         }
@@ -58,8 +63,10 @@ export class WorkbookOpen {
             },
             password: args.passWord
         };
-        this.parent.trigger('beforeOpen', eventArgs);
-        this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
+        if (options.sheetPassword && options.sheetPassword.length <= 0) {
+            this.parent.trigger('beforeOpen', eventArgs);
+            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
+        }
         if (eventArgs.cancel) {
             return;
         }
@@ -88,7 +95,7 @@ export class WorkbookOpen {
     }
 
     private fetchSuccess(data: string, eventArgs: OpenOptions, isOpenFromJson?: boolean): void {
-        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword'];
+        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword', 'CorrectSheetPassword'];
         let workbookData: string = data;
         workbookData = (typeof data === 'string') ? JSON.parse(data) : data;
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */

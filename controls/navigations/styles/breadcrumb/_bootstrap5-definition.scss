@@ -1,0 +1,46 @@
+// Size variables
+$breadcrumb-skin: 'bootstrap5' !default;
+$breadcrumb-last-item-font-weight: $font-weight-normal !default;
+$breadcrumb-font-size: $text-sm !default;
+$breadcrumb-bigger-font-size: $text-base !default;
+$breadcrumb-icon-font-size: $text-sm !default;
+$breadcrumb-icon-bigger-font-size: $text-base !default;
+$breadcrumb-padding: 2px !default;
+$breadcrumb-padding-left: 0 !default;
+$breadcrumb-padding-right: 0 !default;
+$breadcrumb-bigger-padding: 2px !default;
+$breadcrumb-separator-padding: 0 8px !default;
+$breadcrumb-separator-bigger-padding: 0 8px !default;
+$breadcrumb-icon-color: $icon-color !default;
+$breadcrumb-icon-right-padding: 8px !default;
+$breadcrumb-icon-bigger-right-padding: 8px !default;
+$breadcrumb-collapsed-icon-padding: 4px 4px !default;
+$breadcrumb-collapsed-icon-bigger-padding: 5px 5px !default;
+$breadcrumb-sibling-separator-padding: 0 !default;
+$breadcrumb-sibling-separator-margin-left: -8px !default;
+$breadcrumb-icon-item-padding: 0 !default;
+$breadcrumb-collapsed-icon-font-size: 16px !default;
+$breadcrumb-collapsed-icon-bigger-font-size: 18px !default;
+$breadcrumb-item-focus-padding: 1px !default;
+$breadcrumb-item-focus-bigger-padding: 1px !default;
+$breadcrumb-icon-only-item-padding: 3px 5px !default;
+$breadcrumb-icon-only-item-focus-padding: 2px 4px !default;
+$breadcrumb-icon-only-item-next-separator-padding-left: 5px;
+$breadcrumb-icon-only-item-bigger-padding: 2px 4px !default;
+$breadcrumb-icon-only-item-focus-bigger-padding: 1px 3px !default;
+
+// Color variables
+$breadcrumb-separator-color: $content-text-color-alt3 !default;
+$breadcrumb-item-color: $primary-outline !default;
+$breadcrumb-item-hover-color: darken($primary-outline, 10%) !default;
+$breadcrumb-item-focus-color: $breadcrumb-item-hover-color !default;
+$breadcrumb-item-active-color: darken($primary-outline, 15%) !default;
+$breadcrumb-last-item-font-color: $content-text-color-alt3 !default;
+$breadcrumb-collapsed-icon-hover-bgcolor: $content-bg-color-hover !default;
+$breadcrumb-collapsed-icon-active-bgcolor: $content-bg-color-pressed !default;
+$breadcrumb-collapsed-icon-focus-bgcolor: $content-bg-color-focus !default;
+$breadcrumb-collapsed-icon-color: $icon-color !default;
+$breadcrumb-collapsed-icon-hover-color: $icon-color !default;
+$breadcrumb-disabled-item-color: $content-text-color-disabled !default;
+$breadcrumb-icon-interaction-color: $icon-color !default;
+$breadcrumb-item-focus-border: 1px solid darken($primary-outline, 10%) !default;

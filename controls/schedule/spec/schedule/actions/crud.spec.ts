@@ -146,6 +146,24 @@ describe('Schedule CRUD', () => {
             schObj.saveEvent(data);
         });
 
+        it('test normal appointment save with second parameter', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                const dataObj: Record<string, any>[] = schObj.eventsData;
+                expect(dataObj[1].IsAllDay).toBeTruthy();
+                done();
+            };
+            const data: Record<string, any> = {
+                Id: 11,
+                Subject: 'event 1 edited',
+                StartTime: new Date(2017, 9, 19, 11, 0),
+                EndTime: new Date(2017, 9, 19, 12, 30),
+                IsAllDay: true
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
+            schObj.saveEvent(data, 'Save');
+        });
+
         it('test edit occurrence', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(4);
@@ -231,6 +249,24 @@ describe('Schedule CRUD', () => {
                 RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
             };
             schObj.saveEvent(data, 'EditSeries');
+        });
+
+        it('test recurrence appointment save', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(4);
+                done();
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
+            const data: Record<string, any> = {
+                Id: 24,
+                Subject: 'recurrence event',
+                StartTime: new Date(2017, 9, 19, 10, 0),
+                EndTime: new Date(2017, 9, 19, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+                RecurrenceID: 10,
+                Description: 'Recurrence event edited'
+            };
+            schObj.saveEvent(data, 'Save');
         });
 
         it('test edit series', (done: DoneFn) => {

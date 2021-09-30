@@ -2929,6 +2929,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 removeClass([this.element], 'e-gridhover');
             }
         }
+        if (this.enableAdaptiveUI && this.scrollModule) {
+            this.scrollModule.refresh();
+        }
     }
 
     private removeMediaListener(): void {

@@ -637,6 +637,13 @@ export class SfdtReader {
                     if (block.rows[i].cells[j].hasOwnProperty('cellFormat')) {
                         this.parseCellFormat(block.rows[i].cells[j].cellFormat, cell.cellFormat);
                     }
+                    let item: any = block.rows[i].cells[j].blocks;
+                    for (let k: number = 0; k < item.length; k++) {
+                    if (item[k].hasOwnProperty('rows')) {
+                        table.isContainInsideTable = true;
+                        
+                    }
+                }
                     this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
                     if (!isNullOrUndefined(cell.contentControlProperties)) {
@@ -1715,6 +1722,9 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceFormat.keepLinesTogether)) {
                 paragraphFormat.keepLinesTogether = sourceFormat.keepLinesTogether;
+            }
+            if (!isNullOrUndefined(sourceFormat.widowControl)) {
+                paragraphFormat.widowControl = sourceFormat.widowControl;
             }
             paragraphFormat.listFormat = new WListFormat();
             if (sourceFormat.hasOwnProperty('listFormat')) {

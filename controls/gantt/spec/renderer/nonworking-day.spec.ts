@@ -3,7 +3,7 @@
  */
 import { Gantt, DayMarkers } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { baselineData } from '../base/data-source.spec';
+import { baselineData,projectData  } from '../base/data-source.spec';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 describe('Gantt spec for non -working-day', () => {
     describe('Gantt base module', () => {
@@ -79,5 +79,78 @@ describe('Gantt spec for non -working-day', () => {
             ganttObj.holidays = [];
             ganttObj.dataBind();
            });
+    });
+    
+        describe('Empty holidays', () => {
+        Gantt.Inject(DayMarkers);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks'
+                },
+                holidays: [
+                    {
+                        from: new Date('04/04/2019'),
+                        to: new Date('04/04/2019'),
+                        label: 'Local Holiday'
+                    } 
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                highlightWeekends: true,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('Non-working-Day Testing', () => {
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.requestType === 'refresh') {
+                    expect(ganttObj.currentViewData.length).toBe(2);
+                }
+            };
+            ganttObj.holidays = [];
+            ganttObj.projectStartDate = new Date('03/20/2019');
+            ganttObj.projectEndDate = new Date('07/10/2019');
+            ganttObj.dataSource = [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 2,
+                            TaskName: 'Defining the product and its usage',
+                            StartDate: new Date('04/02/2019'),
+                            Duration: 3,
+                            Progress: 30
+                        }
+                    ]
+                }
+            ];
+        });
     });
 });

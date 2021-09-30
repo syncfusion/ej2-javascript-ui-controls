@@ -436,7 +436,6 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
      *
      * @aspDefaultValueIgnore
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public from: number;
@@ -445,7 +444,6 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
      *
      * @aspDefaultValueIgnore
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public to: number;
@@ -890,7 +888,6 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * Sets and gets the orientation of the zoom toolbar.
      *
      * @default Horizontal
-     * @blazorProperty 'ToolbarOrientation'
      */
     @Property('Horizontal')
     public toolBarOrientation: Orientation;
@@ -943,7 +940,6 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * Enables or disables the double click zooming in maps.
      *
      * @default false
-     * @blazorProperty 'ZoomOnDoubleClick'
      */
     @Property(false)
     public doubleClickZoom: boolean;
@@ -1220,7 +1216,6 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * Sets and gets the path for the legend from the data source to be shown.
      *
      * @default null
-     * @blazorProperty 'LegendPath'
      */
     @Property(null)
     public showLegendPath: string;

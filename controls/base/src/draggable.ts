@@ -938,7 +938,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
             pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
         }
-        if (!this.clone && this.dragArea) {
+        if (!this.clone && this.dragArea && !isdragscroll) {
             this.getScrollableValues();
             pageY -=  this.tempScrollHeight ? this.parentScrollY : 0;
             pageX -=  this.tempScrollWidth ? this.parentScrollX : 0;

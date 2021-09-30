@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, blazorCultureFormats, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
 import {TimeFormatObject,ChangeEventArgs,PopupEventArgs,ItemEventArgs} from "./timepicker";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -146,7 +146,6 @@ export interface TimePickerModel extends ComponentModel{
      * {% codeBlock src='timepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     keyConfigs?: { [key: string]: string };
 
@@ -159,7 +158,6 @@ export interface TimePickerModel extends ComponentModel{
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     format?: string | TimeFormatObject;
 
@@ -195,7 +193,6 @@ export interface TimePickerModel extends ComponentModel{
      *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     floatLabelType?: FloatLabelType | string;
@@ -212,7 +209,6 @@ export interface TimePickerModel extends ComponentModel{
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     zIndex?: number;
 
@@ -237,7 +233,6 @@ export interface TimePickerModel extends ComponentModel{
      * [`Format`](../../timepicker/getting-started#setting-the-time-format)documentation.
      *
      * @default 30
-     * @blazorType int
      *
      */
     step?: number;
@@ -250,7 +245,6 @@ export interface TimePickerModel extends ComponentModel{
      * {% codeBlock src='timepicker/scrollTo/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @isBlazorNullableType true
      */
     scrollTo?: Date;
 
@@ -268,7 +262,6 @@ export interface TimePickerModel extends ComponentModel{
      * [`Time Range`](../../timepicker/time-range/) documentation.
      *
      * @default 00:00
-     * @blazorDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
      */
     min?: Date;
 
@@ -278,7 +271,6 @@ export interface TimePickerModel extends ComponentModel{
      * [`Time Range`](../../timepicker/time-range/) documentation.
      *
      * @default 00:00
-     * @blazorDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
      */
     max?: Date;
 
@@ -321,7 +313,6 @@ export interface TimePickerModel extends ComponentModel{
      * Triggers when the value is changed.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
@@ -329,7 +320,6 @@ export interface TimePickerModel extends ComponentModel{
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -337,7 +327,6 @@ export interface TimePickerModel extends ComponentModel{
      * Triggers when the component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -345,7 +334,6 @@ export interface TimePickerModel extends ComponentModel{
      * Triggers when the popup is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
      */
     open?: EmitType<PopupEventArgs>;
 
@@ -353,7 +341,6 @@ export interface TimePickerModel extends ComponentModel{
      * Triggers while rendering the each popup list item.
      *
      * @event itemRender
-     * @blazorProperty 'OnItemRender'
      */
     itemRender?: EmitType<ItemEventArgs>;
 
@@ -361,7 +348,6 @@ export interface TimePickerModel extends ComponentModel{
      * Triggers when the popup is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
      */
     close?: EmitType<PopupEventArgs>;
 

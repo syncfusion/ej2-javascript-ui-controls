@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 19.3.43 (2021-09-30)
+
+### Dropdown Tree
+
+#### New Features
+
+- `#I301222` - Provided support to display custom selected values template in the Dropdown Tree component.
+
+#### Bug Fixes
+
+- `#I342360`, `#I342351` - The issue with "The Dropdown Tree component is not rendered when providing an id that starts with an integer type" has been resolved.
+
 ## 19.2.62 (2021-09-14)
 
 ### DropDownList

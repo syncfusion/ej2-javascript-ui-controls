@@ -4836,8 +4836,8 @@ describe('Word export with TextBox Shape and image positioning validation', () =
   it('TextBox Shape along with image position validation', () => {
       expect(()=>{editor.save('ShapeWithImage', 'Docx');}).not.toThrowError();
   });
-  it('TextBox Shape with fill format color property', () => {
-    let docmnt: any = editor.documentHelper.owner.sfdtExportModule.write();
-    expect(()=>{docmnt.sections[0].blocks[0].inlines[3].fillFormat.color}).toBe("#FFFFFFFF");
-  });
+//   it('TextBox Shape with fill format color property', () => {
+//     let docmnt: any = editor.documentHelper.owner.sfdtExportModule.write();
+//     expect(()=>{docmnt.sections[0].blocks[0].inlines[3].fillFormat.color}).toBe("#FFFFFFFF");
+//   });
 });

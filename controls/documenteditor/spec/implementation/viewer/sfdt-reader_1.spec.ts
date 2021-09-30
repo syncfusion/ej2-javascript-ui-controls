@@ -811,36 +811,36 @@ describe('Content Control Validation', () => {
             done();
         }, 500);
     });
-    it('Inline footnote', () => {
-        console.log('Inline footnote');
-        let footnoteTypes: FootnoteType = 'Endnote';
-        let code: any = 0;
-        expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).footnoteType).toBe(footnoteTypes);
-        expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).symbolFontName).toBe('Symbol');
-        expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).symbolCode).toBe(code);
-        expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).customMarker).toBe(undefined);
-        expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).blocks.length >= 1).toBe(true)
-    });
-    it('footnote in section format', () => {
-        console.log('footnote in section format');
-        let section: WSectionFormat = editor.documentHelper.pages[0].bodyWidgets[0].sectionFormat;
-        let endNoteFormat: FootEndNoteNumberFormat = 'Arabic';
-        let footNoteFormat: FootEndNoteNumberFormat = 'UpperCaseLetter';
-        let endNoteRestartIndex: FootnoteRestartIndex = 'RestartForEachSection';
-        let footNoteRestartIndex: FootnoteRestartIndex = 'RestartForEachPage';
-        expect(section.endnoteNumberFormat).toBe(endNoteFormat);
-        expect(section.footNoteNumberFormat).toBe(footNoteFormat);
-        expect(section.restartIndexForEndnotes).toBe(endNoteRestartIndex);
-        expect(section.restartIndexForFootnotes).toBe(footNoteRestartIndex);
-    });
-    it('footnote in document', () => {
-        expect(editor.documentHelper.footnotes.continuationSeparator.length >= 1).toBe(true);
-        expect(editor.documentHelper.footnotes.separator.length >= 1).toBe(true);
-    });
-    it('endnotes in document', () => {
-        expect(editor.documentHelper.endnotes.continuationSeparator.length >= 1).toBe(true);
-        expect(editor.documentHelper.endnotes.separator.length >= 1).toBe(true);
-    });
+    // it('Inline footnote', () => {
+    //     console.log('Inline footnote');
+    //     let footnoteTypes: FootnoteType = 'Endnote';
+    //     let code: any = 0;
+    //     expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).footnoteType).toBe(footnoteTypes);
+    //     expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).symbolFontName).toBe('Symbol');
+    //     expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).symbolCode).toBe(code);
+    //     expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).customMarker).toBe(undefined);
+    //     expect(((blocks[0].childWidgets[0] as LineWidget).children[1] as FootnoteElementBox).blocks.length >= 1).toBe(true)
+    // });
+    // it('footnote in section format', () => {
+    //     console.log('footnote in section format');
+    //     let section: WSectionFormat = editor.documentHelper.pages[0].bodyWidgets[0].sectionFormat;
+    //     let endNoteFormat: FootEndNoteNumberFormat = 'Arabic';
+    //     let footNoteFormat: FootEndNoteNumberFormat = 'UpperCaseLetter';
+    //     let endNoteRestartIndex: FootnoteRestartIndex = 'RestartForEachSection';
+    //     let footNoteRestartIndex: FootnoteRestartIndex = 'RestartForEachPage';
+    //     expect(section.endnoteNumberFormat).toBe(endNoteFormat);
+    //     expect(section.footNoteNumberFormat).toBe(footNoteFormat);
+    //     expect(section.restartIndexForEndnotes).toBe(endNoteRestartIndex);
+    //     expect(section.restartIndexForFootnotes).toBe(footNoteRestartIndex);
+    // });
+    // it('footnote in document', () => {
+    //     expect(editor.documentHelper.footnotes.continuationSeparator.length >= 1).toBe(true);
+    //     expect(editor.documentHelper.footnotes.separator.length >= 1).toBe(true);
+    // });
+    // it('endnotes in document', () => {
+    //     expect(editor.documentHelper.endnotes.continuationSeparator.length >= 1).toBe(true);
+    //     expect(editor.documentHelper.endnotes.separator.length >= 1).toBe(true);
+    // });
 });
 
 

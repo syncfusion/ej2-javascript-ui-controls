@@ -367,7 +367,7 @@ export class Action {
      * @private
      * @hidden
      */
-    public SingleCardSelection(data: Record<string, any>): void {
+     public SingleCardSelection(data: Record<string, any>): void {
         if (this.parent.cardSettings.selectionType !== 'None' && data[this.parent.cardSettings.headerField]) {
             let card: HTMLElement = this.parent.element.querySelector('.e-card[data-id=\"' +
                 data[this.parent.cardSettings.headerField].toString() + '"\]')

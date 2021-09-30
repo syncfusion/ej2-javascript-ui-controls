@@ -320,7 +320,7 @@ export class TaskbarEdit extends DateProcessor {
      */
     public showHideTaskBarEditingElements(element: Element, secondElement: Element, fadeConnectorLine?: boolean): void {
         secondElement = secondElement ? secondElement : this.editElement;
-        let isShowProgressResizer: boolean = true;
+        let isShowProgressResizer: boolean = this.parent.taskFields.progress ? true : false;
         if (this.parent.readOnly) {
             return;
         }
@@ -411,8 +411,8 @@ export class TaskbarEdit extends DateProcessor {
             action = 'LeftResizing';
         } else if (mouseDownElement.classList.contains(cls.taskBarRightResizer)) {
             action = 'RightResizing';
-        } else if (mouseDownElement.classList.contains(cls.childProgressResizer) ||
-            closest(mouseDownElement, '.' + cls.childProgressResizer)) {
+        } else if ((mouseDownElement.classList.contains(cls.childProgressResizer) ||
+            closest(mouseDownElement, '.' + cls.childProgressResizer)) && (this.parent.taskFields.progress)) {
             action = 'ProgressResizing';
         } else if (mouseDownElement.classList.contains(cls.connectorPointLeft)) {
             action = 'ConnectorPointLeftDrag';

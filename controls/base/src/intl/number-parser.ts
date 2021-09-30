@@ -2,10 +2,8 @@ import { NumberFormatOptions } from '../internationalization';
 import { extend, isNullOrUndefined, isBlazor, getValue } from '../util';
 import { ParserBase as parser, NumericOptions } from './parser-base';
 import { IntlBase as base } from './intl-base';
-const formatRegex: RegExp = /(^[ncpa]{1})([0-1]?[0-9]|20)?$/i;
 const parseRegex: RegExp = /^([^0-9]*)(([0-9,]*[0-9]+)(\.[0-9]+)?)([Ee][+-]?[0-9]+)?([^0-9]*)$/;
 const groupRegex: RegExp = /,/g;
-const latnDecimalRegex: RegExp = /^[0-9]*(\.[0-9]+)?$/;
 
 const keys: string[] = ['minusSign', 'infinity'];
 /**
@@ -33,19 +31,21 @@ interface NumberParseOptions {
 
 /**
  * Module for Number Parser.
+ *
  * @private
  */
 export class NumberParser {
     /**
      * Returns the parser function for given skeleton.
-     * @param {string} -  Specifies the culture name to be which formatting.
-     * @param {NumberFormatOptions} - Specific the format in which number  will parsed.
-     * @param {cldr} - Specifies the global cldr data collection.
-     * @return Function.  
+     *
+     * @param {string} culture -  Specifies the culture name to be which formatting.
+     * @param {NumberFormatOptions} option - Specific the format in which number  will parsed.
+     * @param {Object} cldr - Specifies the global cldr data collection.
+     * @returns {Function} ?
      */
     public static numberParser(culture: string, option: NumberFormatOptions, cldr: Object): Function {
-        let dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
-        let parseOptions: NumericParts = { custom: true };
+        const dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
+        const parseOptions: NumericParts = { custom: true };
         let numOptions: NumericOptions;
         if ((base.formatRegex.test(option.format)) || !(option.format)) {
             extend(parseOptions, base.getProperNumericSkeleton(option.format || 'N'));
@@ -58,10 +58,11 @@ export class NumberParser {
         } else {
             extend(parseOptions, base.customFormat(option.format, null, null));
         }
-        let numbers: Object = getValue('numbers', dependable.parserObject);
+        const numbers: Object = getValue('numbers', dependable.parserObject);
+        // eslint-disable-next-line
         numOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr), true, isBlazor());
         parseOptions.symbolRegex = parser.getSymbolRegex(Object.keys(numOptions.symbolMatch));
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line
         parseOptions.infinity = (<any>numOptions).symbolNumberSystem[keys[1]];
         let symbolpattern: string;
         if (!isBlazor()) {
@@ -69,7 +70,7 @@ export class NumberParser {
                 parseOptions.type, numOptions.numberSystem, dependable.numericObject, parseOptions.isAccount);
             if (symbolpattern) {
                 symbolpattern = symbolpattern.replace(/\u00A4/g, base.defaultCurrency);
-                let split: string[] = symbolpattern.split(';');
+                const split: string[] = symbolpattern.split(';');
                 parseOptions.nData = base.getFormatData(split[1] || '-' + split[0], true, '');
                 parseOptions.pData = base.getFormatData(split[0], true, '');
             }
@@ -87,10 +88,11 @@ export class NumberParser {
     }
     /**
      * Returns parsed number for the provided formatting options
-     * @param {string} value 
-     * @param {NumericParts} options 
-     * @param {NumericOptions} numOptions 
-     * @returns {number}
+     *
+     * @param {string} value ?
+     * @param {NumericParts} options ?
+     * @param {NumericOptions} numOptions ?
+     * @returns {number} ?
      */
     private static getParsedNumber(value: string, options: NumericParts, numOptions: NumericOptions): number {
         let isNegative: boolean;
@@ -108,13 +110,13 @@ export class NumberParser {
             if (value.indexOf('.') === 0) {
                 value = '0' + value;
             }
-            let matches: string[] = value.match(parseRegex);
+            const matches: string[] = value.match(parseRegex);
             if (isNullOrUndefined(matches)) {
                 return NaN;
             }
             lead = matches[1];
             tempValue = matches[2];
-            let exponent: string = matches[5];
+            const exponent: string = matches[5];
             end = matches[6];
             isNegative = options.custom ? ((lead === options.nData.nlead) && (end === options.nData.nend)) :
                 ((lead.indexOf(options.nData.nlead) !== -1) && (end.indexOf(options.nData.nend) !== -1));

@@ -179,7 +179,6 @@ export interface ColorMappingModel {
      * Sets and gets the value from which the range of color mapping starts.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     from?: number;
 
@@ -187,7 +186,6 @@ export interface ColorMappingModel {
      * Sets and gets the value to which the range of color mapping ends.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     to?: number;
 

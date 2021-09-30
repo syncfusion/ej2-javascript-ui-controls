@@ -153,14 +153,14 @@ export let tools: { [key: string]: IToolsItems } = {
     'numberformatlist': {
         'id': 'NumberFormatList',
         'icon': 'e-order-list',
-        'tooltip': 'NumberFormatList',
+        'tooltip': 'Number Format List',
         'command': 'NumberFormatList',
         'subCommand': 'NumberFormatList'
     },
     'bulletformatlist': {
         'id': 'BulletFormatList',
         'icon': 'e-unorder-list',
-        'tooltip': 'BulletFormatList',
+        'tooltip': 'Bullet Format List',
         'command': 'BulletFormatList',
         'subCommand': 'BulletFormatList'
     },
@@ -334,7 +334,7 @@ export let tools: { [key: string]: IToolsItems } = {
     },
     'dimension': {
         'id': 'Dimension',
-        'icon': 'e-dimension',
+        'icon': 'e-img-dimension',
         'tooltip': 'Change Size',
         'command': 'Images',
         'subCommand': 'Dimension'

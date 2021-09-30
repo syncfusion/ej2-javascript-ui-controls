@@ -190,7 +190,8 @@ export class LayoutRender extends MobileLayout {
                     + ' ' + cls.DROPPABLE_CLASS : '');
                 const td: HTMLElement = createElement('td', {
                     className: className + dragClass,
-                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(), 'aria-expanded': 'true', 'tabindex': '0' }
+                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(), 'aria-expanded': 'true',
+                        'tabindex': '0', 'role': 'navigation' }
                 });
                 if (column.allowToggle && !column.isExpanded || index !== -1) {
                     addClass([td], cls.COLLAPSED_CLASS);
@@ -298,7 +299,9 @@ export class LayoutRender extends MobileLayout {
                         this.getColumnData(column.keyField, this.swimlaneData[rows[index].keyField]) : this.columnData[column.keyField];
                     dataCount += columnData.length;
                     const columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
-                    const cardWrapper: HTMLElement = createElement('div', { className: cls.CARD_WRAPPER_CLASS });
+                    const cardWrapper: HTMLElement = createElement('div', {
+                        className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox' }
+                    });
                     columnWrapper.appendChild(cardWrapper);
                     if (columnData.length > 0) {
                         for (const data of columnData as Record<string, string>[]) {
@@ -338,7 +341,7 @@ export class LayoutRender extends MobileLayout {
             className: cls.CARD_CLASS,
             attrs: {
                 'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
-                'aria-selected': 'false', 'tabindex': '-1'
+                'aria-selected': 'false', 'tabindex': '-1', 'role': 'option'
             }
         });
         if (this.parent.cardSettings.template) {
@@ -828,7 +831,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.kanbanRows.forEach((row: HeaderArgs) =>
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: Record<string, any>) =>
-                    obj[this.parent.keyField] && this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
+                obj[this.parent.keyField] && this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
                     ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
                         '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }

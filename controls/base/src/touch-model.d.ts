@@ -20,42 +20,49 @@ export interface TouchModel {
 
     /**
      * Specifies the callback function for tap event.
-     * @event
+     *
+     * @event tap
      */
     tap?: EmitType<TapEventArgs>;
 
     /**
      * Specifies the callback function for tapHold event.
-     * @event
+     *
+     * @event tapHold
      */
     tapHold?: EmitType<TapEventArgs>;
 
     /**
      * Specifies the callback function for swipe event.
-     * @event
+     *
+     * @event swipe
      */
     swipe?: EmitType<SwipeEventArgs>;
 
     /**
      * Specifies the callback function for scroll event.
-     * @event
+     *
+     * @event scroll
      */
     scroll?: EmitType<ScrollEventArgs>;
 
     /**
      * Specifies the time delay for tap.
+     *
      * @default 350
      */
     tapThreshold?: number;
 
     /**
      * Specifies the time delay for tap hold.
+     *
      * @default 750
      */
     tapHoldThreshold?: number;
 
     /**
      * Customize the swipe event configuration.
+     *
      * @default { swipeThresholdDistance: 50 }
      */
     swipeSettings?: SwipeSettingsModel;

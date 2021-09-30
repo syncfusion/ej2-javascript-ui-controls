@@ -2156,8 +2156,6 @@ export class TextMarkupAnnotation {
                 this.pdfViewer.annotationModule.hidePopupNote();
                 if (this.pdfViewerBase.isPanMode && !this.pdfViewerBase.getAnnotationToolStatus()) {
                     eventTarget.style.cursor = 'grab';
-                } else {
-                    eventTarget.style.cursor = 'auto';
                 }
                 if (this.pdfViewerBase.isMousedOver && !this.pdfViewerBase.isFormFieldMousedOver) {
                     this.pdfViewer.fireAnnotationMouseLeave(pageIndex);

@@ -66,6 +66,12 @@
   .e-treeview {
     -webkit-tap-highlight-color: transparent;
 
+    @if $skin-name == 'bootstrap5' {
+      &.e-disabled {
+        opacity: .5;
+      }
+    }
+
     .e-text-content,
     .e-fullrow {
       border-color: $treeview-item-border-color;
@@ -133,9 +139,18 @@
           color: $treeview-checkmark-color;
         }
         @else if $skin-name == 'bootstrap4' {
-          background-color: $treeview-bootstrap4-checkmark-bgcolor;
-          border-color: $treeview-bootstrap4-checkmark-border-color;
-          color: $treeview-bootstrap4-checkmark-color;
+          background-color: $treeview-item-active-check-bg;
+          border-color: $treeview-item-active-check-border-color;
+          color: $treeview-item-active-check-color;
+        }
+        @else if $skin-name == 'bootstrap5' {
+          border-color: $content-text-color-selected;
+        }
+      }
+
+      .e-stop {
+        @if $skin-name == 'bootstrap5' {
+          border-color: $content-text-color-selected;
         }
       }
     }
@@ -210,6 +225,11 @@
       > .e-text-content,
       > .e-fullrow {
         color: $treeview-text-disable-color;
+        @if $skin-name == 'bootstrap5' {
+          .e-list-text {
+            color: $treeview-text-disable-color;
+          }
+        }
       }
 
       > .e-text-content > .e-icon-collapsible,
@@ -219,11 +239,11 @@
     }
 
     .e-sibling {
-      @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+      @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
         @include sibling-theme(left, right);
       }
       @else {
-        border: 1px solid $treeview-drag-line-bg;
+        border-top: 2px solid $treeview-drag-line-bg;
       }
     }
 
@@ -327,7 +347,7 @@
       &.e-rtl {
 
         .e-sibling {
-          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
             @include sibling-theme(right, left);
           }
           @else {

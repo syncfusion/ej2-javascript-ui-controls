@@ -414,6 +414,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private isBootstrap: boolean;
     private isBootstrap4: boolean;
     private isTailwind: boolean;
+    private isBootstrap5: boolean;
     private zIndex: number;
     private l10n: L10n;
     private internationalization: Internationalization;
@@ -738,6 +739,13 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.wireEvents();
         this.setZindex();
         this.renderComplete();
+        if (this.element.tagName === 'EJS-SLIDER') {
+            if (this.getTheme(this.sliderContainer) == "none") {
+                setTimeout(() => {
+                    this.refresh();
+                }, 0);
+            }
+        }
     }
 
     private initialize(): void {
@@ -856,6 +864,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             || this.getTheme(this.sliderContainer) === 'bootstrap-dark';
         this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isTailwind = this.getTheme(this.sliderContainer) === 'tailwind' || this.getTheme(this.sliderContainer) === 'tailwind-dark';
+        this.isBootstrap5 = this.getTheme(this.sliderContainer) === 'bootstrap5';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }
 
@@ -1356,7 +1365,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private renderTooltip(): void {
         this.tooltipObj = new Tooltip({
-            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4 || this.isTailwind,
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4 || this.isTailwind || this.isBootstrap5,
             cssClass: classNames.sliderTooltip,
             height: this.isMaterial ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },

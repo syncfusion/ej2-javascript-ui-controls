@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook, refreshSheetTabs } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook, refreshSheetTabs, positionAutoFillElement } from '../common/index';
 import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -15,13 +15,13 @@ import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, se
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
 import { Render } from '../renderer/render';
 import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation, KeyboardShortcut, WrapText } from '../actions/index';
-import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink, Resize, Insert, Delete, FindAndReplace, Merge } from '../actions/index';
+import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink, Resize, Insert, Delete, FindAndReplace, Merge, AutoFill } from '../actions/index';
 import { ProtectSheet } from '../actions/index';
 import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEventArgs, click, hideFileMenuItems } from '../common/index';
 import { Dialog, ActionEvents, Overlay } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
-import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress } from './../../workbook/common/index';
+import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, rowFillHandler } from './../../workbook/common/index';
 import { activeCellChanged, BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
@@ -41,14 +41,14 @@ import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
-import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace } from '../../workbook/actions/index';
+import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { beginAction, contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
 import { getFilteredCollection, deleteHyperlink } from './../../workbook/common/index';
-import { updateScroll } from '../common/index';
+import { updateScroll, SelectionMode } from '../common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -723,7 +723,19 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public scrollModule: Scroll;
 
     /** @hidden */
+    public autofillModule: AutoFill;
+
+    /** @hidden */
+    public openModule: Open;
+
+    /** @hidden */
+    public selectionModule: Selection;
+
+    /** @hidden */
     public sheetModule: IRenderer;
+
+    /** @hidden */
+    public dataValidationRange: string = '';
 
     /** @hidden */
     public createdHandler: Function | object;
@@ -750,7 +762,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink,
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation,
             ProtectSheet, WorkbookProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage,
-            ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat, SpreadsheetChart, WorkbookChart
+            ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat, SpreadsheetChart, WorkbookChart, AutoFill, WorkbookAutoFill
         );
         if (element) {
             this.appendTo(element);
@@ -950,19 +962,22 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number | string} sheet - Specifies the sheet to protect.
      * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
      * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
+     * @param {string} password - Specifies the password to protect.
      * @returns {void} - To protect the particular sheet.
      */
-    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
+    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel, password?: string): void {
         if (typeof (sheet) === 'string') {
             sheet = getSheetIndex(this as Workbook, sheet);
         }
         if (sheet) {
             this.setSheetPropertyOnMute(this.sheets[sheet], 'isProtected', true);
+            this.setSheetPropertyOnMute(this.sheets[sheet], 'password', password ? password : '');
             this.setSheetPropertyOnMute(this.sheets[sheet], 'protectSettings', protectSettings);
-        }
+        } 
         sheet = this.getActiveSheet().index;
         this.setSheetPropertyOnMute(this.getActiveSheet(), 'isProtected', true);
-        super.protectSheet(sheet, protectSettings);
+        this.setSheetPropertyOnMute(this.getActiveSheet(), 'password', password ? password : '');
+        super.protectSheet(sheet, protectSettings, password);
     }
 
     /**
@@ -1380,6 +1395,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
             getColumn(sheet, mIndex).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
             sheet.columns[mIndex].customWidth = true;
+            this.notify(positionAutoFillElement, null);
         }
     }
 
@@ -1414,9 +1430,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     if (threshold < 0 && eleHeight < -(threshold)) {
                         threshold = -eleHeight;
                     }
-                    const oldIdx: number = parseInt(trgt.getAttribute('aria-rowindex'), 10) - 1;
                     if (this.getActiveSheet() === sheet) {
-                        this.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
+                        this.notify(rowHeightChanged, { threshold: threshold, rowIdx: rowIndex, isCustomHgt: true });
                         if (isNullOrUndefined(edited)) {
                             edited = false;
                         }
@@ -1434,11 +1449,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     } else {
                         threshold = -oldHeight;
                     }
-                    this.notify(rowHeightChanged, { threshold, rowIdx: rowIndex });
+                    this.notify(rowHeightChanged, { threshold: threshold, rowIdx: rowIndex });
                 }
             }
             setRowHeight(sheet, mIndex, parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0);
             sheet.rows[mIndex].customHeight = true;
+            this.notify(positionAutoFillElement, null);
         }
     }
 
@@ -1607,6 +1623,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             cellIdx = getRangeIndexes(address);
             const prevELem: HTMLElement = this.getCell(cellIdx[0], cellIdx[1]);
             let classList: string[] = [];
+            for (let i: number = cellIdx[0]; i <= cellIdx[2]; i++) {
+                for (let j: number = cellIdx[1]; j <= cellIdx[3]; j++) {
+                    if (sheet.rows[i].cells[j] && sheet.rows[i].cells[j].validation) {
+                        if (sheet.rows[i].cells[j].validation.isHighlighted) {
+                            if (prevELem && prevELem.style.backgroundColor == 'rgb(255, 255, 0)') {
+                                sheet.rows[i].cells[j].style = { backgroundColor : '#ffff00'};
+                            }
+                        }
+                    }
+                }
+            }
             for (let i: number = 0; prevELem && i < prevELem.classList.length; i++) {
                 classList.push(prevELem.classList[i]);
             }
@@ -1701,7 +1728,15 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - This method is used to highlight the invalid data.
      */
     public addInvalidHighlight(range?: string): void {
-        super.addInvalidHighlight(range);
+        const ranges: string = range ? range : this.dataValidationRange;
+        if (ranges.indexOf(',') > - 1) {
+            const splitRange: string[] = ranges.split(',');
+            for (let i: number = 0; i < splitRange.length - 1; i++) {
+                super.addInvalidHighlight(splitRange[i]);
+            }
+        } else {
+            super.addInvalidHighlight(ranges);
+        }
     }
 
     /**
@@ -1713,7 +1748,15 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - This method is used for remove highlight from invalid data.
      */
     public removeInvalidHighlight(range?: string): void {
-        super.removeInvalidHighlight(range);
+        const address: string = range ? range : this.dataValidationRange;
+        if (address.indexOf(',') > - 1) {
+            const splitRange: string[] = address.split(',');
+            for (let i: number = 0; i < splitRange.length - 1; i++) {
+                super.removeInvalidHighlight(splitRange[i]);
+            }
+        } else {
+            super.removeInvalidHighlight(address);
+        }
     }
 
     /**
@@ -2063,9 +2106,20 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         let value: string;
         if (td) {
             const spanElem: Element = select('#' + this.element.id + '_currency', td);
+            const spanFillElem: Element = select('.' + 'e-fill', td);
+            const spanFillSecElem: Element = select('.' + 'e-fill-sec', td);
             let alignClass: string = 'e-right-align';
             if (args) {
                 args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
+                if (!args.isRowFill) {
+                    if (spanFillElem) {
+                        detach(spanFillElem);
+                        (td as HTMLElement).style.display = 'table-cell';
+                    }
+                    if (spanFillSecElem) {
+                        detach(spanFillSecElem);
+                    }
+                }
                 if (spanElem) { detach(spanElem); }
                 if (args.type === 'Accounting' && isNumber(args.value)) {
                     if (td.querySelector('a')) {
@@ -2114,8 +2168,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     node = wrapContent.lastChild;
                 }
                 if (node && (node.nodeType === 3 || node.nodeType === 1)) {
-                    node.nodeValue = value;
-
+                    if (!args.isRowFill) {
+                        node.nodeValue = value;
+                    }
                 } else {
                     td.appendChild(document.createTextNode(value));
                 }
@@ -2232,7 +2287,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.notify(formulaOperation, eventArgs);
         return <boolean>eventArgs.isAdded;
     }
-
+    
     /**
      * Removes the defined name from the Spreadsheet.
      *
@@ -2625,6 +2680,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             case 'allowEditing':
                 if (this.allowEditing) {
                     this.notify(editOperation, { action: 'renderEditor' });
+                    if (this.enableKeyboardNavigation) {
+                        // Remove and reassign the `keyDown` and `mouseDown` event in `KeyboardNavigation` and `Selection` module.
+                        // To execute the respective event after editing operation.
+                        this.enableKeyboardNavigation = false; this.dataBind();
+                        this.enableKeyboardNavigation = true; this.dataBind();
+                        const mode: SelectionMode = this.selectionSettings.mode;
+                        if (mode !== 'None') {
+                            this.selectionSettings.mode = 'None'; this.dataBind();
+                            this.selectionSettings.mode = mode; this.dataBind();
+                        }
+                    }
                 }
                 break;
             case 'allowInsert':
@@ -2715,6 +2781,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                         }
                     }
                 }
+                break;
             }
         }
     }

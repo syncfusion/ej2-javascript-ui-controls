@@ -196,7 +196,6 @@ export class ColorMapping extends ChildProperty<ColorMapping> {
      * Sets and gets the value from which the range of color mapping starts.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public from: number;
@@ -204,7 +203,6 @@ export class ColorMapping extends ChildProperty<ColorMapping> {
      * Sets and gets the value to which the range of color mapping ends.
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public to: number;

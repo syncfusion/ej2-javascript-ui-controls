@@ -38,8 +38,7 @@ import { RevisionCollection } from './implementation/track-changes/track-changes
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from './base/constants';
-import { Optimized } from './implementation/text-helper/optimized';
-import { Regular } from './implementation/text-helper/regular';
+import { Optimized, Regular } from './index';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -83,12 +82,12 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /**
      * Gets or sets a value indicating whether to use optimized text measuring approach to match Microsoft Word pagination.
      *
-     * @default false
+     * @default true
      * @aspType bool
      * @returns {boolean} - `true` use optimized text measuring approach to match Microsoft Word pagination; otherwise, `false`
      */
-    @Property(false)
-    public enableOptimizedTextMeasuring: boolean
+     @Property(true)
+     public enableOptimizedTextMeasuring: boolean
 
 }
 
@@ -259,13 +258,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public searchModule: Search;
-    /**
-     * @private
-     */
+     /**
+      * @private
+      */
     public optimizedModule: Optimized;
-    /**
-     * @private
-     */
+      /**
+       * @private
+       */
     public regularModule: Regular;
     private createdTriggered: boolean = false;
     /**
@@ -274,7 +273,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public collaborativeEditingModule: CollaborativeEditing;
     /**
      * Holds regular or optimized module based on DocumentEditorSettting `enableOptimizedTextMeasuring` property.
-     *
      * @private
      */
     public textMeasureHelper: Regular | Optimized
@@ -1016,6 +1014,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.initHelper();
     }
     protected preRender(): void {
+        if (this.documentEditorSettings && this.documentEditorSettings.enableOptimizedTextMeasuring) {
+            DocumentEditor.Inject(Optimized);
+        } else {
+            DocumentEditor.Inject(Regular);
+        }
         //pre render section
         this.findResultsList = [];
         if (this.refreshing) {
@@ -1043,7 +1046,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.element.style.width = formatUnit(this.width);
             }
         }
-        this.textMeasureHelper = (this.optimizedModule) ? this.optimizedModule : this.regularModule;
+        this.textMeasureHelper = (this.optimizedModule) ? this.optimizedModule : this.regularModule
+        if (isNullOrUndefined(this.textMeasureHelper)) {
+            this.textMeasureHelper = new Optimized(this.documentHelper);
+        }
         this.documentHelper.initializeComponents();
         this.openBlank();
         this.renderComplete();
@@ -2112,8 +2118,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Ignore Once': 'Ignore Once',
         'Keep With Next': 'Keep with next',
         'Keep Lines Together': 'Keep lines together',
+        'WidowControl': 'Widow/Orphan control',
         'Indents and Spacing': 'Indents and Spacing',
-        'Line and Page breaks': 'Line and Page breaks',
+        'Line and Page Breaks': 'Line and Page Breaks',
         'Pagination': 'Pagination',
         'Single': 'Single',
         'DashSmallGap': 'DashSmallGap',

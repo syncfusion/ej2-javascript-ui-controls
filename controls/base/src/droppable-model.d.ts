@@ -12,26 +12,29 @@ export interface DroppableModel {
     accept?: string;
 
     /**
-     * Defines the scope value to group sets of draggable and droppable items. 
+     * Defines the scope value to group sets of draggable and droppable items.
      * A draggable with the same scope value will only be accepted by the droppable.
      */
     scope?: string;
 
     /**
      * Specifies the callback function, which will be triggered while drag element is dropped in droppable.
-     * @event
+     *
+     * @event drop
      */
     drop?: (args: DropEventArgs) => void;
 
     /**
      * Specifies the callback function, which will be triggered while drag element is moved over droppable element.
-     * @event
+     *
+     * @event over
      */
     over?: Function;
 
     /**
      * Specifies the callback function, which will be triggered while drag element is moved out of droppable element.
-     * @event
+     *
+     * @event bind
      */
     out?: Function;
 

@@ -1,11 +1,10 @@
 /* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Annotation } from '../axes/axis';
-import { stringToNumber, GaugeLocation, getLocationFromAngle, getFontStyle } from '../utils/helper';
-import { getElement, getTemplateFunction, measureElementRect } from '../utils/helper';
+import { getTemplateFunction, getElement, stringToNumber, getFontStyle, getLocationFromAngle, GaugeLocation, removeElement } from '../utils/helper-common';
 import { IAnnotationRenderEventArgs } from '../model/interface';
 import { annotationRender } from '../model/constants';
-import { createElement, updateBlazorTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Annotation Module handles the Annotation of the axis.
@@ -44,7 +43,7 @@ export class Annotations {
                 this.createTemplate(element, annotationIndex, index);
             }
         });
-        if (parentElement && element.childElementCount && !this.gauge.isBlazor) {
+        if (parentElement && element.childElementCount) {
             parentElement.appendChild(element);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,18 +66,14 @@ export class Annotations {
             cancel: false, name: annotationRender, content: annotation.content,
             axis: axis, annotation: annotation, textStyle: annotation.textStyle
         };
-        if (this.gauge.isBlazor) {
-            const {cancel, name, content, textStyle} : IAnnotationRenderEventArgs = argsData;
-            argsData = {cancel, name, content, annotation, textStyle};
-        }
         this.gauge.trigger('annotationRender', argsData, (observedArgs: IAnnotationRenderEventArgs) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let templateFn: any;
             let templateElement: HTMLCollection;
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content, this.gauge);
-                if (templateFn && (!this.gauge.isBlazor ? templateFn(axis, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? axis : {}, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
+                if (templateFn && templateFn(axis, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length) {
+                    templateElement = Array.prototype.slice.call(templateFn(axis, this.gauge, argsData.content, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     const length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -93,13 +88,6 @@ export class Annotations {
                 this.updateLocation(childElement, axis, <Annotation>annotation);
                 element.appendChild(childElement);
                 const parentElement: Element = document.getElementById(this.elementId + '_Secondary_Element');
-                if (this.gauge.isBlazor && annotationIndex === (this.gauge.axes[axisIndex].annotations.length - 1) &&
-                    element && parentElement) {
-                    parentElement.appendChild(element);
-                    for (let i: number = 0; i < this.gauge.axes[axisIndex].annotations.length; i++) {
-                        updateBlazorTemplate(this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[axisIndex].annotations[i]);
-                    }
-                }
             }
         });
     }
@@ -118,7 +106,7 @@ export class Annotations {
             stringToNumber(annotation.radius, axis.currentRadius),
             this.gauge.midPoint
         );
-        const elementRect: ClientRect = measureElementRect(element);
+        const elementRect: ClientRect = this.measureElementRect(element);
         element.style.left = (location.x - (elementRect.width / 2)) + 'px';
         element.style.top = (location.y - (elementRect.height / 2)) + 'px';
         element.setAttribute('aria-label', annotation.description || 'Annotation');
@@ -142,5 +130,19 @@ export class Annotations {
      */
     public destroy(gauge: CircularGauge): void {
         // Destroy method performed here
+    }
+
+    /**
+    * Function to measure the element rect.
+    *
+    * @param {HTMLElement} element - Specifies the html element.
+    * @returns {ClientRect} - Returns the client rect.
+    * @private
+    */
+    private measureElementRect(element: HTMLElement): ClientRect {
+        document.body.appendChild(element);
+        const bounds: ClientRect = element.getBoundingClientRect();
+        removeElement(element.id);
+        return bounds;
     }
 }

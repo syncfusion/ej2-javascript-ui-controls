@@ -276,6 +276,64 @@ describe('Schedule year view', () => {
         });
     });
 
+    describe('EJ2-51013 - Year view Resources with group by date', () => {
+        let schObj: Schedule;
+        beforeEach((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    byDate: true,
+                    resources: ['Categories']
+                },
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal Timeline Year' },
+                    { option: 'TimelineYear', displayName: 'Vertical Timeline Year', orientation: 'Vertical' }
+                ],
+                resources: [
+                    {
+                        field: 'TaskId',
+                        title: 'Category',
+                        name: 'Categories',
+                        allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, color: '#df5286' },
+                            { text: 'Steven', id: 2, color: '#7fa900' },
+                            { text: 'Robert', id: 3, color: '#ea7a57' },
+                            { text: 'Smith', id: 4, color: '#5978ee' },
+                            { text: 'Micheal', id: 5, color: '#df5286' }
+                        ],
+                        textField: 'text',
+                        idField: 'id',
+                        colorField: 'color'
+                    }
+                ]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterEach(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking ByDate for horizontal timeline year view', () => {
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+            expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-timeline-year-view');
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tr').length).toBe(1);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-resource-cells').length).toBe(5);
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-work-cells').length).toBe(60);
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-work-days').length).toBe(60);
+        });
+        it('Checking ByDate for vertical timeline year view', () => {
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-timeline-year')[1] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+            expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-timeline-year-view');
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tr').length).toBe(1);
+            expect(schObj.element.querySelectorAll('.e-resource-column-wrap .e-resource-cells').length).toBe(5);
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-work-cells').length).toBe(60);
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-work-days').length).toBe(60);
+        });
+    });
+
     describe('EJ2-49947 - scheduler more popup is not updated when deleting the event in year view', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -304,19 +362,19 @@ describe('Schedule year view', () => {
                 Subject: 'Test event-5',
                 StartTime: new Date(2017, 1, 3, 11),
                 EndTime: new Date(2017, 1, 3, 13)
-            }];    
+            }];
             const model: ScheduleModel = {
                 views: [
-                    { option: 'Year' },
+                    { option: 'Year' }
                 ],
-                selectedDate: new Date(2017, 10, 2),
+                selectedDate: new Date(2017, 10, 2)
             };
             schObj = util.createSchedule(model, yearData, done);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
-        
+
         it('Checking the more popup event list after deleting an event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper');
@@ -329,7 +387,7 @@ describe('Schedule year view', () => {
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper');
             expect(morePopup.firstElementChild.classList.contains('e-more-event-popup')).toBeTruthy();
             expect(morePopup.querySelectorAll('.e-appointment').length).toEqual(2);
-            (<HTMLElement>morePopup.querySelector('.e-appointment')).click()
+            (<HTMLElement>morePopup.querySelector('.e-appointment')).click();
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();

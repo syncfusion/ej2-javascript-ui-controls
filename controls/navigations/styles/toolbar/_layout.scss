@@ -117,6 +117,9 @@
         line-height: $tbar-btn-icon-bgr-line-height;
         min-height: $tbar-btn-icon-bgr-height;
         min-width: $tbar-btn-icon-bgr-width;
+        @if $tbar-skin == 'bootstrap5' {
+          padding-bottom: 4px;
+        }
       }
     }
 
@@ -129,7 +132,7 @@
           line-height: inherit;
         }
 
-        @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+        @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
           font-size: 16px;
         }
       }
@@ -150,7 +153,7 @@
         .e-tbar-btn .e-icons.e-btn-icon {
           min-width: $tbar-btn-icon-bgr-width;
 
-          @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+          @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
             font-size: 16px;
           }
         }
@@ -175,7 +178,7 @@
 
           .e-tbar-btn-text {
             padding: $tbar-pop-btn-txt-bgr-pad;
-            @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+            @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
               font-size: 16px;
             }
           }
@@ -658,7 +661,7 @@
           .e-tbar-btn.e-btn {
             line-height: $tbar-btn-nrml-line-height;
 
-            @if $tbar-skin == 'bootstrap' $tbar-skin == 'bootstrap4' {
+            @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
               &:focus {
                 padding: 0 1.5px;
               }
@@ -690,7 +693,7 @@
           min-width: $tbar-btn-icon-nrml-width;
           padding: 0;
 
-          @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+          @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
             font-size: 16px;
             padding: 5px 6px;
           }
@@ -801,10 +804,12 @@
         }
 
         .e-tbar-btn.e-btn {
+          align-items: center;
           display: inline-flex;
           justify-content: flex-start;
           min-height: $tbar-btn-pop-nrml-minheight;
           padding: $tbar-pop-btn-nrml-padding;
+
           @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
             border: 0;
             border-radius: 0;
@@ -857,7 +862,7 @@
           height: 36px;
         }
 
-        @if $tbar-skin == 'tailwind'or $tbar-skin == 'tailwind-dark' {
+        @if $tbar-skin == 'tailwind'or $tbar-skin == 'bootstrap5' {
           height: 38px;
         }
 
@@ -1054,15 +1059,16 @@
 
     .e-popup-down-icon.e-icons,
     .e-popup-up-icon.e-icons {
+      color: $tbar-default-icon-color;
       display: table-cell;
       text-align: center;
       vertical-align: middle;
       width: 100%;
 
-      @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+      @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
         font-size: $tbar-btn-font-size;
       }
-      }
+    }
 
     .e-toolbar-item {
 
@@ -1293,7 +1299,7 @@
           min-width: $tbar-btn-nrml-minwidth;
           padding: $tbar-btn-nrml-padding;
 
-          @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+          @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
             border-radius: 4px;
           }
 
@@ -1349,6 +1355,9 @@
             margin: $tbar-zero-value;
             min-width: $tbar-btn-icon-nrml-width;
             width: auto;
+            @if $tbar-skin == 'bootstrap5' {
+              padding-bottom: 4px;
+            }
           }
          }
 

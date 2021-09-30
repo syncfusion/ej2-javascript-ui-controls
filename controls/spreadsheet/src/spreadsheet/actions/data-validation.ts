@@ -8,14 +8,14 @@ import { Dialog } from '../services/dialog';
 import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp, focus } from '../common/index';
 import { formulaBarOperation, removeDataValidation } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { setRow } from '../../workbook/base/row';
+import { isHiddenRow, setRow, ColumnModel } from '../../workbook/index';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../workbook/common/address';
-import { CellFormatArgs, DefineNameModel, ExtendedRange, getData } from '../../workbook/index';
+import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReference } from '../../workbook/index';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, ColumnModel, Workbook } from '../../workbook/index';
-import { getColumn, isLocked, getRowsHeight, getColumnsWidth, validationHighlight, ValidationOperator } from '../../workbook/index';
+import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, Workbook, checkIsFormula } from '../../workbook/index';
+import { getColumn, isLocked, getRowsHeight, getColumnsWidth, validationHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -591,6 +591,7 @@ export class DataValidation {
     }
 
     private dlgClickHandler(dialogInst: Dialog): void {
+        this.parent.dataValidationRange = this.parent.dataValidationRange + this.parent.getActiveSheet().selectedRange + ',';
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let isValidList: boolean = true;
         let errorMsg: string;
@@ -651,6 +652,12 @@ export class DataValidation {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const format: string = type;
             const validDlg: { isValidate: boolean, errorMsg: string } = this.isDialogValidator(valArr, format, operator);
+            if (operator === 'Between') {
+                if (!isNaN(parseFloat(value1)) && !isNaN(parseFloat(value2)) && parseFloat(value1) > parseFloat(value2)) {
+                    validDlg.isValidate = false;
+                    validDlg.errorMsg = l10n.getConstant('MinMaxError');
+                }
+            }
             errorMsg = validDlg.errorMsg;
             isValidList = validDlg.isValidate;
             if (isValidList) {
@@ -740,7 +747,8 @@ export class DataValidation {
         }
         if (!isEmpty) {
             for (let idx: number = 0; idx < values.length; idx++) {
-                formValidation = this.formatValidation(values[idx], type);
+                const value: string = checkIsFormula(values[idx]) ? this.parent.computeExpression(values[idx]).toString() : values[idx];
+                formValidation = this.formatValidation(value, type);
                 if (formValidation.isValidate) {
                     count = count + 1;
                 } else {
@@ -773,6 +781,12 @@ export class DataValidation {
             let value: string | number = args.value;
             let value1: string | number = validation.value1;
             let value2: string | number = validation.value2;
+            if (checkIsFormula(value1) && validation.type !== 'List') {
+                value1 = this.parent.computeExpression(value1).toString();
+            }
+            if (checkIsFormula(value2) && validation.type !== 'List') {
+                value2 = this.parent.computeExpression(value2).toString();
+            }
             const opt: string = validation.operator || 'Between';
             const type: string = validation.type || 'WholeNumber';
             const ignoreBlank: boolean = isNullOrUndefined(validation.ignoreBlank) ? true : validation.ignoreBlank;
@@ -782,9 +796,9 @@ export class DataValidation {
             if (isValidate) {
                 isValidate = false;
                 if (type === 'Date' || type === 'Time') {
-                    args.value = args.value.slice(args.value.indexOf(' ')+1, args.value.length);
-                    for (let idx: number = 0; idx <= 3; idx++) {
-                        args.value = idx === 0 ? args.value : idx === 1 ? validation.value1 : validation.value2;
+                    args.value = args.value.toString().slice(args.value.toString().indexOf(' ') + 1, args.value.length);
+                    for (let idx: number = 0; idx < 3; idx++) {
+                        args.value = idx === 0 ? args.value : idx === 1 ? value1 : value2;
                         const dateEventArgs: { [key: string]: string | number } = {
                             value: args.value,
                             rowIndex: args.range[0],
@@ -796,18 +810,31 @@ export class DataValidation {
                             this.parent.notify(checkDateFormat, dateEventArgs);
                         }
                         const updatedVal: string = dateEventArgs.updatedVal as string;
-                        if (idx == 0 && updatedVal == '') {
+                        if (idx === 0 && updatedVal === '') {
                             value = args.value;
-                        } else if (idx == 0) {
+                        } else if (idx === 0) {
                             value = updatedVal;
-                        } else if (idx == 1) {
+                        } else if (idx === 1) {
                             value1 = updatedVal;
                         } else {
                             value2 = updatedVal;
                         }
                     }
                 } else if (validation.type === 'TextLength') {
-                    value = args.value.toString().length.toString();
+                    const dateEventArgs: { [key: string]: string | number } = {
+                        value: args.value,
+                        rowIndex: args.range[0],
+                        colIndex: args.range[1],
+                        sheetIndex: args.sheetIdx,
+                        updatedVal: ''
+                    };
+                    this.parent.notify(checkDateFormat, dateEventArgs);
+                    const updatedVal: string = dateEventArgs.updatedVal as string;
+                    if (updatedVal !== '') {
+                        value = updatedVal.toString().length.toString();
+                    } else {
+                        value = args.value.toString().length.toString();
+                    }
                 }
                 if (type === 'List') {
                     if (value1.indexOf('=') !== -1) {
@@ -916,23 +943,44 @@ export class DataValidation {
         errorMsg = l10n.getConstant('ValidationError');
         if (isValidate) {
             const style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
-            this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: style, rowIdx: args.range[0],
-                colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
-                onActionUpdate: true
-            });
-        }
+            if (!isHiddenRow(sheet, args.range[0])) {
+                this.parent.notify(applyCellFormat, <CellFormatArgs>{
+                    style: style, rowIdx: args.range[0],
+                    colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
+                    onActionUpdate: true
+                });
+            }}
         return { isValidate: isValidate, errorMsg: errorMsg };
     }
 
     private checkDataValidation(args: { value: string, range: number[], sheetIdx: number, isCell: boolean }): void {
-        const isValid: { isValidate: boolean, errorMsg: string } = this.isValidationHandler({
-            value: args.value, range: args.range, sheetIdx: args.sheetIdx
-        });
-        if (!isValid.isValidate && args.isCell) {
-            this.validationErrorHandler(isValid.errorMsg);
+        const cell: CellModel = getCell(args.range[0], args.range[1], this.parent.getActiveSheet());
+        const formulaArgs : InvalidFormula = { skip: false, value: '' };
+        if (cell.validation) {
+            if (checkIsFormula(cell.validation.value1) &&
+            !isCellReference(cell.validation.value1.substring(1, cell.validation.value1.length))) {
+                let val: string = cell.validation.value1;
+                val = val.substring(val.indexOf('=') + 1, val.indexOf('('));
+                formulaArgs.value = val;
+                this.parent.notify(formulaInValidation, formulaArgs);
+            }
+            if (!formulaArgs.skip && checkIsFormula(cell.validation.value2) &&
+            !isCellReference(cell.validation.value2.substring(1, cell.validation.value2.length))) {
+                let val2: string = cell.validation.value2;
+                val2 = val2.substring(val2.indexOf('=') + 1, val2.indexOf('('));
+                formulaArgs.value = val2;
+                this.parent.notify(formulaInValidation, formulaArgs);
+            }
         }
-        this.parent.allowDataValidation = isValid.isValidate;
+        if (!formulaArgs.skip) {
+            const isValid: { isValidate: boolean, errorMsg: string } = this.isValidationHandler({
+                value: args.value, range: args.range, sheetIdx: args.sheetIdx
+            });
+            if (!isValid.isValidate && args.isCell) {
+                this.validationErrorHandler(isValid.errorMsg);
+            }
+            this.parent.allowDataValidation = isValid.isValidate;
+        }
     }
 
     private formatValidation(value: string, type: string): { isValidate: boolean, errorMsg: string } {

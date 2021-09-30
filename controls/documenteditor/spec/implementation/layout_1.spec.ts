@@ -18282,10 +18282,10 @@ describe('Document Layout behaviour validation', () => {
             done();
         }, 1000);
     });
-    it('Paragraph and table layouting validation', () => {
-console.log('Paragraph and table layouting validation');
-        editor.open(getJson());
-    });
+//     it('Paragraph and table layouting validation', () => {
+// console.log('Paragraph and table layouting validation');
+//         editor.open(getJson());
+//     });
 });
 
 describe('Tab Character width calculation', () => {

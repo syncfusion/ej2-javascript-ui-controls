@@ -857,7 +857,7 @@ describe('Schedule work week view', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(2);
             const blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(blockEvent.offsetTop).toEqual(720);
-            expect(blockEvent.offsetWidth).toEqual(80);
+            expect(blockEvent.offsetWidth).toBeGreaterThanOrEqual(79);
             expect(blockEvent.offsetHeight).toEqual(108);
         });
 

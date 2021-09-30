@@ -1,6 +1,6 @@
 import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
-import { addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject } from '../input/input';
 import { TextBoxModel} from './textbox-model';
 
@@ -192,7 +192,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      * Triggers when the TextBox component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -201,7 +200,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      * Triggers when the TextBox component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -210,7 +208,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      * Triggers when the content of TextBox has changed and gets focus-out.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangedEventArgs>;
@@ -358,72 +355,70 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     protected preRender(): void {
-        if (!(isBlazor() && this.isServerRendered)) {
-            this.cloneElement = <HTMLInputElement>this.element.cloneNode(true);
-            this.formElement = closest(this.element, 'form') as HTMLFormElement;
-            if (!isNullOrUndefined(this.formElement)) {
-                this.isForm = true;
-            }
-            /* istanbul ignore next */
-            if (this.element.tagName === 'EJS-TEXTBOX') {
-                const ejInstance: Object = getValue('ej2_instances', this.element);
-                const inputElement: string | HTMLInputElement | HTMLTextAreaElement = this.multiline ?
-                    <HTMLTextAreaElement>this.createElement('textarea') :
-                    <HTMLInputElement>this.createElement('input');
-                let index: number = 0;
-                for (index; index < this.element.attributes.length; index++) {
-                    const attributeName: string = this.element.attributes[index].nodeName;
-                    if (attributeName !== 'id') {
-                        inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
-                        inputElement.innerHTML = this.element.innerHTML;
-                        if (attributeName === 'name') {
-                            this.element.removeAttribute('name');
-                        }
+        this.cloneElement = <HTMLInputElement>this.element.cloneNode(true);
+        this.formElement = closest(this.element, 'form') as HTMLFormElement;
+        if (!isNullOrUndefined(this.formElement)) {
+            this.isForm = true;
+        }
+        /* istanbul ignore next */
+        if (this.element.tagName === 'EJS-TEXTBOX') {
+            const ejInstance: Object = getValue('ej2_instances', this.element);
+            const inputElement: string | HTMLInputElement | HTMLTextAreaElement = this.multiline ?
+                <HTMLTextAreaElement>this.createElement('textarea') :
+                <HTMLInputElement>this.createElement('input');
+            let index: number = 0;
+            for (index; index < this.element.attributes.length; index++) {
+                const attributeName: string = this.element.attributes[index].nodeName;
+                if (attributeName !== 'id') {
+                    inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
+                    inputElement.innerHTML = this.element.innerHTML;
+                    if (attributeName === 'name') {
+                        this.element.removeAttribute('name');
                     }
                 }
-                this.element.appendChild(inputElement);
-                this.element = inputElement;
-                setValue('ej2_instances', ejInstance, this.element);
             }
-            this.updateHTMLAttrToElement();
-            this.checkAttributes(false);
-            if (this.element.tagName !== 'TEXTAREA') {
-                this.element.setAttribute('type', this.type);
-            }
-            this.element.setAttribute('role', 'textbox');
-            this.globalize = new Internationalization(this.locale);
-            const localeText: { placeholder: string } = { placeholder: this.placeholder };
-            this.l10n = new L10n('textbox', localeText, this.locale);
-            if (this.l10n.getConstant('placeholder') !== '') {
-                this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
-            }
-            if (!this.element.hasAttribute('id')) {
-                this.element.setAttribute('id', getUniqueID('textbox'));
-            }
-            if (!this.element.hasAttribute('name')) {
-                this.element.setAttribute('name', this.element.getAttribute('id'));
-            }
-            if (this.element.tagName === 'INPUT' && this.multiline) {
-                this.isHiddenInput = true;
-                this.textarea = <HTMLTextAreaElement>this.createElement('textarea');
-                this.element.parentNode.insertBefore(this.textarea, this.element);
-                this.element.setAttribute('type', 'hidden');
-                this.textarea.setAttribute('name', this.element.getAttribute('name'));
-                this.element.removeAttribute('name');
-                this.textarea.setAttribute('role', this.element.getAttribute('role'));
-                this.element.removeAttribute('role');
-                this.textarea.setAttribute('id', getUniqueID('textarea'));
-                const apiAttributes : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
-                for (let index: number = 0; index < this.element.attributes.length; index++) {
-                    const attributeName: string = this.element.attributes[index].nodeName;
-                    if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
-                        !(attributeName === 'id' || attributeName === 'type' || attributeName === 'e-mappinguid')) {
-                        // e-mappinguid attribute is handled for Grid component.
-                        this.textarea.setAttribute(attributeName, this.element.attributes[index].nodeValue);
-                        if (apiAttributes.indexOf(attributeName) < 0) {
-                            this.element.removeAttribute(attributeName);
-                            index--;
-                        }
+            this.element.appendChild(inputElement);
+            this.element = inputElement;
+            setValue('ej2_instances', ejInstance, this.element);
+        }
+        this.updateHTMLAttrToElement();
+        this.checkAttributes(false);
+        if (this.element.tagName !== 'TEXTAREA') {
+            this.element.setAttribute('type', this.type);
+        }
+        this.element.setAttribute('role', 'textbox');
+        this.globalize = new Internationalization(this.locale);
+        const localeText: { placeholder: string } = { placeholder: this.placeholder };
+        this.l10n = new L10n('textbox', localeText, this.locale);
+        if (this.l10n.getConstant('placeholder') !== '') {
+            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        }
+        if (!this.element.hasAttribute('id')) {
+            this.element.setAttribute('id', getUniqueID('textbox'));
+        }
+        if (!this.element.hasAttribute('name')) {
+            this.element.setAttribute('name', this.element.getAttribute('id'));
+        }
+        if (this.element.tagName === 'INPUT' && this.multiline) {
+            this.isHiddenInput = true;
+            this.textarea = <HTMLTextAreaElement>this.createElement('textarea');
+            this.element.parentNode.insertBefore(this.textarea, this.element);
+            this.element.setAttribute('type', 'hidden');
+            this.textarea.setAttribute('name', this.element.getAttribute('name'));
+            this.element.removeAttribute('name');
+            this.textarea.setAttribute('role', this.element.getAttribute('role'));
+            this.element.removeAttribute('role');
+            this.textarea.setAttribute('id', getUniqueID('textarea'));
+            const apiAttributes : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
+            for (let index: number = 0; index < this.element.attributes.length; index++) {
+                const attributeName: string = this.element.attributes[index].nodeName;
+                if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
+                    !(attributeName === 'id' || attributeName === 'type' || attributeName === 'e-mappinguid')) {
+                    // e-mappinguid attribute is handled for Grid component.
+                    this.textarea.setAttribute(attributeName, this.element.attributes[index].nodeValue);
+                    if (apiAttributes.indexOf(attributeName) < 0) {
+                        this.element.removeAttribute(attributeName);
+                        index--;
                     }
                 }
             }
@@ -487,36 +482,22 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             updatedCssClassValue = this.getInputValidClassList(this.cssClass);
         }
-        if (!(isBlazor() && this.isServerRendered)) {
-            this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
-            this.textboxWrapper = Input.createInput({
-                element: this.respectiveElement,
-                floatLabelType: this.floatLabelType,
-                properties: {
-                    enabled: this.enabled,
-                    enableRtl: this.enableRtl,
-                    cssClass: updatedCssClassValue,
-                    readonly: this.readonly,
-                    placeholder: this.placeholder,
-                    showClearButton: this.showClearButton
-                }
-            });
-            this.updateHTMLAttrToWrapper();
-            if (this.isHiddenInput) {
-                this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
+        this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
+        this.textboxWrapper = Input.createInput({
+            element: this.respectiveElement,
+            floatLabelType: this.floatLabelType,
+            properties: {
+                enabled: this.enabled,
+                enableRtl: this.enableRtl,
+                cssClass: updatedCssClassValue,
+                readonly: this.readonly,
+                placeholder: this.placeholder,
+                showClearButton: this.showClearButton
             }
-        } else {
-            this.respectiveElement = this.element;
-            this.textboxWrapper = { container: this.element.parentElement };
-            if (this.showClearButton && !this.multiline) {
-                this.textboxWrapper.clearButton = this.textboxWrapper.container.querySelector('.e-clear-icon');
-                Input.wireClearBtnEvents(this.respectiveElement, this.textboxWrapper.clearButton, this.textboxWrapper.container);
-            }
-            if (this.floatLabelType === 'Auto') {
-                Input.wireFloatingEvents(this.respectiveElement);
-            }
-            // eslint-disable-next-line max-len, @typescript-eslint/no-explicit-any
-            Input.bindInitialEvent({ element: this.respectiveElement, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: (this as any).properties });
+        });
+        this.updateHTMLAttrToWrapper();
+        if (this.isHiddenInput) {
+            this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
         }
         this.wireEvents();
         if (!isNullOrUndefined(this.value)) {
@@ -759,24 +740,20 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     public destroy(): void {
         this.unWireEvents();
-        if (!(isBlazor() && this.isServerRendered)) {
-            if (this.element.tagName === 'INPUT' && this.multiline) {
-                detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
-                this.respectiveElement = this.element;
-                this.element.removeAttribute('type');
-            }
-            this.respectiveElement.value = this.respectiveElement.defaultValue;
-            this.respectiveElement.classList.remove('e-input');
-            this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-            if (!isNullOrUndefined(this.textboxWrapper)) {
-                this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
-                detach(this.textboxWrapper.container);
-            }
-            this.textboxWrapper = null;
-            super.destroy();
-        } else {
-            this.textboxWrapper = null;
+        if (this.element.tagName === 'INPUT' && this.multiline) {
+            detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
+            this.respectiveElement = this.element;
+            this.element.removeAttribute('type');
         }
+        this.respectiveElement.value = this.respectiveElement.defaultValue;
+        this.respectiveElement.classList.remove('e-input');
+        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+        if (!isNullOrUndefined(this.textboxWrapper)) {
+            this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
+            detach(this.textboxWrapper.container);
+        }
+        this.textboxWrapper = null;
+        super.destroy();
     }
 
     /**

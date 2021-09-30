@@ -28,15 +28,15 @@
       }
 
       &:hover {
-        @if $skin-name != 'bootstrap4' {
+        @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
 
       &:focus {
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
           box-shadow: $split-btn-active-box-shadow;
-          z-index: 2;
+          z-index: $split-btn-zindex;
         }
         @else {
           box-shadow: none;
@@ -45,7 +45,7 @@
 
       &:active {
         box-shadow: $split-btn-active-box-shadow;
-        z-index: 2;
+        z-index: $split-btn-zindex;
       }
 
       &.e-top-icon-btn {
@@ -87,13 +87,13 @@
         padding-left: 4px;
         padding-right: 4px;
       }
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
         z-index: 1;
       }
 
       &:focus,
       &:hover {
-        @if $skin-name != 'bootstrap4' {
+        @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
@@ -117,19 +117,20 @@
     }
 
     .e-btn {
-      @if $skin-name != 'bootstrap4' {
+      @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
         box-shadow: none;
       }
 
       &:hover {
-        @if $skin-name != 'bootstrap4' {
+        @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
 
       &:focus {
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
           box-shadow: $split-btn-active-box-shadow;
+          z-index: $split-btn-zindex;
         }
         @else {
           box-shadow: none;
@@ -138,6 +139,9 @@
 
       &:active {
         box-shadow: $split-btn-active-box-shadow;
+        @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+          z-index: $split-btn-zindex;
+        }
       }
 
       &:disabled {

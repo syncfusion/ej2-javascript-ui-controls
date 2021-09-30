@@ -99,7 +99,7 @@ export class Editor {
     /**
      * @private
      */
-     public triggerPageSpellCheck: boolean = true;
+    public triggerPageSpellCheck: boolean = true;
     /**
      * @private
      */
@@ -4156,6 +4156,10 @@ export class Editor {
             || (!isNullOrUndefined(dest.keepLinesTogether) && source.keepLinesTogether !== dest.keepLinesTogether)) {
             return false;
         }
+        if ((isNullOrUndefined(dest.widowControl) && source.widowControl !== false)
+            || (!isNullOrUndefined(dest.widowControl) && source.widowControl !== dest.widowControl)) {
+            return false;
+        }
         if ((isNullOrUndefined(dest.outlineLevel) && source.outlineLevel !== 'BodyText')
             || (!isNullOrUndefined(dest.outlineLevel) && source.outlineLevel !== dest.outlineLevel)) {
             return false;
@@ -7443,10 +7447,11 @@ export class Editor {
      * @returns {void}
      */
     public toggleSubscript(): void {
-        if (!this.owner.isReadOnlyMode) {
-            let value: BaselineAlignment = this.selection.characterFormat.baselineAlignment === 'Subscript' ? 'Normal' : 'Subscript';
-            this.selection.characterFormat.baselineAlignment = value as BaselineAlignment;
+        if (this.owner.isReadOnlyMode || this.restrictFormatting) {
+            return;
         }
+        let value: BaselineAlignment = this.selection.characterFormat.baselineAlignment === 'Subscript' ? 'Normal' : 'Subscript';
+        this.selection.characterFormat.baselineAlignment = value as BaselineAlignment;
     }
     /**
      * Toggles the superscript formatting of selected contents.
@@ -7454,10 +7459,11 @@ export class Editor {
      * @returns {void}
      */
     public toggleSuperscript(): void {
-        if (!this.owner.isReadOnlyMode) {
-            let value: BaselineAlignment = this.selection.characterFormat.baselineAlignment === 'Superscript' ? 'Normal' : 'Superscript';
-            this.selection.characterFormat.baselineAlignment = value as BaselineAlignment;
+        if (this.owner.isReadOnlyMode || this.restrictFormatting) {
+            return;
         }
+        let value: BaselineAlignment = this.selection.characterFormat.baselineAlignment === 'Superscript' ? 'Normal' : 'Superscript';
+        this.selection.characterFormat.baselineAlignment = value as BaselineAlignment;
     }
     /**
      * Increases the left indent of selected paragraphs to a factor of 36 points.
@@ -7567,7 +7573,7 @@ export class Editor {
 
     private updateProperty(type: number, value: Object): void {
         let selection: Selection = this.selection;
-        if ((selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !selection.owner.isDocumentLoaded) {
+        if (((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode()) || !selection.owner.isDocumentLoaded) {
             return;
         }
         let startPosition: TextPosition = selection.start;
@@ -7905,7 +7911,7 @@ export class Editor {
      * @returns {void}
      */
     public toggleBold(): void {
-        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
+        if ((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode()) {
             return;
         }
         let value: boolean = this.getCurrentSelectionValue('bold');
@@ -7917,7 +7923,7 @@ export class Editor {
      * @returns {void}
      */
     public toggleItalic(): void {
-        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
+        if ((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode()) {
             return;
         }
         let value: boolean = this.getCurrentSelectionValue('italic');
@@ -7928,7 +7934,7 @@ export class Editor {
      * @private
      */
     public changeCase(property: string): void {
-        if (this.selection.isEmpty || (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode())) {
+        if (this.selection.isEmpty || ((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode())) {
             return;
         }
         this.initHistory('Uppercase');
@@ -8398,9 +8404,10 @@ export class Editor {
      * @returns {void}
      */
     public toggleUnderline(underline?: Underline): void {
-        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
-            this.updateProperty(1, underline);
+        if ((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode()) {
+            return;
         }
+        this.updateProperty(1, underline);
     }
     /**
      * Toggles the strike through property of selected contents.
@@ -9117,6 +9124,8 @@ export class Editor {
             format.keepWithNext = value as boolean;
         } else if (property === 'keepLinesTogether') {
             format.keepLinesTogether = value as boolean;
+        } else if (property === 'widowControl') {
+            format.widowControl = value as boolean;
         } else if (property === 'contextualSpacing') {
             format.contextualSpacing = value as boolean;
         }
@@ -10091,11 +10100,11 @@ export class Editor {
     public layoutItemBlock(block: BlockWidget, shiftNextWidget: boolean): void {
         let section: Widget = undefined;
         if (block.containerWidget instanceof BlockContainer) {
-            section = block.containerWidget as BlockContainer;
-            let index: number = section.childWidgets.indexOf(block);
+            // let index: number = section.childWidgets.indexOf(block);
             if (!isNullOrUndefined(this.documentHelper.owner)
                 && this.documentHelper.owner.isLayoutEnabled) {
-
+                block = block.combineWidget(this.viewer) as BlockWidget;
+                section = block.containerWidget as BlockContainer;
                 this.documentHelper.layout.layoutBodyWidgetCollection(block.index, section as BodyWidget, block, false);
             }
         } else if (block.containerWidget instanceof TableCellWidget) {
@@ -10657,8 +10666,7 @@ export class Editor {
             this.editorHistory.currentBaseHistoryInfo.action = 'InsertTextParaReplace';
         }
         if (end.paragraph === paragraph && end.currentWidget !== paragraph.lastChild ||
-            (end.currentWidget === paragraph.lastChild && (end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget) && (!((paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof CommentCharacterElementBox) && end.offset + 1 <= selection.getLineLength(paragraph.lastChild as LineWidget)))) ||
-            paraReplace) {
+            end.currentWidget === paragraph.lastChild || paraReplace) {
             let isStartParagraph: boolean = start.paragraph === paragraph;
             if (end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
                 //If selection end with this paragraph and selection doesnot include paragraph mark.               
@@ -12023,12 +12031,15 @@ export class Editor {
                     this.addRemovedRevisionInfo(inline, undefined);
                     this.addRemovedNodes(inline);
                     lineWidget.children.splice(i, 1);
+                    if (isBidi) {
+                        if (!this.isSkipHistory) {
+                            i--;
+                        }
+                    }
                 }
                 if (isBidi) {
                     if (this.isSkipHistory) {
                         i--;
-                    } else {
-                        i++;
                     }
                 }
                 // }
@@ -12535,13 +12546,12 @@ export class Editor {
      */
     public onEnter(isInsertPageBreak?: boolean): void {
         let selection: Selection = this.documentHelper.selection;
-        let format: SelectionCharacterFormat;
+        var format: SelectionCharacterFormat;
         if (isNullOrUndefined(selection.start.paragraph.paragraphFormat.baseStyle) ||
             selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal') {
             format = new SelectionCharacterFormat(undefined)
             format.cloneFormat(this.selection.characterFormat);
         }
-
         if (this.isXmlMapped) {
             return;
         }
@@ -17724,6 +17734,10 @@ export interface ParagraphFormatProperties {
      * Defines the keep lines together property of paragraph
      */
     keepLinesTogether?: boolean;
+    /**
+     * Defines the widow control property of paragraph
+     */
+     widowControl?: boolean;
 }
 /**
  * Defines the section format properties of document editor

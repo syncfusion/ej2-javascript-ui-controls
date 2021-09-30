@@ -41,12 +41,12 @@ console.log('Test control destroy 1');
         container.destroy();
         //expect((element.parentNode as any).querySelectorAll('div').length).toBe(1);
     });
-    it('Test control destroy 2', () => {
-console.log('Test control destroy 2');
-        let element: HTMLElement = container.element;
-        container.destroy();
-        expect(container.element).toBe(undefined);
-    });
+//     it('Test control destroy 2', () => {
+// console.log('Test control destroy 2');
+//         let element: HTMLElement = container.element;
+//         container.destroy();
+//         expect(container.element).toBe(undefined);
+//     });
 });
 
 describe('Property vaidation', () => {
@@ -83,49 +83,49 @@ console.log('Properties pane enable validation');
         expect(container.showPropertiesPane).toBe(true);
     });
 });
-describe('Restrict editing enable validation', () => {
-    let container: DocumentEditorContainer;
-    let menu: ContextMenu;
-    let element: HTMLElement;
-    beforeAll(() => {
-        element = createElement('div');
-        document.body.appendChild(element);
-        DocumentEditorContainer.Inject(Toolbar);
-        container = new DocumentEditorContainer({ restrictEditing: true, showPropertiesPane: true });
-        container.appendTo(element);
+// describe('Restrict editing enable validation', () => {
+//     let container: DocumentEditorContainer;
+//     let menu: ContextMenu;
+//     let element: HTMLElement;
+//     beforeAll(() => {
+//         element = createElement('div');
+//         document.body.appendChild(element);
+//         DocumentEditorContainer.Inject(Toolbar);
+//         container = new DocumentEditorContainer({ restrictEditing: true, showPropertiesPane: true });
+//         container.appendTo(element);
         
-    });
-    afterAll(() => {
-        container.destroy();
-        expect(element.childNodes.length).toBe(0);
-        document.body.removeChild(element);
-        expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
-        element = undefined;
-        container = undefined;
-    });
+//     });
+//     afterAll(() => {
+//         container.destroy();
+//         expect(element.childNodes.length).toBe(0);
+//         document.body.removeChild(element);
+//         expect(() => { container.destroy(); }).not.toThrowError();
+//         document.body.innerHTML = '';
+//         element = undefined;
+//         container = undefined;
+//     });
     
-    it('Restrict editing enable validation', () => {
-        console.log('Restrict editing enable validation');
-                (container.documentEditor as any).openBlank();
-        let classele: any = document.getElementsByClassName('e-toolbar-item');
-        for (let i: number = 0; i< classele.length; i++) {
-            let ele: any =classele[i];
-            let disabled: any = ele.ariaDisabled;
-            let label: any = ele.children[0];
-            if (isNullOrUndefined(label))
-            {
-                continue;
-            }
-            let item: any = label.ariaLabel;
-            if (item === 'New' || item === 'Open' || item ==='Find' || item === 'LocalClipboard' || item === 'RestrictEditing') {
-                expect(disabled).toBe('false');
-            }
-            if (item === 'Undo' || item === 'Redo' || item === 'Image dropdownbutton' || item === 'Table' || item === 'Link' || item ===  'Break dropdownbutton'|| item === 'PageNumber' || item === 'PageSetup' || item === 'Footer' || item === 'FormFields' || item === 'Header' || item === 'Comments' || item === 'TrackChanges' || item === 'Bookmark' || item === 'TableOfContents' ) {
-                expect(disabled).toBe('true');
-            }
-        }
-        expect(container.toolbarModule.propertiesPaneButton.element.parentElement.classList.contains('e-de-overlay')).toBe(true);
-                expect(container.showPropertiesPane).toBe(false);
-            });
-});
+//     it('Restrict editing enable validation', () => {
+//         console.log('Restrict editing enable validation');
+//                 (container.documentEditor as any).openBlank();
+//         let classele: any = document.getElementsByClassName('e-toolbar-item');
+//         for (let i: number = 0; i< classele.length; i++) {
+//             let ele: any =classele[i];
+//             let disabled: any = ele.ariaDisabled;
+//             let label: any = ele.children[0];
+//             if (isNullOrUndefined(label))
+//             {
+//                 continue;
+//             }
+//             let item: any = label.ariaLabel;
+//             if (item === 'New' || item === 'Open' || item ==='Find' || item === 'LocalClipboard' || item === 'RestrictEditing') {
+//                 expect(disabled).toBe('false');
+//             }
+//             if (item === 'Undo' || item === 'Redo' || item === 'Image dropdownbutton' || item === 'Table' || item === 'Link' || item ===  'Break dropdownbutton'|| item === 'PageNumber' || item === 'PageSetup' || item === 'Footer' || item === 'FormFields' || item === 'Header' || item === 'Comments' || item === 'TrackChanges' || item === 'Bookmark' || item === 'TableOfContents' ) {
+//                 expect(disabled).toBe('true');
+//             }
+//         }
+//         expect(container.toolbarModule.propertiesPaneButton.element.parentElement.classList.contains('e-de-overlay')).toBe(true);
+//                 expect(container.showPropertiesPane).toBe(false);
+//             });
+// });

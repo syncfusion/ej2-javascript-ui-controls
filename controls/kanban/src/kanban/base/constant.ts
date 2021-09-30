@@ -47,3 +47,7 @@ export const bottomSpace: number = 25;
 export const cardSpace: number = 16;
 /** @private */
 export const toggleWidth: number = 50;
+/** @hidden */
+export const dataSourceChanged: string = 'dataSourceChanged';
+/** @hidden */
+export const dataStateChange: string = 'dataStateChange';

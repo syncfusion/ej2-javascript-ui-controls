@@ -1100,14 +1100,15 @@ export function createMeasureElements(): void {
         const text: HTMLElement = createHtmlElement('span', { 'style': 'display:inline-block ; line-height: normal' });
         divElement.appendChild(text);
         //let imageElement: HTMLImageElement;
-        const imageElement: HTMLImageElement = createHtmlElement('img', {}) as HTMLImageElement;
+        const imageElement: HTMLImageElement = createHtmlElement('img', { 'alt': 'measureElementImage', 'src': 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }) as HTMLImageElement;
         divElement.appendChild(imageElement);
 
         const svg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
+        svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
         divElement.appendChild(svg);
 
         const element: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        element.setAttribute('d', '');
         svg.appendChild(element);
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

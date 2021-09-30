@@ -1,4 +1,4 @@
-@include export-module('documenteditor-fabric-dark-icons') {
+@include export-module('documenteditor-fabric-icons') {
   .e-documenteditor {
     .e-close::before {
       content: '\e825';
@@ -109,6 +109,11 @@
     font-family: 'e-icons';
   }
 
+  .e-de-ctn-title-download::before {
+    content: '\e603';
+    font-family: 'e-icons';
+  }
+
   .e-de-acceptchange::before {
     content: '\e19f';
     font-family: 'e-icons';
@@ -116,11 +121,6 @@
 
   .e-de-rejectchange::before {
     content: '\e204';
-    font-family: 'e-icons';
-  }
-
-  .e-de-ctn-title-download::before {
-    content: '\e603';
     font-family: 'e-icons';
   }
 
@@ -538,7 +538,7 @@
   .e-de-icon-auto-fitwindow::before {
     content: '\ebaa';
     font-family: 'e-icons';
-   }
+  }
 
   .e-item .e-de-paste-text::before {
     content: '\e687';
@@ -577,3 +577,4 @@
     content: '\e68a';
   }
 }
+  

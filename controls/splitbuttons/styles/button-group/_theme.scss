@@ -22,7 +22,9 @@
     .e-btn:focus,
     input:focus+label.e-btn {
       @include button-focus;
-      box-shadow: none;
+      @if $skin-name != 'bootstrap5' {
+        box-shadow: none;
+      }
       outline-color: $btn-grp-outline-focus-color;
       @if $skin-name == 'fabric' {
         outline-offset: -2px;
@@ -34,7 +36,9 @@
 
       &.e-primary {
         @include primary-focus;
-        box-shadow: none;
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: none;
+        }
         outline-color: $btn-grp-outline-focus-primary-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
@@ -43,7 +47,9 @@
 
       &.e-success {
         @include success-focus;
-        box-shadow: none;
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: none;
+        }
         outline-color: $btn-grp-outline-focus-success-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
@@ -52,7 +58,9 @@
 
       &.e-info {
         @include info-focus;
-        box-shadow: none;
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: none;
+        }
         outline-color: $btn-grp-outline-focus-info-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
@@ -61,7 +69,9 @@
 
       &.e-warning {
         @include warning-focus;
-        box-shadow: none;
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: none;
+        }
         outline-color: $btn-grp-outline-focus-warning-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
@@ -70,7 +80,9 @@
 
       &.e-danger {
         @include danger-focus;
-        box-shadow: none;
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: none;
+        }
         outline-color: $btn-grp-outline-focus-danger-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
@@ -87,31 +99,43 @@
 
       &.e-outline {
         @include outline-focus;
-        box-shadow: none;
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: none;
+        }
 
         &.e-primary {
           @include outline-primary-focus;
-          box-shadow: none;
+          @if $skin-name != 'bootstrap5' {
+            box-shadow: none;
+          }
         }
 
         &.e-success {
           @include outline-success-focus;
-          box-shadow: none;
+          @if $skin-name != 'bootstrap5' {
+            box-shadow: none;
+          }
         }
 
         &.e-info {
           @include outline-info-focus;
+          @if $skin-name != 'bootstrap5' {
             box-shadow: none;
+          }
         }
 
         &.e-warning {
           @include outline-warning-focus;
-          box-shadow: none;
+          @if $skin-name != 'bootstrap5' {
+            box-shadow: none;
+          }
         }
 
         &.e-danger {
           @include outline-danger-focus;
-          box-shadow: none;
+          @if $skin-name != 'bootstrap5' {
+            box-shadow: none;
+          }
         }
       }
     }
@@ -121,82 +145,82 @@
     input:active+label.e-btn,
     input:checked+label.e-btn {
       @include button-active;
-      @if $skin-name != 'bootstrap' {
+      @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
         box-shadow: none;
       }
 
       &.e-primary {
         @include primary-active;
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
 
       &.e-success {
         @include success-active;
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
 
       &.e-info {
         @include info-active;
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
 
       &.e-warning {
         @include warning-active;
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
 
       &.e-danger {
         @include danger-active;
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
       }
 
       &.e-outline {
         @include outline-active;
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
           box-shadow: none;
         }
 
         &.e-primary {
           @include outline-primary-active;
-          @if $skin-name != 'bootstrap' {
+          @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
             box-shadow: none;
           }
         }
 
         &.e-success {
           @include outline-success-active;
-          @if $skin-name != 'bootstrap' {
+          @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
             box-shadow: none;
           }
         }
 
         &.e-info {
           @include outline-info-active;
-          @if $skin-name != 'bootstrap' {
+          @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
             box-shadow: none;
           }
         }
 
         &.e-warning {
           @include outline-warning-active;
-          @if $skin-name != 'bootstrap' {
+          @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
             box-shadow: none;
           }
         }
 
         &.e-danger {
           @include outline-danger-active;
-          @if $skin-name != 'bootstrap' {
+          @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap5' {
             box-shadow: none;
           }
         }

@@ -37,6 +37,9 @@ export class ColumnSeries extends ColumnBase {
                     pointColumn.xValue + sideBySideInfo.start, pointColumn.yValue,
                     pointColumn.xValue + sideBySideInfo.end, origin, series
                 );
+                rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : rect.width;
+                rect.x = series.columnWidthInPixel ? rect.x - (((series.columnWidthInPixel / 2) * series.rectCount) -
+                    (series.columnWidthInPixel * series.index)) : rect.x;
                 const color: string = series.category === 'Indicator' ? pointColumn.color : series.interior;
                 argsData = this.triggerEvent(
                     series, pointColumn, color,

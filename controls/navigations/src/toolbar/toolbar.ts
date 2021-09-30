@@ -2138,7 +2138,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'items':
-                if (!(newProp.items instanceof Array && oldProp.items instanceof Array) && !this.isServerRendered) {
+                if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
                     const changedProb: Object[] = Object.keys(newProp.items);
                     for (let i: number = 0; i < changedProb.length; i++) {
                         const index: number = parseInt(Object.keys(newProp.items)[i], 10);

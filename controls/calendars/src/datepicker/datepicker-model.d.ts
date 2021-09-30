@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes, select } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, DayHeaderFormats} from '../calendar/calendar';import { MaskPlaceholderModel } from '../calendar/calendar-model'
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes, select } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, DayHeaderFormats} from '../calendar/calendar';import { MaskPlaceholderModel } from '../calendar/calendar-model'
 import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
@@ -50,7 +50,6 @@ export interface DatePickerModel extends CalendarModel{
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     format?: string | FormatObject;
 
@@ -216,7 +215,6 @@ export interface DatePickerModel extends CalendarModel{
      * {% codeBlock src='datepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      * @deprecated
      */
     keyConfigs?: { [key: string]: string };
@@ -235,7 +233,6 @@ export interface DatePickerModel extends CalendarModel{
      *
      * @default 1000
      * @aspType int
-     * @blazorType int
      */
     zIndex?: number;
 
@@ -262,7 +259,6 @@ export interface DatePickerModel extends CalendarModel{
      *
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     floatLabelType?: FloatLabelType | string;
@@ -305,8 +301,6 @@ export interface DatePickerModel extends CalendarModel{
      * Triggers when the popup is opened.
      *
      * @event open
-     * @blazorProperty 'OnOpen'
-     * @blazorType PopupObjectArgs
      */
     open?: EmitType<PreventableEventArgs | PopupObjectArgs>;
 
@@ -321,8 +315,6 @@ export interface DatePickerModel extends CalendarModel{
      * Triggers when the popup is closed.
      *
      * @event close
-     * @blazorProperty 'OnClose'
-     * @blazorType PopupObjectArgs
      */
     close?: EmitType<PreventableEventArgs | PopupObjectArgs>;
 
@@ -344,7 +336,6 @@ export interface DatePickerModel extends CalendarModel{
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -352,7 +343,6 @@ export interface DatePickerModel extends CalendarModel{
      * Triggers when the component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

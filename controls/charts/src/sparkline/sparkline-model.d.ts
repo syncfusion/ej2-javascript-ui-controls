@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex, isBlazor } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { remove, L10n, Internationalization, Event, EmitType, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';import { Browser, EventHandler, Touch, Collection } from '@syncfusion/ej2-base';import { SparklineBorder, SparklineTooltipSettings, ContainerArea, AxisSettings, Padding, SparklineMarkerSettings } from './model/base';import { SparklineDataLabelSettings, RangeBandSettings } from './model/base';import { SparklineBorderModel, SparklineTooltipSettingsModel, ContainerAreaModel, AxisSettingsModel } from './model/base-model';import { SparklineMarkerSettingsModel, SparklineDataLabelSettingsModel, RangeBandSettingsModel, PaddingModel } from './model/base-model';import { SparklineType, SparklineValueType, SparklineRangePadding, SparklineTheme } from './model/enum';import { Size, createSvg, RectOption, Rect, drawRectangle, getIdElement, SparkValues, withInBounds, removeElement } from './utils/helper';import { ISparklineLoadedEventArgs, ISparklineLoadEventArgs, IDataLabelRenderingEventArgs, IPointRegionEventArgs } from './model/interface';import { IMarkerRenderingEventArgs, ISparklinePointEventArgs, ISparklineMouseEventArgs } from './model/interface';import { IAxisRenderingEventArgs, ISparklineResizeEventArgs, ITooltipRenderingEventArgs } from './model/interface';import { ISeriesRenderingEventArgs, IThemes } from './model/interface';import { SparklineRenderer } from './rendering/sparkline-renderer';import { SparklineTooltip } from './rendering/sparkline-tooltip';import { getThemeColor } from './utils/helper';import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { remove, L10n, Internationalization, Event, EmitType, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';import { Browser, EventHandler, Touch, Collection } from '@syncfusion/ej2-base';import { SparklineBorder, SparklineTooltipSettings, ContainerArea, AxisSettings, Padding, SparklineMarkerSettings } from './model/base';import { SparklineDataLabelSettings, RangeBandSettings } from './model/base';import { SparklineBorderModel, SparklineTooltipSettingsModel, ContainerAreaModel, AxisSettingsModel } from './model/base-model';import { SparklineMarkerSettingsModel, SparklineDataLabelSettingsModel, RangeBandSettingsModel, PaddingModel } from './model/base-model';import { SparklineType, SparklineValueType, SparklineRangePadding, SparklineTheme } from './model/enum';import { Size, createSvg, RectOption, Rect, drawRectangle, getIdElement, SparkValues, withInBounds, removeElement } from './utils/helper';import { ISparklineLoadedEventArgs, ISparklineLoadEventArgs, IDataLabelRenderingEventArgs, IPointRegionEventArgs } from './model/interface';import { IMarkerRenderingEventArgs, ISparklinePointEventArgs, ISparklineMouseEventArgs } from './model/interface';import { IAxisRenderingEventArgs, ISparklineResizeEventArgs, ITooltipRenderingEventArgs } from './model/interface';import { ISeriesRenderingEventArgs, IThemes } from './model/interface';import { SparklineRenderer } from './rendering/sparkline-renderer';import { SparklineTooltip } from './rendering/sparkline-tooltip';import { getThemeColor } from './utils/helper';import { DataManager, Query } from '@syncfusion/ej2-data';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -180,91 +180,78 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers after sparkline rendered.
      * @event
-     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ISparklineLoadedEventArgs>;
 
     /**
      * Triggers before sparkline render.
      * @event
-     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ISparklineLoadEventArgs>;
 
     /**
      * Triggers before sparkline tooltip render.
      * @event
-     * @blazorProperty 'OnTooltipInitialize'
      */
     tooltipInitialize?: EmitType<ITooltipRenderingEventArgs>;
 
     /**
      * Triggers before sparkline series render.
      * @event
-     * @blazorProperty 'SeriesRendering'
      */
     seriesRendering?: EmitType<ISeriesRenderingEventArgs>;
 
     /**
      * Triggers before sparkline axis render.
      * @event
-     * @blazorProperty 'AxisRendering'
      */
     axisRendering?: EmitType<IAxisRenderingEventArgs>;
 
     /**
      * Triggers before sparkline points render.
      * @event
-     * @blazorProperty 'PointRendering'
      */
     pointRendering?: EmitType<ISparklinePointEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline point region.
      * @event
-     * @blazorProperty 'OnPointRegionMouseMove'
      */
     pointRegionMouseMove?: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline point region.
      * @event
-     * @blazorProperty 'OnPointRegionMouseClick'
      */
     pointRegionMouseClick?: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline container.
      * @event
-     * @blazorProperty 'OnSparklineMouseMove'
      */
     sparklineMouseMove?: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline container.
      * @event
-     * @blazorProperty 'OnSparklineMouseClick'
      */
     sparklineMouseClick?: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers before the sparkline datalabel render.
      * @event
-     * @blazorProperty 'DataLabelRendering'
      */
     dataLabelRendering?: EmitType<IDataLabelRenderingEventArgs>;
 
     /**
      * Triggers before the sparkline marker render.
      * @event
-     * @blazorProperty 'MarkerRendering'
      */
     markerRendering?: EmitType<IMarkerRenderingEventArgs>;
 
     /**
      * Triggers on resizing the sparkline.
      * @event
-     * @blazorProperty 'Resizing'
      */
     resize?: EmitType<ISparklineResizeEventArgs>;
 

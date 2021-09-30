@@ -291,6 +291,11 @@
     font-family: 'e-icons';
   }
 
+  .e-pv-property-icon::before {
+    content: '\e8f1';
+    font-family: 'e-icons';
+  }
+
   .e-pv-comment-selection-icon::before {
     color: $pv-thumbnail-icon-selection-color;
     content: '\e83b';
@@ -304,7 +309,7 @@
 
   .e-pv-accepted-icon::before {
     color: $pv-status-icon-color;
-    content: '\e682';
+    content: '\e853';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
     padding: $pv-accepted-icon-padding;
@@ -313,7 +318,7 @@
 
   .e-pv-rejected-icon::before {
     color: $pv-status-icon-color;
-    content: '\e683';
+    content: '\e805';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
     padding: $pv-rejected-icon-padding;
@@ -322,7 +327,7 @@
 
   .e-pv-completed-icon::before {
     color: $pv-status-icon-color;
-    content: '\e614';
+    content: '\e75d';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
     padding: $pv-status-icon-padding;
@@ -331,7 +336,7 @@
 
   .e-pv-cancelled-icon::before {
     color: $pv-status-icon-color;
-    content: '\e60a';
+    content: '\e771';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
     padding: $pv-status-icon-padding;

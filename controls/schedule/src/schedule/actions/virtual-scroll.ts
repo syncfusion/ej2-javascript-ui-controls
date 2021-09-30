@@ -118,7 +118,7 @@ export class VirtualScroll {
 
     private renderEvents(): void {
         this.setTabIndex();
-        this.parent.notify(events.dataReady, {});
+        this.parent.refreshEvents(false);
         this.parent.notify(events.contentReady, {});
         this.parent.hideSpinner();
     }

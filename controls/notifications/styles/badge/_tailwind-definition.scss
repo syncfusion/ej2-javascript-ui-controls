@@ -1,3 +1,4 @@
+//layout variables
 // Base Badge
 $badge-base-border-radius: 2px !default;
 $badge-base-font-size: $text-xxs !default;
@@ -60,24 +61,6 @@ $badge-circle-line-height: $leading-none !default;
 $badge-ghost-line-height: $leading-none !default;
 $badge-ghost-padding: 3px 10px 3px 10px !default;
 
-$badge-primary-bg-color: $primary !default;
-$badge-secondary-bg-color: $content-bg-color-alt1 !default;
-$badge-success-bg-color: $success-light !default;
-$badge-danger-bg-color: $danger-light !default;
-$badge-warning-bg-color: $warning-light !default;
-$badge-info-bg-color: $info-light !default;
-$badge-light-bg-color: $content-bg-color-alt2 !default;
-$badge-dark-bg-color: $content-text-color-alt2 !default;
-
-$badge-primary-font-color: $primary-text-color !default;
-$badge-secondary-font-color: $content-text-color-alt1 !default;
-$badge-success-font-color: $success !default;
-$badge-danger-font-color: $danger !default;
-$badge-info-font-color: $info !default;
-$badge-light-font-color: $content-text-color-alt1 !default;
-$badge-dark-font-color: $content-bg-color-alt2 !default;
-$badge-warning-font-color: $warning !default;
-
 //bigger styles
 // Base Badge
 $badge-touch-base-border-radius: 4px !default;
@@ -105,3 +88,23 @@ $badge-touch-circle-padding: 1px 3px !default;
 // Dot Badge
 $badge-touch-dot-width: 12px !default;
 $badge-touch-dot-height: 12px !default;
+
+//normal
+$badge-primary-bg-color: $primary !default;
+$badge-secondary-bg-color: $content-bg-color-alt1 !default;
+$badge-success-bg-color: $success-light !default;
+$badge-danger-bg-color: $danger-light !default;
+$badge-warning-bg-color: $warning-light !default;
+$badge-info-bg-color: $info-light !default;
+$badge-light-bg-color: $content-bg-color-alt2 !default;
+$badge-dark-bg-color: $content-text-color-alt2 !default;
+
+$badge-primary-font-color: $primary-text-color !default;
+$badge-secondary-font-color: $content-text-color-alt1 !default;
+$badge-success-font-color: $success !default;
+$badge-danger-font-color: $danger !default;
+$badge-info-font-color: $info !default;
+$badge-light-font-color: $content-text-color-alt1 !default;
+$badge-dark-font-color: $content-bg-color-alt2 !default;
+$badge-warning-font-color: $warning !default;
+

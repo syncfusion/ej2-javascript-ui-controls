@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject } from '../input/input';
+import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { addClass, removeClass } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject } from '../input/input';
 import {ChangedEventArgs,FocusOutEventArgs,FocusInEventArgs,InputEventArgs} from "./textbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -114,7 +114,6 @@ export interface TextBoxModel extends ComponentModel{
      * Triggers when the TextBox component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -122,7 +121,6 @@ export interface TextBoxModel extends ComponentModel{
      * Triggers when the TextBox component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -130,7 +128,6 @@ export interface TextBoxModel extends ComponentModel{
      * Triggers when the content of TextBox has changed and gets focus-out.
      *
      * @event change
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangedEventArgs>;
 

@@ -9,9 +9,85 @@
       height: $protect-dlg-height;
       width: $protect-dlg-width;
 
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        & .e-dlg-header-content {
-          padding: 18px;
+      & .e-sheet-password-content {
+        & .e-header {
+          font-size: 14px;
+          line-height: 28px;
+          margin-bottom: 4px;
+          }
+        }
+      }
+
+    & .e-custom-format-dlg {
+
+      @if $sheet-skin != 'material' {
+        height: 510px !important; // sass-lint:disable-line no-important
+        width: 530px !important; // sass-lint:disable-line no-important
+        }
+     }
+
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+      & .e-dlg-header-content {
+        padding: 18px;
+        }
+      }
+
+    & .e-unprotectworksheet-dlg {
+      left: 0 !important; // sass-lint:disable-line no-important
+
+      & .e-dlg-header-content {
+        & .e-dlg-header {
+          font-size: 18px;
+          line-height: 21px;
+        }
+      }
+
+      & .e-dlg-content {
+        & .e-unprotectsheetpwd-alert-span {
+          color: $dlg-error-color;
+          font-size: 12px;
+          padding-top: 7px;
+        }
+
+        & .e-unprotectsheetpwd-content {
+          & .e-header {
+            font-size: 14px;
+            line-height: 16px;
+          }
+
+          & .e-input {
+            margin-top: 10px;
+          }
+        }
+      }
+   }
+
+    & .e-reenterpwd-dlg {
+      left: 0 !important; // sass-lint:disable-line no-important
+
+      & .e-dlg-header-content {
+        & .e-dlg-header {
+          font-size: 18px;
+          line-height: 21px;
+        }
+      }
+
+      & .e-dlg-content {
+        & .e-reenterpwd-alert-span {
+          color: $dlg-error-color;
+          font-size: 12px;
+          padding-top: 7px;
+        }
+
+        & .e-reenterpwd-content {
+          & .e-header {
+            font-size: 14px;
+            line-height: 16px;
+        }
+
+          & .e-input {
+            margin-top: 10px;
+          }
         }
       }
     }
@@ -63,7 +139,7 @@
     & .e-protect-option-list {
       border: $dlg-list-border;
       cursor: default;
-      margin-top: 6px;
+      margin-top: 20px;
       overflow-y: auto;
 
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
@@ -73,17 +149,39 @@
 
     & .e-protect-checkbox {
       height: 30px;
-      padding-top: 10px;
+      padding-top: 20px;
 
       & .e-label {
         font-size: 14px;
       }
     }
 
+    & .e-dlg-content .e-custom-dialog .e-input.e-dialog-input {
+      float: left;
+      @if $sheet-skin == 'bootstrap5' {
+        margin-right: 4.8%;
+      }
+      @else {
+        margin-right: 2.8%;
+      }
+      margin-right: 2.8%;
+      width: 80%;
+    }
+
+    & .e-dlg-content .e-custom-dialog .e-custom-sample {
+      margin: 10px 10px 10px 0;
+    }
+
+    & .e-dlg-content .e-custom-dialog .e-custom-listview {
+      border: 1px solid $custom-listview-color;
+      border-radius: 3px;
+      height: 300px;
+    }
+
     & .e-protect-content {
       font-size: 13px;
       height: 30px;
-      padding-top: 10px;
+      padding-top: 20px;
       width: 100%;
     }
 
@@ -848,7 +946,7 @@
       cursor: cell;
       pointer-events: none;
       position: absolute;
-      z-index: 2;
+      z-index: 1;
 
       @if $skin-name == 'highcontrast' {
         border-width: 2px;
@@ -864,7 +962,7 @@
       cursor: cell;
       pointer-events: none;
       position: absolute;
-      z-index: 2;
+      z-index: 1;
     }
 
     .e-formularef-indicator {
@@ -872,6 +970,36 @@
       pointer-events: none;
       position: absolute;
       z-index: 1;
+    }
+
+    .e-autofill {
+      background-clip: content-box;
+      background-color: $selection-border-color;
+      border: 1px solid $cell-background;
+      cursor: crosshair;
+      height: 8px;
+      position: absolute;
+      width: 8px;
+      z-index: 3;
+    }
+
+    .e-filloption {
+      height: 30px;
+      position: absolute;
+      width: 47px;
+      z-index: 3;
+
+      @if $skin-name == 'material' {
+        background-color: $cell-border-color;
+      }
+
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        width: 65px;
+      }
+
+      @if $skin-name == 'bootstrap5' {
+        width: 56px;
+      }
     }
 
     .e-active-cell {
@@ -984,12 +1112,19 @@
         }
 
         &:not(.e-split-colorpicker) .e-btn-icon {
-          line-height: $ribbon-btn-height;
-          min-height: $ribbon-btn-height;
-          vertical-align: bottom;
+          @if $skin-name != 'bootstrap5' {
+            line-height: $ribbon-btn-height;
+            min-height: $ribbon-btn-height;
+            vertical-align: bottom;
+          }
 
           &:not(.e-caret) {
-            font-size: 16px;
+            @if $skin-name == 'bootstrap5' {
+              font-size: 18px;
+            }
+            @else {
+              font-size: 16px;
+            }
           }
 
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
@@ -1285,11 +1420,8 @@
     }
 
     & .e-validation-list {
-      border: 1px solid $cell-background;
-      bottom: 1px;
       float: right;
       height: 18px;
-      margin-right: 1px;
       padding: 0;
       position: relative;
       right: 0;
@@ -1297,8 +1429,24 @@
       width: 20px;
       z-index: 2;
 
+      .e-input-group {
+        border: 0;
+        box-shadow: none !important; // sass-lint:disable-line no-important
+      }
+
       & .e-ddl-icon {
         bottom: 5px;
+
+        @if $skin-name != 'material' {
+          height: 18px;
+          min-height: 0;
+          min-width: 0;
+          width: 20px;
+        }
+
+        @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+          padding: 0;
+        }
       }
     }
 
@@ -1885,10 +2033,6 @@
 
       & .e-menu-item,
       & .e-menu-item.e-focused {
-        background-color: $ele-color;
-        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' or $sheet-skin != 'tailwind-dark' {
-          background-color: $cell-background;
-        }
         height: auto;
         line-height: 0;
         padding: 0;
@@ -1928,10 +2072,6 @@
 
       & .e-menu-item,
       & .e-menu-item.e-focused {
-        background-color: $ele-color;
-        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' or $sheet-skin != 'tailwind-dark' {
-          background-color: $cell-background;
-        }
         height: auto;
         line-height: 0;
         padding: 0;
@@ -2372,7 +2512,7 @@
 
     & .e-add-sheet-tab.e-btn.e-icon-btn.e-css,
     & .e-sheets-list.e-dropdown-btn {
-      height: 33px;
+      height: 32px;
       padding: 0;
       width: 32px;
 
@@ -2527,6 +2667,12 @@
           height: 78px;
         }
       }
+    }
+
+    & .e-dlg-content .e-custom-dialog .e-input.e-dialog-input {
+      float: left;
+      margin-right: 2.8%;
+      width: 77%;
     }
 
     & .e-customsort-dlg {

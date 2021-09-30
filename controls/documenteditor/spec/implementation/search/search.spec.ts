@@ -38,15 +38,15 @@ console.log('Find All validation');
         editor.search.findAll('Adventure Cycle');
         expect(editor.search.textSearchResults.length).toBe(6);
     });
-    it('Replace all validation', () => {
-console.log('Replace all validation');
-        editor.search.replaceAll('Giant Panda', editor.search.textSearchResults);
-        for (let i: number = 0; i < editor.documentHelper.pages.length; i++) {
-            let page: Page = editor.documentHelper.pages[i];
-            expect((((page.headerWidget.firstChild as ParagraphWidget).firstChild as LineWidget).children[0] as TextElementBox).text).toBe('Giant Panda');
-            expect((((page.footerWidget.firstChild as ParagraphWidget).firstChild as LineWidget).children[0] as TextElementBox).text).toBe('Giant Panda')
-        }
-    });
+//     it('Replace all validation', () => {
+// console.log('Replace all validation');
+//         editor.search.replaceAll('Giant Panda', editor.search.textSearchResults);
+//         for (let i: number = 0; i < editor.documentHelper.pages.length; i++) {
+//             let page: Page = editor.documentHelper.pages[i];
+//             expect((((page.headerWidget.firstChild as ParagraphWidget).firstChild as LineWidget).children[0] as TextElementBox).text).toBe('Giant Panda');
+//             expect((((page.footerWidget.firstChild as ParagraphWidget).firstChild as LineWidget).children[0] as TextElementBox).text).toBe('Giant Panda')
+//         }
+//     });
 });
 let sfdtText: object = {
     sections: [

@@ -10,6 +10,7 @@ import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusio
 import { DOMNode } from './dom-node';
 
 export class SelectionCommands {
+    public static enterAction: string = 'P'
     /**
      * applyFormat method
      *
@@ -22,7 +23,8 @@ export class SelectionCommands {
      * @hidden
      * @deprecated
      */
-    public static applyFormat(docElement: Document, format: string, endNode: Node, value?: string, selector?: string): void {
+    public static applyFormat(docElement: Document, format: string, endNode: Node, enterAction: string, value?: string, selector?: string): void {
+        this.enterAction = enterAction;
         const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
@@ -116,7 +118,7 @@ export class SelectionCommands {
             }
             if (!preventRestore) { save.restore(); }
             if (isSubSup) {
-                this.applyFormat(docElement, format, endNode);
+                this.applyFormat(docElement, format, endNode, enterAction);
             }
         }
     }
@@ -143,6 +145,10 @@ export class SelectionCommands {
             if (cursorNodes.length > 1 && range.startOffset > 0 && ((cursorNodes[0] as HTMLElement).firstElementChild &&
                 (cursorNodes[0] as HTMLElement).firstElementChild.tagName.toLowerCase() === 'br')) {
                 (cursorNodes[0] as HTMLElement).innerHTML = '';
+            }
+            if (cursorNodes.length === 1 && range.startOffset === 0 && (cursorNodes[0].nodeName === 'BR' ||
+                cursorNodes[0].nextSibling.nodeName === 'BR')) {
+                detach(cursorNodes[0].nodeName === '#text' ? cursorNodes[0].nextSibling : cursorNodes[0]);
             }
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }
@@ -377,10 +383,12 @@ export class SelectionCommands {
         return nodes[index];
     }
     private static applyStyles(nodes: Node[], index: number, element: HTMLElement): Node {
-        nodes[index] = (index === (nodes.length - 1)) || nodes[index].nodeName === 'BR' ?
+        if (!(nodes[index].nodeName === 'BR' && this.enterAction === 'BR')) {
+            nodes[index] = (index === (nodes.length - 1)) || nodes[index].nodeName === 'BR' ?
             InsertMethods.Wrap(nodes[index] as HTMLElement, element)
             : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
-        nodes[index] = this.getChildNode(nodes[index], element);
+            nodes[index] = this.getChildNode(nodes[index], element);
+        }
         return nodes[index];
     }
 

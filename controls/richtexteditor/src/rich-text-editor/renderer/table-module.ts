@@ -1,4 +1,4 @@
-import { detach, closest, Browser, L10n, isNullOrUndefined as isNOU, isBlazor } from '@syncfusion/ej2-base';
+import { detach, closest, Browser, L10n, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, EventHandler, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer, IDropDownItemModel, OffsetPosition, ResizeArgs } from '../base/interface';
 import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs } from '../base/interface';
@@ -147,6 +147,7 @@ export class Table {
             break;
         case 'Dashed':
         case 'Alternate':
+        case 'Custom':
             this.tableStyles(args, item.subCommand);
             break;
         case 'Merge':
@@ -267,6 +268,13 @@ export class Table {
             (table.classList.contains(classes.CLS_TB_ALT_BOR)) ? table.classList.remove(classes.CLS_TB_ALT_BOR) :
                 table.classList.add(classes.CLS_TB_ALT_BOR);
                 /* eslint-enable */
+        }
+        if ((args.args as ClickEventArgs) && (args.args as ClickEventArgs).item.cssClass) {
+            const classList: string[] = (args.args as ClickEventArgs).item.cssClass.split(' ');
+            for (let i: number = 0; i < classList.length; i++) {
+                (table.classList.contains(classList[i])) ? table.classList.remove(classList[i]) :
+                table.classList.add(classList[i]);
+            }
         }
         this.parent.formatter.saveData();
         this.parent.formatter.editorManager.nodeSelection.restore();
@@ -491,7 +499,7 @@ export class Table {
                 range, proxy.contentModule.getDocument());
         }
         const value: ITableArgs = {
-            row: row, columns: col, width: {
+            rows: row, columns: col, width: {
                 minWidth: proxy.parent.tableSettings.minWidth,
                 maxWidth: proxy.parent.tableSettings.maxWidth,
                 width: proxy.parent.tableSettings.width
@@ -696,7 +704,7 @@ export class Table {
                 EventHandler.add(document, Browser.touchStartEvent, this.removeHelper, this);
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
-                const args: ResizeArgs = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
+                const args: ResizeArgs = { event: e, requestType: 'Table' };
                 this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -774,7 +782,7 @@ export class Table {
         const mouseY: number = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
-        const args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
+        const args: ResizeArgs = { event: e, requestType: 'table' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -859,7 +867,7 @@ export class Table {
             this.pageY = null;
             this.moveEle = null;
         }
-        const args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
+        const args: ResizeArgs = { event: e, requestType: 'table' };
         this.parent.trigger(events.resizeStop, args);
         this.parent.formatter.saveData();
     }
@@ -1248,6 +1256,7 @@ export class Table {
         spacing.appendTo(tableWrap.querySelector('#cellSpacing') as HTMLElement);
         return tableWrap;
     }
+
     /**
      * Destroys the ToolBar.
      *

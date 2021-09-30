@@ -4,6 +4,7 @@
 import { closest } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 import { NodeCutter } from './nodecutter';
+import { DOMNode } from './dom-node';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
@@ -16,6 +17,8 @@ export class ClearFormat {
     private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
     private static IGNORE_PARENT_TAGS: string[] = ['ul', 'ol', 'table'];
     private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr', 'th',   'tfoot', 'figcaption', 'li'  ];
+    private static defaultTag: string = 'p';
+    private static domNode: DOMNode;
     /**
      * clear method
      *
@@ -26,7 +29,9 @@ export class ClearFormat {
      * @hidden
      * @deprecated
      */
-    public static clear(docElement: Document, endNode: Node, selector?: string): void {
+    public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string,): void {
+        this.domNode = new DOMNode((endNode as HTMLElement), docElement);
+        this.defaultTag = enterAction === 'P' ? this.defaultTag : 'div';
         const nodeSelection: NodeSelection = new NodeSelection();
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
@@ -126,7 +131,7 @@ export class ClearFormat {
                 && (parentNodes[index1].childNodes[index2].childNodes.length > 0)) {
                     nodes = this.spliceParent([parentNodes[index1].childNodes[index2]], nodes)[1];
                 }
-                if ( (nodes.indexOf(parentNodes[index1].childNodes[index2]) <= -1) &&
+                if ((nodes.indexOf(parentNodes[index1].childNodes[index2]) <= -1) &&
                     (parentNodes[index1].childNodes[index2].textContent.trim() !== '') ) {
                     for (let index3: number = 0; index3 < len; index3++) {
                         if (nodes.indexOf(parentNodes[index1].childNodes[index3]) > -1) {
@@ -202,12 +207,12 @@ export class ClearFormat {
                         && this.IGNORE_PARENT_TAGS.indexOf(parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase()) > -1)
                     && !(parentNodes[index1].childNodes.length === 1
                         && parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
-                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
+                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement(this.defaultTag));
                 }
                 const childNodes: Node[] = InsertMethods.unwrap(parentNodes[index1]);
                 if ( childNodes.length === 1
                     && childNodes[0].parentNode.nodeName.toLocaleLowerCase() === 'p') {
-                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
+                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement(this.defaultTag));
                     InsertMethods.unwrap(parentNodes[index1]);
                 }
                 for (let index2: number = 0; index2 < childNodes.length; index2++) {
@@ -222,12 +227,12 @@ export class ClearFormat {
                         InsertMethods.unwrap(childNodes[index2]);
                     } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
                         childNodes[index2].nodeName.toLocaleLowerCase() === 'p') {
-                        InsertMethods.Wrap(childNodes[index2] as HTMLElement, docElement.createElement('p'));
+                        InsertMethods.Wrap(childNodes[index2] as HTMLElement, docElement.createElement(this.defaultTag));
                         InsertMethods.unwrap(childNodes[index2]);
                     }
                 }
             } else {
-                InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
+                InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement(this.defaultTag));
                 InsertMethods.unwrap(parentNodes[index1]);
             }
         }
@@ -241,10 +246,16 @@ export class ClearFormat {
         // eslint-disable-next-line
         endNode: Node): void {
         for (let index: number = 0; index < textNodes.length; index++) {
-            if ( textNodes[index].parentNode &&
-                IsFormatted.inlineTags.indexOf(textNodes[index].parentNode.nodeName.toLocaleLowerCase()) > -1 ) {
-                nodeCutter.GetSpliceNode(range, textNodes[index].parentNode as HTMLElement );
-                this.removeInlineParent(textNodes[index].parentNode);
+            let currentInlineNode: Node = textNodes[index];
+            let currentNode: Node;
+            while (!this.domNode.isBlockNode(currentInlineNode as Element)) {
+                currentNode = currentInlineNode;
+                currentInlineNode = currentInlineNode.parentElement;
+            }
+            if (currentNode &&
+                IsFormatted.inlineTags.indexOf(currentNode.nodeName.toLocaleLowerCase()) > -1 ) {
+                nodeCutter.GetSpliceNode(range, currentNode as HTMLElement );
+                this.removeInlineParent(currentNode);
             }
         }
     }

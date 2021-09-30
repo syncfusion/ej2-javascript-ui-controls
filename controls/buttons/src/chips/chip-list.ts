@@ -1,6 +1,6 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';
-import { EventHandler, detach, EmitType, Event, addClass, isBlazor, getElement } from '@syncfusion/ej2-base';
+import { EventHandler, detach, EmitType, Event, addClass, getElement } from '@syncfusion/ej2-base';
 import { ChipListModel } from './chip-list-model';
 import { ChipModel } from './chip';
 
@@ -213,7 +213,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='chips/chips/index.md' %}{% endcodeBlock %}
      *
      * @default []
-     * @blazorType List<ChipListChip>
      *
      */
     @Property([])
@@ -293,8 +292,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Specifies a value that indicates whether the chip component is enabled or not.
      *
      * @default true
-     * @blazorDefaultValue null
-     * @blazorType bool?
      */
     @Property(true)
     public enabled: boolean;
@@ -334,7 +331,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='chips/created/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -344,7 +340,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='chips/click/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -356,7 +351,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='chips/beforeClick/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnBeforeClick'
      */
     @Event()
     public beforeClick: EmitType<ClickEventArgs>;
@@ -366,7 +360,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='chips/delete/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnDelete'
      */
     @Event()
     public delete: EmitType<DeleteEventArgs>;
@@ -412,12 +405,10 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     protected render(): void {
         let property: selectionType;
         this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
-        if (!isBlazor() || !this.isServerRendered) {
-            this.setAttributes();
-            this.createChip();
-            this.setRtl();
-            this.select(this.selectedChips, property);
-        }
+        this.setAttributes();
+        this.createChip();
+        this.setRtl();
+        this.select(this.selectedChips, property);
         this.wireEvent(false);
         this.rippleFunction = rippleEffect(this.element, {
             selector: '.e-chip'
@@ -427,16 +418,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private createChip(): void {
         this.innerText = this.element.innerText.trim();
-        if (isBlazor()) {
-            const childElement: NodeListOf<Element> = this.element.querySelectorAll('.e-chip');
-            for (let i: number = 0; i < childElement.length; i++) {
-                if (childElement[i] != null) {
-                    detach(childElement[i]);
-                }
-            }
-        } else {
-            this.element.innerHTML = '';
-        }
+        this.element.innerHTML = '';
         this.chipCreation(this.type === 'chip' ? [this.innerText ? this.innerText : this.text] : this.chips);
     }
 
@@ -787,7 +769,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             (chipDataArgs as ClickEventArgs).cancel = false;
             this.trigger('beforeClick', chipDataArgs as ClickEventArgs, (observedArgs: ClickEventArgs) => {
                 if (!(observedArgs as ClickEventArgs).cancel) {
-                    observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
                     this.clickEventHandler(observedArgs.element, e, del);
                 }
             });
@@ -805,7 +786,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 const deletedItemArgs: DeleteEventArgs = chipData as DeleteEventArgs;
                 this.trigger('delete', deletedItemArgs, (observedArgs: DeleteEventArgs) => {
                     if (!observedArgs.cancel) {
-                        observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
                         this.deleteHandler(observedArgs.element, observedArgs.index);
                         this.selectionHandler(chipWrapper);
                         (chipData as ClickEventArgs).selected = observedArgs.element.classList.contains(classNames.active);
@@ -876,14 +856,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private deleteHandler(chipWrapper: HTMLElement, index: number): void {
-        this.allowServerDataBinding = true;
         this.chips.splice(index, 1);
         this.setProperties({ chips: this.chips }, true);
-        this.serverDataBind();
-        this.allowServerDataBinding = false;
-        if (!(isBlazor() && this.isServerRendered)) {
-            detach(chipWrapper);
-        }
+        detach(chipWrapper);
     }
 
     /**
@@ -898,19 +873,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
         this.wireEvent(true);
         this.rippleFunction();
-        if (isBlazor()) {
-            const chipChildElement: NodeListOf<Element> = !this.chipType() ? this.element.querySelectorAll('.e-chip-text') :
-                this.element.querySelectorAll('.e-chip');
-            for (let i: number = 0; i < chipChildElement.length; i++) {
-                if (chipChildElement[i] != null) {
-                    detach(chipChildElement[i]);
-                }
-            }
-        } else {
-            super.destroy();
-            this.element.innerHTML = '';
-            this.element.innerText = this.innerText;
-        }
+        super.destroy();
+        this.element.innerHTML = '';
+        this.element.innerText = this.innerText;
     }
 
     private removeMultipleAttributes(attributes: string[], element: HTMLElement): void {
@@ -946,23 +911,15 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             case 'selection':
             case 'enableDelete':
             case 'enabled':
-                if (!(isBlazor() && this.isServerRendered)) {
-                    this.isServerRendered = false;
                     this.refresh();
-                    this.isServerRendered = true;
-                }
                 break;
             case 'cssClass':
-                if (!(isBlazor() && this.isServerRendered)) {
                     if (!this.chipType()) {
                         removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
                         addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
                     } else {
-                        this.isServerRendered = false;
                         this.refresh();
-                        this.isServerRendered = true;
                     }
-                }
                 break;
             case 'selectedChips':
                 removeClass(this.element.querySelectorAll('.e-active'), 'e-active');

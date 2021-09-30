@@ -222,12 +222,11 @@ export class VerticalView extends ViewBase implements IRenderer {
                             if (!isNullOrUndefined(this.currentTimeIndicatorTimer)) {
                                 this.clearCurrentTimeIndicatorTimer();
                                 this.changeCurrentTimePosition();
-                                this.currentTimeIndicatorTimer =
-                                    window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
+                                this.updateCurrentTimeIndicatorTimer();
                             }
                         }, interval);
                     }
-                    this.currentTimeIndicatorTimer = window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
+                    this.updateCurrentTimeIndicatorTimer();
                 }
             } else {
                 this.clearCurrentTimeIndicatorTimer();
@@ -268,6 +267,10 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.currentTimeIndicatorTimer = null;
             this.removeCurrentTimeIndicatorElements();
         }
+    }
+
+    private updateCurrentTimeIndicatorTimer(): void {
+        this.currentTimeIndicatorTimer = window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
     }
 
     public removeCurrentTimeIndicatorElements(): void {
@@ -359,7 +362,6 @@ export class VerticalView extends ViewBase implements IRenderer {
                 cntEle = [].slice.call(
                     this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false));
             } else {
-                wrapper.innerHTML = '&nbsp;';
                 cntEle = [].slice.call(wrapper.childNodes);
             }
             break;
@@ -374,6 +376,12 @@ export class VerticalView extends ViewBase implements IRenderer {
             break;
         }
         return cntEle;
+    }
+
+    public refreshHeader(): void {
+        remove(this.element.querySelector('tbody tr'));
+        this.renderHeader();
+        this.parent.notify(event.contentReady, {});
     }
 
     public renderLayout(type: string): void {
@@ -449,6 +457,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         const tbl: Element = this.createTableLayout();
         const trEle: Element = createElement('tr');
         const rowCount: number = this.colLevels.length;
+        let nth: Element;
         for (let i: number = 0; i < rowCount; i++) {
             const ntr: Element = trEle.cloneNode() as Element;
             const data: TdData = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
@@ -460,7 +469,9 @@ export class VerticalView extends ViewBase implements IRenderer {
                     attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
                 })];
             }
-            ntr.appendChild(this.createTd(data));
+            nth = this.createTd(data);
+            this.parent.renderHeaderIndentTemplate(data, nth);
+            ntr.appendChild(nth);
             tbl.querySelector('tbody').appendChild(ntr);
         }
         const ntr: Element = trEle.cloneNode() as Element;
@@ -473,8 +484,9 @@ export class VerticalView extends ViewBase implements IRenderer {
                 cls.ICON + ' ' + cls.DISABLE_CLASS
         });
         const data: TdData = { className: [cls.ALLDAY_CELLS_CLASS], type: 'emptyCells' };
-        const nth: Element = this.createTd(data);
+        nth = this.createTd(data);
         nth.appendChild(appointmentExpandCollapse);
+        this.parent.renderHeaderIndentTemplate(data, nth);
         ntr.appendChild(nth);
         tbl.querySelector('tbody').appendChild(ntr);
         wrap.appendChild(tbl);
@@ -618,10 +630,10 @@ export class VerticalView extends ViewBase implements IRenderer {
         const ntd: Element = td.cloneNode() as Element;
         if (tdData.colSpan) { ntd.setAttribute('colspan', tdData.colSpan.toString()); }
         const clsName: string[] = this.getContentTdClass(r);
-        if (!this.parent.isMinMaxDate(util.resetTime(new Date('' + tdData.date)))) {
+        const cellDate: Date = util.resetTime(tdData.date);
+        if (!this.parent.isMinMaxDate(cellDate)) {
             clsName.push(cls.DISABLE_DATES);
         }
-        const cellDate: Date = util.resetTime(new Date('' + tdData.date));
         util.setTime(cellDate, util.getDateInMs(r.date));
         let type: string = 'workCells';
         if (tdData.className.indexOf(cls.RESOURCE_PARENT_CLASS) !== -1) {

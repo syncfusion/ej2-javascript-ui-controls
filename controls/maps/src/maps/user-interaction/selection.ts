@@ -148,10 +148,6 @@ export class Selection {
             data: data,
             maps: this.maps
         };
-        if (this.maps.isBlazor) {
-            const { shapeData, maps, ...blazorEventArgs }: ISelectionEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
             eventArgs.border.opacity = isNullOrUndefined(this.selectionsettings.border.opacity) ? this.selectionsettings.opacity : this.selectionsettings.border.opacity;
             if (!eventArgs.cancel) {

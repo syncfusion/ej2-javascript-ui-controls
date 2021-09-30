@@ -7,7 +7,9 @@
     -webkit-tap-highlight-color: transparent;
     background-color: $btn-bgcolor;
     border-color: $btn-border-color;
-    box-shadow: $btn-box-shadow;
+    @if $skin-name != 'bootstrap5' {
+      box-shadow: $btn-box-shadow;
+    }
     color: $btn-color;
     transition: box-shadow 280ms cubic-bezier(.4, 0, .2, 1);
     @at-root {
@@ -29,7 +31,9 @@
       &.e-active {
         background-color: $btn-active-bgcolor;
         border-color: $btn-active-border-color;
-        box-shadow: $btn-active-box-shadow;
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: $btn-active-box-shadow;
+        }
         color: $btn-active-color;
       }
 
@@ -58,7 +62,7 @@
         &:focus {
           background-color: $btn-focus-bgcolor;
           border-color: $btn-focus-border-color;
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
             box-shadow: $btn-focus-box-shadow;
           }
           @else {
@@ -148,7 +152,7 @@
             $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, .15), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
-          @else {
+          @else if $skin-name != 'bootstrap5' {
             box-shadow: $btn-active-box-shadow;
           }
           color: $btn-primary-active-color;
@@ -280,7 +284,7 @@
             $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, .15), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
-          @else {
+          @else if $skin-name != 'bootstrap5' {
             box-shadow: $btn-active-box-shadow;
           }
           color: $btn-danger-active-color;
@@ -316,7 +320,7 @@
             $color-rgba: rgba(mix(lighten($btn-flat-focus-bgcolor, 50%), $btn-flat-focus-border-color, .15), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
-          @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
             box-shadow: $btn-focus-box-shadow;
           }
           @else {
@@ -333,7 +337,7 @@
             $color-rgba: rgba(mix(lighten($btn-flat-active-bgcolor, 50%), $btn-flat-active-border-color, .15), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
-          @else {
+          @else if $skin-name != 'bootstrap5' {
             box-shadow: $btn-flat-active-box-shadow;
           }
         }
@@ -370,6 +374,9 @@
             }
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
               box-shadow: $btn-focus-box-shadow;
+            }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-primary-focus-box-shadow;
             }
           }
 
@@ -419,6 +426,9 @@
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
               box-shadow: $btn-focus-box-shadow;
             }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-success-focus-box-shadow;
+            }
             @else {
               box-shadow: $btn-flat-box-shadow;
             }
@@ -433,7 +443,7 @@
               $color-rgba: rgba(mix(lighten($btn-flat-success-active-bgcolor, 50%), $btn-flat-success-active-border-color, .15), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else {
+            @else if $skin-name != 'bootstrap5' {
               box-shadow: $btn-flat-active-box-shadow;
             }
           }
@@ -472,6 +482,9 @@
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
               box-shadow: $btn-focus-box-shadow;
             }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-info-focus-box-shadow;
+            }
             @else {
               box-shadow: $btn-flat-box-shadow;
             }
@@ -486,7 +499,7 @@
               $color-rgba: rgba(mix(lighten($btn-flat-info-active-bgcolor, 50%), $btn-flat-info-active-border-color, .15), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else {
+            @else if $skin-name != 'bootstrap5' {
               box-shadow: $btn-flat-active-box-shadow;
             }
           }
@@ -525,6 +538,9 @@
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
               box-shadow: $btn-focus-box-shadow;
             }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-warning-focus-box-shadow;
+            }
             @else {
               box-shadow: $btn-flat-box-shadow;
             }
@@ -539,7 +555,7 @@
               $color-rgba: rgba(mix(lighten($btn-flat-warning-active-bgcolor, 50%), $btn-flat-warning-active-border-color, .15), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else {
+            @else if $skin-name != 'bootstrap5' {
               box-shadow: $btn-flat-active-box-shadow;
             }
           }
@@ -578,6 +594,9 @@
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
               box-shadow: $btn-focus-box-shadow;
             }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-danger-focus-box-shadow;
+            }
             @else {
               box-shadow: $btn-flat-box-shadow;
             }
@@ -592,7 +611,7 @@
               $color-rgba: rgba(mix(lighten($btn-flat-danger-active-bgcolor, 50%), $btn-flat-danger-active-border-color, .15), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else {
+            @else if $skin-name != 'bootstrap5' {
               box-shadow: $btn-flat-active-box-shadow;
             }
           }
@@ -672,8 +691,14 @@
 
         &.e-success {
           background-color: $btn-outline-bgcolor;
-          border-color: $btn-success-bgcolor;
-          color: $btn-success-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $success-outline;
+            color: $success-outline;
+          }
+          @else {
+            border-color: $btn-success-bgcolor;
+            color: $btn-success-bgcolor;
+          }
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
@@ -702,8 +727,14 @@
 
         &.e-info {
           background-color: $btn-outline-bgcolor;
-          border-color: $btn-info-bgcolor;
-          color: $btn-info-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $info-outline;
+            color: $info-outline;
+          }
+          @else {
+            border-color: $btn-info-bgcolor;
+            color: $btn-info-bgcolor;
+          }
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
@@ -732,8 +763,14 @@
 
         &.e-warning {
           background-color: $btn-outline-bgcolor;
-          border-color: $btn-warning-bgcolor;
-          color: $btn-warning-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $warning-outline;
+            color: $warning-outline;
+          }
+          @else {
+            border-color: $btn-warning-bgcolor;
+            color: $btn-warning-bgcolor;
+          }
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
@@ -762,8 +799,14 @@
 
         &.e-danger {
           background-color: $btn-outline-bgcolor;
-          border-color: $btn-danger-bgcolor;
-          color: $btn-danger-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $danger-outline;
+            color: $danger-outline;
+          }
+          @else {
+            border-color: $btn-danger-bgcolor;
+            color: $btn-danger-bgcolor;
+          }
 
           &:hover {
             @if $skin-name == 'bootstrap4' {

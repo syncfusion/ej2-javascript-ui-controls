@@ -51,5 +51,6 @@ export enum FormulasErrorsStrings {
     missing_sheet = 30,
     cannot_parse = 31,
     expression_cannot_end_with_an_operator = 32,
-    spill = 33
+    spill = 33,
+    div = 34
 }

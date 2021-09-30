@@ -339,46 +339,131 @@ describe('Event Base Module', () => {
             const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
             expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
         });
-        it('Checking event filled full height of the cell in the Month view', (done: DoneFn) => {
-            schObj.dataBound = () => {
-                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                const headerHeight: number = 25;
-                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - headerHeight);
-                done();
-            };
+        it('Checking to month view', (done: DoneFn) => {
+            schObj.dataBound = () => done();
             schObj.currentView = 'Month';
             schObj.dataBind();
         });
-        it('Checking event filled full height of the cell in the Timeline month view', (done: DoneFn) => {
-            schObj.dataBound = () => {
-                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
-                done();
-            };
+        it('Checking event filled full height of the cell in the Month view', () => {
+            const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            expect(eventElement.offsetHeight).toEqual(70);
+        });
+        it('Changing current view to Timeline month', (done: DoneFn) => {
+            schObj.dataBound = () => done();
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
-        it('Checking fill and enable Rtl properties is set to true on timeline month view', (done: DoneFn) => {
-            schObj.dataBound = () => {
-                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
-                done();
-            };
+        it('Checking event filled full height of the cell in the Timeline month view', () => {
+            const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+            const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
+        });
+        it('Enable RTL', (done: DoneFn) => {
+            schObj.dataBound = () => done();
             schObj.enableRtl = true;
             schObj.dataBind();
         });
-        it('Checking fill and enable Rtl properties is set to true on month view', (done: DoneFn) => {
+        it('Checking fill and enable Rtl properties is set to true on timeline month view', () => {
+            const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+            const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
+        });
+        it('Checking current view to month', (done: DoneFn) => {
+            schObj.dataBound = () => done();
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+        it('Checking fill and enable Rtl properties is set to true on month view', () => {
+            const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            expect(eventElement.offsetHeight).toEqual(70);
+        });
+    });
+
+    describe('Checking custom sorting functionality', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Rank 1',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 11, 30),
+            IsAllDay: false,
+            RankId: '1'
+        }, {
+            Id: 2,
+            Subject: 'Rank 3',
+            StartTime: new Date(2017, 9, 29, 10, 30),
+            EndTime: new Date(2017, 9, 29, 12, 30),
+            IsAllDay: false,
+            RankId: '3'
+        }, {
+            Id: 3,
+            Subject: 'Rank 6',
+            StartTime: new Date(2017, 9, 29, 7, 0),
+            EndTime: new Date(2017, 9, 29, 14, 30),
+            IsAllDay: false,
+            RankId: '6'
+        }, {
+            Id: 4,
+            Subject: 'Rank 9',
+            StartTime: new Date(2017, 9, 29, 11, 0),
+            EndTime: new Date(2017, 9, 29, 15, 30),
+            IsAllDay: false,
+            RankId: '9'
+        }];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2017, 9, 29),
+                views: ['Week', 'Month', 'TimelineDay', 'TimelineMonth'],
+                currentView: 'Month',
+                eventSettings: {
+                    sortComparer: (args: any) => {
+                        args.sort((a: any, b: any) => a.RankId.localeCompare(b.RankId, undefined, { numeric: true }));
+                        return args;
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking event sorting by custom field in Month View', () => {
+            const eventElement: Element = schObj.element.querySelector('.e-appointment');
+            const expectedRankId: string = '1';
+            const eventDetails: Record<string, any> = schObj.getEventDetails(eventElement);
+            expect(eventDetails.RankId).toEqual(expectedRankId);
+        });
+        it('Checking event sorting by custom field in Week View', (done: DoneFn) => {
             schObj.dataBound = () => {
-                const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                const headerHeight: number = 25;
-                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - headerHeight);
+                const eventElement: Element = schObj.element.querySelector('.e-appointment');
+                const expectedRankId: string = '1';
+                const eventDetails: Record<string, any> = schObj.getEventDetails(eventElement);
+                expect(eventDetails.RankId).toEqual(expectedRankId);
                 done();
             };
-            schObj.currentView = 'Month';
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+        it('Checking event sorting by custom field in TimelineDay View', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElement: Element = schObj.element.querySelector('.e-appointment');
+                const expectedRankId: string = '1';
+                const eventDetails: Record<string, any> = schObj.getEventDetails(eventElement);
+                expect(eventDetails.RankId).toEqual(expectedRankId);
+                done();
+            };
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+        it('Checking event sorting by custom field in TimelineMonth View', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElement: Element = schObj.element.querySelector('.e-appointment');
+                const expectedRankId: string = '1';
+                const eventDetails: Record<string, any> = schObj.getEventDetails(eventElement);
+                expect(eventDetails.RankId).toEqual(expectedRankId);
+                done();
+            };
+            schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
     });
@@ -425,7 +510,7 @@ describe('Event Base Module', () => {
             const headerHeight: number = 25;
             expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 19 - headerHeight);
         });
-        it('Checking evnet filled full height of the cell in the Timeline month view', (done: DoneFn) => {
+        it('Checking event filled full height of the cell in the Timeline month view', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
                 const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
@@ -476,7 +561,7 @@ describe('Event Base Module', () => {
                 height: '550px', width: '100%', selectedDate: new Date(2018, 9, 1)
             };
             schObj = util.createSchedule(options, eventData, done);
-            inputObj = createElement('input',  { className: 'e-input-element' });
+            inputObj = createElement('input', { className: 'e-input-element' });
             document.body.appendChild(inputObj);
             keyModule = schObj.keyboardInteractionModule;
         });
@@ -492,7 +577,7 @@ describe('Event Base Module', () => {
             inputEle.focus();
             expect(document.activeElement).toEqual(inputEle);
         });
-        it ('To maintain outside element focus on resize', () => {
+        it('To maintain outside element focus on resize', () => {
             const workCell: HTMLTableCellElement = schObj.element.querySelectorAll('.e-work-cells')[170] as HTMLTableCellElement;
             workCell.click();
             const inputEle: HTMLElement = document.querySelector('.e-input-element') as HTMLElement;

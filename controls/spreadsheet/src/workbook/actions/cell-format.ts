@@ -74,15 +74,26 @@ export class WorkbookCellFormat {
             }
             delete eventArgs.style.borderRight;
         }
-        let border: string; let isFullBorder: boolean;
+        let border: string; let isFullBorder: boolean; let cell: CellModel;
         if (Object.keys(args.style).length) {
             for (let i: number = indexes[0]; i <= indexes[2]; i++) {
                 for (let j: number = indexes[1]; j <= indexes[3]; j++) {
                     if (isFullBorder === undefined) {
                         if (eventArgs.style.border !== undefined) {
-                            border = eventArgs.style.border; eventArgs.style.border = undefined; isFullBorder = true;
+                            border = eventArgs.style.border; delete eventArgs.style.border; isFullBorder = true;
                         } else {
                             isFullBorder = false;
+                        }
+                    }
+                    cell = getCell(i, j, sheet, false, true);
+                    if (cell.rowSpan > 1 || cell.colSpan > 1) {
+                        for (let k: number = i, rowSpanLen: number = cell.rowSpan > 1 ? i + (cell.rowSpan - 1) : i; k <= rowSpanLen; k++) {
+                            for (let l: number = j, colSpanLen: number = cell.colSpan > 1 ? j + (cell.colSpan - 1) : j; l <= colSpanLen; l++) {
+                                if (isFullBorder) {
+                                    this.setFullBorder(sheet, border, indexes, k, l, args.onActionUpdate, true);
+                                }
+                                this.setCellStyle(sheet, k, l, eventArgs.style);
+                            }
                         }
                     }
                     if (isFullBorder) {
@@ -111,7 +122,8 @@ export class WorkbookCellFormat {
             if (pCellStyle !== '') { (sheet.rows[rowIdx].cells[colIdx].style as CellStyleExtendedModel).bottomPriority = true; }
         }
     }
-    private setFullBorder(sheet: SheetModel, border: string, indexes: number[], i: number, j: number, actionUpdate: boolean): void {
+    private setFullBorder(
+        sheet: SheetModel, border: string, indexes: number[], i: number, j: number, actionUpdate: boolean, modelUpdate?: boolean): void {
         const style: CellStyleModel = {};
         if (i === indexes[0]) {
             this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
@@ -126,7 +138,7 @@ export class WorkbookCellFormat {
             this.checkAdjustantBorder(sheet, 'border', i, j + 1);
         }
         style.borderRight = border; style.borderTop = border; style.borderLeft = border;
-        style.borderBottom = border; this.setCellBorder(sheet, style, i, j, actionUpdate, j === indexes[3]);
+        style.borderBottom = border; this.setCellBorder(sheet, style, i, j, actionUpdate, j === indexes[3], null, modelUpdate);
         if (i === indexes[2]) {
             this.checkAdjustantBorder(sheet, 'borderTop', i + 1, j); this.checkFullBorder(sheet, 'borderTop', i + 1, j);
             this.setBottomBorderPriority(sheet, i, j);
@@ -282,9 +294,10 @@ export class WorkbookCellFormat {
         }
     }
     private setCellBorder(
-        sheet: SheetModel, style: CellStyleModel, rowIdx: number, colIdx: number, actionUpdate: boolean, lastCell?: boolean, type?: string): void {
+        sheet: SheetModel, style: CellStyleModel, rowIdx: number, colIdx: number, actionUpdate: boolean, lastCell?: boolean, type?: string,
+        modelUpdate?: boolean): void {
         this.setCellStyle(sheet, rowIdx, colIdx, style);
-        if (this.parent.getActiveSheet().id === sheet.id) {
+        if (!modelUpdate && this.parent.getActiveSheet().id === sheet.id) {
             if (type === 'Outer' && (style.borderBottom || style.borderRight)) {
                 const mergeArgs: { range: number[] } = { range: [rowIdx, colIdx, rowIdx, colIdx] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);

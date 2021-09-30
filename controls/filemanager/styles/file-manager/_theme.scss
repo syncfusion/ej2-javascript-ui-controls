@@ -7,7 +7,7 @@
 @mixin active-icon-color {
   .e-btn-icon,
   .e-tbar-btn-text {
-    @if $fm-skin-name == 'bootstrap4' {
+    @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap5' {
       color: $fe-tb-active-color;
     }
   }
@@ -58,7 +58,7 @@
       }
     }
 
-    @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+    @if $fm-skin-name == 'tailwind' {
       .e-navigation {
         &.e-pane {
           background-color: $content-bg-color-alt1;
@@ -89,7 +89,7 @@
         color: $fe-bc-link-color;
 
         &:focus .e-list-text {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
             background: $fe-bc-hover-bg-color;
           }
           color: $fe-bc-hover-font-color;
@@ -106,21 +106,21 @@
           .e-list-text {
 
             &:hover {
-              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
                 background: $fe-bc-hover-bg-color;
               }
               color: $fe-bc-hover-font-color;
             }
 
             &:active {
-              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
                 background: $fe-bc-hover-bg-color;
               }
               color: $fe-bc-hover-font-color;
             }
 
             &:focus {
-              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
                 background: $fe-bc-hover-bg-color;
               }
               color: $fe-bc-hover-font-color;
@@ -180,7 +180,7 @@
       }
 
       .e-empty-inner-content {
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           color: $content-text-color-alt2;
         }
       }
@@ -192,6 +192,12 @@
           .e-fe-text {
             color: $fe-grid-text-color;
           }
+        }
+      }
+
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap4' {
+        td.e-active.e-rowcell:not(.e-editedbatchcell):not(.e-updatedtd) {
+          color: $fe-active-font-color;
         }
       }
 
@@ -213,14 +219,14 @@
 
       .e-checkbox-wrapper {
         .e-icons.e-check {
-          @if $fm-skin-name == 'highcontrast' or $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' {
+          @if $fm-skin-name == 'highcontrast' or $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'bootstrap5' {
             background-color: $fe-checkbox-bg-color;
             color: $fe-checkbox-color;
           }
         }
 
         .e-icons.e-stop {
-          @if $fm-skin-name == 'bootstrap4' {
+          @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap5' {
             background-color: $fe-checkbox-bg-color;
             color: $fe-checkbox-color;
           }
@@ -250,7 +256,7 @@
       }
 
       .e-empty-inner-content {
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           color: $content-text-color-alt2;
         }
       }
@@ -328,7 +334,7 @@
           }
         }
       }
-      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
         .e-address {
           .e-icons {
             color: $icon-color;

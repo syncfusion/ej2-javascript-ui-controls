@@ -445,6 +445,11 @@ export const pasteClean: string = 'pasteClean';
  * @hidden
  * @deprecated
  */
+export const enterHandler: string = 'enterHandler';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const beforeDialogOpen: string = 'beforeDialogOpen';
 /**
  * @hidden
@@ -581,10 +586,10 @@ export const closeLinkDialog: string = 'closeLinkDialog';
  * @deprecated
  */
 export const showImageDialog: string = 'showImageDialog';
-/**
- * @hidden
- * @deprecated
- */
+ /**
+  * @hidden
+  * @deprecated
+  */
 export const closeImageDialog: string = 'closeImageDialog';
 /**
  * @hidden

@@ -185,13 +185,13 @@ export class WorkbookSort {
                 return collator.compare(x.value as string, y.value as string) * -1;
             }
         }
-        if ((x === null || isNullOrUndefined(x.value)) && (y === null || isNullOrUndefined(y.value))) {
+        if ((x === null || x && isNullOrUndefined(x.value)) && (y === null || y && isNullOrUndefined(y.value))) {
             return -1;
         }
-        if (x === null || isNullOrUndefined(x.value)) {
+        if (x === null || x && isNullOrUndefined(x.value)) {
             return 1;
         }
-        if (y === null || isNullOrUndefined(y.value)) {
+        if (y === null || y && isNullOrUndefined(y.value)) {
             return -1;
         }
         return comparer(x ? x.value : x, y ? y.value : y);

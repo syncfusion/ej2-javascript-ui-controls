@@ -1,4 +1,4 @@
-$brand-primary: #0070f0 !default;
+$brand-primary: #0070f0 !default !default;
 $brand-primary-darken-10: darken($brand-primary, 10%) !default;
 $brand-primary-darken-15: darken($brand-primary, 20%) !default;
 $brand-primary-darken-25: darken($brand-primary, 30%) !default;
@@ -49,12 +49,12 @@ $brand-warning-font: #9d6106 !default;
 $brand-danger-font: #ac2a2a !default;
 $base-font: #000 !default;
 $shadow: #000 !default;
+$skin-name: 'bootstrap-dark' !default;
 
 // mapping Bootstrap variables
-$grey-base: $gray-base  !default;
+$grey-base: $gray-base !default;
 $grey-darker: $gray-darker !default;
 $grey-dark: $gray-dark !default;
 $grey: $gray !default;
 $grey-light: $gray-light !default;
 $grey-lighter: $gray-lighter !default;
-$skin-name: 'bootstrap-dark' !default;

@@ -21,7 +21,7 @@
       font-weight: $de-par-dlg-hdr-weight;
       margin-bottom: $de-para-dlg-hdr-margin-bottom;
       margin-top: $de-para-dlg-hdr-margin-top;
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      @if $skin-name == 'tailwind' {
         line-height: 22px;
       }
     }
@@ -92,7 +92,7 @@
     margin-bottom: $de-para-dlg-hdr-margin-bottom;
     margin-top: $de-para-dlg-hdr-margin-top;
     opacity: $de-dlg-heading-opacity;
-    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    @if $skin-name == 'tailwind' {
       line-height: 22px;
     }
   }

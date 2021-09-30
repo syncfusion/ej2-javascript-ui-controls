@@ -1552,13 +1552,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (dataSource && this.fields.groupBy) {
             if (this.sortOrder !== 'None') {
                 this.curViewDS = ListBase.groupDataSource(
-                    ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, this.fields.sortBy)),
+                    ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, (isNullOrUndefined(this.fields.sortBy)) ? this.fields.text : this.fields.sortBy)),
                     this.listBaseOption.fields, this.sortOrder);
             } else {
                 this.curViewDS = ListBase.groupDataSource(dataSource, this.listBaseOption.fields, this.sortOrder);
             }
         } else if (dataSource && this.sortOrder !== 'None') {
-            this.curViewDS = ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, this.fields.sortBy));
+            this.curViewDS = ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, (isNullOrUndefined(this.fields.sortBy)) ? this.fields.text : this.fields.sortBy));
         } else {
             this.curViewDS = dataSource;
         }

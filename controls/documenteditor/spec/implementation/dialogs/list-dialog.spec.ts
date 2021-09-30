@@ -657,30 +657,30 @@ console.log('ListLevel event validation');
         expect(() => { (dialog as any).onListLevelValueChanged(event); }).not.toThrowError();
         (dialog as any).onApplyList();
     });
-    it('ListLevel event validation with index 0', () => {
-console.log('ListLevel event validation with index 0');
-        createDocument(editor);
-        dialog.showListDialog();
-        let event: any = { value: 'Level 1', target: { selectedIndex: 0 } };
-        expect(() => { (dialog as any).onListLevelValueChanged(event); }).not.toThrowError();
-        (dialog as any).onApplyList();
-    });
-    it('ListLevel event validation with index 0', () => {
-console.log('ListLevel event validation with index 0');
-        editor.editorHistory.undo();
-        expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
-    });
-    it('Dialog property validation', (done) => {
-console.log('Dialog property validation');
-        createDocument(editor);
-        dialog.showListDialog();
-        setTimeout(() => {
-            (dialog as any).viewModel = undefined;
-            expect(dialog.list).toBe(undefined);
-            expect(dialog.listLevel).toBe(undefined);
-            done();
-        });
-    });
+//     it('ListLevel event validation with index 0', () => {
+// console.log('ListLevel event validation with index 0');
+//         createDocument(editor);
+//         dialog.showListDialog();
+//         let event: any = { value: 'Level 1', target: { selectedIndex: 0 } };
+//         expect(() => { (dialog as any).onListLevelValueChanged(event); }).not.toThrowError();
+//         (dialog as any).onApplyList();
+//     });
+//     it('ListLevel event validation with index 0', () => {
+// console.log('ListLevel event validation with index 0');
+//         editor.editorHistory.undo();
+//         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
+//     });
+//     it('Dialog property validation', (done) => {
+// console.log('Dialog property validation');
+//         createDocument(editor);
+//         dialog.showListDialog();
+//         setTimeout(() => {
+//             (dialog as any).viewModel = undefined;
+//             expect(dialog.list).toBe(undefined);
+//             expect(dialog.listLevel).toBe(undefined);
+//             done();
+//         });
+//     });
 });
 describe('dialog event validation', () => {
     let editor: DocumentEditor;

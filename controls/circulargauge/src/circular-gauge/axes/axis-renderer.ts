@@ -1,11 +1,8 @@
 /* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Label, Range, Tick } from './axis';
-import { getLocationFromAngle, PathOption, stringToNumber, TextOption, textElement, appendPath, toPixel } from '../utils/helper';
-import {
-    GaugeLocation, VisibleLabels, getAngleFromValue, isCompleteAngle, getPathArc, getDegree,
-    getRoundedPathArc, getRangeColor
-} from '../utils/helper';
+import { stringToNumber, toPixel, textElement, appendPath, getAngleFromValue, getLocationFromAngle, getPathArc, getRoundedPathArc, VisibleLabels, getDegree, isCompleteAngle, PathOption, GaugeLocation, TextOption } from '../utils/helper-common';
+import { getRangeColor } from '../utils/helper-axis-renderer';
 import { TickModel } from './axis-model';
 import { getRangePalette } from '../model/theme';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -80,7 +77,7 @@ export class AxisRenderer {
         let startAngle: number = axis.startAngle;
         let endAngle: number = axis.endAngle;
         const color: string = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
-        if (axis.lineStyle.width > 0 && this.gauge.allowComponentRender) {
+        if (axis.lineStyle.width > 0 && this.gauge.isComponentRender) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
             appendPath(
                 new PathOption(
@@ -443,7 +440,7 @@ export class AxisRenderer {
         startAngle = getAngleFromValue(startValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
         endAngle = getAngleFromValue(endValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
         const isAngleCross360: boolean = (startAngle > endAngle);
-        if (axis.rangeGap != null && axis.rangeGap > 0
+        if (axis.rangeGap != null && axis.rangeGap > 0 && range.start !== range.end
             || (!isNullOrUndefined(range.linearGradient) && !range.isLinearCircularGradient
                 && (colorIndex === range.linearGradient.colorStop.length - 1))) {
             startAngle = (rangeIndex === 0 && !axis.startAndEndRangeGap) ? startAngle :
@@ -458,7 +455,7 @@ export class AxisRenderer {
                         endAngle - (axis.rangeGap / Math.PI) : !range.isLinearCircularGradient ?
                         endAngle - (axis.rangeGap / Math.PI) : endAngle;
         }
-        if (this.gauge.allowComponentRender) {
+        if (this.gauge.isComponentRender) {
             if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle)) && ((range.start >= min && range.end <= max) || (range.end >= min && range.start <= max))) {
                 endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
                 endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
@@ -735,7 +732,9 @@ export class AxisRenderer {
                     this.drawRangePath(axis, range, startWidth, endWidth, rangeIndex, index, rangeElement, i);
                 }
             } else {
-                this.drawRangePath(axis, range, startWidth, endWidth, rangeIndex, index, rangeElement, null);
+                if(!(range.start === range.end && axis.direction === 'AntiClockWise' && axis.startAngle === axis.endAngle)) {
+                    this.drawRangePath(axis, range, startWidth, endWidth, rangeIndex, index, rangeElement, null);
+                }
             }
         }
         );

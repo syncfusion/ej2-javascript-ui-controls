@@ -6,7 +6,7 @@
     background-color: $menu-ul-bgcolor;
 
     @at-root {
-      & ul {
+      & .e-menu {
         @if $skin-name == 'bootstrap4' {
           background-color: $cmenu-ul-bgcolor;
         }

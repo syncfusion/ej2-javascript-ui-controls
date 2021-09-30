@@ -38,4 +38,9 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property('Multiple')
     public mode: SelectionMode;
+
+/**
+ * Represents the selection settings.
+ */
 }
+

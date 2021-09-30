@@ -163,7 +163,33 @@
       }
     }
 
-    &.e-focus {
+    &.e-focus,
+    &:focus {
+      & .e-switch-inner {
+        background-color: $switch-inner-focus-off-bg;
+        border-color: $switch-inner-focus-border;
+        box-shadow: $switch-focus-inner-box-shadow;
+        outline: $switch-focused-outline;
+        outline-offset: $switch-focused-outline-offset;
+      }
+
+      & .e-switch-inner.e-switch-active {
+        background-color: $switch-inner-focus-bg-color;
+        border-color: $switch-focus-border-color-active;
+        outline: $switch-focused-outline-active;
+      }
+
+      & .e-ripple-container {
+        background-color: $switch-checked-ripple-bg-color;
+      }
+
+      & .e-ripple-check.e-ripple-container {
+        background-color: $switch-ripple-bg-color;
+      }
+      }
+
+    &.e-active,
+    &:active {
       & .e-switch-inner {
         background-color: $switch-inner-focus-off-bg;
         border-color: $switch-inner-focus-border;

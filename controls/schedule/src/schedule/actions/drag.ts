@@ -39,8 +39,8 @@ export class DragAndDrop extends ActionBase {
     private isAllDayTarget: boolean = false;
     private targetTd: HTMLElement = null;
     private isCursorAhead: boolean = false;
+    private dragArea: HTMLElement;
     public wireDragEvent(element: HTMLElement): void {
-        const dragElement: HTMLElement = document.querySelector(this.parent.eventDragArea);
         new Draggable(element, {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
             clone: true,
@@ -48,8 +48,7 @@ export class DragAndDrop extends ActionBase {
             enableTapHold: this.parent.isAdaptive as boolean,
             enableTailMode: (this.parent.eventDragArea) ? true : false,
             cursorAt: (this.parent.eventDragArea) ? { left: -20, top: -20 } : { left: 0, top: 0 },
-            dragArea: (this.parent.eventDragArea && dragElement) ?
-                dragElement : this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement,
+            dragArea: this.dragArea,
             dragStart: this.dragStart.bind(this),
             drag: this.drag.bind(this),
             dragStop: this.dragStop.bind(this),
@@ -57,6 +56,12 @@ export class DragAndDrop extends ActionBase {
             helper: this.dragHelper.bind(this),
             queryPositionInfo: this.dragPosition.bind(this)
         });
+    }
+
+    public setDragArea(): void {
+        const dragElement: HTMLElement = document.querySelector(this.parent.eventDragArea);
+        this.dragArea = this.parent.eventDragArea && dragElement ? dragElement :
+            this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
     }
 
     private dragHelper(e: Record<string, any>): HTMLElement {
@@ -1037,6 +1042,12 @@ export class DragAndDrop extends ActionBase {
         if (this.isTimelineDayProcess) {
             const eventSrt: Date = eventObj[this.parent.eventFields.startTime] as Date;
             eventStart.setHours(eventSrt.getHours(), eventSrt.getMinutes(), eventSrt.getSeconds());
+        }
+        if (this.parent.eventDragArea) {
+            const targetDate: Date = this.parent.getDateFromElement(e.target as HTMLElement);
+            if (!isNullOrUndefined(targetDate)) {
+                eventStart = targetDate;
+            }
         }
         const eventEnd: Date = new Date(eventStart.getTime());
         eventEnd.setMilliseconds(eventDuration);

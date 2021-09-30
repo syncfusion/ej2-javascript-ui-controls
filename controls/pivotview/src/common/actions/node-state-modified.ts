@@ -1,4 +1,4 @@
-import { DragEventArgs, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';
+import { DragEventArgs, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
@@ -40,9 +40,9 @@ export class NodeStateModified {
                 'rows' : target.classList[1] === cls.COLUMN_AXIS_CLASS ? 'columns' : target.classList[1] === cls.VALUE_AXIS_CLASS ?
                     'values' : target.classList[1] === cls.FILTER_AXIS_CLASS ? 'filters' : '';
         }
-        if (this.parent.dataType === 'olap') {
-            let actualFieldName: string = ((this.parent.engineModule as OlapEngine).fieldList[fieldName] &&
-                (this.parent.engineModule as OlapEngine).fieldList[fieldName].isCalculatedField ?
+        if (this.parent.dataType === 'olap' || this.parent.dataType === 'pivot') {
+            let actualFieldName: string = (this.parent.dataType === 'olap' && this.parent.engineModule.fieldList[fieldName] &&
+                this.parent.engineModule.fieldList[fieldName].isCalculatedField ?
                 (this.parent.engineModule as OlapEngine).fieldList[fieldName].tag : fieldName);
             if (args.cancel && droppedClass === '') {
                 nodeDropped = false;
@@ -52,16 +52,16 @@ export class NodeStateModified {
                     (droppedClass === 'filters' || droppedClass === 'values'))) ||
                 (this.parent.dataSourceUpdate.btnElement &&
                     (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
-                        actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') > -1 && this.parent.dataType === 'olap' &&
                         (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns'))) ||
                 (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' && this.parent.dataType === 'olap' &&
                         actualFieldName.toLowerCase().indexOf('[measures].') === -1 &&
-                        (this.parent.engineModule as OlapEngine).fieldList[fieldName] &&
+                        this.parent.engineModule.fieldList[fieldName] &&
                         (this.parent.engineModule as OlapEngine).fieldList[fieldName].isNamedSets &&
                         (droppedClass === 'filters' || droppedClass === 'values'))) ||
                 (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' && this.parent.dataType === 'olap' &&
                         actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values'))) {
                 let title: string = this.parent.localeObj.getConstant('warning');
                 let description: string = this.parent.localeObj.getConstant('fieldDropErrorAction');
@@ -79,15 +79,16 @@ export class NodeStateModified {
             }
         }
         if (droppedClass !== '') {
-            if (this.parent.dataType === 'olap') {
-                let actualFieldName: string = (this.parent.engineModule.fieldList[fieldName] &&
-                    (this.parent.engineModule as OlapEngine).fieldList[fieldName].isCalculatedField ?
+            if (this.parent.dataType === 'olap' || this.parent.dataType === 'pivot') {
+                let actualFieldName: string = (this.parent.dataType === 'olap' && this.parent.engineModule.fieldList[fieldName] &&
+                    this.parent.engineModule.fieldList[fieldName].isCalculatedField ?
                     (this.parent.engineModule as OlapEngine).fieldList[fieldName].tag : fieldName);
-                if ((actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
+                if ((actualFieldName.toLowerCase().indexOf('[measures].') > -1 && this.parent.dataType === 'olap' &&
                     (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns')) ||
                     (this.parent.engineModule.fieldList[fieldName] &&
                         (this.parent.engineModule as OlapEngine).fieldList[fieldName].isNamedSets && droppedClass === 'filters') ||
-                    (actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values')) {
+                    (this.parent.dataType === 'olap' && droppedClass === 'values' &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') === -1)) {
                     let title: string = this.parent.localeObj.getConstant('warning');
                     let description: string = this.parent.localeObj.getConstant('fieldDropErrorAction');
                     this.parent.errorDialog.createErrorDialog(title, description);
@@ -111,8 +112,7 @@ export class NodeStateModified {
             }
         }
         this.parent.dataSourceUpdate.updateDataSource(fieldName, droppedClass, droppedPosition);
-        return isBlazor() ? false : nodeDropped;
-
+        return nodeDropped;
     }
 
     private getButtonPosition(target: HTMLElement, droppedClass: string): number {

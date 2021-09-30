@@ -1,6 +1,6 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs } from '../base/interface';
@@ -123,16 +123,8 @@ export class Toolbar {
         /* eslint-disable @typescript-eslint/no-explicit-any */
         let reports: any = { reportName: [] };
         let tool: Toolbar = this;   /* eslint-disable-line */
-        if (isBlazor()) {
-            reports = this.fetchReportsArgs();
-            reports.then((e: any) => {
-                tool.reportList.dataSource = e.reportName;
-                return e;
-            });
-        } else {
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-            this.parent.trigger(events.fetchReport, reports);
-        }
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        this.parent.trigger(events.fetchReport, reports);
         return reports;
     }
 
@@ -576,9 +568,6 @@ export class Toolbar {
                     return;
                 }
                 _this.parent.trigger(events.newReport);
-                if (isBlazor()) {
-                    _this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
-                }
                 let saveArgs: SaveReportArgs = {
                     report: _this.parent.getPersistData(),
                     reportName: reportInput.value
@@ -717,9 +706,6 @@ export class Toolbar {
                 }
             } else if (this.action === 'New') {
                 this.parent.trigger(events.newReport);
-                if (isBlazor()) {
-                    this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
-                }
                 let saveArgs: SaveReportArgs = {
                     report: this.parent.getPersistData(),
                     reportName: this.currentReport
@@ -985,11 +971,6 @@ export class Toolbar {
                 report: this.parent.getPersistData(),
                 reportName: this.parent.localeObj.getConstant('defaultReport')
             };
-            if (isBlazor()) {
-                let pivotData: PivotView = JSON.parse(saveArgs.report);
-                pivotData.dataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings);
-                saveArgs.report = JSON.stringify(pivotData);
-            }
             this.currentReport = this.parent.localeObj.getConstant('defaultReport');
             this.parent.trigger(events.saveReport, saveArgs);
             let reports: FetchReportArgs = this.fetchReports();
@@ -1150,36 +1131,17 @@ export class Toolbar {
     /* eslint-enable max-len */
     private updateReportList(): void {
         let reports: FetchReportArgs;
-        if (isBlazor()) {
-            /* eslint-disable */
-            let _this: any = this;
-            /* eslint-enable */
-            reports = { reportName: [] };
-            this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
-                _this.reportList.dataSource = observedArgs.reportName;
-                if (_this.currentReport === '' && _this.reportList.dataSource.length > 0) {
-                    _this.reportList.value = _this.reportList.dataSource[_this.reportList.dataSource.length - 1];
-                    _this.reportList.text = _this.reportList.dataSource[_this.reportList.dataSource.length - 1];
-                    _this.currentReport = _this.reportList.dataSource[_this.reportList.dataSource.length - 1];
-                } else {
-                    _this.reportList.value = _this.currentReport;
-                    _this.reportList.text = _this.currentReport;
-                }
-                _this.reportList.refresh();
-            });
+        reports = this.fetchReports();
+        this.reportList.dataSource = reports.reportName;
+        if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
+            this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+            this.reportList.text = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+            this.currentReport = this.reportList.dataSource[this.reportList.dataSource.length - 1];
         } else {
-            reports = this.fetchReports();
-            this.reportList.dataSource = reports.reportName;
-            if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
-                this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-                this.reportList.text = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-                this.currentReport = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-            } else {
-                this.reportList.value = this.currentReport;
-                this.reportList.text = this.currentReport;
-            }
-            this.reportList.refresh();
+            this.reportList.value = this.currentReport;
+            this.reportList.text = this.currentReport;
         }
+        this.reportList.refresh();
     }
     /* eslint-disable  */
     private menuItemClick(args: ClickEventArgs): void {
@@ -1207,9 +1169,6 @@ export class Toolbar {
                     }
                     this.parent.layoutRefresh();
                 }
-                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
-                    (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
-                }
                 break;
             case (this.parent.element.id + 'pdf'):
                 if (this.parent.currentView === 'Table') {
@@ -1220,12 +1179,7 @@ export class Toolbar {
                         isMultipleExport: false
                     };
                     this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                        if (isBlazor()) {
-                            let pdfProperties = PivotUtil.formatPdfExportProperties(observedArgs.pdfExportProperties);
-                            this.parent.pdfExport(pdfProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
-                        } else {
-                            this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
-                        }
+                        this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
                     });
                 } else {
                     exportArgs = {
@@ -1248,12 +1202,7 @@ export class Toolbar {
                     workbook: undefined
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    if (isBlazor()) {
-                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
-                        this.parent.excelExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    } else {
-                        this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    }
+                    this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
                 });
                 break;
             case (this.parent.element.id + 'csv'):
@@ -1264,12 +1213,7 @@ export class Toolbar {
                     workbook: undefined
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    if (isBlazor()) {
-                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
-                        this.parent.csvExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    } else {
-                        this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    }
+                    this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
                 });
                 break;
             case (this.parent.element.id + 'png'):
@@ -1387,9 +1331,6 @@ export class Toolbar {
                         }
                         this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
                     }
-                }
-                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
-                    (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
                 }
                 break;
         }

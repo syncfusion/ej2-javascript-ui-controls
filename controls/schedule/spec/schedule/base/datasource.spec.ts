@@ -1697,17 +1697,17 @@ export function yearDataGenerator(count: number = 100, date: Date = new Date(), 
  * @returns {Object[]} Returns the collection of resource datas
  * @private
  */
-export function generateEvents(start: Date, resCount: number, overlapCount: Number) {
-    let data = [];
-    let id = 1;
-    for (let i = 0; i < resCount; i++) {
-        let random = 0;
-        for (let j = 0; j < overlapCount; j++) {
-            let startDate = new Date(start.getTime() + random * (1000 * 60));
-            let endDate = new Date(startDate.getTime() + 15 * (1000 * 60));
+export function generateEvents(start: Date, resCount: number, overlapCount: number): Record<string, any>[] {
+    const data: Record<string, any>[] = [];
+    let id: number = 1;
+    for (let i: number = 0; i < resCount; i++) {
+        let random: number = 0;
+        for (let j: number = 0; j < overlapCount; j++) {
+            const startDate: Date = new Date(start.getTime() + random * (1000 * 60));
+            const endDate: Date = new Date(startDate.getTime() + 15 * (1000 * 60));
             data.push({
                 Id: id,
-                Subject: "Event #" + id,
+                Subject: 'Event #' + id,
                 StartTime: startDate,
                 EndTime: endDate,
                 IsAllDay: false,
@@ -1717,48 +1717,31 @@ export function generateEvents(start: Date, resCount: number, overlapCount: Numb
             random = random + 15;
         }
     }
-    console.log('data returned');
     return data;
 }
 
 /**
  * Method to generate resource data dynamically
  *
- * @param {number} start Accepts the start number
+ * @param {number} startId Accepts the start number
  * @param {number} endId Accepts resource count
- * @param {string} text Accepts resource anme
+ * @param {string} text Accepts resource name
  * @returns {Object[]} Returns the collection of resource datas
  * @private
  */
-
-export function generateResourceDatasource(startId: number, endId: number, text: string) {
-    let data = [];
-    let colors = [
-        "#ff8787",
-        "#9775fa",
-        "#748ffc",
-        "#3bc9db",
-        "#69db7c",
-        "#fdd835",
-        "#748ffc",
-        "#9775fa",
-        "#df5286",
-        "#7fa900",
-        "#fec200",
-        "#5978ee",
-        "#00bdae",
-        "#ea80fc"
+export function generateResourceDatasource(startId: number, endId: number, text: string): Record<string, any>[] {
+    const data: Record<string, any>[] = [];
+    const colors: string[] = [
+        '#ff8787', '#9775fa', '#748ffc', '#3bc9db', '#69db7c', '#fdd835', '#748ffc',
+        '#9775fa', '#df5286', '#7fa900', '#fec200', '#5978ee', '#00bdae', '#ea80fc'
     ];
-    for (let a = startId; a <= endId; a++) {
-        let n = Math.floor(Math.random() * colors.length);
-        data.push({
-            Id: a,
-            Text: text + " " + a,
-            Color: colors[n]
-        });
+    for (let a: number = startId; a <= endId; a++) {
+        const n: number = Math.floor(Math.random() * colors.length);
+        data.push({ Id: a, Text: text + ' ' + a, Color: colors[n] });
     }
     return data;
 }
+
 /**
  * Method to generate data for all day
  *
@@ -1767,16 +1750,16 @@ export function generateResourceDatasource(startId: number, endId: number, text:
  * @returns {Object[]} Returns the collection of event datas
  * @private
  */
- export function generateAllDayData(count: number = 30, date: Date = new Date()): Record<string, any>[] {
+export function generateAllDayData(count: number = 30, date: Date = new Date()): Record<string, any>[] {
     const dateCollections: Record<string, any>[] = [];
     for (let i: number = 0; i < count; i++) {
         dateCollections.push({
-                Id: i + 1,
-                Subject: "Appointment " + i,
-                StartTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 6),
-                EndTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12),
-                IsAllDay: true
-            });
+            Id: i + 1,
+            Subject: 'Appointment ' + i,
+            StartTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 6),
+            EndTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12),
+            IsAllDay: true
+        });
     }
     return dateCollections;
 }

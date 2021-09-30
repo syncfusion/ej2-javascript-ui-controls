@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseEventArgs, Draggable } from '@syncfusion/ej2-base';
+import { Predicate, Query } from '@syncfusion/ej2-data';
 import { CurrentAction } from './type';
 
 /**
@@ -177,4 +178,57 @@ export interface ScrollOffset {
 /** @private */
 export interface SortComparerFunction {
     (param: HeaderArgs[]): HeaderArgs[];
+}
+
+/** Custom data service event types */
+export interface DataStateChangeEventArgs {
+    /** Defines the filter criteria  */
+    where?: Predicate[];
+    /** Defines the Kanban action details */
+    action?: ActionEventArgs;
+    /** Defines the remote table name */
+    table?: string;
+    /** Defines the selected field names */
+    select?: string[];
+}
+export interface PendingState {
+    /**
+     * The function which resolves the current action's promise.
+     */
+    resolver?: Function;
+    /**
+     * Defines the current state of the action.
+     */
+    isPending?: boolean;
+    /**
+     *  DataSource changed through set model
+     */
+    isDataChanged?: boolean;
+}
+/**
+ * Provides information about changed the data event.
+ *
+ * @interface DataSourceChangedEventArgs
+ */
+export interface DataSourceChangedEventArgs {
+    /** Defines the current action type. */
+    requestType?: string;
+    /** Defines the state of the performed action */
+    state?: DataStateChangeEventArgs;
+    /** Returns the appropriate added data based on the action. */
+    addedRecords?: Record<string, any>[];
+    /** Returns the appropriate changed data based on the action. */
+    changedRecords?: Record<string, any>[];
+    /** Returns the appropriate deleted data based on the action. */
+    deletedRecords?: Record<string, any>[];
+    /** Defines the index value */
+    index?: number;
+    /** Defines the end of editing function. */
+    endEdit?: Function;
+    /** Defines the Cancel of editing process */
+    cancelEdit?: Function;
+    /** Defines the query */
+    query?: Query;
+    /** Defines the promise object. */
+    promise?: Promise<object>
 }

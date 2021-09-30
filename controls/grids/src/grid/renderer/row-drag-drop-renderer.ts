@@ -11,7 +11,7 @@ import { Cell } from '../models/cell';
 export class RowDragDropRenderer extends CellRenderer implements ICellRenderer<Column> {
 
     public element: HTMLElement = this.parent.createElement('TD', {
-        className: 'e-rowdragdrop',
+        className: 'e-rowdragdrop e-rowdragdropcell',
         attrs: { role: 'gridcell', tabindex: '-1' }
     });
 

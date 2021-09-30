@@ -7,7 +7,7 @@ import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month);
 
-describe('Touch functioalities', () => {
+describe('Touch functionalities', () => {
     let touchTestObj: any;
     let node: Element;
     const startMouseEventArs: CommonArgs = {

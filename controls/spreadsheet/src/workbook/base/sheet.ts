@@ -166,7 +166,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
     /**
      * Configures row and its properties for the sheet.
      *
-     * @default []
+     * @default null
      */
     @Property(null)
     public rows: RowModel[];
@@ -174,9 +174,9 @@ export class Sheet extends ChildProperty<WorkbookModel> {
     /**
      * Configures column and its properties for the sheet.
      *
-     * @default []
+     * @default null
      */
-    @Property([])
+    @Property(null)
     public columns: ColumnModel[];
 
     /**
@@ -349,6 +349,14 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      */
     @Property('A1')
     public paneTopLeftCell: string;
+
+    /**
+     * Specifies the password.
+     *
+     * @default ''
+     */
+     @Property('')
+     public password: string;
 }
 
 /**

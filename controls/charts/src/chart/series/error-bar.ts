@@ -310,8 +310,8 @@ export class ErrorBar {
         const explodeValue: number = 5;
         const transform: string = chart.chartAreaType === 'Cartesian' ?
             'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
-        const markerHeight: number = (series.marker.height + explodeValue) / 2;
-        const markerWidth: number = (series.marker.width + explodeValue) / 2;
+        const markerHeight: number = (series.marker.height) / 2;
+        const markerWidth: number = (series.marker.width) / 2;
         if (chart.chartAreaType === 'Cartesian') {
             const options: RectOption = new RectOption(
                 chart.element.id + '_ChartErrorBarClipRect_' + series.index, 'transparent',

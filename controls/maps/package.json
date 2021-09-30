@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-maps",
-	"version": "19.2.55",
+	"version": "16.34.2",
 	"description": "The Maps component is used to visualize the geographical data and represent the statistical data of a particular geographical area on earth with user interactivity, and provides various customizing options",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -70,5 +70,6 @@
 	},
 	"main": "./dist/ej2-maps.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-maps.es2015.js"
+	"es2015": "./dist/es6/ej2-maps.es2015.js",
+	"typings": "index.d.ts"
 }

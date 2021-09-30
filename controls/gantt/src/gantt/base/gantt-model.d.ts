@@ -103,7 +103,6 @@ export interface GanttModel extends ComponentModel{
      *
      * @default 0
      * @aspType int
-     * @blazorType int
      */
     treeColumnIndex?: number;
 
@@ -269,7 +268,6 @@ export interface GanttModel extends ComponentModel{
      *
      * @default 36
      * @aspType int
-     * @blazorType int
      */
     rowHeight?: number;
 
@@ -277,8 +275,6 @@ export interface GanttModel extends ComponentModel{
      * Defines height of taskbar element in Gantt.
      *
      * @aspType int?
-     * @blazorType int
-     * @isBlazorNullableType true
      */
     taskbarHeight?: number;
 
@@ -286,7 +282,6 @@ export interface GanttModel extends ComponentModel{
      * Defines start date of the project, if `projectStartDate` value not set then it will be calculated from data source.
      *
      * @default null
-     * @blazorType Date
      */
     projectStartDate?: Date | string;
 
@@ -294,7 +289,6 @@ export interface GanttModel extends ComponentModel{
      * Defines end date of the project, if `projectEndDate` value not set then it will be calculated from data source.
      *
      * @default null
-     * @blazorType Date
      */
     projectEndDate?: Date | string;
 
@@ -338,7 +332,6 @@ export interface GanttModel extends ComponentModel{
      *
      * @default 1
      * @aspType int
-     * @blazorType int
      */
     connectorLineWidth?: number;
 
@@ -375,7 +368,6 @@ export interface GanttModel extends ComponentModel{
      *
      * @default -1
      * @aspType int
-     * @blazorType int
      */
     selectedRowIndex?: number;
 
@@ -693,8 +685,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when Gantt actions such as sorting, filtering, searching etc., starts.
      *
      * @event actionBegin
-     * @blazorproperty 'OnActionBegin'
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionBeginArgs<TValue>
      */
     actionBegin?: EmitType<Object | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>;  // eslint-disable-line
 
@@ -702,8 +692,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when Gantt actions such as sorting, filtering, searching etc. are completed.
      *
      * @event actionComplete
-     * @blazorproperty 'OnActionComplete'
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionCompleteArgs<TValue>
      */
     actionComplete?: EmitType<FilterEventArgs | SortEventArgs | ITaskAddedEventArgs | IKeyPressedEventArgs | ZoomEventArgs>;
 
@@ -711,8 +699,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when actions are failed.
      *
      * @event actionFailure
-     * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.FailureEventArgs
      */
     actionFailure?: EmitType<FailureEventArgs>;
 
@@ -742,7 +728,6 @@ export interface GanttModel extends ComponentModel{
      * This will be triggered a cell get begins to edit.
      *
      * @event cellEdit
-     * @blazorproperty 'OnCellEdit'
      */
     cellEdit?: EmitType<CellEditArgs>;
 
@@ -750,8 +735,7 @@ export interface GanttModel extends ComponentModel{
      * Triggered before the Gantt control gets rendered.
      *
      * @event load
-     * @blazorproperty 'OnLoad'
-     */
+     */
     load?: EmitType<Object>;
 
     /**
@@ -810,7 +794,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when splitter resizing starts.
      *
      * @event splitterResizeStart
-     * @blazorType Syncfusion.EJ2.Blazor.Layouts.ResizeEventArgs
      */
     splitterResizeStart?: EmitType<ResizeEventArgs>;
 
@@ -818,7 +801,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when splitter bar was dragging.
      *
      * @event splitterResizing
-     * @blazorType Syncfusion.EJ2.Blazor.Layouts.ResizingEventArgs
      */
     splitterResizing?: EmitType<ResizingEventArgs>;
 
@@ -900,7 +882,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers after a cell is selected.
      *
      * @event cellSelected
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
      */
     cellSelected?: EmitType<CellSelectEventArgs>;
 
@@ -931,8 +912,7 @@ export interface GanttModel extends ComponentModel{
      * This will be triggered before the header cell element is appended to the Grid element.
      *
      * @event headerCellInfo
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs
-     */
+     */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
     /**
@@ -954,8 +934,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when toolbar item was clicked.
      *
      * @event toolbarClick
-     * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 
@@ -963,16 +941,13 @@ export interface GanttModel extends ComponentModel{
      * Triggers when click on column menu.
      *
      * @event columnMenuClick
-     * @blazorproperty 'ColumnMenuClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnMenuClickEventArgs
-     */
+     */
     columnMenuClick?: EmitType<ColumnMenuClickEventArgs>;
 
     /**
      * Triggers before context menu opens.
      *
      * @event contextMenuOpen
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ContextMenuOpenEventArgs<TValue>
      */
     contextMenuOpen?: EmitType<CMenuOpenEventArgs>;
 
@@ -980,8 +955,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when click on context menu.
      *
      * @event contextMenuClick
-     * @blazorproperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ContextMenuClickEventArgs<TValue>
      */
     contextMenuClick?: EmitType<CMenuClickEventArgs>;
 

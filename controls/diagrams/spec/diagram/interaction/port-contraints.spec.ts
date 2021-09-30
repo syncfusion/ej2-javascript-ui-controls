@@ -5,7 +5,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { MouseEvents } from './mouseevents.spec';
-import { PortConstraints,ConnectorConstraints } from '../../../src/diagram/enum/enum';
+import { PortConstraints, ConnectorConstraints  } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
 import { PortVisibility, DiagramTools } from '../../../src/diagram/index';
 import { NodeConstraints } from '../../../src/index';

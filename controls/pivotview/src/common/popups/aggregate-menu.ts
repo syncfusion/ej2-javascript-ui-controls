@@ -317,13 +317,14 @@ export class AggregateMenu {
                 optionWrapper3.dataSource = fieldItemDataSource;
                 optionWrapper3.value = fieldItemDataSource[0];
                 optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
+                (optionWrapper3 as any).itemData = null;
                 optionWrapper3.dataBind();
             }
         });
         optionWrapper2.isStringTemplate = true;
         optionWrapper2.appendTo(dropOptionDiv2);
         let optionWrapper3: DropDownList = new DropDownList({
-            dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            dataSource: fieldItemDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             value: baseItem,
             // popupWidth: 'auto',
             allowFiltering: true,

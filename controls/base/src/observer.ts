@@ -12,7 +12,7 @@ import { isNullOrUndefined, getValue, extend, isBlazor } from './util';
  * //notify the handlers in event.
  * observe.notify('eventname');
  * ```
- * 
+ *
  */
 export interface BoundOptions {
     handler?: Function;
@@ -29,20 +29,21 @@ export class Observer {
             return;
         }
         this.context = context;
-    };
+    }
     /**
      * To attach handler for given property in current context.
+     *
      * @param {string} property - specifies the name of the event.
      * @param {Function} handler - Specifies the handler function to be called while event notified.
      * @param {Object} context - Specifies the context binded to the handler.
      * @param {string} id - specifies the random generated id.
-     * @return {void}
+     * @returns {void}
      */
     public on(property: string, handler: Function, context?: Object, id?: string): void {
         if (isNullOrUndefined(handler)) {
             return;
         }
-        let cntxt: Object = context || this.context;
+        const cntxt: Object = context || this.context;
         if (this.notExist(property)) {
             this.boundedEvents[property] = [{ handler: handler, context: cntxt }];
             return;
@@ -59,22 +60,23 @@ export class Observer {
 
     /**
      * To remove handlers from a event attached using on() function.
-     * @param {string} eventName - specifies the name of the event.
+     *
+     * @param {string} property - specifies the name of the event.
      * @param {Function} handler - Optional argument specifies the handler function to be called while event notified.
      * @param {string} id - specifies the random generated id.
-     * @return {void}
+     * @returns {void} ?
      */
     public off(property: string, handler?: Function, id?: string): void {
         if (this.notExist(property)) {
             return;
         }
-        let curObject: BoundOptions[] = getValue(property, this.boundedEvents);
+        const curObject: BoundOptions[] = getValue(property, this.boundedEvents);
         if (handler) {
             for (let i: number = 0; i < curObject.length; i++) {
                 if (id) {
                     if (curObject[i].id === id) {
                         curObject.splice(i, 1);
-                        let indexLocation: number = this.ranArray.indexOf(id);
+                        const indexLocation: number = this.ranArray.indexOf(id);
                         if (indexLocation !== -1) {
                             this.ranArray.splice(indexLocation, 1);
                         }
@@ -92,11 +94,12 @@ export class Observer {
 
     /**
      * To notify the handlers in the specified event.
+     *
      * @param {string} property - Specifies the event to be notify.
-     * @param {Object} args - Additional parameters to pass while calling the handler.
+     * @param {Object} argument - Additional parameters to pass while calling the handler.
      * @param {Function} successHandler - this function will invoke after event successfully triggered
      * @param {Function} errorHandler - this function will invoke after event if it was failure to call.
-     * @return {void}
+     * @returns {void} ?
      */
     public notify(property: string, argument?: Object, successHandler?: Function, errorHandler?: Function): void | Object {
         if (this.notExist(property)) {
@@ -108,12 +111,12 @@ export class Observer {
         if (argument) {
             (<{ name: string }>argument).name = property;
         }
-        let blazor: string = 'Blazor';
-        let curObject: BoundOptions[] = getValue(property, this.boundedEvents).slice(0);
+        const blazor: string = 'Blazor';
+        const curObject: BoundOptions[] = getValue(property, this.boundedEvents).slice(0);
         if (window[blazor]) {
             return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         } else {
-            for (let cur of curObject) {
+            for (const cur of curObject) {
                 cur.handler.call(cur.context, argument);
             }
             if (successHandler) {
@@ -128,10 +131,10 @@ export class Observer {
         successHandler: Function,
         errorHandler: Function,
         index: number): void | object {
-        let isTrigger: boolean = index === objs.length - 1;
+        const isTrigger: boolean = index === objs.length - 1;
         if (index < objs.length) {
-            let obj: BoundOptions = objs[index];
-            let promise: Promise<object> = obj.handler.call(obj.context, argument);
+            const obj: BoundOptions = objs[index];
+            const promise: Promise<object> = obj.handler.call(obj.context, argument);
             if (promise && typeof promise.then === 'function') {
                 if (!successHandler) {
                     return promise;
@@ -158,9 +161,9 @@ export class Observer {
         }
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     public dateReviver(key: any, value: any): void | object {
-        let dPattern: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+        const dPattern: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
         if (isBlazor && typeof value === 'string' && value.match(dPattern) !== null) {
             return (new Date(value));
         }
@@ -177,21 +180,31 @@ export class Observer {
     }
     /**
      * To destroy handlers in the event
+     *
+     * @returns {void} ?
      */
     public destroy(): void {
         this.boundedEvents = this.context = undefined;
     }
     /**
-     * Returns if the property exists. 
+     * Returns if the property exists.
+     *
+     * @param {string} prop ?
+     * @returns {boolean} ?
      */
     private notExist(prop: string): boolean {
+        // eslint-disable-next-line
         return this.boundedEvents.hasOwnProperty(prop) === false || this.boundedEvents[prop].length <= 0;
     }
     /**
      * Returns if the handler is present.
+     *
+     * @param {BoundOptions[]} boundedEvents ?
+     * @param {Function} handler ?
+     * @returns {boolean} ?
      */
     private isHandlerPresent(boundedEvents: BoundOptions[], handler: Function): boolean {
-        for (let cur of boundedEvents) {
+        for (const cur of boundedEvents) {
             if (cur.handler === handler) {
                 return true;
             }

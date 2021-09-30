@@ -179,7 +179,7 @@ export class SheetTabs {
     private getSheetTabItems(): { tabItems: TabItemModel[], ddbItems: ItemModel[] } {
         const tabItems: TabItemModel[] = []; const ddbItems: ItemModel[] = []; let sheetName: string;
         this.parent.sheets.forEach((sheet: SheetModel, index: number) => {
-            sheetName = getSheetName(this.parent as Workbook, index);
+            sheetName = getSheetName(this.parent as Workbook, index).replace(/</g, '&lt;').replace(/>/g, '&gt;');
             tabItems.push({ header: { 'text': sheetName }, visible: sheet.state === 'Visible' });
             ddbItems.push({ text: sheetName, iconCss: index === this.parent.activeSheetIndex ? 'e-selected-icon e-icons' : '' });
         });
@@ -208,7 +208,7 @@ export class SheetTabs {
             this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
         }
         for (let i: number = args.startIdx; i <= args.endIdx; i++) {
-            const sheetName: string = this.parent.sheets[i].name;
+            const sheetName: string = this.parent.sheets[i].name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             this.dropDownInstance.items.splice(i, 0, <ItemModel>{ text: sheetName });
             this.tabInstance.addTab(<TabItemModel[]>[{ header: { text: sheetName }, content: '' }], i);
         }
@@ -242,9 +242,9 @@ export class SheetTabs {
     private switchSheetTab(args: BeforeOpenCloseMenuEventArgs): void {
         const target: Element = closest(args.event.target as Element, '.e-toolbar-item');
         if (!target) { return; }
-        const text: string = target.querySelector('.e-tab-text').textContent;
-        for (let i: number = 0, len: number = this.tabInstance.items.length; i < len; i++) {
-            if (this.tabInstance.items[i].header.text === text) {
+        const name: string = target.querySelector('.e-tab-text').textContent;
+        for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
+            if (this.parent.sheets[i].name === name) {
                 if (this.parent.activeSheetIndex !== i) {
                     this.updateSheetTab({ idx: i });
                 }
@@ -329,7 +329,7 @@ export class SheetTabs {
             const idx: number = this.tabInstance.selectedItem;
             // eslint-disable-next-line no-useless-escape
             if (!value.match(new RegExp('.*[\\[\\]\\*\\\\\/\\?].*'))) {
-                if (this.tabInstance.items[idx].header.text !== value) {
+                if (this.parent.sheets[idx].name !== value) {
                     for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
                         if (i !== this.parent.activeSheetIndex && this.parent.sheets[i].name.toLowerCase() === value.toLowerCase()) {
                             this.showRenameDialog(target, l10n.getConstant('SheetRenameAlreadyExistsAlert'));
@@ -338,7 +338,7 @@ export class SheetTabs {
                     }
                 }
                 const items: Element = this.removeRenameInput(target);
-                if (this.tabInstance.items[idx].header.text !== value) {
+                if (this.parent.sheets[idx].name !== value) {
                     this.parent.setSheetPropertyOnMute(this.parent.sheets[idx], 'name', value);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
@@ -353,15 +353,16 @@ export class SheetTabs {
     }
 
     private updateSheetName(args: { value: string, idx: number, items?: Element, }): void {
-        const pName: string = this.tabInstance.items[args.idx].header.text as string;
-        this.tabInstance.items[args.idx].header.text = args.value;
-        this.dropDownInstance.items[args.idx].text = args.value;
+        const pName: string = (this.tabInstance.items[args.idx].header.text as string).replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        const name: string = args.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        this.tabInstance.items[args.idx].header.text = name;
+        this.dropDownInstance.items[args.idx].text = name;
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
+        args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = '';
+        args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').appendChild(document.createTextNode(args.value));
         if (args.value.indexOf('  ') > -1) {
             this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
-            args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = args.value;
         } else {
-            args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = args.value;
             this.tabInstance.dataBind();
         }
         this.parent.notify(workbookFormulaOperation, { action: 'renameUpdation', value: args.value, pName: pName });

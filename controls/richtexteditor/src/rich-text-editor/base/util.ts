@@ -378,10 +378,16 @@ export function toObjectLowerCase(obj: { [key: string]: IToolsItemConfigs }): { 
 export function getEditValue(value: string, rteObj: IRichTextEditor): string {
     let val: string;
     if (value !== null && value !== '') {
-        val = rteObj.enableHtmlEncode ? updateTextNode(decode(value)) : updateTextNode(value);
+        val = rteObj.enableHtmlEncode ? updateTextNode(decode(value), rteObj) : updateTextNode(value, rteObj);
         rteObj.setProperties({ value: val }, true);
     } else {
-        val = rteObj.enableHtmlEncode ? '&lt;p&gt;&lt;br/&gt;&lt;/p&gt;' : '<p><br/></p>';
+        if (rteObj.enterKey === 'DIV') {
+            val = rteObj.enableHtmlEncode ? '&lt;div&gt;&lt;br/&gt;&lt;/div&gt;' : '<div><br/></div>';
+        } else if (rteObj.enterKey === 'BR') {
+            val = rteObj.enableHtmlEncode ? '&lt;br/&gt;' : '<br/>';
+        } else {
+            val = rteObj.enableHtmlEncode ? '&lt;p&gt;&lt;br/&gt;&lt;/p&gt;' : '<p><br/></p>';
+        }
     }
     return val;
 }
@@ -390,7 +396,7 @@ export function getEditValue(value: string, rteObj: IRichTextEditor): string {
  * @returns {string} - returns the string
  * @hidden
  */
-export function updateTextNode(value: string): string {
+export function updateTextNode(value: string, rteObj?: IRichTextEditor): string {
     const tempNode: HTMLElement = document.createElement('div');
     const resultElm: HTMLElement = document.createElement('div');
     const childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
@@ -399,19 +405,23 @@ export function updateTextNode(value: string): string {
     if (childNodes.length > 0) {
         let isPreviousInlineElem: boolean;
         let previousParent: HTMLElement;
-        let paraElm: HTMLElement;
+        let insertElem: HTMLElement;
         while (tempNode.firstChild) {
-            if ((tempNode.firstChild.nodeName === '#text' &&
+            if (rteObj.enterKey !== 'BR' && ((tempNode.firstChild.nodeName === '#text' &&
             (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
-            inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0 ) {
+            inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {
                 if (!isPreviousInlineElem) {
-                    paraElm = createElement('p');
-                    resultElm.appendChild(paraElm);
-                    paraElm.appendChild(tempNode.firstChild);
+                    if (rteObj.enterKey === 'DIV') {
+                        insertElem = createElement('div');
+                    } else {
+                        insertElem = createElement('p');
+                    }
+                    resultElm.appendChild(insertElem);
+                    insertElem.appendChild(tempNode.firstChild);
                 } else {
                     previousParent.appendChild(tempNode.firstChild);
                 }
-                previousParent = paraElm;
+                previousParent = insertElem;
                 isPreviousInlineElem = true;
             } else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
             (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
@@ -436,12 +446,32 @@ export function updateTextNode(value: string): string {
 }
 
 /**
+ * @param {IRichTextEditor} rteObj - specifies the rte object
+ * @returns {string} - returns the value based on enter configuration.
+ * @hidden
+ */
+export function getDefaultValue(rteObj: IRichTextEditor): string {
+    let currentVal: string;
+    if (rteObj.enterKey === 'DIV') {
+        currentVal = rteObj.enableHtmlEncode ? '&lt;div&gt;&lt;br/&gt;&lt;/div&gt;' : '<div><br/></div>';
+    } else if (rteObj.enterKey === 'BR') {
+        currentVal = rteObj.enableHtmlEncode ? '&lt;br/&gt;' : '<br/>';
+    } else {
+        currentVal = rteObj.enableHtmlEncode ? '&lt;p&gt;&lt;br/&gt;&lt;/p&gt;' : '<p><br/></p>';
+    }
+    return currentVal;
+}
+
+/**
  * @param {string} value - specifies the value
  * @returns {boolean} - returns the boolean value
  * @hidden
  */
 export function isEditableValueEmpty(value: string): boolean {
-    return (value === '<p><br></p>' || value === '&lt;p&gt;&lt;br&gt;&lt;/p&gt;' || value === '') ? true : false;
+    return (value === '<p><br></p>' || value === '&lt;p&gt;&lt;br&gt;&lt;/p&gt;'
+    || value === '<div><br></div>' || value === '&lt;div&gt;&lt;br&gt;&lt;/div&gt;'
+    || value === '<br>' || value === '&lt;br&gt;'
+    || value === '') ? true : false;
 }
 
 /**

@@ -176,11 +176,10 @@ export class Selection extends BaseSelection {
      *
      * @private
      */
-    public  getElementByIndex(chart: Chart, index: Index, suffix: string = ''): Element[] {
+    public  getElementByIndex(chart: Chart, index: Index, suffix: string = '', marker?: boolean): Element[] {
         let elementId: string = chart.element.id + '_Series_' + index.series + '_Point' + '_' + index.point;
         const series: Series = <Series>chart.series[index.series];
-        elementId = (!series.isRectSeries && series.type !== 'Scatter' && series.type !== 'Bubble' &&
-        series.marker.visible) ? (elementId + '_Symbol' + suffix) : elementId;
+        elementId = (series.type !== 'Scatter' && series.type !== 'Bubble' && marker) ? (elementId + '_Symbol' + suffix) : elementId;
 
         return [getElement(elementId), ((series.type === 'RangeArea' || series.type === 'SplineRangeArea') && series.marker.visible) ? 
         getElement(elementId + '1') : null];
@@ -196,11 +195,16 @@ export class Selection extends BaseSelection {
         for (const series of chart.visibleSeries) {
             if (series.visible) {
                 index = new Index(series.index, index.point);
-                clusters.push(this.getElementByIndex(chart, index)[0]);
+                if (series.isRectSeries) {
+                    clusters.push(this.getElementByIndex(chart, index)[0]);
+                }
+                clusters.push(this.getElementByIndex(chart, index, '', series.marker.visible)[0]);
                 seriesStyle = this.generateStyle(chart.visibleSeries[index.series]);
                 selectedElements = <NodeListOf<HTMLElement>>document.querySelectorAll('.' + seriesStyle);
                 this.findTrackballElements(selectedElements, seriesStyle);
-                if (!chart.isMultiSelect && selectedElements.length > 0 && selectedElements[0].id !== clusters[clusters.length - 1].id) {
+                const clusterIndex: number = series.marker.visible && series.isRectSeries ? 2 : 1;
+                if (!chart.isMultiSelect && selectedElements.length > 0 &&
+                    selectedElements[0].id !== clusters[clusters.length - clusterIndex].id) {
                     this.removeSelection(chart, index.series, selectedElements, seriesStyle, true);
                 }
             }
@@ -237,13 +241,13 @@ export class Selection extends BaseSelection {
      *
      * @private
      */
-    public findElements(chart: Chart, series: SeriesModel, index: Index, suffix: string = ''): Element[] {
+    public findElements(chart: Chart, series: SeriesModel, index: Index, suffix: string = '', marker?: boolean): Element[] {
         if (this.isSeriesMode) {
             return this.getSeriesElements(series);
         } else if (this.currentMode === 'Cluster') {
             return this.getClusterElements(chart, index);
         } else {
-            return this.getElementByIndex(chart, index, suffix);
+            return this.getElementByIndex(chart, index, suffix, marker);
         }
     }
     /**
@@ -352,7 +356,17 @@ export class Selection extends BaseSelection {
             break;
         case 'Point':
             if (!isNaN(index.point) && element) {
-                this.selection(chart, index, [element]);
+                let pointElements: Element[] = [];
+                pointElements.push(element);
+                if (pointElements[0] !== null && chart.series[index.series].marker.visible &&
+                    (chart.series[index.series].type.indexOf('Column') !== -1 || chart.series[index.series].type.indexOf('Bar') !== -1)) {
+                    if (!(element.id.indexOf('_Symbol') !== -1) && getElement(element.id + '_Symbol')) {
+                        pointElements.push(getElement(element.id + '_Symbol'));
+                    } else if (element.id.indexOf('_Symbol') !== -1 && getElement(element.id.replace('_Symbol', ''))) {
+                        pointElements.push(getElement(element.id.replace('_Symbol', '')));
+                    }
+                }
+                this.selection(chart, index, pointElements);
                 this.selectionComplete(chart, index, this.currentMode);
                 this.blurEffect(chart.element.id, chart.visibleSeries);
             }
@@ -464,6 +478,17 @@ export class Selection extends BaseSelection {
             }
         }
         if (!isNullOrUndefined(selectedElements[0])) {
+            if ((<Series>chart.series[index.series]).isRectSeries) {
+                if (selectedElements[0].id) {
+                    if (document.getElementById(selectedElements[0].id + '_Symbol')) {
+                        selectedElements.push(getElement(selectedElements[0].id + '_Symbol'));
+                    } else if (selectedElements[0].id.indexOf('SeriesGroup') !== -1) {
+                        if (document.getElementById(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup'))) {
+                            selectedElements.push(getElement(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup')));
+                        }
+                    }
+                }
+            }
             let isAdd: boolean;
             const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
             const pClassName: string = selectedElements[0].parentNode &&
@@ -507,7 +532,10 @@ export class Selection extends BaseSelection {
             if ((this.isSeriesMode && !this.toEquals(index[i], currentIndex, this.isSeriesMode)) ||
                 (this.currentMode === 'Cluster' && !this.toEquals(index[i], currentIndex, false)) ||
                 (!this.isSeriesMode && this.toEquals(index[i], currentIndex, true) && !this.toEquals(index[i], currentIndex, false))) {
-                this.removeStyles(this.findElements(chart, series, index[i]));
+                this.removeStyles(this.findElements(chart, series, index[i], '', false));
+                if (series.marker.visible) {
+                    this.removeStyles(this.findElements(chart, series, index[i], '', true));
+                }
                 index.splice(i, 1);
                 i--;
             }
@@ -721,7 +749,7 @@ export class Selection extends BaseSelection {
                 }
                 const seriesElements: Element[] = this.getSeriesElements(chart.visibleSeries[series]);
                 for (const seriesElement of seriesElements) {
-                    if(isNullOrUndefined(seriesElement)) {
+                    if (isNullOrUndefined(seriesElement)) {
                         return;
                     }
                     this.checkSelectionElements(seriesElement, seriesStyle, false, true, series);
@@ -765,6 +793,8 @@ export class Selection extends BaseSelection {
     public getSeriesElements(series: SeriesModel): Element[] {
         const seriesElements: Element[] = [(<Series>series).seriesElement];
         if (series.marker.visible && series.type !== 'Scatter' && series.type !== 'Bubble' && !(<Series>series).isRectSeries) {
+            seriesElements.push((<Series>series).symbolElement);
+        } else if (series.marker.visible && (<Series>series).isRectSeries) {
             seriesElements.push((<Series>series).symbolElement);
         }
         return seriesElements;
@@ -860,7 +890,7 @@ export class Selection extends BaseSelection {
                     }
                     if (isCurrentPoint && series.category !== 'Indicator') {
                         index = new Index((<Series>series).index, points[j].index);
-                        this.selection(chart, index, this.findElements(chart, series, index));
+                        this.selection(chart, index, this.findElements(chart, series, index, '', !series.isRectSeries ? series.marker.visible : false));
                         selectedPointValues.push({ x: selectedPointX, y: yValue });
                     }
                     if (isCurrentPoint && (series.type === 'RangeArea' || series.type === 'SplineRangeArea')) {

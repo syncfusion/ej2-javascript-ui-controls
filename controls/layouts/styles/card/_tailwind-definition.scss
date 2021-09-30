@@ -1,11 +1,9 @@
-/*! component's theme wise override material-definitions and variables */
 $skin-name: 'tailwind' !default;
+//Layout Variables Start
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: 6px !default;
 $card-action-btn-txt-transform: none !default;
-
 // Font
-
 $card-header-font: $text-sm !default;
 $card-title-font: 16px !default;
 $card-action-btn-icon-font: $text-sm !default;
@@ -13,7 +11,6 @@ $card-action-btn-font: $text-sm !default;
 $card-content-font-size: $text-sm !default;
 $card-header-title-font: $text-sm !default;
 $card-header-sub-title-font: $text-sm !default;
-
 // Mouse
 $card-content-line-height: $leading-normal !default;
 $card-nrml-lheight: 36px !default;
@@ -46,9 +43,7 @@ $card-header-txt-nrml-subtitle-font: $text-sm !default;
 $card-image-title-font: $text-base !default;
 $card-action-btn-icon-width: 24px !default;   //Need to check UI
 $card-action-btn-icon-height: 24px !default;   //Need to check UI
-
 // Touch
-
 $card-bigger-lheight: 48px !default;
 $card-bigger-mheight: 48px !default;
 $card-header-bigger-padding: 24px 24px 16px 24px !default;
@@ -71,7 +66,7 @@ $card-image-title-bigger-mheight: 40px !default;  //Need to check UI
 $card-img-title-bigger-padding: 12px 16px !default;
 $card-action-bigger-padding: 12px 24px !default;
 $card-action-bigger-vertical-padding: 12px 24px 12px 24px !default;
-$card-action-bigger-btn-vertical-margin: 0 0 8px 0 !default;      //Need to check UI
+$card-action-bigger-btn-vertical-margin: 0 0 8px 0 !default;//Need to check UI
 $card-action-btn-bigger-height: 38px !default;
 $card-action-btn-bigger-margin: 0 0 0 8px !default;
 $card-action-btn-bigger-padding: 0 6px !default;
@@ -84,8 +79,9 @@ $card-action-btn-bigger-icon-height: 24px !default;  //Need to check UI
 $card-image-title-nrml-padding: 8px 16px !default;
 $card-action-nrml-padding: 8px 18px !default;
 $card-highlight-color: $primary !default;
-// color
+//Layout Variables End
 
+//Theme Variables Start
 $card-bg-color: $content-bg-color !default;
 $card-focus-bg-color: $content-bg-color-alt2 !default;
 $card-hover-bg-color: $content-bg-color-alt2 !default;
@@ -119,5 +115,5 @@ $card-header-txt-subtitle-color: $content-text-color-alt2 !default;
 $card-content-font-color: $content-text-color-alt1 !default;
 $card-box-shadow: $shadow !default;
 $card-action-btn-icon-color: $primary !default;  //Doubt
-
 $card-hover-box-shadow: $shadow !default;
+//Theme Variables End

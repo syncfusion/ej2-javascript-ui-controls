@@ -449,6 +449,14 @@ describe("Accordion Testing", () => {
             expect(itemContent.classList.contains(CLS_CTNHIDE)).toBe(false);
             expect(acrdnItem1.classList.contains(CLS_ACTIVE)).toBe(true);
         });
+
+        it("EJ2-51850 - Accessibility validation error in Accordion", () => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            expect(ele.children[0].getAttribute('aria-expanded')).toBe('true');
+            expect(ele.children[0].getAttribute('role')).toBe('row');
+            expect(ele.children[1].getAttribute('role')).toBe('row');
+            expect(ele.children[1].getAttribute('aria-expanded')).toBe('false');
+        });
     });
     describe("Accordion Item expanded Property testing with Fade animation", () => {
         let accordion: any;

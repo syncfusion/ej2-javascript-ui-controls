@@ -45,7 +45,7 @@
           stroke: $btn-flat-primary-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
@@ -54,7 +54,7 @@
           }
 
           .e-path-arc {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' {
               stroke: $btn-flat-primary-path-arc;
             }
             @else {

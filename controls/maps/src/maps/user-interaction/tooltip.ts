@@ -188,70 +188,7 @@ export class MapsTooltip {
                 maps: this.maps,
                 element: target, eventArgs: e
             };
-            if (this.maps.isBlazor) {
-                const tootipOption : MapsTooltipOption = {
-                    location: location
-                };
-                const blazorArgs: ITooltipRenderEventArgs = {
-                    name: tooltipRender,
-                    cancel: false,
-                    options: tootipOption,
-                    data: templateData,
-                    textStyle: tooltipArgs.options['textStyle'],
-                    fill: tooltipArgs.fill,
-                    element: target, eventArgs: e
-                };
-                this.maps.trigger(tooltipRender, blazorArgs, (args: ITooltipRenderEventArgs) => {
-                    if (!blazorArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
-                        (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
-                        let blazTooltipName: string;
-                        if (targetId.indexOf('MarkerIndex') > 0) {
-                            blazTooltipName = 'MarkerTooltipTemplate';
-                        } else if (targetId.indexOf('BubbleIndex') > 0) {
-                            blazTooltipName = 'BubbleTooltipTemplate';
-                        } else {
-                            blazTooltipName = 'LayerTooltipTemplate';
-                        }
-                        this.maps['isProtectedOnChange'] = true;
-                        if (blazorArgs.cancel) {
-                            this.svgTooltip = new Tooltip({
-                                enable: true,
-                                header: '',
-                                content: [currentData.toString()],
-                                shapes: [],
-                                location: tootipOption.location,
-                                palette: [markerFill],
-                                areaBounds: this.maps.mapAreaRect,
-                                textStyle: tooltipArgs.options['textStyle'],
-                                availableSize: this.maps.availableSize,
-                                fill: tooltipArgs.fill
-                            });
-                        } else {
-                            this.svgTooltip = new Tooltip({
-                                enable: true,
-                                header: '',
-                                content: [currentData.toString()],
-                                shapes: [],
-                                location: tootipOption.location,
-                                palette: [markerFill],
-                                areaBounds: this.maps.mapAreaRect,
-                                textStyle: blazorArgs.textStyle,
-                                availableSize: this.maps.availableSize,
-                                fill: blazorArgs.fill
-                            });
-                        }
-                        const tooltipElement: HTMLElement = tooltipEle;
-                        this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                        this.svgTooltip.appendTo(tooltipElement);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this.maps as any).renderReactTemplates();
-                    } else {
-                        this.removeTooltip();
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this.maps as any).clearTemplate();
-                    }
-                });
-            } else {
+            
                 this.maps.trigger(tooltipRender, tooltipArgs, (args: ITooltipRenderEventArgs) => {
                     if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                         (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
@@ -306,7 +243,7 @@ export class MapsTooltip {
                         (this.maps as any).clearTemplate();
                     }
                 });
-            }
+			
             if (this.svgTooltip) {
                 this.maps.trigger('tooltipRenderComplete', {
                     cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption,

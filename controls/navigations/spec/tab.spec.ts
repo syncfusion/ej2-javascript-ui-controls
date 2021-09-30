@@ -10488,6 +10488,51 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('EJ2-50535 - Script error from the EJ2 tab component', () => {
+        let tab: Tab;
+        let tbItems: object[] = [
+            { header: { "text": "item3" }, content: "Content3" },
+            { header: { "text": "item4" }, content: "Content4" }
+        ];
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Items - header checking', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            const newItems: object[] = [
+                { header: { "text": "item2" }, content: "" }
+            ];
+            tab.addTab(newItems, 0);
+            expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("item2");
+            expect(element.querySelectorAll(".e-toolbar-item")[1].querySelector(".e-tab-text").innerHTML).toBe("item1");
+            tab.items[1].header.text = 'NewItem1';
+            tab.dataBind();
+            expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("item2");
+            expect(element.querySelectorAll(".e-toolbar-item")[1].querySelector(".e-tab-text").innerHTML).toBe("NewItem1");
+            tab.addTab(tbItems, 1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(4);
+            expect(element.querySelectorAll('.e-toolbar-item').item(0).id).toEqual('e-item' + tab.tabId + '_1');
+            expect(element.querySelectorAll('.e-toolbar-item').item(1).id).toEqual('e-item' + tab.tabId + '_2');
+            expect(element.querySelectorAll('.e-toolbar-item').item(2).id).toEqual('e-item' + tab.tabId + '_3');
+            expect(element.querySelectorAll('.e-toolbar-item').item(3).id).toEqual('e-item' + tab.tabId + '_0');
+        });
+    });
+
     describe('EJ2-52472 - Tab visible property not working on initial load', () => {
         let tab: Tab;
         beforeEach((): void => {

@@ -73,10 +73,6 @@ export class TreeMapLegend {
             cancel: false, name: legendRendering, treemap: this.treemap, _changePosition: this.treemap.legendSettings.position,
             position: this.treemap.legendSettings.position
         };
-        if (this.treemap.isBlazor) {
-            const { treemap, ...blazorEventArgs }: ILegendRenderingEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.treemap.trigger(legendRendering, eventArgs, (observedArgs: ILegendRenderingEventArgs) => {
             // eslint-disable-next-line no-underscore-dangle
             if (!observedArgs.cancel && observedArgs._changePosition !== this.treemap.legendSettings.position) {
@@ -629,13 +625,9 @@ export class TreeMapLegend {
                     textLocation = legendRtlLocation['textLocation'];
                 }
                 eventArgs = {
-                    cancel: false, name: legendItemRendering, treemap: this.treemap.isBlazor ? null : treemap, fill: collection['Fill'],
+                    cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
-                if (this.treemap.isBlazor) {
-                    const { treemap, ...blazorEventArgs }: ILegendItemRenderingEventArgs = eventArgs;
-                    eventArgs = blazorEventArgs;
-                }
                 this.treemap.trigger(legendItemRendering, eventArgs, (observedArgs: ILegendItemRenderingEventArgs) => {
                     const renderOptions: PathOption = new PathOption(
                         shapeId, observedArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, ''

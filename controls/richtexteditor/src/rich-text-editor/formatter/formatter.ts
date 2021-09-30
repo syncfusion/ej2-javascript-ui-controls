@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, KeyboardEventArgs, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
 import * as CONSTANT from '../base/constant';
 import { updateUndoRedoStatus, isIDevice } from '../base/util';
 import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs } from './../base/interface';
@@ -64,10 +64,6 @@ export class Formatter {
                     itemCollection: value
                 };
                 extend(args, args, items, true);
-                if (isBlazor()) {
-                    delete args.item;
-                    delete args.itemCollection;
-                }
                 self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                     if (actionBeginArgs.cancel) {
                         if (action === 'paste' || action === 'cut' || action === 'copy') {
@@ -79,10 +75,16 @@ export class Formatter {
             const isTableModule : boolean = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
                 self.tableModule.ensureInsideTableList : false;
             if ((event.which === 9 && isTableModule) || event.which !== 9) {
+                if (event.which === 13 && self.editorMode === 'HTML') {
+                    value =  <{}>{
+                        'enterAction': self.enterKey
+                    };
+                }
                 this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
                     event: event,
                     callBack: this.onSuccess.bind(this, self),
-                    value: value
+                    value: value,
+                    enterAction: self.enterKey
                 });
             }
         } else if (!isNullOrUndefined(args) && args.item.command && args.item.subCommand && ((args.item.command !== args.item.subCommand
@@ -114,7 +116,8 @@ export class Formatter {
                             (actionBeginArgs.item as IDropDownItemModel).value,
                             actionBeginArgs.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
                                 { name: args.name } : value,
-                            ('#' + self.getID() + ' iframe')
+                            ('#' + self.getID() + ' iframe'),
+                            self.enterKey
                         );
                     }
                 }

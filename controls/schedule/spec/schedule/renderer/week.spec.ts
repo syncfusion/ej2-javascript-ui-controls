@@ -7,7 +7,7 @@ import {
     NavigatingEventArgs, ActionEventArgs, SelectEventArgs, PopupOpenEventArgs
 } from '../../../src/schedule/index';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
-import { blockData } from '../base/datasource.spec';
+import { blockData, timelineResourceData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -376,7 +376,7 @@ describe('Schedule Week view', () => {
             const model: ScheduleModel = {
                 currentView: 'Week',
                 enableAdaptiveUI: true,
-                eventSettings: { allowAdding : false },
+                eventSettings: { allowAdding: false },
                 selectedDate: new Date(2017, 9, 5)
             };
             schObj = util.createSchedule(model, []);
@@ -1202,6 +1202,90 @@ describe('Schedule Week view', () => {
             endRevisedObj.value = new Date(2017, 9, 31, 11, 30);
             endRevisedObj.dataBind();
             saveButton.click();
+        });
+    });
+
+    describe('checking indent template with resources in vertical views', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '580px', selectedDate: new Date(2018, 4, 1), currentView: 'Week',
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerColor: '#f8a398' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }],
+                views: [
+                    { option: 'Day' },
+                    { option: 'Week' },
+                    { option: 'WorkWeek' }
+                ],
+                headerIndentTemplate: '<div class="temp-wrap">Resources</div>'
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking indent template', () => {
+            expect(schObj.element.querySelector('.e-vertical-view')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
+            expect(schObj.element.querySelector('.e-resource-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-resource-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.innerHTML).toEqual('Resources');
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+        });
+
+        it('changing current view and check resource indent template', () => {
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-resource-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-resource-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.innerHTML).toEqual('Resources');
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            schObj.currentView = 'WorkWeek';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-resource-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-resource-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="temp-wrap">Resources</div>');
+            expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.innerHTML).toEqual('Resources');
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.classList.contains('temp-wrap'))
+                .toBeTruthy();
+        });
+
+        it('checking indentTemplate property', () => {
+            schObj.headerIndentTemplate = '<div class="template-wrap">Testing</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-resource-cells').innerHTML).toEqual('<div class="template-wrap">Testing</div>');
+            expect(schObj.element.querySelector('.e-resource-cells').firstElementChild.classList.contains('template-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="template-wrap">Testing</div>');
+            expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('template-wrap'))
+                .toBeTruthy();
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.innerHTML).toEqual('Testing');
+            expect(schObj.element.querySelector('.e-all-day-cells').lastElementChild.classList.contains('template-wrap'))
+                .toBeTruthy();
         });
     });
 

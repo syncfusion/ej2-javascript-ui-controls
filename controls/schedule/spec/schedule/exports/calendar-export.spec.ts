@@ -177,7 +177,7 @@ describe('ICS calendar export', () => {
         });
     });
 
-    describe('ICS Export Checing for Readonly events', () => {
+    describe('ICS Export Checking for Readonly events', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
@@ -193,7 +193,7 @@ describe('ICS calendar export', () => {
         });
     });
 
-    describe('ICS Export Checing for Blocked events', () => {
+    describe('ICS Export Checking for Blocked events', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };

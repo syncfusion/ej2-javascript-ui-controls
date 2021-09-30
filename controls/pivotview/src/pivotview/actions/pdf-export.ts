@@ -302,9 +302,18 @@ export class PDFExport {
                                 stringFormat.paragraphIndent = indent * 15;
                                 maxLevel = maxLevel > indent ? maxLevel : indent;
                             } else {
-                                stringFormat.paragraphIndent = (!isColHeader && localCnt === 0 && (pivotValues[rCnt][cCnt] as IAxisSet) &&
-                                    (pivotValues[rCnt][cCnt] as IAxisSet).level !== -1) ?
-                                    (pivotValues[rCnt][cCnt] as IAxisSet).level * 15 : 0;
+                                stringFormat.paragraphIndent = 0;
+                                if ((!isColHeader && localCnt === 0 && (pivotValues[rCnt][cCnt] as IAxisSet) &&
+                                    (pivotValues[rCnt][cCnt] as IAxisSet).level !== -1)) {
+                                    let cell: IAxisSet = pivotValues[rCnt][cCnt] as IAxisSet;
+                                    let levelName: string = cell.valueSort ? cell.valueSort.levelName.toString() : '';
+                                    let memberPos: number = cell.actualText ?
+                                        cell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length : 0;
+                                    let levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
+                                        (memberPos ? memberPos - 1 : memberPos);
+                                    let level: number = levelPosition ? (levelPosition - 1) : 0;
+                                    stringFormat.paragraphIndent = level * 10;
+                                }
                             }
                             stringFormat.alignment = isValueCell ? PdfTextAlignment.Right : PdfTextAlignment.Left;
                             stringFormat.lineAlignment = PdfVerticalAlignment.Middle;
@@ -434,7 +443,7 @@ export class PDFExport {
         if (this.parent.exportAllPages && this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
             let pageSettings: IPageSettings = this.engine.pageSettings;
             this.engine.pageSettings = null;
-            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions);
+            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true);
             this.parent.applyFormatting(this.engine.pivotValues);
             clonedValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
             this.engine.pivotValues = currentPivotValues;

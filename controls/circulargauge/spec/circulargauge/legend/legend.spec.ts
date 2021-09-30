@@ -7,7 +7,7 @@ import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Legend } from '../../../src/circular-gauge/legend/legend';
 import { Range, Axis } from '../../../src/circular-gauge/axes/axis';
 import { ILoadedEventArgs, ILegendRenderEventArgs } from '../../../src/circular-gauge/model/interface';
-import { getAngleFromLocation, GaugeLocation, getElement } from '../../../src/circular-gauge/utils/helper';
+import { getElement, GaugeLocation, getAngleFromLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { MouseEvents } from '../user-interaction/mouse-events.spec';
 
@@ -522,6 +522,77 @@ describe('Circular-Gauge Control', () => {
             }, {
                 start: null, end: null
             }];
+            gauge.refresh();
+        });
+        it('Legend toggleVisibility shape color checking', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_Axis_0_text_3');
+                trigger.clickEvent(legendEle);
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement(legendId + '_Axis_0_Shape_3');
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement('container_Axis_0_Range_3');
+                expect(legendEle['style'].visibility === "hidden").toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                ranges:[
+                { start: 0, end: 20, color: '#ccffff', legendText: 'Light air'},
+                { start: 11, end: 11, color: '#99ffff', legendText: 'Light breeze' },
+                { start: 11, end: 19, color: '#99ff99', legendText: 'Gentle breeze' },
+                { start: 19, end: 28, color: '#79ff4d', legendText: 'Moderate breeze' },
+                ],
+            }];
+            gauge.legendSettings.toggleVisibility = true;
+            gauge.legendSettings.alignment = 'Center';
+            gauge.refresh();
+        });
+        it('Legend range rendering with setRangeValue method', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                gauge.setRangeValue(0, 3, 19, 25);
+                legendEle = getElement(legendId + '_Axis_0_text_3');
+                trigger.clickEvent(legendEle);
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement(legendId + '_Axis_0_Shape_3');
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement('container_Axis_0_Range_3');
+                expect(legendEle['style'].visibility === "hidden").toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                ranges:[
+                { start: 0, end: 5, color: '#ccffff', legendText: 'Light air'},
+                { start: 5, end: 11, color: '#99ffff', legendText: 'Light breeze' },
+                { start: 11, end: 19, color: '#99ff99', legendText: 'Gentle breeze' },
+                { start: 19, end: 19, color: '#79ff4d', legendText: 'Moderate breeze' },
+                ],
+            }];
+            gauge.legendSettings.toggleVisibility = true;
+            gauge.legendSettings.alignment = 'Center';
+            gauge.refresh();
+        });
+        it('Legend range rendering with range greater than axis maximum', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_Axis_0_text_0');
+                trigger.clickEvent(legendEle);
+                legendEle = getElement(legendId + '_Axis_0_Shape_1');
+                trigger.clickEvent(legendEle);
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                trigger.clickEvent(legendEle);
+                legendEle = getElement(legendId + '_Axis_0_Shape_1');
+                expect(legendEle.getAttribute('fill') === "#99ffff").toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                minimum: 0,
+                maximum: 50,
+                ranges:[
+                { start: 60, end: 100, color: '#ccffff', legendText: 'Light air'},
+                { start: 0, end: 30, color: '#99ffff', legendText: 'Light breeze' },
+                ],
+            }];
+            gauge.legendSettings.toggleVisibility = true;
+            gauge.legendSettings.alignment = 'Center';
             gauge.refresh();
         });
     });

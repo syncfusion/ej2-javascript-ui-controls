@@ -63,7 +63,7 @@ export class FormFieldPopUp {
         textBoxButtonDiv.appendChild(textBoxCancelButton);
         textBoxDiv.appendChild(textBoxButtonDiv);
         textBox.appendTo(textBoxInput);
-        new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        new Button({ cssClass: 'e-de-save e-primary', iconCss: 'e-de-save-icon' }, textBoxOkButton);
         new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.textBoxInstance = textBox;
         return textBoxDiv;
@@ -84,7 +84,7 @@ export class FormFieldPopUp {
         textBoxButtonDiv.appendChild(textBoxCancelButton);
         numericDiv.appendChild(textBoxButtonDiv);
         numericTextBox.appendTo(numberInput);
-        new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        new Button({ cssClass: 'e-de-save e-primary', iconCss: 'e-de-save-icon' }, textBoxOkButton);
         new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.numericTextBoxInstance = numericTextBox;
         return numericDiv;
@@ -106,7 +106,7 @@ export class FormFieldPopUp {
         textBoxButtonDiv.appendChild(textBoxCancelButton);
         dateDiv.appendChild(textBoxButtonDiv);
         datePicker.appendTo(dateInput);
-        this.dataPickerOkButton = new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        this.dataPickerOkButton = new Button({ cssClass: 'e-de-save e-primary', iconCss: 'e-de-save-icon' }, textBoxOkButton);
         new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.datePickerInstance = datePicker;
         return dateDiv;
@@ -127,7 +127,7 @@ export class FormFieldPopUp {
         textBoxButtonDiv.appendChild(textBoxCancelButton);
         dropDownDiv.appendChild(textBoxButtonDiv);
         ddl.appendTo(dropDownInput);
-        new Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        new Button({ cssClass: 'e-de-save e-primary', iconCss: 'e-de-save-icon' }, textBoxOkButton);
         new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
         this.ddlInstance = ddl;
         return dropDownDiv;

@@ -1,10 +1,11 @@
-import { Browser, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, EventHandler, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, mouseDown, selectionStatus } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
 import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded, colWidthChanged, getUpdateUsingRaf, beginAction } from '../common/index';
 import { updateScroll } from '../common/index';
+import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
@@ -16,6 +17,8 @@ export class Scroll {
     private topIndex: number;
     private leftIndex: number;
     private clientX: number = 0;
+    /** @hidden */
+    public isKeyScroll: boolean = true;
     private initScrollValue: number; // For RTL mode
     /** @hidden */
     public prevScroll: { scrollLeft: number, scrollTop: number };
@@ -37,6 +40,14 @@ export class Scroll {
         const scrollLeft: number = e.scrollLeft; const top: number = e.scrollTop || target.scrollTop;
         const left: number = scrollLeft && this.parent.enableRtl ? this.initScrollValue - scrollLeft : scrollLeft;
         let scrollArgs: IScrollArgs; let prevSize: number;
+        if (this.parent.allowAutoFill) {
+            let elem = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn-popup');
+            let DDBElem: HTMLElement = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn');
+            if (elem) {
+                const DDBObj: DropDownButton = getComponent(DDBElem, DropDownButton);
+                DDBObj.toggle();
+            }
+        }
         if (!isNullOrUndefined(scrollLeft) && this.prevScroll.scrollLeft !== left) {
             const scrollRight: boolean = left > this.prevScroll.scrollLeft;
             prevSize = this.offset.left.size;
@@ -79,6 +90,7 @@ export class Scroll {
             const textArea: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar');
             textArea.focus();
         }
+        this.isKeyScroll = true;
     }
 
     private updateNonVirtualRows(): void {

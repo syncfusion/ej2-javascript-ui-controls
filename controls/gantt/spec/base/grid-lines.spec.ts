@@ -92,4 +92,37 @@ describe('Gantt grid line support', () => {
             done();
         });
     });
+    describe('Render Gantt with empty data source', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: '',
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'Children',
+                    },
+                    projectStartDate: new Date('02/01/2018'),
+                    projectEndDate: new Date('04/30/2018'),
+                    gridLines: 'Both',
+                    highlightWeekends: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Vertical gridlines are render even with empty data source', (done:Function) => {
+           ganttObj.gridLines = 'Both';
+           ganttObj.chartVerticalLineContainer = null;
+           done();
+        });
+    });
+
 });

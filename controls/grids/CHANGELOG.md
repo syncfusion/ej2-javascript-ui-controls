@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 19.3.43 (2021-09-30)
+
+### Grid
+
+#### New Features
+
+- `#I284744`, `#I289234` - Provided keyboard navigation support for infinite scroll.
+- `#I314791`, `#I311562` - Provided group caption collapse support for infinite scroll.
+
+#### Breaking Changes
+
+- The `groupSettings.disablePageWiseAggregates` option will be enabled automatically when using aggregates and grouping in an infinite scroll.
+
 ## 19.2.62 (2021-09-14)
 
 ### Grid

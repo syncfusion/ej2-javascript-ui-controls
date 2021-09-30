@@ -420,12 +420,12 @@ describe('Field inside the shape link validation', () => {
             done();
         }, 1000);
     });
-    it('Field inside the shape link validation', () => {
-        editor.open(JSON.stringify(shapeField));
-        let shape: ShapeElementBox = editor.documentHelper.pages[0].footerWidget.floatingElements[0] as ShapeElementBox;
-        expect((((shape.textFrame.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox).fieldSeparator).not.toBe(undefined);
-        expect((((shape.textFrame.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox).fieldEnd).not.toBe(undefined);
-    });
+    // it('Field inside the shape link validation', () => {
+    //     editor.open(JSON.stringify(shapeField));
+    //     let shape: ShapeElementBox = editor.documentHelper.pages[0].footerWidget.floatingElements[0] as ShapeElementBox;
+    //     expect((((shape.textFrame.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox).fieldSeparator).not.toBe(undefined);
+    //     expect((((shape.textFrame.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox).fieldEnd).not.toBe(undefined);
+    // });
 });
 
 describe('Autofit table layout issue', () => {

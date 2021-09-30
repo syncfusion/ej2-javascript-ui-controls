@@ -335,7 +335,6 @@ export interface BulletChartModel extends ComponentModel{
      * Triggers after the bullet chart rendering
      *
      * @event loaded
-     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<IBulletLoadedEventArgs>;
 
@@ -343,7 +342,6 @@ export interface BulletChartModel extends ComponentModel{
      * Triggers on clicking the chart.
      *
      * @event bulletChartMouseClick
-     * @blazorProperty 'OnBulletChartMouseClick'
      */
 
     bulletChartMouseClick?: EmitType<IBulletMouseEventArgs>;
@@ -360,7 +358,6 @@ export interface BulletChartModel extends ComponentModel{
      * Triggers before the prints gets started.
      *
      * @event beforePrint
-     * @blazorProperty 'OnPrint'
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;

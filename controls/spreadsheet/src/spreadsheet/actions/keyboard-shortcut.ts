@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
-import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink } from '../common/index';
+import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, fillRange } from '../common/index';
 import { findDlg, gotoDlg } from '../common/index';
-import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind } from '../../workbook/common/index';
+import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind, sheetCreated, AutoFillDirection, AutoFillType, getRangeIndexes, getSwapRange, getRangeAddress } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked } from '../../workbook/index';
 import { setCell, getCell } from '../../workbook/base/cell';
 import { RowModel } from '../../workbook/base/row-model';
@@ -72,6 +72,10 @@ export class KeyboardShortcut {
                 if (!this.parent.isEdit) {
                     e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: false });
                 }
+            }
+            else if (e.keyCode === 82 || e.keyCode === 68) { /* Ctrl + R */ /* Ctrl + D */
+                e.preventDefault();
+                this.parent.notify(fillRange, { verticalFill: e.keyCode === 68 });
             }
             const actSheet: SheetModel = this.parent.sheets[this.parent.getActiveSheet().id - 1];
             let isLocked: boolean;

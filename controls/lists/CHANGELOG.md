@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.62 (2021-09-14)
+## 19.3.43 (2021-09-30)
+
+### ListView
+
+#### Bug Fixes
+
+- `#F168185` - The issue with "Sorting is not applied properly when entering different values in the text field of the ListView component" has been resolved.
+
+## 19.2.55 (2021-08-11)
 
 ### ListView
 

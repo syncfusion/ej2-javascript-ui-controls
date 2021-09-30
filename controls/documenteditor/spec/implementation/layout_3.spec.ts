@@ -3666,26 +3666,26 @@ console.log('Insert Page break at paragraph middle');
         editor.editorHistory.redo();
         expect(editor.documentHelper.pages.length).toBe(2);
     });
-    it('Insert Page Break on non empty selection', () => {
-console.log('Insert Page Break on non empty selection');
-        editor.openBlank();
-        editor.editor.insertText('Syncfusion Software');
-        editor.editor.onEnter();
-        editor.editor.insertText('Syncfusion Software');
-        editor.editor.onEnter();
-        editor.editor.insertText('Syncfusion Software');
-        editor.selection.selectPosition(editor.documentStart, editor.documentStart);
-        editor.selection.moveNextPosition();
-        editor.selection.moveNextPosition();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.selection.handleShiftRightKey();
-        editor.editor.insertPageBreak();
-        editor.editorHistory.undo();
-        expect(editor.documentHelper.pages.length).toBe(1);
-        editor.editorHistory.redo();
-        expect(editor.documentHelper.pages.length).toBe(2);
-    });
+//     it('Insert Page Break on non empty selection', () => {
+// console.log('Insert Page Break on non empty selection');
+//         editor.openBlank();
+//         editor.editor.insertText('Syncfusion Software');
+//         editor.editor.onEnter();
+//         editor.editor.insertText('Syncfusion Software');
+//         editor.editor.onEnter();
+//         editor.editor.insertText('Syncfusion Software');
+//         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
+//         editor.selection.moveNextPosition();
+//         editor.selection.moveNextPosition();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.selection.handleShiftRightKey();
+//         editor.editor.insertPageBreak();
+//         editor.editorHistory.undo();
+//         expect(editor.documentHelper.pages.length).toBe(1);
+//         editor.editorHistory.redo();
+//         expect(editor.documentHelper.pages.length).toBe(2);
+//     });
 });
 
 let documentWithoutHeaderFooter: any = {

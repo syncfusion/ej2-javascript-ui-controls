@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 19.3.43 (2021-09-30)
+
+### RichTextEditor
+
+#### New Features
+
+- `#I231505`, `#I230743`, `#I239381`, `#I261360`, `#I273955`, `#I300418`, `#I307752`,`#I312982` - Provided support to customize the tags appended when enter or shift + enter key is pressed using the property `enterKey` and `shiftEnterKey` in the Rich Text Editor.
+
+#### Breaking Changes
+
+- `#I334962` - The image size popup, now has an option to set an `auto` value.
+
+#### Bug Fixes
+
+- `#I340683` - The issue with "Text inserted outside of the Rich Text Editor, after performing `Shift + Enter` key action" has been resolved.
+
+- `#I340683` - The issue with "Pasting the text content for the second time, after clearing the value hangs the Rich Text Editor" has been resolved.
+
+- `#I339234` - The issue with "Formats like bold, italic, underline will get unselected, when clicking in editor after selecting them" has been resolved.
+
 ## 19.2.62 (2021-09-14)
 
 ### RichTextEditor
@@ -129,7 +149,7 @@
 
 - `#I332614` - The issue with "Columns and row resize not working when there is unequal number columns in all rows" has been resolved.
 
-## 19.2.46 (2021-07-06)
+## 19.2.44 (2021-06-30)
 
 ### RichTextEditor
 
@@ -148,14 +168,6 @@
 - `#F165931` - The issue with "Ordered list number color not changing, when font color is applied to the list in the Rich Text Editor" has been resolved.
 
 - `#I327566` - The issue with "Image resizing is not working properly when `resizeByPercent` is set true" has been resolved.
-
-- `#I333070` - The issue with "Scroller doesn't appear with the editor, in the full screen mode" has been resolved.
-
-- `#I332465` - Resolved the script error raised, when Rich Text Editor is destroyed with toolbar disabled.
-
-- `#I331970` - The issue with "Pasting content with length exactly, equal to the `maxLength` doesn’t paste in the Rich Text Editor" has been resolved.
-
-- `#FB26351` - The issue with "Accessibility validation errors in Rich Text Editor" has been resolved.
 
 ## 19.1.54 (2021-03-30)
 

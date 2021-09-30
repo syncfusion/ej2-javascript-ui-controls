@@ -37,7 +37,11 @@ export type MapsTheme =
     /** Renders a map with Tailwind theme. */
     'Tailwind' |
     /** Renders a map with TailwindDark theme. */
-    'TailwindDark';
+    'TailwindDark' |
+    /** Renders a map with Bootstrap5 theme. */
+    'Bootstrap5' |
+    /**  Render a map with Bootstrap5 dark theme. */
+    'Bootstrap5Dark';
 
 /**
  * Defines the position of the legend.

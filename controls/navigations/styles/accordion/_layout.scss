@@ -56,7 +56,7 @@
           min-width: $acrdn-bgr-icn-minwidth;
           right: $acrdn-bgr-header-paddingpix;
 
-          @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+          @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'bootstrap5' {
             font-size: $acrdn-bgr-arrow-icon-font-size;
           }
         }
@@ -65,7 +65,7 @@
           display: inline-block;
           padding: 0 $acrdn-bgr-header-icon-padding 0 0;
 
-          @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+          @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'bootstrap5' {
             .e-acrdn-icons.e-icons {
               font-size: $acrdn-bgr-icon-font-size;
             }
@@ -218,10 +218,6 @@
 
         > .e-acrdn-header .e-acrdn-header-content {
           font-weight: $acrdn-slct-header-font-weight;
-
-          @if $acrdn-skin == 'highcontrast' {
-            font-weight: 600;
-          }
         }
 
       }
@@ -232,7 +228,9 @@
     }
 
     .e-acrdn-item {
-      overflow: hidden;
+      @if $acrdn-skin != 'bootstrap5' {
+        overflow: hidden;
+      }
       padding-top: $acrdn-item-padding-size;
       position: relative;
 
@@ -321,7 +319,7 @@
             }
           }
 
-          @if $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+          @if $acrdn-skin == 'tailwind' or $acrdn-skin == 'bootstrap5' {
             .e-acrdn-icons.e-icons {
               font-size: $acrdn-icon-font-size;
             }

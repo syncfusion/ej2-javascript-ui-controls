@@ -6,6 +6,7 @@ import { isNullOrUndefined as isNOU, detach, createElement, closest } from '@syn
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { markerClassName } from './dom-node';
 import { NodeCutter } from './nodecutter';
+import { EnterKeyAction } from '../../rich-text-editor/actions/enter-key';
 /**
  * Formats internal component
  *
@@ -45,7 +46,7 @@ export class Formats {
         if (e.event.which === 13 && range.startContainer === endCon && endCon.nodeType !== 3) {
             const pTag: HTMLElement = createElement('p');
             pTag.innerHTML = '<br>';
-            if (lastChild && lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
+            if (!isNOU(lastChild) && lastChild && lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
                 endCon.replaceChild(pTag, lastChild);
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
             } else {
@@ -88,7 +89,7 @@ export class Formats {
                 let startParent: Node = range.startContainer;
                 if (!isNOU(lastEmpty) && !isNOU(lastBeforeBr) && isNOU(lastEmpty.nextSibling) &&
                 lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
-                    this.paraFocus(range.startContainer as Element);
+                    this.paraFocus(range.startContainer as Element, e.enterAction);
                 } else if ((startParent.textContent.charCodeAt(0) === 8203 &&
                 startParent.textContent.length === 1) || startParent.textContent.length === 0 ) {
                     //Double enter with any parent tag for the node
@@ -130,11 +131,19 @@ export class Formats {
         }
     }
 
-    private paraFocus(referNode: Element): void {
-        const pTag: HTMLElement = createElement('p');
-        pTag.innerHTML = '<br>';
-        this.parent.domNode.insertAfter(pTag, referNode);
-        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+    private paraFocus(referNode: Element, enterAction?: string): void {
+        let insertTag: HTMLElement;
+        if (enterAction === 'DIV') {
+            insertTag = createElement('div');
+            insertTag.innerHTML = '<br>';
+        } else if (enterAction === 'BR') {
+            insertTag = createElement('br');
+        } else {
+            insertTag = createElement('p');
+            insertTag.innerHTML = '<br>';
+        }
+        this.parent.domNode.insertAfter(insertTag, referNode);
+        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, insertTag, 0);
         detach(referNode.lastChild);
     }
 
@@ -214,7 +223,67 @@ export class Formats {
         }
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
-        const formatsNodes: Node[] = this.parent.domNode.blockNodes();
+        let formatsNodes: Node[] = this.parent.domNode.blockNodes();
+        if (e.enterAction === 'BR') {
+            this.setSelectionBRConfig();
+            const allSelectedNode: Node[] = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument);
+            const selectedNodes: Node[] = this.parent.nodeSelection.getSelectionNodes(allSelectedNode);
+            const currentFormatNodes: Node[] = [];
+            if (selectedNodes.length === 0) {
+                selectedNodes.push(formatsNodes[0]);
+            }
+            for (let i: number = 0; i < selectedNodes.length; i++) {
+                let currentNode: Node = selectedNodes[i];
+                let previousCurrentNode: Node;
+                while (!this.parent.domNode.isBlockNode(currentNode as Element) && currentNode !== this.parent.editableElement) {
+                    previousCurrentNode = currentNode;
+                    currentNode = currentNode.parentElement;
+                }
+                if (this.parent.domNode.isBlockNode(currentNode as Element) && currentNode === this.parent.editableElement) {
+                    currentFormatNodes.push(previousCurrentNode);
+                }
+            }
+            for (let i: number = 0; i < currentFormatNodes.length; i++) {
+                if (!this.parent.domNode.isBlockNode(currentFormatNodes[i] as Element)) {
+                    let currentNode: Node = currentFormatNodes[i];
+                    let previousNode: Node = currentNode;
+                    while (currentNode === this.parent.editableElement) {
+                        previousNode = currentNode;
+                        currentNode = currentNode.parentElement;
+                    }
+                    let tempElem: HTMLElement;
+                    if (this.parent.domNode.isBlockNode(previousNode.parentElement) &&
+                    previousNode.parentElement === this.parent.editableElement) {
+                        tempElem = createElement('div');
+                        previousNode.parentElement.insertBefore(tempElem, previousNode);
+                        tempElem.appendChild(previousNode);
+                    } else {
+                        tempElem = previousNode as HTMLElement;
+                    }
+                   
+                    let preNode: Node = tempElem.previousSibling;
+                    while (!isNOU(preNode) && preNode.nodeName !== 'BR' &&
+                    !this.parent.domNode.isBlockNode(preNode as Element)) {
+                        tempElem.firstChild.parentElement.insertBefore(preNode, tempElem.firstChild);
+                        preNode = tempElem.previousSibling;
+                    }
+                    if (!isNOU(preNode) && preNode.nodeName === 'BR') {
+                        detach(preNode);
+                    }
+                    let postNode: Node = tempElem.nextSibling;
+                    while (!isNOU(postNode) && postNode.nodeName !== 'BR' &&
+                    !this.parent.domNode.isBlockNode(postNode as Element)) {
+                        tempElem.appendChild(postNode);
+                        postNode = tempElem.nextSibling;
+                    }
+                    if (!isNOU(postNode) && postNode.nodeName === 'BR') {
+                        detach(postNode);
+                    }
+                }
+            }
+            this.setSelectionBRConfig();
+            formatsNodes = this.parent.domNode.blockNodes();
+        }
         for (let i: number = 0; i < formatsNodes.length; i++) {
             let parentNode: Element;
             let replaceHTML: string;
@@ -269,6 +338,17 @@ export class Formats {
                 range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
                 elements: this.parent.domNode.blockNodes() as Element[]
             });
+        }
+    }
+
+    private setSelectionBRConfig(): void {
+        const startElem: Element = this.parent.editableElement.querySelector('.' + markerClassName.startSelection);
+        const endElem: Element = this.parent.editableElement.querySelector('.' + markerClassName.endSelection);
+        if (isNOU(endElem)){
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, startElem, 0);
+        } else {
+            this.parent.nodeSelection.setSelectionText(
+                this.parent.currentDocument, startElem, endElem, 0, 0);
         }
     }
 

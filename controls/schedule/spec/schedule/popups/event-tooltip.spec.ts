@@ -378,7 +378,7 @@ describe('Schedule event tooltip module', () => {
         it('Checking event subject in agenda view', () => {
             const target: HTMLElement = schObj.element.querySelector('.e-appointment');
             expect(target.querySelector('.e-subject').innerHTML).toBe('Add title');
-            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();    
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
             const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
             expect(isVisible(tooltipEle)).toBe(true);

@@ -594,8 +594,8 @@ export class DOMNode {
         if (start.nodeType === 3) {
             this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
         } else if (start.tagName === 'BR') {
-            this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
-            const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
+            this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
+            const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + className);
             markerStart.appendChild(start);
         } else {
             if (start.tagName === 'IMG') {

@@ -2,9 +2,9 @@ import { Spreadsheet } from '../base/index';
 import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getUpdateUsingRaf } from '../common/index';
 import { autoFit, hideShow, virtualContentLoaded, completeAction, setScrollEvent, onContentScroll, skipHiddenIdx } from '../common/index';
 import { beginAction, hiddenMerge, updateTableWidth } from '../common/index';
-import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell } from '../../workbook/index';
+import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, addHighlight } from '../../workbook/index';
 import { getCellIndexes, getColumnWidth, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
-import { activeCellMergedRange, setMerge } from '../../workbook/index';
+import { activeCellMergedRange, setMerge, ExtendedRowModel } from '../../workbook/index';
 import { detach } from '@syncfusion/ej2-base';
 
 /**
@@ -40,6 +40,7 @@ export class ShowHide {
     private hideRow(args: HideShowEventArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet(); let cell: CellModel;
         let count: number = 0; let idx: number; let nextIdx: number; let merge: boolean;
+        let model: ExtendedRowModel;
         if (args.hide) {
             let content: HTMLTableElement; let rowHdr: HTMLTableElement; let row: HTMLTableRowElement;
             for (let i: number = args.startIndex; i <= args.endIndex; i++) {
@@ -49,7 +50,9 @@ export class ShowHide {
                     content = this.parent.getContentTable();
                     idx = this.parent.getViewportIndex(i); count = 0;
                 }
-                setRow(sheet, i, { hidden: true });
+                model = { hidden: true };
+                if (args.isFiltering) { model.isFiltered = true; }
+                setRow(sheet, i, model);
                 this.refreshChart(i, 'rows');
                 row = content && content.rows[idx];
                 if (row) {
@@ -97,7 +100,14 @@ export class ShowHide {
             this.parent.selectRange(sheet.selectedRange);
             if (this.parent.scrollSettings.enableVirtualization) {
                 let startIndex: number = args.startIndex; const endIndex: number = args.startIndex;
-                if (this.parent.viewport.topIndex >= args.startIndex) { this.parent.viewport.topIndex = args.endIndex + 1; }
+                if (this.parent.viewport.topIndex >= args.startIndex) {
+                    if (!args.isFiltering || this.parent.viewport.topIndex === args.startIndex) {
+                        this.parent.viewport.topIndex = args.endIndex + 1;
+                    } else {
+                        args.aboveViewport = true;
+                        return;
+                    }
+                }
                 args.startIndex = this.parent.viewport.bottomIndex + 1; args.endIndex = args.startIndex + count - 1;
                 const indexes: number[] = this.parent.skipHidden(args.startIndex, args.endIndex);
                 args.startIndex = indexes[0]; args.endIndex = indexes[1];
@@ -128,7 +138,11 @@ export class ShowHide {
             let endRow: number = args.startIndex - 1; let newStartRow: number; const mergeCollection: MergeArgs[] = [];
             for (let i: number = args.startIndex, len: number = args.endIndex; i <= len; i++) {
                 if (!isHiddenRow(sheet, i)) {
-                    if (args.startIndex === args.endIndex) { return; }
+                    if (args.startIndex === args.endIndex) {
+                        for (let j = 0; j <= sheet.usedRange.colIndex; j++){
+                            this.parent.notify(addHighlight, { range: getRangeAddress([args.startIndex, j]), td: undefined });
+                        }
+                        return; }
                     if (idx === undefined) {
                         endRow++;
                     } else {
@@ -137,13 +151,15 @@ export class ShowHide {
                     continue;
                 }
                 if (newStartRow !== undefined) { len = i; continue; }
+                model = { hidden: false };
+                if (args.isFiltering) { model.isFiltered = false; }
                 if (i > this.parent.viewport.bottomIndex) {
-                    setRow(sheet, i, { hidden: false });
+                    setRow(sheet, i, model);
                     if (startRow === undefined) { return; }
                     continue;
                 }
                 if (startRow === undefined) { startRow = i; }
-                setRow(sheet, i, { hidden: false });
+                setRow(sheet, i, model);
                 this.refreshChart(i, 'rows');
                 if (idx === undefined) {
                     hFrag = document.createDocumentFragment(); frag = document.createDocumentFragment();

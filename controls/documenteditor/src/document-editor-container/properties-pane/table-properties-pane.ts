@@ -84,7 +84,7 @@ export class TableProperties {
     }
     private initializeTablePropPane(): void {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        this.tableProperties = createElement('div', { id: this.elementId + '_tableProperties' });
+        this.tableProperties = createElement('div', { id: this.elementId + '_tableProperties', styles: 'overflow: auto' });
         this.initFillColorDiv();
         this.initBorderStylesDiv();
         this.initCellDiv();
@@ -643,6 +643,14 @@ export class TableProperties {
             return;
         }
         this.parentElement.style.display = isShow ? 'block' : 'none';
+        if(isShow){
+            let tabHeaderHeight: HTMLElement = (this.parentElement.getElementsByClassName('e-tab-header')[0] as HTMLElement);
+            if (tabHeaderHeight) {
+                let paneHeight: number = this.parentElement.offsetHeight - tabHeaderHeight.offsetHeight;
+                this.tableProperties.style.height = paneHeight + 'px';
+                this.tableTextProperties.element.style.height = paneHeight + 'px';
+            }
+        }
         this.documentEditor.resize();
         this.prevContext = this.documentEditor.selection.contextType;
     }

@@ -2501,7 +2501,7 @@ describe('Schedule timeline work week view', () => {
             expect(headTrs[4].children.length).toEqual(48 * daysLength);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-            expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+            expect(headTrs[4].children[1].innerHTML).toEqual('');
         });
 
         it('check work cells', () => {
@@ -2570,7 +2570,7 @@ describe('Schedule timeline work week view', () => {
                 expect(headTrs[4].children.length).toEqual(48 * daysLength);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.getWorkCellElements().length).toEqual(48 * daysLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 7).getTime().toString());
@@ -2606,7 +2606,7 @@ describe('Schedule timeline work week view', () => {
                 expect(headTrs[4].children.length).toEqual(48 * daysLength);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.getWorkCellElements().length).toEqual(48 * daysLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -3137,7 +3137,7 @@ describe('Schedule timeline work week view', () => {
             expect(headTrs[4].children.length).toEqual(240);
             expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
             expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-            expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+            expect(headTrs[4].children[1].innerHTML).toEqual('');
         });
 
         it('check resource column', () => {
@@ -3220,7 +3220,7 @@ describe('Schedule timeline work week view', () => {
                 expect(headTrs[4].children.length).toEqual(240);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
@@ -3275,7 +3275,7 @@ describe('Schedule timeline work week view', () => {
                 expect(headTrs[4].children.length).toEqual(240);
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
-                expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
+                expect(headTrs[4].children[1].innerHTML).toEqual('');
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);

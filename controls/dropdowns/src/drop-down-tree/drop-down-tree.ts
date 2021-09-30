@@ -28,6 +28,7 @@ const CHIP: string = 'e-chips';
 const CHIP_CONTENT: string = 'e-chipcontent';
 const CHIP_CLOSE: string = 'e-chips-close';
 const HIDEICON: string = 'e-icon-hide';
+const DDTHIDEICON: string = 'e-ddt-icon-hide';
 const POPUP_CLASS: string = 'e-ddt e-popup';
 const PARENTITEM: string = 'e-list-parent';
 const CONTENT: string = 'e-popup-content';
@@ -52,6 +53,7 @@ const HEADERTEMPLATE: string = 'HeaderTemplate';
 const FOOTERTEMPLATE: string = 'FooterTemplate';
 const NORECORDSTEMPLATE: string = 'NoRecordsTemplate';
 const ACTIONFAILURETEMPLATE: string = 'ActionFailureTemplate';
+const CUSTOMTEMPLATE: string = 'CustomTemplate';
 const REMAIN_WRAPPER: string = 'e-remain';
 const OVERFLOW_VIEW: string = 'e-overflow';
 const SHOW_TEXT: string = 'e-show-text';
@@ -301,7 +303,7 @@ export interface DdtKeyPressEventArgs {
     event: KeyboardEventArgs;
 }
 
-export type Mode = 'Default' | 'Delimiter' | 'Box';
+export type Mode = 'Default' | 'Delimiter' | 'Box' | 'Custom';
 
 export type SortOrder = 'None' | 'Ascending' | 'Descending';
 
@@ -369,6 +371,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private footerTemplateId: string;
     private l10n: L10n;
     private actionFailureTemplateId: string;
+    private customTemplateId: string;
     private noRecordsTemplateId: string;
     private isValueChange: boolean;
     private keyEventArgs: KeyboardEvent;
@@ -431,6 +434,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      */
     @Property('')
     public cssClass: string;
+
+    /**
+     * This property is used to customize the display text of the selected items in the Dropdown Tree. The given custom template is 
+     * added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
+     *
+     * @default "${value.length} item(s) selected"
+     */
+    @Property("${value.length} item(s) selected")
+    public customTemplate: string;
 
     /**
      * Defines the value separator character in the input element when multi-selection or checkbox is enabled in the Dropdown Tree.
@@ -572,6 +584,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * * Box : Selected items will be visualized in chip.
      * * Delimiter : Selected items will be visualized in the text content.
      * * Default : On focus in component will act in the box mode. On blur component will act in the delimiter mode.
+     * * Custom : Selected items will be visualized with the given custom template value. The given custom template
+     *  is added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled. 
      */
     @Property('Default')
     public mode: Mode;
@@ -669,7 +683,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      */
     @Property('None')
     public sortOrder: SortOrder;
-
 
     /**
      * Gets or sets the display text of the selected item which maps the data **text** field in the component.
@@ -884,6 +897,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE}`;
         this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE}`;
         this.noRecordsTemplateId = `${this.element.id}${NORECORDSTEMPLATE}`;
+        this.customTemplateId = `${this.element.id}${CUSTOMTEMPLATE}`;
         this.keyConfigs = {
             escape: 'escape',
             altUp: 'alt+uparrow',
@@ -924,9 +938,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     public render(): void {
-        const isTree: Element = document.querySelector('#' + this.element.id + '_tree');
+        const isTree: Element = select('#' + this.element.id + '_tree', document);
         if (isTree) {
-            const popupDiv: Element = document.querySelector('#' + this.element.id + '_popup');
+            const popupDiv: Element = select('#' + this.element.id + '_popup', document);
             detach(popupDiv ? popupDiv : isTree.parentElement);
         }
         this.ensureAutoCheck();
@@ -980,14 +994,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.popupDiv.appendChild(this.tree);
         document.body.appendChild(this.popupDiv);
         this.wireTreeEvents();
-        this.popupDiv.style.display = 'none';
+        addClass([this.popupDiv], DDTHIDEICON);
         this.renderTree();
         this.isRemoteData = this.fields.dataSource instanceof DataManager;
         if (this.allowMultiSelection || this.showCheckBox) {
             if (this.mode !== 'Delimiter') {
                 this.createChip();
             }
-            if (!this.wrapText) {
+            if (!this.wrapText && this.mode !== 'Custom') {
                 this.overFlowWrapper = this.createElement('span', { className: OVERFLOW_VIEW + ' ' + HIDEICON });
                 this.inputWrapper.insertBefore(this.overFlowWrapper, this.hiddenElement);
                 if (this.mode !== 'Box') {
@@ -1012,7 +1026,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.oldValue = this.value;
         this.isInitialized = true;
         this.hasTemplate = this.itemTemplate || this.headerTemplate || this.footerTemplate || this.actionFailureTemplate
-                            || this.noRecordsTemplate;
+                            || this.noRecordsTemplate || this.customTemplate;
         this.renderComplete();
     }
 
@@ -1321,7 +1335,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         removeClass([this.inputWrapper], [INPUTFOCUS]);
         if ((this.allowMultiSelection || this.showCheckBox)) {
             const isValue: boolean = this.value ? (this.value.length ? true : false) : false;
-            if (this.mode !== 'Delimiter') {
+            if (this.mode !== 'Delimiter' && this.mode !== 'Custom') {
                 if (this.chipWrapper && (this.mode === 'Default')) {
                     addClass([this.chipWrapper], HIDEICON);
                     removeClass([this.inputWrapper], SHOW_CHIP);
@@ -1341,7 +1355,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateView(): void {
-        if (!this.showCheckBox && !this.allowMultiSelection) {
+        if ((!this.showCheckBox && !this.allowMultiSelection) || this.mode === 'Custom') {
             return;
         }
         if (this.mode !== 'Box') {
@@ -1408,7 +1422,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.popupObj.refreshPosition();
                 }
             }
-            if (!this.wrapText) {
+            if (!this.wrapText && this.mode !== 'Custom') {
                 if (this.inputWrapper.contains(this.overFlowWrapper)) {
                     addClass([this.overFlowWrapper], HIDEICON);
                 }
@@ -2158,7 +2172,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
             if (this.isFirstRender && !isCancelled) {
                 prepend([this.popupDiv], this.popupEle);
-                this.popupDiv.style.display = 'block';
+                removeClass([this.popupDiv], DDTHIDEICON);
                 if (this.allowFiltering) { this.renderFilter(); }
                 if (this.showCheckBox && this.showSelectAll && (!this.popupDiv.classList.contains(NODATA))) {
                     this.createSelectAllWrapper();
@@ -2177,7 +2191,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             if (!isCancelled) {
                 attributes(this.inputWrapper, { 'aria-expanded': 'true' });
                 this.popupObj.show(null, (this.zIndex === 1000) ? this.inputEle : null);
-                this.popupEle.style.display = 'block';
+                removeClass([this.popupEle], DDTHIDEICON);
                 this.updatePopupHeight();
                 this.popupObj.refreshPosition();
                 if (!(this.showCheckBox && this.showSelectAll) && (!this.popupDiv.classList.contains(NODATA)
@@ -2656,6 +2670,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateMode(): void {
+        if (this.mode === 'Custom') { return; }
         if (this.mode !== 'Delimiter') {
             if (!this.inputWrapper.contains(this.chipWrapper)) {
                 this.createChip();
@@ -2856,20 +2871,23 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.dataValue += temp;
                     textValue += temp;
                 }
-                if (this.mode !== 'Delimiter' && (!this.isChipDelete || this.treeSettings.autoCheck) &&
+                if (this.mode !== 'Custom' && this.mode !== 'Delimiter' && (!this.isChipDelete || this.treeSettings.autoCheck) &&
                             (this.allowMultiSelection || this.showCheckBox)) {
                     this.setChipValues(temp, this.value[i]);
                 }
                 hiddenInputValue += '<option selected value ="' + this.value[i] + '">' +
                                         this.selectedText[this.selectedText.length - 1] + '</option>';
             }
-            if (this.selectedText.length > 1) {
+            if (this.selectedText.length >= 1) {
                 this.setProperties({ text: textValue }, true);
             }
             this.hiddenElement.innerHTML = hiddenInputValue;
+            if (this.mode === 'Custom' && (this.allowMultiSelection || this.showCheckBox)) {
+                this.setTagValues();
+            }
         }
         const isValid: boolean = this.getValidMode();
-        if (this.mode !== 'Box' && (this.allowMultiSelection || this.showCheckBox) && !isValid) {
+        if (this.mode !== 'Custom' && this.mode !== 'Box' && (this.allowMultiSelection || this.showCheckBox) && !isValid) {
             if (this.chipWrapper) {
                 addClass([this.chipWrapper], HIDEICON);
                 removeClass([this.inputWrapper], SHOW_CHIP);
@@ -2907,6 +2925,37 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             chip.appendChild(chipClose);
             EventHandler.add(chipClose, 'mousedown', this.removeChip, this);
         }
+    }
+
+    private setTagValues(): void {
+        if (this.value === null || this.text == null) { return; }
+        if (!this.inputWrapper.contains(this.chipWrapper)) {
+            this.createChip();
+        }
+        if (!this.inputWrapper.classList.contains(SHOW_CHIP)) {
+            addClass([this.inputWrapper], SHOW_CHIP);
+        }
+        const chip: HTMLElement = this.createElement('span', {
+            className: CHIP,
+        });
+        if (!this.inputEle.classList.contains(CHIP_INPUT)) {
+            addClass([this.inputEle], CHIP_INPUT);
+        }
+        if (this.chipWrapper.classList.contains(HIDEICON)) {
+            removeClass([this.chipWrapper], HIDEICON);
+        }
+        const chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
+        const template: string = this.customTemplate;
+        const templateId: string = this.customTemplateId;
+        const templatestring: string = 'customTemplate';
+        const compiledString: Function = this.templateComplier(template);
+        let tempArr: Element[] = compiledString({'value': this.value, 'text': this.text}, this, templatestring, templateId, this.isStringTemplate, undefined, chipContent);
+        if (tempArr) {
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, chipContent);
+        }
+        chip.appendChild(chipContent);
+        this.chipCollection.appendChild(chip);
     }
 
     private setSelectAllWrapper(state: boolean): void {
@@ -3316,7 +3365,21 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.updateValue(newProp.value); break;
             case 'text': this.updateText(newProp.text); break;
             case 'allowMultiSelection': this.updateMultiSelection(newProp.allowMultiSelection); break;
-            case 'mode': this.updateModelMode(); break;
+            case 'mode':
+                if (!this.showCheckBox && !this.allowMultiSelection) { return;}
+                if (this.mode === 'Custom') {
+                    if (this.overFlowWrapper) {
+                        detach(this.overFlowWrapper);
+                    }
+                    if (this.chipWrapper) {
+                        detach(this.chipWrapper);
+                    }
+                    this.setTagValues();
+                } else {
+                    if (oldProp.mode === 'Custom') { this.updateOverflowWrapper(this.wrapText); }
+                    this.updateModelMode();
+                }
+                break;
             case 'delimiterChar':
                 if (this.mode === 'Box') { return; }
                 if (this.showCheckBox || this.allowMultiSelection) {
@@ -3345,6 +3408,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 break;
             case 'treeSettings':
                 this.updateTreeSettings(newProp);
+                break;
+            case 'customTemplate': 
+                if (this.mode !== "Custom") { return; }
+                this.chipCollection.innerHTML = "";
+                this.setTagValues();
                 break;
             case 'sortOrder':
                 if (this.hasTemplate) { this.updateTemplate(); }
@@ -3490,7 +3558,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         const eventArgs: DdtPopupEventArgs = { popup: this.popupObj };
         this.inputWrapper.classList.remove(ICONANIMATION);
         if (this.popupEle) {
-            this.popupEle.style.display = 'none';
+            addClass([this.popupEle], DDTHIDEICON);
         }
         attributes(this.inputWrapper, { 'aria-expanded': 'false' });
         if (this.popupObj && this.isPopupOpen) {

@@ -1,7 +1,1 @@
-@include export-module('toast-material-icons') {
-  .e-toast {
-    .e-toast-close-icon::before {
-      content: $toast-close-icon;
-    }
-  }
-}
+@import './tailwind.scss';

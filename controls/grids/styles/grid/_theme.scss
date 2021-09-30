@@ -15,6 +15,12 @@
       color: $grid-command-icon-color;
     }
 
+    .e-unboundcelldiv .e-btn:hover .e-icons {
+      @if $grid-skin == 'bootstrap5' {
+        color: $white;
+      }
+    }
+
     .e-table {
       background-color: $grid-table-background-color;
     }
@@ -72,7 +78,7 @@
 
     .e-gridheader {
       background-color: $grid-header-bg-color;
-      border-bottom-color: $grid-header-border-color;
+      border-bottom-color: $grid-outter-border;
       border-top-color: $grid-header-border-color;
       color: $grid-header-color;
     }
@@ -177,6 +183,7 @@
     .e-indentcell,
     .e-recordplusexpand,
     .e-recordpluscollapse,
+    .e-rowdragdropcell,
     .e-detailrowcollapse,
     .e-detailrowexpand,
     .e-detailindentcell,
@@ -558,5 +565,16 @@
 
   .e-filterbardropdown:not(.e-rtl) {
     margin-right: $grid-filterbar-dropdown;
+  }
+
+  .e-headercontent .e-filterbar .e-filterbarcell .e-fltrinputdiv .e-input-group {
+    .e-filterbardropdown {
+      border: transparent;
+    }
+
+    .e-filterbardropdown:active,
+    .e-filterbardropdown.e-input-focus {
+      box-shadow: none;
+    }
   }
 }

@@ -1773,6 +1773,16 @@ export class Series extends SeriesBase {
     public columnWidth: number;
 
     /**
+     * To render the column series points with particular column width as pixel.
+     *
+     * @default null
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue Double.NaN
+     */
+    @Property(null)
+    public columnWidthInPixel: number;
+
+    /**
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
      *
      * @default 0

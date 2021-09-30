@@ -2394,7 +2394,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.onDragStart(args);
                     }
                 });
-                this.dragobj.enableScrollHandler = true;
                 if (this.dragCollection.indexOf(this.dragobj) === -1) {
                     this.dragCollection.push(this.dragobj);
                 }

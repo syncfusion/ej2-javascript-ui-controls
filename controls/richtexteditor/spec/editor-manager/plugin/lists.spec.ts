@@ -1519,6 +1519,38 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('Space key press testing bold applied', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><p class="selectNode"><strong>​1.</strong></p><div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' space key press after 1. when bold is applied', () => {
+                startNode = editNode.querySelector('.selectNode');
+                startNode = startNode.childNodes[0].childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 3);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.selectnode').parentElement.tagName).toBe('OL');
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe('- Space key press testing', () => {
             let elem: HTMLElement;
             let innerValue: string = `<div id="content-edit"><p>one node</p><p class='space-two-node'>1.two node</p><p><br></p>
@@ -1577,35 +1609,6 @@ describe ('left indent testing', () => {
                 (editorObj as any).editorKeyDown(keyBoardEvent);
                 expect(editNode.querySelector('#firstli')).toBe(null);
                 innerValue = `<div id="content-edit"><ol id="olList"><li>First List</li><li id='secondli'>&#65279;&#65279;</li></ol></div>`;
-            });
-
-            it('-  EJ2-51918 - enter key press in the second empty list ', () => {
-                startNode = editNode.querySelector('#secondli');
-                expect(startNode.textContent.length === 2).toBe(true);
-                startNode = startNode.childNodes[0] as HTMLElement;
-                setCursorPoint(startNode, 0);
-                keyBoardEvent.event.shiftKey = false;
-                keyBoardEvent.action = 'enter';
-                keyBoardEvent.event.which = 13;
-                (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('#secondli')).toBe(null);
-                expect(editNode.querySelector('#olList').nextElementSibling.tagName).toBe('P');
-                innerValue = `<div id="content-edit"><ol id="olList"><li>First List</li><li id='secondli'>&#65279;&#65279;</li><li>third List</li></ol></div>`;
-            });
-
-            it('-  EJ2-51918 - enter key press in the second empty list which is in between li elements ', () => {
-                startNode = editNode.querySelector('#secondli');
-                expect(startNode.textContent.length === 2).toBe(true);
-                startNode = startNode.childNodes[0] as HTMLElement;
-                setCursorPoint(startNode, 0);
-                keyBoardEvent.event.shiftKey = false;
-                keyBoardEvent.action = 'enter';
-                keyBoardEvent.event.which = 13;
-                (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('#secondli')).toBe(null);
-                expect(editNode.querySelector('#olList').nextElementSibling.tagName).toBe('P');
-                expect(editNode.querySelector('#olList').nextElementSibling.nextElementSibling.tagName).toBe('OL');
-
             });
             afterAll(() => {
                 detach(elem);

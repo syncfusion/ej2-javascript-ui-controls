@@ -5,7 +5,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
-import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import { GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import { Gradient } from '../../../src/circular-gauge/axes/gradient';
 CircularGauge.Inject(Gradient);
 

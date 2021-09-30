@@ -50,6 +50,10 @@
           background: $tbar-default-bg;
           box-shadow: $tbar-btn-box-shadow;
           color: $tbar-default-font;
+
+          .e-toolbar-item .e-tbar-btn-text {
+            color: $tbar-default-font;
+          }
           @if $tbar-skin == 'bootstrap' {
             margin: 1px 0;
           }
@@ -67,6 +71,13 @@
             @if $tbar-skin == 'bootstrap' {
               border: 1px solid $tbar-focus-border-color;
               margin: 0;
+            }
+
+            @if $tbar-skin == 'bootstrap5' {
+              .e-toolbar-item .e-tbar-btn-text,
+              .e-icons {
+                color: $tbar-active-icon-color;
+              }
             }
 
             @if $tbar-skin == 'highcontrast' {
@@ -111,6 +122,13 @@
                 }
               }
             }
+
+            @if $tbar-skin == 'bootstrap5' {
+              .e-toolbar-item .e-tbar-btn-text,
+              .e-icons {
+                color: $tbar-active-icon-color;
+              }
+            }
           }
 
           &:active {
@@ -131,18 +149,23 @@
                 color: $tbar-pressed-font;
               }
             }
+            @if $tbar-skin == 'bootstrap5' {
+              .e-icons {
+                color: $tbar-active-icon-color;
+              }
+            }
           }
 
         }
 
-        .e-toolbar-item .e-tbar-btn-text {
-          color: $tbar-default-font;
-        }
       }
     }
 
-    .e-icons {
+    .e-tbar-btn.e-btn .e-icons {
       color: $tbar-default-icon-color;
+      @if $tbar-skin == 'bootstrap5' {
+        padding-bottom: 4px;
+      }
     }
 
     .e-toolbar-pop {
@@ -150,7 +173,7 @@
       border: $tbar-border-size $tbar-border-type $tbar-default-border;
       box-shadow: $tbar-pop-box-shadow;
 
-      @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+      @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
         background: $tbar-pop-bg;
       }
 
@@ -175,18 +198,18 @@
           }
         }
 
-        @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+        @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
           .e-tbar-btn {
             background: $tbar-popup-btn-bg-color;
+
+            &:focus {
+              background: $tbar-focus-bg;
+            }
 
             &:hover {
               background: $tbar-hover-bg;
             }
           }
-        }
-
-        .e-tbar-btn-text {
-          color: $tbar-default-font;
         }
 
         @if $tbar-skin == 'highcontrast' or $tbar-skin == 'fabric' {
@@ -197,14 +220,23 @@
       }
     }
 
+    &.e-extended-toolbar .e-toolbar-pop {
+      @if $tbar-skin == 'bootstrap5' {
+        background: $tbar-default-bg;
+      }
+    }
+
     &.e-toolpop {
 
       .e-hor-nav.e-nav-active,
       .e-hor-nav.e-nav-active:not(.e-expended-nav) {
         background: $tbar-pressed-bg;
         border: $tbar-nav-press-border;
-        border-left: $border-size $tbar-border-nav-active-type $tbar-pressed-bg;
         box-shadow: $tbar-nav-pressed-box-shadow;
+
+        @if $tbar-skin != 'bootstrap4' {
+          border-left: $border-size $tbar-border-nav-active-type $tbar-pressed-bg;
+        }
 
         @if $tbar-skin == 'highcontrast' {
           &:focus {
@@ -227,6 +259,7 @@
       background: $tbar-default-bg;
       box-shadow: $tbar-btn-box-shadow;
       color: $tbar-default-font;
+
       @if $tbar-skin == 'bootstrap' {
         margin: 1px 0;
       }
@@ -252,6 +285,13 @@
 
           &:active {
             background: $tbar-btn-focus-active-bg-color;
+          }
+        }
+        @if $tbar-skin == 'bootstrap5' {
+          .e-icons,
+          .e-tbar-btn-text {
+            color: $tbar-active-icon-color;
+            padding-bottom: 4px;
           }
         }
       }
@@ -293,6 +333,13 @@
             }
           }
         }
+        @if $tbar-skin == 'bootstrap5' {
+          .e-icons,
+          .e-tbar-btn-text {
+            color: $tbar-active-icon-color;
+            padding-bottom: 4px;
+          }
+        }
       }
     }
 
@@ -321,9 +368,11 @@
           }
         }
 
-        @if $tbar-skin != 'highcontrast' and $tbar-skin != 'bootstrap4' {
-          .e-tbar-btn-text {
-            color: $tbar-default-font;
+        @if $tbar-skin != 'bootstrap5' {
+          @if $tbar-skin != 'highcontrast' and $tbar-skin != 'bootstrap4' {
+            .e-tbar-btn-text {
+              color: $tbar-default-font;
+            }
           }
         }
 
@@ -370,6 +419,16 @@
         @include tbar-btn-animation;
       }
 
+      @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
+        &.e-nav-active {
+          &:active,
+          &:focus,
+          &:hover {
+            border-bottom-right-radius: 0;
+          }
+        }
+      }
+
       &:active {
         border: $tbar-nav-press-border;
         box-shadow: $tbar-nav-pressed-box-shadow;
@@ -391,7 +450,6 @@
       &:hover {
         background: $tbar-hover-bg;
         border-left: $tbar-nav-hover-border;
-        color: $tbar-hover-font;
 
         @if $tbar-skin == 'bootstrap4' {
           background: $tbar-popup-hover-bg;
@@ -399,6 +457,17 @@
           .e-icons {
             color: inherit;
           }
+        }
+
+        @if $tbar-skin == 'bootstrap5' {
+          color: $tbar-active-icon-color;
+
+          .e-icons {
+            color: inherit;
+          }
+        }
+        @else {
+          color: $tbar-hover-font;
         }
 
         @if $tbar-skin == 'highcontrast' {
@@ -416,7 +485,6 @@
       &:focus {
         background: $tbar-hover-bg;
         border-left: $tbar-nav-focus-border;
-        color: $tbar-pressed-font;
 
         @if $tbar-skin != 'bootstrap' {
           border-color: $tbar-pressed-border;
@@ -426,6 +494,17 @@
           .e-icons {
             color: inherit;
           }
+        }
+
+        @if $tbar-skin == 'bootstrap5' {
+          color: $tbar-active-icon-color;
+
+          .e-icons {
+            color: inherit;
+          }
+        }
+        @else {
+          color: $tbar-pressed-font;
         }
 
         @if $tbar-skin == 'highcontrast' {
@@ -439,6 +518,9 @@
 
       &:active {
         background:  $tbar-press-bg;
+        @if $tbar-skin == 'bootstrap5' {
+          background: $tbar-active-bg;
+        }
         @if $tbar-skin == 'bootstrap' {
           border-left: 1px solid $tbar-press-border-color;
         }

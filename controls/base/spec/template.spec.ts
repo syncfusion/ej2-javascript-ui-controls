@@ -163,7 +163,6 @@ describe('Template', () => {
     });
 
     it('JSON array input with special character apostrophe', () => {
-        debugger
         let templateStr: string = `<div><input value='HANAR's'></div>`;
         let getString: any = template.compile(templateStr);
         let output: any = getString(templateStr);

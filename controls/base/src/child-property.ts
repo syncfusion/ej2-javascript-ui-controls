@@ -2,10 +2,11 @@ import { getValue, setValue, merge, isBlazor } from './util';
 import { Base } from './base';
 /**
  * To detect the changes for inner properties.
+ *
  * @private
  */
 export class ChildProperty<T> {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     private parentObj: any;
     private controlParent: ParentObject;
     private propName: string;
@@ -15,7 +16,7 @@ export class ChildProperty<T> {
     protected changedProperties: { [key: string]: Object } = {};
     protected childChangedProperties: { [key: string]: Object } = {};
     protected oldProperties: { [key: string]: Object } = {};
-    // tslint:disable-next-line:no-empty
+    // eslint-disable-next-line
     protected finalUpdate: Function = (): void => { };
     private callChildDataBind: Function = getValue('callChildDataBind', Base);
     constructor(parent: T, propName: string, defaultValue: Object, isArray?: boolean) {
@@ -27,9 +28,10 @@ export class ChildProperty<T> {
     }
     /**
      * Updates the property changes
-     * @param {boolean} val 
-     * @param {string} propName 
-     * @returns {void}
+     *
+     * @param {boolean} val ?
+     * @param {string} propName ?
+     * @returns {void} ?
      */
     private updateChange(val: boolean, propName: string): void {
         if (val === true) {
@@ -43,6 +45,8 @@ export class ChildProperty<T> {
     }
     /**
      * Updates time out duration
+     *
+     * @returns {void} ?
      */
     private updateTimeOut(): void {
         if (this.parentObj.updateTimeOut) {
@@ -50,15 +54,17 @@ export class ChildProperty<T> {
             this.parentObj.updateTimeOut();
 
         } else {
-            let changeTime: number = setTimeout(this.parentObj.dataBind.bind(this.parentObj));
-            let clearUpdate: Function = () => {
+            const changeTime: number = setTimeout(this.parentObj.dataBind.bind(this.parentObj));
+            const clearUpdate: Function = () => {
                 clearTimeout(changeTime);
             };
             this.finalUpdate = clearUpdate;
         }
     }
     /**
-     * Clears changed properties 
+     * Clears changed properties
+     *
+     * @returns {void} ?
      */
     private clearChanges(): void {
         this.finalUpdate();
@@ -68,9 +74,10 @@ export class ChildProperty<T> {
     }
     /**
      * Set property changes
-     * @param {Object} prop 
-     * @param {boolean} muteOnChange 
-     * {void}
+     *
+     * @param {Object} prop ?
+     * @param {boolean} muteOnChange ?
+     * @returns {void} ?
      */
     protected setProperties(prop: Object, muteOnChange: boolean): void {
         if (muteOnChange === true) {
@@ -83,11 +90,13 @@ export class ChildProperty<T> {
     }
     /**
      * Binds data
+     *
+     * @returns {void} ?
      */
     protected dataBind(): void {
         this.callChildDataBind(this.childChangedProperties, this);
         if (this.isParentArray) {
-            let curIndex: number = (this.parentObj[this.propName] as Object[]).indexOf(this);
+            const curIndex: number = (this.parentObj[this.propName] as Object[]).indexOf(this);
             if (Object.keys(this.changedProperties).length) {
                 setValue(this.propName + '.' + curIndex, this.changedProperties, this.parentObj.changedProperties);
                 setValue(this.propName + '.' + curIndex, this.oldProperties, this.parentObj.oldProperties);
@@ -100,10 +109,12 @@ export class ChildProperty<T> {
     }
     /**
      * Saves changes to newer values
-     * @param {string} key 
-     * @param {Object} newValue 
-     * @param {Object} oldValue 
-     * @returns {void}
+     *
+     * @param {string} key ?
+     * @param {Object} newValue ?
+     * @param {Object} oldValue ?
+     * @param {boolean} restrictServerDataBind ?
+     * @returns {void} ?
      */
     protected saveChanges(key: string, newValue: Object, oldValue: Object, restrictServerDataBind?: boolean): void {
         if (this.controlParent.isProtectedOnChange) { return; }
@@ -116,16 +127,15 @@ export class ChildProperty<T> {
     }
     protected serverDataBind(key: string, value: Object, isSaveChanges?: boolean, action?: string): void {
         if (isBlazor() && !this.parentObj.isComplexArraySetter) {
-            // tslint:disable-next-line:no-any
             let parent: Object;
-            let newChanges: Object = {};
-            let parentKey: string = isSaveChanges ? this.getParentKey(true) + '.' + key : key;
+            const newChanges: Object = {};
+            const parentKey: string = isSaveChanges ? this.getParentKey(true) + '.' + key : key;
             /* istanbul ignore else  */
             if (parentKey.indexOf('.') !== -1) {
-                let complexKeys: string[] = parentKey.split('.');
+                const complexKeys: string[] = parentKey.split('.');
                 parent = newChanges;
                 for (let i: number = 0; i < complexKeys.length; i++) {
-                    let isFinal: boolean = i === complexKeys.length - 1;
+                    const isFinal: boolean = i === complexKeys.length - 1;
                     parent[complexKeys[i]] = isFinal ? value : {};
                     parent = isFinal ? parent : parent[complexKeys[i]];
                 }
@@ -136,14 +146,14 @@ export class ChildProperty<T> {
             }
             /* istanbul ignore next */
             if (this.isParentArray) {
-                let actionProperty: string = 'ejsAction';
+                const actionProperty: string = 'ejsAction';
                 parent[actionProperty] = action ? action : 'none';
             }
             this.controlParent.serverDataBind(newChanges);
         }
     }
     protected getParentKey(isSaveChanges?: boolean): string {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line
         let index: any = '';
         let propName: string = this.propName;
         /* istanbul ignore next */
@@ -177,6 +187,6 @@ interface ParentObject {
     isProtectedOnChange: boolean;
     controlParent: ParentObject;
     isRendered: boolean;
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     serverDataBind: (newChanges?: { [key: string]: any }) => void;
 }

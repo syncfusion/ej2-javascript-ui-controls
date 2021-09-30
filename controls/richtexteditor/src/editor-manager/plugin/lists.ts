@@ -59,7 +59,7 @@ export class Lists {
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
         if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
             for (let i: number = 0; i < olListStartRegex.length; i++) {
-                if (olListStartRegex[i].test(range.startContainer.textContent.slice(0, range.startOffset).trim())) {
+                if (olListStartRegex[i].test(range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim())) {
                     return true;
                 }
             }
@@ -87,8 +87,8 @@ export class Lists {
                     range.startOffset, range.startContainer.textContent.length);
                 this.applyListsHandler({ subCommand: 'OL', callBack: e.callBack });
                 e.event.preventDefault();
-            } else if (range.startContainer.textContent.slice(0, range.startOffset).trim() === '*' ||
-            range.startContainer.textContent.slice(0, range.startOffset).trim() === '-') {
+            } else if (range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim() === '*' ||
+            range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim() === '-') {
                 range.startContainer.textContent = range.startContainer.textContent.slice(
                     range.startOffset, range.startContainer.textContent.length);
                 this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack });
@@ -110,15 +110,22 @@ export class Lists {
             const startNodeParent: HTMLElement = startNode.parentElement;
             if (isNOU(startNodeParent.parentElement.closest('UL')) && isNOU(startNodeParent.parentElement.closest('OL'))) {
                 if (!isNOU(startNode.nextElementSibling)) {
-                    //startNode.classList.add('innerNode');
                     const nearBlockNode: Element = this.parent.domNode.blockParentNode(startNode);
                     this.parent.nodeCutter.GetSpliceNode(range, (nearBlockNode as HTMLElement));
                 }
-                const paraTag: HTMLElement = createElement('p');
-                paraTag.innerHTML = '<br>';
-                this.parent.domNode.insertAfter(paraTag, startNodeParent);
+                let insertTag: HTMLElement;
+                if (e.enterAction === 'DIV') {
+                    insertTag = createElement('div');
+                    insertTag.innerHTML = '<br>';
+                } else if (e.enterAction === 'P') {
+                    insertTag = createElement('p');
+                    insertTag.innerHTML = '<br>';
+                } else {
+                    insertTag = createElement('br');
+                }
+                this.parent.domNode.insertAfter(insertTag, startNodeParent);
                 e.event.preventDefault();
-                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, paraTag, 0);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, insertTag, 0);
                 if (startNodeParent.textContent === '') {
                     detach(startNodeParent);
                 } else {
@@ -404,7 +411,66 @@ export class Lists {
         this.currentAction = e.subCommand;
         this.currentAction = e.subCommand = this.currentAction === 'NumberFormatList' ? 'OL' : this.currentAction === 'BulletFormatList' ? 'UL' : this.currentAction;
         this.domNode.setMarker(this.saveSelection);
-        const listsNodes: Node[] = this.domNode.blockNodes();
+        let listsNodes: Node[] = this.domNode.blockNodes();
+        if (e.enterAction === 'BR') {
+            this.setSelectionBRConfig();
+            const allSelectedNode: Node[] = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument);
+            const selectedNodes: Node[] = this.parent.nodeSelection.getSelectionNodes(allSelectedNode);
+            const currentFormatNodes: Node[] = [];
+            if (selectedNodes.length === 0) {
+                selectedNodes.push(listsNodes[0]);
+            }
+            for (let i: number = 0; i < selectedNodes.length; i++) {
+                let currentNode: Node = selectedNodes[i];
+                let previousCurrentNode: Node;
+                while (!this.parent.domNode.isBlockNode(currentNode as Element) && currentNode !== this.parent.editableElement) {
+                    previousCurrentNode = currentNode;
+                    currentNode = currentNode.parentElement;
+                }
+                if (this.parent.domNode.isBlockNode(currentNode as Element) && currentNode === this.parent.editableElement) {
+                    currentFormatNodes.push(previousCurrentNode);
+                }
+            }
+            for (let i: number = 0; i < currentFormatNodes.length; i++) {
+                if (!this.parent.domNode.isBlockNode(currentFormatNodes[i] as Element)) {
+                    let currentNode: Node = currentFormatNodes[i];
+                    let previousNode: Node = currentNode;
+                    while (currentNode === this.parent.editableElement) {
+                        previousNode = currentNode;
+                        currentNode = currentNode.parentElement;
+                    }
+                    let tempElem: HTMLElement;
+                    if (this.parent.domNode.isBlockNode(previousNode.parentElement) &&
+                    previousNode.parentElement === this.parent.editableElement) {
+                        tempElem = createElement('p');
+                        previousNode.parentElement.insertBefore(tempElem, previousNode);
+                        tempElem.appendChild(previousNode);
+                    } else {
+                        tempElem = previousNode as HTMLElement;
+                    }
+                    let preNode: Node = tempElem.previousSibling;
+                    while (!isNOU(preNode) && preNode.nodeName !== 'BR' &&
+                    !this.parent.domNode.isBlockNode(preNode as Element)) {
+                        tempElem.firstChild.parentElement.insertBefore(preNode, tempElem.firstChild);
+                        preNode = tempElem.previousSibling;
+                    }
+                    if (!isNOU(preNode) && preNode.nodeName === 'BR') {
+                        detach(preNode);
+                    }
+                    let postNode: Node = tempElem.nextSibling;
+                    while (!isNOU(postNode) && postNode.nodeName !== 'BR' &&
+                    !this.parent.domNode.isBlockNode(postNode as Element)) {
+                        tempElem.appendChild(postNode);
+                        postNode = tempElem.nextSibling;
+                    }
+                    if (!isNOU(postNode) && postNode.nodeName === 'BR') {
+                        detach(postNode);
+                    }
+                }
+            }
+            this.setSelectionBRConfig();
+            listsNodes = this.parent.domNode.blockNodes();
+        }
         for (let i: number = 0; i < listsNodes.length; i++) {
             if ((listsNodes[i] as Element).tagName === 'TABLE' && !range.collapsed) {
                 listsNodes.splice(i, 1);
@@ -423,6 +489,17 @@ export class Lists {
                 range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
                 elements: this.parent.domNode.blockNodes() as Element[]
             });
+        }
+    }
+
+    private setSelectionBRConfig(): void {
+        const startElem: Element = this.parent.editableElement.querySelector('.' + markerClassName.startSelection);
+        const endElem: Element = this.parent.editableElement.querySelector('.' + markerClassName.endSelection);
+        if (isNOU(endElem)){
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, startElem, 0);
+        } else {
+            this.parent.nodeSelection.setSelectionText(
+                this.parent.currentDocument, startElem, endElem, 0, 0);
         }
     }
 

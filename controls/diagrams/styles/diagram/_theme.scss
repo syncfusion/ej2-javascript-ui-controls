@@ -42,6 +42,20 @@
     stroke: $diagram-resize-handle-disable-stroke;
    }
 
+   // sass-lint:disable-all
+  .e-diagram-bezier-handle.e-source.e-disabled {
+    opacity: 1 !important;
+   }
+
+  .e-diagram-bezier-handle.e-target.e-disabled {
+    opacity: 1 !important;
+   }
+
+  .e-symbolpalette .e-acrdn-content {
+    background-color: $palette-background-color !important;
+   }
+  // sass-lint:enable-all
+
   .e-diagram-bezier-handle {
     fill: $diagram-bezier-handle-color;
     stroke: $diagram-resize-handle-stroke;
@@ -54,9 +68,13 @@
   .e-diagram-resize-handle {
     fill: $diagram-resize-handle-color;
     stroke: $diagram-resize-handle-stroke;
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'material' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' ) {
       stroke: $diagram-endpoint-handle-color;
     }
+  }
+
+  .e-diagram-helper {
+    stroke: $diagram-helper-stroke;
   }
 
   .e-diagram-resize-handle.e-disabled {

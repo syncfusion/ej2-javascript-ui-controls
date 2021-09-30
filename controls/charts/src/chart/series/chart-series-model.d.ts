@@ -1069,6 +1069,15 @@ export interface SeriesModel extends SeriesBaseModel{
     columnWidth?: number;
 
     /**
+     * To render the column series points with particular column width as pixel.
+     *
+     * @default null
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue Double.NaN
+     */
+    columnWidthInPixel?: number;
+
+    /**
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
      *
      * @default 0

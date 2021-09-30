@@ -42,7 +42,7 @@ export class StatusBar {
         const styles: string = isRtl ? 'padding-right:16px' : 'padding-left:16px';
         const div: HTMLElement = createElement('div', { className: (this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
         this.statusBarDiv.appendChild(div);
-        const label: HTMLElement = createElement('label');
+        const label: HTMLElement = createElement('span');
         label.textContent = this.localObj.getConstant('Page') + ' ';
         div.appendChild(label);
         this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text' }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
@@ -58,10 +58,10 @@ export class StatusBar {
         this.updatePageNumber();
         div.appendChild(this.editablePageNumber);
         this.editablePageNumber.setAttribute('title', this.localObj.getConstant('Current Page Number'));
-        const label1: HTMLElement = createElement('label', { styles: 'width:16px' });
+        const label1: HTMLElement = createElement('span', { styles: 'width:20px' });
         label1.textContent = ' ' + this.localObj.getConstant('of') + ' ';
         div.appendChild(label1);
-        this.pageCount = createElement('label');
+        this.pageCount = createElement('span');
         div.appendChild(this.pageCount);
         this.updatePageCount();
         if (this.documentEditor.enableSpellCheck) {

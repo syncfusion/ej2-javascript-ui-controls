@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-charts",
-	"version": "19.2.60",
+	"version": "1.152.13",
 	"description": "Feature-rich chart control with built-in support for over 25 chart types, technical indictors, trendline, zooming, tooltip, selection, crosshair and trackball.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -60,5 +60,6 @@
 	},
 	"main": "./dist/ej2-charts.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-charts.es2015.js"
+	"es2015": "./dist/es6/ej2-charts.es2015.js",
+	"typings": "index.d.ts"
 }

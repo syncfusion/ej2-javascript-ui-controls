@@ -194,7 +194,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @aspType Syncfusion.EJ2.Grids.ClipMode
      * @isEnumeration true
-     * @blazorType Syncfusion.Blazor.Grids.ClipMode
      */
     @Property('Ellipsis')
     public clipMode: ClipMode;
@@ -314,7 +313,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * that will be executed along with data processing.
      *
      * @default null
-     * @blazorType Syncfusion.Blazor.Data.Query
      */
     @Property()
     public query: Query;
@@ -331,7 +329,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.PrintMode
-     * @blazorType Syncfusion.Blazor.Grids.PrintMode
      */
     @Property('AllPages')
     public printMode: PrintMode;
@@ -534,7 +531,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @default Syncfusion.EJ2.Grids.GridLine.Default
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.GridLine
-     * @blazorType Syncfusion.Blazor.Grids.GridLine
      */
     @Property('Default')
     public gridLines: GridLine;
@@ -701,7 +697,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -709,7 +704,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * This event allows customization of TreeGrid properties before rendering.
      *
      * @event load
-     * @blazorproperty 'OnLoad'
      */
     @Event()
     public load: EmitType<Object>;
@@ -717,7 +711,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers while expanding the TreeGrid record
      *
      * @event expanding
-     * @blazorproperty 'Expanding'
      */
     @Event()
     public expanding: EmitType<RowExpandingEventArgs>;
@@ -725,7 +718,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers after the record is expanded
      *
      * @event expanded
-     * @blazorproperty 'Expanded'
      */
     @Event()
     public expanded: EmitType<RowExpandedEventArgs>;
@@ -733,7 +725,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers while collapsing the TreeGrid record
      *
      * @event collapsing
-     * @blazorproperty 'Collapsing'
      */
     @Event()
     public collapsing: EmitType<RowExpandingEventArgs>;
@@ -741,7 +732,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers after the record is collapsed.
      *
      * @event collapsed
-     * @blazorproperty 'Collapsed'
      */
     @Event()
     public collapsed: EmitType<RowExpandingEventArgs>;
@@ -749,8 +739,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when cell is saved.
      *
      * @event cellSave
-     * @blazorproperty 'OnCellSave'
-     * @blazorType Syncfusion.Blazor.Grids.CellSaveArgs<TValue>
      */
     @Event()
     public cellSave: EmitType<CellSaveArgs>;
@@ -758,8 +746,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when cell is saved.
      *
      * @event cellSaved
-     * @blazorproperty 'CellSaved'
-     * @blazorType Syncfusion.Blazor.Grids.CellSaveArgs<TValue>
      */
     @Event()
     public cellSaved: EmitType<CellSaveArgs>;
@@ -768,8 +754,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
    * @event actionBegin
-   * @blazorproperty 'OnActionBegin'
-   * @blazorType Syncfusion.Blazor.Grids.ActionEventArgs<TValue>
    */
   @Event()
   public actionBegin: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
@@ -777,8 +761,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
    * @event actionComplete
-   * @blazorproperty 'OnActionComplete'
-   * @blazorType Syncfusion.Blazor.Grids.ActionEventArgs<TValue>
    */
 
   @Event()
@@ -787,8 +769,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   /** 
    * Triggers before the record is to be edit.
    * @event beginEdit
-   * @blazorproperty 'OnBeginEdit'
-   * @blazorType Syncfusion.Blazor.Grids.BeginEditArgs<TValue>
    */
   @Event()
   public beginEdit: EmitType<BeginEditArgs>;
@@ -831,8 +811,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   /** 
    * Triggers when the cell is being edited.
    * @event cellEdit
-   * @blazorproperty 'OnCellEdit'
-   * @blazorType Syncfusion.Blazor.Grids.CellEditArgs<TValue>
    */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -841,8 +819,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when any TreeGrid action failed to achieve the desired results.
      *
      * @event actionFailure
-     * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.Blazor.Grids.FailureEventArgs
      */
     @Event()
     public actionFailure: EmitType<FailureEventArgs>;
@@ -850,7 +826,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when data source is populated in the TreeGrid.
      *
      * @event dataBound
-     * @blazorproperty 'DataBound'
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -861,8 +836,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event dataSourceChanged
      * @deprecated
-     * @blazorProperty 'dataSourceUpdated'
-     * @blazorType Syncfusion.Blazor.Grids.DataSourceChangedEventArgs
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -873,7 +846,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event dataStateChange
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.DataStateChangeEventArgs
      */
     @Event()
     public dataStateChange: EmitType<DataStateChangeEventArgs>;
@@ -882,8 +854,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when record is double clicked.
      *
      * @event recordDoubleClick
-     * @blazorproperty 'OnRecordDoubleClick'
-     * @blazorType Syncfusion.Blazor.Grids.RecordDoubleClickEventArgs<TValue>
      */
     @Event()
     public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
@@ -893,8 +863,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * This will be triggered before the row element is appended to the TreeGrid element.
      *
      * @event rowDataBound
-     * @blazorproperty 'RowDataBound'
-     * @blazorType Syncfusion.Blazor.Grids.RowDataBoundEventArgs<TValue>
      */
     @Event()
     public rowDataBound: EmitType<RowDataBoundEventArgs>;
@@ -903,8 +871,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * > This event triggers at initial expand.
      *
      * @event detailDataBound
-     * @blazorproperty 'DetailDataBound'
-     * @blazorType Syncfusion.Blazor.Grids.DetailDataBoundEventArgs<TValue>
      */
     @Event()
     public detailDataBound: EmitType<DetailDataBoundEventArgs>;
@@ -913,8 +879,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * This will be triggered before the cell element is appended to the TreeGrid element.
      *
      * @event queryCellInfo
-     * @blazorproperty 'QueryCellInfo'
-     * @blazorType Syncfusion.Blazor.Grids.QueryCellInfoEventArgs<TValue>
      */
     @Event()
     public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
@@ -929,8 +893,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before row selection occurs.
      *
      * @event rowSelecting
-     * @blazorproperty 'RowSelecting'
-     * @blazorType Syncfusion.Blazor.Grids.RowSelectingEventArgs<TValue>
      */
     @Event()
     public rowSelecting: EmitType<RowSelectingEventArgs>;
@@ -939,8 +901,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers after a row is selected.
      *
      * @event rowSelected
-     * @blazorproperty 'RowSelected'
-     * @blazorType Syncfusion.Blazor.Grids.RowSelectEventArgs<TValue>
      */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
@@ -950,7 +910,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event rowSelected
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.RowDeselectEventArgs<TValue>
      */
     @Event()
     public rowDeselecting: EmitType<RowDeselectEventArgs>;
@@ -959,8 +918,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when a selected row is deselected.
      *
      * @event rowDeselected
-     * @blazorproperty 'RowDeselected'
-     * @blazorType Syncfusion.Blazor.Grids.RowDeselectEventArgs<TValue>
      */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
@@ -968,8 +925,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggered for stacked header.
      *
      * @event headerCellInfo
-     * @blazorproperty 'HeaderCellInfo'
-     * @blazorType Syncfusion.Blazor.Grids.HeaderCellInfoEventArgs
      */
     @Event()
     public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
@@ -978,8 +933,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before any cell selection occurs.
      *
      * @event cellSelecting
-     * @blazorproperty 'CellSelecting'
-     * @blazorType Syncfusion.Blazor.Grids.CellSelectingEventArgs<TValue>
      */
     @Event()
     public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -988,7 +941,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event columnMenuOpen
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnMenuOpenEventArgs
      */
     @Event()
     public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
@@ -996,8 +948,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when click on column menu.
      *
      * @event columnMenuClick
-     * @blazorproperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
@@ -1007,8 +957,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers after a cell is selected.
      *
      * @event cellSelected
-     * @blazorproperty 'CellSelected'
-     * @blazorType Syncfusion.Blazor.Grids.CellSelectEventArgs<TValue>
      */
     @Event()
     public cellSelected: EmitType<CellSelectEventArgs>;
@@ -1018,7 +966,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event cellDeselecting
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.CellDeselectEventArgs
      */
     @Event()
     public cellDeselecting: EmitType<CellDeselectEventArgs>;
@@ -1028,7 +975,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event cellDeselected
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.CellDeselectEventArgs
      */
     @Event()
     public cellDeselected: EmitType<CellDeselectEventArgs>;
@@ -1065,7 +1011,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event columnDragStart
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnDragEventArgs
      */
     @Event()
     public columnDragStart: EmitType<ColumnDragEventArgs>;
@@ -1075,7 +1020,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event columnDrag
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnDragEventArgs
      */
     @Event()
     public columnDrag: EmitType<ColumnDragEventArgs>;
@@ -1085,7 +1029,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event columnDrop
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ColumnDragEventArgs
      */
     @Event()
     public columnDrop: EmitType<ColumnDragEventArgs>;
@@ -1103,7 +1046,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event printComplete
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PrintEventArgs
      */
     @Event()
     public printComplete: EmitType<PrintEventArgs>;
@@ -1112,7 +1054,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event beforePrint
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PrintEventArgs
      */
     @Event()
     public beforePrint: EmitType<PrintEventArgs>;
@@ -1120,8 +1061,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when toolbar item is clicked.
      *
      * @event toolbarClick
-     * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -1129,8 +1068,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before data is bound to Tree Grid.
      *
      * @event beforeDataBound
-     * @blazorproperty 'OnDataBound'
-     * @blazorType Syncfusion.Blazor.Grids.BeforeDataBoundArgs<TValue>
      */
     @Event()
     public beforeDataBound: EmitType<BeforeDataBoundArgs>;
@@ -1139,7 +1076,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event contextMenuOpen
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Navigations.BeforeOpenCloseMenuEventArgs
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1148,8 +1084,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when click on context menu.
      *
      * @event contextMenuClick
-     * @blazorproperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1243,7 +1177,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event pdfQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PdfQueryCellInfoEventArgs
      */
     @Event()
     public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
@@ -1254,7 +1187,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event pdfHeaderQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PdfHeaderQueryCellInfoEventArgs
      */
     @Event()
     public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
@@ -1265,7 +1197,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event excelQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ExcelQueryCellInfoEventArgs
      */
     @Event()
     public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -1276,7 +1207,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event excelHeaderQueryCellInfo
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ExcelHeaderQueryCellInfoEventArgs
      */
     @Event()
     public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -1285,7 +1215,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before TreeGrid data is exported to Excel file.
      *
      * @event beforeExcelExport
-     * @blazorproperty 'OnExcelExport'
      */
     @Event()
     public beforeExcelExport: EmitType<Object>;
@@ -1295,7 +1224,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event excelExportComplete
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.ExcelExportCompleteArgs
      */
     @Event()
     public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
@@ -1304,7 +1232,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before TreeGrid data is exported to PDF document.
      *
      * @event beforePdfExport
-     * @blazorproperty 'OnPdfExport'
      */
     @Event()
     public beforePdfExport: EmitType<Object>;
@@ -1314,7 +1241,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event pdfExportComplete
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Grids.PdfExportCompleteArgs
      */
     @Event()
     public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
@@ -1325,7 +1251,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {boolean} isMultipleExport - Define to enable multiple export.
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @blazorType void
      * @returns {Promise<any>} - Returns promise object of export action
      */
     /* eslint-disable */
@@ -1343,7 +1268,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @returns {Promise<any>} - Returns promise object of export action
-     * @blazorType void
      */
     /* eslint-disable */
     public csvExport(
@@ -1360,7 +1284,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @param {Object} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @returns {Promise<any>} - Returns promise object of export action
-     * @blazorType void
      */
     public pdfExport(
         pdfExportProperties?: PdfExportProperties | TreeGridPdfExportProperties,
@@ -1634,6 +1557,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
+        const splitFrozenCount: string = 'splitFrozenCount';
+        this.grid[splitFrozenCount](this.getGridColumns(this.columns as Column[]));
         if (this.isDestroyed) { return modules; }
         modules.push({
             member: 'filter', args: [this, this.filterSettings]
@@ -1681,7 +1606,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 member: 'ExcelExport', args: [this]
             });
         }
-        if (this.frozenColumns || this.frozenRows || this.getFrozenColumns()) {
+        if (this.frozenColumns || this.frozenRows || this.getFrozenColumns() || this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount()) {
             modules.push({
                 member: 'freeze', args: [this]
             });
@@ -2106,13 +2031,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (old) {
             const keys: string[] = Object.keys(old);
             let isEqual: boolean = true;
-            let excludeKeys: string[] = ["Children", "childRecords","taskData","uniqueID","parentItem", "parentUniqueID", "index"];
+            const excludeKeys: string[] = ['Children', 'childRecords', 'taskData', 'uniqueID', 'parentItem', 'parentUniqueID', 'index'];
             for (let i: number = 0; i < keys.length; i++) {
                 if (old[keys[i]] !== current[keys[i]] && excludeKeys.indexOf(keys[i]) === -1) {
                     const isDate: boolean = old[keys[i]] instanceof Date && current[keys[i]] instanceof Date;
                     if (!isDate || ((old[keys[i]] as Date).getTime() !== (current[keys[i]] as Date).getTime())) {
                         isEqual = false; break;
-                    }    
+                    }
                 }
             }
             return isEqual;
@@ -2852,7 +2777,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public addRecord(data?: Object, index?: number,  position?: RowPosition): void {
         if (this.editModule) {
-            let isAddedRowByMethod: string = 'isAddedRowByMethod';
+            const isAddedRowByMethod: string = 'isAddedRowByMethod';
             this.editModule[isAddedRowByMethod] = true;
             this.editModule.addRecord(data, index, position);
         }
@@ -3572,7 +3497,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setHeightForFrozenContent(): void {
-        if (this.grid.getFrozenColumns() > 0) {
+        let freeze: boolean = (this.grid.getFrozenLeftColumnsCount() > 0 || this.grid.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (this.grid.getFrozenColumns() > 0 || freeze) {
             (<{ refreshScrollOffset?: Function }>this.grid.contentModule).refreshScrollOffset();
         }
     }
@@ -3637,11 +3563,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             const row: HTMLTableRowElement[] = getObject('rows', rec);
             const record: HTMLTableRowElement[] = getObject('records', rec);
             for (let i: number = 0; i < record.length; i++) {
+              if ((record[i] as any).parentItem != undefined) {
                 const pindex: number = (this.flatData[(record[i] as ITreeData).parentItem.index] as ITreeData).index;
                 if ((this.flatData[pindex] as ITreeData).expanded === false) {
                     record.push((this.flatData[pindex] as HTMLTableRowElement));
                     (this.flatData[pindex] as ITreeData).expanded = true;
                 }
+              }
                 this.expandRow(row[i], record[i]);
             }
         }
@@ -3943,6 +3871,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.lastRowBorder(row, false);
         }
         let movableRows: HTMLTableRowElement[];
+        let freezeRightRows: HTMLTableRowElement[];
         let gridRows: HTMLTableRowElement[] = this.getRows();
         if (this.rowTemplate) {
             const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
@@ -3963,8 +3892,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                         '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
                     ));
         }
-        if (this.frozenRows || this.frozenColumns || this.getFrozenColumns()) {
+        let freeze: boolean = (this.grid.getFrozenLeftColumnsCount() > 0 || this.grid.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (this.frozenRows || this.frozenColumns || this.getFrozenColumns() || freeze) {
             movableRows = <HTMLTableRowElement[]>this.getMovableRows().filter(
+                (r: HTMLTableRowElement) =>
+                    r.querySelector(
+                        '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
+                    ));
+        }
+        if (freeze) {
+            freezeRightRows = <HTMLTableRowElement[]>this.getFrozenRightRows().filter(
                 (r: HTMLTableRowElement) =>
                     r.querySelector(
                         '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
@@ -3976,6 +3913,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (!isNullOrUndefined(movableRows)) {
                 movableRows[i].style.display = displayAction;
+            }
+            if (!isNullOrUndefined(freezeRightRows)) {
+                freezeRightRows[i].style.display = displayAction;
             }
             this.notify('childRowExpand', { row: rows[i] });
             if (!isNullOrUndefined(childRecords[i].childRecords) && (action !== 'expand' ||
@@ -4026,15 +3966,45 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
 
         const rows: HTMLTableRowElement[] = rowDetails.rows;
+        let row: HTMLTableRowElement;
         let childRecord: ITreeData;
+        let movablerows: HTMLTableRowElement[] = [];
+        let rightrows: HTMLTableRowElement[] = [];
+        let freeze: boolean = (this.getFrozenLeftColumnsCount() > 0 || this.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        if (freeze) {
+            movablerows = <HTMLTableRowElement[]>this.getMovableRows().filter(
+                (r: HTMLTableRowElement) =>
+                    r.querySelector(
+                        '.e-gridrowindex' + rowDetails.record.index + 'level' + (rowDetails.record.level + 1)
+                    )
+            );
+            rightrows = <HTMLTableRowElement[]>this.getFrozenRightRows().filter(
+                (r: HTMLTableRowElement) =>
+                    r.querySelector(
+                        '.e-gridrowindex' + rowDetails.record.index + 'level' + (rowDetails.record.level + 1)
+                    )
+            );
+        }
         for (let i: number = 0; i < rows.length; i++) {
             rows[i].style.display = 'none';
+            row = rows[i];
             const collapsingTd: Element = rows[i].querySelector('.e-detailrowexpand');
             if (!isNullOrUndefined(collapsingTd)) {
                 this.grid.detailRowModule.collapse(collapsingTd);
             }
-            if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
-                const expandElement: HTMLElement = rows[i].querySelector('.e-treecolumn-container .e-treegridexpand');
+            if (freeze) {
+                movablerows[i].style.display = 'none';
+                rightrows[i].style.display = 'none';
+                if (!rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
+                    if (movablerows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
+                        row = movablerows[i];
+                    } else if (rightrows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
+                        row = rightrows[i];
+                    }
+                }
+            }
+            if (row.querySelector('.e-treecolumn-container .e-treegridexpand')) {
+                const expandElement: HTMLElement = row.querySelector('.e-treecolumn-container .e-treegridexpand');
                 childRecord = this.rowTemplate ? this.grid.getCurrentViewRecords()[rows[i].rowIndex] :
                     this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
                 if (!isNullOrUndefined(expandElement) && childRecord.expanded) {
@@ -4223,6 +4193,150 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getMovableRows(): Element[] {
         return this.grid.getMovableRows();
+    }
+
+    /**
+     * Gets a frozen right tables row element by index.
+     *
+     * @param  {number} index - Specifies the row index.
+     * @returns {Element} returns the element
+     */
+    public getFrozenRightRowByIndex(index: number): Element {
+        return this.grid.getFrozenRightRowByIndex(index);
+    }
+
+    /**
+     * Gets the Tree Grid's frozen right content rows from frozen Tree Grid.
+     *
+     * @returns {Element[]} returns the element
+     */
+    public getFrozenRightRows(): Element[] {
+        return this.grid.getFrozenRightRows();
+    }
+
+    /**
+     * Gets all the Tree Grid's frozen right table data rows.
+     *
+     * @returns {Element[]} Returns the Element
+     */
+    public getFrozenRightDataRows(): Element[] {
+        return this.grid.getFrozenRightDataRows();
+    }
+
+    /**
+     * Gets a frozen right table cell by row and column index.
+     *
+     * @param  {number} rowIndex - Specifies the row index.
+     * @param  {number} columnIndex - Specifies the column index.
+     * @returns {Element} Returns the Element
+     */
+    public getFrozenRightCellFromIndex(rowIndex: number, columnIndex: number): Element {
+        return this.grid.getFrozenRightCellFromIndex(rowIndex, columnIndex);
+    }
+
+    /**
+     * Gets a frozen left column header by column index.
+     *
+     * @param  {number} index - Specifies the column index.
+     * @returns {Element} Returns the Element
+     */
+    public getFrozenLeftColumnHeaderByIndex(index: number): Element {
+        return this.grid.getFrozenLeftColumnHeaderByIndex(index);
+    }
+
+    /**
+     * Gets a frozen right column header by column index.
+     *
+     * @param  {number} index - Specifies the column index.
+     * @returns {Element} Returns the Element
+     */
+    public getFrozenRightColumnHeaderByIndex(index: number): Element {
+        return this.grid.getFrozenRightColumnHeaderByIndex(index);
+    }
+
+    /**
+     * Gets a movable column header by column index.
+     *
+     * @param  {number} index - Specifies the column index.
+     * @returns {Element} Returns the Element
+     */
+    public getMovableColumnHeaderByIndex(index: number): Element {
+        return this.grid.getMovableColumnHeaderByIndex(index);
+    }
+
+    /**
+     * @hidden
+     * @returns {number} Returns the movable column count
+     */
+    public getMovableColumnsCount(): number {
+        return this.grid.getMovableColumnsCount();
+    }
+
+    /**
+     * @hidden
+     * @returns {number} Returns the Frozen Left column
+     */
+    public getFrozenLeftColumnsCount(): number {
+        return this.grid.getFrozenLeftColumnsCount();
+    }
+
+    /**
+     * @hidden
+     * @returns {number} Returns the Frozen Right column count
+     */
+    public getFrozenRightColumnsCount(): number {
+        return this.grid.getFrozenRightColumnsCount();
+    }
+
+    /**
+     * @hidden
+     * @returns {Column[]} Returns the column
+     */
+    public getFrozenLeftColumns(): Column[] {
+        this.updateColumnModel(this.grid.getFrozenLeftColumns());
+        return this.columnModel;
+    }
+
+    /**
+     * @hidden
+     * @returns {Column[]} Returns the column
+     */
+    public getFrozenRightColumns(): Column[] {
+        this.updateColumnModel(this.grid.getFrozenRightColumns());
+        return this.columnModel;
+    }
+
+    /**
+     * @hidden
+     * @returns {number} Returns the visible movable count
+     */
+    public getVisibleMovableCount(): number {
+        return this.grid.getVisibleMovableCount();
+    }
+
+    /**
+     * @hidden
+     * @returns {number} Returns the visible Frozen Right count
+     */
+    public getVisibleFrozenRightCount(): number {
+        return this.grid.getVisibleFrozenRightCount();
+    }
+
+    /**
+     * @hidden
+     * @returns {number} Returns the visible Frozen left count
+     */
+    public getVisibleFrozenLeftCount(): number {
+        return this.grid.getVisibleFrozenLeftCount();
+    }
+
+    /**
+     * @hidden
+     * @returns {Column[]} Returns the column
+     */
+    public getMovableColumns(): Column[] {
+        this.updateColumnModel(this.grid.getMovableColumns());
+        return this.columnModel;
     }
 
     /**

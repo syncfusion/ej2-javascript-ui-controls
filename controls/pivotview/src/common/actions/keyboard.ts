@@ -2,7 +2,7 @@ import { KeyboardEvents, KeyboardEventArgs, closest, addClass, removeClass } fro
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { PivotView } from '../../pivotview';
+import { PivotView } from '../../pivotview/base/pivotview';
 
 /**
  * Keyboard interaction
@@ -18,7 +18,8 @@ export class CommonKeyboardInteraction {
         enter: 'enter',
         escape: 'escape',
         upArrow: 'upArrow',
-        downArrow: 'downArrow'
+        downArrow: 'downArrow',
+        altJ: 'alt+J'
     };
     private keyboardModule: KeyboardEvents;
     /* eslint-disable */
@@ -60,6 +61,16 @@ export class CommonKeyboardInteraction {
             case 'downArrow':
                 this.processFilterNodeSelection(e);
                 break;
+            case 'altJ':
+                this.processComponentFocus(e);
+        }
+    }
+    private processComponentFocus(e: Event): void {
+        if (this.parent.element) {
+            this.parent.element.focus();
+            e.stopPropagation();
+            e.preventDefault();
+            return;
         }
     }
     private getButtonElement(target: HTMLElement): HTMLElement {

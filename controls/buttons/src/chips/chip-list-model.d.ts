@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';import { EventHandler, detach, EmitType, Event, addClass, isBlazor, getElement } from '@syncfusion/ej2-base';import { ChipModel } from './chip';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';import { EventHandler, detach, EmitType, Event, addClass, getElement } from '@syncfusion/ej2-base';import { ChipModel } from './chip';
 import {Selection,ClickEventArgs,DeleteEventArgs} from "./chip-list";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -12,7 +12,6 @@ export interface ChipListModel extends ComponentModel{
      * {% codeBlock src='chips/chips/index.md' %}{% endcodeBlock %}
      *
      * @default []
-     * @blazorType List<ChipListChip>
      *
      */
     chips?: string[] | number[] | ChipModel[];
@@ -83,8 +82,6 @@ export interface ChipListModel extends ComponentModel{
      * Specifies a value that indicates whether the chip component is enabled or not.
      *
      * @default true
-     * @blazorDefaultValue null
-     * @blazorType bool?
      */
     enabled?: boolean;
 
@@ -120,7 +117,6 @@ export interface ChipListModel extends ComponentModel{
      * {% codeBlock src='chips/created/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
@@ -129,7 +125,6 @@ export interface ChipListModel extends ComponentModel{
      * {% codeBlock src='chips/click/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnClick'
      */
     click?: EmitType<ClickEventArgs>;
 
@@ -140,7 +135,6 @@ export interface ChipListModel extends ComponentModel{
      * {% codeBlock src='chips/beforeClick/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnBeforeClick'
      */
     beforeClick?: EmitType<ClickEventArgs>;
 
@@ -149,7 +143,6 @@ export interface ChipListModel extends ComponentModel{
      * {% codeBlock src='chips/delete/index.md' %}{% endcodeBlock %}
      *
      * @event
-     * @blazorProperty 'OnDelete'
      */
     delete?: EmitType<DeleteEventArgs>;
 

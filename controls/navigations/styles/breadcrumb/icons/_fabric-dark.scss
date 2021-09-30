@@ -1,0 +1,13 @@
+
+@include export-module('breadcrumb-fabric-dark-icons') {
+  /*! breadcrumb icons */
+  .e-breadcrumb {
+    .e-breadcrumb-collapsed::before {
+      content: '\eb04';
+    }
+
+    .e-home::before {
+      content: '\e92b';
+    }
+  }
+}

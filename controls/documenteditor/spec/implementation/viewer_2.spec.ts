@@ -1365,24 +1365,24 @@ console.log('Double tap on footer region validation');
         editor.dataBind();
         expect(editor.enableHeaderAndFooter).toBe(false);
     });
-    it('Selection on footer content', () => {
-console.log('Selection on footer content');
-        let y = documentHelper.currentPage.boundingRectangle.y + documentHelper.currentPage.boundingRectangle.height - 48;
-        let event: any = {
-            offsetX: documentHelper.currentPage.boundingRectangle.x + 96, offsetY: y,
-            preventDefault: () => { return true }, which: 1
-        }
-        event.offsetY = event.offsetY - viewer.containerTop;
-        documentHelper.onDoubleTap(event)
-        editor.dataBind();
-        event.offsetY = event.offsetY - (viewer.containerTop + 20);
-        expect(editor.enableHeaderAndFooter).toBe(true);
-        documentHelper.onMouseDownInternal(event);
-        event.offsetX = event.offsetX + 30;
-        documentHelper.onMouseMoveInternal(event);
-        documentHelper.onMouseUpInternal(event);
-        expect(editor.selection.start.paragraph.isInHeaderFooter).toBe(true);
-    });
+//     it('Selection on footer content', () => {
+// console.log('Selection on footer content');
+//         let y = documentHelper.currentPage.boundingRectangle.y + documentHelper.currentPage.boundingRectangle.height - 48;
+//         let event: any = {
+//             offsetX: documentHelper.currentPage.boundingRectangle.x + 96, offsetY: y,
+//             preventDefault: () => { return true }, which: 1
+//         }
+//         event.offsetY = event.offsetY - viewer.containerTop;
+//         documentHelper.onDoubleTap(event)
+//         editor.dataBind();
+//         event.offsetY = event.offsetY - (viewer.containerTop + 20);
+//         expect(editor.enableHeaderAndFooter).toBe(true);
+//         documentHelper.onMouseDownInternal(event);
+//         event.offsetX = event.offsetX + 30;
+//         documentHelper.onMouseMoveInternal(event);
+//         documentHelper.onMouseUpInternal(event);
+//         expect(editor.selection.start.paragraph.isInHeaderFooter).toBe(true);
+//     });
 });
 describe('First Page header odd and even page header validation', () => {
     let editor: DocumentEditor;
@@ -1492,37 +1492,37 @@ console.log('enable header footer validation');
         editor.dataBind();
         expect(editor.enableHeaderAndFooter).toBe(false);
     });
-    it('Double tap on footer region validation', () => {
-console.log('Double tap on footer region validation');
-        documentHelper = editor.documentHelper;
-        let y = documentHelper.currentPage.boundingRectangle.y + documentHelper.currentPage.boundingRectangle.height - 48;
-        let event: any = {
-            offsetX: documentHelper.currentPage.boundingRectangle.x + 5, offsetY: y,
-            preventDefault: () => { return true }
-        }
-        documentHelper.onDoubleTap(event);
-        editor.dataBind();
-        documentHelper.onMouseDownInternal(event);
-        documentHelper.onMouseMoveInternal(event);
-        documentHelper.onMouseUpInternal(event);
-        editor.editorModule.insertTextInternal('Syncfusion', true);
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editor.insertTable(2, 2);
-        expect(editor.documentHelper.isBlockInHeader(editor.selection.start.paragraph)).toBe(false);
-        expect(documentHelper.currentPage.footerWidget.height + (documentHelper.currentPage.bodyWidgets[0].sectionFormat.footerDistance * 1.333333333)).toBeGreaterThan(96);
-        expect(documentHelper.currentPage.footerWidget.y).toBeLessThan(documentHelper.currentPage.boundingRectangle.height - (documentHelper.currentPage.bodyWidgets[0].sectionFormat.footerDistance * 1.333333333) * 2);
-        editor.selection.extendToNextLine();
-        editor.selection.extendToNextLine();
-        editor.selection.extendToNextLine();
-        expect(editor.selection.isEmpty).toBe(false);
-        editor.selection.extendToPreviousLine();
-        editor.selection.extendToPreviousLine();
-        editor.selection.extendToPreviousLine();
-        expect(editor.selection.isEmpty).toBe(true);
-    });
+//     it('Double tap on footer region validation', () => {
+// console.log('Double tap on footer region validation');
+//         documentHelper = editor.documentHelper;
+//         let y = documentHelper.currentPage.boundingRectangle.y + documentHelper.currentPage.boundingRectangle.height - 48;
+//         let event: any = {
+//             offsetX: documentHelper.currentPage.boundingRectangle.x + 5, offsetY: y,
+//             preventDefault: () => { return true }
+//         }
+//         documentHelper.onDoubleTap(event);
+//         editor.dataBind();
+//         documentHelper.onMouseDownInternal(event);
+//         documentHelper.onMouseMoveInternal(event);
+//         documentHelper.onMouseUpInternal(event);
+//         editor.editorModule.insertTextInternal('Syncfusion', true);
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editor.insertTable(2, 2);
+//         expect(editor.documentHelper.isBlockInHeader(editor.selection.start.paragraph)).toBe(false);
+//         expect(documentHelper.currentPage.footerWidget.height + (documentHelper.currentPage.bodyWidgets[0].sectionFormat.footerDistance * 1.333333333)).toBeGreaterThan(96);
+//         expect(documentHelper.currentPage.footerWidget.y).toBeLessThan(documentHelper.currentPage.boundingRectangle.height - (documentHelper.currentPage.bodyWidgets[0].sectionFormat.footerDistance * 1.333333333) * 2);
+//         editor.selection.extendToNextLine();
+//         editor.selection.extendToNextLine();
+//         editor.selection.extendToNextLine();
+//         expect(editor.selection.isEmpty).toBe(false);
+//         editor.selection.extendToPreviousLine();
+//         editor.selection.extendToPreviousLine();
+//         editor.selection.extendToPreviousLine();
+//         expect(editor.selection.isEmpty).toBe(true);
+//     });
 });
 function createDocument(): BodyWidget {
     let section: BodyWidget = new BodyWidget();

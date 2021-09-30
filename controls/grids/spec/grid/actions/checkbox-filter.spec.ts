@@ -141,7 +141,7 @@ describe('Checkbox Filter module => ', () => {
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(0);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);              
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);              
-                expect(checkBoxFilter.querySelector('.e-checkboxlist').children[0].innerHTML).toBe('No matches found');
+                expect(checkBoxFilter.querySelector('.e-checkfltrnmdiv').children[0].innerHTML).toBe('No matches found');
                 gridObj.actionComplete =null;
                 done();
                 }

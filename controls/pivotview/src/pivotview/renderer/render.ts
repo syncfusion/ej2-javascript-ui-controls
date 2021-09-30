@@ -7,7 +7,7 @@ import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryC
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement } from '@syncfusion/ej2-base';
-import { isBlazor, addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
+import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
@@ -218,11 +218,6 @@ export class Render {
             pdfExportComplete: this.pdfExportComplete.bind(this),
             excelExportComplete: this.excelExportComplete.bind(this)
         });
-        if (isBlazor()) {
-            let isJsComponent: string = 'isJsComponent';
-            /* eslint-disable-next-line */
-            (this.parent.grid as any)[isJsComponent] = true;
-        }
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
         this.parent.grid.on('export-DataBound', this.excelDataBound.bind(this));
     }
@@ -318,7 +313,7 @@ export class Render {
 
     /* eslint-enable */
     private dataBound(args: DataBoundEventArgs): void { /* eslint-disable-line */
-        if (this.parent.cellTemplate && !isBlazor()) {
+        if (this.parent.cellTemplate) {
             for (let cell of this.parent.gridHeaderCellInfo) {
                 if (this.parent.cellTemplate) {
                     /* eslint-disable-next-line */
@@ -335,13 +330,15 @@ export class Render {
             }
             this.parent.gridHeaderCellInfo = [];
         }
-        if (this.parent.element.querySelector('.e-firstcell') && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.columns.length > 0)) {
-            if (this.parent.enableRtl) {
-                (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderRight = 'none';
-            } else {
-                (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderLeft = 'none';
-            }
-        }
+        // if ((this.parent.dataSourceSettings.valueAxis === 'row' ||
+        //     !(this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.valueAxis === 'column' && this.parent.engineModule && !this.parent.engineModule.isLastHeaderHasMeasures)) && /* eslint-disable-line */
+        //     this.parent.element.querySelector('.e-firstcell') && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.columns.length > 0)) { /* eslint-disable-line */
+        //     if (this.parent.enableRtl) {
+        //         (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderRight = 'none';
+        //     } else {
+        //         (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderLeft = 'none';
+        //     }
+        // }
         if (this.parent.grid && this.parent.grid.widthService) {
             this.parent.grid.widthService.setWidthToTable();
         }
@@ -677,12 +674,7 @@ export class Render {
                     pdfExportProperties: { fileName: 'Export.pdf' },
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    if (isBlazor()) {
-                        let pdfProperties = PivotUtil.formatPdfExportProperties(observedArgs.pdfExportProperties);
-                        this.parent.pdfExport(pdfProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
-                    } else {
-                        this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
-                    }
+                    this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
                 });
                 break;
             case this.parent.element.id + '_excel':
@@ -693,12 +685,7 @@ export class Render {
                     excelExportProperties: { fileName: 'Export.xlsx' },
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    if (isBlazor()) {
-                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
-                        this.parent.excelExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    } else {
-                        this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    }
+                    this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
                 });
                 break;
             case this.parent.element.id + '_csv':
@@ -709,12 +696,7 @@ export class Render {
                     excelExportProperties: { fileName: 'Export.csv' },
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    if (isBlazor()) {
-                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
-                        this.parent.csvExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    } else {
-                        this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
-                    }
+                    this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
                 });
                 break;
             case this.parent.element.id + '_drillthrough_menu':
@@ -922,7 +904,9 @@ export class Render {
                     (this.parent.engineModule.headerContent.length - 1) :
                     this.parent.dataSourceSettings.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
             let lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
-            if (vSort !== undefined && lock && rCnt === len && this.parent.dataSourceSettings.valueAxis === 'column') {
+            if (vSort !== undefined && lock && (rCnt === len || (rCnt + 1) === len && cell.level > -1 &&
+                this.parent.engineModule.headerContent[(rCnt + 1)][cCnt] && this.parent.engineModule.headerContent[(rCnt + 1)][cCnt].level === -1)
+                && this.parent.dataSourceSettings.valueAxis === 'column') {
                 if (tCell.querySelector('.e-sortfilterdiv')) {
                     tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
                         'e-descending' : 'e-ascending');
@@ -952,7 +936,7 @@ export class Render {
         let column: string = args.column.field === '0.formattedText' ? '0.formattedText' : (args.column.customAttributes as any).cell.valueSort.levelName;
         this.parent.resizeInfo[column] = Number(args.column.width.toString().split('px')[0]);
         if (this.parent.enableVirtualization && args.column.field === '0.formattedText') {
-            if (this.parent.dataSourceSettings.values.length > 1) {
+            if (this.parent.dataSourceSettings.values.length > 1 && !isNullOrUndefined((this.parent.grid.columns[this.parent.grid.columns.length - 1] as ColumnModel).columns)) {
                 let gridColumns: string[] | ColumnModel[] | Column[] = (this.parent.grid.columns[this.parent.grid.columns.length - 1] as ColumnModel).columns;
                 (gridColumns[gridColumns.length - 1] as ColumnModel).minWidth = this.parent.gridSettings.columnWidth;
             } else {
@@ -1055,13 +1039,18 @@ export class Render {
         let tCell: HTMLElement = args.cell as HTMLElement;
         if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             let customClass: string = this.parent.hyperlinkSettings.cssClass;
-            tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
             let cell: IAxisSet = (args.data as IGridValues)[0] as IAxisSet;
+            tCell.setAttribute('index', cell.rowIndex ? cell.rowIndex.toString() : '0');
             if (tCell.getAttribute('aria-colindex') === '0') {
                 if (this.parent.dataType === 'pivot') {
                     let isValueCell: boolean = cell.type && cell.type === 'value';
                     tCell.innerText = '';
-                    let level: number = cell.level ? cell.level : (isValueCell ? (this.lastSpan + 1) : 0);
+                    let levelName: string = cell.valueSort ? cell.valueSort.levelName.toString() : '';
+                    let memberPos: number = cell.actualText ?
+                        cell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length : 0;
+                    let levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
+                        (memberPos ? memberPos - 1 : memberPos);
+                    let level: number = levelPosition ? (levelPosition - 1) : 0;
                     do {
                         if (level > 0) {
                             tCell.appendChild(createElement('span', {
@@ -1070,9 +1059,9 @@ export class Render {
                         }
                         level--;
                     } while (level > -1);
-                    level = cell.level ? cell.level : 0;
-                    this.lastSpan = !isValueCell ? level : this.lastSpan;
-                    if (!cell.hasChild && level > 0) {
+                    level = levelPosition ? (levelPosition - 1) : 0;
+                    this.lastSpan = levelPosition ? this.lastSpan : 0;
+                    if (!cell.hasChild && (!isValueCell ? level : 0) > 0) {
                         tCell.appendChild(createElement('span', {
                             className: cls.LASTSPAN
                         }));
@@ -1080,7 +1069,18 @@ export class Render {
                     let fieldName: string;
                     if ((this.parent.dataSourceSettings.rows.length > 0 &&
                         (cell.valueSort ? Object.keys(cell.valueSort).length > 0 : true))) {
-                        fieldName = level > -1 ? this.parent.dataSourceSettings.rows[level].name : '';
+                        if (isValueCell) {
+                            for (let field of this.parent.dataSourceSettings.values) {
+                                let name: string = field.caption ? field.caption : field.name;
+                                if (levelName.indexOf(name) > -1) {
+                                    fieldName = field.name;
+                                    break;
+                                }
+                            }
+                        } else {
+                            fieldName = cell.level > -1 && this.parent.dataSourceSettings.rows[cell.level] ?
+                                this.parent.dataSourceSettings.rows[cell.level].name : '';
+                        }
                         tCell.setAttribute('fieldname', fieldName);
                     }
                 } else {
@@ -1091,7 +1091,7 @@ export class Render {
                     if (cell.type === 'grand sum') {
                         this.rowGrandPos = cell.rowIndex;
                         tCell.classList.add('e-gtot');
-                        localizedText = this.parent.localeObj.getConstant('grandTotal');
+                        localizedText = isNullOrUndefined(cell.valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') : cell.formattedText;
                     } else if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
                         (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
                         tCell.classList.add('e-gtot');
@@ -1135,10 +1135,13 @@ export class Render {
                 tCell.innerText = '';
                 tCell.classList.add(cls.VALUESCONTENT);
                 cell = (args.data as IGridValues)[Number(tCell.getAttribute('aria-colindex'))] as IAxisSet;
+                cell = isNullOrUndefined(cell) ? (args.column.customAttributes.cell as IAxisSet) : cell;
                 if (cell.isSum) {
                     tCell.classList.add(cls.SUMMARY);
                 }
-                if (cell.isGrandSum || this.colGrandPos === Number(tCell.getAttribute('aria-colindex')) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
+                let isGrandSum: boolean = (isNullOrUndefined(cell.isGrandSum) && this.parent.dataSourceSettings.valueAxis === 'column' && this.parent.dataType === 'olap' &&
+                    ((this.colGrandPos - this.parent.dataSourceSettings.values.length) < Number(tCell.getAttribute('aria-colindex'))));
+                if (cell.isGrandSum || (isGrandSum || this.colGrandPos === Number(tCell.getAttribute('aria-colindex'))) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
                     tCell.classList.add('e-gtot');
                 } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(!isNullOrUndefined(cell.value) ? cell.colIndex : cell.colIndex - 1)) {
                     tCell.classList.add('e-colstot');
@@ -1160,19 +1163,15 @@ export class Render {
                 let index: string = tCell.getAttribute('index');
                 let colindex: string = tCell.getAttribute('aria-colindex');
                 let templateID: string = index + '_' + colindex;
-                if (!(window && isBlazor())) {
-                    /* eslint-disable-next-line */
-                    let element: any = this.parent.getCellTemplate()(
-                        { targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
-                    if (element && element !== '' && element.length > 0) {
-                        if (this.parent.enableHtmlSanitizer) {
-                            this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
-                        } else {
-                            this.parent.appendHtml(tCell, element[0].outerHTML);
-                        }
+                /* eslint-disable-next-line */
+                let element: any = this.parent.getCellTemplate()(
+                    { targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
+                if (element && element !== '' && element.length > 0) {
+                    if (this.parent.enableHtmlSanitizer) {
+                        this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                    } else {
+                        this.parent.appendHtml(tCell, element[0].outerHTML);
                     }
-                } else if (index && colindex) {
-                    this.parent.gridCellCollection[templateID] = tCell;
                 }
             }
             this.unWireEvents(tCell);
@@ -1306,7 +1305,14 @@ export class Render {
             let tCell: HTMLElement = args.node as HTMLElement;
             if (cell) {
                 let customClass: string = this.parent.hyperlinkSettings.cssClass;
-                let level: number = cell.level ? cell.level : 0;
+                let isValueCell: boolean = false;
+                for (let field of this.parent.dataSourceSettings.values) {
+                    if (field.name === cell.actualText) {
+                        isValueCell = true;
+                        tCell.setAttribute('fieldname', field.name);
+                    }
+                }
+                let level: number = cell.rowIndex ? cell.rowIndex : 0;
                 if ((cell.level === -1 && !cell.rowSpan) || cell.rowSpan === -1) {
                     (args.node as HTMLElement).style.display = 'none';
                 } else if (cell.rowSpan > 1) {
@@ -1320,12 +1326,12 @@ export class Render {
                 args.node.setAttribute('index', cell.rowIndex.toString());
                 let fieldName: string;
                 if (this.parent.dataType === 'pivot') {
-                    if (!(this.parent.dataSourceSettings.values && this.parent.dataSourceSettings.valueAxis === 'column' &&
+                    if (!isValueCell && !(this.parent.dataSourceSettings.values && this.parent.dataSourceSettings.valueAxis === 'column' &&
                         this.parent.dataSourceSettings.values.length > 1 &&
-                        (cell.rowIndex === this.engine.headerContent.length - 1)) && this.parent.dataSourceSettings.columns &&
+                        (isValueCell && cell.rowIndex === this.engine.headerContent.length - 1)) && this.parent.dataSourceSettings.columns &&
                         this.parent.dataSourceSettings.columns.length > 0) {
-                        fieldName = level > -1 && this.parent.dataSourceSettings.columns[level] ?
-                            this.parent.dataSourceSettings.columns[level].name : '';
+                        fieldName = cell.level > -1 && this.parent.dataSourceSettings.columns[cell.level] ?
+                            this.parent.dataSourceSettings.columns[cell.level].name : '';
                         tCell.setAttribute('fieldname', fieldName);
                     }
                     if (this.validateColumnTotalcell(cell.colIndex)) {
@@ -1341,7 +1347,7 @@ export class Render {
                     } else {
                         tCell.classList.add('e-colstot');
                     }
-                    let localizedText: string = cell.type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
+                    let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') : cell.formattedText) :
                         cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
                     if ((tCell.querySelector('.e-headertext') as HTMLElement) !== null) {
                         (tCell.querySelector('.e-headertext') as HTMLElement).innerText = localizedText;
@@ -1387,11 +1393,7 @@ export class Render {
                     let index: string = tCell.getAttribute('index');
                     let colindex: string = tCell.getAttribute('aria-colindex');
                     let templateID: string = index + '_' + colindex;
-                    if (!(window && isBlazor())) {
-                        this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
-                    } else if (index && colindex) {
-                        this.parent.gridCellCollection[templateID] = tCell;
-                    }
+                    this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
                 }
                 let len: number = this.parent.dataSourceSettings.values.length;
                 for (let vCnt: number = 0; vCnt < len; vCnt++) {
@@ -1642,9 +1644,10 @@ export class Render {
                                 colField[cCnt].colSpan : headerSplit[cCnt] as number) : 1;
                         colSpan = this.parent.dataType === 'olap' ? 1 : colSpan;
                         let formattedText: string = colField[cCnt] ? (colField[cCnt].type === 'grand sum' ?
-                            this.parent.localeObj.getConstant('grandTotal') : (colField[cCnt].type === 'sum' ?
-                                colField[cCnt].formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total') :
-                                colField[cCnt].formattedText)) : '';
+                            (isNullOrUndefined(colField[cCnt].valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') :
+                                colField[cCnt].formattedText) : (colField[cCnt].type === 'sum' ?
+                                    colField[cCnt].formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total') :
+                                    colField[cCnt].formattedText)) : '';
                         if (headerCnt === this.engine.headerContent.length - 1) {
                             colSpan = 1;
                             columnModel[actualCnt] = {
@@ -1807,13 +1810,19 @@ export class Render {
     /* eslint-enable */
     private excelRowEvent(args: ExcelQueryCellInfoEventArgs): void {
         if (args.column.field === '0.formattedText') {
-            let isValueCell: boolean = (args.data as IAxisSet[])[0].type === 'value';
+            /* eslint-disable-next-line */
+            let cell: IAxisSet = (args.data as IAxisSet[])[0];
+            let isValueCell: boolean = cell.type && cell.type === 'value';
             let level: number = 0;
             if (this.parent.dataType === 'olap') {
-                /* eslint-disable-next-line */
-                level = this.indentCollection[((args as any).data as IAxisSet[])[0].rowIndex];
+                level = this.indentCollection[cell.rowIndex];
             } else {
-                level = isValueCell ? (this.lastSpan + 1) : (args.data as IAxisSet[])[0].level;
+                let levelName: string = cell.valueSort ? cell.valueSort.levelName.toString() : '';
+                let memberPos: number = cell.actualText ?
+                    cell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length : 0;
+                let levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
+                    (memberPos ? memberPos - 1 : memberPos);
+                level = levelPosition ? (levelPosition - 1) : 0;
             }
             this.colPos = 0;
             args.style = { hAlign: 'Left', indent: level * 2 };
@@ -1836,12 +1845,18 @@ export class Render {
         args = this.exportContentEvent(args);
         if (args.column.field === '0.formattedText') {
             let level: number = 0;
-            let isValueCell: boolean = ((args as any).data as IAxisSet[])[0].type === 'value';
+            /* eslint-disable-next-line */
+            let cell: IAxisSet = (args.data as IAxisSet[])[0];
+            let isValueCell: boolean = cell.type && cell.type === 'value';
             if (this.parent.dataType === 'olap') {
-                level = this.indentCollection[((args as any).data as IAxisSet[])[0].rowIndex];
+                level = this.indentCollection[cell.rowIndex];
             } else {
-                level = isValueCell ? (this.lastSpan + 1) : ((args as any).data as IAxisSet[])[0].level !== -1 ?
-                    ((args as any).data as IAxisSet[])[0].level : 0;
+                let levelName: string = cell.valueSort ? cell.valueSort.levelName.toString() : '';
+                let memberPos: number = cell.actualText ?
+                    cell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length : 0;
+                let levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
+                    (memberPos ? memberPos - 1 : memberPos);
+                level = levelPosition ? (levelPosition - 1) : 0;
             }
             args.style = { paragraphIndent: level * 10 };
             this.lastSpan = isValueCell ? this.lastSpan : level;
@@ -1893,8 +1908,9 @@ export class Render {
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
     private exportContentEvent(args: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): any {    /* eslint-disable-line */
-        args.value = (<any>args).data[Number(args.column.field.split('.formattedText')[0])].type === 'grand sum' ?  /* eslint-disable-line */
-            this.parent.localeObj.getConstant('grandTotal') : args.value;
+        let cell: IAxisSet = (<any>args).data[Number(args.column.field.split('.formattedText')[0])];    /* eslint-disable-line */
+        args.value = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) ?
+            this.parent.localeObj.getConstant('grandTotal') : cell.formattedText) : args.value;
         return args;
     }
     private unWireEvents(cell: HTMLElement): void {

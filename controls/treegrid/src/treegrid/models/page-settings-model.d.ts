@@ -9,7 +9,6 @@ export interface PageSettingsModel {
      * Defines the number of records to be displayed in TreeGrid per page.
      *
      * @default 12
-     * @blazorType int
      */
     pageSize?: number;
 
@@ -17,7 +16,6 @@ export interface PageSettingsModel {
      * Defines the number of pages to be displayed in the TreeGrid pager container.
      *
      * @default 8
-     * @blazorType int
      */
     pageCount?: number;
 
@@ -25,14 +23,12 @@ export interface PageSettingsModel {
      * Defines the current page number of the pager in TreeGrid.
      *
      * @default 1
-     * @blazorType int
      */
     currentPage?: number;
 
     /**
      * @hidden
      * Gets the total records count of the TreeGrid.
-     * @blazorType int
      */
     totalRecordsCount?: number;
 

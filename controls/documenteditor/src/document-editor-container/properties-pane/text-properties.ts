@@ -125,7 +125,7 @@ export class Text {
         this.highlightColorInputElement = this.highlightColor.element.firstChild as HTMLElement;
         this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Clear all formatting'));
         const rightDiv2: HTMLElement = createElement('div', {
-            id: element + '_rightDiv2', className: divClassName, styles: 'display:inline-flex;'
+            id: element + '_rightDiv2', className: divClassName.replace('e-btn-group',''), styles: 'display:inline-flex;'
         });
         if (isRtl) {
             classList(rightDiv2, ['e-rtl'], []);

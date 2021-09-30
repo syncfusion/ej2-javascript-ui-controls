@@ -224,3 +224,20 @@ export function wrap(address: string, wrap: boolean = true, context?: Workbook):
         context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
     }
 }
+
+/**
+ * @hidden
+ * @param {string} format - Specifies the cell format.
+ * @returns {string} - Specifies the supported color code.
+ */
+export function getColorCode(format: string): string {
+    const customColors: string[] = ['Black', 'Blue', 'Cyan', 'Green', 'Magenta', 'Red', 'White', 'Yellow'];
+    let code: string;
+    if (format.indexOf('[') > -1) {
+        const colorValue: string = format.split('[')[1].split(']')[0];
+        if (customColors.indexOf(colorValue) > -1) {
+            code = colorValue;
+        }
+    }
+    return code;
+}

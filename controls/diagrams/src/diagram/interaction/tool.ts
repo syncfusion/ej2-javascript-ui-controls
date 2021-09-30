@@ -919,7 +919,7 @@ export class MoveTool extends ToolBase {
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper' && !(obj.nodes[0] as Node).isLane && !(obj.nodes[0] as Node).isPhase)
                 || ((object as Node).id !== 'helper')) {
-                if ((((object instanceof Selector && object.width === this.undoElement.width && object.height === this.undoElement.height) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
+                if ((((object instanceof Selector && Math.round(object.width) === Math.round(this.undoElement.width) && Math.round(object.height) === Math.round(this.undoElement.height)) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
                     (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint
                     // eslint-disable-next-line max-len
                     || (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint)) || this.isSelectionHasConnector(object)) {

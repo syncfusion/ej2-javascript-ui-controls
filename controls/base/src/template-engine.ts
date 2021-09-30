@@ -5,11 +5,14 @@ import { compile as render } from './template';
 import { createElement } from './dom';
 import { isNullOrUndefined, isBlazor } from './util';
 
-const HAS_ROW: RegExp = /^[\n\r.]+\<tr|^\<tr/;
-const HAS_SVG: RegExp = /^[\n\r.]+\<svg|^\<path|^\<g/;
-export let blazorTemplates: object = {};
+const HAS_ROW: RegExp = /^[\n\r.]+<tr|^<tr/;
+const HAS_SVG: RegExp = /^[\n\r.]+<svg|^<path|^<g/;
+export const blazorTemplates: object = {};
 
-
+/**
+ *
+ * @returns {string} ?
+ */
 export function getRandomId(): string {
 
     return '-' + Math.random().toString(36).substr(2, 5);
@@ -19,31 +22,34 @@ export function getRandomId(): string {
  * Interface for Template Engine.
  */
 export interface ITemplateEngine {
-    compile: (templateString: string, helper?: Object, ignorePrefix?:boolean) => (data: Object | JSON) => string;
+    compile: (templateString: string, helper?: Object, ignorePrefix?: boolean) => (data: Object | JSON) => string;
 }
 
 /**
  * Compile the template string into template function.
- * @param  {string} templateString - The template string which is going to convert.
- * @param  {Object} helper? - Helper functions as an object.
+ *
+ * @param {string} templateString - The template string which is going to convert.
+ * @param {Object} helper - Helper functions as an object.
+ * @param {boolean} ignorePrefix ?
+ * @returns {NodeList} ?
  * @private
  */
-//tslint:disable-next-line
+// eslint-disable-next-line
 export function compile(templateString: string, helper?: Object, ignorePrefix?:boolean): (data: Object | JSON, component?: any, propName?: any) => NodeList {
-    let compiler: Function = engineObj.compile(templateString, helper, ignorePrefix);
-    //tslint:disable-next-line
+    const compiler: Function = engineObj.compile(templateString, helper, ignorePrefix);
+    // eslint-disable-next-line
     return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number, element?: any): NodeList => {
-        let result: object = compiler(data, component, propName, element);
-        let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
+        const result: object = compiler(data, component, propName, element);
+        const blazorTemplateId: string = 'BlazorTemplateId';
         if (isBlazor() && !isStringTemplate) {
-            let randomId: string = getRandomId();
+            const randomId: string = getRandomId();
             let blazorId: string = templateId + randomId;
             if (!blazorTemplates[templateId]) {
                 blazorTemplates[templateId] = [];
             }
             if (!isNullOrUndefined(index)) {
-                let keys: string[] = Object.keys(blazorTemplates[templateId][index]);
-                for (let key of keys) {
+                const keys: string[] = Object.keys(blazorTemplates[templateId][index]);
+                for (const key of keys) {
                     if (key !== blazorTemplateId && data[key]) {
                         blazorTemplates[templateId][index][key] = data[key];
                     }
@@ -55,18 +61,18 @@ export function compile(templateString: string, helper?: Object, ignorePrefix?:b
                 data[blazorTemplateId] = blazorId;
                 blazorTemplates[templateId].push(data);
             }
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line
             return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line
                 [createElement('div', { id: blazorId, className: 'e-blazor-template' })] as any;
 
         }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {
-                let ele: HTMLElement = createElement('svg', { innerHTML: result });
+                const ele: HTMLElement = createElement('svg', { innerHTML: result });
                 return <NodeList>ele.childNodes;
             } else {
-                let ele: HTMLElement = createElement((HAS_ROW.test(result) ? 'table' : 'div'), { innerHTML: result });
+                const ele: HTMLElement = createElement((HAS_ROW.test(result) ? 'table' : 'div'), { innerHTML: result });
                 return <NodeList>ele.childNodes;
             }
         } else {
@@ -75,12 +81,20 @@ export function compile(templateString: string, helper?: Object, ignorePrefix?:b
     };
 }
 
+/**
+ *
+ * @param {string} templateId ?
+ * @param {string} templateName ?
+ * @param {string} comp ?
+ * @param {boolean} isEmpty ?
+ * @param {Function} callBack ?
+ * @returns {void} ?
+ */
 export function updateBlazorTemplate(
     templateId?: string, templateName?: string, comp?: object,
     isEmpty?: boolean, callBack?: Function): void {
-    let blazor: string = 'Blazor';
     if (isBlazor()) {
-        let ejsIntrop: string = 'sfBlazor';
+        const ejsIntrop: string = 'sfBlazor';
         window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
         if (isEmpty !== false) {
             blazorTemplates[templateId] = [];
@@ -88,11 +102,18 @@ export function updateBlazorTemplate(
     }
 }
 
+/**
+ *
+ * @param {string} templateId ?
+ * @param {string} templateName ?
+ * @param {number} index ?
+ * @returns {void} ?
+ */
 export function resetBlazorTemplate(templateId?: string, templateName?: string, index?: number): void {
-    let templateDiv: HTMLElement = document.getElementById(templateId);
+    const templateDiv: HTMLElement = document.getElementById(templateId);
     if (templateDiv) {
-        // tslint:disable-next-line:no-any
-        let innerTemplates: HTMLElement[] = templateDiv.getElementsByClassName('blazor-inner-template') as any;
+        // eslint-disable-next-line
+        const innerTemplates: HTMLElement[] = templateDiv.getElementsByClassName('blazor-inner-template') as any;
         for (let i: number = 0; i < innerTemplates.length; i++) {
             let tempId: string = ' ';
             if (!isNullOrUndefined(index)) {
@@ -100,9 +121,9 @@ export function resetBlazorTemplate(templateId?: string, templateName?: string, 
             } else {
                 tempId = innerTemplates[i].getAttribute('data-templateId');
             }
-            let tempElement: HTMLElement = document.getElementById(tempId);
+            const tempElement: HTMLElement = document.getElementById(tempId);
             if (tempElement) {
-                let length: number = tempElement.childNodes.length;
+                const length: number = tempElement.childNodes.length;
                 for (let j: number = 0; j < length; j++) {
                     if (!isNullOrUndefined(index)) {
                         innerTemplates[index].appendChild(tempElement.childNodes[0]);
@@ -119,7 +140,9 @@ export function resetBlazorTemplate(templateId?: string, templateName?: string, 
 
 /**
  * Set your custom template engine for template rendering.
+ *
  * @param  {ITemplateEngine} classObj - Class object for custom template.
+ * @returns {void} ?
  * @private
  */
 export function setTemplateEngine(classObj: ITemplateEngine): void {
@@ -128,7 +151,8 @@ export function setTemplateEngine(classObj: ITemplateEngine): void {
 
 /**
  * Get current template engine for template rendering
- * @param  {ITemplateEngine} classObj - Class object for custom template.
+ *
+ * @returns {string} ?
  * @private
  */
 export function getTemplateEngine(): (template: string, helper?: Object) => (data: Object | JSON) => string {
@@ -137,9 +161,10 @@ export function getTemplateEngine(): (template: string, helper?: Object) => (dat
 
 //Default Engine Class
 class Engine implements ITemplateEngine {
+    // eslint-disable-next-line
     public compile(templateString: string, helper: Object = {}, ignorePrefix?:boolean): (data: Object | JSON) => string {
         return render(templateString, helper);
     }
 }
 
-let engineObj: ITemplateEngine = { compile: new Engine().compile };
+const engineObj: ITemplateEngine = { compile: new Engine().compile };

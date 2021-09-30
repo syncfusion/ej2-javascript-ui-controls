@@ -2,9 +2,9 @@ import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as events from '../../common/base/constant';
 import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
-import { DrillThroughEventArgs } from '../../common';
+import { DrillThroughEventArgs } from '../../common/base/interface';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
-import { EventHandler, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColumnModel } from '@syncfusion/ej2-grids';
 
 /**
@@ -47,6 +47,7 @@ export class DrillThrough {
     }
 
     private unWireEvents(): void {
+        if (this.parent.isDestroyed) { return; }
         EventHandler.remove(this.parent.element, 'dblclick', this.mouseClickHandler);
     }
 
@@ -109,21 +110,7 @@ export class DrillThrough {
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
                 let currModule: DrillThrough = this;    /* eslint-disable-line */
-                if (isBlazor() && this.parent.enableVirtualization) {
-                    /* eslint-disable @typescript-eslint/no-explicit-any */
-                    (currModule.parent as any).interopAdaptor.invokeMethodAsync(
-                        'PivotInteropMethod', 'fetchRawData', { 'RowIndex': rowIndex, 'ColumnIndex': colIndex }).then((data: any) => {  /* eslint-disable-line */
-                            rawData = JSON.parse(data.rawData);
-                            let parsedObj: any = JSON.parse(data.indexObject);
-                            let indexObject: any = {};
-                            for (let len: number = 0; len < parsedObj.length; len++) {
-                                indexObject[parsedObj[len].Key] = parsedObj[len].Value;
-                            }
-                            pivotValue.indexObject = indexObject;
-                            currModule.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
-                            /* eslint-enable @typescript-eslint/no-explicit-any */
-                        });
-                } else if (this.parent.dataSourceSettings.mode === 'Server') {
+                if (this.parent.dataSourceSettings.mode === 'Server') {
                     this.parent.getEngine('fetchRawData', null, null, null, null, null, null, { rowIndex: rowIndex, columnIndex: colIndex });
                 } else {
                     if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
@@ -143,7 +130,7 @@ export class DrillThrough {
                     }
                 }
             }
-            if (!(isBlazor() && this.parent.enableVirtualization) && this.parent.dataSourceSettings.mode !== 'Server') {
+            if (this.parent.dataSourceSettings.mode !== 'Server') {
                 this.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
             }
         }
@@ -213,23 +200,25 @@ export class DrillThrough {
         let drillThrough: DrillThrough = this;  /* eslint-disable-line */
         let gridColumns: ColumnModel[] = eventArgs.gridColumns;
         this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
-            if (isBlazor()) {
-                for (let i: number = 0; i < observedArgs.gridColumns.length; i++) {
-                    if (gridColumns[i].field === observedArgs.gridColumns[i].field) {
-                        gridColumns[i].field = observedArgs.gridColumns[i].field;
-                        gridColumns[i].editType = observedArgs.gridColumns[i].editType;
-                        gridColumns[i].headerText = observedArgs.gridColumns[i].headerText;
-                        gridColumns[i].type = observedArgs.gridColumns[i].type;
-                        gridColumns[i].validationRules = observedArgs.gridColumns[i].validationRules;
-                        gridColumns[i].visible = observedArgs.gridColumns[i].visible;
-                        gridColumns[i].width = observedArgs.gridColumns[i].width;
-                    }
-                }
-                observedArgs.gridColumns = gridColumns;
-            }
             if (!eventArgs.cancel) {
                 drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
             }
         });
+    }
+
+    /**
+     * To destroy the drillthrough module.
+     * @returns  {void}
+     * @hidden
+     */
+    public destroy(): void {
+        this.unWireEvents();
+        if (this.drillThroughDialog) {
+            this.drillThroughDialog.destroy();
+            this.drillThroughDialog = null;
+        }
+        else {
+            return;
+        }
     }
 }

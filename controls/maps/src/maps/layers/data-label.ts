@@ -185,7 +185,7 @@ export class DataLabel {
                 bottomMax: 0, bottomMin: 0, height: 0
             };
         } else {
-            location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+            location = findMidPointOfPolygon(shapePoint[midIndex], projectionType, layer.geometryType);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const firstLevelMapLocation : any = location;
@@ -206,7 +206,7 @@ export class DataLabel {
                 location['x'] = ((location['x'] + zoomTransPoint['x']) * scale);
                 location['y'] = ((location['y'] + zoomTransPoint['y']) * scale);
             }
-            location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
+            location['y'] = (this.maps.projectionType === 'Mercator') || layer.geometryType === 'Normal' ? location['y'] : (-location['y']);
             data = location;
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
                 if (this.maps.useGroupingSeparator) {
@@ -221,10 +221,6 @@ export class DataLabel {
                     width: dataLabel.border.width, opacity: dataLabel.border.opacity }, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
-            if (this.maps.isBlazor) {
-                const {maps, datalabel, ...blazorEventArgs } : ILabelRenderingEventArgs = eventargs;
-                eventargs = blazorEventArgs;
-            }
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs: ILabelRenderingEventArgs) => {
                 if (eventargs.cancel) {
                     return;
@@ -253,7 +249,7 @@ export class DataLabel {
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const location1: any = findMidPointOfPolygon(position, projectionType);
+                    const location1: any = findMidPointOfPolygon(position, projectionType, layer.geometryType);
                     if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && eventargs.template === '') {
                         location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
                         location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
@@ -280,7 +276,8 @@ export class DataLabel {
                     labelTemplateElement.appendChild(labelElement);
                 } else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
-                        trimmedLable = textTrim(width, text, style);
+                        let textType: any = typeof text === 'number' ? (text as any).toString() : text;
+                        trimmedLable = textTrim(width, textType, style);
                         elementSize = measureText(trimmedLable, style);
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
                     }

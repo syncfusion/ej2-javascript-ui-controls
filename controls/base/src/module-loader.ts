@@ -22,26 +22,27 @@ export interface ModuleDeclaration {
     isProperty?: boolean;
 }
 export interface IParent {
-    /* tslint:disable:no-any */
+    // eslint-disable-next-line
     [key: string]: any;
 }
 
 export class ModuleLoader {
-    /* tslint:disable:no-any */
+    // eslint-disable-next-line
     private parent: any;
     private loadedModules: ModuleDeclaration[] = [];
     constructor(parent: IParent) {
         this.parent = parent;
-    };
+    }
 
     /**
      * Inject required modules in component library
-     * @return {void}
+     *
+     * @returns {void} ?
      * @param {ModuleDeclaration[]} requiredModules - Array of modules to be required
      * @param {Function[]} moduleList - Array of modules to be injected from sample side
      */
     public inject(requiredModules: ModuleDeclaration[], moduleList: Function[]): void {
-        let reqLength: number = requiredModules.length;
+        const reqLength: number = requiredModules.length;
         if (reqLength === 0) {
             this.clean();
             return;
@@ -50,18 +51,18 @@ export class ModuleLoader {
             this.clearUnusedModule(requiredModules);
         }
         for (let i: number = 0; i < reqLength; i++) {
-            let modl: ModuleDeclaration = requiredModules[i];
-            for (let module of moduleList) {
-                let modName: string = modl.member;
+            const modl: ModuleDeclaration = requiredModules[i];
+            for (const module of moduleList) {
+                const modName: string = modl.member;
                 if ( module.prototype.getModuleName() === modl.member && !this.isModuleLoaded(modName)) {
-                    let moduleObject: Object = createInstance(module, modl.args);
-                    let memberName: string = this.getMemberName(modName);
+                    const moduleObject: Object = createInstance(module, modl.args);
+                    const memberName: string = this.getMemberName(modName);
                     if (modl.isProperty) {
                         setValue(memberName, module, this.parent);
                     } else {
                         setValue(memberName, moduleObject, this.parent);
                     }
-                    let loadedModule: ModuleDeclaration = modl;
+                    const loadedModule: ModuleDeclaration = modl;
                     loadedModule.member = memberName;
                     this.loadedModules.push(loadedModule);
                 }
@@ -71,10 +72,11 @@ export class ModuleLoader {
 
     /**
      * To remove the created object while destroying the control
-     * @return {void}
+     *
+     * @returns {void}
      */
     public clean(): void {
-        for (let modules of this.loadedModules) {
+        for (const modules of this.loadedModules) {
             if (!modules.isProperty) {
                 getValue(modules.member, this.parent).destroy();
             }
@@ -84,16 +86,17 @@ export class ModuleLoader {
 
     /**
      * Removes all unused modules
-     * @param {ModuleDeclaration[]} moduleList 
-     * @returns {void}
+     *
+     * @param {ModuleDeclaration[]} moduleList ?
+     * @returns {void} ?
      */
 
     private clearUnusedModule(moduleList: ModuleDeclaration[]): void {
-        let usedModules: string[] = moduleList.map((arg: ModuleDeclaration) => { return this.getMemberName(arg.member); });
-        let removableModule: ModuleDeclaration[] = this.loadedModules.filter((module: ModuleDeclaration) => {
+        const usedModules: string[] = moduleList.map((arg: ModuleDeclaration) => { return this.getMemberName(arg.member); });
+        const removableModule: ModuleDeclaration[] = this.loadedModules.filter((module: ModuleDeclaration) => {
             return usedModules.indexOf(module.member) === -1;
         });
-        for (let mod of removableModule) {
+        for (const mod of removableModule) {
             if (!mod.isProperty) {
                 getValue(mod.member, this.parent).destroy();
             }
@@ -104,8 +107,9 @@ export class ModuleLoader {
 
     /**
      * To get the name of the member.
-     * @param {string} name 
-     * @returns {string}
+     *
+     * @param {string} name ?
+     * @returns {string} ?
      */
 
     private getMemberName(name: string): string {
@@ -114,12 +118,13 @@ export class ModuleLoader {
 
     /**
      * Returns boolean based on whether the module specified is loaded or not
-     * @param {string} modName 
-     * @returns {boolean}
+     *
+     * @param {string} modName ?
+     * @returns {boolean} ?
      */
 
     private isModuleLoaded(modName: string): boolean {
-        for (let mod of this.loadedModules) {
+        for (const mod of this.loadedModules) {
             if (mod.member === this.getMemberName(modName)) {
                 return true;
             }

@@ -262,7 +262,7 @@ export class Render {
                 });
                 break;
             }
-            if (this.parent[isReact]) { this.parent[renderReactTemplates](); }
+            if (this.parent && this.parent[isReact]) { this.parent[renderReactTemplates](); }
         });
         this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh, skipTranslate: args.skipTranslate });
     } 

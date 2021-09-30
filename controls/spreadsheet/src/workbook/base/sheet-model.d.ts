@@ -89,14 +89,14 @@ export interface SheetModel {
     /**
      * Configures row and its properties for the sheet.
      *
-     * @default []
+     * @default null
      */
     rows?: RowModel[];
 
     /**
      * Configures column and its properties for the sheet.
      *
-     * @default []
+     * @default null
      */
     columns?: ColumnModel[];
 
@@ -250,5 +250,12 @@ export interface SheetModel {
      * @default 'A1'
      */
     paneTopLeftCell?: string;
+
+    /**
+     * Specifies the password.
+     *
+     * @default ''
+     */
+    password?: string;
 
 }

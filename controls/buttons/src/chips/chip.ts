@@ -48,8 +48,6 @@ export class Chip {
      * Specifies a value that indicates whether the chip component is enabled or not.
      *
      * @default true
-     * @blazorDefaultValue null
-     * @blazorType bool?
      */
     public enabled: boolean;
 
@@ -116,8 +114,6 @@ export interface ChipModel {
      * Specifies a value that indicates whether the chip component is enabled or not.
      *
      * @default true
-     * @blazorDefaultValue null
-     * @blazorType bool?
      */
     enabled?: boolean;
 

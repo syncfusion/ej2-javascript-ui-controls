@@ -13,7 +13,9 @@
     }
 
     #{if(&, '&', '*')} .e-input-group {
-      padding: 4px 0;
+      @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
+        padding: 4px 0;
+      }
     }
   }
 
@@ -24,7 +26,9 @@
     }
 
     #{if(&, '&', '*')} .e-input-group {
-      padding: 4px 0;
+      @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
+        padding: 4px 0;
+      }
     }
   }
 
@@ -103,7 +107,9 @@
       #{if(&, '&', '*')} .e-filter-parent .e-input-filter:focus,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-control-wrapper.e-input-focus .e-input-filter {
-        padding: $ddl-list-filter-text-indent;
+        @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'bootstrap5') {
+          padding: $ddl-list-filter-text-indent;
+        }
       }
 
       #{if(&, '&', '*')} .e-input-group {

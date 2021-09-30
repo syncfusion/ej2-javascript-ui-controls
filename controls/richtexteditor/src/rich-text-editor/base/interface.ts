@@ -8,7 +8,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
-import { EditorMode } from './../../common/types';
+import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
@@ -32,6 +32,8 @@ import { PasteCleanup } from '../actions/paste-clean-up';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
+import { NodeCutter, DOMNode } from '../../editor-manager';
+import { EnterKeyAction } from '../actions/enter-key';
 /**
  * Specifies Rich Text Editor interfaces.
  *
@@ -111,6 +113,9 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     fullScreenModule?: FullScreen
     resizeModule?: Resize
     refreshUI?(): void
+    enterKeyModule?: EnterKeyAction
+    enterKey?: EnterKey
+    shiftEnterKey?: ShiftEnterKey
     pasteCleanupModule?: PasteCleanup
     undoRedoModule?: UndoRedoManager
     quickToolbarModule?: QuickToolbar
@@ -387,8 +392,13 @@ export interface ILinkCommandsArgs {
  * Provides information about a Table added to the Rich Text Editor.
  */
 export interface ITableCommandsArgs {
-    /** Defines the number of rows to be inserted in the table */
+    /**
+     * @deprecated
+     * This argument deprecated. Use `rows` argument.
+     */
     row?: number
+    /** Defines the number of rows to be inserted in the table */
+    rows?: number
     /** Defines the number of columns to be inserted in the table */
     columns?: number
     /** Defines the minWidth, maxWidth and width of the table */
@@ -401,7 +411,7 @@ export interface ITableCommandsArgs {
  * @deprecated
  */
 export interface ITableArgs {
-    row?: number
+    rows?: number
     columns?: number
     width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
     selection?: NodeSelection
@@ -436,6 +446,8 @@ export interface IEditorModel {
     undoRedoManager?: UndoRedoManager | UndoRedoCommands
     nodeSelection?: NodeSelection
     mdSelectionFormats?: MDSelectionFormats
+    domNode?: DOMNode
+    nodeCutter?: NodeCutter
 }
 
 /**

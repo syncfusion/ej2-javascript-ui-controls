@@ -12,7 +12,7 @@
         height: auto;
         min-height: auto;
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           height: $tab-big-height;
           min-height: $tab-big-height;
         }
@@ -35,7 +35,7 @@
         }
 
         .e-indicator + .e-toolbar-item:nth-last-child(1).e-active {
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             margin: 1px 2px 0 0;
           }
         }
@@ -57,7 +57,7 @@
 
         .e-scroll-nav {
           width: 50px;
-          @if $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             border-radius: 4px;
             width: 38px;
           }
@@ -120,7 +120,7 @@
             margin: $tab-mob-boot-item-margin;
           }
 
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             &.e-ileft:not(.e-icon) .e-tab-icon::before {
               position: relative;
               top: -.5px;
@@ -183,7 +183,7 @@
           min-width: $tab-big-icon-container-size;
           width: $tab-big-icon-container-size;
 
-          @if $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             line-height: $tab-big-icon-container-size;
           }
         }
@@ -435,7 +435,7 @@
             @if $tab-skin == 'bootstrap' {
               line-height: 42px;
             }
-            @if $tab-skin == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
               line-height: 38px;
             }
 
@@ -446,7 +446,7 @@
                 line-height: 42px;
                 top: .5px;
               }
-              @if $tab-skin == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
                 line-height: 38px;
                 top: .5px;
               }
@@ -465,7 +465,7 @@
             @if $tab-skin == 'bootstrap' {
               line-height: 42px;
             }
-            @if $tab-skin == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
               line-height: 38px;
             }
 
@@ -475,7 +475,7 @@
               @if $tab-skin == 'bootstrap' {
                 line-height: 42px;
               }
-              @if $tab-skin == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
                 line-height: 38px;
               }
 
@@ -489,7 +489,7 @@
                 line-height: 42px;
                 top: -2px;
               }
-              @if $tab-skin == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
                 line-height: 38px;
                 top: -2px;
               }
@@ -532,7 +532,7 @@
               padding-top: $tab-big-even-boot-active-item-padding-bottom;
             }
 
-            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
               .e-close-icon::before {
                 top: .5px;
               }
@@ -557,7 +557,7 @@
               margin: $tab-mob-even-last-item-margin;
             }
 
-            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4'or $tbar-skin == 'bootstrap5' {
 
               .e-tab-text {
                 padding-top: .5px;
@@ -757,7 +757,7 @@
         }
       }
 
-      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
         &.e-rtl .e-toolbar-item.e-active {
           margin: 0 0 0 2px;
         }
@@ -932,7 +932,7 @@
 
     &.e-rtl {
 
-      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
 
         .e-tab-header {
 
@@ -978,7 +978,7 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-alt-first-item-margin;
           padding: 0;
-          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          @if $tab-skin == 'tailwind' {
             padding: 0 12px;
           }
         }
@@ -1215,7 +1215,7 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-alt-first-item-margin;
           padding: 0;
-          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          @if $tab-skin == 'tailwind' {
             padding: 0 12px;
           }
         }
@@ -1223,7 +1223,9 @@
         .e-toolbar-item {
 
           &:not(.e-separator) {
-            margin: $tab-alt-item-margin;
+            @if $tab-skin != 'bootstrap5' {
+              margin: $tab-alt-item-margin;
+            }
           }
 
           .e-tab-wrap {
@@ -1415,14 +1417,6 @@
         }
       }
     }
-
-    .e-content {
-      .e-item {
-        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
-          padding: 16px 0;
-        }
-      }
-    }
   }
 
   .e-tab {
@@ -1453,7 +1447,7 @@
         content: '';
         position: absolute;
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           display: block;
         }
       }
@@ -1473,14 +1467,14 @@
         min-height: $tab-nrml-height;
         position: relative;
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           height: $tab-nrml-height;
           min-height: $tab-nrml-height;
         }
 
         @media screen and (max-width: 480px) {
           min-height: $tab-big-height;
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             height: $tab-big-height;
           }
         }
@@ -1510,7 +1504,7 @@
           }
         }
 
-        @if $tab-skin == 'bootstrap'or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap'or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
 
           &[style*= 'overflow: hidden'] .e-toolbar-item:not(.e-separator).e-active {
             margin-bottom: 0;
@@ -1525,12 +1519,12 @@
 
         .e-scroll-nav {
           width: 40px;
-          @if $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             border-radius: 4px;
             width: 32px;
           }
 
-          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          @if $tab-skin == 'tailwind' {
             width: 24px;
           }
         }
@@ -1568,7 +1562,7 @@
         right: 0;
         transition: left .125s cubic-bezier(.35, 0, .25, 1), right .25s cubic-bezier(.35, 0, .25, 1);
 
-        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+        @if $tab-skin == 'tailwind' {
           border-radius: 2px;
           bottom: -1px;
           height: 2px;
@@ -1671,7 +1665,7 @@
           .e-tab-wrap {
             margin-bottom: $tab-nrml-active-item-wrap-margin-bottom;
 
-            @if $tab-skin == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
               &:hover {
                 border: 0;
               }
@@ -1688,7 +1682,7 @@
             }
           }
 
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             .e-tab-icon::before {
               top: -1px;
             }
@@ -1760,7 +1754,7 @@
           min-width: $tab-nrml-icon-container-size;
           width: $tab-nrml-icon-container-size;
 
-          @if $tab-skin == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             line-height: $tab-nrml-icon-container-size;
           }
 
@@ -1903,7 +1897,7 @@
 
           &:not(.e-separator) {
             margin: $tab-pop-item-margin;
-            @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            @if $tab-skin == 'tailwind' {
               padding: 0;
             }
           }
@@ -2147,7 +2141,7 @@
             @if $tab-skin == 'bootstrap' {
               line-height: 34px;
             }
-            @if $tab-skin == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
               line-height: 32px;
             }
 
@@ -2166,7 +2160,7 @@
                   line-height: 43px;
                 }
               }
-              @if $tab-skin == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
                 line-height: 32px;
                 top: 0;
 
@@ -2206,7 +2200,7 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
               line-height: 32px;
             }
 
@@ -2217,7 +2211,7 @@
                 top: -1px;
               }
 
-              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
                 line-height: 32px;
                 top: 0;
 
@@ -2232,7 +2226,7 @@
             }
 
             &:hover {
-              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
                 line-height: 32px;
                 top: -.5px;
               }
@@ -2247,7 +2241,7 @@
           bottom: auto;
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           .e-hscroll-bar {
             margin-top: -1px;
           }
@@ -2740,7 +2734,7 @@
         }
       }
 
-      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
         &.e-rtl .e-tab-header .e-toolbar-item.e-active {
           margin: 0 0 0 2px;
         }
@@ -3020,7 +3014,7 @@
           min-height: $tab-mob-fill-height;
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           &::before {
             display: none;
           }
@@ -3042,7 +3036,7 @@
           &:not(.e-tbar-pos) .e-toolbar-item:last-child {
             margin: $tab-nrml-alt-first-item-margin;
             padding: 0;
-            @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            @if $tab-skin == 'tailwind' {
               padding: 0 8px;
             }
           }
@@ -3300,7 +3294,7 @@
 
       .e-tab-header {
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           &::before {
             display: none;
           }
@@ -3310,7 +3304,7 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-nrml-alt-first-item-margin;
           padding: 0;
-          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          @if $tab-skin == 'tailwind' {
             padding: 0 8px;
           }
         }
@@ -3437,7 +3431,7 @@
           margin: $tab-nrml-rtl-item-margin;
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child.e-active {
             margin: $tab-nrml-rtl-item-margin;
           }
@@ -3470,7 +3464,7 @@
           }
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
           &.e-horizontal-bottom {
 
             .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:not(.e-separator) {
@@ -3653,7 +3647,7 @@
       min-width: $tab-nrml-icon-container-size;
       width: $tab-nrml-icon-container-size;
 
-      @if $tab-skin == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
         line-height: $tab-nrml-icon-container-size;
       }
 
@@ -3848,7 +3842,7 @@
       min-width: $tab-big-icon-container-size;
       width: $tab-big-icon-container-size;
 
-      @if $tab-skin == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
         line-height: $tab-big-icon-container-size;
       }
     }

@@ -2639,6 +2639,7 @@ for (let i: number = 0; i < collections.length; i++) {
             let opacityElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_properties_opacity');
             // eslint-disable-next-line
             let leaderLengthElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_properties_leader_length');
+            let opacityValue: number = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.opacity * 100;
             if (lineStartElement && lineEndElement) {
                 lineStartElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].sourceDecoraterShapes);
                 lineEndElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].taregetDecoraterShapes);
@@ -2648,7 +2649,6 @@ for (let i: number = 0; i < collections.length; i++) {
             strokeColorElement.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor;
             this.onStrokeColorChange(strokeColorElement.value);
             this.onFillColorChange(fillColorElement.value);
-            opacityElement.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.opacity * 100;
             // eslint-disable-next-line
             if (parseInt(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeDashArray) >= 3) {
                 lineStyleElement.value = 'Dashed';
@@ -2661,7 +2661,7 @@ for (let i: number = 0; i < collections.length; i++) {
                 // eslint-disable-next-line
                 leaderLengthElement.value = parseInt(this.pdfViewer.selectedItems.annotations[0].leaderHeight.toString());
             }
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenPropertiesDialog');
+            this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenPropertiesDialog', opacityValue);
         }
     }
 
@@ -2943,7 +2943,7 @@ for (let i: number = 0; i < collections.length; i++) {
     /**
      * @private
      */
-    public onOkClicked(): void {
+    public onOkClicked(opacityValue?: number): void {
         let startArrow: DecoratorShapes;
         let endArrow: DecoratorShapes;
         let thickness: number;
@@ -2983,7 +2983,11 @@ for (let i: number = 0; i < collections.length; i++) {
             strokeColor = (strokeColor === '') ? '#ffffff00' : strokeColor;
             fillColor = this.getValue(fillColorElement.children[0].style.borderBottomColor, 'hex');
             fillColor = (fillColor === '' ) ? '#ffffff00' : fillColor;
-            opacity = (opacityElement.value as number) / 100;
+            if (opacityValue) {
+                opacity = (opacityValue) / 100;
+            } else {
+                opacity = (opacityElement.value as number) / 100;
+            }
             if (lineStyleElement.value) {
                 if (lineStyleElement.value === 'Solid') {
                     this.setThickness('0', 'solid', true);

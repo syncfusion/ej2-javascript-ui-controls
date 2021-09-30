@@ -89,7 +89,7 @@ export class ExcelExport {
         }
         if (this.parent.exportAllPages && this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
             let pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
-            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings);
+            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings, true);
             this.parent.applyFormatting(this.engine.pivotValues);
             clonedValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
             this.engine.pivotValues = currentPivotValues;
@@ -167,8 +167,14 @@ export class ExcelExport {
                                                 cells[cells.length - 1].style.indent = indent * 2;
                                                 maxLevel = maxLevel > indent ? maxLevel : indent;
                                             } else {
-                                                cells[cells.length - 1].style.indent = pivotCell.level * 2;
-                                                maxLevel = pivotCell.level > maxLevel ? pivotCell.level : maxLevel;
+                                                let levelName: string = pivotCell.valueSort ? pivotCell.valueSort.levelName.toString() : '';
+                                                let memberPos: number = pivotCell.actualText ?
+                                                pivotCell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length : 0;
+                                                let levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
+                                                    (memberPos ? memberPos - 1 : memberPos);
+                                                let level: number = levelPosition ? (levelPosition - 1) : 0;
+                                                cells[cells.length - 1].style.indent = level * 2;
+                                                maxLevel = level > maxLevel ? level : maxLevel;
                                             }
                                         }
                                     }

@@ -1,4 +1,4 @@
-@include export-module('documenteditor-bootstrap-dark-icons') {
+@include export-module('documenteditor-bootstrap-icons') {
   .e-documenteditor {
     .e-close::before {
       content: '\e825';
@@ -102,21 +102,10 @@
       content: '\e60a';
       font-family: 'e-icons';
     }
-
   }
 
   .e-de-ctn-title-print::before {
     content: '\e34b';
-    font-family: 'e-icons';
-  }
-
-  .e-de-acceptchange::before {
-    content: '\e19f';
-    font-family: 'e-icons';
-  }
-
-  .e-de-rejectchange::before {
-    content: '\e204';
     font-family: 'e-icons';
   }
 
@@ -169,6 +158,16 @@
   .e-de-tablecell-bottom-alignment::before {
     content: '\e525';
     font-size: $de-tablecell-alignment-font-size;
+  }
+
+  .e-de-acceptchange::before {
+    content: '\e19f';
+    font-family: 'e-icons';
+  }
+
+  .e-de-rejectchange::before {
+    content: '\e204';
+    font-family: 'e-icons';
   }
 
   .e-de-table-border-setting {
@@ -316,6 +315,10 @@
 
   .e-menu-item .e-de-cut::before {
     content: '\e279';
+  }
+
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e605';
   }
 
   .e-menu-item .e-de-spellcheck::before {
@@ -567,10 +570,6 @@
 
   .e-item .e-de-paste-merge-table::before {
     content: '\e91f';
-  }
-
-  .e-menu-item .e-de-open-properties::before {
-    content: '\e605';
   }
 
   .e-btn-icon .e-de-paste::before,

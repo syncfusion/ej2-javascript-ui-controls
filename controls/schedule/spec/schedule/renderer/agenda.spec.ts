@@ -1034,7 +1034,7 @@ describe('Agenda View', () => {
             const schOptions: ScheduleModel = {
                 width: '100%',
                 height: '650px',
-                views: [{ option: 'Month' }, { option: 'Agenda'}],
+                views: [{ option: 'Month' }, { option: 'Agenda' }],
                 selectedDate: new Date(2018, 1, 15),
                 currentView: 'Agenda'
             };
@@ -1089,7 +1089,7 @@ describe('Agenda View', () => {
                     StartTime: new Date(2018, 1, 5, 10, 0),
                     EndTime: new Date(2018, 1, 5, 11, 30),
                     CategoryColor: '#1aaa55'
-                }, 
+                },
                 {
                     Id: 18,
                     Subject: 'Black Cockatoos Playtime',
@@ -1097,7 +1097,7 @@ describe('Agenda View', () => {
                     EndTime: new Date(2018, 1, 15, 16, 0),
                     CategoryColor: '#7fa900'
                 }
-           ];
+            ];
             schObj = createSchedule(schOptions, scheduleDatas, done);
             schObj.eventRendered = (args: EventRenderedArgs) => {
                 if (args.data.Subject === 'Birds of Prey') {
@@ -1110,7 +1110,7 @@ describe('Agenda View', () => {
         });
 
         it('Checking event rendered count in agenda view', () => {
-            const eventElements:  HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElements.length).toEqual(5);
         });
     });

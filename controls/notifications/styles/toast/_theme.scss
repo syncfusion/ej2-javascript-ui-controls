@@ -9,6 +9,19 @@
       border: 1px solid  $toast-border-color;
     }
 
+    .e-toast-close-icon {
+      color: $toast-close-icon-color;
+
+      &.e-blazor-toast-close-icon,
+      &.e-blazor-toast-close-icon:focus,
+      &.e-blazor-toast-close-icon:active {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+        outline: 0;
+      }
+    }
+
     &.e-toast-success {
       background-color: $toast-success-bg-color;
       color: $toast-success-color;
@@ -26,6 +39,10 @@
         }
 
       .e-toast-icon {
+        color: $toast-success-icon-color;
+      }
+
+      .e-toast-close-icon {
         color: $toast-success-icon-color;
       }
 
@@ -60,6 +77,10 @@
         color: $toast-info-icon-color;
       }
 
+      .e-toast-close-icon {
+        color: $toast-info-icon-color;
+      }
+
       &:hover {
         background-color: $toast-info-hover-bg-color;
         box-shadow: $toast-info-hover-box-shadow;
@@ -88,6 +109,10 @@
         }
 
       .e-toast-icon {
+        color: $toast-warning-icon-color;
+      }
+
+      .e-toast-close-icon {
         color: $toast-warning-icon-color;
       }
 
@@ -122,6 +147,10 @@
         color: $toast-danger-icon-color;
       }
 
+      .e-toast-close-icon {
+        color: $toast-danger-icon-color;
+      }
+
       &:hover {
         background-color: $toast-danger-hover-bg-color;
         box-shadow: $toast-danger-hover-box-shadow;
@@ -144,19 +173,6 @@
 
     .e-toast-icon {
       color: $toast-icon-color;
-    }
-
-    .e-toast-close-icon {
-      color: $toast-close-icon-color;
-
-      &.e-blazor-toast-close-icon,
-      &.e-blazor-toast-close-icon:focus,
-      &.e-blazor-toast-close-icon:active {
-        background-color: transparent;
-        border: 0;
-        box-shadow: none;
-        outline: 0;
-      }
     }
 
     .e-toast-message {

@@ -874,6 +874,7 @@ describe('Context-', () => {
             }, 100);
         });
     });
+    
       describe('Content menu -', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
@@ -926,4 +927,5 @@ describe('Context-', () => {
             setTimeout(done, 2000);
         });
     });
+
 });

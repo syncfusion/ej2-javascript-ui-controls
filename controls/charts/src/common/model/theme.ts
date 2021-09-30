@@ -116,8 +116,8 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
             '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
         break;
     case 'MaterialDark':
-        palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
-            '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
+        palette = ['#9ECB08', '#56AEFF', '#C57AFF', '#61EAA9', '#EBBB3E',
+            '#F45C5C', '#8A77FF', '#63C7FF', '#FF84B0', '#F7C928'];
         break;
     case 'FabricDark':
         palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
@@ -137,7 +137,15 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
     case 'TailwindDark':
         palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
                     '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
-        break;    
+        break;
+    case 'Bootstrap5':
+        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+                    '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+        break;
+    case 'Bootstrap5Dark':
+        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+                    '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+        break;
     default:
         palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
             '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
@@ -146,9 +154,10 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
     return palette;
 }
 /** @private */
+// tslint:disable-next-line:max-func-body-length
 export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyle {
     let style: IThemeStyle;
-    const darkBackground: string = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
+    const darkBackground: string = theme === 'MaterialDark' ? '#383838' : (theme === 'FabricDark' ? '#242424' : '#1b1b1b');
     switch (theme as string) {
     case 'HighContrastLight':
     case 'Highcontrast':
@@ -253,9 +262,9 @@ case 'TailwindDark':
         minorTickLine: ' #4B5563',
         chartTitle: '#D1D5DB',
         legendLabel: '#D1D5DB',
-        background: 'rgba(255,255,255, 0.0)',
+        background: '#1f2937',
         areaBorder: ' #374151',
-        errorBar: '#374151',
+        errorBar: '#ffffff',
         crosshairLine: '#9CA3AF',
         crosshairFill: '#F9FAFB',
         crosshairLabel: '#1F2937',
@@ -269,6 +278,60 @@ case 'TailwindDark':
         selectionCircleStroke: '#282727'
     };
     break;
+    case 'Bootstrap5':
+        style = {
+            axisLabel: '#495057',
+            axisTitle: '#343A40',
+            axisLine: '#D1D5DB',
+            majorGridLine: '#E5E7EB',
+            minorGridLine: '#E5E7EB',
+            majorTickLine: '#D1D5DB',
+            minorTickLine: ' #D1D5DB',
+            chartTitle: '#343A40',
+            legendLabel: '#343A40',
+            background: '#FFFFFF',
+            areaBorder: ' #DEE2E6',
+            errorBar: '#1F2937',
+            crosshairLine: '#1F2937',
+            crosshairFill: '#212529',
+            crosshairLabel: '#F9FAFB',
+            tooltipFill: '#212529',
+            tooltipBoldLabel: '#D1D5DB',
+            tooltipLightLabel: '#F9FAFB',
+            tooltipHeaderLine: '#6B7280',
+            markerShadow: null,
+            selectionRectFill: 'rgba(79,70,229, 0.1)',
+            selectionRectStroke: '#4F46E5',
+            selectionCircleStroke: '#6B7280'
+        };
+        break;
+    case 'Bootstrap5Dark':
+        style = {
+            axisLabel: '#CED4DA',
+            axisTitle: '#E9ECEF',
+            axisLine: '#495057',
+            majorGridLine: '#343A40',
+            minorGridLine: '#343A40',
+            majorTickLine: '#495057',
+            minorTickLine: ' #495057',
+            chartTitle: '#E9ECEF',
+            legendLabel: '#E9ECEF',
+            background: '#212529',
+            areaBorder: ' #444C54',
+            errorBar: '#ADB5BD',
+            crosshairLine: '#ADB5BD',
+            crosshairFill: '#E9ECEF',
+            crosshairLabel: '#212529',
+            tooltipFill: '#E9ECEF',
+            tooltipBoldLabel: '#D1D5DB',
+            tooltipLightLabel: '#F9FAFB',
+            tooltipHeaderLine: '#6B7280',
+            markerShadow: null,
+            selectionRectFill: 'rgba(79,70,229, 0.1)',
+            selectionRectStroke: '#4F46E5',
+            selectionCircleStroke: '#6B7280'
+        };
+        break;
     default:
         style = {
             axisLabel: '#686868',

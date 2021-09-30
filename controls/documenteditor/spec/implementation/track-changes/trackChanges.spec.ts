@@ -1041,3 +1041,4 @@ console.log('Track Changes Pane close button validation');
         expect(right).toBe('');
     });
 });
+

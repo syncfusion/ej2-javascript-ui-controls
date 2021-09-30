@@ -105,9 +105,9 @@ export class TableOptionsDialog {
         });
         let td6Padding: string;
         if (isRtl) {
-            td6Padding = 'padding-right:15px;';
+            td6Padding = 'padding-right:25px;';
         } else {
-            td6Padding = 'padding-left:14px;';
+            td6Padding = 'padding-left:25px;';
         }
         const td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: td6Padding });
         this.cellspacingTextBox = <HTMLInputElement>createElement('input', {
@@ -121,7 +121,7 @@ export class TableOptionsDialog {
         this.target.appendChild(div);
         this.target.appendChild(divBtn);
         this.cellSpaceTextBox = new NumericTextBox({
-            value: 0, min: 0, max: 264.5, width: 163,
+            value: 0, min: 0, max: 264.5, width: 174,
             decimals: 2, enablePersistence: false
         });
         this.cellSpaceTextBox.appendTo(this.cellspacingTextBox);

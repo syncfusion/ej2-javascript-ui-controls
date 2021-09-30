@@ -13,13 +13,13 @@
         }
 
         .e-header-text {
-          @if ($kanban-skin == 'tailwind') {
+          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
             color: $kanban-header-font;
           }
         }
 
         .e-item-count {
-          @if ($kanban-skin == 'tailwind') {
+          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
             color: $kanban-header-item-color;
           }
         }
@@ -29,7 +29,7 @@
             color: $kanban-border-hover-color;
           }
 
-          @if ($kanban-skin == 'tailwind') {
+          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
             color: $kanban-header-item-color;
           }
         }
@@ -49,7 +49,7 @@
               color: $kanban-icons-toggle-color;
             }
 
-            @if ($kanban-skin == 'tailwind') {
+            @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
               background: none;
               box-shadow: $kanban-hover-box-shadow;
               color: $kanban-primary-color;
@@ -73,6 +73,11 @@
           }
 
           .e-show-add-button {
+
+            &:hover {
+              background-color: $kanban-dropped-clone-bg-color;
+            }
+
             .e-show-add-icon {
               color: $kanban-dropped-clone-border-color;
             }
@@ -80,7 +85,7 @@
         }
 
         .e-card {
-          @if ($kanban-skin == 'tailwind') {
+          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
             background: $kanban-bg-color;
           }
 
@@ -96,6 +101,9 @@
             }
             @if $kanban-skin == 'bootstrap4' or $kanban-skin == 'bootstrap' {
               border: 1px solid $kanban-dragged-clone-border-color;
+            }
+            @if $kanban-skin == 'bootstrap5' {
+              background-color: $kanban-bg-color;
             }
           }
 
@@ -149,11 +157,14 @@
   .e-kanban-dialog {
     .e-kanban-form-wrapper table {
       textarea {
-        @if $kanban-skin == 'highcontrast' {
-          background-color: $kanban-bg-color;
+        background-color: $kanban-text-area-bg-color;
+        color: $kanban-text-area-color;
+
+        @if $kanban-skin == 'fabric' or $kanban-skin == 'fabric-dark' or $kanban-skin == 'bootstrap5' or $kanban-skin == 'highcontrast' or $kanban-skin == 'tailwind' {
+          font-weight: 400;
         }
-        @if ($kanban-skin == 'tailwind') {
-          background-color: $kanban-bg-color;
+
+        @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
           border-color: $kanban-focus-color;
           border-radius: 4px;
           outline: none;
@@ -161,7 +172,7 @@
         }
 
         &:focus {
-          @if ($kanban-skin == 'tailwind') {
+          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
             box-shadow: $kanban-text-focus-box-shadow;
           }
         }

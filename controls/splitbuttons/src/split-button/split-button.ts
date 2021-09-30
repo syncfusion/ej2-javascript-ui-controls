@@ -205,7 +205,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         }
     }
     /**
-     * Initialize the Component rendering
+     * Initialize the Component rendering.
      *
      * @returns {void}
      * @private

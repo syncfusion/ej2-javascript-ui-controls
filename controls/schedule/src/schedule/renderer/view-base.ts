@@ -5,6 +5,7 @@ import {
 import { Schedule } from '../base/schedule';
 import { TdData, ResourceDetails, CallbackFunction } from '../base/interface';
 import * as cls from '../base/css-constant';
+import * as event from '../base/constant';
 import * as util from '../base/util';
 
 /**
@@ -34,8 +35,16 @@ export class ViewBase {
         return [];
     }
 
-    public serverRenderLayout(): void {
-        // Need only for layout server rendering
+    public refreshHeader(): void {
+        // Method to refresh the date header
+    }
+
+    public refreshResourceHeader(): void {
+        remove(this.element.querySelector('tbody').lastElementChild.firstElementChild);
+        const resTd: Element = createElement('td');
+        resTd.appendChild(this.parent.resourceBase.createResourceColumn());
+        prepend([resTd], this.element.querySelector('tbody').lastElementChild);
+        this.parent.notify(event.contentReady, {});
     }
 
     public getDayName(date: Date): string {
@@ -90,7 +99,7 @@ export class ViewBase {
 
     public createTableLayout(className?: string): Element {
         const clsName: string = className || '';
-        const table: Element = createElement('table', { className: cls.SCHEDULE_TABLE_CLASS + ' ' + clsName });
+        const table: Element = createElement('table', { className: cls.SCHEDULE_TABLE_CLASS + ' ' + clsName, attrs: { role: 'table' } });
         const tbody: Element = createElement('tbody');
         table.appendChild(tbody);
         return table;

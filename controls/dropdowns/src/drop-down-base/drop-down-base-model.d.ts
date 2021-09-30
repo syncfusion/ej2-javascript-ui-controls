@@ -1,4 +1,4 @@
-import { Component, EventHandler, addClass, append, Property, Event, KeyboardEvents, EmitType, L10n, compile } from '@syncfusion/ej2-base';import { setStyleAttribute, extend, removeClass, prepend, isNullOrUndefined, detach, getValue, AnimationModel } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, rippleEffect, RippleOptions, ChildProperty, Complex } from '@syncfusion/ej2-base';import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data';import { ListBase, SortOrder } from '@syncfusion/ej2-lists';import { Popup } from '@syncfusion/ej2-popups';import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, remove, select, selectAll } from '@syncfusion/ej2-base';
+import { Component, EventHandler, addClass, append, Property, Event, KeyboardEvents, EmitType, L10n, compile } from '@syncfusion/ej2-base';import { setStyleAttribute, extend, removeClass, prepend, isNullOrUndefined, detach, getValue, AnimationModel } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, rippleEffect, RippleOptions, ChildProperty, Complex } from '@syncfusion/ej2-base';import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data';import { ListBase, SortOrder } from '@syncfusion/ej2-lists';import { Popup } from '@syncfusion/ej2-popups';import { remove, select, selectAll } from '@syncfusion/ej2-base';
 import {FilterType,SelectEventArgs} from "./drop-down-base";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -232,8 +232,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers before fetching data from the remote server.
      *
      * @event actionBegin
-     * @blazorProperty 'OnActionBegin'
-     * @blazorType ActionBeginEventArgs
      */
     actionBegin?: EmitType<Object>;
 
@@ -241,8 +239,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers after data is fetched successfully from the remote server.
      *
      * @event actionComplete
-     * @blazorProperty 'OnActionComplete'
-     * @blazorType ActionCompleteEventArgs
      */
     actionComplete?: EmitType<Object>;
 
@@ -250,7 +246,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers when the data fetch request from the remote server fails.
      *
      * @event actionFailure
-     * @blazorProperty 'OnActionFailure'
      */
     actionFailure?: EmitType<Object>;
 
@@ -258,7 +253,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
      *
      * @event select
-     * @blazorProperty 'OnValueSelect'
      */
     select?: EmitType<SelectEventArgs>;
 
@@ -266,8 +260,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers when data source is populated in the popup list..
      *
      * @event dataBound
-     * @blazorProperty 'DataBound'
-     * @blazorType DataBoundEventArgs
      */
     dataBound?: EmitType<Object>;
 
@@ -275,7 +267,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -283,7 +274,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers when the component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

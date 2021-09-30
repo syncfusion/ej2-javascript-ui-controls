@@ -1,44 +1,48 @@
-//Mouse Mode
+$skin-name: 'tailwind' !default;
+//Layout Variables Start
+//Mouse Mode Start
 $toast-icon-nrml-height: 20px !default;
 $toast-icon-nrml-width: 20px !default;
 $toast-icon-nrml-size: $text-base !default;
 $toast-icon-nrml-right-margin: 10px !default;
 $toast-close-icon-nrml-height: 20px !default;
 $toast-close-icon-nrml-width: 20px !default;
-$toast-close-icon-nrml-size: $text-sm !default;
+$toast-close-icon-nrml-size: $text-base !default;
 $toast-position-nrml-distance: 10px !default;
 $multitoast-nrml-gap-distance: 10px !default;
 $toast-nrml-min-height: 48px !default;
-$toast-nrml-padding: 14px !default;
-$toast-action-btn-nrml-padding: 10px 0 0 0 !default;
+$toast-nrml-padding: 16px !default;
+$toast-action-btn-nrml-padding: 10px 3px 3px 0 !default;
 $toast-action-btn-nrml-margin: 10px !default;
 $toast-progressbar-nrml-height: 4px !default;
-$toast-content-nrml-padding: 8px 0 20px 0 !default;
+$toast-content-nrml-padding: 8px 0 !default;
 $toast-nrml-border-radious: 6px !default;
 $toast-font-nrml-size: $text-sm !default;
 $toast-title-font-nrml-size: $text-sm !default;
+//Mouse Mode End
 
-//Touch Mode
+//Touch Mode Start
 $toast-icon-bgr-height: 24px !default;
 $toast-icon-bgr-width: 24px !default;
 $toast-icon-bgr-size: 18px !default;
 $toast-icon-bgr-right-margin: 13px !default;
 $toast-close-icon-bgr-height: 24px !default;
 $toast-close-icon-bgr-width: 24px !default;
-$toast-close-icon-bgr-size: $text-sm !default;
+$toast-close-icon-bgr-size: $text-base !default;
 $toast-position-bgr-distance: 10px !default;
 $multitoast-bgr-gap-distance: 10px !default;
 $toast-bgr-min-height: 48px !default;
-$toast-action-btn-bgr-padding: 10px 0 0 0 !default;
+$toast-action-btn-bgr-padding: 10px 5px 5px 0 !default;
 $toast-action-btn-bgr-margin: 10px !default;
 $toast-progressbar-bgr-height: 4px !default;
-$toast-content-bgr-padding: 14px 0 10px 0 !default;
+$toast-content-bgr-padding: 12px 0 !default;
 $toast-bgr-border-radious: 6px !default;
 $toast-font-bgr-size: $text-sm !default;
 $toast-title-font-weight: bold !default;
+//Touch Mode End
+//Layout Variables End
 
-//theme variables
-
+//Theme Variables Start
 $toast-box-shadow: $shadow !default;
 $toast-hover-box-shadow: $shadow !default;
 $toast-progress-color: $primary !default;
@@ -50,9 +54,7 @@ $toast-icon-color: $icon-color !default;
 $toast-close-icon-color: $icon-color !default;
 $toast-title-color: $content-text-color !default;
 $toast-content-color: $content-text-color-alt1 !default;
-
-// Toast Types theme definitions
-
+// Toast Type Definitions Start
 $toast-success-bg-color: $success-light !default;
 $toast-success-color: $success-bg-color !default;
 $toast-success-title-color: $success-bg-color !default;
@@ -88,8 +90,10 @@ $toast-danger-content-color: $toast-danger-color !default;
 $toast-danger-hover-bg-color: $danger-light !default;
 $toast-danger-hover-color: $toast-danger-color !default;
 $toast-danger-hover-box-shadow: $shadow !default;
-//icon variabels
-
+// Toast Type Definitions End
+//icon Variable
 $toast-close-icon: '\e771' !default;
-
-$toast-title-font-weight: bold !default;
+$toast-success-icon: '\e7b0' !default;
+$toast-error-icon: '\e7a2' !default;
+$toast-info-icon: '\e797' !default;
+//Theme Variables End

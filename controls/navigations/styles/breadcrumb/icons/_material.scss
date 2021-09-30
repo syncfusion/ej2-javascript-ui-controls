@@ -1,0 +1,24 @@
+
+@include export-module('breadcrumb-material-icons') {
+  /*! breadcrumb icons */
+  .e-breadcrumb {
+    .e-breadcrumb-collapsed::before {
+      content: '\eb04';
+    }
+
+    .e-home {
+      margin-top: -1px;
+
+      &::before {
+        content: '\e92b';
+      }
+    }
+  }
+
+  .e-bigger .e-breadcrumb,
+  .e-bigger.e-breadcrumb {
+    .e-home {
+      margin-top: 0;
+    }
+  }
+}

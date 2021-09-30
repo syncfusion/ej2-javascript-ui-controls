@@ -9,7 +9,6 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * Defines the number of records to be displayed in TreeGrid per page.
      *
      * @default 12
-     * @blazorType int
      */
     @Property(12)
     public pageSize: number;
@@ -18,7 +17,6 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * Defines the number of pages to be displayed in the TreeGrid pager container.
      *
      * @default 8
-     * @blazorType int
      */
     @Property(8)
     public pageCount: number;
@@ -27,7 +25,6 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * Defines the current page number of the pager in TreeGrid.
      *
      * @default 1
-     * @blazorType int
      */
     @Property(1)
     public currentPage: number;
@@ -35,7 +32,6 @@ export class PageSettings extends ChildProperty<PageSettings> {
     /**
      * @hidden
      * Gets the total records count of the TreeGrid.
-     * @blazorType int
      */
     @Property()
     public totalRecordsCount: number;

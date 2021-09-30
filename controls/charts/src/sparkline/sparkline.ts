@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex, isBlazor } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { remove, L10n, Internationalization, Event, EmitType, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Touch, Collection } from '@syncfusion/ej2-base';
@@ -214,7 +214,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers after sparkline rendered.
      * @event
-     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ISparklineLoadedEventArgs>;
@@ -222,7 +221,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline render.
      * @event
-     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ISparklineLoadEventArgs>;
@@ -230,7 +228,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline tooltip render.
      * @event
-     * @blazorProperty 'OnTooltipInitialize'
      */
     @Event()
     public tooltipInitialize: EmitType<ITooltipRenderingEventArgs>;
@@ -238,7 +235,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline series render.
      * @event
-     * @blazorProperty 'SeriesRendering'
      */
     @Event()
     public seriesRendering: EmitType<ISeriesRenderingEventArgs>;
@@ -246,7 +242,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline axis render.
      * @event
-     * @blazorProperty 'AxisRendering'
      */
     @Event()
     public axisRendering: EmitType<IAxisRenderingEventArgs>;
@@ -254,7 +249,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline points render.
      * @event
-     * @blazorProperty 'PointRendering'
      */
     @Event()
     public pointRendering: EmitType<ISparklinePointEventArgs>;
@@ -262,7 +256,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse move on the sparkline point region.
      * @event
-     * @blazorProperty 'OnPointRegionMouseMove'
      */
     @Event()
     public pointRegionMouseMove: EmitType<IPointRegionEventArgs>;
@@ -270,7 +263,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse click on the sparkline point region.
      * @event
-     * @blazorProperty 'OnPointRegionMouseClick'
      */
     @Event()
     public pointRegionMouseClick: EmitType<IPointRegionEventArgs>;
@@ -278,7 +270,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse move on the sparkline container.
      * @event
-     * @blazorProperty 'OnSparklineMouseMove'
      */
     @Event()
     public sparklineMouseMove: EmitType<ISparklineMouseEventArgs>;
@@ -286,7 +277,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse click on the sparkline container.
      * @event
-     * @blazorProperty 'OnSparklineMouseClick'
      */
     @Event()
     public sparklineMouseClick: EmitType<ISparklineMouseEventArgs>;
@@ -294,7 +284,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline datalabel render.
      * @event
-     * @blazorProperty 'DataLabelRendering'
      */
     @Event()
     public dataLabelRendering: EmitType<IDataLabelRenderingEventArgs>;
@@ -302,32 +291,30 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline marker render.
      * @event
-     * @blazorProperty 'MarkerRendering'
      */
     @Event()
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
      * Triggers on resizing the sparkline.
      * @event
-     * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<ISparklineResizeEventArgs>;
 
-    // sparkline internal properties
+    // Sparkline internal properties.
 
     /**
-     * svg renderer object.
+     * SVG renderer object.
      * @private
      */
     public renderer: SvgRenderer;
     /**
-     * sparkline renderer object.
+     * Sparkline renderer object.
      * @private
      */
     public sparklineRenderer: SparklineRenderer;
     /**
-     * sparkline svg element's object
+     * Sparkline SVG element's object
      * @private
      */
     public svgObject: Element;
@@ -379,9 +366,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      */
     public intl: Internationalization;
 
-    /** @private */
-    public isBlazor: boolean;
-
     // Sparkline rendering starts from here.
 
     /**
@@ -394,13 +378,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      * Initializing pre-required values for sparkline.
      */
     protected preRender(): void {
-        this.isBlazor = isBlazor();
 
         this.allowServerDataBinding = false;
 
         this.unWireEvents();
 
-        this.trigger('load', { sparkline: !this.isBlazor ? this : null });
+        this.trigger('load', { sparkline: this });
 
         this.sparkTheme = getThemeColor(this.theme);
 
@@ -431,7 +414,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
-        this.trigger('loaded', { sparkline: !this.isBlazor ? this : null });
+        this.trigger('loaded', { sparkline: this });
     }
     /**
      * To render sparkline elements
@@ -592,7 +575,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         let args: ISparklineResizeEventArgs = {
             name: 'resize',
             previousSize: this.availableSize,
-            sparkline: !this.isBlazor ? this : null,
+            sparkline: this,
             currentSize: new Size(0, 0)
         };
         if (this.resizeTo) {
@@ -625,14 +608,14 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.notify(Browser.touchMoveEvent, e);
         let args: ISparklineMouseEventArgs = {
             name: 'sparklineMouseMove', cancel: false,
-            sparkline: !this.isBlazor ? this : null, event: e
+            sparkline: this, event: e
         };
         this.trigger(args.name, args);
         let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs: IPointRegionEventArgs = {
                 name: 'pointRegionMouseMove', cancel: false,
-                event: e, sparkline: !this.isBlazor ? this : null,
+                event: e, sparkline: this,
                 pointIndex: pointClick.pointIndex
             };
             this.trigger(pointArgs.name, pointArgs);
@@ -648,14 +631,14 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.setSparklineMouseXY(e);
         let args: ISparklineMouseEventArgs = {
             name: 'sparklineMouseClick', cancel: false,
-            sparkline: !this.isBlazor ? this : null, event: e
+            sparkline: this, event: e
         };
         this.trigger(args.name, args);
         let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs: IPointRegionEventArgs = {
                 name: 'pointRegionMouseClick', cancel: false,
-                event: e, sparkline: !this.isBlazor ? this : null,
+                event: e, sparkline: this,
                 pointIndex: pointClick.pointIndex
             };
             this.trigger(pointArgs.name, pointArgs);
@@ -742,11 +725,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
                     refresh = true;
                     break;
                 case 'dataSource':
-                    if (this.isBlazor) {
-                        this.sparklineRenderer.processDataManager();
-                        this.createSVG();
-                        break;
-                    }
                     refresh = true;
                     break;
                 case 'border':

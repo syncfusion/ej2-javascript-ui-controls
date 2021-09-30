@@ -4,11 +4,11 @@ import { IFieldOptions, IField } from '../../base/engine';
 import { SummaryTypes } from '../../base/types';
 import { FieldDroppedEventArgs, FieldDropEventArgs } from '../base/interface';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
-import { isBlazor } from '@syncfusion/ej2-base';
 import { PivotButton } from '../actions/pivot-button';
 import { PivotUtil } from '../../base/util';
-import { PivotView } from '../../pivotview';
-import { PivotFieldList } from '../../pivotfieldlist';
+import { PivotView } from '../../pivotview/base/pivotview';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * `DataSourceUpdate` module is used to update the dataSource.
@@ -45,6 +45,7 @@ export class DataSourceUpdate {
     public updateDataSource(fieldName: string, droppedClass: string, droppedPosition: number): void {
         let dataSourceItem: IFieldOptions;
         let draggedClass: string;
+        let draggedPosition: number = -1;
         let row: IFieldOptions[] = this.parent.dataSourceSettings.rows;
         let column: IFieldOptions[] = this.parent.dataSourceSettings.columns;
         let value: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -56,6 +57,7 @@ export class DataSourceUpdate {
                     if (field[len][i].name === fieldName || (this.parent.dataType === 'olap' &&
                         field[len][i].name.toLowerCase() === '[measures]' && field[len][i].name.toLowerCase() === fieldName)) {
                         draggedClass = len === 0 ? 'rows' : len === 1 ? 'columns' : len === 2 ? 'values' : 'filters';
+                        draggedPosition = i;
                     }
                     if (!draggedClass) {
                         draggedClass = 'fieldList';
@@ -82,16 +84,36 @@ export class DataSourceUpdate {
                             this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
                             break;
                         case 'rows':
-                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
+                            droppedPosition = droppedPosition === this.parent.dataSourceSettings.rows.length ? -1 : droppedPosition;
+                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'row', valueIndex: droppedPosition } }, true);
                             break;
                         case 'columns':
-                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'column' } }, true);
+                            droppedPosition = droppedPosition === this.parent.dataSourceSettings.columns.length ? -1 : droppedPosition;
+                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'column', valueIndex: droppedPosition } }, true);
                             break;
                     }
                 } else {
                     // dataSourceItem = this.removeFieldFromReport(fieldName.toString());
                     // dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
                     this.removeFieldFromReport(fieldName.toString());
+                    if (this.parent.dataType === 'pivot' && this.control.showValuesButton && this.parent.dataSourceSettings.values.length > 1) {
+                        let dropAxisFields: IFieldOptions[] = (this.parent.dataSourceSettings.valueAxis === 'row' &&
+                            droppedClass === 'rows') ? this.parent.dataSourceSettings.rows : (this.parent.dataSourceSettings.valueAxis === 'column' && droppedClass === 'columns') ?
+                            this.parent.dataSourceSettings.columns : undefined;
+                        if (draggedPosition < this.parent.dataSourceSettings.valueIndex && ((this.parent.dataSourceSettings.valueAxis === 'row' &&
+                            draggedClass === 'rows') || (this.parent.dataSourceSettings.valueAxis === 'column' && draggedClass === 'columns'))) {
+                            this.control.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }, true);
+                        }
+                        if (!isNullOrUndefined(dropAxisFields)) {
+                            if (droppedPosition === -1 && this.parent.dataSourceSettings.valueIndex === -1) {
+                                this.control.setProperties({ dataSourceSettings: { valueIndex: dropAxisFields.length } }, true);
+                            } else if (droppedPosition > -1 && droppedPosition <= this.parent.dataSourceSettings.valueIndex) {
+                                this.control.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex + 1 } }, true);
+                            } else if (this.parent.dataSourceSettings.valueIndex > -1 && droppedPosition > this.parent.dataSourceSettings.valueIndex) {
+                                droppedPosition = droppedPosition - 1;
+                            }
+                        }
+                    }
                     dataSourceItem = this.getNewField(fieldName.toString(), observedArgs.dropField);
                     if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
                         droppedClass = 'values';
@@ -116,7 +138,6 @@ export class DataSourceUpdate {
                         droppedAxis: droppedClass, droppedPosition: droppedPosition
                     };
                     /* eslint-disable */
-                    let dataSourceUpdate: DataSourceUpdate = this;
                     control.trigger(events.onFieldDropped, eventArgs, (droppedArgs: FieldDroppedEventArgs) => {
                         dataSourceItem = droppedArgs.droppedField;
                         if (dataSourceItem) {
@@ -124,48 +145,25 @@ export class DataSourceUpdate {
                             droppedClass = droppedArgs.droppedAxis;
                             switch (droppedClass) {
                                 case 'filters':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.push(dataSourceItem) : this.parent.dataSourceSettings.filters.push(dataSourceItem));
+                                    droppedPosition !== -1 ? this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.filters.push(dataSourceItem);
                                     break;
                                 case 'rows':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.push(dataSourceItem) : this.parent.dataSourceSettings.rows.push(dataSourceItem));
+                                    droppedPosition !== -1 ? this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.rows.push(dataSourceItem);
                                     break;
                                 case 'columns':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.push(dataSourceItem) : this.parent.dataSourceSettings.columns.push(dataSourceItem));
+                                    droppedPosition !== -1 ? this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.columns.push(dataSourceItem);
                                     break;
                                 case 'values':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.push(dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem));
-                                    if (isBlazor()) {
-                                        if (dataSourceUpdate.parent.dataType === 'olap' && !(dataSourceUpdate.parent.engineModule as OlapEngine).isMeasureAvail) {
-                                            let measureField: IFieldOptions = {
-                                                name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
-                                            };
-                                            let fieldAxis: IFieldOptions[] = dataSourceUpdate.parent.dataSourceSettings.valueAxis === 'row' ?
-                                                dataSourceUpdate.parent.dataSourceSettings.rows : dataSourceUpdate.parent.dataSourceSettings.columns;
-                                            fieldAxis.push(measureField);
-                                        }
-                                    } else {
-                                        if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail) {
-                                            let measureField: IFieldOptions = {
-                                                name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
-                                            };
-                                            let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                                                this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                                            fieldAxis.push(measureField);
-                                        }
+                                    droppedPosition !== -1 ? this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem);
+                                    if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail) {
+                                        let measureField: IFieldOptions = {
+                                            name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
+                                        };
+                                        let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                                            this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                                        fieldAxis.push(measureField);
                                     }
                                     break;
-                            }
-                            if (isBlazor()) {
-                                dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
-                                dataSourceUpdate.parent.control.axisFieldModule.render();
                             }
                         }
                     });
