@@ -5,8 +5,9 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
-import { LayerModel, Rect, UndoRedo } from '../../../src/index';
+import { LayerModel, Rect, UndoRedo, PointModel } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
+import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams, UndoRedo);
 /**
@@ -1918,4 +1919,119 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
     });
 })
 
+describe('Connector Segment -Rotate', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
 
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1',
+                type: 'Orthogonal',
+                sourcePoint: { x: 300, y: 100 },
+                targetPoint: { x: 400, y: 200 },
+            },
+            {
+                id: 'connector10', sourcePoint: { x: 400, y: 100 },
+                targetPoint: { x: 500, y: 200 }, type: 'Orthogonal',
+                segments: [{ type: 'Orthogonal', length: 100, direction: 'Right' }, { type: 'Orthogonal', length: 100, direction: 'Top' }]
+            },
+        ];
+        diagram = new Diagram({
+            width: '1000px',
+            height: '800px',
+            connectors: connectors,
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Rotate the connectors and check rotate angle', (done: Function) => {
+        diagram.selectAll();
+        diagram.rotate(diagram.selectedItems, 300);
+        expect(diagram.selectedItems.rotateAngle === 300 ).toBe(true);
+        done();
+    });
+    it('Rotate the connector with segment and check points', (done: Function) => {
+        diagram.selectAll();
+        diagram.rotate(diagram.selectedItems, 300);
+        expect(diagram.connectors[1].sourcePoint.x > 355 && diagram.connectors[1].sourcePoint.y > 174 &&
+            diagram.connectors[1].targetPoint.x > 392 && diagram.connectors[1].targetPoint.y > 37).toBe(true);
+        done();
+    });
+})
+
+describe('Multiple Connector Rotate Issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1',
+                type: 'Straight',
+                sourcePoint: { x: 250, y: 150 },
+                targetPoint: { x: 150, y: 200 },
+            },
+            {
+                id: 'connector10', sourcePoint: { x: 200, y: 100 },
+                targetPoint: { x: 400, y: 200 },
+                segments: [{ type: 'Straight' }]
+            },
+        ];
+        diagram = new Diagram({
+            width: '750px',
+            height: '800px',
+            connectors: connectors,
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Rotate the multiple connectors and check rotate angle', (done: Function) => {
+        diagram.selectAll();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let bounds: Rect = diagram.selectedItems.wrapper.bounds;
+        let rotator: PointModel = { x: bounds.center.x, y: bounds.y - 30 };
+        let matrix: Matrix = identityMatrix();
+        rotateMatrix(matrix, 320, bounds.center.x, bounds.center.y);
+        let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
+        mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + 8, rotator.y + 8, endPoint.x + 8, endPoint.y + 8);
+        console.log("Rotate Angle: "+ diagram.selectedItems.rotateAngle);
+        expect(Math.floor(diagram.selectedItems.rotateAngle) === 316 || Math.floor(diagram.selectedItems.rotateAngle) === 320 || Math.floor(diagram.selectedItems.rotateAngle) === 315 ).toBe(true);
+        done();
+    });
+    it('Scale the connector and check selector offset', (done: Function) => {
+        diagram.scale(diagram.selectedItems, 1.2, 1, { x: 0.5, y: 0.5 });
+        expect(diagram.selectedItems.offsetX === 275 && diagram.selectedItems.offsetY === 150 ).toBe(true);
+        done();
+    });
+})

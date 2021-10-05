@@ -15,7 +15,7 @@ import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoE
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
-import { DataBind, setRow, setColumn } from '../index';
+import { DataBind, setRow, setColumn, InsertDeleteEventArgs } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookChart } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
@@ -803,7 +803,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public insertRow(startRow?: number | RowModel[], endRow?: number, sheet?: number | string): void {
         this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getSheetModel(sheet), start: startRow, end: endRow,
-            modelType: 'Row' });
+            modelType: 'Row', insertType: 'below' });
     }
 
     /**
@@ -819,7 +819,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public insertColumn(startColumn?: number | ColumnModel[], endColumn?: number, sheet?: number | string): void {
         this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getSheetModel(sheet), start: startColumn, end: endColumn,
-            modelType: 'Column' });
+            modelType: 'Column', insertType: 'after' });
     }
 
     /**
@@ -1111,13 +1111,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Saves the Spreadsheet data to Excel file.
-     * <br><br>
+     *
+     * {% codeBlock src='spreadsheet/save/index.md' %}{% endcodeBlock %}
+     *
      * The available arguments in saveOptions are:
      * * url: Specifies the save URL.
      * * fileName: Specifies the file name.
      * * saveType: Specifies the file type need to be saved.
-     *
-     * {% codeBlock src='spreadsheet/save/index.md' %}{% endcodeBlock %}
      *
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
      * @returns {void} - To Saves the Spreadsheet data to Excel file.
@@ -1530,8 +1530,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Gets the formatted text of the cell.
      *
-     * @param {CellModel} cell - Specifies the cell.
      * {% codeBlock src='spreadsheet/getDisplayText/index.md' %}{% endcodeBlock %}
+     *
+     * @param {CellModel} cell - Specifies the cell.
      * @returns {string} - To get Display Text.
      */
     public getDisplayText(cell: CellModel): string {
@@ -1655,5 +1656,66 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public frozenColCount(sheet: SheetModel): number {
         return sheet.frozenColumns ? (sheet.topLeftCell === 'A1' ? sheet.frozenColumns : getCellIndexes(sheet.topLeftCell)[1] +
             sheet.frozenColumns) : 0;
+    }
+
+    /**
+     * To update the provided range while inserting or deleting rows and columns.
+     *
+     * @param {InsertDeleteEventArgs} args - Insert / Detele event arguments.
+     * @param {number[]} index - Existing range.
+     * @returns {boolean} - It return `true`, if the insert / delete action happens between the provided range, otherwise `false`.
+     * @hidden
+     */
+    public updateRangeOnInsertDelete(args: InsertDeleteEventArgs, index: number[]): boolean {
+        let diff: number; let updated: boolean = false;
+        if (args.isInsert) {
+            diff = (args.endIndex - args.startIndex) + 1;
+            if (args.modelType === 'Row') {
+                if (args.startIndex <= index[0]) { index[0] += diff; updated = true; }
+                if (args.startIndex <= index[2]) { index[2] += diff; updated = true; }
+            } else {
+                if (args.startIndex <= index[1]) { index[1] += diff; updated = true; }
+                if (args.startIndex <= index[3]) { index[3] += diff; updated = true; }
+            }
+        } else {
+            if (args.modelType === 'Row') {
+                diff = index[0] - args.startIndex;
+                if (diff > 0) {
+                    if (index[0] > args.endIndex) {
+                        diff = (args.endIndex - args.startIndex) + 1;
+                        if (diff > 0) { index[0] -= diff; updated = true; }
+                    } else {
+                        index[0] -= diff; updated = true;
+                    }
+                }
+                if (args.startIndex <= index[2]) {
+                    if (args.endIndex <= index[2]) {
+                        index[2] -= (args.endIndex - args.startIndex) + 1;
+                    } else {
+                        index[2] -= (index[2] - args.startIndex) + 1;
+                    }
+                    updated = true;
+                }
+            } else {
+                diff = index[1] - args.startIndex;
+                if (diff > 0) {
+                    if (index[1] > args.endIndex) {
+                        diff = (args.endIndex - args.startIndex) + 1;
+                        if (diff > 0) { index[1] -= diff; updated = true; }
+                    } else {
+                        index[1] -= diff; updated = true;
+                    }
+                }
+                if (args.startIndex <= index[3]) {
+                    if (args.endIndex <= index[3]) {
+                        index[3] -= (args.endIndex - args.startIndex) + 1;
+                    } else {
+                        index[3] -= (index[3] - args.startIndex) + 1;
+                    }
+                    updated = true;
+                }
+            }
+        }
+        return updated;
     }
 }

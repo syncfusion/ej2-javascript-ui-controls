@@ -8,6 +8,7 @@ import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups'
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
 import { XmlHttpRequestHandler, beforePaneSwitchEvent, toolbarClickEvent, beforeFileOpenEvent } from '../../document-editor/base/index';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
+import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs } from './../../index';
 
 const TOOLBAR_ID: string = '_toolbar';
 const NEW_ID: string = '_new';
@@ -672,9 +673,15 @@ export class Toolbar {
         this.importHandler.onFailure = this.failureHandler.bind(this);
         this.importHandler.onError = this.failureHandler.bind(this);
         this.importHandler.customHeaders = this.container.headers;
+        const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'Import', headers: this.container.headers, timeout: 0, cancel: false, withCredentials: false  };
+        this.container.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
         const formData: FormData = new FormData();
         formData.append('files', file);
-        this.importHandler.send(formData);
+        if (httprequestEventArgs.cancel) {
+            hideSpinner(this.container.containerTarget);
+        } else {
+            this.importHandler.send(formData, httprequestEventArgs);
+        }
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private failureHandler(args: any): void {

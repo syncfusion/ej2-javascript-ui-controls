@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 19.3.43 (2021-09-30)
+## 19.3.44 (2021-10-05)
 
 ### Diagram
 
@@ -16,6 +16,7 @@
 - `#I339619` - The issue "An exception occurs when save and load the swimlane with BPMN children" has been fixed.
 - `#I339487` - The issue "The connector drawing object does not snap to near by port" has been fixed.
 - `#I342173` - The issue "An exception occurs when clear the diagram using Clear API" has been fixed.
+- `#I337722` - The issue "Connector Position not Updated Properly when rotating it with segments" has been fixed.
 
 ## 19.2.56 (2021-08-17)
 

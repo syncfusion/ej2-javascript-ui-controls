@@ -60,6 +60,7 @@ export class SheetTabs {
         this.dropDownInstance = new DropDownButton({
             iconCss: 'e-icons',
             items: items.ddbItems,
+            createPopupOnClick: true,
             beforeItemRender: (args: MenuEventArgs): void => {
                 const sheet: SheetModel = this.parent.sheets[this.dropDownInstance.items.indexOf(args.item)];
                 if (sheet.state === 'Hidden') {
@@ -538,6 +539,7 @@ export class SheetTabs {
                 this.aggregateDropDown = new DropDownButton({
                     content: content,
                     items: this.getAggregateItems(eventArgs),
+                    createPopupOnClick: true,
                     select: (args: MenuEventArgs): void => {
                         this.parent.notify(aggregateComputation, eventArgs);
                         this.updateAggregateContent(args.item.text,

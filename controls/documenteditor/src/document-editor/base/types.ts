@@ -1524,3 +1524,7 @@ export type ImageFormat = 'Png' | 'Jpeg';
  * Specifies the compatibility mode
  */
 export type CompatibilityMode = 'Word2003' | 'Word2007' | 'Word2010' | 'Word2013';
+/**
+ * Specifies the server action types.
+ */
+export type ServerActionType = 'Import' | 'RestrictEditing' | 'SpellCheck' | 'SystemClipboard';

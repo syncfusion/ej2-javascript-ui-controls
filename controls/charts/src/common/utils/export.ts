@@ -257,7 +257,7 @@ export class ExportUtils {
             id: 'Svg_Export_Element',
             width: 200, height: 200
         });
-        controls.map((control: Chart | RangeNavigator | AccumulationChart | BulletChart) => {
+        controls.map((control: Chart | RangeNavigator | AccumulationChart | BulletChart | StockChart) => {
             const svg: Node = control.svgObject.cloneNode(true);
             const groupEle: Element = control.renderer.createGroup({
                 style: (isNullOrUndefined(isVertical) || isVertical) ? 'transform: translateY(' + height + 'px)' :
@@ -272,10 +272,20 @@ export class ExportUtils {
             if (!isCanvas) {
                 groupEle.appendChild(svg);
             }
-            width = (isNullOrUndefined(isVertical) || isVertical) ? Math.max(control.availableSize.width, width) :
-                width + control.availableSize.width;
-            height = (isNullOrUndefined(isVertical) || isVertical) ? height + control.availableSize.height :
-                Math.max(control.availableSize.height, height);
+            let top: number = 0;
+            let left: number = 0;
+            if ((control as StockChart).stockLegendModule && (control as StockChart).legendSettings.visible) {
+                if ((control as StockChart).legendSettings.position === "Bottom" || (control as StockChart).legendSettings.position === "Top" 
+                || (control as StockChart).legendSettings.position === "Auto") {
+                    top += (control as StockChart).stockLegendModule.legendBounds.height;
+                } else if ((control as StockChart).legendSettings.position === "Left" || (control as StockChart).legendSettings.position === "Right") {
+                    left += (control as StockChart).stockLegendModule.legendBounds.width;
+                }
+            }
+            width = (isNullOrUndefined(isVertical) || isVertical) ? Math.max(control.availableSize.width + left, width) :
+                width + control.availableSize.width + left;
+            height = (isNullOrUndefined(isVertical) || isVertical) ? height + control.availableSize.height + top :
+                Math.max(control.availableSize.height + top, height);
 
             if (!isCanvas) {
                 svgObject.appendChild(groupEle);

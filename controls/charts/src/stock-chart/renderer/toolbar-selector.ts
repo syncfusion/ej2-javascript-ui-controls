@@ -374,6 +374,9 @@ export class ToolBarSelector {
                             // eslint-disable-next-line @typescript-eslint/indent
                             'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
                     }
+                    if (this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
+                        (getElement(stockChart.element.id + '_chart_legend_g') as HTMLElement).style.transform = 'translateY(' + additionalRect.height + 'px)';
+                    }
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
                     remove(getElement(this.stockChart.element.id + '_additionalExport'));
                     (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(0px)';
@@ -381,6 +384,9 @@ export class ToolBarSelector {
                         (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
                             // eslint-disable-next-line @typescript-eslint/indent
                             'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
+                    }
+                    if (this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
+                        (getElement(stockChart.element.id + '_chart_legend_g') as HTMLElement).style.transform = 'translateY(0px)';
                     }
                     this.stockChart.svgObject.setAttribute('height', (svgHeight.height).toString());
                 }

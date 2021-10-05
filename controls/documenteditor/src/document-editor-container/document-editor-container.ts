@@ -9,14 +9,14 @@ import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from '../document-editor/base/constants';
+import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend } from '../document-editor/base/constants';
 
 /**
  * Document Editor container component.
@@ -237,6 +237,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public contentControl: EmitType<Object>;
+    /**
+     * This event is triggered before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
+     */
+    @Event()
+    public beforeXmlHttpRequestSend: EmitType<XmlHttpRequestEventArgs>;
     /**
      * Document editor container's toolbar module
      *
@@ -880,6 +885,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             beforeCommentAction: this.onCommentAction.bind(this),
             trackChange: this.onTrackChange.bind(this),
             serviceFailure: this.fireServiceFailure.bind(this),
+            beforeXmlHttpRequestSend: this.beforeXmlHttpSend.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -905,6 +911,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private wireEvents(): void{
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
+        this.documentEditor.on(internalviewChangeEvent, this.onViewChange, this);
     }
     private unWireEvents(): void {
         if (isNullOrUndefined(this.documentEditor)) {
@@ -916,6 +923,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             }
         }
         this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
+        this.documentEditor.off(internalviewChangeEvent, this.onViewChange);
     }
     private onCommentBegin(): void {
         if (this.toolbarModule) {
@@ -926,6 +934,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.toolbarModule) {
             this.toolbarModule.enableDisableInsertComment(true && this.enableComment);
         }
+    }
+    private beforeXmlHttpSend(args: XmlHttpRequestEventArgs): void{
+        this.trigger(beforeXmlHttpRequestSend, args);
     }
     private onCommentDelete(args: CommentDeleteEventArgs): void {
         this.trigger(commentDeleteEvent, args);

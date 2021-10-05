@@ -23,7 +23,7 @@ import { VirtualRowModelGenerator } from '../../../src/grid/services/virtual-row
 import { RowModelGenerator } from '../../../src/grid/services/row-model-generator';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { largeDataset } from '../base/datasource.spec';
+import { largeDataset, employeeData } from '../base/datasource.spec';
 import { EditEventArgs, NotifyArgs } from '../../../src';
 
 Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate, Edit, Toolbar, Freeze);
@@ -1157,6 +1157,60 @@ describe('Column virtualization', () => {
             };
             gObj.actionComplete = actionComplete;
             (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+        });
+
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
+        });
+    });
+    describe("EJ2-53627 -> Grid column virtualization does not support dynamic column changes", () => {
+        let gObj: Grid;
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    columns: [
+                        { field: 'EmployeeID', width: 120 },
+                        { field: 'FirstName', width: 120 },
+                        { field: 'Title', width: 120 },
+                        { field: 'TitleOfCourtesy', width: 120 },
+                        { field: 'Address', width: 120 },
+                        { field: 'City', width: 120 },
+                        { field: 'Region', width: 120 },
+                        { field: 'PostalCode', width: 120 },
+                        { field: 'Country', width: 120 },
+                        { field: 'HomePhone', width: 120 },
+                        { field: 'Extension', width: 120 }
+                    ],
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    height: 300
+                }, done);
+        });
+
+        it('Check the column visibility', (done: Function) => {
+            let dataBound = () => {
+                expect((gObj as any).columnModel[(gObj as any).columnModel.length - 1].visible).toBe((gObj as any).columnModel[3].visible);
+                expect((gObj as any).columnModel[(gObj as any).columnModel.length - 1].visible).toBe(false);
+                expect(document.getElementsByClassName('e-headercell')[0].classList.contains('e-hide')).toBe(true);
+                gObj.dataBound = null;
+                done();
+            };
+            gObj.dataBound = dataBound;
+            gObj.columns = [
+                { field: 'EmployeeID', width: 120, visible: false },
+                { field: 'FirstName', width: 120 },
+                { field: 'Title', width: 120 },
+                { field: 'TitleOfCourtesy', width: 120, visible: false },
+                { field: 'Address', width: 120 },
+                { field: 'City', width: 120 },
+                { field: 'Region', width: 120 },
+                { field: 'PostalCode', width: 120 },
+                { field: 'Country', width: 120 },
+                { field: 'HomePhone', width: 120 },
+                { field: 'Extension', width: 120, visible: false }
+            ];
         });
 
         afterAll(() => {

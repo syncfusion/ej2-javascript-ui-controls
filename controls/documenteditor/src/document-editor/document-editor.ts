@@ -2,7 +2,7 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Eve
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -37,7 +37,7 @@ import { TrackChangesPane } from './implementation/track-changes/track-changes-p
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
-import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from './base/constants';
+import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent } from './base/constants';
 import { Optimized, Regular } from './index';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -818,6 +818,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public contentControl: EmitType<Object>;
     /**
+     * This event is triggered before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
+     */
+     @Event()
+     public beforeXmlHttpRequestSend: EmitType<XmlHttpRequestEventArgs>;
+    /**
      * @private
      */
     public characterFormat: CharacterFormatProperties;
@@ -1380,6 +1385,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     source: this
                 };
                 this.trigger(viewChangeEvent, eventArgs);
+                this.notify(internalviewChangeEvent, eventArgs);
             }
         }
     }

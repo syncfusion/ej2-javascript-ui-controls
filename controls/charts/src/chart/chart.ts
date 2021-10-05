@@ -2440,15 +2440,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     private renderBorder(): void {
-        if(this.stockChart) {
-            return;
-        }
+        let x: number = 0;
+        let y: number = 0;
         const width: number = this.border.width;
         const backGroundImage: string = this.backgroundImage;
         const fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
+        if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
+            if (this.stockChart.legendSettings.position === "Top") {
+                y += this.stockChart.stockLegendModule.legendBounds.height;
+            } else if (this.stockChart.legendSettings.position === "Left") {
+                x += this.stockChart.stockLegendModule.legendBounds.width;
+            }
+        }
         const rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', fillColor, this.border, 1,
-            new Rect(width * 0.5, width * 0.5, this.availableSize.width - width, this.availableSize.height - width));
+            new Rect(width * 0.5 + x, width * 0.5 + y, this.availableSize.width - width, this.availableSize.height - width));
 
         this.htmlObject = redrawElement(this.redraw, this.element.id + '_ChartBorder', rect, this.renderer) as HTMLElement
             || this.renderer.drawRectangle(rect) as HTMLElement;

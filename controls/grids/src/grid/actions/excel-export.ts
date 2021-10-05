@@ -578,7 +578,7 @@ export class ExcelExport {
             } else {
                 excelRows.push(excelRow);
             }
-            if (!isNullOrUndefined(gObj.childGrid)) {
+            if (row.isExpand && !isNullOrUndefined(gObj.childGrid)) {
                 gObj.isPrinting = true;
                 const exportType: ExportType = (!isNullOrUndefined(excelExportProperties) && excelExportProperties.exportType) ?
                     excelExportProperties.exportType : 'AllPages';

@@ -655,12 +655,18 @@ export class ChangesSingleView {
         this.trackChangesPane.changesInfoDiv.removeChild(this.outerSingleDiv);
         this.removeFromParentCollec();
         this.revision.accept();
+        if (this.owner.enableHeaderAndFooter) {
+            this.owner.editor.updateHeaderFooterWidget();
+        }
     }
 
     private rejectButtonClick(): void {
         this.trackChangesPane.changesInfoDiv.removeChild(this.outerSingleDiv);
         this.removeFromParentCollec();
         this.revision.reject();
+        if (this.owner.enableHeaderAndFooter) {
+            this.owner.editor.updateHeaderFooterWidget();
+        }
     }
 
     private removeFromParentCollec(): void {

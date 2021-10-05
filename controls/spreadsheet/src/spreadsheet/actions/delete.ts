@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { beginAction, completeAction, skipHiddenIdx, refreshSheetTabs, refreshImagePosition, focus } from '../common/index';
-import { deleteAction, InsertDeleteEventArgs } from '../../workbook/common/index';
+import { deleteAction, InsertDeleteEventArgs, triggerDataChange } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
 /**
@@ -72,7 +72,12 @@ export class Delete {
             }
         }
         this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
-        if (isAction) { this.parent.notify(completeAction, { eventArgs: args, action: 'delete' }); }
+        if (isAction) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'delete' });
+        } else if (!args.isUndoRedo) {
+            args.isMethod = true;
+            this.parent.notify(triggerDataChange, { eventArgs: args, action: 'delete' });
+        }
     }
 
     private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {

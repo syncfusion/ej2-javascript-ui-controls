@@ -1,8 +1,9 @@
 import { closest, Browser } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
-import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction, positionAutoFillElement } from '../common/index';
+import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
+import { positionAutoFillElement, colWidthChanged } from '../common/index';
 import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
 
@@ -28,6 +29,7 @@ export class WrapText {
         this.parent.on(ribbonClick, this.ribbonClickHandler, this);
         this.parent.on(wrapEvent, this.wrapTextHandler, this);
         this.parent.on(rowHeightChanged, this.rowHeightChangedHandler, this);
+        this.parent.on(colWidthChanged, this.colWidthChanged, this);
     }
 
     private removeEventListener(): void {
@@ -35,6 +37,7 @@ export class WrapText {
             this.parent.off(ribbonClick, this.ribbonClickHandler);
             this.parent.off(wrapEvent, this.wrapTextHandler);
             this.parent.off(rowHeightChanged, this.rowHeightChangedHandler);
+            this.parent.off(colWidthChanged, this.colWidthChanged);
         }
     }
 
@@ -174,23 +177,27 @@ export class WrapText {
     private rowHeightChangedHandler(args: { rowIdx: number, isCustomHgt: boolean }): void {
         if (args.isCustomHgt) {
             const sheet: SheetModel = this.parent.getActiveSheet();
-            const leftIdx: number = this.parent.viewport.leftIndex;
-            const rightIdx: number = this.parent.viewport.rightIndex;
-            for (let i: number = leftIdx; i < rightIdx; i++) {
-                const cell: CellModel = getCell(args.rowIdx, i, sheet);
-                if (cell && cell.wrap) {
-                    const ele: Element = this.parent.getCell(args.rowIdx, i);
-                    if (!ele) { continue; }
-                    let styleText: string = (ele as HTMLElement).style.cssText;
-                    if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
-                        ele.innerHTML = this.parent.createElement('span', {
-                            className: 'e-wrap-content',
-                            innerHTML: ele.innerHTML,
-                            styles: styleText
-                        }).outerHTML;
-                    }
+            for (let i: number = this.parent.viewport.leftIndex, len: number = this.parent.viewport.rightIndex; i <= len; i++) {
+                if (getCell(args.rowIdx, i, sheet, false, true).wrap) {
+                    this.updateWrapCell(this.parent.getCell(args.rowIdx, i));
                 }
             }
+        }
+    }
+    private colWidthChanged(args: { colIdx: number, checkWrapCell: boolean }): void {
+        if (args.checkWrapCell) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            for (let i: number = this.parent.viewport.topIndex, len: number = this.parent.viewport.bottomIndex; i <= len; i++) {
+                if (getCell(i, args.colIdx, sheet, false, true).wrap) {
+                    this.updateWrapCell(this.parent.getCell(i, args.colIdx));
+                }
+            }
+        }
+    }
+    private updateWrapCell(ele: Element): void {
+        if (ele && (ele.children.length === 0 || !ele.querySelector('.e-wrap-content'))) {
+            ele.innerHTML = this.parent.createElement(
+                'span', { className: 'e-wrap-content', innerHTML: ele.innerHTML, styles: (ele as HTMLElement).style.cssText }).outerHTML;
         }
     }
     /**

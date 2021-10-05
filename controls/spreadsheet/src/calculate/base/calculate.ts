@@ -2455,14 +2455,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @returns {void} - Specifies when changing the value.
      */
     public valueChanged(
-        grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[], refresh?: boolean): void {
+        grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[], refresh?: boolean,
+        sheetName?: string): void {
         const pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
         let isComputedValueChanged: boolean = true;
         let isCompute: boolean = true;
         const calcFamily: CalcSheetFamilyItem = this.getSheetFamilyItem(pgrid);
         let cellTxt: string = getAlphalabel(changeArgs.getColIndex()) + changeArgs.getRowIndex().toString();
-        this.actCell = cellTxt;
+        this.actCell = sheetName + '!' + cellTxt;
         if (calcFamily.sheetNameToParentObject !== null && calcFamily.sheetNameToParentObject.size > 0) {
             const token: string = calcFamily.parentObjectToToken.get(pgrid);
             cellTxt = token + cellTxt;
@@ -2668,20 +2669,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             } else {
-                const val: string = this.getValueFromArg(argArr[i]);
-                if (this.getErrorStrings().indexOf(val) > -1) {
-                    return val;
-                }
-                const cellVal: number = this.parseFloat(val);
-                if (val === '' || this.isNaN(this.parseFloat(cellVal))) {
-                    countStrVal = countStrVal + 1;
-                    if (countStrVal === argVal.length) {
-                        result = 0;
-                    }
-                    continue;
-                } else {
-                    result = (operation === 'max') ? Math.max(result, cellVal) : Math.min(result, cellVal);
-                }
+                const val: string = this.getValueFromArg(argArr[i]) || '0';
+                if (this.getErrorStrings().indexOf(val) > -1) { return val; }
+                const cellVal: number = this.isNaN(this.parseFloat(val)) ? 0 : this.parseFloat(val);
+                result = operation === 'max' ? Math.max(result, cellVal) : Math.min(result, cellVal);
             }
         }
         return result.toString();

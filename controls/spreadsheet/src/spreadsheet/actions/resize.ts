@@ -453,7 +453,7 @@ export class Resize {
             }
             this.resizeStart(index, viewportIdx, `${width}px`, true, false, `${curWidth}px`);
             setColumn(sheet, index, { width: width, customWidth: true });
-            this.parent.notify(colWidthChanged, { threshold, colIdx: index });
+            this.parent.notify(colWidthChanged, { threshold, colIdx: index, checkWrapCell: true });
         } else {
             if (this.isMouseMoved) {
                 this.parent.hideColumn(index);

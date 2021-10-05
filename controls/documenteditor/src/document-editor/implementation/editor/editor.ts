@@ -15,7 +15,7 @@ import {
     ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo, Base64,
     TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, RevisionMatchedInfo, FootNoteWidgetsInfo
 } from './editor-helper';
-import { isNullOrUndefined, Browser, classList, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, classList, L10n, isVisible } from '@syncfusion/ej2-base';
 import {
     WParagraphFormat, WSectionFormat, WListFormat,
     WTableFormat, WRowFormat, WCellFormat, WStyle,
@@ -51,7 +51,7 @@ import { DialogUtility } from '@syncfusion/ej2-popups';
 import { DocumentHelper, Layout } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 import { XmlHttpRequestHandler } from '../../base/ajax-helper';
-import { CommentActionEventArgs, beforeCommentActionEvent, trackChangeEvent } from '../../base/index';
+import { CommentActionEventArgs, beforeCommentActionEvent, trackChangeEvent, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from '../../base/index';
 import { CommentView } from '../comments';
 
 /**
@@ -863,7 +863,15 @@ export class Editor {
             enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
             enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
             enforceProtectionHandler.customHeaders = this.owner.headers;
-            enforceProtectionHandler.send(formObject);
+            const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'RestrictEditing', headers: this.owner.headers, timeout: 0, cancel: false, withCredentials: false };
+            this.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+            if (httprequestEventArgs.cancel) {
+                if (this.documentHelper.dialog.visible) {
+                    this.documentHelper.dialog.hide();
+                }
+            } else {
+                enforceProtectionHandler.send(formObject, httprequestEventArgs);
+            }
         }
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -914,7 +922,15 @@ export class Editor {
             unProtectDocumentHandler.onSuccess = this.onUnProtectionSuccess.bind(this);
             unProtectDocumentHandler.onFailure = this.protectionFailureHandler.bind(this);
             unProtectDocumentHandler.onError = this.protectionFailureHandler.bind(this);
-            unProtectDocumentHandler.send(formObject);
+            const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'RestrictEditing', headers: this.owner.headers, timeout: 0, cancel: false, withCredentials: false };
+            this.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+            if (httprequestEventArgs.cancel) {
+                if (this.documentHelper.dialog.visible) {
+                    this.documentHelper.dialog.hide();
+                }
+            } else {
+                unProtectDocumentHandler.send(formObject, httprequestEventArgs);
+            }
         }
     }
     private onUnProtectionSuccess(result: any): void {
@@ -2877,6 +2893,7 @@ export class Editor {
     private insertRemoveHeaderFooter(sectionIndex: number, insert: boolean): void {
         if (this.documentHelper.headersFooters[sectionIndex]) {
             // Need to handle further
+            this.documentHelper.headersFooters.splice(sectionIndex,0,{});
         } else {
             this.documentHelper.headersFooters[sectionIndex] = {};
         }
@@ -4031,7 +4048,13 @@ export class Editor {
         this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
         this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
-        this.pasteRequestHandler.send(formObject);
+        const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SystemClipboard', headers: this.owner.headers, timeout: 0, cancel: false, withCredentials: false };
+        this.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+        if (httprequestEventArgs.cancel) {
+            hideSpinner(this.owner.element);
+        } else {
+            this.pasteRequestHandler.send(formObject, httprequestEventArgs);
+        }
     }
     /**
      * @private
@@ -8481,7 +8504,9 @@ export class Editor {
         let paragraph: ParagraphWidget = inline.paragraph;
         let lineIndex: number = paragraph.childWidgets.indexOf(inline.line);
         let textElement: TextElementBox;
+        let indexCountForRevision: number = 0;
         if (startIndex > 0) {
+            indexCountForRevision += 1;
             textElement = new TextElementBox();
             textElement.characterFormat.copyFormat(inline.characterFormat);
             textElement.line = inline.line;
@@ -8493,9 +8518,11 @@ export class Editor {
             }
             node.line.children.splice(index, 0, textElement);
             x++;
+            this.updateRevisionForFormattedContent(inline, textElement, indexCountForRevision);
             // this.addToLinkedFields(span);                      
         }
         if (endIndex < node.length) {
+            indexCountForRevision += 1;
             textElement = new TextElementBox();
             textElement.characterFormat.copyFormat(inline.characterFormat);
             textElement.text = (node as TextElementBox).text.substring(endIndex);
@@ -8506,6 +8533,7 @@ export class Editor {
             }
             node.line.children.splice(index, 0, textElement);
             x++;
+            this.updateRevisionForFormattedContent(inline, textElement, indexCountForRevision);
             // this.addToLinkedFields(span);                       
         }
         if (startIndex === 0) {
@@ -8515,6 +8543,14 @@ export class Editor {
             (inline as TextElementBox).text = (inline as TextElementBox).text.substr(0, startIndex);
         }
         return x;
+    }
+    private updateRevisionForFormattedContent(inline: ElementBox, tempSpan: ElementBox, indexCount: number): any {
+        for (let i: number = 0; i < inline.revisions.length; i++) {
+            let currentRevision: Revision = inline.revisions[i];
+            let rangeIndex: number = currentRevision.range.indexOf(inline) + indexCount;
+            tempSpan.revisions.splice(0, 0, currentRevision);
+            currentRevision.range.splice(rangeIndex, 0, tempSpan);
+        }
     }
     // Cell
 
@@ -10236,7 +10272,7 @@ export class Editor {
                 if (commentStartChar.commentMark) {
                     commentStartChar.removeCommentMark();
                 }
-                if (commentStartChar.line && commentStartChar.line.paragraph &&
+                if (commentStartChar.indexInOwner !== -1 && commentStartChar.line && commentStartChar.line.paragraph &&
                     commentStartChar.line.paragraph.bodyWidget && currentBaseHistryInfo) {
                     this.removeInline(commentStartChar);
                     this.selection.editPosition = currentBaseHistryInfo.insertPosition;
@@ -11989,7 +12025,7 @@ export class Editor {
                         removedCommentEnd.push(inline);                      
                     }
                 }
-                if (!this.isCmtDeleteStarted && inline instanceof CommentCharacterElementBox &&
+                if (!(this.editorHistory && this.editorHistory.isUndoing) && !this.isCmtDeleteStarted && inline instanceof CommentCharacterElementBox &&
                     inline.commentType == 0 && (removedCommentEnd.indexOf(inline.comment.commentEnd) === -1) &&
                     this.editorHistory && (!(this.editorHistory && this.editorHistory.currentHistoryInfo)
                         || this.editorHistory && this.editorHistory.currentHistoryInfo
@@ -17349,6 +17385,7 @@ export class Editor {
         this.selection.start.setPositionForLineWidget((footPara.childWidgets[0] as LineWidget), text1.line.getOffset(text1, footnote.text.length));
         this.selection.end.setPositionInternal(this.selection.start);
         // this.selection.fireSelectionChanged(true);
+        this.updateFootNoteIndex();
         this.reLayout(this.selection, false);
         this.separator('footnote');
         this.continuationSeparator('footnote');
@@ -17542,6 +17579,14 @@ export class Editor {
             this.documentHelper.footnotes.continuationSeparator.push(paragraph);
         } else if (type === 'endnote' && this.documentHelper.endnotes.continuationSeparator.length < 1) {
             this.documentHelper.endnotes.continuationSeparator.push(paragraph);
+        }
+    }
+
+    private updateFootNoteIndex(): void {
+        let footNoteCollec: FootnoteElementBox[] = this.documentHelper.footnoteCollection;
+        for (let i: number = 0; i < footNoteCollec.length; i++) {
+            footNoteCollec[i].text = (i + 1).toString();
+            ((footNoteCollec[i].blocks[0].childWidgets[0] as LineWidget).children[0] as TextElementBox).text = (i + 1).toString();
         }
     }
 

@@ -481,16 +481,34 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     protected wireEvents(): void {
         this.delegateMousedownHandler = this.mousedownHandler.bind(this);
-        EventHandler.add(document, 'mousedown touchstart', this.delegateMousedownHandler, this);
+        if (!this.createPopupOnClick) {
+            EventHandler.add(document, 'mousedown touchstart', this.delegateMousedownHandler, this);
+        }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
     }
 
     protected popupWireEvents(): void {
         const popupElement: HTMLElement = this.getPopUpElement();
-        EventHandler.add(popupElement, 'click', this.clickHandler, this);
-        EventHandler.add(popupElement, 'keydown', this.keyBoardHandler, this);
+        if (this.createPopupOnClick) {
+            EventHandler.add(document, 'mousedown touchstart', this.delegateMousedownHandler, this);
+        }
+        if (popupElement) {
+            EventHandler.add(popupElement, 'click', this.clickHandler, this);
+            EventHandler.add(popupElement, 'keydown', this.keyBoardHandler, this);
+        }
         this.rippleFn = rippleEffect(popupElement, { selector: '.' + classNames.ITEM });
+    }
+
+    protected popupUnWireEvents(): void {
+        const popupElement: HTMLElement = this.getPopUpElement();
+        if (this.createPopupOnClick) {
+            EventHandler.remove(document, 'mousedown touchstart', this.delegateMousedownHandler);
+        }
+        if (popupElement) {
+            EventHandler.remove(popupElement, 'click', this.clickHandler);
+            EventHandler.remove(popupElement, 'keydown', this.keyBoardHandler);
+        }
     }
 
     /**
@@ -624,6 +642,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         this.trigger('beforeClose', beforeCloseArgs,  (observedArgs: BeforeOpenCloseMenuEventArgs) => {
             if (!observedArgs.cancel) {
+                this.popupUnWireEvents();
                 const ul: HTMLElement = this.getULElement();
                 const selectedLi: Element = ul.querySelector('.e-selected');
                 if (selectedLi) { selectedLi.classList.remove('e-selected'); }
@@ -647,7 +666,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     protected unWireEvents(): void {
-        EventHandler.remove(document, 'mousedown touchstart', this.delegateMousedownHandler);
+        if (!this.createPopupOnClick) {
+            EventHandler.remove(document, 'mousedown touchstart', this.delegateMousedownHandler);
+        }
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keydown', this.keyBoardHandler);
         if (this.isPopupCreated) {

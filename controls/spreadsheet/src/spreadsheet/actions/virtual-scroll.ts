@@ -495,7 +495,7 @@ export class VirtualScroll {
                 }
                 if (newHeight < height) { return; }
                 this.scroll[this.parent.activeSheetIndex].rowCount = args.index + 1;
-                this.updateVTrack(this.rowHeader, height, 'height');
+                this.updateVTrack(this.rowHeader, newHeight, 'height');
                 if (this.scroll[this.parent.activeSheetIndex].rowCount > sheet.rowCount) {
                     this.parent.setSheetPropertyOnMute(sheet, 'rowCount', this.scroll[this.parent.activeSheetIndex].rowCount);
                 }

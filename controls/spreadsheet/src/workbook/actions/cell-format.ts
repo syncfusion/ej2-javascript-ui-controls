@@ -1,9 +1,7 @@
 import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs } from '../common/index';
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
-import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell } from '../base/index';
-
-
+import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, checkConditionalFormat } from '../index';
 
 /**
  * Workbook Cell format.
@@ -366,6 +364,7 @@ export class WorkbookCellFormat {
                             this.parent.notify(deleteHyperlink, { sheet: sheet, rowIdx: sRowIdx, colIdx: sColIdx, preventRefresh: true });
                         }
                         delete cell.value; delete cell.formula;
+                        this.parent.notify(checkConditionalFormat, { rowIdx: sRowIdx, colIdx: sColIdx, cell: cell, isAction: true });
                         break;
                     case 'Clear Hyperlinks':
                         delete cell.hyperlink;

@@ -53,7 +53,7 @@ export class Tooltip extends BaseTooltip {
             if (!chart.crosshair.enable) {
                 this.tooltip();
                 if (chart.tooltip.fadeOutMode === 'Move') {
-                    this.removeTooltip(2000);
+                    this.removeTooltip(chart.tooltip.fadeOutDuration);
                 }
             } else if (chart.startMove && chart.tooltip.fadeOutMode === 'Move') {
                 this.removeTooltip(2000);

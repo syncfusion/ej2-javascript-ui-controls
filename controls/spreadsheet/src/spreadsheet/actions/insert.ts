@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { beginAction, completeAction, insertSheetTab, skipHiddenIdx, refreshImagePosition, focus } from '../common/index';
-import { beforeInsert, insert, InsertDeleteEventArgs } from '../../workbook/common/index';
+import { beforeInsert, insert, InsertDeleteEventArgs, triggerDataChange } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
 /**
@@ -71,7 +71,12 @@ export class Insert {
             break;
         }
         this.refreshImgElement(args.model.length, this.parent.activeSheetIndex, args.modelType, args.index);
-        if (isAction) { this.parent.notify(completeAction, { eventArgs: args, action: 'insert' }); }
+        if (isAction) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'insert' });
+        } else if (!args.isUndoRedo) {
+            args.isMethod = true;
+            this.parent.notify(triggerDataChange, { eventArgs: args, action: 'insert' });
+        }
     }
     private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
         const sheet: SheetModel = this.parent.sheets[sheetIdx];

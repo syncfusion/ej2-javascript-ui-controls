@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo } from '../index';
+import { XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -908,7 +909,11 @@ export class SpellChecker {
 
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
-                httpRequest.send(JSON.stringify(spellCheckData));
+                const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SpellCheck', headers: this.documentHelper.owner.headers, timeout: 0, cancel: false, withCredentials: false };
+                this.documentHelper.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+                if (!httprequestEventArgs.cancel) {
+                    httpRequest.send(JSON.stringify(spellCheckData));
+                }
                 httpRequest.onreadystatechange = () => {
                     if (httpRequest.readyState === 4) {
                         if (httpRequest.status === 200 || httpRequest.status === 304) {

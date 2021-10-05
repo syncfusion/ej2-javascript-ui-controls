@@ -958,17 +958,19 @@ export class DataValidation {
         const formulaArgs : InvalidFormula = { skip: false, value: '' };
         if (cell.validation) {
             if (checkIsFormula(cell.validation.value1) &&
-            !isCellReference(cell.validation.value1.substring(1, cell.validation.value1.length))) {
+            !isCellReference(cell.validation.value1.substring(1, cell.validation.value1.length)) &&
+            cell.validation.value1.indexOf('(') > - 1) {
                 let val: string = cell.validation.value1;
                 val = val.substring(val.indexOf('=') + 1, val.indexOf('('));
-                formulaArgs.value = val;
+                formulaArgs.value = val.toUpperCase();
                 this.parent.notify(formulaInValidation, formulaArgs);
             }
             if (!formulaArgs.skip && checkIsFormula(cell.validation.value2) &&
-            !isCellReference(cell.validation.value2.substring(1, cell.validation.value2.length))) {
+            !isCellReference(cell.validation.value2.substring(1, cell.validation.value2.length)) &&
+            cell.validation.value1.indexOf('(') > - 1) {
                 let val2: string = cell.validation.value2;
                 val2 = val2.substring(val2.indexOf('=') + 1, val2.indexOf('('));
-                formulaArgs.value = val2;
+                formulaArgs.value = val2.toUpperCase();
                 this.parent.notify(formulaInValidation, formulaArgs);
             }
         }

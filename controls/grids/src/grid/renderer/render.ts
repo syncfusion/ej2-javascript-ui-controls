@@ -316,7 +316,7 @@ export class Render {
         const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow' });
         tr.appendChild(this.parent.createElement('td', {
             innerHTML: this.l10n.getConstant('EmptyRecord'),
-            attrs: { colspan: (gObj.getVisibleColumns().length + spanCount).toString() }
+            attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString() }
         }));
         tbody.appendChild(tr);
         this.contentRenderer.renderEmpty(<HTMLElement>tbody);

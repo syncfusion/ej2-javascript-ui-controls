@@ -3623,14 +3623,14 @@ export class Selection {
      * @returns 
      */
     public isElementInSelection(element:ElementBox): boolean {
-        let offset: number = element.line.getOffset(element, 1);
+        let offset: number = element.line.getOffset(element, 0);
         let elemPosition: TextPosition = new TextPosition(this.owner);
         elemPosition.setPositionParagraph(element.line, offset);
         let start: TextPosition = this.start;
         let end: TextPosition = this.end;
         if (!this.isForward) {
-            start = end;
-            end = start;
+            start = this.end;
+            end = this.start;
         }
         return ((elemPosition.isExistAfter(start) || elemPosition.isAtSamePosition(start))
             && (elemPosition.isExistBefore(end) || elemPosition.isAtSamePosition(end)));
@@ -5296,12 +5296,14 @@ export class Selection {
      * @private
      */
     public validateTextPosition(inline: ElementBox, index: number): ElementInfo {
-        if (inline.length === index && (inline.nextNode instanceof FieldElementBox
-            || (!(inline instanceof ImageElementBox) && inline.nextNode instanceof BookmarkElementBox))) {
+        let nextNode: ElementBox = inline.nextNode;
+        if (inline.length === index && (nextNode instanceof FieldElementBox
+            || (!(inline instanceof ImageElementBox) && (nextNode instanceof BookmarkElementBox || nextNode instanceof CommentCharacterElementBox)))) {
             //If inline is last item within field, then set field end as text position.
             const nextInline: ElementBox = this.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
-            if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
-                || nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1) {
+            if ((nextInline instanceof FieldElementBox && nextInline.fieldType === 1)
+                || (nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1)
+                || (nextInline instanceof CommentCharacterElementBox && nextInline.commentType === 1)) {
                 inline = nextInline;
                 index = this.documentHelper.isFormFillProtectedMode ? 0 : 1;
             }
@@ -8937,10 +8939,6 @@ export class Selection {
         div.style.top = '-10000px';
         div.style.position = 'relative';
         div.innerHTML = htmlContent;
-        if (this.htmlWriter.isMergeField) {
-            div.innerText = '';
-            this.htmlWriter.isMergeField = false;
-        }
         document.body.appendChild(div);
         if (navigator.userAgent.indexOf('Firefox') !== -1) {
             div.tabIndex = 0;

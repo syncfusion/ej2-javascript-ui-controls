@@ -1,4 +1,4 @@
-import { Spreadsheet } from '../../../src/index';
+import { Spreadsheet, setCellFormat } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 
 export function checkPosition(ele: HTMLElement, pos: string[], isRtl?: boolean) {
@@ -202,8 +202,7 @@ describe('Selection ->', () => {
                     expect(helper.invoke('getRow', [0]).style.height).toEqual('20px');
                     expect(inst.sheets[0].rows[2].height).toBe(74);
                     expect(helper.invoke('getRow', [2]).style.height).toEqual('74px');
-                    helper.getElement('#' + helper.id + '_borders').click();
-                    helper.getElement('#' + helper.id + '_borders-popup').querySelectorAll('.e-menu-item')[4].click();
+                    inst.notify(setCellFormat, { style: { border: '1px solid #000000' }, onActionUpdate: true });
                     expect(inst.sheets[0].rows[0].height).toBe(21);
                     expect(helper.invoke('getRow', [0]).style.height).toEqual('21px');
                     expect(inst.sheets[0].rows[2].height).toBe(74);

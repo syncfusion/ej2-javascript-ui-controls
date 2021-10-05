@@ -123,7 +123,7 @@ export class KeyboardInteraction {
             this.processCtrlShiftNavigationArrows(e);
             break;
         case 'escape':
-            this.processEscape();
+            this.processEscape(e);
         }
     }
     private addEventListener(): void {
@@ -264,7 +264,7 @@ export class KeyboardInteraction {
         if (target.classList.contains(cls.MORE_EVENT_HEADER_DATE_CLASS)) {
             this.parent.setProperties({ selectedDate: this.parent.getDateFromElement(target) }, true);
             this.parent.changeView(this.parent.getNavigateView(), e);
-            this.processEscape();
+            this.processEscape(e);
             return;
         }
     }
@@ -813,7 +813,7 @@ export class KeyboardInteraction {
                 !this.parent.eventSettings.allowDeleting) {
                 return;
             }
-            this.parent.quickPopup.deleteClick();
+            this.parent.quickPopup.deleteClick(e);
         }
     }
     private processCtrlShiftNavigationArrows(e: KeyboardEventArgs): void {
@@ -847,8 +847,8 @@ export class KeyboardInteraction {
             }
         }
     }
-    private processEscape(): void {
-        this.parent.quickPopup.onClosePopup();
+    private processEscape(event: Event): void {
+        this.parent.quickPopup.onClosePopup(event);
         this.parent.quickPopup.morePopup.hide();
         if (this.parent.headerModule) {
             this.parent.headerModule.hideHeaderPopup();

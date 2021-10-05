@@ -25,6 +25,19 @@
         .e-icons {
           color: $schedule-active-font-color;
         }
+
+        @if $schedule-skin == 'bootstrap5' {
+          .e-tbar-btn {
+            &:active,
+            &:focus,
+            &:hover {
+              .e-tbar-btn-text,
+              .e-icons {
+                color: $schedule-appointment-font-color;
+              }
+            }
+          }
+        }
       }
 
       .e-toolbar-pop {

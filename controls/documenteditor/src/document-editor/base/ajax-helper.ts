@@ -1,4 +1,7 @@
 /* eslint-disable */
+
+import { XmlHttpRequestEventArgs } from "./index";
+
 /**
  * @private
  */
@@ -27,7 +30,7 @@ export class XmlHttpRequestHandler {
      */
     public mode: boolean = true;
 
-    private xmlHttpRequest: XMLHttpRequest;
+    public xmlHttpRequest: XMLHttpRequest;
     /**
      * @private
      */
@@ -38,8 +41,12 @@ export class XmlHttpRequestHandler {
      *
      * @param  {object} jsonObject - To send to service
      */
-    public send(jsonObject: object): void {
+    public send(jsonObject: object, httpRequestEventArgs?: XmlHttpRequestEventArgs): void {
         this.xmlHttpRequest = new XMLHttpRequest();
+        this.xmlHttpRequest.withCredentials = httpRequestEventArgs.withCredentials;
+        this.xmlHttpRequest.timeout = (httpRequestEventArgs.timeout >= 0 ? httpRequestEventArgs.timeout : 0);
+        this.customHeaders = httpRequestEventArgs.headers;
+        
         this.xmlHttpRequest.onreadystatechange = () => {
             this.stateChange(this);
         };

@@ -2651,3 +2651,40 @@ describe('Zorder Validation', () => {
         expect(block.zOrderPosition).toBeGreaterThanOrEqual(0);
     });
 });
+describe('Header with track changes Validation', () => {
+    let editor: DocumentEditor;
+    let writer: XmlWriter;
+    let json: any;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport);
+        editor = new DocumentEditor({ enableWordExport: true, enableSfdtExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableTrackChanges: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        writer = new XmlWriter();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        writer.destroy();
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('header Validation', () => {
+        editor.selection.goToHeader();
+        editor.editor.insertText('one');
+        expect(() => { editor.save('header', 'Docx'); }).not.toThrowError();
+    });
+    it('header Table Validation', () => {
+        editor.selection.goToHeader();
+        editor.editor.insertTable(2,2);
+        editor.editor.insertText('one');
+        expect(() => { editor.save('headerTable', 'Docx'); }).not.toThrowError();
+    });
+});

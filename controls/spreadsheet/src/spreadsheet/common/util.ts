@@ -8,7 +8,7 @@ import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress
 import { ValidationModel, setValidation, removeValidation, clearCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged } from './index';
 import { getCell, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
-import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel } from '../../workbook/index';
+import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
 import { workbookFormulaOperation, DefineNameModel } from '../../workbook/index';
 import { deleteChart } from '../../spreadsheet/index';
 import { initiateFilterUI } from './event';
@@ -1216,17 +1216,13 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         break;
     case 'insert':
         if (isRedo === false) {
-            spreadsheet.delete(
-                options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType,
-                options.eventArgs.sheet.name);
+            spreadsheet.notify(deleteModel, <InsertDeleteModelArgs>{ model: options.eventArgs.sheet, start: options.eventArgs.index, end:
+                options.eventArgs.index + (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isUndoRedo: true });
         } else {
-            spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
-                model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                    options.eventArgs.sheet, start: options.eventArgs.index, end: options.eventArgs.index +
-                        (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType,
-                isAction: false, checkCount: options.eventArgs.sheetCount,
-                activeSheetIndex: options.eventArgs.activeSheetIndex
-            });
+            spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{ model: options.eventArgs.modelType === 'Sheet' ?
+                spreadsheet : options.eventArgs.sheet, start: options.eventArgs.index, end: options.eventArgs.index +
+                (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount:
+                options.eventArgs.sheetCount, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
         }
         break;
     case 'delete':
@@ -1234,11 +1230,12 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
                 model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
                     options.eventArgs.sheet, start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
-                isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames: options.eventArgs.definedNames
+                isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames: options.eventArgs.definedNames,
+                isUndoRedo: true
             });
         } else {
-            spreadsheet.delete(
-                options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType, options.eventArgs.sheet.name);
+            spreadsheet.notify(deleteModel, <InsertDeleteModelArgs>{ model: options.eventArgs.sheet, start: options.eventArgs.startIndex,
+                end: options.eventArgs.endIndex, modelType: options.eventArgs.modelType, isUndoRedo: true });
         }
         break;
     case 'validation':

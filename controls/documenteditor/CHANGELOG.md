@@ -2,18 +2,36 @@
 
 ## [Unreleased]
 
+## 19.3.44 (2021-10-05)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I339602` – Track changes is now updated properly in header and footer.
+- `#I341964`, `#I342165` – Resolved the text rearrange issue in copy/paste of RTL text.
+- `#I339714` – Footnote order is now updated properly.
+- `#I339973` - Table serialization issue in word export is resolved.
+- `#I340795` – Issue with copying field is resolved.
+- `#I339872` – Page number is footer is now updated properly.
+- `#I339576`, `#F168072` – Resolved the issue in applying page orientation with the section break.
+- `#I339027` – Resolved the script error in saving tracked content in header/footer.
+- `#I340532` – Html elements are nor properly disposed.
+- `#F168319` – Resolved the ViewChange event binding issue in Document Editor component
+- `#I340643`, `#I341375` – Resolved the history issue in comment operations
+- `#I341840` – Resolved the table rendering issue.
+
+#### New Features
+
+- `#I342110` - Added event to customize the XMLHttpRequest in DocumentEditor and DocumentEditorContainer component.
+
 ## 19.3.43 (2021-09-30)
 
 ### Document Editor
 
-#### New Features
+#### Breaking Changes
 
-- `#I256210`, `#F150773`, `#I295055`, `#I295551`, `#I324037`, `#I326715` - Added support for Widow/Orphan control, Keep with next and Keep lines together properties.
-- `#I298019`, `#I307321`, `#F160804`, `#F164217`, `#F164872` – Improved the accuracy of text size measurements such as to match Microsoft Word pagination for most Word documents.
-- `#I243246`, `#I249594`, `#I287633`, `#I295055`, `#I295549`, `#I299657`, `#I308408`, `#I326567` – Added support to preserve tables with position properties.
-- Added option to directly convert DocIO's WordDocument to SFDT and vice-versa in .NET and Java server-side library.
-- Added Word-to-SFDT conversion in Java server-side library.
-- Added new spell checker library for Java.
+- Optimized the accuracy of text size measurements such as to match Microsoft Word pagination for most Word documents. This improvement is included as default behaviour along with an optional API `enableOptimizedTextMeasuring` in Document editor settings. To disable this improvement and retain the document pagination behaviour of older versions, kindly set `false` to `enableOptimizedTextMeasuring` property.
 
 #### Bug Fixes
 
@@ -75,6 +93,15 @@
 - `#I339454` - Resolved alignment issue for a table that is wrapped over a positioned object.
 - `#I341016` - Resolved the script error while exporting a document with empty list.
 - `#I334046` - Optimized the spell check by page service call in optimized spell check mode.
+
+#### New Features
+
+- `#I256210`, `#F150773`, `#I295055`, `#I295551`, `#I324037`, `#I326715` - Added support for Widow/Orphan control, Keep with next and Keep lines together properties.
+- `#I298019`, `#I307321`, `#F160804`, `#F164217`, `#F164872` – Improved the accuracy of text size measurements such as to match Microsoft Word pagination for most Word documents.
+- `#I243246`, `#I249594`, `#I287633`, `#I295055`, `#I295549`, `#I299657`, `#I308408`, `#I326567` – Added support to preserve tables with position properties.
+- Added option to directly convert DocIO's WordDocument to SFDT and vice-versa in .NET and Java server-side library.
+- Added Word-to-SFDT conversion in Java server-side library.
+- Added new spell checker library for Java.
 
 ## 19.2.62 (2021-09-14)
 

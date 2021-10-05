@@ -2882,3 +2882,18 @@ export function findParentInSwimlane(node: Node, diagram: Diagram, parent: strin
     }
     return parent;
 }
+
+/**
+ * selectionHasConnector method \
+ *
+ * @returns {boolean} selectionHasConnector method .\
+ * @param { Diagram } wrapper - provide the diagram  element.
+ * @param { selector } size - provide the selector element.
+ * @private
+ */
+ export function selectionHasConnector(diagram: Diagram, selector: Selector): boolean {
+    if (diagram.selectedItems.connectors.length > 1 && diagram.selectedItems.nodes.length === 0 && selector.rotateAngle !== 0) {
+        return true;
+    }
+    return false; 
+}

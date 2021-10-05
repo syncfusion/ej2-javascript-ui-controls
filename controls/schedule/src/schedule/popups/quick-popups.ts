@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { L10n, closest, EventHandler, isNullOrUndefined, formatUnit, append, AnimationModel } from '@syncfusion/ej2-base';
 import { addClass, removeClass, createElement, remove, extend } from '@syncfusion/ej2-base';
-import { Dialog, Popup, isCollide, ButtonPropsModel } from '@syncfusion/ej2-popups';
+import { Dialog, Popup, isCollide, ButtonPropsModel, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Input, FormValidator } from '@syncfusion/ej2-inputs';
 import { Schedule } from '../base/schedule';
@@ -32,6 +32,7 @@ export class QuickPopups {
     private fieldValidator: FieldValidator;
     private isCrudAction: boolean = false;
     public lastEvent: Record<string, any>;
+    private dialogEvent: Event;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -855,23 +856,26 @@ export class QuickPopups {
         });
     }
 
-    private saveClick(): void {
+    private saveClick(event: Event): void {
+        this.dialogEvent = event;
         this.isCrudAction = true;
         this.quickPopupHide();
     }
 
-    private detailsClick(): void {
+    private detailsClick(event: Event): void {
         const subjectEle: HTMLInputElement = this.quickPopup.element.querySelector('.' + cls.SUBJECT_CLASS) as HTMLInputElement;
         if (subjectEle && subjectEle.value !== '') {
             extend(this.parent.activeCellsData, { subject: subjectEle.value });
         }
+        this.dialogEvent = event;
         this.isCrudAction = false;
         this.fieldValidator.destroyToolTip();
         this.quickPopupHide();
         this.parent.eventWindow.openEditor(this.parent.activeCellsData as unknown as Record<string, any>, 'Add');
     }
 
-    private editClick(): void {
+    private editClick(event: Event): void {
+        this.dialogEvent = event;
         this.quickPopupHide(true);
         const data: Record<string, any> = this.parent.activeEventData.event as Record<string, any>;
         this.parent.currentAction = 'EditSeries';
@@ -883,7 +887,8 @@ export class QuickPopups {
         }
     }
 
-    public deleteClick(): void {
+    public deleteClick(event: Event): void {
+        this.dialogEvent = event;
         this.quickPopupHide(true);
         this.parent.currentAction = 'Delete';
         if ((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceRule]) {
@@ -915,12 +920,14 @@ export class QuickPopups {
         this.morePopup.element.querySelector('.' + cls.MORE_EVENT_POPUP_CLASS).appendChild(moreElement);
     }
 
-    private closeClick(): void {
+    private closeClick(event: Event): void {
+        this.dialogEvent = event;
         this.quickPopupHide();
         this.morePopup.hide();
     }
 
     private dialogButtonClick(event: Event): void {
+        this.dialogEvent = event;
         this.quickDialog.hide();
         const target: HTMLElement = event.target as HTMLElement;
         const cancelBtn: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
@@ -960,7 +967,7 @@ export class QuickPopups {
         } else if (!cancelBtn.classList.contains(cls.DISABLE_CLASS) && (target.classList.contains(cls.QUICK_DIALOG_ALERT_OK) ||
             (target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL) && !cancelBtn.classList.contains(cls.QUICK_DIALOG_CANCEL_CLASS)))) {
             this.parent.uiStateValues.isIgnoreOccurrence = target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL);
-            this.parent.eventWindow.eventSave(this.l10n.getConstant('ok'));
+            this.parent.eventWindow.eventSave(event, this.l10n.getConstant('ok'));
         }
     }
 
@@ -1024,8 +1031,9 @@ export class QuickPopups {
         return eventObj;
     }
 
-    private beforeQuickDialogClose(): void {
+    private beforeQuickDialogClose(e: BeforeCloseEventArgs): void {
         const args: PopupCloseEventArgs = {
+            event: e.event || this.dialogEvent,
             type: (isNullOrUndefined(this.parent.activeEventData.event)) ? 'ValidationAlert' :
                 !isNullOrUndefined((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceRule])
                     ? 'RecurrenceAlert' : 'DeleteAlert', cancel: false, data: this.parent.activeEventData.event as Record<string, any>,
@@ -1173,7 +1181,8 @@ export class QuickPopups {
         }
     }
 
-    private popupClose(): void {
+    private popupClose(event: Event): void {
+        this.dialogEvent = event;
         this.isCrudAction = false;
         this.quickPopupHide(true);
     }
@@ -1206,6 +1215,7 @@ export class QuickPopups {
         }
         const isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
         const args: PopupCloseEventArgs = {
+            event: this.dialogEvent,
             type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
             cancel: false, data: popupData, element: this.quickPopup.element,
             target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element) as Element
@@ -1237,7 +1247,7 @@ export class QuickPopups {
         if (!isNullOrUndefined(navigateEle)) {
             const date: Date = this.parent.getDateFromElement(e.currentTarget as HTMLTableCellElement);
             if (!isNullOrUndefined(date)) {
-                this.closeClick();
+                this.closeClick(e);
                 this.parent.setProperties({ selectedDate: date }, true);
                 this.parent.changeView(this.parent.getNavigateView(), e);
             }
@@ -1267,7 +1277,10 @@ export class QuickPopups {
         }
     }
 
-    public onClosePopup(): void {
+    public onClosePopup(event?: Event): void {
+        if (!isNullOrUndefined(event)) {
+            this.dialogEvent = event;
+        }
         this.quickPopupHide();
         this.parent.eventBase.focusElement();
     }

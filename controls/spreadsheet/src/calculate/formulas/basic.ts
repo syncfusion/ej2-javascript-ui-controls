@@ -908,7 +908,8 @@ export class BasicFormulas {
                     }
                     tmp = exactOne;
                 }
-                const actCell: string = this.parent.actCell;
+                let actCell: string = this.parent.actCell;
+                actCell = actCell.indexOf('!') > - 1 ? actCell.split('!')[1] : actCell;
                 let actRowIdx: number = this.parent.rowIndex(actCell);
                 let actColIdx: number = this.parent.colIndex(actCell);
                 if (this.parent.dependencyLevel === 0) {
@@ -997,7 +998,8 @@ export class BasicFormulas {
     }
 
     public clearDependency(value: string): void {
-        const actCell: string = this.parent.actCell;
+        let actCell: string = this.parent.actCell;
+        actCell = actCell.indexOf('!') > - 1 ? actCell.split('!')[1] : actCell;
         const actRowIdx: number = this.parent.rowIndex(actCell);
         const actColIdx: number = this.parent.colIndex(actCell);
         const j: number = value.indexOf(':');
@@ -2355,7 +2357,9 @@ export class BasicFormulas {
                     for (let startRow: number = rowIdx, rowInc: number = 0; startRow <= eRowIdx; startRow++, rowInc++) {
                         for (let a: number = 0, colInc: number = 0; a < id.length; a++, colInc++) {
                             const cellValue: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[a] + colIdx) + startRow);
-                            const activeCell: string = this.parent.actCell; const actRowIdx: number = this.parent.rowIndex(activeCell);
+                            let activeCell: string = this.parent.actCell;
+                            activeCell = activeCell.indexOf('!') > - 1 ?activeCell.split('!')[1] : activeCell;
+                            const actRowIdx: number = this.parent.rowIndex(activeCell);
                             const actColIdx: number = this.parent.colIndex(activeCell);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
@@ -2368,8 +2372,10 @@ export class BasicFormulas {
                     for (let a: number = 0, rowInc: number = 0; a < id.length; a++, rowInc++) {
                         for (let startCol: number = colIdx, colInc: number = 0; startCol <= eColIdx; startCol++, colInc++) {
                             const value: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(startCol) + (id[a] + rowIdx));
-                            const activeCell: string = this.parent.actCell; const actRowIdx: number = this.parent.rowIndex(activeCell);
+                            let activeCell: string = this.parent.actCell;
+                            activeCell = activeCell.indexOf('!') > - 1 ?activeCell.split('!')[1] : activeCell;
                             const actColIdx: number = this.parent.colIndex(activeCell);
+                            const actRowIdx: number = this.parent.rowIndex(activeCell);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
                                                                              value, actRowIdx + rowInc, actColIdx + colInc);

@@ -228,8 +228,6 @@ export const showAggregate: string = 'showAggregate';
 /** @hidden */
 export const initiateConditionalFormat: string = 'initiateConditionalFormat';
 /** @hidden */
-export const checkConditionalFormat: string = 'checkConditionalFormat';
-/** @hidden */
 export const setCF: string = 'setCF';
 /** @hidden */
 export const clearViewer: string = 'clearViewer';

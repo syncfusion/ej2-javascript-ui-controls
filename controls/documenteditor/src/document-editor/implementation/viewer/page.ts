@@ -1685,7 +1685,7 @@ export class TableWidget extends BlockWidget {
         containerWidth = (this.tableFormat.preferredWidth > containerWidth) ? this.tableFormat.preferredWidth : containerWidth;
         let isZeroWidth: boolean = (isAutoWidth && this.tableFormat.preferredWidth === 0 && !isAutoFit);
         tableWidth = this.getTableClientWidth(containerWidth);
-        if (isZeroWidth && !this.isDefaultFormatUpdated) {
+        if (isZeroWidth && !this.isDefaultFormatUpdated && isAutoFit) {
             this.splitWidthToTableCells(tableWidth, isZeroWidth);
         }
         for (let i: number = 0; i < this.childWidgets.length; i++) {
@@ -4411,10 +4411,19 @@ export class FieldElementBox extends ElementBox {
         }
         field.width = this.width;
         field.height = this.height;
-        if (this.revisions.length > 0) {
-            field.removedIds = Revision.cloneRevisions(this.revisions);
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    field.revisions.push(revision.clone());
+                }
+            }
         } else {
-            field.removedIds = this.removedIds.slice();
+            if (this.revisions.length > 0) {
+                field.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                field.removedIds = this.removedIds.slice();
+            }
         }
         field.fieldCodeType = this.fieldCodeType;
         return field;
@@ -4705,24 +4714,33 @@ export class TextElementBox extends ElementBox {
      * @private
      */
     public clone(): TextElementBox {
-        let span: TextElementBox = new TextElementBox();
-        span.characterFormat.copyFormat(this.characterFormat);
-        span.text = this.text;
+        let textEle: TextElementBox = new TextElementBox();
+        textEle.characterFormat.copyFormat(this.characterFormat);
+        textEle.text = this.text;
         if (this.margin) {
-            span.margin = this.margin.clone();
+            textEle.margin = this.margin.clone();
         }
-        span.baselineOffset = this.baselineOffset;
-        if (this.revisions.length > 0) {
-            span.removedIds = Revision.cloneRevisions(this.revisions);
+        textEle.baselineOffset = this.baselineOffset;
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    textEle.revisions.push(revision.clone());
+                }
+            }
         } else {
-            span.removedIds = this.removedIds.slice();
+            if (this.revisions.length > 0) {
+                textEle.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                textEle.removedIds = this.removedIds.slice();
+            }
         }
-        span.width = this.width;
-        span.height = this.height;
+        textEle.width = this.width;
+        textEle.height = this.height;
         if (this.contentControlProperties) {
-            span.contentControlProperties = this.contentControlProperties;
+            textEle.contentControlProperties = this.contentControlProperties;
         }
-        return span;
+        return textEle;
     }
     /**
      * @private
@@ -4881,21 +4899,30 @@ export class FieldTextElementBox extends TextElementBox {
      * @private
      */
     public clone(): FieldTextElementBox {
-        let span: FieldTextElementBox = new FieldTextElementBox();
-        span.characterFormat.copyFormat(this.characterFormat);
-        span.fieldBegin = this.fieldBegin;
-        span.text = this.text;
+        let fieldSpan: FieldTextElementBox = new FieldTextElementBox();
+        fieldSpan.characterFormat.copyFormat(this.characterFormat);
+        fieldSpan.fieldBegin = this.fieldBegin;
+        fieldSpan.text = this.text;
         if (this.margin) {
-            span.margin = this.margin.clone();
+            fieldSpan.margin = this.margin.clone();
         }
-        if (this.revisions.length > 0) {
-            span.removedIds = Revision.cloneRevisions(this.revisions);
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revisionChanges: Revision = this.revisions[i];
+                    fieldSpan.revisions.push(revisionChanges.clone());
+                }
+            }
         } else {
-            span.removedIds = this.removedIds.slice();
+            if (this.revisions.length > 0) {
+                fieldSpan.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                fieldSpan.removedIds = this.removedIds.slice();
+            }
         }
-        span.width = this.width;
-        span.height = this.height;
-        return span;
+        fieldSpan.width = this.width;
+        fieldSpan.height = this.height;
+        return fieldSpan;
     }
 }
 /** 
@@ -4925,22 +4952,31 @@ export class TabElementBox extends TextElementBox {
      * @private
      */
     public clone(): TabElementBox {
-        let span: TabElementBox = new TabElementBox();
-        span.characterFormat.copyFormat(this.characterFormat);
-        span.tabText = this.tabText;
-        span.tabLeader = this.tabLeader;
-        span.text = this.text;
+        let tabSpan: TabElementBox = new TabElementBox();
+        tabSpan.characterFormat.copyFormat(this.characterFormat);
+        tabSpan.tabText = this.tabText;
+        tabSpan.tabLeader = this.tabLeader;
+        tabSpan.text = this.text;
         if (this.margin) {
-            span.margin = this.margin.clone();
+            tabSpan.margin = this.margin.clone();
         }
-        span.width = this.width;
-        span.height = this.height;
-        if (this.revisions.length > 0) {
-            span.removedIds = Revision.cloneRevisions(this.revisions);
+        tabSpan.width = this.width;
+        tabSpan.height = this.height;
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    tabSpan.revisions.push(revision.clone());
+                }
+            }
         } else {
-            span.removedIds = this.removedIds.slice();
+            if (this.revisions.length > 0) {
+                tabSpan.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                tabSpan.removedIds = this.removedIds.slice();
+            }
         }
-        return span;
+        return tabSpan;
     }
 }
 /** 
@@ -5064,10 +5100,19 @@ export class ContentControl extends ElementBox {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
-        if (this.revisions.length > 0) {
-            span.removedIds = Revision.cloneRevisions(this.revisions);
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revisionChange: Revision = this.revisions[i];
+                    span.revisions.push(revisionChange.clone());
+                }
+            }
         } else {
-            span.removedIds = this.removedIds.slice();
+            if (this.revisions.length > 0) {
+                span.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                span.removedIds = this.removedIds.slice();
+            }
         }
         span.type = this.type;
         span.width = this.width;
@@ -5833,10 +5878,19 @@ export class ImageElementBox extends ShapeBase {
         if (this.margin) {
             image.margin = this.margin.clone();
         }
-        if (this.revisions.length > 0) {
-            image.removedIds = Revision.cloneRevisions(this.revisions);
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    image.revisions.push(revision.clone());
+                }
+            }
         } else {
-            image.removedIds = this.removedIds.slice();
+            if (this.revisions.length > 0) {
+                image.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                image.removedIds = this.removedIds.slice();
+            }
         }
         image.name = this.name;
         image.alternativeText = this.alternativeText;

@@ -31,6 +31,7 @@ import { BlazorAction, ScrollActions } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
+import { selectionHasConnector } from '../utility/diagram-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
 import {
     canOutConnect, canInConnect, canPortInConnect, canPortOutConnect, canAllowDrop, canUserInteract, defaultTool
@@ -710,6 +711,7 @@ export class DiagramEventHandler {
                 if (!this.inAction && evt.which !== 3) {
                     if (this.action === 'Drag') {
                         this.action = 'Select';
+                        let oldSelectedValue = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel))
                         const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
                         const obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
                         let isMultipleSelect: boolean = true;
@@ -719,7 +721,7 @@ export class DiagramEventHandler {
                             isMultipleSelect = false; this.commandHandler.clearSelection();
                         }
                         if (!isSelected(this.diagram, obj) || (!isMultipleSelect)) {
-                            this.commandHandler.selectObjects([obj]);
+                            this.commandHandler.selectObjects([obj], undefined, oldSelectedValue);
                         }
                     }
                 }
@@ -998,7 +1000,9 @@ export class DiagramEventHandler {
         }
         const selector: SelectorModel = this.diagram.selectedItems;
         if (selector && selector.wrapper) {
-            this.diagram.renderSelector(true);
+            if (!(selectionHasConnector(this.diagram, selector as Selector))) {
+                this.diagram.renderSelector(true);
+            }
         }
         if (this.diagram.diagramActions & DiagramAction.Interactions || this.diagram.diagramActions & DiagramAction.ToolAction) {
             this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.ToolAction;

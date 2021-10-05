@@ -295,6 +295,7 @@ export interface InsertDeleteModelArgs {
     activeSheetIndex?: number;
     checkCount?: number;
     definedNames?: DefineNameModel[];
+    isUndoRedo?: boolean;
 }
 
 /**
@@ -363,6 +364,8 @@ export interface InsertDeleteEventArgs {
     isInsert?: boolean;
     freezePane?: boolean;
     definedNames?: DefineNameModel[];
+    isMethod?: boolean;
+    isUndoRedo?: boolean;
 }
 
 /**

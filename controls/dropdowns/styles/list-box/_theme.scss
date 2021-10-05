@@ -51,7 +51,9 @@
       }
 
       & .e-icons {
-        color: $listview-icon-color;
+        @if $skin-name != 'bootstrap5' {
+          color: $listview-icon-color;
+        }
       }
 
       & .e-list-item {

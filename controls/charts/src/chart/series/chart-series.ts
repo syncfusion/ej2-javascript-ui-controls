@@ -1242,7 +1242,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
         this.yMin = isLogAxis ?
             Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY) || (seriesMinY === 0) ||
-                (seriesMinY.toString() === '')) ? this.yMin : seriesMinY) :
+                (seriesMinY.toString() === "0") || (seriesMinY.toString() === '')) ? this.yMin : seriesMinY) :
             Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY)) ? this.yMin : seriesMinY);
         this.yMax = Math.max(this.yMax, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     }

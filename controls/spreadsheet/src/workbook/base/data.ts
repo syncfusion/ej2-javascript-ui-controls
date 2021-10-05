@@ -1,9 +1,9 @@
-import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
-import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat, checkUniqueRange } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete, workbookFormulaOperation } from '../common/index';
+import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../index';
+import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete, workbookFormulaOperation, checkUniqueRange } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { setCell } from './cell';
+import { setCell, checkConditionalFormat } from './../index';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -33,11 +33,13 @@ export function getData(
             const indexes: number[] = getIndexesFromAddress(address);
             let sRow: number = indexes[0];
             let index: number = 0;
-            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number } = {
-                sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx, promise:
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
+            /* eslint-disable */
+            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number,
+                isFinite?: boolean } = { sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx, isFinite:
+                    (<any>context).scrollSettings && (<any>context).scrollSettings.isFinite,
+                    promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
+            /* eslint-enable */
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
                 const frozenRow: number = context.frozenRowCount(sheet); const frozenCol: number = context.frozenColCount(sheet);
@@ -278,6 +280,9 @@ export function clearRange(context: Workbook, address: string, sheetIdx: number,
                 }
                 if (!isNullOrUndefined(cellValue) && cellValue !== '') {
                     context.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRIdx, colIndex: sCIdx });
+                }
+                if (valueOnly) {
+                    context.notify(checkConditionalFormat, { rowIdx: sRIdx, colIdx: sCIdx, cell: cell, isAction: true });
                 }
             }
         }

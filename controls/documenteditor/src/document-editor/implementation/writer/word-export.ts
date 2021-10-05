@@ -3950,12 +3950,12 @@ export class WordExport {
             switch (rowFormat.gridBeforeWidthType) {
                 case 'Percent':
                     let width: string = this.roundToTwoDecimal(rowFormat.gridBeforeWidth * this.percentageFactor).toString();
-                    writer.writeAttributeString('w', 'val', this.wNamespace, width);
+                    writer.writeAttributeString('w', 'w', this.wNamespace, width);
                     writer.writeAttributeString('w', 'type', this.wNamespace, 'pct');
                     break;
                 case 'Point':
                     let pointWidth: string = this.roundToTwoDecimal(rowFormat.gridBeforeWidth * this.twipsInOnePoint).toString();
-                    writer.writeAttributeString('w', 'val', this.wNamespace, pointWidth);
+                    writer.writeAttributeString('w', 'w', this.wNamespace, pointWidth);
                     writer.writeAttributeString('w', 'type', this.wNamespace, 'dxa');
                     break;
             }

@@ -1,7 +1,7 @@
 import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
 import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
-import { SheetModel, checkUniqueRange } from '../../workbook/index';
+import { SheetModel, checkUniqueRange, refreshInsertDelete } from '../../workbook/index';
 
 /**
  * The `WorkbookDelete` module is used to delete cells, rows, columns and sheets from workbook.
@@ -50,10 +50,10 @@ export class WorkbookDelete {
         }
         let deletedCells: RowModel[]; const mergeArgsCollection: MergeArgs[] = []; const count: number = (args.end - args.start) + 1;
         let prevCell: CellModel; let freezePane: boolean;
-        const eventArgs: { action: string, insertArgs: InsertDeleteEventArgs } = { action: 'refreshInsertDelete', insertArgs: { startIndex:
-            args.start, endIndex: args.end, modelType: args.modelType, sheet: args.model } };
+        const insertArgs: InsertDeleteEventArgs = { startIndex: args.start, endIndex: args.end, modelType: args.modelType, sheet:
+            args.model };
         if (args.modelType === 'Row') {
-            this.parent.notify(workbookFormulaOperation, eventArgs);
+            this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.rowIndex) { return; }
             if (args.end > args.model.usedRange.rowIndex) { args.end -= (args.end - args.model.usedRange.rowIndex); }
@@ -117,7 +117,7 @@ export class WorkbookDelete {
                 }
             }
         } else if (args.modelType === 'Column') {
-            this.parent.notify(workbookFormulaOperation, eventArgs);
+            this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.colIndex) { return; }
             if (args.end > args.model.usedRange.colIndex) { args.end -= (args.end - args.model.usedRange.colIndex); }
@@ -209,9 +209,9 @@ export class WorkbookDelete {
             if (args.model !== this.parent.getActiveSheet()) { return; }
         }
         this.parent.notify(deleteAction, {
-            startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: eventArgs.insertArgs.definedNames,
+            startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: insertArgs.definedNames,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
-            activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane, sheet: args.model
+            activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane, sheet: args.model, isUndoRedo: args.isUndoRedo
         });
     }
     private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {

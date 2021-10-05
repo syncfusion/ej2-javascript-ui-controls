@@ -1640,6 +1640,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      *
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: AccumulationChartModel, oldProp: AccumulationChartModel): void {
         const update: { refreshElements: boolean, refreshBounds: boolean } = {
             refreshElements: false, refreshBounds: false
@@ -1695,9 +1696,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                             extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                             seriesRefresh = true;
                         }
-                        if (newProp.series[i] && !isNullOrUndefined(newProp.series[i].explodeIndex) && newProp.series[i].explodeIndex >= 0 
-						    && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
+                        if (newProp.series[i] && !isNullOrUndefined(newProp.series[i].explodeIndex) && newProp.series[i].explodeIndex >= 0
+                            && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
                             this.accBaseModule.explodePoints(newProp.series[i].explodeIndex, this);
+                            this.accBaseModule.deExplodeAll(newProp.series[i].explodeIndex, this.enableAnimation ? 300 : 0);
+                        } else if (newProp.series[i].explodeIndex < 0) {
                             this.accBaseModule.deExplodeAll(newProp.series[i].explodeIndex, this.enableAnimation ? 300 : 0);
                         }
                     }

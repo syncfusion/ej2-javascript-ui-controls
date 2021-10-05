@@ -37,7 +37,7 @@ import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight, setColumn, s
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
 import { Sort, Filter, SpreadsheetImage, SpreadsheetChart } from '../integrations/index';
-import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';
+import { isNumber, getColumn, WorkbookFilter, refreshInsertDelete, InsertDeleteEventArgs, RangeModel } from '../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
@@ -47,7 +47,7 @@ import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { beginAction, contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
-import { getFilteredCollection, deleteHyperlink } from './../../workbook/common/index';
+import { getFilteredCollection, deleteHyperlink, getRangeAddress } from './../../workbook/common/index';
 import { updateScroll, SelectionMode } from '../common/index';
 /**
  * Represents the Spreadsheet component.
@@ -1355,14 +1355,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public setColWidth(width: number | string = 64, colIndex: number = 0, sheetIndex?: number): void {
         const colThreshold: number = this.getThreshold('col');
-        const lastIdx: number = this.viewport.leftIndex + this.viewport.colCount + (colThreshold * 2);
         const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
         if (sheet) {
             const mIndex: number = colIndex;
             const colWidth: string = (typeof width === 'number') ? width + 'px' : width;
             colIndex = isNullOrUndefined(colIndex) ? getCellIndexes(sheet.activeCell)[1] : colIndex;
             if (sheet === this.getActiveSheet()) {
-                if (colIndex >= this.viewport.leftIndex && colIndex <= lastIdx) {
+                if (colIndex >= this.viewport.leftIndex && colIndex <= this.viewport.rightIndex) {
                     if (this.scrollSettings.enableVirtualization) { colIndex = colIndex - this.viewport.leftIndex; }
                     let trgt: HTMLElement;
                     if (sheet.showHeaders) {
@@ -1379,7 +1378,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     }
                     const oldIdx: number = parseInt(trgt.getAttribute('aria-colindex'), 10) - 1;
                     if (this.getActiveSheet() === sheet) {
-                        this.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+                        this.notify(colWidthChanged, { threshold, colIdx: oldIdx, checkWrapCell: true });
                         setResize(colIndex, colIndex, colWidth, true, this);
                     }
                 } else {
@@ -2368,6 +2367,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
         EventHandler.add(this.element, 'noderefresh', this.refreshNode, this);
         this.on(freeze, this.freeze, this);
+        this.on(refreshInsertDelete, this.refreshInsertDelete, this);
     }
 
     /**
@@ -2403,6 +2403,19 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
         EventHandler.remove(this.element, 'noderefresh', this.refreshNode);
         this.off(freeze, this.freeze);
+        this.off(refreshInsertDelete, this.refreshInsertDelete);
+    }
+
+    private refreshInsertDelete(args: InsertDeleteEventArgs): void {
+        let updated: boolean; let indexes: number[];
+        args.sheet.ranges.forEach((range: RangeModel): void => {
+            if (range.template && range.address) {
+                indexes = getRangeIndexes(range.address);
+                updated = this.updateRangeOnInsertDelete(args, indexes);
+                if (updated) { range.address = getRangeAddress(indexes); }
+            }
+        });
+        this.setSheetPropertyOnMute(args.sheet, 'ranges', args.sheet.ranges);
     }
 
     /**

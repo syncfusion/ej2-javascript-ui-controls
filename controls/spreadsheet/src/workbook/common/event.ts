@@ -256,3 +256,7 @@ export const refreshClipboard: string = 'refreshClipboard';
 export const updateView: string = 'updateView';
 /** @hidden */
 export const selectionComplete: string = 'selectionComplete';
+/** @hidden */
+export const refreshInsertDelete: string = 'refreshInsertDelete';
+/** @hidden */
+export const checkConditionalFormat: string = 'checkConditionalFormat';

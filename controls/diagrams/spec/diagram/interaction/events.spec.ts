@@ -76,6 +76,44 @@ describe('Diagram Control', () => {
                 done();
             });
         });
+        
+        describe('Testing selection events', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+                ele = createElement('div', { id: 'diagram2' });
+                document.body.appendChild(ele);
+                let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+                let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 350, offsetY: 100 };
+                let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
+                diagram = new Diagram({
+                    width: 1000, height: 1000, nodes: [node, node1],
+                    connectors: [connector]
+                });
+                diagram.appendTo('#diagram2');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+
+            it('Checking selection Change after multiple select', (done: Function) => {
+                diagram.selectionChange = (args: ISelectionChangeEventArgs) => {
+                    diagram.selectAll();
+                    diagram.select([diagram.nameTable['node1']])
+                    expect(args.oldValue.length !== 0).toBe(true);
+                };
+                done();
+            });
+        });
+
     });
     describe('Testing event', () => {
         let diagram: Diagram;

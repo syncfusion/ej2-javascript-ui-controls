@@ -30,6 +30,7 @@ export class DataBind {
             this.parent.off(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler);
             this.parent.off(dataSourceChanged, this.dataSourceChangedHandler);
             this.parent.off(dataChanged, this.dataChangedHandler);
+            this.parent.off(triggerDataChange, this.triggerDataChangeHandler);
         }
     }
 
@@ -46,7 +47,7 @@ export class DataBind {
     // eslint-disable-next-line
     private updateSheetFromDataSourceHandler(
         args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
-        sheetIndex?: number, dataSourceChange?: boolean }): void {
+        sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
@@ -149,8 +150,15 @@ export class DataBind {
                         } else {
                             flds = [];
                         }
-                        args.sheet.usedRange.rowIndex = (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1;
-                        args.sheet.usedRange.colIndex = sColIdx + flds.length - 1 < 0 ? args.sheet.usedRange.colIndex: sColIdx + flds.length - 1;
+                        const totalRows: number = (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1;
+                        const totalCols: number = sColIdx + flds.length - 1 < 0 ? args.sheet.usedRange.colIndex: sColIdx + flds.length - 1;
+                        if (args.isFinite) {
+                            args.sheet.usedRange.rowIndex = totalRows < args.sheet.rowCount ? totalRows : args.sheet.rowCount - 1;
+                            args.sheet.usedRange.colIndex = totalCols < args.sheet.colCount ? totalCols : args.sheet.colCount - 1;
+                        } else {
+                            args.sheet.usedRange.rowIndex = totalRows;
+                            args.sheet.usedRange.colIndex = totalCols;
+                        }
                         if (insertRowCount) {
                             loadedInfo = this.getLoadedInfo(sRange, eRange, range);
                             sRange = loadedInfo.unloadedRange[0]; eRange = loadedInfo.unloadedRange[1];
@@ -171,11 +179,11 @@ export class DataBind {
                                 args.rangeSettingCount.push(k);
                                 //if (remoteUrl) {
                                 const unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
-                                    rangeSettingCount?: number[] } = {
-                                    sheet: args.sheet, indexes: [0, 0, args.sheet.usedRange.rowIndex, args.sheet.usedRange.colIndex],
+                                    rangeSettingCount?: number[], isFinite?: boolean } = {
+                                    sheet: args.sheet, indexes: [0, 0, totalRows, totalCols],
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }),
-                                    rangeSettingCount: args.rangeSettingCount
+                                    rangeSettingCount: args.rangeSettingCount, isFinite: args.isFinite
                                 };
                                 this.updateSheetFromDataSourceHandler(unloadedArgs);
                                 unloadedArgs.promise.then((): void => {
@@ -429,7 +437,7 @@ export class DataBind {
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number, modelType: string,
         deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, pastedRange: string,
-        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean
+        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean, isMethod?: boolean
     }): void {
         const changedData: Object[] = [{}];
         let action: string;
@@ -497,6 +505,7 @@ export class DataBind {
                                 isNewRow = true;
                                 range.info.count += args.model.length;
                             }
+                            if (args.isMethod) { return; }
                         } else {
                             inRange = dataRange[0] <= args.startIndex && dataRange[2] >= args.startIndex;
                             if (args.isDataRequest) {
@@ -547,6 +556,7 @@ export class DataBind {
                             });
                             range.info.count -= 1;
                         });
+                        if (args.isMethod) { return; }
                         deleteRowDetails = { count: args.deletedModel.length, index: args.endIndex };
                     } else {
                         action = isNewRow ? 'add' : 'edit';

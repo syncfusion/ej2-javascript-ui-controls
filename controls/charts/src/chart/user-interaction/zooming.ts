@@ -181,8 +181,10 @@ export class Zoom {
                 this.performDefferedZoom(chart);
             });
         } else {
-            this.performDefferedZoom(chart);
-            this.redrawOnZooming(chart, false);
+            this.chart.trigger(onZooming, zoomingEventArgs, () => {
+                this.performDefferedZoom(chart);
+                this.redrawOnZooming(chart, false);
+            });
         }
     }
 
@@ -299,8 +301,10 @@ export class Zoom {
             this.chart.trigger(onZooming, onZoomingEventArg, () => { this.zoomingRect = new Rect(0, 0, 0, 0);
                 this.performZoomRedraw(chart); });
         } else {
-            this.zoomingRect = new Rect(0, 0, 0, 0);
-            this.redrawOnZooming(chart);
+            this.chart.trigger(onZooming, onZoomingEventArg, () => {
+                this.zoomingRect = new Rect(0, 0, 0, 0);
+                this.redrawOnZooming(chart);
+            });
         }
     }
 
@@ -388,7 +392,7 @@ export class Zoom {
         if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
         } else {
-            this.redrawOnZooming(chart);
+            this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.redrawOnZooming(chart); });
         }
     }
 
@@ -502,7 +506,7 @@ export class Zoom {
             }
         }
         const onZoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
+        if (!onZoomingEventArgs.cancel) {
             this.chart.trigger(onZooming, onZoomingEventArgs);
         }
     }

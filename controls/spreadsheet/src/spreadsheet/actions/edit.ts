@@ -902,21 +902,23 @@ export class Edit {
         this.parent.notify(getUniqueRange, args);
         const collection: string[] = args.range;
         for (let i: number = 0; i < collection.length; i++) {
-            const rangeIdx: number[] = getRangeIndexes(collection[i]);
-            for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
-                for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
-                    if (uniquArgs.cellIdx[0] === j && uniquArgs.cellIdx[1] === k) {
-                        uniquArgs.isUnique = true; this.uniqueCell = true;
-                        const uniqueIndex: number[] = this.uniqueColl !== '' ? getRangeIndexes(this.uniqueColl) : [0, 0, 0, 0];
-                        const collectionIndex: number[] = getRangeIndexes(collection[i]);
-                        if (uniqueIndex[0] === collectionIndex[0] && uniqueIndex[1] === collectionIndex[1]) {
-                            const index: number[] = [uniqueIndex[0], collectionIndex[1], uniqueIndex[0], collectionIndex[1]];
-                            index[2] = uniqueIndex[2] > collectionIndex[2] ? uniqueIndex[2] : collectionIndex[2];
-                            index[3] = uniqueIndex[3] > collectionIndex[3] ? uniqueIndex[3] : collectionIndex[3];
-                            this.uniqueColl = getRangeAddress(index);
-                            uniquArgs.uniqueRange = getRangeAddress(index);
-                        } else { this.uniqueColl = collection[i];
-                            uniquArgs.uniqueRange = collection[i];
+            if (collection[i].split('!')[0] === this.parent.getActiveSheet().name) {
+                const rangeIdx: number[] = getRangeIndexes(collection[i]);
+                for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
+                    for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
+                        if (uniquArgs.cellIdx[0] === j && uniquArgs.cellIdx[1] === k) {
+                            uniquArgs.isUnique = true; this.uniqueCell = true;
+                            const uniqueIndex: number[] = this.uniqueColl !== '' ? getRangeIndexes(this.uniqueColl) : [0, 0, 0, 0];
+                            const collectionIndex: number[] = getRangeIndexes(collection[i]);
+                            if (uniqueIndex[0] === collectionIndex[0] && uniqueIndex[1] === collectionIndex[1]) {
+                                const index: number[] = [uniqueIndex[0], collectionIndex[1], uniqueIndex[0], collectionIndex[1]];
+                                index[2] = uniqueIndex[2] > collectionIndex[2] ? uniqueIndex[2] : collectionIndex[2];
+                                index[3] = uniqueIndex[3] > collectionIndex[3] ? uniqueIndex[3] : collectionIndex[3];
+                                this.uniqueColl = getRangeAddress(index);
+                                uniquArgs.uniqueRange = getRangeAddress(index);
+                            } else { this.uniqueColl = collection[i];
+                                uniquArgs.uniqueRange = collection[i];
+                            }
                         }
                     }
                 }

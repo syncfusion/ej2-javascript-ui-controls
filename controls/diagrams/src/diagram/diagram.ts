@@ -44,7 +44,7 @@ import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } 
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape } from './objects/node';
-import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex } from './utility/diagram-util';
+import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, selectionHasConnector  } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
@@ -3241,7 +3241,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 this.callBlazorModel = true;
             }
-            this.updateSelector();
+            const selector: Selector = this.selectedItems as Selector;
+            if (!(selectionHasConnector(this, selector))) {
+                this.updateSelector();
+            }
             this.refreshCanvasLayers();
         } else {
             this.commandHandler.scale(
@@ -8338,8 +8341,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.selectedItems !== undefined) {
             this.clearSelectorLayer();
             if (selector.wrapper !== null && selector.wrapper.children && selector.wrapper.children.length) {
-                selector.wrapper.measure(size);
-                selector.wrapper.arrange(selector.wrapper.desiredSize);
+                let canUpdate: boolean = true;
+                let canRender: boolean = true;
+                if (selectionHasConnector(this, selector)) {
+                    const eventHandler: string = 'eventHandler';
+                    let rotate: string = this[eventHandler].action;
+                    let isRotate: boolean = rotate.includes('Rotate');
+                    let isSelect: boolean = rotate.includes('None') || rotate.includes('Select') || rotate.includes('Drag');
+                    if (isRotate || isSelect) {
+                        canRender = false;
+                    }
+                    if (!isSelect) {
+                        canUpdate = false;
+                    }
+                }
+                if (canUpdate) {
+                    selector.wrapper.measure(size);
+                    selector.wrapper.arrange(selector.wrapper.desiredSize);
+                }
                 if (selector.rotateAngle !== 0 || selector.rotateAngle !== selector.wrapper.prevRotateAngle) {
                     for (const obj of selector.nodes) {
                         obj.offsetX = obj.wrapper.offsetX;
@@ -8405,10 +8424,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.diagramActions & DiagramAction.Interactions) {
                         this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions | RendererAction.PreventRenderSelector;
                     }
-                    this.diagramRenderer.renderResizeHandle(
-                        selector.wrapper, selectorEle, selector.thumbsConstraints, this.scroller.currentZoom,
-                        selector.constraints, this.scroller.transform, canHideResizers, canMove(selector)
-                    );
+                    if (!(selectionHasConnector(this, selector) && canRender)) {
+                        this.diagramRenderer.renderResizeHandle(
+                            selector.wrapper, selectorEle, selector.thumbsConstraints, this.scroller.currentZoom,
+                            selector.constraints, this.scroller.transform, canHideResizers, canMove(selector)
+                        );
+                    }
                     this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions & ~RendererAction.PreventRenderSelector;
 
                 }

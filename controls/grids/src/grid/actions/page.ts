@@ -9,6 +9,7 @@ import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import { extend as gridExtend, getActualProperties, isActionPrevent, addRemoveEventListener } from '../base/util';
 import * as events from '../base/constant';
 import { PagerModel } from '../../pager';
+import * as literals from '../base/string-literals';
 
 /**
  * The `Page` module is used to render pager and handle paging action.
@@ -298,7 +299,7 @@ export class Page implements IAction {
         };
         if (this.parent.isDestroyed) { return; }
         if (this.parent.isReact) {
-            this.parent.addEventListener(events.created, this.handlers.created.bind(this));
+            this.parent.addEventListener(literals.create, this.handlers.created.bind(this));
         }
         this.evtHandlers = [{ event: events.initialLoad, handler: this.handlers.load },
             { event: events.initialEnd, handler: this.handlers.end },
@@ -345,7 +346,7 @@ export class Page implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         if (this.parent.isReact) {
-            this.parent.removeEventListener(events.created, this.handlers.created);
+            this.parent.removeEventListener(literals.create, this.handlers.created);
         }
         this.parent.off(events.pagerRefresh, this.renderReactPagerTemplate);
         addRemoveEventListener(this.parent, this.evtHandlers, false);

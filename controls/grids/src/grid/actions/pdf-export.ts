@@ -1045,6 +1045,8 @@ export class PdfExport {
                 this.parent.trigger(events.pdfQueryCellInfo, args);
                 if (!isNullOrUndefined(args.image)) {
                     args.value = new PdfBitmap(args.image.base64);
+                    args.value.height = (<{ height?: number }>args.image).height || args.value.height;
+                    args.value.width = (<{ width?: number }>args.image).width || args.value.width;
                 }
                 cell.value = args.value;
                 if (!isNullOrUndefined(args.hyperLink)) {

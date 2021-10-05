@@ -242,6 +242,7 @@ export class Ribbon {
                     { text: l10n.getConstant('All'), id: 'All' },
                     { text: l10n.getConstant('Values'), id: 'Values' },
                     { text: l10n.getConstant('Formats'), id: 'Formats' }],
+                createPopupOnClick: true,
                 select: (args: MenuEventArgs) => {
                     this.parent.notify(paste, { type: args.item.id, isAction: true, isInternal: true });
                 },
@@ -427,7 +428,7 @@ export class Ribbon {
         chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Material' }));
         this.chartThemeDDB = new DropDownButton({
             items: this.getChartThemeDdbItems(),
-            content: '',
+            createPopupOnClick: true,
             select: (args: MenuEventArgs): void => this.chartThemeDDBSelect(args),
             close: (): void => this.parent.element.focus(),
             cssClass: 'e-flat e-charttheme-ddb',
@@ -443,7 +444,7 @@ export class Ribbon {
         numFormatBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'General' }));
         this.numFormatDDB = new DropDownButton({
             items: this.getNumFormatDdbItems(id),
-            content: '',
+            createPopupOnClick: true,
             select: (args: MenuEventArgs): void => this.numDDBSelect(args),
             open: (args: OpenCloseMenuEventArgs): void => this.numDDBOpen(args),
             beforeItemRender: (args: MenuEventArgs): void => this.previewNumFormat(args),
@@ -460,6 +461,7 @@ export class Ribbon {
         this.fontSizeDdb = new DropDownButton({
             cssClass: 'e-font-size-ddb',
             content: '11',
+            createPopupOnClick: true,
             items: [{ text: '8' }, { text: '9' }, { text: '10' }, { text: '11' }, { text: '12' }, { text: '14' }, { text: '16' },
                 { text: '18' }, { text: '20' }, { text: '22' }, { text: '24' }, { text: '26' }, { text: '28' }, { text: '36' },
                 { text: '48' }, { text: '72' }],
@@ -680,9 +682,10 @@ export class Ribbon {
         const ddbCssClass: string = isChart ? 'e-chart-ddb' : 'e-chart-type-ddb';
         const chartBtnId: string = isChart ? id + '_chart-btn' : id + '_chart-type-btn';
         this.chartDdb = new DropDownButton({
-            iconCss: 'e-icons' + ' ' + ddbIconCss,
+            iconCss: `e-icons ${ddbIconCss}`,
             cssClass: ddbCssClass,
             target: this.chartMenu.element.parentElement,
+            createPopupOnClick: true,
             created: (): void => { this.chartMenu.element.style.display = ''; },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.' + ddbCssClass)) {
@@ -787,6 +790,7 @@ export class Ribbon {
             iconCss: 'e-icons e-addchart-icon',
             cssClass: 'e-addchart-ddb',
             target: this.addChartMenu.element.parentElement,
+            createPopupOnClick: true,
             created: (): void => { this.addChartMenu.element.style.display = ''; },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-addchart-ddb')) {
@@ -1060,6 +1064,7 @@ export class Ribbon {
             iconCss: 'e-icons e-conditionalformatting-icon',
             cssClass: 'e-cf-ddb',
             target: this.cFMenu.element.parentElement,
+            createPopupOnClick: true,
             created: (): void => { this.cFMenu.element.style.display = ''; },
             close: (): void => focus(this.parent.element)
         });
@@ -1153,6 +1158,7 @@ export class Ribbon {
             iconCss: 'e-icons e-bottom-borders',
             cssClass: 'e-borders-ddb',
             target: this.bordersMenu.element.parentElement,
+            createPopupOnClick: true,
             created: (): void => { this.bordersMenu.element.style.display = ''; },
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.tBarDdbBeforeOpen(
                 <HTMLElement>args.element.firstElementChild, this.bordersMenu.items, 1),
@@ -1268,6 +1274,7 @@ export class Ribbon {
         this.fontNameDdb = new DropDownButton({
             cssClass: 'e-font-family',
             items: this.getFontFamilyItems(),
+            createPopupOnClick: true,
             select: (args: MenuEventArgs): void => {
                 const eventArgs: SetCellFormatArgs = { style: { fontFamily: args.item.text as FontFamily }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
@@ -1302,6 +1309,7 @@ export class Ribbon {
                 { text: l10n.getConstant('HighlightInvalidData') },
                 { text: l10n.getConstant('ClearHighlight') },
                 { text: l10n.getConstant('ClearValidation') }],
+            createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.datavalidationDdb, args.element, 'iconCss');
             },
@@ -1338,6 +1346,7 @@ export class Ribbon {
             iconCss: 'e-icons e-left-icon',
             items: [{ iconCss: 'e-icons e-left-icon' }, { iconCss: 'e-icons e-center-icon' }, { iconCss: 'e-icons e-right-icon' }],
             beforeItemRender: this.alignItemRender.bind(this),
+            createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.textAlignDdb, args.element, 'iconCss');
             },
@@ -1363,6 +1372,7 @@ export class Ribbon {
             iconCss: 'e-icons e-bottom-icon',
             items: [{ iconCss: 'e-icons e-top-icon' }, { iconCss: 'e-icons e-middle-icon' }, { iconCss: 'e-icons e-bottom-icon' }],
             beforeItemRender: this.alignItemRender.bind(this),
+            createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.verticalAlignDdb, args.element, 'iconCss');
             },
@@ -1388,6 +1398,7 @@ export class Ribbon {
         this.mergeSplitBtn = new SplitButton({
             cssClass: 'e-merge-ddb',
             iconCss: 'e-icons e-merge-icon',
+            createPopupOnClick: true,
             items: [{ text: l10n.getConstant('MergeAll'), id: `${id}_merge_all` }, { text: l10n.getConstant('MergeHorizontally'), id:
                 `${id}_merge_horizontally` }, { text: l10n.getConstant('MergeVertically'), id: `${id}_merge_vertically` },
             { separator: true, id: `${id}_merge_separator` }, { text: l10n.getConstant('Unmerge'), id: `${id}_unmerge` }],
@@ -1495,6 +1506,7 @@ export class Ribbon {
                 { text: l10n.getConstant('Filter'), iconCss: 'e-icons e-filter-apply', id: id + '_applyfilter' },
                 { text: l10n.getConstant('ClearAllFilter'), iconCss: 'e-icons e-filter-clear', id: id + '_clearfilter' },
                 { text: l10n.getConstant('ReapplyFilter'), iconCss: 'e-icons e-filter-reapply', id: id + '_reapplyfilter' }],
+            createPopupOnClick: true,
             beforeItemRender: (args: MenuEventArgs): void => {
                 const eventArgs: { [key: string]: boolean } = { isFiltered: false, isClearAll: true };
                 this.parent.notify(getFilteredColumn, eventArgs);
@@ -1699,6 +1711,7 @@ export class Ribbon {
                 { text: l10n.getConstant('ClearFormats') },
                 { text: l10n.getConstant('ClearContents') },
                 { text: l10n.getConstant('ClearHyperlinks') }],
+            createPopupOnClick: true,
             select: (args: MenuEventArgs): void => {
                 this.parent.notify(clearViewer, { options: { type: args.item.text } });
             },
@@ -2694,6 +2707,7 @@ export class Ribbon {
                 { text: this.ribbon.items[2].header.text as string },
                 { text: this.ribbon.items[3].header.text as string }
             ],
+            createPopupOnClick: true,
             select: (args: MenuEventArgs): void => {
                 if (args.item.text !== ddbObj.content) {
                     toolbarObj.element.style.display = 'none';

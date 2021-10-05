@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell } from '../common/index';
 import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
 import { removeAllChildren } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
@@ -9,7 +9,7 @@ import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth, getShee
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView } from '../../workbook/index';
-import { checkIsFormula } from '../../workbook/common/util';
+import { checkIsFormula, checkConditionalFormat } from '../../workbook/common/index';
 /**
  * CellRenderer class which responsible for building cell content.
  *

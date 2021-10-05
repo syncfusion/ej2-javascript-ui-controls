@@ -2637,7 +2637,7 @@
 
       & .e-groupheadercell span {
         float: right;
-        padding: $grid-bigger-rtl-group-span-padding;
+        padding: $grid-rtl-group-span-padding;
       }
 
       &.e-horizontallines .e-grouptopleftcell {
@@ -3131,6 +3131,10 @@
 
   &.e-rtl .e-columnmenu {
     margin: $grid-bigger-rtl-cm-margin;
+  }
+
+  &.e-rtl .e-groupheadercell span {
+    padding: $grid-bigger-rtl-group-span-padding;
   }
 }
 

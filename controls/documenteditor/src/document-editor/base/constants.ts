@@ -50,3 +50,7 @@ export const keyDownEvent: string = 'keyDown';
 export const toolbarClickEvent: string = 'toolbarClick';
 /** @hidden */
 export const beforeFileOpenEvent: string = 'beforeFileOpen';
+/** @hidden */
+export const internalviewChangeEvent: string = 'internalviewChange';
+/** @hidden */
+export const beforeXmlHttpRequestSend: string = 'beforeXmlHttpRequestSend';

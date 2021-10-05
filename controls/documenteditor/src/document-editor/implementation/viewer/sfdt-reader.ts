@@ -1034,7 +1034,7 @@ export class SfdtReader {
                         let lineWidgetCount: number = lineWidget.children.length;
                         if (lineWidgetCount >= 2) {
                             let fieldTextElement: ElementBox = this.containsFieldBegin(lineWidget);
-                            if (!isNullOrUndefined(fieldTextElement) && fieldTextElement instanceof TextElementBox && fieldTextElement.text.match('PAGE')) {
+                            if (!isNullOrUndefined(fieldTextElement) && fieldTextElement instanceof TextElementBox && (fieldTextElement.text.match('PAGE') || fieldTextElement.text.match('page'))) {
                                 this.documentHelper.isPageField = true;
                             }
                         }

@@ -913,12 +913,18 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Creating a background element to the svg object
      */
     private renderChartBackground(): void {
-        if(this.stockChart) {
-            return;
+        let top: number = 0;
+        let left: number = 0;
+        if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
+            if (this.stockChart.legendSettings.position === "Top") {
+                top += this.stockChart.stockLegendModule.legendBounds.height;
+            } else if (this.stockChart.legendSettings.position === "Left") {
+                left += this.stockChart.stockLegendModule.legendBounds.width;
+            }
         }
         const rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', this.background || this.themeStyle.background, { width: 0, color: 'transparent' }, 1,
-            new Rect(0, 0, this.availableSize.width, this.availableSize.height));
+            new Rect(left, top, this.availableSize.width, this.availableSize.height));
         this.svgObject.appendChild(this.renderer.drawRectangle(rect) as HTMLElement);
     }
 

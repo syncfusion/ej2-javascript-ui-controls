@@ -417,7 +417,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private createChip(): void {
-        this.innerText = this.element.innerText.trim();
+        // eslint-disable-next-line
+        this.innerText = (this.element.innerText && this.element.innerText.length !== 0) ? this.element.innerText.trim() : this.element.innerText;
         this.element.innerHTML = '';
         this.chipCreation(this.type === 'chip' ? [this.innerText ? this.innerText : this.text] : this.chips);
     }
@@ -789,7 +790,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                         this.deleteHandler(observedArgs.element, observedArgs.index);
                         this.selectionHandler(chipWrapper);
                         (chipData as ClickEventArgs).selected = observedArgs.element.classList.contains(classNames.active);
-                        let selectedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
+                        const selectedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
                         this.trigger('click', selectedItemArgs);
                     }
                 });
@@ -911,15 +912,15 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             case 'selection':
             case 'enableDelete':
             case 'enabled':
-                    this.refresh();
+                this.refresh();
                 break;
             case 'cssClass':
-                    if (!this.chipType()) {
-                        removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
-                        addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
-                    } else {
-                        this.refresh();
-                    }
+                if (!this.chipType()) {
+                    removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
+                    addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
+                } else {
+                    this.refresh();
+                }
                 break;
             case 'selectedChips':
                 removeClass(this.element.querySelectorAll('.e-active'), 'e-active');

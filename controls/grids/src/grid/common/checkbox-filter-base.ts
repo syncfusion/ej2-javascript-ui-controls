@@ -386,7 +386,7 @@ export class CheckBoxFilterBase {
     private btnClick(e: MouseEvent): void {
         if (this.filterState) {
             if ((<Element>e.target).tagName.toLowerCase() === 'input' && (<Element>e.target).classList.contains('e-searchinput')) {
-                let value: string | boolean = (<HTMLInputElement>e.target).value;
+                let value: string | number | Date | boolean = (<HTMLInputElement>e.target).value;
                 if (this.options.column.type === 'boolean') {
                     if (value !== '' &&
                         this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
@@ -395,6 +395,9 @@ export class CheckBoxFilterBase {
                         this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
                         value = false;
                     }
+                }
+                if (this.options.type === 'date' || this.options.type === 'datetime') {
+                    value = this.valueFormatter.fromView(value as string, this.options.parserFn, this.options.type);
                 }
                 const args: Object = {
                     action: 'filtering', filterCollection: {

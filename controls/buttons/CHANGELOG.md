@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.3.44 (2021-10-05)
+
+### Chips
+
+#### Bug Fixes
+
+- `F167517` - The issue with "JEST test case failure with Chip component" has been resolved.
+
 ## 19.2.47 (2021-07-13)
 
 ### Checkbox

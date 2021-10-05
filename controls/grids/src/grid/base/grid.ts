@@ -3030,6 +3030,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const properties: string[] = Object.keys(newProp);
         if (properties.indexOf('columns') > -1) {
+            if (this.enableColumnVirtualization) { this.columnModel = []; }
             this.updateColumnObject(); requireGridRefresh = true;
         }
         for (const prop of properties) {

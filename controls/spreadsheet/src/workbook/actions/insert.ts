@@ -1,6 +1,6 @@
 import { RangeModel, Workbook } from '../base/index';
 import { insert, insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange } from '../../workbook/common/index';
-import { ModelType, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard } from '../../workbook/common/index';
+import { ModelType, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
 import { SheetModel, RowModel, CellModel } from '../../workbook/base/index';
 
 
@@ -54,10 +54,10 @@ export class WorkbookInsert {
             }
         }
         let freezePane: boolean;
-        const eventArgs: { action: string, insertArgs: InsertDeleteEventArgs } = { action: 'refreshInsertDelete', insertArgs: { startIndex:
-            index, endIndex: index + model.length - 1, modelType: args.modelType, sheet: args.model, isInsert: true } };
+        const insertArgs: InsertDeleteEventArgs = { startIndex: index, endIndex: index + model.length - 1, modelType: args.modelType, sheet:
+            args.model, isInsert: true };
         if (args.modelType === 'Row') {
-            this.parent.notify(workbookFormulaOperation, eventArgs);
+            this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
             if (!args.model.rows) { args.model.rows = []; }
             if (isModel && args.model.usedRange.rowIndex > -1 && index > args.model.usedRange.rowIndex) {
@@ -87,7 +87,7 @@ export class WorkbookInsert {
                 }
             }
         } else if (args.modelType === 'Column') {
-            this.parent.notify(workbookFormulaOperation, eventArgs);
+            this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
             if (!args.model.columns) { args.model.columns = []; }
             args.model.columns.splice(index, 0, ...model);
@@ -158,10 +158,9 @@ export class WorkbookInsert {
                 { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });
             if (args.model !== this.parent.getActiveSheet()) { return; }
         }
-        this.parent.notify(insert, {
-            model: model, index: index, modelType: args.modelType, isAction: args.isAction, sheet: args.model, activeSheetIndex:
-                args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType, freezePane: freezePane
-        });
+        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, sheet: args.model,
+            activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType,
+            freezePane: freezePane, isUndoRedo: args.isUndoRedo });
     }
     private updateRangeModel(ranges: RangeModel[]): void {
         ranges.forEach((range: RangeModel): void => {

@@ -42,11 +42,12 @@ import { Snapping } from '../objects/snapping';
 import { LayoutAnimation } from '../objects/layout-animation';
 import { Container } from '../core/containers/container';
 import { Canvas } from '../core/containers/canvas';
-import { getDiagramElement, getAdornerLayerSvg, getHTMLLayer, getAdornerLayer } from '../utility/dom-util';
+import { getDiagramElement, getAdornerLayerSvg, getHTMLLayer, getAdornerLayer, getSelectorElement } from '../utility/dom-util';
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { getObjectType, getPoint, intersect2, getOffsetOfConnector, canShowCorner } from './../utility/diagram-util';
 import { LayerModel } from '../diagram/layer-model';
+import { selectionHasConnector } from './../utility/diagram-util';
 import { Layer } from '../diagram/layer';
 import { SelectorConstraints, Direction, DiagramConstraints } from '../enum/enum';
 import { PageSettings } from '../diagram/page-settings';
@@ -4220,7 +4221,7 @@ Remove terinal segment in initial
      *
      * @private
      */
-    public rotatePoints(conn: Connector, angle: number, pivot: PointModel): void {
+     public rotatePoints(conn: Connector, angle: number, pivot: PointModel): void {
         if (!conn.sourceWrapper || !conn.targetWrapper) {
             const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, angle, pivot.x, pivot.y);
@@ -4231,6 +4232,13 @@ Remove terinal segment in initial
             }
             const newProp: Connector = { sourcePoint: conn.sourcePoint, targetPoint: conn.targetPoint } as Connector;
             this.diagram.connectorPropertyChange(conn as Connector, {} as Connector, newProp);
+            if (conn.segments && conn.segments.length > 0) {
+                this.diagram.protectPropertyChange(true);
+                let connector: Connector = conn;
+                connector.segments = [];
+                this.diagram.connectorPropertyChange(connector, {} as Connector, { segments: connector.segments } as Connector);
+                this.diagram.protectPropertyChange(false);
+            }
         }
     }
 
@@ -4371,7 +4379,7 @@ Remove terinal segment in initial
      *
      * @private
      */
-    public scaleObject(sw: number, sh: number, pivot: PointModel, obj: IElement, element: DiagramElement, refObject: IElement): void {
+     public scaleObject(sw: number, sh: number, pivot: PointModel, obj: IElement, element: DiagramElement, refObject: IElement, canUpdate?: boolean): void {
         sw = sw < 0 ? 1 : sw; sh = sh < 0 ? 1 : sh;
         let oldValues: NodeModel = {} as Node;
         if (sw !== 1 || sh !== 1) {
@@ -4450,17 +4458,19 @@ Remove terinal segment in initial
                     if (checkParentAsContainer(this.diagram, obj, true)) {
                         checkChildNodeInContainer(this.diagram, obj);
                     } else {
-                        this.diagram.nodePropertyChange(obj as Node, oldValues as Node, {
-                            width: node.width, height: node.height, offsetX: node.offsetX, offsetY: node.offsetY,
-                            margin: { top: node.margin.top + (top - oldtop), left: node.margin.left + (left - oldleft) }
-                        } as Node);
+                        if (!canUpdate) {
+                            this.diagram.nodePropertyChange(obj as Node, oldValues as Node, {
+                                width: node.width, height: node.height, offsetX: node.offsetX, offsetY: node.offsetY,
+                                margin: { top: node.margin.top + (top - oldtop), left: node.margin.left + (left - oldleft) }
+                            } as Node);
+                        }
                     }
                 }
             } else {
                 const connector: Connector = obj as Connector;
                 const oldValues: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
                 if (!connector.sourceWrapper || !connector.targetWrapper) {
-                    this.scaleConnector(connector, matrix, oldValues);
+                    this.scaleConnector(connector, matrix, oldValues, sw, sh, pivot);
                 }
             }
             const parentNode: NodeModel = this.diagram.nameTable[(obj as Node).processId];
@@ -4472,7 +4482,7 @@ Remove terinal segment in initial
         }
     }
 
-    private scaleConnector(connector: Connector, matrix: Matrix, oldValues: Connector): void {
+    private scaleConnector(connector: Connector, matrix: Matrix, oldValues: Connector, sw?: number, sh?: number, pivot?: PointModel): void {
         connector.sourcePoint = transformPointByMatrix(matrix, connector.sourcePoint);
         connector.targetPoint = transformPointByMatrix(matrix, connector.targetPoint);
         if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlow).sequence === 'Default') {
@@ -4480,6 +4490,89 @@ Remove terinal segment in initial
         }
         const newProp: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
         this.diagram.connectorPropertyChange(connector, oldValues, newProp);
+        const selector: Selector = this.diagram.selectedItems as Selector;
+        if (selectionHasConnector(this.diagram, selector)) {
+            let clonedSelectedItems: object = cloneObject(this.diagram.selectedItems);
+            const nodeModel: NodeModel = {
+                offsetX: (clonedSelectedItems as any).offsetX, offsetY: (clonedSelectedItems as any).offsetY,
+                height: (clonedSelectedItems as any).height, width: (clonedSelectedItems as any).width, rotateAngle: (clonedSelectedItems as any).rotateAngle
+            };
+            const obj: Node = new Node(this.diagram, 'nodes', nodeModel, true);
+            obj.wrapper = (clonedSelectedItems as any).wrapper;
+            obj.wrapper.rotateAngle = selector.rotateAngle;
+            this.scaleObject(sw, sh, pivot, obj as IElement, obj.wrapper, obj, true);
+            selector.wrapper.actualSize.width = obj.width;
+            selector.wrapper.actualSize.height = obj.height;
+            selector.wrapper.offsetX = obj.offsetX;
+            selector.wrapper.offsetY = obj.offsetY;
+            let child: ConnectorModel = this.diagram.selectedItems.connectors[0];
+            if (child.id !== connector.id) {
+                this.measureSelector(selector);
+            }
+        }
+    }
+
+    private measureSelector(selector: Selector) {
+        let desiredBounds: Rect = undefined;
+        //Measuring the children
+        let clonedSelectedItems: object = cloneObject(this.diagram.selectedItems);
+        let objects: ConnectorModel[] = [];
+        let bounds: Rect;
+        objects = (clonedSelectedItems as SelectorModel).connectors;
+        const pivot: PointModel = { x: this.diagram.selectedItems.offsetX, y: this.diagram.selectedItems.offsetY };
+        for (let i: number = 0; i < objects.length; i++) {
+            const matrix: Matrix = identityMatrix();
+            rotateMatrix(matrix, -selector.rotateAngle, pivot.x, pivot.y);
+            objects[i].sourcePoint = transformPointByMatrix(matrix, objects[i].sourcePoint);
+            objects[i].targetPoint = transformPointByMatrix(matrix, objects[i].targetPoint);
+            let p1: PointModel = { x: objects[i].sourcePoint.x, y: objects[i].sourcePoint.y };
+            let p2: PointModel = { x: objects[i].targetPoint.x, y: objects[i].targetPoint.y };
+            bounds = (this.calculateBounds(p1, p2));
+            if (desiredBounds === undefined) {
+                desiredBounds = bounds;
+            } else {
+                desiredBounds.uniteRect(bounds);
+            }
+        }
+        let offsetPt: PointModel = {};
+        if (desiredBounds !== undefined) {
+            offsetPt = {
+                x: desiredBounds.x + desiredBounds.width * selector.wrapper.pivot.x,
+                y: desiredBounds.y + desiredBounds.height * selector.wrapper.pivot.y
+            };
+        }
+        const nodeModel: NodeModel = {
+            offsetX: offsetPt.x, offsetY: offsetPt.y,
+            height: desiredBounds.height, width: desiredBounds.width, rotateAngle: 0
+        };
+        const obj: Node = new Node(this.diagram, 'nodes', nodeModel, true);
+        const matrix: Matrix = identityMatrix();
+        rotateMatrix(matrix, selector.rotateAngle, pivot.x, pivot.y);
+        obj.rotateAngle += selector.rotateAngle;
+        obj.rotateAngle = (obj.rotateAngle + 360) % 360;
+        const newOffset: PointModel = transformPointByMatrix(matrix, { x: obj.offsetX, y: obj.offsetY });
+        obj.offsetX = newOffset.x;
+        obj.offsetY = newOffset.y;
+        selector.wrapper.actualSize.width = desiredBounds.width;
+        selector.wrapper.actualSize.height = desiredBounds.height;
+        selector.wrapper.offsetX = obj.offsetX;
+        selector.wrapper.offsetY = obj.offsetY;
+        const selectorEle: (SVGElement | HTMLCanvasElement) = getSelectorElement(this.diagram.element.id);
+        this.diagram.diagramRenderer.renderResizeHandle(
+            selector.wrapper, selectorEle, selector.thumbsConstraints, this.diagram.scroller.currentZoom,
+            selector.constraints, this.diagram.scroller.transform, false, canMove(selector)
+        );
+    }
+
+    private calculateBounds(p1: PointModel, p2: PointModel): Rect {
+        let left: number = Math.min(p1.x, p2.x);
+        let right: number = Math.max(p1.x, p2.x);
+        let top: number = Math.min(p1.y, p2.y);
+        let bottom: number = Math.max(p1.y, p2.y);
+        let width: number = right - left;
+        let height: number = bottom - top;
+        let rect: Rect = new Rect(left, top, width, height);
+        return rect;
     }
 
     /**

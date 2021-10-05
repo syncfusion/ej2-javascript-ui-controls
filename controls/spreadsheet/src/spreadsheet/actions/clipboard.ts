@@ -431,7 +431,7 @@ export class Clipboard {
                 }
                 if (isCut) {
                     this.updateFilter(copyInfo, rfshRange);
-                    setMaxHgt(prevSheet, cIdx[0], cIdx[1], this.parent.getCell(cIdx[0], cIdx[1]).offsetHeight);
+                    setMaxHgt(prevSheet, cIdx[0], cIdx[1], (this.parent.getRow(cIdx[0]) || { offsetHeight: 20 }).offsetHeight);
                     const hgt: number = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
                 }
@@ -605,8 +605,8 @@ export class Clipboard {
         } else {
             range = getRangeIndexes(sheet.selectedRange);
         }
-        const option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
-            sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise:
+        const option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, isFinite?: boolean } = {
+            sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], isFinite: this.parent.scrollSettings.isFinite, promise:
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
         };

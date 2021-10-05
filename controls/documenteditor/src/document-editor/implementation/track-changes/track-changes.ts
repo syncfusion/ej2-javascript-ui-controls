@@ -120,6 +120,9 @@ export class Revision {
             editorHistory.updateHistory();
         }
         this.owner.editor.reLayout(this.owner.selection);
+        if (blockInfo.paragraph.isInHeaderFooter) {
+            this.owner.editor.updateHeaderFooterWidget();
+        }
     }
 
     /**
@@ -448,6 +451,9 @@ export class RevisionCollection {
             }
             if (changes) {
                 revisionCollec.splice(0, 1);
+            }
+            if (this.owner.enableHeaderAndFooter) {
+                this.owner.editor.updateHeaderFooterWidget();
             }
         }
         let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);

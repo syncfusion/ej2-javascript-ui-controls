@@ -49,6 +49,7 @@ export class EventWindow {
     private eventWindowTime: Record<string, Date>;
     private timezoneData: Record<string, any>[];
     private isEnterKey: boolean;
+    private dialogEvent: Event;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -241,6 +242,7 @@ export class EventWindow {
         }
         const eventProp: PopupCloseEventArgs = {
             type: 'Editor',
+            event: args.event || this.dialogEvent,
             data: this.eventCrudData,
             cancel: false,
             element: this.element,
@@ -1117,11 +1119,12 @@ export class EventWindow {
         this.repeatStatus.setProperties({ label: data });
     }
 
-    public dialogClose(): void {
+    public dialogClose(event?: Event): void {
         if (this.isEnterKey) {
             this.isEnterKey = false;
             return;
         }
+        this.dialogEvent = event;
         this.isCrudAction = false;
         this.parent.activeEventData = { event: undefined, element: undefined };
         this.parent.currentAction = null;
@@ -1173,7 +1176,7 @@ export class EventWindow {
         }
     }
 
-    public eventSave(alert?: string): void {
+    public eventSave(event: Event, alert?: string): void {
         if (this.isEnterKey) {
             this.isEnterKey = false;
             return;
@@ -1188,6 +1191,7 @@ export class EventWindow {
             return;
         }
         this.eventCrudData = dataCollection.eventData;
+        this.dialogEvent = event;
         this.isCrudAction = true;
         this.dialogObject.hide();
     }
@@ -1706,7 +1710,7 @@ export class EventWindow {
         return element ? (element as EJ2Instance).ej2_instances[0] : null;
     }
 
-    private eventDelete(): void {
+    private eventDelete(event: Event): void {
         if (this.isEnterKey) {
             this.isEnterKey = false;
             return;
@@ -1731,6 +1735,7 @@ export class EventWindow {
             }
             break;
         }
+        this.dialogEvent = event;
         this.isCrudAction = false;
         this.dialogObject.hide();
         this.parent.quickPopup.openDeleteAlert();

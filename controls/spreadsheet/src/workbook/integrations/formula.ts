@@ -5,7 +5,7 @@ import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonEr
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol } from '../common/index';
-import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference } from '../common/index';
+import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete } from '../common/index';
 import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula } from '../common/index';
 
 
@@ -69,6 +69,7 @@ export class WorkbookFormula {
         this.parent.on(removeUniquecol, this.removeUniquecol, this);
         this.parent.on(clearFormulaDependentCells, this.clearFormulaDependentCells, this);
         this.parent.on(formulaInValidation, this.formulaInValidation, this);
+        this.parent.on(refreshInsertDelete, this.refreshInsertDelete, this);
     }
 
     private removeEventListener(): void {
@@ -79,6 +80,7 @@ export class WorkbookFormula {
             this.parent.off(removeUniquecol, this.removeUniquecol);
             this.parent.off(clearFormulaDependentCells, this.clearFormulaDependentCells);
             this.parent.off(formulaInValidation, this.formulaInValidation);
+            this.parent.off(refreshInsertDelete, this.refreshInsertDelete);
         }
     }
 
@@ -209,9 +211,6 @@ export class WorkbookFormula {
             break;
         case 'registerGridInCalc':
             this.calculateInstance.grid = <string>args.sheetID; break;
-        case 'refreshInsertDelete':
-            this.refreshInsertDelete(<InsertDeleteEventArgs>args.insertArgs);
-            break;
         case 'checkFormulaAdded':
             const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(args.sheetId);
             if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
@@ -406,11 +405,12 @@ export class WorkbookFormula {
         rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): void {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
         let sheetId: string = sheet.id + '';
+        const sheetName: string = sheet.name;
         if (isFormula) {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
-            this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing);
+            this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing, sheetName);
             const referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true) {
                 let rowId: number;
@@ -715,7 +715,7 @@ export class WorkbookFormula {
                     if (pVal !== args.sheet.name) { continue; }
                 }
                 index = getRangeIndexes(ref);
-                updated = this.updateRange(args, index);
+                updated = this.parent.updateRangeOnInsertDelete(args, index);
                 if (updated) {
                     splitFormula[i] = index[3] < index[1] ? this.calculateInstance.getErrorStrings()[CommonErrors.ref] :
                         this.getAddress(index);
@@ -726,59 +726,6 @@ export class WorkbookFormula {
         if (cell.formula !== newFormula) {
             cell.formula = newFormula; cell.value = null;
         }
-    }
-
-    private updateRange(args: InsertDeleteEventArgs, index: number[]): boolean {
-        let diff: number; let updated: boolean = false;
-        if (args.isInsert) {
-            diff = (args.endIndex - args.startIndex) + 1;
-            if (args.modelType === 'Row') {
-                if (args.startIndex <= index[0]) { index[0] += diff; updated = true; }
-                if (args.startIndex <= index[2]) { index[2] += diff; updated = true; }
-            } else {
-                if (args.startIndex <= index[1]) { index[1] += diff; updated = true; }
-                if (args.startIndex <= index[3]) { index[3] += diff; updated = true; }
-            }
-        } else {
-            if (args.modelType === 'Row') {
-                diff = index[0] - args.startIndex;
-                if (diff > 0) {
-                    if (index[0] > args.endIndex) {
-                        diff = (args.endIndex - args.startIndex) + 1;
-                        if (diff > 0) { index[0] -= diff; updated = true; }
-                    } else {
-                        index[0] -= diff; updated = true;
-                    }
-                }
-                if (args.startIndex <= index[2]) {
-                    if (args.endIndex <= index[2]) {
-                        index[2] -= (args.endIndex - args.startIndex) + 1;
-                    } else {
-                        index[2] -= (index[2] - args.startIndex) + 1;
-                    }
-                    updated = true;
-                }
-            } else {
-                diff = index[1] - args.startIndex;
-                if (diff > 0) {
-                    if (index[1] > args.endIndex) {
-                        diff = (args.endIndex - args.startIndex) + 1;
-                        if (diff > 0) { index[1] -= diff; updated = true; }
-                    } else {
-                        index[1] -= diff; updated = true;
-                    }
-                }
-                if (args.startIndex <= index[3]) {
-                    if (args.endIndex <= index[3]) {
-                        index[3] -= (args.endIndex - args.startIndex) + 1;
-                    } else {
-                        index[3] -= (index[3] - args.startIndex) + 1;
-                    }
-                    updated = true;
-                }
-            }
-        }
-        return updated;
     }
 
     private parseFormula(formula: string, rangeRef?: boolean): string[] {
@@ -896,7 +843,7 @@ export class WorkbookFormula {
             definedName = definedNames[i]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
             if (sheetName !== args.sheet.name) { continue; }
             range = getRangeIndexes(splitedRef[1]);
-            updated = this.updateRange(args, range);
+            updated = this.parent.updateRangeOnInsertDelete(args, range);
             if (args.isInsert) {
                 this.updateDefinedNames(definedName, sheetName, range, updated);
             } else {

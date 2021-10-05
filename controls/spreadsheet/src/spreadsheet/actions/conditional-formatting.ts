@@ -1,10 +1,10 @@
 import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
-import { checkConditionalFormat, initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs, focus } from '../common/index';
+import { initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs, focus } from '../common/index';
 import { beginAction, completeAction } from '../common/index';
 import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, cFInitialCheck, isNumber, cFRender, cFDelete, DataBar } from '../../workbook/common/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
-import { setCFRule, clearCells, getCellAddress } from '../../workbook/common/index';
+import { setCFRule, clearCells, getCellAddress, checkConditionalFormat } from '../../workbook/common/index';
 import { extend, getNumberDependable, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';

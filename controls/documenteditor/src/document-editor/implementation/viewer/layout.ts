@@ -7461,6 +7461,9 @@ export class Layout {
             for (let i: number = newLineIndex; i < paragraph.childWidgets.length; i++) {
                 if (isBidi || !(paragraph.paragraphFormat.bidi && this.isContainsRtl(lineWidget)) && !isSkip) {
                     if (i === lineIndex) {
+                        if (this.viewer.owner.editor.isPaste) {
+                            this.reArrangeElementsForRtl(paragraph.childWidgets[i] as LineWidget, paragraph.paragraphFormat.bidi);
+                        }
                         continue;
                     }
                 }

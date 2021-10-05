@@ -78,7 +78,7 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
     if (context.allowMerge) {
         modules.push({ member: 'workbookmerge', args: [context] });
     }
-    if (context.allowDataValidation) {
+    if (context.allowCellFormatting) {
         modules.push({ member: 'workbookConditionalFormatting', args: [context] });
     }
     if (context.allowImage) {

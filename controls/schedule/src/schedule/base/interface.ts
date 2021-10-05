@@ -157,6 +157,8 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
 
 /** An interface that holds options to control the popup close action. */
 export interface PopupCloseEventArgs extends BaseEventArgs {
+    /** Return the current interaction event. */
+    event?: Event;
     /**
      * Returns the type of the popup which is currently being opted to open.
      * The available type values are as follows,

@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 19.3.43 (2021-09-30)
+## 19.3.44 (2021-10-05)
 
 ### Schedule
 
@@ -20,6 +20,7 @@
 - `#I342117` - An issue with today button navigation in Agenda view and scrolling down not happening issue has been fixed.
 - `#F168358` - An issue with the "delete icon is not disabled in mobile mode" has been fixed.
 - `#I340332` - An issue with the events rendering performance in vertical views has been fixed.
+- `#I342489` - An issue with identify the clicked button on `popupClose` event has been fixed by providing `event` option on `PopupCloseEventArgs`.
 
 ## 19.2.59 (2021-08-31)
 

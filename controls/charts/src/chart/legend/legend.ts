@@ -382,6 +382,14 @@ export class Legend extends BaseLegend {
     }
     private refreshSeries(seriesCollection: Series[]): void {
         for (const series of seriesCollection) {
+            if (series.type.indexOf('Spline') > -1 ) {
+                const isArea: boolean = (series.type.indexOf('Area') > -1 || series.drawType.indexOf('Area') > -1);
+                const isRange: boolean = series.type.indexOf('Range') > -1;
+                this.chart[
+                    'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
+                ].findSplinePoint(series);
+            }
+            
             series.position = undefined;
         }
     }

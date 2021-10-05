@@ -2,9 +2,8 @@ import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/inde
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange } from '../common/event';
 import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
-import { checkIsFormula } from '../../workbook/common/index';
+import { checkIsFormula, checkConditionalFormat } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
-import { checkConditionalFormat } from '../../spreadsheet/common/event';
 
 /**
  * The `WorkbookEdit` module is used to handle the editing functionalities in Workbook.
