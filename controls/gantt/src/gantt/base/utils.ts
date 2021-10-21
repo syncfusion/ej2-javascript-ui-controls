@@ -108,7 +108,7 @@ export function getTaskData(
         for (let i: number = 0; i < records.length; i++) {
             let data: object;
             if (!isNullOrUndefined(parent) && parent.timezone) {
-                this.updateDates(records[i], parent);
+                updateDates(records[i], parent);
             }
             // eslint-disable-next-line
             data = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
