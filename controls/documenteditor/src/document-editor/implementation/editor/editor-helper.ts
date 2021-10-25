@@ -323,6 +323,9 @@ export class HelperMethods {
         } else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
             extension = '.wmf';
             formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/svg+xml;base64,')) {
+            extension = '.svg';
+            formatClippedString = base64ImageString.replace('data:image/svg+xml;base64,', '');
         } else {
             extension = '.jpeg';
         }
