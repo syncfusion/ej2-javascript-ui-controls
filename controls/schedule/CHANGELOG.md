@@ -1,0 +1,1243 @@
+# Changelog
+
+## [Unreleased]
+
+## 19.3.57 (2021-12-07)
+
+### Schedule
+
+#### New Features
+
+- `#I316891`, `#I328879`, `#I331265`, `#I335777`, `#I339302`, `#F165491` - Provided support to sort appointments by priority instead of time.
+- `#I242605`, `#F160122`, `#F165334` - Provided public method for Scheduler to refresh the Scheduler layout without re-render.
+- `#I314842`, `#I320731` - Provided public method for Scheduler to refresh the given templates.
+- `#FB24252` - Provided template support for header indent cells.
+
+#### Bug Fixes
+
+- `#I333664` - An issue with the dragging between two Schedulers has been fixed.
+- `#I340348` - An issue with opening the editor window in RTL mode has been fixed.
+- `#I342117` - An issue with today button navigation in Agenda view and scrolling down not happening issue has been fixed.
+- `#F168358` - An issue with the "delete icon is not disabled in mobile mode" has been fixed.
+- `#I340332` - An issue with the events rendering performance in vertical views has been fixed.
+- `#I342489` - An issue with identify the clicked button on `popupClose` event has been fixed by providing `event` option on `PopupCloseEventArgs`.
+
+## 19.2.59 (2021-08-31)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I339839` - An issue with the scheduler resize action is not working properly in timeline views has been fixed.
+- `#I338473` - An issue with the scheduler `showWeekend` property set to false appointments missing has been fixed.
+
+## 19.2.56 (2021-08-17)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I334925` - An issue with the longer appointments in timeline year view UI has been resolved.
+
+## 19.2.55 (2021-08-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I337733` - An issue with the scheduler events overlapping when start and end times were the same has been resolved.
+
+## 19.2.51 (2021-08-03)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F167351` - An issue with the scheduler quick popup closes when using multi-select in the popup content has been fixed.
+
+## 19.2.49 (2021-07-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I331086` - An issue with the drag and drop the spanned events in vertical views has been fixed.
+- `#I336108` - An issue with the scheduler import of recurring events has been fixed.
+
+## 19.2.47 (2021-07-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I333860, #I333664` - An issue with the external drag between two scheduler has been fixed.
+- `#F166305` - An issue with dynamically changed `minDate` and `maxDate` property in react scheduler has been fixed.
+- `#F166752` - An issue with drag and drop doesn't work when enabled the desktop mode in mobile devices has been fixed.
+- `#I331086` - An issue with the drag and drop the spanned events in vertical views has been fixed.
+
+## 19.2.46 (2021-07-06)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I332366` - An issue with the toolbar popup is not open properly when multiple schedules are rendered on a single page has been fixed.
+
+## 19.2.44 (2021-06-30)
+
+### Schedule
+
+#### New Features
+
+- Provided option to set the custom months count in year views.
+
+#### Bug Fixes
+
+- `#FB25227` - An issue with the scheduler resize action is not working in timeline views has been fixed.
+- `#I331501` - An issue with the scheduler height is not responsive related to the parent container has been fixed.
+
+## 19.1.69 (2021-06-15)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I331194` - An issue with localization for form-validator is not working has been fixed.
+- `#I331513` - An issue with add icon shows on mobile when disabled the `allowAdding` property has been fixed.
+
+## 19.1.67 (2021-06-08)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I327333` - An issue with the scheduler current time indicator position not maintained has been fixed.
+- `#I329599` - An issue with the scheduler `eventRendered` event in agenda view has been fixed.
+- `#F165707` - An issue with the external drag between two scheduler has been fixed.
+- `#I330676` - An issue with the scheduler more popup is not updated when deleting the event in year view has been fixed.
+- `#I330946` - An issue with the scheduler keyboard interaction when the `readonly` property is enabled has been fixed.
+
+## 19.1.66 (2021-06-01)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F165550` - An issue with script error throws while dragging the scheduler events in IE11 has been fixed.
+
+## 19.1.65 (2021-05-25)
+
+### Schedule
+
+#### New Features
+
+- Provided public method to select the resources programmatically based on group index in mobile mode.
+
+#### Bug Fixes
+
+- `#I317799` - An issue with memory leak while performing navigation action has been fixed.
+- `#F165261` - An issue with scheduler dates are not translated based on locale has been fixed.
+- `#FB25480` - An issue with the scheduler mobile mode when the `readonly` property is enabled has been fixed.
+
+## 19.1.63 (2021-05-13)
+
+### Schedule
+
+#### New Features
+
+- Provided scrolling support for all day row when loading huge events.
+- Provided the print option support to print the schedule in a customized way.
+- Provided option to set the different first month in year view.
+- Provided template support for date header in year views.
+
+#### Bug Fixes
+
+- `#I325602`: An issue with resizing the appointment to last cell is not working has been fixed.
+- `#I315877` - An issue with the scheduler fast dragging in timeline views has been resolved.
+
+## 19.1.59 (2021-05-04)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#FB23548` - An issue with Keyboard Interaction with Virtual Scrolling has been fixed.
+- `#I323778` - An issue with Scheduler Accessibility has been fixed.
+
+## 19.1.58 (2021-04-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I324040` - An issue with the scheduler multiple appointment selection in IOS device has been resolved.
+- `#I324529, #I323448` - An issue with deleting the entire recurrence events with resources has been resolved.
+- `#FB23906, #FB23902` - An issue with "Scheduler causing focus loss for text inputs in Android device" has been fixed.
+- `#FB23931` - An issue with "Scheduler stealing focus on window resize" has been fixed.
+- `#I313715` - An issue with script error throws while resizing the scheduler events has been fixed.
+- `#FB24226` - An issue with the scheduler alert message when drag the event in series has been fixed.
+
+## 19.1.57 (2021-04-20)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I312919` - An issue with the scheduler performance with resources has been resolved.
+
+## 19.1.56 (2021-04-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#FB23907` - An issue with the "Scheduler throws the console errors in Android device" has been fixed.
+- `#F161048` - An issue with Scheduler quick popup rendered twice when the `quickInfoOnSelectionEnd` property is enabled has been fixed.
+- `#I320954` - An issue with the scheduler rendered twice with a different timezone has been fixed.
+- `#I319812` - An issue with the appointment is not created properly in Timeline Year view has been fixed.
+- `#I320915` - An issue with Scheduler events height is not rendered properly in the DST timezone has been fixed.
+- `#FB23548` - An issue with Keyboard Interaction with Virtual Scrolling has been fixed.
+- `F159057` - An issue with the appointment was not shown correctly in the UI in `TimelineMonth` view has been fixed.
+
+## 19.1.55 (2021-04-06)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F17228` - An issue with scheduler input field focus not working in iPad device with external keyboard has been fixed.
+- `#I317983` - An issue with the height of the `TimelineMonth` view is not properly applied when the `rowAutoHeight` property is enabled with scheduler height `auto` has been fixed.
+- `#I321711` - Duplicate events rendered in year view of schedule issue has been fixed.
+- `#I320945` - An issue with scheduler multiple cell selection by holding shift and mouse click throws script error has been fixed.
+
+## 19.1.54 (2021-03-30)
+
+### Schedule
+
+#### New Features
+
+- **Multiple events drag and drop** - This feature allows to select multiple events and reschedule them quickly by drag-and-drop. Multiple selections can be done by pressing the CTRL key with a click.
+- **Time Format** - This feature allows users to set `24-hour` or `12-hour` time formats in the scheduler. By default, the time format applies from the schedule's current culture configuration.
+
+### Recurrence Editor
+
+#### Breaking Changes
+
+- The following properties type was changed.
+
+| Property | Previous Type | Current Type                   |
+|----------|---------------|--------------------------------|
+| `selectedType` | `anonymous`      | `int` |
+| value | `anonymous`      | `string` |
+
+## 18.4.49 (2021-03-23)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F22773` - An issue with editor freezes when saving a task to repeat yearly on the last day of a month has been fixed.
+- `#F163215` - An issue with one day block event renders for two days has been fixed.
+- `#I316945` - An issue with recurrence events are not deleted properly in overview sample has been fixed.
+- `#I317560` - An issue with Schedule events getting overlapped issue has been fixed.
+- `#I313557` - An issue with scheduler resource header when enabled `rowAutoHeight` and `height` properties has been fixed.
+- `#317799` - An issue with memory leak in Scheduler has been fixed.
+- `#313715,320461` - An issue with script error throws while fast dragging of scheduler events has been fixed.
+
+## 18.4.48 (2021-03-16)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I313966` - An issue with scheduler toolbar popup items are hidden in iPhone has been fixed.
+- `#I313459` - An issue with scheduler content width is not properly adjusted while loading large number of resources in IOS device has been fixed.
+- `#I315617` -  An issue with scheduler `refreshDataManager` method invokes before active view has been fixed.
+
+## 18.4.47 (2021-03-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I303694` - An issue with scheduler toolbar items are not rendered as mobile view in iPad has been fixed.
+
+## 18.4.46 (2021-03-02)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I306554` - Events are overlapping each other if multiple appointments having duration less than a day in same cell in year view issue has been fixed.
+- `#I292642` - An issue with today date is not selected properly in header calendar with different timezone has been fixed.
+- `#I315273` - An issue with clone element position place is mismatched while perform resize action with different resize interval has been fixed.
+- `#I316544` - An issue with locale word are not displayed in all day row expand and collapse section has been fixed.
+- `#I315617, #I315568` - An issue with script error throws while refresh the scheduler before loads the active view has been fixed.
+- `#I315462` - An issue with appointments are not rendered when removing the resource dynamically has been fixed.
+- `#F162676` - An issue with resource and content area gets misaligned when `rowAutoHeight` is enabled in virtual scrolling has been fixed.
+
+## 18.4.44 (2021-02-23)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I314589` - An issue with week number not shown properly in timeline views has been fixed.
+
+## 18.4.42 (2021-02-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I312058` - An issue with Appointments not rendered in vertical timeline year view issue has been fixed.
+- `#I310882` - An issue with daily recurring event not able to create for 24 hours has been fixed.
+
+## 18.4.41 (2021-02-02)
+
+### Schedule
+
+#### New Features
+
+- `#304701`, `#305038` - Provided the persistence support for scroll bar position.
+
+#### Bug Fixes
+
+- `#I309044` - An issue with year view months rendered incorrectly issue has been fixed.
+- `#I312201` - An issue with Scheduler throws script error from Current time indicator has been fixed.
+
+## 18.4.35 (2021-01-19)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I306474` - An issue when `rowAutoHeight` is enabled the events are overlapping to each other in month view issue has been fixed.
+- `#I309996` - An issue with `resouceHeaderTemplate` is not rendering, while navigating the date via swipe actions has been fixed.
+- `F161271` - An issue with script errors throws when editing the block appointments manually using open editor has been fixed.
+- `#I292642` - An issue when timezone is set the calendar today date is not updated properly issue has been fixed.
+
+## 18.4.34 (2021-01-12)
+
+### Schedule
+
+#### Bug Fixes
+
+- `I309759, I309773` - An issue with the `getCurrentViewDates` returned incorrect dates in Agenda view has been fixed.
+
+## 18.4.33 (2021-01-05)
+
+### Schedule
+
+#### New Features
+
+- `#I305332, #I309559` - Provided different options to set the week numbers like Microsoft Outlook Calendar.
+
+#### Bug Fixes
+
+- `#I307462` - An issue when editing date time and End as until the last event not rendered has been fixed.
+- `#F159141` - An issue when enable persistence is true selected resource not rendered issue has been fixed.
+- `#I304107` - An issue when request to return current view or view model issue has been resolved.
+- `#I306554, #I307686` - An issue when rendering the appointments in timeline year view has been fixed.
+- `#F20602` - An issue with the position of the more event popup window is calculating wrongly when we setting the timescale interval has been fixed.
+- An issue with appointments overlapping in year view has been fixed.
+- `#I306366` - An issue with resource text is not visible in mobile mode issue has been fixed.
+
+## 18.4.32 (2020-12-29)
+
+### Schedule
+
+#### New Features
+
+- Provided public methods for the Scheduler to get and set the resource collections.
+
+## 18.4.31 (2020-12-22)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#301175` - An issue with the appointment top value in timeline views for the appointment rendered in the last resource has been fixed.
+
+## 18.4.30 (2020-12-17)
+
+### Schedule
+
+#### New Features
+
+- Provided the event Drag and Drop and Resize support for Timeline Year view.
+
+#### Bug Fixes
+
+- `#159985` - An issue with `scrollToResource` public method not working properly has been fixed.
+- `#159896`- An issue with the appointments are misaligned when `rowAutoHeight` is true has been fixed.
+- `#18946` - An issue with displaying date twice for DST time-zones when switching between summer and winter time, has been fixed.
+- `#300527` - An issue with loose shadow event once new week opens issue has been fixed.
+- `#292074` - An issue with Schedule event dragging is not working fine when set up the `eventDragArea` property has been fixed.
+- `#303564` - An issue with Editor window throws script error has been fixed.
+- `#304988` - An issue with Scheduler throws script error when navigate form the scheduler to other component has been fixed.
+
+## 18.3.53 (2020-12-08)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#286035` - An issue with theme mapping has been fixed.
+- `#299009, #305259` - An issue with the `resourceHeaderTemplate` shows empty content when changing the properties of schedule if tooltip enabled has been fixed.
+- `#159749` - An issue with Scheduler is not refreshed properly while navigating has been fixed.
+- `#305387` - An issue with events not displayed on proper time has been fixed.
+- `#301811` - An issue with render RTE component as a additional field in the editor template has been fixed.
+
+## 18.3.51 (2020-11-24)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#292642` - An issue with the event rendering with `StartTimezone` and `EndTimezone` fields at the time of initial loading alone has been fixed.
+- `#292642` - An issue with date navigation from calendar with different timezone has been fixed.
+- `#F16947` - An issue with events on same day and time overlap in readable way has been fixed.
+- `#F159110` - An issues with Scheduler timeline year view has been fixed.
+- `#F159666` - An issue with wrong element in `renderCell` event has been fixed.
+- `#F159432` - An issue with customizing the dragging interval time of the events has been fixed.
+- `#301811` - An issue with render RTE component as a additional field in the editor template has been fixed.
+
+## 18.3.50 (2020-11-17)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#299272` - An issue with the all day spanned events are not properly rendered in the timeline year view has been fixed.
+- `#299896` - An issue with events get overlapped, when we render the two events at the same time has been fixed.
+- `#299009` - An issue with `resourceHeaderTemplate` when enable the schedule tooltip has been fixed.
+
+## 18.3.48 (2020-11-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#299517` - An issue with the `displayName` property not working in the Agenda view and the `MonthAgenda` view has been fixed.
+
+## 18.3.44 (2020-10-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F158249` - Now `scrollTo()` support has been added in timeline year view.
+- `#292093` - An issue with setting the resize interval for event in `resizeStart` not resizing the event to its minimum interval value has been fixed.
+- `#299079` - An issue with Custom editor window throws script error has been fixed.
+
+## 18.3.42 (2020-10-20)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#293358` - An issue with the Scheduler events are not rendered in month view and the same events rendered in other views has been fixed.
+- `#286376` - An issue with refreshing the layout when setting `dataSource` dynamically using `setmodel` in Year view has been fixed.
+- `#286376` - An issue with view navigation when setting `dataSource` dynamically using `setmodel` in year view has been fixed.
+- `#294568` - An issue with all day spanned event is not rendered properly in the `TimelineYear` view has been fixed.
+- `#296098` - An issue with event click action on less duration events not deselecting the previously selected event has been fixed.
+- `#286199` - An issue with when destroying the child component used in the editor template the child component is destroyed multiple time has been fixed.
+- `#297720` - An issue with creating an event for the resource parent work cells using `addEvent` method has been fixed.
+
+## 18.3.40 (2020-10-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#290061` - An issue with the drop action not working properly in the first row of the Scheduler has been fixed.
+- `#289933` - An issue with the flickering clone drag element when dragging action is performed at the top most cells of the Scheduler has been fixed.
+- `#285797` - An issue with dragging an appointment beyond the schedule end time causes appointment to jump has been fixed.
+- `#290061` - An issue with the drop action not working properly in the first row of the Scheduler has been fixed.
+- `#289933` - An issue with the flickering clone drag element when dragging action is performed at the top most cells of the Scheduler has been fixed.
+- `#292609` - An issue with dynamically changed `minDate` and `maxDate` property are not applying to editor start and end date pickers has been fixed.
+- `#296040` - An issue with event template is not applied in react scheduler has been fixed.
+
+## 18.3.35 (2020-10-01)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#292642` - An issue with date navigation from calendar today button with different timezone has been fixed.
+- `#292609` - An issue with applying `minDate` and `maxDate` when until date of recurrence editor is configured has been fixed.
+- `#157158` - An issue with events not displaying when set `minDate` and `maxDate` as string type has been fixed.
+- `#292093` - An issue with events that are not properly rendered when the drag target moves outside the work cell has been fixed.
+- `#157442` - An issue with improper alignment of header cells while remove resource dynamically has been fixed.
+- `#287725` - An issue with clone element height is not calculated properly when disable the timescale in week view has been fixed.
+- `#292250` - An issue with timeline views resource tree tab accessibility navigation has been fixed.
+
+## 18.2.59 (2020-09-21)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#292250` - An issue with accessibility related navigations from one resource to another resource events issue has been fixed.
+
+## 18.2.57 (2020-09-08)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#156859` - An issue with the resource name is displayed wrongly in quick popup has been fixed.
+- `#157022` - An issue with character encoding in german umlaut culture while import iCalendar has been fixed.
+- `#289020` - An issue with script error throws while creating new events in the iPhone has been fixed.
+
+## 18.2.55 (2020-08-25)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#286271` - An issue with the block events are not rendered When we changing the scheduler `timezone` dynamically has been fixed.
+- `#154907, #154998` - An issue with `Agenda` view while `allowVirtualscrolling` and `hideEmptyAgendaDays` set to be true has been fixed.
+- `#289191` - An issue with agenda view freezes when we render a spanned event with a millisecond end time value is fixed.
+- `#156849` - An issue with Scheduler throws script error when perform event drag action above the cells with `cellTemplate` has been fixed.
+- `#286376` - An issue with horizontal year view events has been fixed.
+
+## 18.2.54 (2020-08-18)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#285796` - An issue with dragging the events to the first row in vertical view not working properly when page scrolling is enabled has been fixed.
+- `#285797` - An issue with drag and drop not working properly in the vertical view in the last cell of the day when using the timescale property has been fixed.
+- `#287725` - An issue with drag and drop doesn't work properly when we disable `timeScale` property has been fixed.
+
+## 18.2.47 (2020-07-28)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#282556` - An issue with resizing the events has been fixed.
+- `#284373` - An issue with adding multiple CSS classes to `cssClass` property has been fixed.
+
+## 18.2.46 (2020-07-21)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#154622` - An issue with date format is not showing correctly in Mac browsers has been fixed.
+- `#283631` - An issue with resizing not working properly with Timeline views when the resize interval is 5 has been fixed.
+- `#284869` - An issue with events are disappeared after resizing the browser window has been fixed.
+- `#280860` - An issue with the clone element while drag and drop on first resource has been fixed.
+- `#232618, #236674, #246713, #246657, #271311` - An issue with Scheduler content is take some time delay to update when enabling resource virtual scrolling has been fixed.
+- `#281573` - An issue with events not rendered in the `WorkWeek` view when applied `firstDayofweek` property has been fixed.
+- `#283295` - An issue with script error thrown while clicking on the cell in multi level resource grouping scheduler has been fixed.
+- `#282818` - An issue with the single resource can perform in multiple group with same resource id has been fixed.
+
+## 18.2.44 (2020-07-07)
+
+### Schedule
+
+#### New Features
+
+- **Inline Editing** - The feature enables user to Edit an appointment’s title or create an appointment easily through a single click on the cells or on the existing appointment’s subject.
+- **Year View** - Utilize a horizontal year view in Schedule that exposes the annual view of the calendar. This will help users who navigate between years and months frequently.
+- **Enhancement of Timeline Year View** - The existing timeline year view now has added support to configure multiple resources, enable row auto-height, and drag and drop appointments.
+
+#### Bug Fixes
+
+- `#280595` - An issue with event subject default field mapping is not consider in UI has been fixed.
+
+## 18.1.56 (2020-06-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#278019` - An issue with drag and drop of vertical view events doesn't work properly when we disable `timeScale` property has been fixed.
+
+## 18.1.55 (2020-06-02)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#271944` - An issue with header calendar doesn't close when using two scheduler in same document has been fixed.
+- `#154305, #153364` - An issue with keypad closes instantly when opening the editor window on Android devices has been resolved.
+
+## 18.1.54 (2020-05-26)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#151241` - An issue with `popupOpenEventArgs` API documentation has missing possible type value has been fixed.
+
+## 18.1.52 (2020-05-13)
+
+### Schedule
+
+#### New Features
+
+- Now resource grouping support has been added in timeline year view.
+
+#### Bug Fixes
+
+- `#272563` - An issue with drag and drop of all day events doesn't work properly when we disable `timeScale` property has been fixed.
+- `#271586` - An issue with event is not created in Sunday and Saturday of the `WorkWeek` view has been fixed.
+- `#153364` - An issue with appointment alignment while rotation has been fixed.
+- `#273474` - An issue with `editFollowingEvent` has been fixed.
+
+## 18.1.48 (2020-05-05)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F11316` - An issue with `ToolbarActionArgs` is deprecated but without it, Print Exporting won't work has been fixed.
+- `#273612` - An issue with blocked events in mobile mode has been fixed.
+
+## 18.1.46 (2020-04-28)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F11648` - An issue with previous value maintaining in select event has been fixed.
+- `#F12531` - An issue with `allowMultiRowSelection` is not working properly in timeline views has been fixed.
+- `#268604` - An issue with improper time slots rendering when daylight saving time occurring date has been fixed.
+- `#271829` - An issue with selected class is not applied properly in `MonthAgenda` view has been fixed.
+- `#273646` - An issue with `aria-readonly` attribute has been fixed.
+- `#266725` - An issue with `scrollToResource` method when we enabled the `virtualScrolling` property has been fixed.
+- `#271264` - An issue with `scrollToResource` method when we enabled the `rowAutoHeight` property has been fixed.
+
+## 18.1.45 (2020-04-21)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#273039` - An issue with a resource field value doesn't get right if we have the same field mapping for all resource levels when `allowMultiple` is true has been fixed.
+- `#F152942` - An issue with `getGroupIndexFromEvent` is not returning the correct result once the resource has enabled the `allowMultiple` property has been fixed.
+
+## 18.1.44 (2020-04-14)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#151925` - An issue with locale words are not translated properly has been fixed.
+
+## 18.1.43 (2020-04-07)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#269022` - In timeline views, an issue with appointments is positioned in the wrong place when browser zooming is set at 75% and 67% has been fixed.
+
+## 18.1.42 (2020-04-01)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#269264` - An issue with last occurrence of the recurrence event is not rendered on month view has been fixed.
+
+## 18.1.36-beta (2020-03-19)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#151738` - An issue with swipe action in mobile mode while applying `setWorkHours()` method has been fixed.
+- `#151972` - An issue with particular recurrence event while changing time zone as `Eastern time` has been fixed.
+
+## 17.4.55 (2020-03-10)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#266530` - An issue with the property `editFollowingEvents` with count repeat type has been fixed.
+- `#266933` - An issue with the property `editFollowingEvents` does not work properly when block events presents has been fixed.
+- `#266725` - An issue with the method `scrollToResource()` which does not work properly when the virtual scroll property is enabled has been fixed.
+- `#151209` - An issue with swipe action in mobile mode when `minDate/maxDate` applied has been fixed.
+- `#263624` - An issue with the scheduler rendered with the block events shows the misplaced header cells on the Timeline month view has been fixed.
+
+## 17.4.51 (2020-02-25)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#151346` - An issue with unexpected delete alert behaviour for longer duration events has been fixed.
+- `#151346` - An issue with multi select events of adaptive Scheduler mode has been fixed.
+- `#151209` - An issue with misplaced dragging events in different time intervals has been fixed.
+- `#149561` - An issue with scheduler throwing script error while dragging the event with the option `groupByDate` in day view has been fixed.
+- `#263624` - An issue with the scheduler rendered with the block events shows the misplaced header cells on the Timeline month view has been fixed.
+- `#151455` - An issue in long spanned events in year view has been fixed.
+- `#263715` - An issue with dragging not working properly when page scrolling is enabled has been fixed.
+
+## 17.4.50 (2020-02-18)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#148560` - An issue with misplaced dragging events in different drag intervals has been fixed.
+- `#262962` - An issue with page becoming crash for invalid recurrence rule has been fixed.
+- `#151346` - An issue with incorrect aria-label for alert windows has been fixed.
+
+## 17.4.46 (2020-01-30)
+
+### Schedule
+
+#### New Features
+
+- Provided public method to scroll to the position of the any resources that available on the scheduler.
+- Provided public method to change the current view based on index.
+- Added option to render single event per cell using `enableMaxHeight` property.
+
+#### Bug Fixes
+
+- `#F145578` - An issue with `scrollTo()` method not working properly in Timeline Week View has been fixed.
+
+## 17.4.43 (2020-01-14)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#149393` - An issue with event rendering in Timeline mode with `timescale` property has been fixed.
+- `#150335` - An issue with draggable clone element position on scroll has been fixed.
+- `#256071` - An issue with `datepicker popup` not closing properly has been fixed.
+- `#258565` - An issue with drag-and-drop flickering has been fixed.
+
+## 17.4.41 (2020-01-07)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#150069` - An issue with recurrence count limitation has been fixed.
+- `#148560` - An issue with drag interval has been fixed.
+- `#258735` - An issue with event rendering in Timeline mode with `startHour` property  has been fixed.
+- `#149868` - An issue with event resizing in Vertical mode with `startHour` property has been fixed.
+- `#257355` - An issue with displaying the clicked date's event details in Month Agenda view with read only mode has been fixed.
+- `#258455` - An issue with Accessibility has been fixed.
+
+## 17.4.39 (2019-12-17)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#254033` - An issue with rendering Scheduler with empty resource collection has been fixed.
+- `#252616` - An issue with page becoming idle for invalid recurrence rule has been fixed.
+- `#149561` - An issue with drag and drop behaviour with resource date wise grouping option has been fixed.
+- `#255919` - An issue with current month not displaying in calendar after swiping in mobile mode has been fixed.
+- An issue with event position while zooming the page has been fixed.
+- An issue with displaying wrong week number for DST time-zones has been fixed.
+
+## 17.3.28 (2019-11-19)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#148606, #148770, #253868, #253137 , #253534` - An issue with displaying wrong timeslot and time for DST time-zones has been fixed.
+- `#148560` - An issue with custom drag interval has been fixed.
+
+## 17.3.27 (2019-11-12)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#253534` - An issue with displaying fractional value in Agenda view for DST time-zones has been fixed.
+- `#253652` - An issue with triggering the `popupClose` event on clicking outside the Scheduler has been fixed.
+- An issue with event height whose duration is less than 30 minutes has been fixed.
+- `#253519` - An issue with events overlapping whose start and end time are same has been fixed.
+
+## 17.3.19 (2019-10-22)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#251995` - An issue with request type parameter of action complete event while performing CRUD actions has been fixed.
+
+## 17.3.17 (2019-10-15)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with displaying week number with different `firstDayOfWeek` has been fixed.
+- `#244512` - An issue with recurrence option in editor template has been fixed.
+- `#148187` - An issue with default flag missing in variable `$schedule-tbar-border-hover-color` from `bootstrap4` theme has been fixed.
+
+## 17.3.16 (2019-10-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#147850`, `#249678` - An issue with event click action is not working in the latest version of iOS has been fixed.
+- `#246126` - An issue with toolbar is not working properly in all overflow modes in Scheduler has been fixed.
+- An issue with recurrence date is not generated properly in month option has been fixed.
+
+## 17.3.14 (2019-10-03)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#240169` - An issue with drag and drop the appointments which are taller than the Scheduler has been fixed.
+- `#249012` - An issue with editing the recurrence events in the block dates has been fixed.
+- `#246295` - An issue with `QuickInfo` window is not open on cell click action has been fixed.
+- `#245942`, `#241514` - An issue with scrolling is not working in properly in different mobile mode has been fixed.
+- `#246563` - An issue with event is not rendered properly in agenda view has been fixed.
+- `#244271` - An issue with editor window is not closed when edit the event has been fixed.
+- `#246788` - An issue with cell selection event does not provide the proper cell details has been fixed.
+- `#246565` - An issue with scroller position is not positioned at current date in timeline month view has been fixed.
+
+## 17.3.9-beta (2019-09-20)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#147443` - An issue with editor window headers are misaligned in mobile mode has been fixed.
+- `#147383` - An issue with drag and drop action is not working properly when `enableCompactView` disabled in mobile mode has been fixed.
+- `#246161` - An issue with multiple cell selections are not maintained when mouse right button click action has been fixed.
+- `#245932` - An issue with `showWeekend` field showing week ends either it is set as false has been fixed.
+
+## 17.2.49 (2019-09-04)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#244555` - An issue with recurrence editor change event is not populate the updated rule value has been fixed.
+
+## 17.2.47 (2019-08-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#245942` - An issue with `quick popup` open on tab hold action in mobile mode has been fixed.
+- `#242531` - An issue with events not updated properly while changing Scheduler time zone dynamically has been fixed.
+- `#244512` - An issue with recurrence editor value not mapping in custom editor window has been fixed.
+
+## 17.2.41 (2019-08-14)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#241514` - An issue with clone element not removing in DOM while invoke `refreshEvents` public method.
+
+## 17.2.40 (2019-08-06)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#242906` - An issue with action begin event is not triggered in event add action within editor template has been fixed.
+- `#242299` - An issue with events misaligned in different browser zooming has been fixed.
+- `#243422` - An issue with recurrence validation is showing unwanted alert has been fixed.
+- `#240463` - An issue with end time value of editor window in month view has been fixed.
+- `#146092` - An issue with displaying week number with different `firstDayOfWeek` has been fixed.
+
+## 17.2.39 (2019-07-30)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#242057` - An issue with applying different work hours for each individual resource when the `byDate` option is enabled within `group` property has been fixed.
+- `#240752` - An issue with recurrence option while using `editorTemplate` has been fixed.
+- `#242634` - An issue with calendar format in timeline month view has been fixed.
+- Getting wrong start and end time for the longer appointments in timeline views issue has been fixed.
+- An issue with recurring events while defining recurrence rule on it that includes both BYMONTH, BYMONTHDAY and BYDAY properties together has been fixed.
+
+## 17.2.35 (2019-07-17)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#240271` - An issue with misalignment of +more indicator when the custom elements and appointments are rendered in same cell has been fixed.
+
+## 17.2.34 (2019-07-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- Start and end time of events in month and timeline views now been correctly acquired in `eventRendered` event and event template.
+- `#240585` - Start time, end time and group index of clone element now been tracked in the events `drag` and `resizing`.
+- `#240271` - An issue with misalignment of +more indicator when the custom elements and appointments are rendered in same cell has been fixed.
+
+## 17.2.28-beta (2019-06-27)
+
+### Schedule
+
+#### New Features
+
+- Improved the drag and resize action for longer duration appointments.
+- Support to print the Scheduler layout.
+- Provided an option to edit the following recurrence events.
+- Provided time zone support to current time indicator.
+- Provided public method to reset/remove the highlighted work cells.
+
+#### Bug Fixes
+
+- Localization is not set properly to `datetimepicker` in editor window issue has been fixed.
+- `openEditor` method is not set the given start and end time in month view issue has been fixed.
+- `#145352` - An issue with displaying expand icon of parent resource which has no child has been fixed.
+
+## 17.1.51 (2019-06-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#234343` - An issue with adding resources dynamically when it has empty collection in initially has been fixed.
+- `#235165` - An issue with `rowAutoHeight` property enabled the horizontal scroll wrongly in month view has been fixed.
+
+## 17.1.50 (2019-06-04)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#234667` - An issue with Scheduler is not properly navigating to selected date in timeline views has been fixed.
+- `#234974` - An issue with Deleting ready only events is fixed.
+- `#143894` - An issue with selecting work cells for multiple rows is fixed.
+- `#234587` - An issue with rendering events with huge number of events in same times in week view is fixed.
+
+## 17.1.48 (2019-05-21)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#143979` - Events not rendered properly with `allowGroupEdit` when the resource id is two digit issue has been fixed.
+- `#234916` - Delete key not working properly in IE11 issue has been fixed.
+
+## 17.1.44 (2019-05-07)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#233286` - An issue with event not rendered properly in start and end time date format as string in agenda view is fixed.
+- `#234231` - An issue with setting the different work hours in timeline week is fixed.
+- `#143531` - An issue with event not loaded properly in agenda virtual scrolling is fixed.
+
+## 17.1.43 (2019-04-30)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#233410` - An issue with date is not retrieved in view navigation in timeline month view is fixed.
+
+## 17.1.42 (2019-04-23)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#143894` - An issue with select event arguments element value returns wrongly has been fixed.
+- `#230544` - An issue with `editorTemplate` is not accessing the cell or event details has been fixed.
+- `#229980`, `#229989` - An issue with appointment position misplaced in timeline views has been fixed.
+
+## 17.1.41 (2019-04-16)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#143412` - An issue with event editing using public `saveEvent` method and checking slot availability using `isSlotAvailable` method is fixed.
+- `#143720` - An issue with passing multiple resource for adding dynamically using `addResource` public method is fixed.
+- `#232246` - An issue with event resizing is not properly update when `startHour` and `endHour` using in timeline views is fixed.
+- `#231332` - An issue with block alert validation in recurrence event and data is not received in `popupOpen` event is fixed.
+
+## 17.1.38 (2019-03-29)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue while resizing all-day events in Scheduler, with disabled timescale mode is fixed.
+- An event to trigger on selection of multiple cells or events has been added.
+
+## 17.1.32-beta (2019-03-13)
+
+### Schedule
+
+#### New Features
+
+- Provided support to auto-adjust the height of work cells based on the number of appointments present in the same time ranges.
+- Support for exporting the Scheduler events to an Excel file format is provided.
+- Support has been provided to export the Scheduler events to a calendar (`.ics`) file, as well as to import events from an `.ics` file into our Scheduler.
+
+## 16.4.55 (2019-02-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with unable to scroll down the browser scroller, when the Scheduler is loaded with Month Agenda as current view has been fixed.
+
+## 16.4.54 (2019-02-19)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with events not displaying correctly based on Agenda view's current date range has been fixed.
+- An issue with recurring events while defining recurrence rule on it that includes both BYMONTH and BYDAY properties together has been fixed.
+- An issue with incorrect casing of `popupOpen` event's parameters that triggers on cell click action has been fixed.
+- An issue with 24 hours format not displaying in time cells of adaptive Scheduler mode has been fixed.
+
+## 16.4.53 (2019-02-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue that occurs on enabling the time interval for resizing in timeline day view has been fixed.
+
+## 16.4.52 (2019-02-05)
+
+### Schedule
+
+#### New Features
+
+- Improvements done to support creation of recurring events based on the recurrence rule properties, that lies under the criteria of limited combination.
+- The recurring appointments of Scheduler can be now created and processed successfully based on the Islamic calendar dates.
+
+## 16.4.47 (2019-01-16)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with event display order getting changed within the more event container of timeline views has been fixed.
+- An issue with the display of time range text in `quick popup`, when both the start and end time of a spanned event has the same exact hours and minutes but with different dates has been fixed.
+
+## 16.4.45 (2019-01-02)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with the display of `+n more popup` on Scheduler, while setting appointment time in seconds has been fixed.
+
+## 16.4.44 (2018-12-24)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with `quick popup` opening on blocked time ranges has been fixed.
+
+## 16.4.42 (2018-12-14)
+
+### Schedule
+
+#### New Features
+
+- Provided support to display Scheduler in Islamic calendar mode.
+
+## 16.4.40-beta (2018-12-10)
+
+### Schedule
+
+#### New Features
+
+- A specific time range can be blocked on Scheduler now, to prevent the creation of appointments in that time slot.
+- Specific events can be made read-only, restricting any CRUD actions.
+- Load resources and appointments of timeline views virtually on every scroll action.
+
+#### Bug Fixes
+
+- An issue that occurs with BYDAY rule option, while defining day names in different order has been fixed.
+- An issue with `eventClick` client-side event not triggering, while selecting multiple appointments by pressing `ctrl` key and mouse click combination has been fixed.
+- An issue with wrong display of + more count indicator in all-day row has been fixed.
+
+#### Breaking Changes
+
+- The default value of `allowVirtualScrolling` has been changed to `false`.
+
+## 16.3.32 (2018-11-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with date and time displaying wrongly on `quick popup` in the presence of Daylight Saving Time has been fixed.
+
+## 16.3.31 (2018-11-07)
+
+### Schedule
+
+#### Breaking Changes
+
+- Misalignment issue with edit and delete icons on edit `event popup` has been fixed.
+
+## 16.3.29 (2018-10-31)
+
+### Schedule
+
+#### New Features
+
+- Support to drag and drop an item from external source into scheduler and vice versa has been provided.
+- In mobile devices, drag and drop support has been enabled by tap holding and moving the appointments over the time slots.
+- Auto navigation option from current scheduler view to previous or next date range has been provided, while dragging an appointment to the left or right extremities of the view port.
+- Scrolling action has been improved to enable smooth scrolling, while dragging an appointment to any of the view port extremities.
+
+## 16.3.24 (2018-10-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- Misalignment issue with header cells of timeline views in Safari browser has been fixed.
+- An issue with appointment resizing, when the scheduler is placed at bottom in a container that has scroll-able height has been fixed.
+
+## 16.3.23 (2018-10-03)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with scheduler throwing script error while rendering it as hidden element has been fixed.
+
+## 16.3.17 (2018-09-12)
+
+### Schedule
+
+#### New Features
+
+- **Timeline view** - Displays the day, week, work week and month view layouts in timeline mode by illustrating both the date and time intervals in horizontal orientation. Also, it organizes the resource display in a hierarchical tree structure based on the grouping levels.
+- **Header rows** - Provided support to add custom header rows on timeline views, to depict an additional row for displaying the corresponding year, month, week number and dates.
+- **Drag and Drop** - Appointments can be easily rescheduled to some other time, by dragging and dropping it onto the required time slots.
+- **Resize** - Appointment’s time can be easily extended either by resizing its start or end handlers.
+- **Week Number** - Support added to display the week number of the current date, beside the date header section.
+- Provided template support for customizing `quick popup`, that opens while clicking on the cells or appointments.
+- The data type of the appointment ID field is made compatible to accept both string and number type values.
+
+#### Bug Fixes
+
+- An issue with customization done on `quick popup` getting lost, while clicking on the same target twice has been fixed.
+
+## 16.2.47 (2018-08-07)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with `isSlotAvailable` method not returning proper event collection, while providing event’s start and end time data as its parameter has been fixed.
+
+## 16.2.46 (2018-07-30)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with creation of weekly recurrence appointment, without providing `repeat every` field value has been fixed.
+- An issue that occurred due to the improper destroy action on sub-components of scheduler has been fixed.
+
+## 16.2.44 (2018-07-10)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with delete icon not displaying in a disabled state on `quick popup`, when scheduler is set to `readonly` has been fixed.
+
+## 16.2.43 (2018-07-03)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with recurrence validation while using editor template has been fixed.
+- An issue with recurring events on day view, created with UNTIL and WEEKLY rule combination has been fixed.
+- An alignment issue with recurrence editor in bootstrap theme has been fixed.
+- An issue with highlighting current day in month view, when `firstDayOfWeek` is set with the value other than `Sunday` has been fixed.
+- An issue while customizing `quick popup` with normal HTML buttons has been fixed.
+
+## 16.2.41 (2018-06-25)
+
+### Schedule
+
+#### New Features
+
+- Distinct time interval option with customizable major and minor slots has been introduced to view the appointments clearly and accurately.
+- An enhancement has been made to extend the default view range with customized intervals, to display 'n' number of days, weeks and months.
+- Validation support on recurrence appointment(s) has been added.
+- Multiple resources support has been added with the following options.
+- **Group By Child** - To group the same child resource(s) under different parent resource(s).
+- **Group By Date** -  To group the resource(s) on day basis.
+- **Group Editing** - To edit all resource events simultaneously.
+- **Custom Work Days** - To display the custom work days for each resource.
+- Provided public methods to add or remove the resources dynamically.
+
+#### Bug Fixes
+
+- An issue with time format not displaying according to the given culture issue has been fixed.
+- A script error occurring while enabling or disabling the time indicator option in Agenda view issue has been fixed.
+- An issue with event not displayed in day and week views, when set with same start and end time has been fixed.
+- An issue with displaying yearly recurrence event has been fixed.
+
+##### Breaking Changes
+
+- Type of `id` property within the `eventSettings.field` has been changed from `object` type to `string`.
+- Appearance enhancement has been done on `quick popup` that opens, when single clicked on cells and events. Also, the same `popup` opens on single tap of events on mobile mode.
+
+## 16.1.37 (2018-04-24)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with recurrence events created with UNTIL rule, which doesn't rendered on day view is fixed.
+- An issue with buttons of quick window not getting disabled, while setting `readonly` property has been fixed.
+
+## 16.1.28 (2018-03-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- Problem with all-day appointments that are created for spanned timeline in work week view is fixed.
+- Traversing order of appointments while pressing `Tab` key and `Shift+Tab` combination keys is corrected.
+
+## 16.1.24 (2018-02-22)
+
+### Schedule
+
+Schedule is an event calendar which facilitates user with the common Outlook-calendar features, thus allowing the users to plan and manage their appointments and its time in an efficient way.
+
+- **Views** - Schedule is now availed with 6 different view modes – day, week, work week, month, agenda and month agenda. It is possible to configure view-based settings on each view mode. The `Week` view is set as active view by default.
+- **Data binding** - Seamless data binding with various client-side and remote data sources thus allowing the data to load on demand by default to reduce the data transfer and loading time.
+- **Recurrence** - Allows the user to repeat a set of events on a daily, weekly, monthly, or yearly basis.
+- **Template** - The key elements like events, date header, work cells and event tooltip comes with the default template support which allows the flexible end-user customization to embed any kind of text, images, or styles to it.
+- **Time zone** -  Regardless of whatever time zone your system follows, Schedule supports setting your own required time zone value to it as well as to each event – thus allowing the events to display on its exact local time.
+- **Customizable working days and hours** - Users can set specific work hour range which is visually differentiated with active colour. Also, the working days collection can be customized with specific days, so that the remaining days will be considered as weekend.
+- **Custom editor template** - Template option is availed for event editor, thus allowing the users to add their own custom editor design and also provides option to add additional fields onto the default event editor.
+- **Adaptive rendering** - Adapts with optimal user interfaces for mobile and desktop form-factors, thus helping the user’s application to scale elegantly across all the form-factors without any additional effort.
+- **Keyboard interaction** - All the common actions such as traversing through the appointments, multiple cell selection, add/edit/delete the appointments, navigate to other views, dates and much more can be performed through keyboard inputs.
+- **Localization** - All the static text and date content can be localized to any desired language. Also, it can be displayed with appropriate time mode and date-format as per the localized language.
+- **RTL** - Supports displaying the component to display in the direction from right to left.
