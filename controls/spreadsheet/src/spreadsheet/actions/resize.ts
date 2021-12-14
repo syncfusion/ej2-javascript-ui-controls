@@ -1,12 +1,12 @@
-import { getDPRValue, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
-import { closest, EventHandler } from '@syncfusion/ej2-base';
+import { getDPRValue, hideAutoFillElement, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
+import { closest, detach, EventHandler } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { colWidthChanged, rowHeightChanged, contentLoaded, hideShow, getFilterRange } from '../common/index';
+import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange } from '../common/index';
 import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
 import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs } from '../../workbook/common/index';
-import { rowFillHandler } from '../../workbook/common/event';
+import { rowFillHandler, hideShow } from '../../workbook/common/event';
 
 /**
  * The `Resize` module is used to handle the resizing functionalities in Spreadsheet.
@@ -46,6 +46,9 @@ export class Resize {
     private wireEvents(): void {
         const rowHeader: Element = this.parent.getRowHeaderContent();
         const colHeader: Element = this.parent.element.getElementsByClassName('e-header-panel')[0];
+        if (!colHeader) {
+            return;
+        }
         EventHandler.add(colHeader, 'dblclick', this.dblClickHandler, this);
         EventHandler.add(rowHeader, 'dblclick', this.dblClickHandler, this);
         EventHandler.add(colHeader, 'mousedown', this.mouseDownHandler, this);
@@ -121,14 +124,12 @@ export class Resize {
     }
 
     private mouseUpHandler(e: MouseEvent & TouchEvent): void {
-        const colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
-        const rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
+        const resizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-resize-handle')[0] as HTMLElement;
         this.resizeOn(e);
         this.isMouseMoved = null;
-        const resizeHandler: HTMLElement = colResizeHandler || rowResizeHandler;
-        let HeaderTooltip: HTMLElement = document.querySelector('.e-header-tooltip');
+        const HeaderTooltip: HTMLElement = document.querySelector('.e-header-tooltip');
         if (resizeHandler) {
-            document.getElementById(this.parent.element.id + '_sheet').removeChild(resizeHandler);
+            detach(resizeHandler);
             this.updateCursor();
         }
         if (HeaderTooltip) {
@@ -381,6 +382,7 @@ export class Resize {
 
     private createResizeHandler(trgt: HTMLElement, className: string): void {
         const editor: HTMLElement = this.parent.createElement('div', { className: className });
+        editor.classList.add('e-resize-handle');
         const sheet: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
         if (trgt.classList.contains('e-colresize')) {
             editor.style.height = this.parent.getMainContent().parentElement.clientHeight + this.parent.getColumnHeaderContent().offsetHeight + 'px';
@@ -398,16 +400,16 @@ export class Resize {
 
     private resizeTooltip(trgt: HTMLElement, isResize?: boolean, e?: MouseEvent): void {
         if (isResize) {
-            let HeaderTolltip: HTMLElement = document.querySelector('.e-header-tooltip');
+            const HeaderTolltip: HTMLElement = document.querySelector('.e-header-tooltip');
             const colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
             const rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
             if (colResizeHandler) {
-                let trgtWidth: number = (e.clientX) - Math.round(this.trgtEle.getBoundingClientRect().left);
+                const trgtWidth: number = (e.clientX) - Math.round(this.trgtEle.getBoundingClientRect().left);
                 if (HeaderTolltip) {
                     HeaderTolltip.firstChild.textContent = trgtWidth > 0 ? ('Width:(' + trgtWidth.toString() + ' pixels)') : ('Width: 0.00');
                 }
             } else if (rowResizeHandler) {
-                let trgtHeight: number = (e.clientY) - Math.round(this.trgtEle.getBoundingClientRect().top);
+                const trgtHeight: number = (e.clientY) - Math.round(this.trgtEle.getBoundingClientRect().top);
                 if (HeaderTolltip) {
                     HeaderTolltip.firstChild.textContent = trgtHeight > 0 ? ('Height:(' + trgtHeight.toString() + ' pixels)') : ('Height: 0.00');
                 }
@@ -416,8 +418,8 @@ export class Resize {
             const isColResize: boolean = trgt.classList.contains('e-colresize');
             const isRowResize: boolean = trgt.classList.contains('e-rowresize');
             if (isColResize || isRowResize) {
-                let className: string = isColResize ? "e-colresize-handler" : "e-rowresize-handler";
-                let tooltip: Tooltip = new Tooltip({
+                const className: string = isColResize ? 'e-colresize-handler' : 'e-rowresize-handler';
+                const tooltip: Tooltip = new Tooltip({
                     cssClass: 'e-header-tooltip',
                     showTipPointer: false
                 });
@@ -425,7 +427,8 @@ export class Resize {
                     tooltip.content = 'Width:(' + Math.round(trgt.getBoundingClientRect().width).toString() + ' pixels)';
                 } else if (isRowResize) {
                     tooltip.content = 'Height:(' + Math.round(trgt.getBoundingClientRect().height).toString() + ' pixels)';
-                    tooltip.offsetX = -((this.parent.getMainContent().parentElement.clientWidth / 2) - Math.round(trgt.getBoundingClientRect().width));
+                    tooltip.offsetX = -((this.parent.getMainContent().parentElement.clientWidth / 2) -
+                    Math.round(trgt.getBoundingClientRect().width));
                 }
                 tooltip.appendTo('.' + className);
                 tooltip.open();
@@ -457,6 +460,7 @@ export class Resize {
         } else {
             if (this.isMouseMoved) {
                 this.parent.hideColumn(index);
+                this.showHideCopyIndicator();
                 this.parent.notify(completeAction, {
                     eventArgs: {
                         index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetIndex, oldWidth: `${curWidth}px`,
@@ -467,6 +471,18 @@ export class Resize {
         }
     }
 
+    private showHideCopyIndicator(): void{
+        const copyIndicator: HTMLElement = this.parent.element.querySelector('.e-copy-indicator');
+        let isIndicator: boolean = false;
+        if (copyIndicator) {
+            detach(copyIndicator);
+            this.parent.notify(hideAutoFillElement, null);
+            isIndicator = true;
+        }
+        if (isIndicator) {
+            this.parent.notify(contentLoaded, {});
+        }
+    }
     private showHiddenColumns(index: number, width?: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
@@ -488,6 +504,7 @@ export class Resize {
         }
         this.trgtEle.classList.remove('e-unhide-column');
         this.parent.hideColumn(startIdx, endIdx, false);
+        this.showHideCopyIndicator();
         if (width === undefined) { this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx }); }
     }
 
@@ -541,6 +558,7 @@ export class Resize {
             let rowHeight: number = e.clientY - this.event.clientY + parseInt(prevData, 10);
             if (rowHeight <= 0) {
                 this.parent.hideRow(actualIdx);
+                this.showHideCopyIndicator();
                 setRow(sheet, actualIdx, { height: 0, customHeight: true });
                 this.parent.notify(completeAction, {
                     eventArgs:
@@ -581,6 +599,7 @@ export class Resize {
                         });
                     }
                     this.parent.hideRow(selectedRange[0], actualIdx - 1, false);
+                    this.showHideCopyIndicator();
                     idx += Math.abs(actualIdx - count);
                 } else {
                     if (idx !== 0 && !isHiddenRow(sheet, actualIdx - 1)) {

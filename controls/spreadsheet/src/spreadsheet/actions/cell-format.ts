@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, clearViewer, beginAction, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook, isNumber, clearFormulaDependentCells} from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook, clearFormulaDependentCells, activeCellChanged} from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -60,7 +60,7 @@ export class CellFormat {
                         args.style.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell,
                         args.manualUpdate);
                 }
-                // if (currCell.format && currCell.format.indexOf('[') > -1 && !isNumber(currCell.value)) { 
+                // if (currCell.format && currCell.format.indexOf('[') > -1 && !isNumber(currCell.value)) {
                 //     //do nothing
                 // } else {
                 //     Object.assign(cell.style, args.style);
@@ -325,6 +325,7 @@ export class CellFormat {
         }
         this.parent.notify(addHighlight, { range: range, isclearFormat: true });
         this.parent.notify(selectRange, {address: range});
+        this.parent.notify(activeCellChanged, null);
     }
 
     private addEventListener(): void {

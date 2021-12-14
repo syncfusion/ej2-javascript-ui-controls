@@ -42,12 +42,16 @@ export class DataBind {
      * @param {number[]} args.indexes - Specify the indexes.
      * @param {Promise<CellModel>} args.promise - Specify the promise.
      * @param {number} args.rangeSettingCount - Specify the rangeSettingCount.
+     * @param {string} args.formulaCellRef - Specify the formulaCellRef.
+     * @param {number} args.sheetIndex - Specify the sheetIndex.
+     * @param {boolean} args.dataSourceChange - Specify the dataSourceChange.
+     * @param {boolean} args.isFinite - Specify the isFinite.
      * @returns {void} - Update given data source to sheet.
      */
-    // eslint-disable-next-line
+
     private updateSheetFromDataSourceHandler(
         args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
-        sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean }): void {
+            sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
@@ -150,8 +154,13 @@ export class DataBind {
                         } else {
                             flds = [];
                         }
-                        const totalRows: number = (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1;
-                        const totalCols: number = sColIdx + flds.length - 1 < 0 ? args.sheet.usedRange.colIndex: sColIdx + flds.length - 1;
+                        let totalRows: number;
+                        if ((sRowIdx + (count || e.count)) > 0) {
+                            totalRows = (sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1;
+                        } else {
+                            totalRows = args.sheet.usedRange.rowIndex;
+                        }
+                        const totalCols: number = sColIdx + flds.length - 1 < 0 ? args.sheet.usedRange.colIndex : sColIdx + flds.length - 1;
                         if (args.isFinite) {
                             args.sheet.usedRange.rowIndex = totalRows < args.sheet.rowCount ? totalRows : args.sheet.rowCount - 1;
                             args.sheet.usedRange.colIndex = totalCols < args.sheet.colCount ? totalCols : args.sheet.colCount - 1;
@@ -356,6 +365,7 @@ export class DataBind {
      * @param {string} args.sheetIdx - Specify the sheetIdx.
      * @param {string} args.rangeIdx - Specify the rangeIdx.
      * @param {boolean} args.isLastRange - Specify the isLastRange.
+     * @param {Object[]} args.changedData - Specify the changedData.
      * @returns {void} - Remove old data from sheet.
      */
     private dataSourceChangedHandler(
@@ -432,6 +442,9 @@ export class DataBind {
      * @param {string} args.range - Specify the range.
      * @param {boolean}  args.isUndoRedo - Specify the boolean value.
      * @param {string} args.requestType - Specify the requestType.
+     * @param {Object[]} args.data - Specify the data.
+     * @param {boolean}  args.isDataRequest - Specify the isDataRequest.
+     * @param {boolean} args.isMethod - Specify the isMethod.
      * @returns {void} - Triggers dataSourceChange event when cell data changes
      */
     private dataChangedHandler(args: {
@@ -491,8 +504,8 @@ export class DataBind {
                         return;
                     } else {
                         if (args.insertType) {
-                            inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
-                                : dataRange[0] < args.index) && dataRange[2] >= args.index;
+                            inRange = ((!range.showFieldAsHeader && (args.insertType === 'above' || args.isMethod)) ? dataRange[0] <=
+                                args.index : dataRange[0] < args.index) && dataRange[2] >= args.index;
                             cellIndices = [args.index];
                             if (!inRange) {
                                 if ((dataRange[2] + 1 === args.index && args.insertType === 'below')) {
@@ -517,11 +530,11 @@ export class DataBind {
                     }
                 } else {
                     cellIndices = getRangeIndexes(
-                        args.requestType === 'paste' ? args.pastedRange.split('!')[1] : args.sheetIdx > -1 ? args.address :
-                        (args.address || args.range).split('!')[1]);
+                        args.requestType && args.requestType.toLowerCase().includes('paste') ? args.pastedRange.split('!')[1] :
+                            args.sheetIdx > -1 ? args.address : (args.address || args.range).split('!')[1]);
                     const dataRangeIndices: number[] =
                         [...[range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]], ...dataRange.slice(1, 4)];
-                    if (cellIndices[0] === startCell[0]) {
+                    if (range.showFieldAsHeader && cellIndices[0] === startCell[0]) {
                         for (let i: number = cellIndices[1]; i <= cellIndices[3]; i++) {
                             if (i >= dataRangeIndices[1] && i <= dataRangeIndices[3]) {
                                 range.info.flds[i - startCell[1]] = getCell(startCell[0], i, sheet, false, true).value || '';
@@ -531,7 +544,7 @@ export class DataBind {
                     inRange = isInRange(dataRangeIndices, cellIndices, true);
                     if (args.requestType === 'paste' && (args as unknown as { copiedInfo: { isCut: boolean } }).copiedInfo.isCut) {
                         cutIndices = [].slice.call((args as unknown as { copiedInfo: { range: number[] } }).copiedInfo.range);
-                        if (cutIndices[0] === startCell[0]) {
+                        if (range.showFieldAsHeader && cutIndices[0] === startCell[0]) {
                             for (let i: number = cutIndices[1]; i <= cutIndices[3]; i++) {
                                 if (i >= dataRangeIndices[1] && i <= dataRangeIndices[3]) {
                                     range.info.flds[i - startCell[1]] = '';

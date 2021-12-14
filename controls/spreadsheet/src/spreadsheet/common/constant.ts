@@ -35,7 +35,7 @@ export const fillColor: { [key: string]: string[] } = {
 };
 
 /** @hidden */
-export const keyCodes: { [key: string]: number } ={
+export const keyCodes: { [key: string]: number } = {
     UP: 38,
     DOWN: 40,
     LEFT: 37,
@@ -371,7 +371,7 @@ export const defaultLocale: object = {
     Reference: 'Reference',
     DataValidation: 'Data Validation',
     CLEARALL: 'Clear All',
-	APPLY: 'Apply',
+    APPLY: 'Apply',
     CellRange: 'Cell Range',
     Allow: 'Allow',
     Data: 'Data',
@@ -579,14 +579,14 @@ export const defaultLocale: object = {
     ConfirmPasswordAlertMsg: 'Please enter the confirm password',
     IsProtected: 'is protected',
     PDF: 'PDF document',
-    AutoFillMergeAlertMsg: "To do this, all the merged cells need to be the same size",
+    AutoFillMergeAlertMsg: 'To do this, all the merged cells need to be the same size',
     FillSeries: 'Fill Series',
-    CopyCells:'Copy Cells',
+    CopyCells: 'Copy Cells',
     FillFormattingOnly: 'Fill Formatting Only',
-    FillWithoutFormatting:'Fill Without Formatting',
+    FillWithoutFormatting: 'Fill Without Formatting',
     CustomFormat: 'Custom Number Formats',
     CustomFormatSample: 'Type',
-    UnProtectWorksheet: "Unprotect Sheet",
-    ReEnterPassword: "Re-enter password to proceed",
-    SheetPassword: "Password to unprotect sheet:",
+    UnProtectWorksheet: 'Unprotect Sheet',
+    ReEnterPassword: 'Re-enter password to proceed',
+    SheetPassword: 'Password to unprotect sheet:'
 };

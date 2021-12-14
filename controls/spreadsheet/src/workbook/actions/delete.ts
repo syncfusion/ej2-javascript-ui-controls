@@ -1,7 +1,7 @@
 import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
 import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
-import { SheetModel, checkUniqueRange, refreshInsertDelete } from '../../workbook/index';
+import { SheetModel, checkUniqueRange, refreshInsertDelete, updateRowColCount, getSheetIndex } from '../../workbook/index';
 
 /**
  * The `WorkbookDelete` module is used to delete cells, rows, columns and sheets from workbook.
@@ -53,8 +53,10 @@ export class WorkbookDelete {
         const insertArgs: InsertDeleteEventArgs = { startIndex: args.start, endIndex: args.end, modelType: args.modelType, sheet:
             args.model };
         if (args.modelType === 'Row') {
+            if (args.checkCount !== undefined && args.checkCount === args.model.usedRange.rowIndex) { return; }
             this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
+            this.setRowColCount(args.start, args.end, args.model, 'row');
             if (args.start > args.model.usedRange.rowIndex) { return; }
             if (args.end > args.model.usedRange.rowIndex) { args.end -= (args.end - args.model.usedRange.rowIndex); }
             args.model.usedRange.rowIndex -= ((args.end - args.start) + 1);
@@ -117,6 +119,7 @@ export class WorkbookDelete {
                 }
             }
         } else if (args.modelType === 'Column') {
+            if (args.checkCount !== undefined && args.checkCount === args.model.usedRange.colIndex) { return; }
             this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.colIndex) { return; }
@@ -186,6 +189,7 @@ export class WorkbookDelete {
                 }
             }
         } else {
+            if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
             if (args.end - args.start === this.parent.sheets.length - 1) { return; }
         }
         const deletedModel: RowModel[] = [];
@@ -207,12 +211,27 @@ export class WorkbookDelete {
         if (args.modelType !== 'Sheet') {
             this.parent.notify(refreshClipboard, args);
             if (args.model !== this.parent.getActiveSheet()) { return; }
+            this.parent.notify(
+                deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames:
+                    insertArgs.definedNames, isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
+                sheetCount: args.modelType === 'Row' ? args.model.usedRange.rowIndex : args.model.usedRange.colIndex, activeSheetIndex:
+                    getSheetIndex(this.parent, args.model.name), freezePane: freezePane, isUndoRedo: args.isUndoRedo });
+        } else {
+            this.parent.notify(deleteAction, {
+                startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: insertArgs.definedNames,
+                isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells, sheetCount: this.parent.sheets.length,
+                activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane, isUndoRedo: args.isUndoRedo
+            });
         }
-        this.parent.notify(deleteAction, {
-            startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: insertArgs.definedNames,
-            isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
-            activeSheetIndex: this.parent.activeSheetIndex, freezePane: freezePane, sheet: args.model, isUndoRedo: args.isUndoRedo
-        });
+    }
+    private setRowColCount(startIdx: number, endIdx: number, sheet: SheetModel, layout: string): void {
+        const prop: string = layout + 'Count';
+        if (endIdx >= sheet[prop]) { endIdx = sheet[prop] - 1; }
+        if (endIdx < startIdx) { return; }
+        this.parent.setSheetPropertyOnMute(sheet, prop, sheet[prop] - ((endIdx - startIdx) + 1));
+        if (sheet.id === this.parent.getActiveSheet().id) {
+            this.parent.notify(updateRowColCount, { index: sheet[prop] - 1, update: layout, isDelete: true, start: startIdx, end: endIdx });
+        }
     }
     private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {
         const total: number = (endIndex - startIndex) + 1; const newRange: number[] = [];

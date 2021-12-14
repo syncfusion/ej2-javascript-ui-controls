@@ -116,12 +116,13 @@ export function isHiddenRow(sheet: SheetModel, index: number): boolean {
  * @param {SheetModel} sheet - Specifies the sheet.
  * @param {number} rowIndex - Specifies the rowIndex.
  * @param {boolean} checkDPR - Specifies the bool value.
+ * @param {boolean} addHidden - By default hidden rows are considered as 0, set `true` if you want to add the hidden rows height.
  * @returns {number} - To get the row height.
  */
-export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR?: boolean): number {
+export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR?: boolean, addHidden?: boolean): number {
     let hgt: number;
     if (sheet && sheet.rows && sheet.rows[rowIndex]) {
-        if (sheet.rows[rowIndex].hidden) { return 0; }
+        if (!addHidden && sheet.rows[rowIndex].hidden) { return 0; }
         hgt = sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
     } else {
         hgt = 20;
@@ -154,9 +155,11 @@ export function setRowHeight(sheet: SheetModel, rowIndex: number, height: number
  * @param {number} startRow - Specifies the startRow.
  * @param {number} endRow - Specifies the endRow.
  * @param {boolean} checkDPR - Specifies the boolean value.
+ * @param {boolean} addHidden - By default hidden rows are considered as 0, set `true` if you want to add the hidden rows height.
  * @returns {number} - To get the rows height.
  */
-export function getRowsHeight(sheet: SheetModel, startRow: number, endRow: number = startRow, checkDPR?: boolean): number {
+export function getRowsHeight(
+    sheet: SheetModel, startRow: number, endRow: number = startRow, checkDPR?: boolean, addHidden?: boolean): number {
     let height: number = 0;
     let swap: number;
     if (startRow > endRow) {
@@ -165,7 +168,7 @@ export function getRowsHeight(sheet: SheetModel, startRow: number, endRow: numbe
         endRow = swap;
     }
     for (let i: number = startRow; i <= endRow; i++) {
-        height += getRowHeight(sheet, i, checkDPR);
+        height += getRowHeight(sheet, i, checkDPR, addHidden);
     }
     return height;
 }

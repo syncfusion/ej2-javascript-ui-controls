@@ -294,7 +294,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(getCell(3, 10, instance.getActiveSheet()).style.color).toEqual('#000000');
             helper.invoke('selectRange', ['K5']);
             helper.click('_font_color_picker .e-dropdown-btn');
-            helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#ed7d31ff"]');
+            helper.click('#' + helper.getElement('#' + helper.id + '_font_color_picker .e-dropdown-btn').id + '-popup span[aria-label="#ed7d31ff"]');
             expect(getCell(4, 10, instance.getActiveSheet()).style.color).toEqual('#ed7d31');
             // undo checking
             helper.click('_undo');
@@ -307,8 +307,9 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         it('Text color mode switcher testing', (): void => {
             helper.invoke('selectRange', ['K6']);
             helper.click('_font_color_picker .e-dropdown-btn');
-            helper.click('.e-colorpicker-popup.e-popup-open .e-switch-ctrl-btn button');
-            helper.click('.e-colorpicker-popup.e-popup-open .e-switch-ctrl-btn .e-apply');
+            const popupSelector: string = '#' + helper.getElement('#' + helper.id + '_font_color_picker .e-dropdown-btn').id + '-popup';
+            helper.click(popupSelector + ' .e-switch-ctrl-btn button');
+            helper.click(popupSelector + ' .e-switch-ctrl-btn .e-apply');
             expect(getCell(5, 10, instance.getActiveSheet()).style.color).toEqual('#ed7d31');
         });
 
@@ -318,7 +319,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(getCell(3, 10, instance.getActiveSheet()).style.backgroundColor).toEqual('#ffff00');
             helper.invoke('selectRange', ['K5']);
             helper.click('_fill_color_picker .e-dropdown-btn');
-            helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#00ffffff"]');
+            helper.click('#' + helper.getElement('#' + helper.id + '_fill_color_picker .e-dropdown-btn').id + '-popup span[aria-label="#00ffffff"]');
             expect(getCell(4, 10, instance.getActiveSheet()).style.backgroundColor).toEqual('#00ffff');
             // undo checking
             helper.click('_undo');
@@ -331,8 +332,9 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         it('Fill color mode switcher testing', (): void => {
             helper.invoke('selectRange', ['K6']);
             helper.click('_fill_color_picker .e-dropdown-btn');
-            helper.click('.e-colorpicker-popup.e-popup-open .e-switch-ctrl-btn button');
-            helper.click('.e-colorpicker-popup.e-popup-open .e-switch-ctrl-btn .e-apply');
+            const popupSelector: string = '#' + helper.getElement('#' + helper.id + '_fill_color_picker .e-dropdown-btn').id + '-popup';
+            helper.click(popupSelector + ' .e-switch-ctrl-btn button');
+            helper.click(popupSelector + ' .e-switch-ctrl-btn .e-apply');
             expect(getCell(5, 10, instance.getActiveSheet()).style.backgroundColor).toEqual('#00ffff');
         });
 

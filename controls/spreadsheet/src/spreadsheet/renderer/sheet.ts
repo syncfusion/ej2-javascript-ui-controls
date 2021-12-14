@@ -274,6 +274,7 @@ export class SheetRender implements IRenderer {
                 if (frozenCol && indexes[1] < frozenCol) {
                     col = this.updateCol(sheet, indexes[1], selectAllColGrp);
                     const empty: Element = rowHdrColGrp.querySelector('.e-empty');
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                     empty ? rowHdrColGrp.insertBefore(col.cloneNode(true), empty) : rowHdrColGrp.appendChild(col.cloneNode(true));
                     selectAllHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
                 } else {
@@ -464,6 +465,11 @@ export class SheetRender implements IRenderer {
         if (this.contentPanel.querySelector('.e-sheet-content tbody')) {
             detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
             this.getContentTable().appendChild(frag);
+            const indexes: number[] = getCellIndexes(sheet.activeCell);
+            const cellElem: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
+            if (cellElem) {
+                cellElem.focus();
+            }
         }
         this.parent.notify(virtualContentLoaded, { refresh: 'Row', prevRowColCnt: args.prevRowColCnt });
         if (this.parent.allowChart) {

@@ -45,7 +45,8 @@ export class WorkbookConditionalFormat {
         }
     }
 
-    private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel, isAction?: boolean, sheetIdx?: number, isUndoRedo?: boolean }): void {
+    private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel, isAction?: boolean,
+        sheetIdx?: number, isUndoRedo?: boolean }): void {
         const conditionalFormat: ConditionalFormatModel = args.conditionalFormat;
         let range: string = conditionalFormat.range;
         const sheetIndex: number = args.isUndoRedo ? args.sheetIdx : this.parent.getAddressInfo(range).sheetIndex;
@@ -76,9 +77,17 @@ export class WorkbookConditionalFormat {
         }
     }
 
+    private clearRule(rangeIndexes: number[]): void {
+        for (let rIdx: number = rangeIndexes[0]; rIdx <= rangeIndexes[2]; rIdx++) {
+            for (let cIdx: number = rangeIndexes[1]; cIdx <= rangeIndexes[3]; cIdx++) {
+                this.parent.notify(clearCF, { rIdx: rIdx, cIdx: cIdx });
+            }
+        }
+    }
+
     private clearRules(
         args: { range: string, isPublic?: boolean, isclearFormat?: true, sheetIdx?: number, isClearCF?: boolean,
-        isUndoRedo?: boolean }): void {
+            isUndoRedo?: boolean }): void {
         const isPublic: boolean = isNullOrUndefined(args.isPublic) ? true : false;
         const cFormats: ConditionalFormatModel[] = [];
         const oldRange: string[] = [];
@@ -97,10 +106,14 @@ export class WorkbookConditionalFormat {
         const cFRules: ConditionalFormatModel[] = sheet.conditionalFormats;
         const rangeIndexes: number[] = getRangeIndexes(range);
         if (sheetIndex === this.parent.activeSheetIndex) {
-            for (let rIdx: number = rangeIndexes[0]; rIdx <= rangeIndexes[2]; rIdx++) {
-                for (let cIdx: number = rangeIndexes[1]; cIdx <= rangeIndexes[3]; cIdx++) {
-                    this.parent.notify(clearCF, { rIdx: rIdx, cIdx: cIdx });
+            if (cFRules && rangeIndexes[2] === sheet.rowCount - 1 && rangeIndexes[3] === sheet.colCount - 1 &&
+                rangeIndexes[0] === 0 && rangeIndexes[1] === 0) {
+                for (let i: number = 0; i < cFRules.length; i++) {
+                    const rangeIndexes: number[] = getRangeIndexes(cFRules[i].range);
+                    this.clearRule(rangeIndexes);
                 }
+            } else {
+                this.clearRule(rangeIndexes);
             }
         }
         if (!cFRules) {
@@ -405,7 +418,7 @@ export class WorkbookConditionalFormat {
     private cFUndoHandler(args: { conditionalFormat: ConditionalFormatModel, sheetIdx: number }): void {
         if (args.sheetIdx === this.parent.activeSheetIndex) {
             const cFRule: ConditionalFormatModel = args.conditionalFormat;
-        const cFRanges: string[] = cFRule.range.split(',');
+            const cFRanges: string[] = cFRule.range.split(',');
             const sheet: SheetModel = getSheet(this.parent, args.sheetIdx);
             for (let cFRangeIdx: number = 0; cFRangeIdx < cFRanges.length; cFRangeIdx++) {
                 const cFRange: string = cFRanges[cFRangeIdx];
@@ -415,8 +428,8 @@ export class WorkbookConditionalFormat {
                         const cell: CellModel = sheet.rows[cFRRowIdx].cells[cFRColIdx];
                         this.parent.notify(
                             cFInitialCheck, {
-                            rowIdx: cFRRowIdx, colIdx: cFRColIdx, cell: cell, conditionalFormat: cFRule, isAction: true
-                        });
+                                rowIdx: cFRRowIdx, colIdx: cFRColIdx, cell: cell, conditionalFormat: cFRule, isAction: true
+                            });
                     }
                 }
             }

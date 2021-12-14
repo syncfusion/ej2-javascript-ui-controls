@@ -104,6 +104,8 @@ export class Selection {
         getUpdateUsingRaf((): void => {
             let ele: HTMLElement = this.getActiveCell();
             const sheet: SheetModel = this.parent.getActiveSheet();
+            let isCopyIndicatorRefresh: boolean = false;
+            const copyIndicator: HTMLElement = this.parent.element.querySelector('.e-copy-indicator');
             if (ele) {
                 const cellIndex: number[] = getCellIndexes(sheet.activeCell);
                 if (sheet.frozenRows || sheet.frozenColumns) {
@@ -113,8 +115,16 @@ export class Selection {
                 } else {
                     if (cellIndex[0] === args.rowIdx) {
                         ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;
+                        if (copyIndicator) {
+                            copyIndicator.style.height = `${parseFloat(copyIndicator.style.height) + args.threshold}px`;
+                            isCopyIndicatorRefresh = true;
+                        }
                     } else if (cellIndex[0] > args.rowIdx) {
                         ele.style.top = `${parseFloat(ele.style.top) + args.threshold}px`;
+                        if (copyIndicator) {
+                            copyIndicator.style.top = `${parseFloat(copyIndicator.style.top) + args.threshold}px`;
+                            isCopyIndicatorRefresh = true;
+                        }
                     }
                 }
             }
@@ -132,8 +142,14 @@ export class Selection {
                 const rowEnd: number = sRange[2];
                 if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
                     ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;
+                    if (copyIndicator && !isCopyIndicatorRefresh) {
+                        copyIndicator.style.height = `${parseFloat(copyIndicator.style.height) + args.threshold}px`;
+                    }
                 } else if (rowStart > args.rowIdx && ele) {
                     ele.style.top = `${parseFloat(ele.style.top) + args.threshold}px`;
+                    if (copyIndicator && !isCopyIndicatorRefresh) {
+                        copyIndicator.style.top = `${parseFloat(copyIndicator.style.top) + args.threshold}px`;
+                    }
                 }
             }
         });
@@ -143,6 +159,8 @@ export class Selection {
         getUpdateUsingRaf((): void => {
             const sheet: SheetModel = this.parent.getActiveSheet();
             let ele: HTMLElement = this.getActiveCell();
+            let isCopyIndicatorRefresh: boolean = false;
+            const copyIndicator: HTMLElement = this.parent.element.querySelector('.e-copy-indicator');
             if (ele) {
                 const cellIndex: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
                 if (sheet.frozenRows || sheet.frozenColumns) {
@@ -152,8 +170,16 @@ export class Selection {
                 } else {
                     if (cellIndex[1] === args.colIdx) {
                         ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
+                        if (copyIndicator) {
+                            copyIndicator.style.width = `${parseFloat(copyIndicator.style.width) + args.threshold}px`;
+                            isCopyIndicatorRefresh = true;
+                        }
                     } else if (cellIndex[1] > args.colIdx) {
                         ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
+                        if (copyIndicator) {
+                            copyIndicator.style.left = `${parseFloat(copyIndicator.style.left) + args.threshold}px`;
+                            isCopyIndicatorRefresh = true;
+                        }
                     }
                 }
             }
@@ -167,8 +193,14 @@ export class Selection {
             const colStart: number = sRange[1]; const colEnd: number = sRange[3];
             if (colStart <= args.colIdx && colEnd >= args.colIdx && ele) {
                 ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
+                if (copyIndicator && !isCopyIndicatorRefresh) {
+                    copyIndicator.style.width = `${parseFloat(copyIndicator.style.width) + args.threshold}px`;
+                }
             } else if (colStart > args.colIdx && ele) {
                 ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
+                if (copyIndicator && !isCopyIndicatorRefresh) {
+                    copyIndicator.style.left = `${parseFloat(copyIndicator.style.left) + args.threshold}px`;
+                }
             }
         });
     }
@@ -230,7 +262,6 @@ export class Selection {
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
             }
-            
             if (!closest(e.target as Element, '.e-findtool-dlg')) {
                 if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
                     && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
@@ -266,7 +297,7 @@ export class Selection {
                     if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
                         return;
                     }
-                    if((e.target as HTMLElement).className.indexOf('e-autofill') > -1){
+                    if ((e.target as HTMLElement).className.indexOf('e-autofill') > -1){
                         this.isautoFillClicked = true;
                         this.dAutoFillCell = sheet.selectedRange;
                     }
@@ -307,9 +338,9 @@ export class Selection {
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [rowIdx, colIdx];
                         }
-                        if(!this.isautoFillClicked && !closest(e.target as Element, '.e-filloption')){
-                        this.selectRangeByIdx(
-                            [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+                        if (!this.isautoFillClicked && !closest(e.target as Element, '.e-filloption')){
+                            this.selectRangeByIdx(
+                                [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
                         }
                     }
                     if (this.parent.isMobileView()) {
@@ -389,8 +420,8 @@ export class Selection {
             if (frozenCol && indexes[1] < frozenCol && indexes[3] >= frozenCol && horizontalContent.scrollLeft) {
                 horizontalContent.scrollLeft = 0; indexes[3] = frozenCol;
             }
-            if(this.isautoFillClicked){
-                let args: {e: MouseEvent & TouchEvent, indexes?: number[] } = { e: e, indexes: null };
+            if (this.isautoFillClicked){
+                const args: {e: MouseEvent & TouchEvent, indexes?: number[] } = { e: e, indexes: null };
                 this.parent.notify(selectAutoFillRange, args);
                 indexes = args.indexes;
             }
@@ -419,8 +450,8 @@ export class Selection {
         this.parent.notify(mouseUpAfterSelection, e);
         if (this.isautoFillClicked) {
             const sheet: SheetModel = this.parent.getActiveSheet();
-            let indexes: number[] = getRangeIndexes(sheet.selectedRange);
-            if (!(this.isColSelected && indexes[1] == colIdx) && !(this.isRowSelected && indexes[0] == rowIdx)) {
+            const indexes: number[] = getRangeIndexes(sheet.selectedRange);
+            if (!(this.isColSelected && indexes[1] === colIdx) && !(this.isRowSelected && indexes[0] === rowIdx)) {
                 this.parent.notify(performAutoFill, { event: e, dAutoFillCell: this.dAutoFillCell });
             }
             this.isautoFillClicked = false;
@@ -694,7 +725,7 @@ export class Selection {
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
             this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getCellAddress(range[0], range[1]));
             if (sheet.isProtected) {
-                let element: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
+                const element: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
                 const cell: CellModel = getCell(range[0], range[1], sheet);
                 const isCellLocked: boolean = isLocked(cell, getColumn(sheet, range[1]));
                 if (isCellLocked && element && !element.disabled) {

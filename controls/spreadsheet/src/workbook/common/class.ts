@@ -806,7 +806,7 @@ export class AutoFillSettings extends ChildProperty<AutoFillSettings> {
      *
      * @default true
      */
-     @Property(true)
-     public showFillOptions: boolean;
+    @Property(true)
+    public showFillOptions: boolean;
 }
 

@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, fillRange } from '../common/index';
 import { findDlg, gotoDlg } from '../common/index';
-import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind, sheetCreated, AutoFillDirection, AutoFillType, getRangeIndexes, getSwapRange, getRangeAddress } from '../../workbook/common/index';
+import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked } from '../../workbook/index';
 import { setCell, getCell } from '../../workbook/base/cell';
 import { RowModel } from '../../workbook/base/row-model';
@@ -34,8 +34,14 @@ export class KeyboardShortcut {
         }
     }
 
+    private isTrgtNotInput(e: KeyboardEvent): boolean {
+        const trgt: Element = e.target as Element;
+        return (!closest(trgt, '.e-filter-popup')
+        && !closest(trgt, '.e-find-dlg') && !closest(trgt, '.e-hyperlink-dlg') &&
+        !closest(trgt, '.e-sheet-tab') && !closest(trgt, '.e-name-box') && !closest(trgt, '.e-link-dialog'));
+    }
     private keyDownHandler(e: KeyboardEvent): void {
-        if (e.ctrlKey || e.metaKey) {
+        if ((e.ctrlKey || e.metaKey) && this.isTrgtNotInput(e)) {
             if (!closest(e.target as Element, '.e-find-dlg')) {
                 if ([79, 83].indexOf(e.keyCode) > -1) {
                     e.preventDefault();

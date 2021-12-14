@@ -244,6 +244,8 @@ export class SheetTabs {
         const target: Element = closest(args.event.target as Element, '.e-toolbar-item');
         if (!target) { return; }
         const name: string = target.querySelector('.e-tab-text').textContent;
+        const disableItems: string[] = [];
+        const id: string = `${this.parent.element.id}_cmenu`;
         for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
             if (this.parent.sheets[i].name === name) {
                 if (this.parent.activeSheetIndex !== i) {
@@ -257,15 +259,21 @@ export class SheetTabs {
             if (this.skipHiddenSheets() === 1) {
                 //let id: string = `${this.parent.element.id}_cmenu`;
                 //this.parent.enableFileMenuItems([`${id}_hide_sheet`, `${id}_delete_sheet`], false, true);
-                args.element.children[1].classList.add('e-disabled'); args.element.children[4].classList.add('e-disabled');
+                disableItems.push(`${id}_hide_sheet`, `${id}_delete_sheet`);
             }
-            if (!this.parent.allowInsert) { args.element.children[0].classList.add('e-disabled'); }
-            if (!this.parent.allowDelete) { args.element.children[1].classList.add('e-disabled'); }
+            if (!this.parent.allowInsert) { disableItems.push(`${id}_insert_sheet`); }
+            if (!this.parent.allowDelete && disableItems.indexOf(`${id}_delete_sheet`) > -1 ) { disableItems.push(`${id}_delete_sheet`); }
         }
         if (this.parent.password.length > 0 || this.parent.isProtected) {
-            args.element.children[0].classList.add('e-disabled'); args.element.children[1].classList.add('e-disabled');
-            args.element.children[2].classList.add('e-disabled'); args.element.children[3].classList.add('e-disabled');
+            if (disableItems.indexOf(`${id}_insert_sheet`) > -1) {
+                disableItems.push(`${id}_insert_sheet`)
+            }
+            if (disableItems.indexOf(`${id}_delete_sheet`) > -1) {
+                disableItems.push(`${id}_delete_sheet`)
+            }
+            disableItems.push(`${id}_duplicate`, `${id}_rename`);
         }
+        this.parent.enableContextMenuItems(disableItems, false, true);
     }
 
     private skipHiddenSheets(): number {
@@ -543,7 +551,8 @@ export class SheetTabs {
                     select: (args: MenuEventArgs): void => {
                         this.parent.notify(aggregateComputation, eventArgs);
                         this.updateAggregateContent(args.item.text,
-                            { Count: eventArgs.Count, Sum: eventArgs.Sum, Avg: eventArgs.Avg, Min: eventArgs.Min, Max: eventArgs.Max }, true);
+                                                    { Count: eventArgs.Count, Sum: eventArgs.Sum, Avg: eventArgs.Avg, Min: eventArgs.Min,
+                                                        Max: eventArgs.Max }, true);
                     },
                     beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
                         this.beforeOpenHandler(this.aggregateDropDown, args.element),

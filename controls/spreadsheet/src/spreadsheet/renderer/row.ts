@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { IRowRenderer, ICellRenderer, CellRenderArgs, skipHiddenIdx } from '../common/index';
-import { getRowHeight, SheetModel, getCell, isHiddenRow } from '../../workbook/base/index';
+import { getRowHeight, SheetModel, getCell, isHiddenRow, isHiddenCol } from '../../workbook/base/index';
 import { attributes } from '@syncfusion/ej2-base';
 import { getCellAddress } from '../../workbook/common/index';
 
@@ -29,8 +29,19 @@ export class RowRenderer implements IRowRenderer {
         row.classList.add('e-row');
         const sheet: SheetModel = this.parent.getActiveSheet();
         attributes(row, { 'aria-rowindex': (index + 1).toString() });
-        row.style.height = `${getRowHeight(sheet, index, true)}px`;
+        const rowHeight: number = getRowHeight(sheet, index, true);
+        row.style.height = `${rowHeight}px`;
+        if (rowHeight < 20 ) {
+            row.style.lineHeight =  rowHeight > 0 ? (rowHeight - 1) + 'px' : '0px';
+        }
         if (isRowHeader && !skipHidden) {
+            if ( rowHeight < 20 ) {
+                row.style.lineHeight = rowHeight >= 4 ? (rowHeight - 4) + 'px' :
+                    rowHeight > 0 ? (rowHeight - 1) + 'px' : '0px';
+                if (!row.classList.contains('e-reach-fntsize')) {
+                    row.classList.add('e-reach-fntsize');
+                }
+            }
             if (isHiddenRow(sheet, index + 1) && !isHiddenRow(sheet, index - 1)) {
                 row.classList.add('e-hide-start');
             }
@@ -48,8 +59,9 @@ export class RowRenderer implements IRowRenderer {
             row.appendChild(this.cellRenderer.renderRowHeader(index));
         } else {
             row = this.render(index);
-            const len: number = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
+            const len: number = this.parent.viewport.rightIndex;
             for (let i: number = this.parent.viewport.leftIndex; i <= len; i++) {
+                if (isHiddenCol(sheet, i)) { continue; }
                 row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet),
                     address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow,
                     first: index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ?

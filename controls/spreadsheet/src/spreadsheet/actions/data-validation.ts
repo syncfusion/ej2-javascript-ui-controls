@@ -1,4 +1,4 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, CellSaveEventArgs } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, CellSaveEventArgs, beginAction, completeAction } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, activeCellChanged } from '../../workbook/common/event';
 import { getCell, setCell } from '../../workbook/base/cell';
 import { CellModel } from '../../workbook/base/cell-model';
@@ -52,7 +52,6 @@ export class DataValidation {
 
     private addEventListener(): void {
         EventHandler.add(this.parent.element, 'dblclick', this.listOpen, this);
-        EventHandler.add(document, 'mousedown', this.mouseDownHandler, this);
         this.parent.on(initiateDataValidation, this.initiateDataValidationHandler, this);
         this.parent.on(invalidData, this.invalidDataHandler, this);
         this.parent.on(isValidation, this.checkDataValidation, this);
@@ -64,7 +63,6 @@ export class DataValidation {
 
     private removeEventListener(): void {
         EventHandler.remove(this.parent.element, 'dblclick', this.listOpen);
-        EventHandler.remove(document, 'mousedown', this.mouseDownHandler);
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateDataValidation, this.initiateDataValidationHandler);
             this.parent.off(invalidData, this.invalidDataHandler);
@@ -78,16 +76,12 @@ export class DataValidation {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private removeValidationHandler(e: MouseEvent): void {
-        const range: string = this.getRange(this.parent.getActiveSheet().selectedRange);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const range: string = this.getRange(sheet.selectedRange);
+        const args: {range: string} = {range: sheet.name + '!' + range};
+        this.parent.notify(beginAction, { eventArgs: args, action: 'removeValidation' });
         this.parent.removeDataValidation(range);
-    }
-
-    private mouseDownHandler(e: MouseEvent): void {
-        const target: HTMLElement = e.target as HTMLElement;
-        const parEle: HTMLElement = closest(target, '.e-ddl') as HTMLElement;
-        if (parEle && parEle.getAttribute('id') === this.parent.element.id + 'listValid_popup') {
-            this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: target.innerText });
-        }
+        this.parent.notify(completeAction, { eventArgs: args, action: 'removeValidation' });
     }
 
     private keyUpHandler(e: KeyboardEvent): void {
@@ -116,9 +110,13 @@ export class DataValidation {
 
     private invalidDataHandler(args: { isRemoveHighlight: boolean }): void {
         if (args.isRemoveHighlight) {
+            this.parent.notify(beginAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'removeHighlight' });
             this.parent.removeInvalidHighlight();
+            this.parent.notify(completeAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'removeHighlight' });
         } else {
+            this.parent.notify(beginAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'addHighlight' });
             this.parent.addInvalidHighlight();
+            this.parent.notify(completeAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'addHighlight' });
         }
     }
 
@@ -154,7 +152,7 @@ export class DataValidation {
                     tdEle.insertBefore(ddlCont, tdEle.firstChild);
                     const dataSource: { [key: string]: Object }[] = this.updateDataSource(cell, validation);
                     this.listObj = new DropDownList({
-                        index: this.setDropDownListIndex(dataSource, cell, validation),
+                        index: this.setDropDownListIndex(dataSource, cell),
                         dataSource: dataSource,
                         fields: { text: 'text', value: 'id' },
                         width: '0px',
@@ -185,7 +183,7 @@ export class DataValidation {
         }
     }
 
-    private setDropDownListIndex(dataSource: { [key: string]: Object }[], cell: CellModel, validation: ValidationModel): number {
+    private setDropDownListIndex(dataSource: { [key: string]: Object }[], cell: CellModel): number {
         if (cell && cell.value) {
             for (let dataIdx: number = 0, len: number = dataSource.length; dataIdx < len; dataIdx++) {
                 if (dataSource[dataIdx].text === cell.value.toString()) {
@@ -199,18 +197,20 @@ export class DataValidation {
     private updateDataSource(cell: CellModel, validation: ValidationModel): { [key: string]: Object }[] {
         this.data = [];
         let count: number = 0;
-        let definedNames: DefineNameModel[] = this.parent.definedNames;
+        const definedNames: DefineNameModel[] = this.parent.definedNames;
         let value: string = validation.value1;
         const isRange: boolean = value.indexOf('=') !== -1;
         if (definedNames.length > 0 && isRange) {
-            let listValue: string = value.split('=')[1];
+            const listValue: string = value.split('=')[1];
             for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
                 if (definedNames[idx].name === listValue) {
                     let definedNameRange: string = definedNames[idx].refersTo;
+                    // eslint-disable-next-line
                     while (definedNameRange.includes("'")) {
+                        // eslint-disable-next-line
                         definedNameRange = definedNameRange.replace("'", '');
                     }
-                    value = definedNameRange
+                    value = definedNameRange;
                 }
             }
         }
@@ -271,6 +271,7 @@ export class DataValidation {
     }
 
     private listValueChange(value: string): void {
+        this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: value });
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cellIdx: number[] = getIndexesFromAddress(sheet.activeCell);
         const cellObj: CellModel = Object.assign({}, getCell(cellIdx[0], cellIdx[1], sheet));

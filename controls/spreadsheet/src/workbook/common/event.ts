@@ -38,7 +38,9 @@ export const textDecorationUpdate: string = 'textDecorationUpdate';
 /** @hidden */
 export const applyCellFormat: string = 'applyCellFormat';
 /** @hidden */
-export const updateUsedRange: string = 'updateUsedRange';
+export const  updateUsedRange: string = 'updateUsedRange';
+/** @hidden */
+export const updateRowColCount: string = 'updateRowColCount';
 /** @hidden */
 export const workbookFormulaOperation: string = 'workbookFormulaOperation';
 /** @hidden */
@@ -180,6 +182,8 @@ export const activeCellMergedRange: string = 'activeCellMergedRange';
 export const insertMerge: string = 'insertMerge';
 /** @hidden */
 export const pasteMerge: string = 'pasteMerge';
+/** @hidden */
+export const hideShow: string = 'hideShow';
 /** @hidden */
 export const setCFRule: string = 'setCFRule';
 /** @hidden */

@@ -1,4 +1,4 @@
-import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../index';
+import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes } from '../index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete, workbookFormulaOperation, checkUniqueRange } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
@@ -14,25 +14,34 @@ import { setCell, checkConditionalFormat } from './../index';
  * @param {boolean} valueOnly - Specifies the valueOnly.
  * @param {number[]} frozenIndexes - Specifies the freeze row and column start indexes, if it is scrolled.
  * @param {boolean} filterDialog - Specifies the bool value.
+ * @param {string} formulaCellRef - Specifies the formulaCellRef.
+ * @param {number} idx - Specifies the idx.
+ * @param {boolean} skipHiddenRows - Specifies the skipHiddenRows.
+ * @param {string} commonAddr - Specifies the common address for the address parameter specified with list of range separated by ','.
  * @returns {Promise<Map<string, CellModel> | Object[]>} - To get the data
  * @hidden
  */
 export function getData(
     context: Workbook, address: string, columnWiseData?: boolean,
     valueOnly?: boolean, frozenIndexes?: number[],
-    filterDialog?: boolean, formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    filterDialog?: boolean, formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string):
+    Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
             let i: number;
             let row: RowModel;
             let data: Map<string, CellModel> | { [key: string]: CellModel }[] = new Map();
-            const sheetIdx: number = address.indexOf('!') > -1 ? getSheetIndex(context, getSheetNameFromAddress(address))
-                : context.activeSheetIndex;
+            let sheetIdx: number;
+            if (address.indexOf('!') > -1) {
+                sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
+                address = address.slice(address.indexOf('!') + 1, address.length);
+            } else {
+                sheetIdx = context.activeSheetIndex;
+            }
             const sheet: SheetModel = getSheet(context, sheetIdx);
-            const indexes: number[] = getIndexesFromAddress(address);
+            let indexes: number[] = getIndexesFromAddress(commonAddr || address);
             let sRow: number = indexes[0];
-            let index: number = 0;
             /* eslint-disable */
             const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number,
                 isFinite?: boolean } = { sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx, isFinite:
@@ -43,27 +52,44 @@ export function getData(
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
                 const frozenRow: number = context.frozenRowCount(sheet); const frozenCol: number = context.frozenColCount(sheet);
-                while (sRow <= indexes[2]) {
-                    const cells: { [key: string]: CellModel | string | Date } = {};
-                    row = getRow(sheet, sRow);
-                    i = indexes[1];
-                    while (i <= indexes[3]) {
-                        if (columnWiseData) {
-                            if (skipHiddenRows && isHiddenRow(sheet, sRow) && !filterDialog) { sRow++; continue; }
-                            if (data instanceof Map) { data = []; }
-                            const key: string = getColumnHeaderText(i + 1);
-                            const rowKey: string = '__rowIndex';
-                            if (valueOnly) {
-                                cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
-                            } else {
-                                const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
-                                if ((cell && (cell.formula || cell.value)) || Object.keys(cells).length) {
-                                    cells[key] = cell;
+                if (columnWiseData) {
+                    if (data instanceof Map) { data = []; }
+                    let index: number;
+                    address.split(',').forEach((addr: string): void => {
+                        indexes = getRangeIndexes(addr);
+                        index = 0; sRow = indexes[0];
+                        while (sRow <= indexes[2]) {
+                            const cells: { [key: string]: CellModel | string | Date } = data[index.toString()] || {};
+                            row = getRow(sheet, sRow); i = indexes[1];
+                            while (i <= indexes[3]) {
+                                if (skipHiddenRows && isHiddenRow(sheet, sRow) && !filterDialog) { sRow++; continue; }
+                                const key: string = getColumnHeaderText(i + 1);
+                                const rowKey: string = '__rowIndex';
+                                if (valueOnly) {
+                                    cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
+                                } else {
+                                    const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
+                                    if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
+                                        cells[key] = cell;
+                                    }
                                 }
+                                if (indexes[3] < i + 1 && Object.keys(cells).length) { cells[rowKey] = (sRow + 1).toString(); }
+                                data[index.toString()] = cells;
+                                i++;
                             }
-                            if (indexes[3] < i + 1 && Object.keys(cells).length) { cells[rowKey] = (sRow + 1).toString(); }
-                            data[index.toString()] = cells;
-                        } else {
+                            sRow++;
+                            if (Object.keys(cells).length) {
+                                index++;
+                            } else {
+                                (data as { [key: string]: CellModel }[]).pop();
+                            }
+                        }
+                    });
+                } else {
+                    while (sRow <= indexes[2]) {
+                        row = getRow(sheet, sRow);
+                        i = indexes[1];
+                        while (i <= indexes[3]) {
                             const eventArgs: CellInfoEventArgs = { cell: getCell(sRow, i, sheet), address: getCellAddress(sRow, i),
                                 rowIndex: sRow, colIndex: i };
                             context.trigger(queryCellInfo, eventArgs);
@@ -107,13 +133,9 @@ export function getData(
                                 const style: CellStyleModel = {}; Object.assign(style, cellObj.style); cellObj.style = style;
                             }
                             (data as Map<string, CellModel>).set(eventArgs.address, cellObj);
+                            i++;
                         }
-                        i++;
-                    }
-                    sRow++; index++;
-                    if (columnWiseData && !Object.keys(cells).length) {
-                        index--;
-                        (data as { [key: string]: CellModel }[]).pop();
+                        sRow++;
                     }
                 }
                 return data;

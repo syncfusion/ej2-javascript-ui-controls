@@ -355,8 +355,8 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      *
      * @default ''
      */
-     @Property('')
-     public password: string;
+    @Property('')
+    public password: string;
 }
 
 /**

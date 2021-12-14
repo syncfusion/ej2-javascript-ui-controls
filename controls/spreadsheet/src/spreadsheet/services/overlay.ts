@@ -109,7 +109,12 @@ export class Overlay {
 
     /**
      * To adjust the layout inside freeze pane.
+     *
      * @hidden
+     * @param {ChartModel} model - Specifies the id.
+     * @param {HTMLElement} element - Specifies the range.
+     * @param {string} range - Specifies the sheet index.
+     * @returns {void}
      */
     public adjustFreezePaneSize(model: ChartModel, element: HTMLElement, range: string): void {
         const indexes: number[] = getRangeIndexes(range); const sheet: SheetModel = this.parent.getActiveSheet();
@@ -226,7 +231,7 @@ export class Overlay {
                 if (aY > checkOffset[0]) {
                     overlayElem.style.top = aY + 'px';
                 }
-                this.resizedReorderLeft = aX < 0 ? 0: aX; //resized divLeft
+                this.resizedReorderLeft = aX < 0 ? 0 : aX; //resized divLeft
                 this.resizedReorderTop = aY < 0 ? 0 : aY; // resized divTop
             } else {
                 this.overlayMouseUpHandler(e, true);

@@ -566,7 +566,7 @@ export class Sort {
                 this.parent.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: i, colIndex: j });
             }
         }
-        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, true);
+        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, true, true);
         this.parent.hideSpinner();
     }
 }

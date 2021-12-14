@@ -659,13 +659,14 @@ export class WorkbookFindAndReplace {
         }
     }
     public replaceAll(args: FindOptions): void {
-        let startSheet: number = 0; let sheet: SheetModel = this.parent.sheets[startSheet];
+        let startSheet: number = args.mode === 'Sheet' ? args.sheetIndex : 0;
+        let sheet: SheetModel = this.parent.sheets[startSheet];
         let endRow: number = sheet.usedRange.rowIndex; let count: number = 0; const undoRedoOpt: string = 'beforeReplaceAll';
         let startRow: number = 0; let endColumn: number = sheet.usedRange.colIndex; let startColumn: number = 0;
         const addressCollection: string[] = [];
         let address: string ;
-        for (startRow; startRow <= endRow; startRow++) {
-            if (startColumn > endColumn && startRow === endRow) {
+        for (startRow; startRow <= endRow + 1; startRow++) {
+            if (startColumn > endColumn && startRow > endRow) {
                 if (args.mode === 'Workbook') {
                     startSheet++; sheet = this.parent.sheets[startSheet];
                     if (sheet) {

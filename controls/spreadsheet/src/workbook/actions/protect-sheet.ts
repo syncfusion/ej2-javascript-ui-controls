@@ -24,7 +24,8 @@ export class WorkbookProtectSheet {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.setSheetPropertyOnMute(sheet, 'protectSettings', {
             selectCells: args.protectSettings.selectCells, formatCells: args.protectSettings.formatCells,
-            formatColumns: args.protectSettings.formatColumns, formatRows: args.protectSettings.formatRows, insertLink: args.protectSettings.insertLink
+            formatColumns: args.protectSettings.formatColumns, formatRows: args.protectSettings.formatRows,
+            insertLink: args.protectSettings.insertLink
         });
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });

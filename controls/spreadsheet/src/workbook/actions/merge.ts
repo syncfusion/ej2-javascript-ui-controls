@@ -1,6 +1,6 @@
 import { Workbook, CellModel, getCell, SheetModel, setCell } from '../base/index';
 import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange } from './../common/index';
-import { insertMerge, activeCellChanged, pasteMerge, getCellIndexes, checkIsFormula, setCellFormat } from './../common/index';
+import { insertMerge, activeCellChanged, pasteMerge, getCellIndexes, checkIsFormula } from './../common/index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**

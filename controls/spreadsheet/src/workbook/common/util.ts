@@ -5,6 +5,7 @@ import { getCellAddress, getRangeIndexes } from './address';
  * Check whether the text is formula or not.
  *
  * @param {string} text - Specify the text.
+ * @param {boolean} isEditing - Specify the isEditing.
  * @returns {boolean} - Check whether the text is formula or not.
  */
 export function checkIsFormula(text: string, isEditing?: boolean): boolean {
@@ -42,6 +43,30 @@ export function isChar(value: string): boolean {
         return true;
     }
     return false;
+}
+
+/**
+ * Check whether the range selection is on complete row.
+ *
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @param {number[]} range - Specify the range index.
+ * @returns {boolean} - Returns boolean value
+ * @hidden
+ */
+export function isRowSelected(sheet: SheetModel, range: number[]): boolean {
+    return range[1] === 0 && range[3] === sheet.colCount - 1;
+}
+
+/**
+ * Check whether the range selection is on complete column.
+ *
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @param {number[]} range - Specify the range index.
+ * @returns {boolean} - Returns boolean value
+ * @hidden
+ */
+export function isColumnSelected(sheet: SheetModel, range: number[]): boolean {
+    return range[0] === 0 && range[2] === sheet.rowCount - 1;
 }
 
 /**
@@ -232,47 +257,54 @@ export function getUpdatedFormula(currIndexes: number[], prevIndexes: number[], 
  * @hidden
  */
 export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel): number[] {
-    let topIdx: number = rowIdx; let btmIdx: number = rowIdx;
-    let leftIdx: number = colIdx; let prevleftIdx: number;
-    let rightIdx: number = colIdx; let prevrightIdx: number;
-    let topReached: boolean; let btmReached: boolean;
-    let leftReached: boolean; let rightReached: boolean;
-    for (let i: number = 1; ; i++) {
-        if (!btmReached && getCell(rowIdx + i, colIdx, sheet, null, true).value) {
-            btmIdx = rowIdx + i;
-        } else {
-            btmReached = true;
+    let i: number = 0; let j: number = 0; let loopLength: number = 0;
+    const length: number = sheet.usedRange.rowIndex + sheet.usedRange.colIndex;
+    const startCell: { rowIndex: number, colIndex: number } = { rowIndex: rowIdx, colIndex: colIdx };
+    const endCell: { rowIndex: number, colIndex: number } = { rowIndex: rowIdx, colIndex: colIdx };
+    for (i = 1; i < length + 1; i++) {
+        for (j = -loopLength; j < loopLength + 1; j++) {                            // start from right
+            if (getCell(rowIdx + j, colIdx + i, sheet, null, true).value) {
+                endCell.rowIndex = endCell.rowIndex > rowIdx + j ? endCell.rowIndex : rowIdx + j;
+                endCell.colIndex = endCell.colIndex > colIdx + i ? endCell.colIndex : colIdx + i;
+            }
         }
-        if (!topReached && getCell(rowIdx - i, colIdx, sheet, null, true).value) {
-            topIdx = rowIdx - i;
-        } else {
-            topReached = true;
+        if (getCell(rowIdx + i, colIdx + i, sheet, null, true).value) {
+            endCell.rowIndex = endCell.rowIndex > rowIdx + i ? endCell.rowIndex : rowIdx + i;
+            endCell.colIndex = endCell.colIndex > colIdx + i ? endCell.colIndex : colIdx + i;
         }
-        if (topReached && btmReached) {
-            break;
+        for (j = -loopLength; j < loopLength + 1; j++) {
+            if (getCell(rowIdx + i, colIdx + j, sheet, null, true).value) {
+                endCell.rowIndex = endCell.rowIndex > rowIdx + i ? endCell.rowIndex : rowIdx + i;
+                endCell.colIndex = endCell.colIndex > colIdx + j ? endCell.colIndex : colIdx + j;
+            }
         }
+        if (getCell(rowIdx + i, colIdx - i, sheet, null, true).value) {
+            endCell.rowIndex = endCell.rowIndex > rowIdx + i ? endCell.rowIndex : rowIdx + i;
+            startCell.colIndex = startCell.colIndex < colIdx - i ? startCell.colIndex : colIdx - i;
+        }
+        for (j = -loopLength; j < loopLength + 1; j++) {
+            if (getCell(rowIdx + j, colIdx - i, sheet, null, true).value) {
+                startCell.rowIndex = startCell.rowIndex < rowIdx + j ? startCell.rowIndex : rowIdx + j;
+                startCell.colIndex = startCell.colIndex < colIdx - i ? startCell.colIndex : colIdx - i;
+                endCell.rowIndex = endCell.rowIndex > rowIdx + j ? endCell.rowIndex : rowIdx + j;
+            }
+        }
+        if (getCell(rowIdx - i, colIdx - i, sheet, null, true).value) {
+            startCell.rowIndex = startCell.rowIndex < rowIdx - i ? startCell.rowIndex : rowIdx - i;
+            startCell.colIndex = startCell.colIndex < colIdx - i ? startCell.colIndex : colIdx - i;
+        }
+        for (j = -loopLength; j < loopLength + 1; j++) {
+            if (getCell(rowIdx - i, colIdx + j, sheet, null, true).value) {
+                startCell.rowIndex = startCell.rowIndex < rowIdx - i ? startCell.rowIndex : rowIdx - i;
+                startCell.colIndex = startCell.colIndex < colIdx + j ? startCell.colIndex : colIdx + j;
+                endCell.colIndex = endCell.colIndex > colIdx + j ? endCell.colIndex : colIdx + j;
+            }
+        }
+        if (getCell(rowIdx - i, colIdx + i, sheet, null, true).value) {
+            startCell.rowIndex = startCell.rowIndex < rowIdx - i ? startCell.rowIndex : rowIdx - i;
+            endCell.colIndex = endCell.colIndex > colIdx + i ? endCell.colIndex : colIdx + i;
+        }
+        loopLength++;
     }
-    for (let j: number = 1; ; j++) {
-        prevleftIdx = leftIdx;
-        prevrightIdx = rightIdx;
-        for (let i: number = topIdx; i <= btmIdx; i++) {
-            if (!leftReached && getCell(i, leftIdx - 1, sheet, null, true).value) {
-                leftIdx = prevleftIdx - 1;
-            }
-            if (!rightReached && getCell(i, rightIdx + 1, sheet, null, true).value) {
-                rightIdx = prevrightIdx + 1;
-            }
-            if (i === btmIdx) {
-                if (leftIdx === prevleftIdx) {
-                    leftReached = true;
-                }
-                if (rightIdx === prevrightIdx) {
-                    rightReached = true;
-                }
-            }
-            if (rightReached && leftReached) {
-                return [topIdx, leftIdx, btmIdx, rightIdx];
-            }
-        }
-    }
+    return [startCell.rowIndex, startCell.colIndex, endCell.rowIndex, endCell.colIndex];
 }

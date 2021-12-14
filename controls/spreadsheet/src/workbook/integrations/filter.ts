@@ -1,9 +1,8 @@
 import { Workbook, SheetModel, CellModel, getData } from '../base/index';
 import { DataManager, Query, Deferred, Predicate } from '@syncfusion/ej2-data';
 import { getCellIndexes, getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, getCellAddress } from '../common/index';
-import { BeforeFilterEventArgs, FilterOptions, FilterEventArgs, setRow, ExtendedRowModel } from '../index';
-import { initiateFilter, clearAllFilter, dataRefresh } from '../common/event';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { BeforeFilterEventArgs, FilterOptions, FilterEventArgs, setRow, ExtendedRowModel, getSheetIndex } from '../index';
+import { initiateFilter, clearAllFilter, dataRefresh, hideShow } from '../common/event';
 
 /**
  * The `WorkbookFilter` module is used to handle filter action in Spreadsheet.
@@ -91,6 +90,7 @@ export class WorkbookFilter {
      *
      * @param {DataManager} dataManager - Specify the dataManager.
      * @param {Predicate[]} predicates - Specify the predicates.
+     * @param {string} range - Specify the range.
      * @returns {void} - Hides or unhides the rows based on the filter predicates.
      */
     private setFilter(dataManager: DataManager, predicates: Predicate[], range: string): void {
@@ -102,17 +102,28 @@ export class WorkbookFilter {
             }
             const result: { [key: string]: CellModel }[] = dataManager.executeLocal(query) as { [key: string]: CellModel }[];
             const rowKey: string = '__rowIndex';
-            const sheet: SheetModel = this.parent.getActiveSheet();
+            let sheet: SheetModel;
+            let sheetIdx: number;
+            if (range.indexOf('!') > -1) {
+                 sheetIdx = getSheetIndex(this.parent, range.split('!')[0]);
+                 sheet = this.parent.sheets[sheetIdx];
+            } else {
+                sheet = this.parent.getActiveSheet();
+                sheetIdx = getSheetIndex(this.parent, sheet.name);
+            }
             if (this.parent.getModuleName() === 'spreadsheet') {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 const parent: any = this.parent;
-                if ((parent.scrollSettings.enableVirtualization && (jsonData.length > parent.viewport.bottomIndex -
-                    parent.viewport.topIndex)) || !!sheet.frozenColumns || !!sheet.frozenRows) {
+                if ((parent.scrollSettings.enableVirtualization && (jsonData.length > parent.viewport.rowCount +
+                    (parent.getThreshold('row') * 2))) || !!sheet.frozenColumns || !!sheet.frozenRows) {
                     let hide: boolean;
                     jsonData.forEach((data: { [key: string]: CellModel }) => {
                         hide = result.indexOf(data) < 0;
                         setRow(sheet, Number(data[rowKey]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
                     });
+                    if (sheetIdx !== parent.activeSheetIndex) {
+                        return;
+                    }
                     this.parent.notify(dataRefresh, null);
                 } else {
                     let aboveViewport: boolean;
@@ -121,7 +132,7 @@ export class WorkbookFilter {
                             startIndex: Number(data[rowKey]) - 1, hide: result.indexOf(data) < 0, isFiltering: true, aboveViewport: false
                         };
                         eventArgs.endIndex = eventArgs.startIndex;
-                        this.parent.notify('hideShow', eventArgs);
+                        this.parent.notify(hideShow, eventArgs);
                         if (!aboveViewport) { aboveViewport = <boolean>eventArgs.aboveViewport; }
                     });
                     if (aboveViewport && range) {
@@ -146,7 +157,22 @@ export class WorkbookFilter {
         if (this.filterRange) {
             const range: number[] =  getCellIndexes(this.filterRange);
             const sheet: SheetModel = this.parent.getActiveSheet();
-            this.parent.hideRow(range[0], sheet.usedRange.rowIndex, false);
+            if (this.parent.getModuleName() === 'workbook') {
+                this.parent.hideRow(range[0], sheet.usedRange.rowIndex, false);
+                return;
+            }
+            const len: number = (sheet.usedRange.rowIndex - range[0]) + 1;
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const parent: any = this.parent;
+            if ((parent.scrollSettings.enableVirtualization && (len > parent.viewport.rowCount + (parent.getThreshold('row') * 2))) ||
+                !!sheet.frozenColumns || !!sheet.frozenRows) {
+                for (let i: number = 0; i <= sheet.usedRange.rowIndex; i++) {
+                    setRow(sheet, i, <ExtendedRowModel>{ hidden: false, isFiltered: false });
+                }
+                this.parent.notify(dataRefresh, null);
+            } else {
+                this.parent.notify(hideShow, { startIndex: range[0], endIndex: sheet.usedRange.rowIndex, hide: false, isFiltering: true });
+            }
         }
     }
 

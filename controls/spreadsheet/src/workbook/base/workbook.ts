@@ -5,12 +5,12 @@ import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
 import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange, RangeModel } from './index';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType, AutoFillSettings, AutoFillDirection, AutoFillType } from '../common/index';
+import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange } from '../common/interface';
-import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';
+import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType } from '../common/index';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
@@ -277,15 +277,15 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     @Property(true)
     public allowChart: boolean;
 
-     /**
+    /**
      * It allows to enable/disable AutoFill functionalities.
      *
      * @default true
      */
-      @Property(true)
-      public allowAutoFill: boolean;
+    @Property(true)
+    public allowAutoFill: boolean;
 
-      /**
+    /**
      * Configures the auto fill settings.
      * ```html
      * <div id='Spreadsheet'></div>
@@ -311,8 +311,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @default { fillType: 'FillSeries', showFillOptions: true }
      */
 
-     @Complex<AutoFillSettingsModel>({}, AutoFillSettings)
-     public autoFillSettings: AutoFillSettingsModel;
+    @Complex<AutoFillSettingsModel>({}, AutoFillSettings)
+    public autoFillSettings: AutoFillSettingsModel;
 
     /**
      * It allows you to apply conditional formatting to the sheet.
@@ -528,7 +528,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     public chartCount: number = 1;
-    
+
     /** @hidden */
     public formulaRefCell: string;
 
@@ -542,7 +542,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace,
-            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart, WorkbookAutoFill);
+            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart,
+            WorkbookAutoFill);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -986,11 +987,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public setUsedRange(rowIdx: number, colIdx: number, sheet: SheetModel = this.getActiveSheet()): void {
         if (rowIdx > sheet.usedRange.rowIndex) {
             sheet.usedRange.rowIndex = rowIdx;
-            if (sheet === this.getActiveSheet()) { this.notify(updateUsedRange, { index: rowIdx, update: 'row' }); }
+            if (sheet === this.getActiveSheet()) { this.notify(updateRowColCount, { index: rowIdx, update: 'row' }); }
         }
         if (colIdx > sheet.usedRange.colIndex) {
             sheet.usedRange.colIndex = colIdx;
-            if (sheet === this.getActiveSheet()) { this.notify(updateUsedRange, { index: colIdx, update: 'col' }); }
+            if (sheet === this.getActiveSheet()) { this.notify(updateRowColCount, { index: colIdx, update: 'col' }); }
         }
     }
 
@@ -1016,8 +1017,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return 'workbook';
     }
 
-    /** @hidden */
-    public goTo(address: string): void {
+    /** @hidden
+     * @param {string} address - Specifies the sheet id.
+     * @returns {void} - To set the value for row and col.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public goTo(address?: string): void {
         /** */
     }
 
@@ -1025,6 +1030,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} sheetId - Specifies the sheet id.
      * @param {number} rowIndex - Specifies the rowIndex.
      * @param {number} colIndex - Specifies the colIndex.
+     * @param {string} formulaCellReference - Specifies the formulaCellReference.
+     * @param {boolean} refresh - Specifies the refresh.
      * @returns {string | number} - To set the value for row and col.
      */
     public getValueRowCol(
@@ -1065,10 +1072,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden
-     * @param {number} sheetIndex - Specifies the sheet id.
+     * @param {number} sheetId - Specifies the sheet id.
      * @param {string | number} value - Specifies the value.
      * @param {number} rowIndex - Specifies the rowIndex.
      * @param {number} colIndex - Specifies the colIndex.
+     * @param {string} formula - Specifies the colIndex.
      * @returns {void} - To set the value for row and col.
      */
     public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string): void {
@@ -1145,7 +1153,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 this.notify(
                     events.beginSave, {
                         saveSettings: eventArgs, isFullPost: eventArgs.isFullPost,
-                        needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams, pdfLayoutSettings: eventArgs.pdfLayoutSettings
+                        needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams, pdfLayoutSettings:
+                        eventArgs.pdfLayoutSettings
                     });
             }
         }
@@ -1210,8 +1219,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} password - Specifies the password to protect
      * @returns {void} - protect the active sheet.
      */
-    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel, password?:string): void {
-        this.notify(events.protectsheetHandler, { protectSettings:protectSettings, password: password} );
+    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel, password?: string): void {
+        this.notify(events.protectsheetHandler, { protectSettings: protectSettings, password: password} );
     }
 
     /**
@@ -1319,13 +1328,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Used to get a row data from the data source with updated cell value.
-     * 
-     * @param {number} index? - Specifies the row index.
-     * @param {number} sheetIndex? - Specifies the sheet index. By default, it consider the active sheet index.
-     * @returns {Object[]} - Return row data.
+     *
      * {% codeBlock src='spreadsheet/getRowData/index.md' %}{% endcodeBlock %}
+     *
+     * @param {number} index - Specifies the row index.
+     * @param {number} sheetIndex - Specifies the sheet index. By default, it consider the active sheet index.
+     * @returns {Object[]} - Return row data.
      */
-     public getRowData(index?: number, sheetIndex?: number): Object[] {
+    public getRowData(index?: number, sheetIndex?: number): Object[] {
         if (isNullOrUndefined(index)) { index = 0; }
         if (isNullOrUndefined(sheetIndex)) { sheetIndex = this.activeSheetIndex; }
         const eventArgs: { sheetIdx: number, startIndex: number, modelType: ModelType, isDataRequest: boolean, data?: Object[] } =
@@ -1341,10 +1351,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} sheetIdx - Specifies the sheetIdx to update.
      * @returns {void} - To update a range properties.
      */
-     public updateRange(range: RangeModel, sheetIdx?: number): void {
+    public updateRange(range: RangeModel, sheetIdx?: number): void {
         sheetIdx = sheetIdx ? sheetIdx - 1 : this.activeSheetIndex;
-        let sheet: SheetModel = getSheet(this, sheetIdx);
-        let ranges: RangeModel[] = sheet.ranges;
+        const sheet: SheetModel = getSheet(this, sheetIdx);
+        const ranges: RangeModel[] = sheet.ranges;
         if (!isNullOrUndefined(sheet)) {
             ranges.push(range);
             sheet.ranges = ranges;
@@ -1426,13 +1436,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Used to perform autofill action based on the specified range in spreadsheet.
-    *
-    * @param {string} fillRange - Specifies the fill range.
-    * @param {string} dataRange - Specifies the data range.
-    * @param {AutoFillDirection} direction - Specifies the direction("Down","Right","Up","Left") to be filled.
-    * @param {AutoFillType} fillType - Specifies the fill type("FillSeries","CopyCells","FillFormattingOnly","FillWithoutFormatting") for autofill action.
-    * @returns {void} - To perform autofill action based on the specified range in spreadsheet.
-    */
+     *
+     * @param {string} fillRange - Specifies the fill range.
+     * @param {string} dataRange - Specifies the data range.
+     * @param {AutoFillDirection} direction - Specifies the direction("Down","Right","Up","Left") to be filled.
+     * @param {AutoFillType} fillType - Specifies the fill type("FillSeries","CopyCells","FillFormattingOnly","FillWithoutFormatting") for autofill action.
+     * @returns {void} - To perform autofill action based on the specified range in spreadsheet.
+     */
     public autoFill(fillRange: string, dataRange?: string,  direction?: AutoFillDirection, fillType?: AutoFillType): void {
         const options: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType } = {
             dataRange: dataRange ? dataRange : this.getActiveSheet().selectedRange,
@@ -1448,7 +1458,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      *
      * {% codeBlock src='spreadsheet/insertChart/index.md' %}{% endcodeBlock %}
      *
-     * @param {ChartModel} chart - Specifies the options to insert chart in spreadsheet.
+     * @param {ChartModel} chart - Specifies the options to insert chart in spreadsheet
      * @returns {void} - To set the chart in spreadsheet.
      */
     public insertChart(chart?: ChartModel[]): void {
@@ -1538,8 +1548,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public getDisplayText(cell: CellModel): string {
         if (!cell) { return ''; }
         if (cell.format && !isNullOrUndefined(cell.value)) {
-            const eventArgs: { [key: string]: string | number | boolean } = {
-                formattedText: cell.value, value: cell.value, format: cell.format, onLoad: true
+            const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
+                formattedText: cell.value, value: cell.value, format: cell.format, onLoad: true, cell: cell
             };
             this.notify(events.getFormattedCellObject, eventArgs);
             return eventArgs.formattedText as string;

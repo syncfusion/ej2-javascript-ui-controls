@@ -540,7 +540,8 @@ export class ConditionalFormatting {
         }
     }
 
-    private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel, td: HTMLElement, isAction?: true }): void {
+    private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel,
+        td: HTMLElement, isAction?: true }): void {
         let indexes: number[];
         let isApply: boolean = false;
         let result: boolean = false;

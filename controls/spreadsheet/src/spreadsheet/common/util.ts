@@ -1,17 +1,14 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
-import { Spreadsheet } from '../base/index';
+import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
-import { removeSheetTab, rowHeightChanged } from './index';
 import { getCell, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
-import { workbookFormulaOperation, DefineNameModel } from '../../workbook/index';
-import { deleteChart } from '../../spreadsheet/index';
-import { initiateFilterUI } from './event';
+import { workbookFormulaOperation, DefineNameModel, getSheet } from '../../workbook/index';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -55,6 +52,7 @@ export function getColGroupWidth(index: number): number {
 }
 
 let scrollAreaWidth: number = null;
+let textLineHeight: number = 1.24;
 
 /**
  * @hidden
@@ -115,8 +113,8 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
     if (context.scrollSettings.enableVirtualization) {
         const topIdx: number = context.viewport.topIndex;
         const leftIdx: number = context.viewport.leftIndex;
-        const bottomIdx: number = topIdx + context.viewport.rowCount + context.getThreshold('row') * 2;
-        const rightIdx: number = leftIdx + context.viewport.colCount + context.getThreshold('col') * 2;
+        const bottomIdx: number = context.viewport.bottomIndex;
+        const rightIdx: number = context.viewport.rightIndex;
         const sheet: SheetModel = context.getActiveSheet();
         let inView: boolean;
         if (sheet.frozenRows || sheet.frozenColumns) {
@@ -229,7 +227,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
             removeRangeEle(parent.getSelectAllContent(), content, 'e-active-cell');
             removeRangeEle(parent.getColumnHeaderContent(), content, 'e-active-cell');
             removeRangeEle(parent.getRowHeaderContent(), content, 'e-active-cell');
-        } 
+        }
         else if (cls === 'e-autofill') {
             let contentElem: HTMLElement;
             const freezeRow: number = parent.frozenRowCount(sheet); const freezeCol: number = parent.frozenColCount(sheet);
@@ -256,25 +254,25 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
             let contentElem: HTMLElement;
             const freezeRow: number = parent.frozenRowCount(sheet); const freezeCol: number = parent.frozenColCount(sheet);
             if ((range[0] < freezeRow || range[1] < freezeCol)) {
-                if (range[3] + 1 == freezeCol && range[2] + 1 > freezeRow) {
-                    locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
-                } else if (range[2] + 1 == freezeRow && range[3] + 1 > freezeCol) {
-                    locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4 });
-                } else if (range[3] + 1 == freezeCol && range[2] + 1 < freezeRow) { // for upper side 
+                if (range[3] + 1 === freezeCol && range[2] + 1 > freezeRow) {
+                    locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
+                } else if (range[2] + 1 === freezeRow && range[3] + 1 > freezeCol) {
+                    locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4 });
+                } else if (range[3] + 1 === freezeCol && range[2] + 1 < freezeRow) { // for upper side
                     contentElem = parent.getColumnHeaderContent();
-                    let rangeElem: HTMLElement = contentElem.querySelector('.' + cls);
+                    const rangeElem: HTMLElement = contentElem.querySelector('.' + cls);
                     if (!rangeElem) {
                         parent.notify(getautofillDDB, { id: parent.element.id + '_autofilloptionbtn', appendElem: contentElem });
                     }
                     ele = parent.autofillModule.autoFillDropDown.element;
                     locateElem(ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
-                } else if (range[2] + 1 == freezeRow && range[3] + 1 == freezeCol) { // corner cell
-                    locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4, left: -4 });
+                } else if (range[2] + 1 === freezeRow && range[3] + 1 === freezeCol) { // corner cell
+                    locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4, left: -4 });
                 }
                 else {
                     contentElem = range[0] < freezeRow && range[1] < freezeCol ? parent.getSelectAllContent() :
                         (range[0] < freezeRow ? parent.getColumnHeaderContent() : parent.getRowHeaderContent());
-                    let rangeEle: HTMLElement = contentElem.querySelector('.' + cls);
+                    const rangeEle: HTMLElement = contentElem.querySelector('.' + cls);
                     if (!rangeEle) {
                         parent.notify(getautofillDDB, { id: parent.element.id + '_autofilloptionbtn', appendElem: contentElem });
                     }
@@ -285,7 +283,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                 }
             }
             else {
-                locateElem(parent.getMainContent().querySelector(".e-filloption"), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true);
+                locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true);
             }
             if (ele.style.display) { ele.style.display = ''; }
             removeRangeEle(parent.getSelectAllContent(), contentElem, 'e-filloption');
@@ -417,7 +415,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
 /**
  * @param {Element} content - Specify the content element.
  * @param {HTMLElement} checkElement - Specify the element.
- * @param {boolean} checkActiveCell - Specify the boolean value.
+ * @param {string} clsName - Specify the class name.
  * @returns {void} - remove element with given range
  */
 export function removeRangeEle(content: Element, checkElement: HTMLElement, clsName: string): void {
@@ -427,15 +425,15 @@ export function removeRangeEle(content: Element, checkElement: HTMLElement, clsN
             ele = content.querySelector('.e-active-cell');
             if (ele) { detach(ele); }
         }
-    } else if(clsName ==='e-autofill') {
+    } else if (clsName === 'e-autofill') {
         if (content !== checkElement) {
-        ele = content.querySelector('.e-autofill');
-        if (ele) { detach(ele); }
+            ele = content.querySelector('.e-autofill');
+            if (ele) { detach(ele); }
         }
-    } else if(clsName ==='e-filloption') {
+    } else if (clsName === 'e-filloption') {
         if (content !== checkElement) {
-        ele = content.querySelector('.e-filloption');
-        if (ele) { detach(ele); }
+            ele = content.querySelector('.e-filloption');
+            if (ele) { detach(ele); }
         }
     }
     else {
@@ -458,19 +456,25 @@ export function removeRangeEle(content: Element, checkElement: HTMLElement, clsN
  * @param {number} freezeScrollHeight - Specify the freeze scroll height
  * @param {number} freezeScrollWidth - Specify the freeze scroll width
  * @param {number} rowHdrWidth - Specify the row header width
+ * @param {number} cls - Specify the class
+ * @param {number} isFillOptShow - Specify the fill option
+ * @param {number} freezeFillOpt - Specifies the fill option
+ * @param {number} freezeFillOpt.top - Specifies the fill option
+ * @param {number} freezeFillOpt.left - Specifies the fill option
  * @returns {void} - Position element with given range
  */
 export function locateElem(
     ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow?: number, frozenColumn?: number,
-    isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number, cls?: string, isFillOptShow?: boolean, freezeFillOpt?:{top?:number; left?:number}): void {
+    isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number, cls?: string,
+    isFillOptShow?: boolean, freezeFillOpt?: {top?: number; left?: number}): void {
     const swapRange: number[] = getSwapRange(range);
     const cellPosition: { top: number, left: number } = getCellPosition(
         sheet, swapRange, frozenRow, frozenColumn, freezeScrollHeight, freezeScrollWidth, rowHdrWidth);
     const startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     const height: number = getRowsHeight(sheet, range[0], range[2], true);
     const width: number = getColumnsWidth(sheet, range[1], range[3], true);
-    let isRowSelected: boolean = (range[1] === 0 && range[3] === sheet.colCount - 1);
-    let isColSelected: boolean = (range[0] === 0 && range[2] === sheet.rowCount - 1);
+    const isRowSelected: boolean = (range[1] === 0 && range[3] === sheet.colCount - 1);
+    const isColSelected: boolean = (range[0] === 0 && range[2] === sheet.rowCount - 1);
     let top: number = 0; let tdiff: number = -5;
     let ldiff: number = -5;
     let left: number = 0;
@@ -498,10 +502,13 @@ export function locateElem(
             otdiff = 1;
             oldiff = 6;
         }
-        if (!isColSelected)
+        if (!isColSelected) {
             top += height;
+        }
         if (!isRowSelected)
+        {
             left += width;
+        }
         top += Math.round(cellPosition.top) + tdiff;
         left += Math.round(cellPosition.left) + ldiff;
         let attrs: { [key: string]: string } = {};
@@ -516,7 +523,7 @@ export function locateElem(
             if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
         } else {
             attrs = {
-                'top': top + 'px',
+                'top': top + 'px'
             };
             attrs[isRtl ? 'right' : 'left'] = left + 'px';
             if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
@@ -1026,6 +1033,15 @@ export function setWidthAndHeight(trgt: HTMLElement, value: number, isCol: boole
 
 /**
  * @hidden
+ * @param {number} lineHeight - Specify the line height for other culture text.
+ * @returns {void} -  to set the line height for other culture text.
+ */
+export function setTextLineHeight(lineHeight: number): void {
+    textLineHeight = lineHeight;
+}
+
+/**
+ * @hidden
  * @param {HTMLElement} table - Specify the table.
  * @param {HTMLElement[]} text - specify the text.
  * @param {boolean} isCol - Specifyt boolean value
@@ -1088,10 +1104,12 @@ export function findMaxValue(
  * @hidden
  * @param {CollaborativeEditArgs} options - Specify the collaborative edit arguments.
  * @param {Spreadsheet} spreadsheet - specify the spreadsheet.
- * @param {boolean} isRedo - Specifyt he boolean value.
+ * @param {boolean} isRedo - Specifyt the boolean value.
+ * @param {CollaborativeEditArgs[]} undoCollections - Specifyt the undo collections.
  * @returns {void} - To update the Action.
  */
-export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean, undoCollections?: CollaborativeEditArgs[]): void {
+export function updateAction(
+    options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean, undoCollections?: CollaborativeEditArgs[]): void {
     /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
     const eventArgs: any = options.eventArgs;
     let chartElement: HTMLElement;
@@ -1103,6 +1121,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
     let cellValue: CellModel;
     let clipboardPromise: Promise<Object>;
     let model: RowModel[];
+    let sheet: SheetModel;
     switch (options.action) {
     case 'sorting':
         args = {
@@ -1123,7 +1142,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
     case 'cellSave':
         cellEvtArgs = options.eventArgs as CellSaveEventArgs;
         cellValue = eventArgs.formula ? (isRedo ? { value: cellEvtArgs.formula } : { formula: cellEvtArgs.formula })
-         : { value: cellEvtArgs.value };
+            : { value: cellEvtArgs.value };
         spreadsheet.updateCell(cellValue, cellEvtArgs.address);
         break;
     case 'cellDelete':
@@ -1148,14 +1167,9 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         }
         break;
     case 'clipboard':
-        if (eventArgs.copiedInfo.isCut && !isRedo) {
-            return;
-        }
-        clipboardPromise = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
-            : spreadsheet.copy(eventArgs.copiedRange);
-        clipboardPromise.then(() => {
-            spreadsheet.paste(eventArgs.pastedRange, eventArgs.type);
-        });
+        if (eventArgs.copiedInfo.isCut && !isRedo) { return; }
+        clipboardPromise = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange) : spreadsheet.copy(eventArgs.copiedRange);
+        clipboardPromise.then(() => spreadsheet.paste(eventArgs.pastedRange, eventArgs.type));
         break;
     case 'gridLines':
         spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showGridLines', eventArgs.isShow);
@@ -1183,12 +1197,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.index - 1], 'name', eventArgs.value);
         break;
     case 'removeSheet':
-        spreadsheet.notify(removeSheetTab, {
-            index: eventArgs.index,
-            isAction: true,
-            count: eventArgs.sheetCount,
-            clicked: true
-        });
+        spreadsheet.notify(removeSheetTab, { index: eventArgs.index, isAction: true, count: eventArgs.sheetCount, clicked: true });
         break;
     case 'wrap':
         wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet as Workbook);
@@ -1206,47 +1215,74 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
     case 'filter':
         if (isRedo === false) {
             spreadsheet.notify(
-                initiateFilterUI, { predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.index,
-                isCut: true, isUndoRedo: true });
+                initiateFilterUI, {
+                    predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.index, isCut: true, isUndoRedo: true
+                });
         } else {
             spreadsheet.notify(
-                initiateFilterUI, { predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.index, isCut: true,
-                isUndoRedo: true });
+                initiateFilterUI, {
+                    predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.index, isCut: true, isUndoRedo: true
+                });
         }
         break;
     case 'insert':
+        if (options.eventArgs.modelType === 'Sheet') {
+            sheet = spreadsheet;
+        } else {
+            sheet = getSheet(spreadsheet, options.eventArgs.activeSheetIndex);
+            if (!sheet) { break; }
+        }
         if (isRedo === false) {
-            spreadsheet.notify(deleteModel, <InsertDeleteModelArgs>{ model: options.eventArgs.sheet, start: options.eventArgs.index, end:
+            spreadsheet.notify(
+                deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, end:
                 options.eventArgs.index + (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isUndoRedo: true });
         } else {
-            spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{ model: options.eventArgs.modelType === 'Sheet' ?
-                spreadsheet : options.eventArgs.sheet, start: options.eventArgs.index, end: options.eventArgs.index +
-                (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount:
-                options.eventArgs.sheetCount, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
+            spreadsheet.notify(
+                insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, end: options.eventArgs.index +
+                    (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isAction: false,
+                checkCount: options.eventArgs.sheetCount, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
         }
         break;
     case 'delete':
-        if (isRedo === false) {
-            spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{
-                model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
-                    options.eventArgs.sheet, start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
-                isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames: options.eventArgs.definedNames,
-                isUndoRedo: true
-            });
+        if (options.eventArgs.modelType === 'Sheet') {
+            sheet = spreadsheet;
         } else {
-            spreadsheet.notify(deleteModel, <InsertDeleteModelArgs>{ model: options.eventArgs.sheet, start: options.eventArgs.startIndex,
-                end: options.eventArgs.endIndex, modelType: options.eventArgs.modelType, isUndoRedo: true });
+            sheet = getSheet(spreadsheet, options.eventArgs.activeSheetIndex);
+            if (!sheet) { break; }
+        }
+        if (isRedo === false) {
+            spreadsheet.notify(
+                insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.deletedModel, modelType:
+                    options.eventArgs.modelType, isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel,
+                definedNames: options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
+        } else {
+            spreadsheet.notify(
+                deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.startIndex, checkCount:
+                    options.eventArgs.sheetCount, end: options.eventArgs.endIndex, modelType: options.eventArgs.modelType,
+                isUndoRedo: true });
         }
         break;
     case 'validation':
         if (isRedo) {
-            const rules: ValidationModel = {
-                type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1,
-                value2: eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown
-            };
+            const rules: ValidationModel = { type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1, value2:
+                eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown };
             spreadsheet.notify(setValidation, { rules: rules, range: eventArgs.range });
         } else {
             spreadsheet.notify(removeValidation, { range: eventArgs.range });
+        }
+        break;
+    case 'removeHighlight':
+        if (isRedo) {
+            spreadsheet.removeInvalidHighlight(eventArgs.range);
+        } else {
+            spreadsheet.addInvalidHighlight(eventArgs.range);
+        }
+        break;
+    case 'addHighlight':
+        if (isRedo) {
+            spreadsheet.addInvalidHighlight(eventArgs.range);
+        } else {
+            spreadsheet.removeInvalidHighlight(eventArgs.range);
         }
         break;
     case 'merge':
@@ -1267,47 +1303,43 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         break;
     case 'conditionalFormat':
         if (isRedo) {
-            const conditionalFormat: ConditionalFormatModel = {
-                type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
-                range: eventArgs.range
-            };
+            const conditionalFormat: ConditionalFormatModel = { type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
+                range: eventArgs.range };
             spreadsheet.notify(setCFRule, { conditionalFormat: conditionalFormat, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true });
-            } else {
-                spreadsheet.notify(clearCFRule, { range: eventArgs.range, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true });
-                for (let undoCollIdx: number = 0; undoCollIdx < undoCollections.length; undoCollIdx++) {
-                    if (undoCollections[undoCollIdx].action === 'conditionalFormat' ) {
-                        let conditionalFormat: ConditionalFormatModel = {
-                            type: undoCollections[undoCollIdx].eventArgs.type as (HighlightCell | TopBottom | DataBar | ColorScale | IconSet), cFColor: undoCollections[undoCollIdx].eventArgs.cFColor as CFColor,
-                            value: undoCollections[undoCollIdx].eventArgs.value, range: undoCollections[undoCollIdx].eventArgs.range
-                        }
-                        spreadsheet.notify(cFUndo, { conditionalFormat: conditionalFormat, sheetIdx: undoCollections[undoCollIdx].eventArgs.sheetIdx });
-                    }
+        } else {
+            spreadsheet.notify(clearCFRule, { range: eventArgs.range, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true });
+            for (let undoCollIdx: number = 0; undoCollIdx < undoCollections.length; undoCollIdx++) {
+                if (undoCollections[undoCollIdx].action === 'conditionalFormat') {
+                    const conditionalFormat: ConditionalFormatModel = {
+                        type: undoCollections[undoCollIdx].eventArgs.type as (HighlightCell | TopBottom | DataBar | ColorScale | IconSet),
+                        cFColor: undoCollections[undoCollIdx].eventArgs.cFColor as CFColor,
+                        value: undoCollections[undoCollIdx].eventArgs.value, range: undoCollections[undoCollIdx].eventArgs.range
+                    };
+                    spreadsheet.notify(
+                        cFUndo, { conditionalFormat: conditionalFormat, sheetIdx: undoCollections[undoCollIdx].eventArgs.sheetIdx });
                 }
             }
-            break;
+        }
+        break;
     case 'clearCF':
         if (isRedo) {
-            spreadsheet.notify(clearCFRule, { range: eventArgs.selectedRange, sheetIdx: eventArgs.sheetIdx, isClearCF: true, isUndoRedo: true });
+            spreadsheet.notify(
+                clearCFRule, { range: eventArgs.selectedRange, sheetIdx: eventArgs.sheetIdx, isClearCF: true, isUndoRedo: true });
         } else {
-            spreadsheet.notify(clearCells, {
-                conditionalFormats: eventArgs.cFormats,
-                oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange
-            });
+            spreadsheet.notify(
+                clearCells, { conditionalFormats: eventArgs.cFormats, oldRange: eventArgs.oldRange,
+                    selectedRange: eventArgs.selectedRange });
         }
         break;
     case 'insertImage':
         if (isRedo) {
-            spreadsheet.notify(createImageElement, {
-                options: {
-                    src: options.eventArgs.imageData,
-                    height: options.eventArgs.imageHeight, width: options.eventArgs.imageWidth, imageId: options.eventArgs.id
-                },
-                range: options.eventArgs.range, isPublic: false, isUndoRedo: true
-            });
+            spreadsheet.notify(
+                createImageElement, { options: { src: options.eventArgs.imageData, height: options.eventArgs.imageHeight, width:
+                options.eventArgs.imageWidth, imageId: options.eventArgs.id }, range: options.eventArgs.range, isPublic: false,
+                isUndoRedo: true });
         } else {
-            spreadsheet.notify(deleteImage, {
-                id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range
-            });
+            spreadsheet.notify(
+                deleteImage, { id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range });
         }
         break;
     case 'imageRefresh':
@@ -1316,13 +1348,11 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             options.eventArgs.isUndoRedo = true;
             spreadsheet.notify(refreshImgCellObj, options.eventArgs);
         } else {
-            spreadsheet.notify(refreshImgCellObj, {
-                prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft,
-                currentTop: options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id,
-                currentHeight: options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
-                prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
-            });
-
+            spreadsheet.notify(
+                refreshImgCellObj, { prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft, currentTop:
+                options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id, currentHeight:
+                options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
+                prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true });
         }
         element.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
         element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
@@ -1331,13 +1361,10 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         break;
     case 'insertChart':
         if (isRedo) {
-            const chartOptions: ChartModel[] = [{
-                type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
-            }];
-            spreadsheet.notify(setChart, {
-                chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
-            });
+            const chartOptions: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width }];
+            spreadsheet.notify(
+                setChart, { chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange });
         } else {
             spreadsheet.notify(deleteChart, { id: eventArgs.id, isUndoRedo: true });
         }
@@ -1346,14 +1373,11 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         if (isRedo) {
             spreadsheet.notify(deleteChart, { id: eventArgs.id });
         } else {
-            const chartOpts: ChartModel[] = [{
-                type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width,
-                top: eventArgs.top, left: eventArgs.left
-            }];
-            spreadsheet.notify(setChart, {
-                chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
-            });
+            const chartOpts: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
+                left: eventArgs.left }];
+            spreadsheet.notify(
+                setChart, { chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange });
         }
         break;
     case 'chartRefresh':
@@ -1366,43 +1390,36 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         }
         if (isRedo) {
             options.eventArgs.isUndoRedo = true;
-            spreadsheet.notify(refreshChartSize, {
-                height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
-            });
+            spreadsheet.notify(
+                refreshChartSize, { height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement });
         } else {
-            spreadsheet.notify(refreshChartSize, {
-                height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
-            });
+            spreadsheet.notify(
+                refreshChartSize, { height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement });
         }
         break;
-        case 'autofill':
-            if (isRedo) {
-                spreadsheet.notify(setAutoFill, {
-                    fillRange: options.eventArgs.fillRange, dataRange: options.eventArgs.dataRange, fillType: options.eventArgs.fillType, direction:options.eventArgs.direction
-                });
-            } 
+    case 'autofill':
+        if (isRedo) {
+            spreadsheet.notify(
+                setAutoFill, { fillRange: options.eventArgs.fillRange, dataRange: options.eventArgs.dataRange,
+                    fillType: options.eventArgs.fillType, direction: options.eventArgs.direction });
+        }
         break;
-        case 'addDefinedName':
-            if (isRedo === false) {
-                const removeArgs: { [key: string]: Object } = {
-                    action: 'removeDefinedName',
-                    isRemoved: false,
-                    definedName: eventArgs.name,
-                    scope: eventArgs.scope,
-                    isEventTrigger: true
-                };
-                spreadsheet.notify(workbookFormulaOperation, removeArgs);
-            } else {
-                const definedName: DefineNameModel =
-                    { name: eventArgs.name, refersTo: eventArgs.refersTo, scope: eventArgs.scope, comment: eventArgs.comment };
-                const addArgs: { [key: string]: Object } = {
-                    action: 'addDefinedName',
-                    isAdded: false,
-                    definedName: definedName,
-                    isEventTrigger: true
-                };
-                spreadsheet.notify(workbookFormulaOperation, addArgs);
-            }
+    case 'removeValidation':
+        if (isRedo) {
+            spreadsheet.notify(removeValidation, { range: eventArgs.range });
+        }
+        break;
+    case 'addDefinedName':
+        if (isRedo === false) {
+            spreadsheet.notify(
+                workbookFormulaOperation, { action: 'removeDefinedName', isRemoved: false, definedName: eventArgs.name, scope:
+                eventArgs.scope, isEventTrigger: true });
+        } else {
+            const definedName: DefineNameModel =
+                { name: eventArgs.name, refersTo: eventArgs.refersTo, scope: eventArgs.scope, comment: eventArgs.comment };
+            spreadsheet.notify(
+                workbookFormulaOperation, { action: 'addDefinedName', isAdded: false, definedName: definedName, isEventTrigger: true });
+        }
         break;
     }
 }
@@ -1480,7 +1497,7 @@ export function getTextHeight(context: Workbook, style: CellStyleModel, lines: n
  * @returns {number} - returns line height
  */
 function getLineHeight(style: CellStyleModel): number {
-    let lineHeight: number = 1.24;
+    let lineHeight: number = textLineHeight;
     if (style) {
         if (style.fontFamily === 'Arial Black') {
             lineHeight = 1.44;
@@ -1556,7 +1573,7 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
     });
     if (prevWidth) {
         lineCnt = (prevWidth - spaceWidth) / colwidth;
-        maxCnt = parseFloat((lineCnt).toString().split('.')[0])
+        maxCnt = parseFloat((lineCnt).toString().split('.')[0]);
         cnt += (lineCnt + 0.05 >= maxCnt + 1 ?  Math.ceil(lineCnt) + 1 : Math.ceil(lineCnt));
     }
     return cnt;
@@ -1733,21 +1750,22 @@ export function focus(ele: HTMLElement): void {
 /**
  * Checks whether a specific range of cells is locked or not.
  *
- * @param {number[]} range - Specify the range.
+ * @param {Spreadsheet} parent - Specify the spreadsheet.
+ * @param {number[]} rangeIndexes - Specify the range indexes.
  * @returns {boolean} - Returns true if any of the cells is locked and returns false if none of the cells is locked.
  * @hidden
  */
- export function isLockedCells(parent: Spreadsheet, rangeIndexes?: number[]): boolean {
+export function isLockedCells(parent: Spreadsheet, rangeIndexes?: number[]): boolean {
     const sheet: SheetModel = parent.getActiveSheet(); let hasLockCell: boolean;
-        const address: number[] = !isNullOrUndefined(rangeIndexes) ? rangeIndexes : getSwapRange(getRangeIndexes(sheet.selectedRange));
-        for (let row: number = address[0]; row <= address[2]; row++) {
-            for (let col: number = address[1]; col <= address[3]; col++) {
-                const cell: CellModel = getCell(row, col, sheet);
-                if (isLocked(cell, getColumn(sheet, col))) {
-                    hasLockCell = true;
-                    break;
-                }
+    const address: number[] = !isNullOrUndefined(rangeIndexes) ? rangeIndexes : getSwapRange(getRangeIndexes(sheet.selectedRange));
+    for (let row: number = address[0]; row <= address[2]; row++) {
+        for (let col: number = address[1]; col <= address[3]; col++) {
+            const cell: CellModel = getCell(row, col, sheet);
+            if (isLocked(cell, getColumn(sheet, col))) {
+                hasLockCell = true;
+                break;
             }
         }
-        return hasLockCell;
+    }
+    return hasLockCell;
 }

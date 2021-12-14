@@ -62,7 +62,7 @@ export function dateToInt(val: any, isTime?: boolean, isTimeOnly?: boolean): num
     const startDateUTC: number = Date.UTC(
         startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(),
         startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
-        const dateUTC: number = Date.UTC(
+    const dateUTC: number = Date.UTC(
         date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(),
         date.getSeconds(), date.getMilliseconds());
     const diffDays: number = ((dateUTC - startDateUTC) / (1000 * 3600 * 24));
@@ -91,6 +91,7 @@ export function isNumber(val: string | number): boolean {
  * @hidden
  * @param {Date | string | number} text - Specifies the text.
  * @param {Internationalization} intl - Specifies the Internationalization.
+ * @param {string} locale - Specifies the locale.
  * @param {string} format - Specifies the string.
  * @returns {ToDateArgs} - Returns Date format.
  */

@@ -1,13 +1,13 @@
 import { Spreadsheet } from '../base/index';
-import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
+import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
 import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
-import { openHyperlink, initiateHyperlink, editHyperlink, hideShow, HideShowEventArgs, applyProtect } from '../common/index';
+import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale } from '../common/index';
 import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel } from '../../workbook/common/index';
-import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet } from '../../workbook/index';
+import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow } from '../../workbook/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -95,8 +95,8 @@ export class ContextMenu {
                 this.parent.notify(removeSheetTab, {});
                 break;
             case id + '_insert_sheet':
-                this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex +1,
-                    end: this.parent.activeSheetIndex +1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
+                this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex,
+                    end: this.parent.activeSheetIndex, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex });
                 break;
             case id + '_hide_sheet':
                 this.parent.notify(hideSheet, null);
@@ -171,14 +171,14 @@ export class ContextMenu {
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                 this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
                     this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true,
-                    insertType: 'before'});
+                insertType: 'before'});
                 focus(this.parent.element);
                 break;
             case id + '_insert_column_after':
                 indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                 this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
                     indexes[3] + 1, end: indexes[3] + 1 + (indexes[3] - indexes[1]), modelType: 'Column', isAction: true,
-                    insertType: 'after' });
+                insertType: 'after' });
                 focus(this.parent.element);
                 break;
             case id + '_hyperlink':
@@ -312,6 +312,7 @@ export class ContextMenu {
      * To populate context menu items based on target area.
      *
      * @param {string} target - Specify the target
+     * @param {Element} targetEle - Specify the target element
      * @returns {MenuItemModel[]} - To populate context menu items based on target area.
      */
     private getDataSource(target: string, targetEle?: Element): MenuItemModel[] {
@@ -331,8 +332,8 @@ export class ContextMenu {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]], ['Above', 'Below']);
-            if (!sheet.frozenRows && !sheet.frozenColumns && (!targetEle || !targetEle.parentElement ||
-                !targetEle.parentElement.classList.value.includes('e-hide'))) {
+            if (!sheet.frozenRows && !sheet.frozenColumns && (!targetEle || targetEle.classList.contains('e-rowresize') ||
+                !targetEle.parentElement || !targetEle.parentElement.classList.value.includes('e-hide'))) {
                 this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
             }
         } else if (target === 'ColumnHeader') {

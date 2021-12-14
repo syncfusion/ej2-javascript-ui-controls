@@ -39,14 +39,11 @@ export class SpreadsheetImage {
      * @returns {void} - Rendering upload component for importing images.
      */
     private renderImageUpload(): void {
-        const uploadID: string = this.parent.element.id + '_imageUpload';
-        this.parent.element.appendChild(this.parent.createElement('input', {
-            id: uploadID,
+        const uploadBox: HTMLElement = this.parent.element.appendChild(this.parent.createElement('input', {
+            id: this.parent.element.id + '_imageUpload', styles: 'display: none;',
             attrs: { type: 'file', accept: '.image, .jpg, .png, .gif ,jpeg', name: 'fileUpload' }
         }));
-        const uploadBox: HTMLElement = document.getElementById(uploadID);
         uploadBox.onchange = this.imageSelect.bind(this);
-        uploadBox.style.display = 'none';
     }
     /**
      * Process after select the excel and image file.
@@ -55,26 +52,16 @@ export class SpreadsheetImage {
      * @returns {void} - Process after select the excel and image file.
      */
     private imageSelect(args: Event): void {
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const filesData: FileList = (args.target as any).files[0];
-        if (filesData && filesData.length < 1) {
-            return;
-        }
-        const impArgs: OpenOptions = {
-            file: filesData
-        };
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        if ((impArgs.file as any).type.indexOf('image') === 0) {
-            this.insertImage(impArgs);
+        const file: File = (<HTMLInputElement>args.target).files[0];
+        if (!file) { return; }
+        if (file.type.includes('image')) {
+            this.insertImage(<OpenOptions>{ file: file });
         } else {
-            (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-                content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n)
-                    .getConstant('UnsupportedFile'),
-                width: '300'
-            });
+            (this.parent.serviceLocator.getService(dialog) as Dialog).show(
+                { content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n).getConstant('UnsupportedFile'),
+                    width: '300' });
         }
-
-        (document.getElementById(this.parent.element.id + '_imageUpload') as HTMLInputElement).value = '';
+        (<HTMLInputElement>args.target).value = '';
     }
 
     /**
@@ -108,10 +95,8 @@ export class SpreadsheetImage {
     }
     /* eslint-enable */
     private createImageElement(args: {
-        options: {
-            src: string, imageId?: string, height?: number,
-            width?: number, top?: number, left?: number
-        }, range: string, isPublic?: boolean, isUndoRedo?: boolean
+        options: { src: string, imageId?: string, height?: number, width?: number, top?: number, left?: number }, range?: string,
+        isPublic?: boolean, isUndoRedo?: boolean
     }): void {
         const range: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
@@ -124,10 +109,8 @@ export class SpreadsheetImage {
         if (document.getElementById(id)) {
             return;
         }
-        let eventArgs: BeforeImageData = {
-            requestType: 'beforeInsertImage', range: sheet.name + '!' + range,
-            imageData: args.options.src, sheetIndex: sheetIndex
-        };
+        let eventArgs: BeforeImageData = { requestType: 'beforeInsertImage', range: sheet.name + '!' + range, imageData: args.options.src,
+            sheetIndex: sheetIndex };
         if (args.isPublic) {
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'beforeInsertImage' });
         }
@@ -135,17 +118,13 @@ export class SpreadsheetImage {
         const element: HTMLElement = overlayObj.insertOverlayElement(id, range, sheetIndex);
         element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
         if (args.options.height || args.options.left) {
-            element.style.height = args.options.height + 'px';
-            element.style.width = args.options.width + 'px';
-            element.style.top = args.options.top + 'px';
-            element.style.left = args.options.left + 'px';
+            element.style.height = args.options.height + 'px'; element.style.width = args.options.width + 'px';
+            element.style.top = args.options.top + 'px'; element.style.left = args.options.left + 'px';
         }
         if (sheet.frozenRows || sheet.frozenColumns) {
             overlayObj.adjustFreezePaneSize(args.options, element, range);
         }
-        if (!args.options.imageId) {
-            this.pictureCount++;
-        }
+        if (!args.options.imageId) { this.pictureCount++; }
         const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(element.style.height.replace('px', '')),
             width: parseFloat(element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
@@ -161,11 +140,10 @@ export class SpreadsheetImage {
         if (!currCell.image[currCell.image.length - 1].id) {
             currCell.image[currCell.image.length - 1].id = imgData.id;
         }
-        eventArgs = {
-            requestType: 'insertImage', range: sheet.name + '!' + range, imageHeight: args.options.height ? args.options.height : 300,
-            imageWidth: args.options.width ? args.options.width : 400, imageData: args.options.src, id: id, sheetIndex: sheetIndex
-        };
         if (!args.isUndoRedo && args.isPublic) {
+            eventArgs = { requestType: 'insertImage', range: sheet.name + '!' + range, imageHeight: args.options.height ?
+                args.options.height : 300, imageWidth: args.options.width ? args.options.width : 400, imageData: args.options.src, id: id,
+            sheetIndex: sheetIndex };
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'insertImage' });
         }
     }

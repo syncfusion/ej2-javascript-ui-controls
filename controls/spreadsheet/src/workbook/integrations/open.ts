@@ -1,13 +1,12 @@
 /**
  * Open properties.
  */
-import { isUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
-import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes, FilterCollectionModel, getCellAddress, sortImport } from '../common/index';
+import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
 import { sheetCreated, protectSheetWorkBook, getRangeAddress, updateFilter } from '../common/index';
 import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel } from '../base/index';
-import { beginAction, initiateFilterUI } from '../../spreadsheet/common/event';
-import { PredicateModel } from '@syncfusion/ej2-grids';
+import { beginAction } from '../../spreadsheet/common/event';
 
 export class WorkbookOpen {
     private parent: Workbook;
@@ -35,8 +34,8 @@ export class WorkbookOpen {
         const formData: FormData = new FormData();
         if (options.file) {
             formData.append('file', options.file as string);
-        } 
-        else if (options.sheetIndex >=0) {
+        }
+        else if (options.sheetIndex >= 0) {
             formData.append('sheetPassword', options.sheetPassword as string);
             formData.append('sheetIndex', options.sheetIndex.toString());
         }
@@ -63,7 +62,7 @@ export class WorkbookOpen {
             },
             password: args.passWord
         };
-        if (options.sheetPassword && options.sheetPassword.length <= 0) {
+        if (isNullOrUndefined(options.sheetPassword)) {
             this.parent.trigger('beforeOpen', eventArgs);
             this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
         }
@@ -138,7 +137,6 @@ export class WorkbookOpen {
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
         this.parent.notify(protectSheetWorkBook, null);
-        this.parent.notify(updateFilter, { isOpen: true });
     }
 
     private setSelectAllRange(sheets: SheetModel[], isOpenFromJson: boolean): void {

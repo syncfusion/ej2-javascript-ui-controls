@@ -3,7 +3,7 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, initiateFilterUI } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula, getCellAddress } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, ValidationModel, setValidation } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, FilterCollectionModel, triggerDataChange } from '../../workbook/index';
 import { addClass, extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
@@ -72,9 +72,12 @@ export class UndoRedo {
         case 'filter':
             address = getRangeIndexes(eventArgs.range);
             break;
-            case 'autofill':
-                address = getRangeIndexes(eventArgs.fillRange);
-                break;
+        case 'autofill':
+            address = getRangeIndexes(eventArgs.fillRange);
+            break;
+        case 'removeValidation':
+            address = getRangeIndexes(eventArgs.range);
+            break;
         }
         cells = this.getCellDetails(address, sheet);
         this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
@@ -95,6 +98,7 @@ export class UndoRedo {
             case 'wrap':
             case 'cellDelete':
             case 'autofill':
+            case 'removeValidation':
                 undoRedoArgs = this.performOperation(undoRedoArgs);
                 break;
             case 'clipboard':
@@ -118,6 +122,8 @@ export class UndoRedo {
                 updateAction(undoRedoArgs, this.parent, !args.isUndo);
                 break;
             case 'validation':
+            case 'addHighlight':
+            case 'removeHighlight':
                 updateAction(undoRedoArgs, this.parent, !args.isUndo);
                 break;
             case 'merge':
@@ -176,7 +182,7 @@ export class UndoRedo {
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         const actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
             'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh', 'insertChart', 'deleteChart',
-            'chartRefresh', 'filter', 'cellDelete', 'autofill', 'addDefinedName'];
+            'chartRefresh', 'filter', 'cellDelete', 'autofill', 'addDefinedName', 'removeValidation', 'removeHighlight', 'addHighlight'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -188,13 +194,13 @@ export class UndoRedo {
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
             action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh' || action === 'insertChart' ||
-            action === 'chartRefresh' || action === 'filter' || action === 'cellDelete' || action === 'autofill' ||
+            action === 'chartRefresh' || action === 'filter' || action === 'cellDelete' || action === 'autofill' || action === 'removeValidation' ||
             action === 'addDefinedName') {
             const beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
         }
-        if (action === 'clipboard' && eventArgs.copiedInfo.isExternal) {
+        if (action === 'clipboard' && eventArgs.copiedInfo && eventArgs.copiedInfo.isExternal) {
             const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(eventArgs.pastedRange);
             eventArgs.copiedInfo.cellDetails = this.getCellDetails(addressInfo.indices, getSheet(this.parent, addressInfo.sheetIndex));
         }
@@ -323,7 +329,7 @@ export class UndoRedo {
                 if (copiedInfo.isExternal) {
                     const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(eventArgs.pastedRange);
                     this.updateCellDetails(copiedInfo.cellDetails as PreviousCellDetails[], getSheet(this.parent, addressInfo.sheetIndex),
-                        addressInfo.indices, true);
+                                           addressInfo.indices, true);
                 } else {
                     updateAction(args, this.parent, copiedInfo.isCut as boolean);
                 }
@@ -540,7 +546,7 @@ export class UndoRedo {
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null, isLocked: cell ? cell.isLocked : null,
                     style: cell && cell.style ? Object.assign({}, cell.style) : null, value: cell ? cell.value : '', formula: cell ?
                         cell.formula : '', wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
-                    hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart
+                    hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart, validation: cell && cell.validation
                 });
             }
         }
@@ -550,9 +556,17 @@ export class UndoRedo {
     private updateCellDetails(
         cells: PreviousCellDetails[], sheet: SheetModel, range: number[], isRefresh: boolean, args?: CollaborativeEditArgs): void {
         const len: number = cells.length;
-        let cellElem: HTMLElement; let prevCell:CellModel;
+        let cellElem: HTMLElement; let prevCell: CellModel;
         for (let i: number = 0; i < len; i++) {
             prevCell = getCell(cells[i].rowIndex, cells[i].colIndex, sheet);
+            if (prevCell && prevCell.style) {
+                if (prevCell.style.borderTop && (!cells[i].style || !(cells[i].style as CellStyleModel).borderTop)) {
+                    this.parent.setBorder({ borderTop: '' }, sheet.name + '!' + getCellAddress(cells[i].rowIndex, cells[i].colIndex));
+                }
+                if (prevCell.style.borderLeft && (!cells[i].style || !(cells[i].style as CellStyleModel).borderLeft)) {
+                    this.parent.setBorder({ borderLeft: '' }, sheet.name + '!' + getCellAddress(cells[i].rowIndex, cells[i].colIndex));
+                }
+            }
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format, isLocked: cells[i].isLocked,
                 style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
@@ -563,13 +577,21 @@ export class UndoRedo {
                 workbookEditOperation,
                 {
                     action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
-                    cells[i].colIndex], value: cells[i].formula ? cells[i].formula : cells[i].value
+                        cells[i].colIndex], value: cells[i].formula ? cells[i].formula : cells[i].value
                 });
             if ((args && args.action === 'wrap' && args.eventArgs.wrap) || (prevCell && prevCell.wrap && args && args.action === 'autofill' )) {
                 this.parent.notify(wrapEvent, {
                     range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
                         cells[i].colIndex], wrap: false, sheet: sheet
                 });
+            }
+            if (args && args.action === 'removeValidation' && cells[i].validation) {
+                const rules: ValidationModel = {
+                    type: cells[i].validation.type, operator: cells[i].validation.operator, value1: cells[i].validation.value1,
+                    value2: cells[i].validation.value2, ignoreBlank: cells[i].validation.ignoreBlank,
+                    inCellDropDown: cells[i].validation.inCellDropDown
+                };
+                this.parent.notify(setValidation, { rules: rules, range: args.eventArgs.range });
             }
             if (args && cells[i].hyperlink && args.action === 'clear') {
                 args.eventArgs.range = sheet.name + '!' + getRangeAddress([cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,

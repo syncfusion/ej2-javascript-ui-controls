@@ -241,7 +241,11 @@ export class FormulaBar {
                                 const format: string = key === 'date' ? 'M/d/yyyy' : 'h:mm:ss a';
                                 formulaInp.value = intl.formatDate(intToDate(parseFloat(cell.value)), { type: key, format: format});
                             } else {
-                                formulaInp.value = cellEle.textContent;
+                                if (cell.validation && cell.validation.type === 'List') {
+                                    formulaInp.value = (cellEle.lastElementChild || cellEle).textContent;
+                                } else {
+                                    formulaInp.value = cellEle.textContent;
+                                }
                             }
                         } else {
                             formulaInp.value = cell.value;
@@ -451,7 +455,7 @@ export class FormulaBar {
     private dialogBeforeClose(): void {
         EventHandler.remove(this.formulaList.element, 'dblclick', this.formulaClickHandler);
         const dialogContentEle: HTMLElement = document.getElementsByClassName('e-spreadsheet-function-dlg')[0].
-        querySelector('.e-dlg-content');
+            querySelector('.e-dlg-content');
         dialogContentEle.parentNode.removeChild(dialogContentEle);
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (this.dialog.dialogInstance as any).storeActiveElement = document.getElementById(this.parent.element.id + '_edit');

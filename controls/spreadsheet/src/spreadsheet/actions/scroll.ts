@@ -1,18 +1,19 @@
 import { Browser, EventHandler, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Spreadsheet } from '../base/index';
+import { Spreadsheet, FormulaBarEdit, ScrollEventArgs, isFormulaBarEdit, colWidthChanged, mouseDown, getUpdateUsingRaf } from '../index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
-import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, mouseDown, selectionStatus } from '../common/index';
+import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, updateScroll, selectionStatus } from '../common/index';
+import { virtualContentLoaded } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
-import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded, colWidthChanged, getUpdateUsingRaf, beginAction } from '../common/index';
-import { updateScroll } from '../common/index';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
+ *
  * @hidden
  */
 export class Scroll {
     private parent: Spreadsheet;
+    /** @hidden */
     public offset: { left: IOffset, top: IOffset };
     private topIndex: number;
     private leftIndex: number;
@@ -35,14 +36,14 @@ export class Scroll {
         this.initProps();
     }
 
-    private onContentScroll(e: { scrollTop?: number, scrollLeft?: number, preventScroll?: boolean, skipHidden?: boolean }): void {
+    private onContentScroll(e: ScrollEventArgs): void {
         const target: HTMLElement = this.parent.getMainContent().parentElement;
         const scrollLeft: number = e.scrollLeft; const top: number = e.scrollTop || target.scrollTop;
         const left: number = scrollLeft && this.parent.enableRtl ? this.initScrollValue - scrollLeft : scrollLeft;
         let scrollArgs: IScrollArgs; let prevSize: number;
         if (this.parent.allowAutoFill) {
-            let elem = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn-popup');
-            let DDBElem: HTMLElement = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn');
+            const elem: Element = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn-popup');
+            const DDBElem: HTMLElement = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn');
             if (elem) {
                 const DDBObj: DropDownButton = getComponent(DDBElem, DropDownButton);
                 DDBObj.toggle();
@@ -67,6 +68,9 @@ export class Scroll {
             this.leftIndex = scrollArgs.prev.idx; this.prevScroll.scrollLeft = left;
         }
         if (this.prevScroll.scrollTop !== top) {
+            if (e.skipRowVirualScroll) {
+                this.prevScroll.scrollTop = 0; this.offset.top = { idx: 0, size: 0 };
+            }
             const scrollDown: boolean = top > this.prevScroll.scrollTop;
             prevSize = this.offset.top.size;
             this.offset.top = this.getRowOffset(top, scrollDown);
@@ -75,8 +79,10 @@ export class Scroll {
             this.updateTopLeftCell(scrollDown);
             if (e.preventScroll && this.offset.top.idx <= this.parent.getThreshold('row')) {
                 this.offset.top = { idx: 0, size: 0 };
-            } else {
+            } else if (!e.skipRowVirualScroll) {
                 this.parent.notify(onVerticalScroll, scrollArgs);
+            } else {
+                scrollArgs.prev.idx = scrollArgs.cur.idx;
             }
             if (!this.parent.scrollSettings.enableVirtualization && scrollDown && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualRows();
@@ -156,7 +162,7 @@ export class Scroll {
                         return { idx: i, size: temp - getRowHeight(sheet, i + frozenRow, true) < 0 ? 0 :
                             temp - getRowHeight(sheet, i + frozenRow, true) };
                     } else {
-                        return { idx: i + 1, size: temp };
+                        return { idx: skipHiddenIdx(sheet, i + 1, true), size: temp };
                     }
                 }
                 i--;
@@ -232,7 +238,7 @@ export class Scroll {
     }
 
     private scrollHandler(e: MouseEvent): void {
-        this.onContentScroll({ scrollLeft: (e.target as Element).scrollLeft });
+        this.onContentScroll(<ScrollEventArgs>{ scrollLeft: (e.target as Element).scrollLeft });
     }
 
     private updateScroll(args: { top?: number, left?: number }): void {

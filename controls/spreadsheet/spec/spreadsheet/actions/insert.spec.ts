@@ -61,6 +61,40 @@ describe('Insert & Delete ->', () => {
             });
         });
     });
+    describe('UI interaction ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ name: 'Border Types', showGridLines: false }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.setBorder({ border: '1px solid #000000' }, 'B2:D5', 'Outer');
+                    spreadsheet.setBorder({ border: '1px solid #000000' }, 'G2:I5', 'Inner');
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert row between borders', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertRow(2);
+            expect(spreadsheet.sheets[0].rows[2].cells[1].style).toEqual(jasmine.objectContaining({ borderLeft: '1px solid #000000' }));
+            expect(spreadsheet.sheets[0].rows[2].cells[3].style).toEqual(jasmine.objectContaining({ borderRight: '1px solid #000000' }));
+            expect(spreadsheet.sheets[0].rows[2].cells[6].style).toEqual(jasmine.objectContaining({ borderBottom: '1px solid #000000', borderRight: '1px solid #000000' }));
+            expect(spreadsheet.sheets[0].rows[2].cells[7].style).toEqual(jasmine.objectContaining({ borderLeft: '1px solid #000000', borderBottom: '1px solid #000000', borderRight: '1px solid #000000' }));
+            expect(spreadsheet.sheets[0].rows[2].cells[8].style).toEqual(jasmine.objectContaining({ borderBottom: '1px solid #000000', borderLeft: '1px solid #000000' }));
+            done();
+        });
+        it('Insert column between borders', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertColumn(7);
+            expect(spreadsheet.sheets[0].rows[1].cells[7].style).toEqual(jasmine.objectContaining({ borderBottom: '1px solid #000000', borderRight: '1px solid #000000' }));
+            expect(spreadsheet.sheets[0].rows[2].cells[7].style).toEqual(jasmine.objectContaining({ borderBottom: '1px solid #000000', borderRight: '1px solid #000000' }));
+            expect(spreadsheet.sheets[0].rows[3].cells[7].style).toEqual(jasmine.objectContaining({ borderBottom: '1px solid #000000', borderTop: '1px solid #000000', borderRight: '1px solid #000000' }));
+            expect(spreadsheet.sheets[0].rows[5].cells[7].style).toEqual(jasmine.objectContaining({ borderTop: '1px solid #000000', borderRight: '1px solid #000000' }));
+            done();
+        });
+    });
     describe('CR-Issues ->', () => {
         describe('I289560 ->', () => {
             beforeEach((done: Function) => {

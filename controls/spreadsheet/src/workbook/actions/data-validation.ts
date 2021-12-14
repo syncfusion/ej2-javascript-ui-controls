@@ -81,7 +81,7 @@ export class WorkbookDataValidation {
             onlyRange = rangeArr[0] + ':' + rangeArr[1];
         }
         if (!isNullOrUndefined(sheetName)) {
-            range = sheetName + onlyRange;
+            range = sheetName + '!' + onlyRange;
         }
         range = range || sheet.selectedRange;
         const indexes: number[] = getRangeIndexes(range);
@@ -191,7 +191,7 @@ export class WorkbookDataValidation {
                         if (cell && cell.validation) {
                             validation = cell.validation;
                             if (isclearFormat && !validation.isHighlighted) {
-                               return;
+                                return;
                             }
                             if (isRemoveHighlightedData) {
                                 if (validation.isHighlighted) {
@@ -204,7 +204,7 @@ export class WorkbookDataValidation {
                             validation = column.validation;
                             if (isclearFormat && !validation.isHighlighted) {
                                 return;
-                             }
+                            }
                             if (isRemoveHighlightedData && isfullCol) {
                                 if (validation.isHighlighted) {
                                     column.validation.isHighlighted = false;
@@ -221,11 +221,11 @@ export class WorkbookDataValidation {
                             const isValid: boolean = this.parent.allowDataValidation;
                             this.parent.allowDataValidation = true;
                             if (!isValid) {
-                                if(!isHiddenRow(sheet, rowIdx)){
-                                this.parent.notify(validationHighlight, {
-                                    isRemoveHighlightedData: isRemoveHighlightedData, rowIdx: rowIdx, colIdx: colIdx, td: td
-                                });
-                            }}
+                                if (!isHiddenRow(sheet, rowIdx)){
+                                    this.parent.notify(validationHighlight, {
+                                        isRemoveHighlightedData: isRemoveHighlightedData, rowIdx: rowIdx, colIdx: colIdx, td: td
+                                    });
+                                }}
                         }
                     }
                 }

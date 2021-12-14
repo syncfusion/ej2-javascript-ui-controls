@@ -117,7 +117,6 @@ export class WorkbookFormula {
         const formulas: Map<string, IFormulaColl> = this.calculateInstance.getLibraryFormulas();
         const formulaInfo: IFormulaColl[] = (Array.from(formulas.values()));
         let collection: string[];
-        let length: number;
         switch (action) {
         case 'getLibraryFormulas':
             args.formulaCollection = Array.from(formulas.keys());
@@ -212,6 +211,7 @@ export class WorkbookFormula {
         case 'registerGridInCalc':
             this.calculateInstance.grid = <string>args.sheetID; break;
         case 'checkFormulaAdded':
+            // eslint-disable-next-line no-case-declarations
             const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(args.sheetId);
             if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
                 args.address = family.parentObjectToToken.get(args.sheetId) + args.address;
@@ -253,7 +253,7 @@ export class WorkbookFormula {
                         token = dependentCellRef.slice(0, dependentCellRef.lastIndexOf(this.calculateInstance.sheetToken) + 1);
                         this.updateDataContainer(
                             [rowId - 1, colId - 1], { value: formulaVal, visible: false, sheetId: family.tokenToParentObject.has(token) ?
-                            Number(family.tokenToParentObject.get(token)) : parseInt(dependentCellRef.split('!')[1], 10) + 1 });
+                                Number(family.tokenToParentObject.get(token)) : parseInt(dependentCellRef.split('!')[1], 10) + 1 });
                         this.calculateInstance.refresh(fInfo.getParsedFormula());
                     }
                 }
@@ -268,8 +268,8 @@ export class WorkbookFormula {
     }
 
     private renameUpdation(name: string, pName: string): void {
-        let sheet: SheetModel; let cell: CellModel; let uPName: string = pName.toUpperCase();
-        const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\":<>~_-]', 'g');
+        let sheet: SheetModel; let cell: CellModel; const uPName: string = pName.toUpperCase();
+        const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\\":<>~_-]', 'g');
         const exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
         const regx: RegExp = new RegExp(pName.replace(escapeRegx, '\\$&') + exp, 'gi');
         this.sheetInfo.forEach((info: { visibleName: string }, index: number): void => {
@@ -386,9 +386,10 @@ export class WorkbookFormula {
     }
 
     private removeUniquecol(): void {
-        const cellAddr: string = this.parent.getActiveSheet().activeCell;
+        const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = 0; i < this.calculateInstance.uniqueRange.length; i++) {
-            if (this.calculateInstance.uniqueRange[i].split(':')[0] === cellAddr) {
+            const uniqRngAddress: string[] = this.calculateInstance.uniqueRange[i].split(':')[0].split('!');
+            if (uniqRngAddress[0] === sheet.name && uniqRngAddress[1] === sheet.activeCell ) {
                 const range: number[] = getRangeIndexes(this.calculateInstance.uniqueRange[i]);
                 this.calculateInstance.uniqueRange.splice(i, 1);
                 for (let j: number = range[0]; j <= range[2]; j++) {
@@ -497,7 +498,7 @@ export class WorkbookFormula {
             if (lessEq || greaterEq || equal) {
                 getCell(
                     rowIdx, colIdx, isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(
-                    this.parent, sheetIdx)).formula = formula;
+                        this.parent, sheetIdx)).formula = formula;
             }
         }
         return formula;
@@ -544,6 +545,8 @@ export class WorkbookFormula {
      *
      * @param {DefineNameModel} definedName - Define named range.
      * @param {boolean} isValidate - Specify the boolean value.
+     * @param {number} index - Define named index.
+     * @param {boolean} isEventTrigger - Specify the boolean value.
      * @returns {boolean} - Used to add defined name to workbook.
      */
     private addDefinedName(definedName: DefineNameModel, isValidate: boolean, index?: number, isEventTrigger?: boolean): boolean {
@@ -580,7 +583,8 @@ export class WorkbookFormula {
                 this.parent.definedNames.splice(index, 0, definedName);
             }
         }
-        const eventArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment, refersTo: definedName.refersTo, cancel: false };
+        const eventArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment,
+            refersTo: definedName.refersTo, cancel: false };
         if (!isEventTrigger) {
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'addDefinedName' });
         }
@@ -593,6 +597,7 @@ export class WorkbookFormula {
      *
      * @param {string} name - Specifies the defined name.
      * @param {string} scope - Specifies the scope of the define name.
+     * @param {boolean} isEventTrigger - Specify the boolean value.
      * @returns {boolean} - To Return the bool value.
      */
     private removeDefinedName(name: string, scope: string, isEventTrigger?: boolean): boolean {
@@ -883,7 +888,8 @@ export class WorkbookFormula {
         }
         definedName.refersTo = sheetName + '!' + getRangeAddress(range);
         this.parent.notify(workbookFormulaOperation, { action: 'addDefinedName', definedName: definedName, isAdded: false, index: index, isEventTrigger: true });
-        const refreshArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment, refersTo: definedName.refersTo, cancel: false };
+        const refreshArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment,
+            refersTo: definedName.refersTo, cancel: false };
         this.parent.notify('actionComplete', { eventArgs: refreshArgs, action: 'refreshNamedRange' });
     }
 }

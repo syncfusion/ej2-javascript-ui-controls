@@ -2,7 +2,7 @@
  * Open properties.
  */
 import { Spreadsheet } from '../base/index';
-import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/index';
+import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook } from '../../workbook/index';
 import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize } from '../common/index';
@@ -17,7 +17,7 @@ import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
 import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
-import { LegendSettingsModel, LabelPosition, ChartType, getCellIndexes, isHiddenCol } from '../../workbook/index';
+import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol } from '../../workbook/index';
 
 Chart.Inject(ColumnSeries, LineSeries, BarSeries, AreaSeries, StackingColumnSeries, StackingLineSeries, StackingBarSeries, ScatterSeries);
 Chart.Inject(StackingAreaSeries, Category, Legend, Tooltip, DataLabel);

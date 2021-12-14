@@ -1,7 +1,7 @@
-import { RangeModel, Workbook } from '../base/index';
-import { insert, insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange } from '../../workbook/common/index';
-import { ModelType, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
-import { SheetModel, RowModel, CellModel } from '../../workbook/base/index';
+import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex } from '../base/index';
+import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange } from '../../workbook/common/index';
+import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
+import { ModelType, CellStyleModel } from '../../workbook/common/index';
 
 
 /**
@@ -57,6 +57,7 @@ export class WorkbookInsert {
         const insertArgs: InsertDeleteEventArgs = { startIndex: index, endIndex: index + model.length - 1, modelType: args.modelType, sheet:
             args.model, isInsert: true };
         if (args.modelType === 'Row') {
+            if (args.checkCount !== undefined && args.model.rows && args.checkCount === args.model.rows.length) { return; }
             this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
             if (!args.model.rows) { args.model.rows = []; }
@@ -76,20 +77,36 @@ export class WorkbookInsert {
             } else {
                 this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex, args.model);
             }
-            const curIdx: number = index + model.length;
+            const curIdx: number = index + model.length; let style: CellStyleModel; let cell: CellModel;
             for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
-                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
-                    args.model.rows[curIdx].cells[i].rowSpan !== undefined && args.model.rows[curIdx].cells[i].rowSpan < 0 &&
-                    args.model.rows[curIdx].cells[i].colSpan === undefined) {
-                    this.parent.notify(insertMerge, <MergeArgs>{
-                        range: [curIdx, i, curIdx, i], insertCount: model.length,
-                        insertModel: 'Row' });
+                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i]) {
+                    cell = args.model.rows[curIdx].cells[i];
+                    if (cell.rowSpan !== undefined && cell.rowSpan < 0 && cell.colSpan === undefined) {
+                        this.parent.notify(insertMerge, <MergeArgs>{
+                            range: [curIdx, i, curIdx, i], insertCount: model.length, insertModel: 'Row'
+                        });
+                    }
+                    if (cell.style && getCell(index - 1, i, args.model, false, true).style) {
+                        style = this.checkBorder(cell.style, args.model.rows[index - 1].cells[i].style);
+                        if (style !== {}) {
+                            model.forEach((row: RowModel): void => {
+                                if (!row.cells) { row.cells = []; }
+                                if (!row.cells[i]) { row.cells[i] = {}; }
+                                if (!row.cells[i].style) { row.cells[i].style = {}; }
+                                Object.assign(row.cells[i].style, style);
+                            });
+                        }
+                    }
                 }
             }
         } else if (args.modelType === 'Column') {
+            if (args.checkCount !== undefined && args.model.columns && args.checkCount === args.model.columns.length) { return; }
             this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
             if (!args.model.columns) { args.model.columns = []; }
+            if (index && !args.model.columns[index - 1]) {
+                args.model.columns[index - 1] = {};
+            }
             args.model.columns.splice(index, 0, ...model);
             const frozenCol: number = this.parent.frozenColCount(args.model);
             if (index < frozenCol) {
@@ -106,6 +123,7 @@ export class WorkbookInsert {
             if (!args.columnCellsModel) { args.columnCellsModel = []; }
             for (let i: number = 0; i < model.length; i++) { cellModel.push(null); }
             mergeCollection = [];
+            let cell: CellModel; let style: CellStyleModel;
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
                 if (!args.model.rows[i]) {
                     args.model.rows[i] = { cells: [] };
@@ -118,11 +136,23 @@ export class WorkbookInsert {
                 args.model.rows[i].cells.splice(index, 0, ...(args.columnCellsModel[i] && args.columnCellsModel[i].cells ?
                     args.columnCellsModel[i].cells : cellModel));
                 const curIdx: number = index + model.length;
-                if (args.model.rows[i].cells[curIdx] && args.model.rows[i].cells[curIdx].colSpan !== undefined &&
-                    args.model.rows[i].cells[curIdx].colSpan < 0 && args.model.rows[i].cells[curIdx].rowSpan === undefined) {
-                    mergeCollection.push(<MergeArgs>{
-                        range: [i, curIdx, i, curIdx], insertCount: cellModel.length,
-                        insertModel: 'Column' });
+                if (args.model.rows[i].cells[curIdx]) {
+                    cell = args.model.rows[i].cells[curIdx];
+                    if (cell.colSpan !== undefined && cell.colSpan < 0 && cell.rowSpan === undefined) {
+                        mergeCollection.push(<MergeArgs>{
+                            range: [i, curIdx, i, curIdx], insertCount: cellModel.length, insertModel: 'Column'
+                        });
+                    }
+                    if (cell.style && getCell(i, index - 1, args.model, false, true).style) {
+                        style = this.checkBorder(cell.style, args.model.rows[i].cells[index - 1].style);
+                        if (style !== {}) {
+                            for (let j: number = index; j < curIdx; j++) {
+                                if (!args.model.rows[i].cells[j]) { args.model.rows[i].cells[j] = {}; }
+                                if (!args.model.rows[i].cells[j].style) { args.model.rows[i].cells[j].style = {}; }
+                                Object.assign(args.model.rows[i].cells[j].style, style);
+                            }
+                        }
+                    }
                 }
             }
             mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(insertMerge, mergeArgs); });
@@ -157,10 +187,14 @@ export class WorkbookInsert {
                 refreshClipboard,
                 { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });
             if (args.model !== this.parent.getActiveSheet()) { return; }
+            this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
+                getSheetIndex(this.parent, args.model.name), sheetCount: args.modelType === 'Row' ? args.model.rows.length :
+                args.model.columns.length, insertType: args.insertType, freezePane: freezePane, isUndoRedo: args.isUndoRedo });
+        } else {
+            this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction,
+                activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType,
+                freezePane: freezePane, isUndoRedo: args.isUndoRedo });
         }
-        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, sheet: args.model,
-            activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType,
-            freezePane: freezePane, isUndoRedo: args.isUndoRedo });
     }
     private updateRangeModel(ranges: RangeModel[]): void {
         ranges.forEach((range: RangeModel): void => {
@@ -171,6 +205,14 @@ export class WorkbookInsert {
                 range.address = range.address || 'A1';
             }
         });
+    }
+    private checkBorder(style: CellStyleModel, adjStyle: CellStyleModel): CellStyleModel {
+        const matchedStyle: CellStyleModel = {};
+        if (style.borderLeft && style.borderLeft === adjStyle.borderLeft) { matchedStyle.borderLeft = style.borderLeft; }
+        if (style.borderRight && style.borderRight === adjStyle.borderRight) { matchedStyle.borderRight = style.borderRight; }
+        if (style.borderTop && style.borderTop === adjStyle.borderTop) { matchedStyle.borderTop = style.borderTop; }
+        if (style.borderBottom && style.borderBottom === adjStyle.borderBottom) { matchedStyle.borderBottom = style.borderBottom; }
+        return matchedStyle;
     }
     private setInsertInfo(sheet: SheetModel, startIndex: number, count: number, totalKey: string, modelType: ModelType = 'Row'): void {
         const endIndex: number = count = startIndex + (count - 1);

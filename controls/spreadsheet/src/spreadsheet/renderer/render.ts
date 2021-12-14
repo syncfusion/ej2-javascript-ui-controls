@@ -1,12 +1,12 @@
-﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, skipHiddenIdx, refreshSheetTabs } from '../common/index';
+﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, skipHiddenIdx } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
-import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/base/index';
-import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet } from '../../workbook/common/index';
-import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact } from '../common/index';
+import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook, setColumn } from '../../workbook/index';
+import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, setRow } from '../../workbook/index';
+import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact, updateTranslate } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
-import { getSiblingsHeight } from '../common/index';
+import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet
@@ -53,7 +53,7 @@ export class Render {
         this.checkTopLeftCell(true);
     }
 
-    private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean): void {
+    private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean, scrollTop?: number, scrollLeft?: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.showSpinner();
         let isTopLeftCell: boolean = sheet.topLeftCell === 'A1';
@@ -86,9 +86,11 @@ export class Render {
         } else {
             const pIndexes: number[] = sheet.paneTopLeftCell === sheet.topLeftCell ? indexes : getCellIndexes(sheet.paneTopLeftCell);
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
-            const eventArgs: { scrollLeft?: number, scrollTop?: number, preventScroll: boolean } = { preventScroll: true };
-            eventArgs.scrollTop = pIndexes[0] > frozenRow ? getRowsHeight(sheet, frozenRow ? frozenRow : 0, pIndexes[0] - 1) : 0;
-            eventArgs.scrollLeft = pIndexes[1] > frozenCol ? getColumnsWidth(sheet, frozenCol ? frozenCol : 0, pIndexes[1] - 1) : 0;
+            const eventArgs: ScrollEventArgs = { preventScroll: true };
+            eventArgs.scrollTop = scrollTop || (pIndexes[0] > frozenRow ?
+                getRowsHeight(sheet, frozenRow ? frozenRow : 0, pIndexes[0] - 1, true) : 0);
+            eventArgs.scrollLeft = scrollLeft || (pIndexes[1] > frozenCol ?
+                getColumnsWidth(sheet, frozenCol ? frozenCol : 0, pIndexes[1] - 1, true) : 0);
             this.parent.notify(onContentScroll, eventArgs);
             let threshold: number = this.parent.getThreshold('row');
             const rowIndex: number = sheet.frozenRows ? indexes[0] : (indexes[0] > threshold ?
@@ -129,6 +131,7 @@ export class Render {
      * @param {RefreshArgs} args - Specifies the RefreshArgs.
      * @param {string} address - Specifies the address.
      * @param {boolean} initLoad - Specifies the initLoad.
+     * @param {boolean} isRefreshing - Specifies the isRefreshing.
      * @returns {void}
      */
     // tslint:disable-next-line:max-func-body-length
@@ -144,33 +147,38 @@ export class Render {
                 let lastCol: number = args.colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
                 const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
                 if (args.frozenIndexes.length) {
-                    lastRow += (args.frozenIndexes[0] - frozenRow) ; lastCol += (args.frozenIndexes[1] - frozenCol);
+                    lastRow += (args.frozenIndexes[0] - frozenRow); lastCol += (args.frozenIndexes[1] - frozenCol);
                 }
                 lastRow += sheet.frozenRows; lastCol += sheet.frozenColumns;
                 let count: number = sheet.rowCount - 1; let diff: number = 0;
-                if (this.parent.scrollSettings.isFinite && lastRow > count) {
-                    diff = lastRow - count; lastRow = count;
-                    if (diff && !isNullOrUndefined(this.parent.viewport.topIndex)) {
-                        diff = this.parent.viewport.topIndex - diff > -1 ? this.parent.viewport.topIndex - diff : 0;
-                        this.parent.viewport.topIndex = args.rowIndex = this.skipHiddenIdx(diff, true);
+                let indexes: number[] = this.parent.skipHidden(args.rowIndex, lastRow, 'rows', false);
+                lastRow = indexes[1];
+                if (args.rowIndex !== indexes[0]) {
+                    const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
+                    if (topLeftCell[0] === args.rowIndex) {
+                        this.parent.updateTopLeftCell(indexes[0], topLeftCell[1], 'row');
                     }
                 }
+                if (this.parent.scrollSettings.isFinite && lastRow > count) {
+                    diff = lastRow - count; lastRow = skipHiddenIdx(sheet, count, false);
+                    if (indexes[0] > skipHiddenIdx(sheet, 0, true)) {
+                        diff = args.rowIndex - diff; diff = diff > -1 ? diff : 0;
+                        diff = this.decreaseHidden(diff, args.rowIndex - 1);
+                        if (args.top && diff < args.rowIndex) {
+                            this.parent.notify(updateTranslate, { height: getRowsHeight(sheet, diff, args.rowIndex - 1), isRender: true });
+                        }
+                        this.parent.viewport.topIndex = indexes[0] = diff;
+                    }
+                }
+                let startRow: number = args.rowIndex = indexes[0];
                 count = sheet.colCount - 1; diff = 0;
                 if (this.parent.scrollSettings.isFinite && lastCol > count) {
                     diff = lastCol - count; lastCol = count;
                     if (diff && !isNullOrUndefined(this.parent.viewport.leftIndex)) {
                         diff = this.parent.viewport.leftIndex - diff > -1 ? this.parent.viewport.leftIndex - diff : 0;
-                        this.parent.viewport.leftIndex = args.colIndex = this.skipHiddenIdx(diff, true, 'columns');
+                        this.parent.viewport.leftIndex = args.colIndex = skipHiddenIdx(sheet, diff, true, 'columns');
                     }
                 }
-                let indexes: number[] = this.parent.skipHidden(args.rowIndex, lastRow);
-                if (args.rowIndex !== indexes[0]) {
-                    const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
-                    if (topLeftCell[0] === args.rowIndex) { this.parent.updateTopLeftCell(indexes[0], topLeftCell[1], 'row'); }
-                    args.rowIndex = indexes[0];
-                }
-                let startRow: number = args.rowIndex;
-                lastRow = indexes[1];
                 const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
                 indexes = this.parent.skipHidden(args.colIndex, lastCol, 'columns');
                 if (args.colIndex !== indexes[0]) {
@@ -216,6 +224,7 @@ export class Render {
         if (args.refresh === 'All') {
             this.parent.trigger(beforeDataBound, {});
         }
+        const isOpen: boolean = this.parent.isOpen;
         setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: true });
         const sheetsLen: number = this.parent.sheets.length;
         getData(this.parent as Workbook, `${sheetName}!${address}`, null, null, args.frozenIndexes).then((values: Map<string, CellModel>): void => {
@@ -231,7 +240,7 @@ export class Render {
             switch (args.refresh) {
             case 'All':
                 sheetModule.renderTable(
-                    { cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad, isRefreshing: isRefreshing });
+                    { cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad, isRefreshing: isRefreshing, isOpen: isOpen});
                 break;
             case 'Row':
                 sheetModule.refreshRowContent(
@@ -265,15 +274,6 @@ export class Render {
             if (this.parent && this.parent[isReact]) { this.parent[renderReactTemplates](); }
         });
         this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh, skipTranslate: args.skipTranslate });
-    } 
-
-    public skipHiddenIdx(
-        index: number, increase: boolean, layout: string = 'rows', sheet: SheetModel = this.parent.getActiveSheet()): number {
-        if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
-            index = increase ? ++index : --index;
-            index = this.skipHiddenIdx(index, increase, layout, sheet);
-        }
-        return index;
     }
 
     private removeSheet(): void {
@@ -283,13 +283,22 @@ export class Render {
     /**
      * Refresh the active sheet.
      *
+     * @param {boolean} isOpen - Specifies the isOpen.
+     * @param {boolean} resize - Set `true` to refresh the sheet with exiting scroll top and left.
      * @returns {void}
      */
-    public refreshSheet(isOpen?: boolean): void {
+    public refreshSheet(isOpen?: boolean, resize?: boolean): void {
+        let scrollTop: number = 0; let scrollLeft: number = 0;
+        if (resize) {
+            const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
+            if (mainPanel) { scrollTop = mainPanel.scrollTop; }
+            const sheetContent: Element = this.parent.getMainContent();
+            if (sheetContent) { scrollLeft = sheetContent.scrollLeft; }
+        }
         this.removeSheet();
         this.renderSheet();
         this.parent.notify(deInitProperties, {});
-        this.checkTopLeftCell(false, isOpen);
+        this.checkTopLeftCell(false, isOpen, scrollTop, scrollLeft);
     }
 
     /**
@@ -325,6 +334,25 @@ export class Render {
         if (args.refresh) {
             this.refreshSheet(args.isDuplicate);
         }
+    }
+
+    public decreaseHidden(startIdx: number, endIdx: number, layout: string = 'rows'): number {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        for (let i: number = endIdx; i >= startIdx; i--) {
+            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
+                if (sheet.frozenColumns || sheet.frozenRows) {
+                    if (layout === 'rows') {
+                        setRow(sheet, i, { hidden: false });
+                    } else {
+                        setColumn(sheet, i, { hidden: false });
+                    }
+                    continue;
+                }
+                startIdx--;
+                if (startIdx < 0) { startIdx = skipHiddenIdx(sheet, 0, true, layout); break; }
+            }
+        }
+        return startIdx;
     }
 
     /**

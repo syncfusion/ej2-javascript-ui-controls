@@ -803,8 +803,8 @@ export class SpreadsheetHyperlink {
             delete (cell.hyperlink);
             if (cell.style) { delete cell.style.textDecoration; delete cell.style.color; }
             if (cell.validation){
-                if(cell.validation.isHighlighted){
-                    if(cell.style.backgroundColor){
+                if (cell.validation.isHighlighted){
+                    if (cell.style.backgroundColor){
                         cell.style.color = '#ff0000';
                     }
                 }

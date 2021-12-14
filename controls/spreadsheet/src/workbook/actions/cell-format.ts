@@ -48,10 +48,19 @@ export class WorkbookCellFormat {
         }
         if (eventArgs.style.borderBottom !== undefined) {
             for (let i: number = indexes[1]; i <= indexes[3]; i++) {
+                const rowIdx: number = indexes[0]; const colIdx: number = i;
+                const firstCell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+                const lastCell: CellModel = getCell(indexes[2], indexes[3], sheet, false, true);
                 this.checkAdjustantBorder(sheet, 'borderTop', indexes[2] + 1, i);
                 this.checkFullBorder(sheet, 'borderTop', indexes[2] + 1, i); this.checkFullBorder(sheet, 'borderBottom', indexes[2], i);
-                this.setCellBorder(
-                    sheet, { borderBottom: eventArgs.style.borderBottom }, indexes[2], i, args.onActionUpdate, i === indexes[3]);
+                if (firstCell.rowSpan > 1 && lastCell.rowSpan < 0) {
+                    this.setCellBorder(
+                        sheet, { borderBottom: eventArgs.style.borderBottom }, indexes[0], i, args.onActionUpdate, i === indexes[3]);
+                }
+                else {
+                    this.setCellBorder(
+                        sheet, { borderBottom: eventArgs.style.borderBottom }, indexes[2], i, args.onActionUpdate, i === indexes[3]);
+                }
                 this.setBottomBorderPriority(sheet, indexes[2], i);
             }
             delete eventArgs.style.borderBottom;
@@ -86,7 +95,8 @@ export class WorkbookCellFormat {
                     cell = getCell(i, j, sheet, false, true);
                     if (cell.rowSpan > 1 || cell.colSpan > 1) {
                         for (let k: number = i, rowSpanLen: number = cell.rowSpan > 1 ? i + (cell.rowSpan - 1) : i; k <= rowSpanLen; k++) {
-                            for (let l: number = j, colSpanLen: number = cell.colSpan > 1 ? j + (cell.colSpan - 1) : j; l <= colSpanLen; l++) {
+                            for (let l: number = j, colSpanLen: number = cell.colSpan > 1 ? j + (cell.colSpan - 1) : j;
+                                l <= colSpanLen; l++) {
                                 if (isFullBorder) {
                                     this.setFullBorder(sheet, border, indexes, k, l, args.onActionUpdate, true);
                                 }

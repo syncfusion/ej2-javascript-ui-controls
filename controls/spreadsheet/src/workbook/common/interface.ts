@@ -383,7 +383,7 @@ export interface DataSourceChangedEventArgs {
  *
  * @hidden
  */
- export interface DefinedNameEventArgs {
+export interface DefinedNameEventArgs {
     name?: string;
     scope?: string;
     comment?: string;

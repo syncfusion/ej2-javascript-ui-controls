@@ -1,10 +1,10 @@
 import { Spreadsheet } from '../base/index';
 import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getUpdateUsingRaf } from '../common/index';
-import { autoFit, hideShow, virtualContentLoaded, completeAction, setScrollEvent, onContentScroll, skipHiddenIdx } from '../common/index';
-import { beginAction, hiddenMerge, updateTableWidth } from '../common/index';
+import { autoFit, virtualContentLoaded, completeAction, setScrollEvent, onContentScroll, skipHiddenIdx } from '../common/index';
+import { beginAction, hiddenMerge, updateTableWidth, updateTranslate, ScrollEventArgs } from '../common/index';
 import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, addHighlight } from '../../workbook/index';
 import { getCellIndexes, getColumnWidth, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
-import { activeCellMergedRange, setMerge, ExtendedRowModel } from '../../workbook/index';
+import { activeCellMergedRange, setMerge, ExtendedRowModel, getRowHeight, getRangeIndexes, hideShow } from '../../workbook/index';
 import { detach } from '@syncfusion/ej2-base';
 
 /**
@@ -29,7 +29,11 @@ export class ShowHide {
         if (sheet.frozenRows || sheet.frozenColumns) { return; }
         if (args.startIndex > args.endIndex) { const temp: number = args.startIndex;
             args.startIndex = args.endIndex; args.endIndex = temp; }
-        if (args.actionUpdate) { this.parent.notify(beginAction, { eventArgs: args, action: 'hideShow' }); }
+        if (args.actionUpdate) {
+            args.cancel = false;
+            this.parent.notify(beginAction, { eventArgs: args, action: 'hideShow' });
+            if (args.cancel) { return; }
+        }
         if (args.isCol) {
             this.hideCol(args);
         } else {
@@ -37,12 +41,21 @@ export class ShowHide {
         }
         if (args.actionUpdate) { this.parent.notify(completeAction, { eventArgs: args, action: 'hideShow' }); }
     }
-    private hideRow(args: HideShowEventArgs): void {
+    private hideRow(eventArgs: HideShowEventArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet(); let cell: CellModel;
         let count: number = 0; let idx: number; let nextIdx: number; let merge: boolean;
         let model: ExtendedRowModel;
+        const args: HideShowEventArgs = Object.assign({}, eventArgs);
+        const isFinite: boolean = this.parent.scrollSettings.isFinite;
+        let height: number;
+        if (isFinite) {
+            if (args.startIndex >= sheet.rowCount) { return; }
+            if (args.endIndex >= sheet.rowCount) { args.endIndex = sheet.rowCount - 1; }
+            height = 0;
+        }
         if (args.hide) {
             let content: HTMLTableElement; let rowHdr: HTMLTableElement; let row: HTMLTableRowElement;
+            const updateBtmIdx: boolean = isFinite && args.endIndex === skipHiddenIdx(sheet, sheet.rowCount - 1, false);
             for (let i: number = args.startIndex; i <= args.endIndex; i++) {
                 if (isHiddenRow(sheet, i)) { continue; }
                 if (idx === undefined) {
@@ -53,6 +66,9 @@ export class ShowHide {
                 model = { hidden: true };
                 if (args.isFiltering) { model.isFiltered = true; }
                 setRow(sheet, i, model);
+                if (isFinite) {
+                    height += getRowHeight(sheet, i, true, true);
+                }
                 this.refreshChart(i, 'rows');
                 row = content && content.rows[idx];
                 if (row) {
@@ -98,6 +114,16 @@ export class ShowHide {
             }
             if (!count) { return; }
             this.parent.selectRange(sheet.selectedRange);
+            const updateHideClass: Function = (): void => {
+                if (sheet.showHeaders) {
+                    if (idx === 0) {
+                        if (rowHdr.rows[0]) { rowHdr.rows[0].classList.add('e-hide-end'); }
+                    } else {
+                        if (rowHdr && rowHdr.rows[idx - 1]) { rowHdr.rows[idx - 1].classList.add('e-hide-start'); }
+                        if (rowHdr && rowHdr.rows[idx]) { rowHdr.rows[idx].classList.add('e-hide-end'); }
+                    }
+                }
+            };
             if (this.parent.scrollSettings.enableVirtualization) {
                 let startIndex: number = args.startIndex; const endIndex: number = args.startIndex;
                 if (this.parent.viewport.topIndex >= args.startIndex) {
@@ -109,8 +135,39 @@ export class ShowHide {
                     }
                 }
                 args.startIndex = this.parent.viewport.bottomIndex + 1; args.endIndex = args.startIndex + count - 1;
-                const indexes: number[] = this.parent.skipHidden(args.startIndex, args.endIndex);
+                const indexes: number[] = this.parent.skipHidden(args.startIndex, args.endIndex, 'rows', false);
                 args.startIndex = indexes[0]; args.endIndex = indexes[1];
+                if (isFinite) {
+                    const refreshSheet: Function = (): void => {
+                        const prevTop: number = this.parent.viewport.topIndex;
+                        this.parent.viewport.bottomIndex = args.endIndex = skipHiddenIdx(sheet, sheet.rowCount - 1, false);
+                        startIndex = this.parent.viewport.topIndex = this.parent.renderModule.decreaseHidden(
+                            args.endIndex - (this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)), args.endIndex);
+                        this.parent.notify(setScrollEvent, { set: false });
+                        this.parent.notify(updateTranslate, { isHide: true, height: height, prevSize: prevTop });
+                        const eventArgs: ScrollEventArgs = { skipRowVirualScroll: true };
+                        eventArgs.scrollTop = this.parent.getMainContent().parentElement.scrollTop;
+                        this.parent.notify(onContentScroll, eventArgs);
+                        getUpdateUsingRaf((): void => this.parent.notify(setScrollEvent, { set: true }));
+                        this.parent.renderModule.refreshUI(
+                            { rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row',
+                                skipTranslate: true });
+                    };
+                    if (args.startIndex >= sheet.rowCount) {
+                        if (this.parent.viewport.topIndex === skipHiddenIdx(sheet, 0, true)) {
+                            updateHideClass();
+                            if (updateBtmIdx) {
+                                this.parent.viewport.bottomIndex = skipHiddenIdx(sheet, sheet.rowCount - 1, false);
+                            }
+                            return;
+                        }
+                        refreshSheet(); return;
+                    } else if (args.endIndex >= sheet.rowCount) {
+                        refreshSheet(); return;
+                    } else {
+                        this.parent.notify(updateTranslate, { isHide: true, height: height });
+                    }
+                }
                 this.parent.viewport.bottomIndex = args.endIndex;
                 if (count > this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)) {
                     startIndex = startIndex < 1 ? endIndex + 1 : startIndex - 1;
@@ -120,29 +177,38 @@ export class ShowHide {
                     this.parent.renderModule.refreshUI(
                         { colIndex: this.parent.viewport.leftIndex, direction: '', refresh: 'RowPart' },
                         `${getCellAddress(args.startIndex, this.parent.viewport.leftIndex)}:${getCellAddress(
-                            args.endIndex,
-                            this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2))}`);
+                            args.endIndex, this.parent.viewport.rightIndex)}`);
                 }
             }
-            if (sheet.showHeaders) {
-                if (idx === 0) {
-                    if (rowHdr.rows[0]) { rowHdr.rows[0].classList.add('e-hide-end'); }
-                } else {
-                    if (rowHdr && rowHdr.rows[idx - 1]) { rowHdr.rows[idx - 1].classList.add('e-hide-start'); }
-                    if (rowHdr && rowHdr.rows[idx]) { rowHdr.rows[idx].classList.add('e-hide-end'); }
-                }
-            }
+            updateHideClass();
         } else {
             let hFrag: DocumentFragment; let frag: DocumentFragment; let hRow: Element; let row: Element;
             let rowRenderer: IRowRenderer; let rTBody: Element; let tBody: Element; let startRow: number;
             let endRow: number = args.startIndex - 1; let newStartRow: number; const mergeCollection: MergeArgs[] = [];
+            let skipDetach: boolean; let direction: string = 'lastElementChild'; let detachedHeight: number = 0;
+            if (isFinite) {
+                const lastIdx: number = skipHiddenIdx(sheet, sheet.rowCount - 1, false);
+                if (this.parent.viewport.bottomIndex === lastIdx) {
+                    if (this.parent.viewport.topIndex === skipHiddenIdx(sheet, 0, true)) {
+                        skipDetach = true;
+                    } else {
+                        const topLeftCell: number = getRangeIndexes(sheet.topLeftCell)[0];
+                        const count: number = (((sheet.rowCount - 1) - topLeftCell) + 1) -
+                            this.parent.hiddenCount(topLeftCell, sheet.rowCount - 1);
+                        if (count < this.parent.viewport.rowCount + Math.round(this.parent.getThreshold('row') / 2)) {
+                            direction = 'firstElementChild';
+                        }
+                    }
+                }
+            }
             for (let i: number = args.startIndex, len: number = args.endIndex; i <= len; i++) {
                 if (!isHiddenRow(sheet, i)) {
                     if (args.startIndex === args.endIndex) {
-                        for (let j = 0; j <= sheet.usedRange.colIndex; j++){
+                        for (let j: number = 0; j <= sheet.usedRange.colIndex; j++) {
                             this.parent.notify(addHighlight, { range: getRangeAddress([args.startIndex, j]), td: undefined });
                         }
-                        return; }
+                        return;
+                    }
                     if (idx === undefined) {
                         endRow++;
                     } else {
@@ -153,13 +219,16 @@ export class ShowHide {
                 if (newStartRow !== undefined) { len = i; continue; }
                 model = { hidden: false };
                 if (args.isFiltering) { model.isFiltered = false; }
-                if (i > this.parent.viewport.bottomIndex) {
+                if (!skipDetach && i > this.parent.viewport.bottomIndex) {
                     setRow(sheet, i, model);
                     if (startRow === undefined) { return; }
                     continue;
                 }
                 if (startRow === undefined) { startRow = i; }
                 setRow(sheet, i, model);
+                if (isFinite) {
+                    height += getRowHeight(sheet, i, true, true);
+                }
                 this.refreshChart(i, 'rows');
                 if (idx === undefined) {
                     hFrag = document.createDocumentFragment(); frag = document.createDocumentFragment();
@@ -177,10 +246,19 @@ export class ShowHide {
                 if (sheet.showHeaders) {
                     hRow = rowRenderer.refresh(i, null, null, true);
                     hFrag.appendChild(hRow);
-                    if (rTBody && rTBody.childElementCount) { detach(rTBody.lastElementChild); }
+                    if (rTBody && rTBody.childElementCount && !skipDetach) { detach(rTBody[direction]); }
                 }
                 row = frag.appendChild(rowRenderer.refresh(i, row, hRow));
-                if (tBody && tBody.childElementCount) { detach(tBody.lastElementChild); }
+                if (tBody && tBody.childElementCount && !skipDetach) {
+                    detach(tBody[direction]);
+                    if (direction === 'firstElementChild') {
+                        if (idx !== undefined && idx - 1 > -1) {
+                            idx -= 1;
+                        }
+                        detachedHeight += getRowHeight(sheet, this.parent.viewport.topIndex, true);
+                        this.parent.viewport.topIndex = skipHiddenIdx(sheet, this.parent.viewport.topIndex + 1, true);
+                    }
+                }
                 for (let j: number = this.parent.viewport.leftIndex; j <= this.parent.viewport.rightIndex; j++) {
                     cell = getCell(i, j, sheet) || {};
                     if (cell.rowSpan !== undefined) {
@@ -193,11 +271,15 @@ export class ShowHide {
                     }
                 }
             }
+            if (idx === undefined) { return; }
             this.parent.viewport.bottomIndex = this.parent.viewport.topIndex + this.parent.viewport.rowCount +
                 (this.parent.getThreshold('row') * 2);
             count = this.parent.hiddenCount(this.parent.viewport.topIndex, args.startIndex) +
                 this.parent.hiddenCount(args.endIndex + 1, this.parent.viewport.bottomIndex);
             this.parent.viewport.bottomIndex += count;
+            if (isFinite && this.parent.viewport.bottomIndex >= sheet.rowCount) {
+                this.parent.viewport.bottomIndex = skipHiddenIdx(sheet, sheet.rowCount - 1, false);
+            }
             args.insertIdx = idx; args.row = frag.querySelector('.e-row'); args.mergeCollection = mergeCollection;
             if (sheet.showHeaders) {
                 args.hdrRow = hFrag.querySelector('.e-row');
@@ -234,6 +316,9 @@ export class ShowHide {
                 }
             }
             if (args.skipAppend) { return; }
+            if (isFinite) {
+                this.parent.notify(updateTranslate, { height: height, size: detachedHeight });
+            }
             if (Math.abs(endRow - startRow) > this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)) {
                 this.parent.renderModule.refreshSheet();
             } else {
@@ -288,7 +373,8 @@ export class ShowHide {
                         this.parent.notify(setScrollEvent, { set: false });
                         const content: Element = this.parent.getMainContent();
                         content.scrollLeft -= scrollWidth;
-                        this.parent.notify(onContentScroll, { scrollLeft: content.scrollLeft, preventScroll: true, skipHidden: true });
+                        this.parent.notify(
+                            onContentScroll, <ScrollEventArgs>{ scrollLeft: content.scrollLeft, preventScroll: true, skipHidden: true });
                         getUpdateUsingRaf((): void => this.parent.notify(setScrollEvent, { set: true }));
                     }
                 }

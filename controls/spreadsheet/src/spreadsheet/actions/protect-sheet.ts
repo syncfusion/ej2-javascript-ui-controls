@@ -128,7 +128,6 @@ export class ProtectSheet {
             content: dialogElem.outerHTML + checkBoxElement.outerHTML + protectHeaderCntent.outerHTML + listViewElement.outerHTML,
             showCloseIcon: true, isModal: true,
             cssClass: 'e-protect-dlg',
-            
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'ProtectSheetDialog',
@@ -189,10 +188,10 @@ export class ProtectSheet {
     }
 
     private selectOption(): void {
-        let actSheet: SheetModel = this.parent.getActiveSheet();
+        const actSheet: SheetModel = this.parent.getActiveSheet();
         const pwd: HTMLElement = this.parent.element.querySelector('.e-sheet-password-dialog').
             getElementsByClassName('e-sheet-password-content')[0].querySelector('.e-input');
-        if ((pwd as CellModel).value.length == 0) {
+        if ((pwd as CellModel).value.length === 0) {
             this.parent.setSheetPropertyOnMute(actSheet, 'isProtected', true);
             this.parent.setSheetPropertyOnMute(actSheet, 'password', (pwd as CellModel).value);
             this.updateProtectSheet((pwd as CellModel).value);
@@ -207,7 +206,7 @@ export class ProtectSheet {
 
     private selectSheetPassword(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let actSheet: SheetModel = this.parent.getActiveSheet();
+        const actSheet: SheetModel = this.parent.getActiveSheet();
         const pwd: HTMLElement = this.parent.element.querySelector('.e-sheet-password-dialog').
             getElementsByClassName('e-sheet-password-content')[0].querySelector('.e-input');
         const cnfrmPwd: HTMLElement = this.parent.element.querySelector('.e-reenterpwd-dialog').
@@ -247,7 +246,7 @@ export class ProtectSheet {
             formatCells: selectedItems.text.indexOf(l10n.getConstant('FormatCells')) > -1,
             formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,
             formatColumns: selectedItems.text.indexOf(l10n.getConstant('FormatColumns')) > -1,
-            insertLink: selectedItems.text.indexOf(l10n.getConstant('InsertLinks')) > -1,
+            insertLink: selectedItems.text.indexOf(l10n.getConstant('InsertLinks')) > -1
         };
         this.parent.protectSheet(null, protectSettings, password);
         this.parent.notify(protectSelection, null);
@@ -258,16 +257,16 @@ export class ProtectSheet {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const id: string = this.parent.element.id;
         const disableHomeBtnId: string[] = [id + '_undo', id + '_redo', id + '_cut', id + '_copy', id + '_paste', id + '_number_format',
-        id + '_font_name', id + '_font_size', id + '_bold', id + '_italic', id + '_line-through', id + '_underline',
-        id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_merge_cells', id + '_text_align',
-        id + '_vertical_align', id + '_wrap', id + '_sorting', id + '_clear', id + '_conditionalformatting'];
+            id + '_font_name', id + '_font_size', id + '_bold', id + '_italic', id + '_line-through', id + '_underline',
+            id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_merge_cells', id + '_text_align',
+            id + '_vertical_align', id + '_wrap', id + '_sorting', id + '_clear', id + '_conditionalformatting'];
         const enableHomeBtnId: string[] = [id + '_cut', id + '_copy', id + '_number_format', id + '_font_name', id + '_font_size',
-        id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
-        id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting',
-        id + '_clear', id + '_conditionalformatting'];
+            id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
+            id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting',
+            id + '_clear', id + '_conditionalformatting'];
         const enableFrmlaBtnId: string[] = [id + '_insert_function'];
         const enableInsertBtnId: string[] = [id + '_hyperlink', id + '_', id + '_chart'];
-        const imageBtnId: string[] = [id + '_'];
+        const imageBtnId: string[] = [id + '_image'];
         const findBtnId: string[] = [id + '_find'];
         const dataValidationBtnId: string[] = [id + '_datavalidation'];
         const chartBtnId: string[] = [id + '_chart'];
@@ -533,7 +532,7 @@ export class ProtectSheet {
         });
     }
 
-    private unProtectsheet(args :{isImportedSheet?:boolean}): void {
+    private unProtectsheet(args : { isImportedSheet?: boolean}): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
@@ -651,13 +650,12 @@ export class ProtectSheet {
             (this.parent.element.querySelector('.e-unprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
         }
     }
-    private unprotectSheetdlgOkClick(dialogInst: Dialog, isImportedSheet?:boolean): void {
+    private unprotectSheetdlgOkClick(dialogInst: Dialog, isImportedSheet?: boolean): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let isActive: boolean;
+        const sheet: SheetModel = this.parent.getActiveSheet();
         const pwd: HTMLElement = this.parent.element.querySelector('.e-unprotectsheetpwd-dialog').
             getElementsByClassName('e-unprotectsheetpwd-content')[0].querySelector('.e-input');
-            if (isImportedSheet && sheet.password.length === 0) {
+        if (isImportedSheet && sheet.password.length === 0) {
             const impArgs: OpenOptions = {
                 sheetPassword: (pwd as CellModel).value,
                 sheetIndex: this.parent.activeSheetIndex
@@ -667,7 +665,7 @@ export class ProtectSheet {
         else {
             if (sheet.password === (pwd as CellModel).value) {
                 dialogInst.hide();
-                this.unProtectSheetPassword()
+                this.unProtectSheetPassword();
             } else {
                 const pwdSpan: Element = this.parent.createElement('span', {
                     className: 'e-unprotectsheetpwd-alert-span',
@@ -678,15 +676,14 @@ export class ProtectSheet {
         }
     }
 
-    private unProtectSheetPassword(){
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let isActive: boolean;
-        let sheetIdx: number =this.parent.activeSheetIndex;
+    private unProtectSheetPassword(): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIdx: number = this.parent.activeSheetIndex;
         this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
         this.parent.setSheetPropertyOnMute(sheet, 'password', '');
-        isActive = sheet.isProtected ? false : true;
+        const isActive: boolean = sheet.isProtected ? false : true;
         this.parent.notify(applyProtect, { isActive: isActive, id: this.parent.element.id + '_protect' });
-        if(this.parent.openModule.isImportedFile && this.parent.openModule.unProtectSheetIdx.indexOf(sheetIdx) === -1 ) {
+        if (this.parent.openModule.isImportedFile && this.parent.openModule.unProtectSheetIdx.indexOf(sheetIdx) === -1 ) {
             this.parent.openModule.unProtectSheetIdx.push(sheetIdx);
         }
     }

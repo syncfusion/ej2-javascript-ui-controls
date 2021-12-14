@@ -207,7 +207,7 @@ export type ChartTheme =
 /**  Render a chart with Bootstrap5 theme. */
 'Bootstrap5' |
 /**  Render a chart with Tailwind theme. */
-'Tailwind' | 
+'Tailwind' |
 /**  Render a chart with TailwindDark theme. */
 'TailwindDark' ;
 
@@ -254,8 +254,8 @@ export type LabelPosition =
 /**
  * Defines fill type options.
  */
- export type AutoFillType = 'FillSeries' | 'CopyCells' | 'FillFormattingOnly' | 'FillWithoutFormatting';
- /**
+export type AutoFillType = 'FillSeries' | 'CopyCells' | 'FillFormattingOnly' | 'FillWithoutFormatting';
+/**
  * Defines Auto fill direction options.
  */
-  export type AutoFillDirection = 'Down' | 'Right' | 'Up' | 'Left';
+export type AutoFillDirection = 'Down' | 'Right' | 'Up' | 'Left';

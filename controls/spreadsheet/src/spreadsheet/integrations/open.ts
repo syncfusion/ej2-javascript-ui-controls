@@ -12,7 +12,7 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 export class Open {
     private parent: Spreadsheet;
-    public isImportedFile:boolean = false;
+    public isImportedFile: boolean = false;
     public unProtectSheetIdx: number[] = [];
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -99,20 +99,20 @@ export class Open {
                     innerHTML: l10n.getConstant('InCorrectPassword')
                 });
                 (this.parent.element.querySelector('.e-importprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
-            } else if(openError[4] === response.data) {
+            } else if (openError[4] === response.data) {
                 const l10n: L10n = this.parent.serviceLocator.getService(locale);
                 const alertSpan: Element = this.parent.createElement('span', {
                     className: 'e-unprotectsheetpwd-alert-span',
                     innerHTML: l10n.getConstant('InCorrectPassword')
                 });
                 (this.parent.element.querySelector('.e-unprotectworksheet-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
-            } else if(openError[5] === response.data){
+            } else if (openError[5] === response.data){
                 this.parent.isOpen = false;
                 this.parent.notify(unProtectSheetPassword, null);
                 const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
                 dialogInst.hide();
                 this.parent.hideSpinner();
-            } 
+            }
             else  {
                 const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
                 dialogInst.hide();
@@ -142,7 +142,7 @@ export class Open {
         if (!this.parent.element) {
             return;
         }
-        if (openError[5] != response.data) {
+        if (openError[5] !== response.data) {
             this.parent.trigger('openComplete', { response: response });
             this.parent.notify(completeAction, { response: response, action: 'import' });
             this.parent.renderModule.refreshSheet(response.isOpenFromJson);

@@ -124,8 +124,6 @@ export const applySort: string = 'applySort';
 /** @hidden */
 export const collaborativeUpdate: string = 'collaborativeUpdate';
 /** @hidden */
-export const hideShow: string = 'hideShow';
-/** @hidden */
 export const autoFit: string = 'autoFitRowsColumns';
 /** @hidden */
 export const updateToggleItem: string = 'updateToggleItem';
@@ -325,3 +323,5 @@ export const UnProtectWorksheet: string = 'UnProtectWorksheet';
 export const hideAutoFillElement: string = 'hideAutoFillElement';
 /** @hidden */
 export const unProtectSheetPassword: string = 'unProtectSheetPassword';
+/** @hidden */
+export const updateTranslate: string = 'updateTranslate';

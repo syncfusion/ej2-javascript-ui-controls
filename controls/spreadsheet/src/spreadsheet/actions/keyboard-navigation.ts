@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
-import { keyDown, cellNavigate, renameSheet, filterCellKeyDown } from '../common/index';
-import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, getCell } from '../../workbook/index';
-import { getRangeIndexes, getSwapRange, isHiddenRow } from '../../workbook/index';
+import { keyDown, cellNavigate, renameSheet, filterCellKeyDown, skipHiddenIdx, getUpdateUsingRaf } from '../common/index';
+import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, getCell, getCellAddress } from '../../workbook/index';
+import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSelected } from '../../workbook/index';
 import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -43,7 +43,7 @@ export class KeyboardNavigation {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const filterArgs: { [key: string]: KeyboardEvent | boolean } = { e: e, isFilterCell: false };
             const actIdxes: number[] = getCellIndexes(sheet.activeCell);
-            if ([9, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            if ([9, 37, 38, 39, 40, 33, 34].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
             }
             if (e.shiftKey) {// shift selection
@@ -108,6 +108,23 @@ export class KeyboardNavigation {
                 isNavigate = true;
                 e.preventDefault();
             } */
+            else if (!e.shiftKey && (e.keyCode === 34 || e.keyCode === 33)) { // Page Up and Page Down
+                const mainPanel: Element = this.parent.element.querySelector('.e-main-panel');
+                let diff: number = 0;
+                if (e.keyCode === 34) { // Page Down
+                    diff = mainPanel.getBoundingClientRect().height + mainPanel.scrollTop;
+                } else { // Page Up
+                    diff = mainPanel.scrollTop - mainPanel.getBoundingClientRect().height;
+                }
+                const aRowIdx: number = getCellIndexes(this.parent.getActiveSheet().activeCell)[0];
+                let topRow: number = getCellIndexes(this.parent.getActiveSheet().paneTopLeftCell)[0];
+                const selectDiff: number = aRowIdx - topRow;
+                mainPanel.scrollTop = diff;
+                getUpdateUsingRaf((): void => {
+                    topRow = getCellIndexes(this.parent.getActiveSheet().paneTopLeftCell)[0];
+                    this.parent.selectRange(getCellAddress(topRow + selectDiff , actIdxes[1]));
+                });
+            }
             if (isNavigate) {
                 const isScroll: boolean = this.parent.scrollModule ? this.parent.scrollModule.isKeyScroll : true;
                 if (isScroll) {
@@ -231,6 +248,7 @@ export class KeyboardNavigation {
             }
         }
         if (e.keyCode === 37 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 40) {
+            const activeIdxes: number[] = getCellIndexes(sheet.activeCell);
             while (isHiddenRow(this.parent.getActiveSheet(), selectedRange[2])) {
                 if (e.keyCode === 40) {
                     selectedRange[2] = selectedRange[2] + 1;
@@ -240,7 +258,8 @@ export class KeyboardNavigation {
                 }
             }
             this.parent.selectRange(getRangeAddress(selectedRange));
-            this.scrollNavigation([selectedRange[2], selectedRange[3]], false);
+            this.scrollNavigation([isColumnSelected(sheet, selectedRange) ? activeIdxes[0] : selectedRange[2],
+                isRowSelected(sheet, selectedRange) ? activeIdxes[1] : selectedRange[3]], false);
         }
     }
 
@@ -265,7 +284,7 @@ export class KeyboardNavigation {
                     cont.scrollTop = 0; return;
                 }
                 if (actIdxes[0] === frozenRow - 1) { cont.scrollTop = 0; }
-            } else if (actIdxes[0] === this.parent.renderModule.skipHiddenIdx(0, true)) {
+            } else if (actIdxes[0] === skipHiddenIdx(sheet, 0, true)) {
                 cont.scrollTop = 0; return;
             }
         }
@@ -275,7 +294,7 @@ export class KeyboardNavigation {
                     hCont.scrollLeft = 0; return;
                 }
                 if (actIdxes[1] === frozenCol - 1) { hCont.scrollLeft = 0; }
-            } else if (actIdxes[1] === this.parent.renderModule.skipHiddenIdx(0, true, 'columns')) {
+            } else if (actIdxes[1] === skipHiddenIdx(sheet, 0, true, 'columns')) {
                 hCont.scrollLeft = 0; return;
             }
         }

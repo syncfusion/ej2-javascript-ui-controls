@@ -927,7 +927,8 @@ export class BasicFormulas {
                             const splitValue: string[] = tmp[0].split('+');
                             for (let j: number = actColIdx, diff2: number = splitValue.length + actColIdx; j < diff2; j++) {
                                 const value: string = this.parent.getValueFromArg(getAlphalabel(j) + i, true);
-                                if (value !== '' && value.indexOf('UNIQUE') !== 1) {
+                                if (value !== '' && value.indexOf('UNIQUE') !== 1 &&
+                                    value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
                                     return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
                                 }
                             }
@@ -946,7 +947,8 @@ export class BasicFormulas {
                             const splitValue: string[] = tmp[0].split('+');
                             for (let j: number = actRowIdx, diff2: number = splitValue.length + actRowIdx; j < diff2; j++) {
                                 const value: string = this.parent.getValueFromArg(getAlphalabel(i) + j, true);
-                                if (value !== '' && value.indexOf('UNIQUE') !== 1) {
+                                if (value !== '' && value.indexOf('UNIQUE') !== 1 &&
+                                    value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
                                     return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
                                 }
                             }
@@ -2358,7 +2360,7 @@ export class BasicFormulas {
                         for (let a: number = 0, colInc: number = 0; a < id.length; a++, colInc++) {
                             const cellValue: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[a] + colIdx) + startRow);
                             let activeCell: string = this.parent.actCell;
-                            activeCell = activeCell.indexOf('!') > - 1 ?activeCell.split('!')[1] : activeCell;
+                            activeCell = activeCell.indexOf('!') > - 1 ? activeCell.split('!')[1] : activeCell;
                             const actRowIdx: number = this.parent.rowIndex(activeCell);
                             const actColIdx: number = this.parent.colIndex(activeCell);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2373,7 +2375,7 @@ export class BasicFormulas {
                         for (let startCol: number = colIdx, colInc: number = 0; startCol <= eColIdx; startCol++, colInc++) {
                             const value: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(startCol) + (id[a] + rowIdx));
                             let activeCell: string = this.parent.actCell;
-                            activeCell = activeCell.indexOf('!') > - 1 ?activeCell.split('!')[1] : activeCell;
+                            activeCell = activeCell.indexOf('!') > - 1 ? activeCell.split('!')[1] : activeCell;
                             const actColIdx: number = this.parent.colIndex(activeCell);
                             const actRowIdx: number = this.parent.rowIndex(activeCell);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3246,9 +3248,11 @@ export class BasicFormulas {
      * @returns {string} - Returns spreadsheet display text.
      */
     private spreadsheetDisplayText(value: string): string {
-        if (this.parent.parentObject && (this.parent.parentObject as any).element &&
-        (this.parent.parentObject as any).element.classList.contains('e-spreadsheet') && this.parent.isCellReference(value)) {
+        // eslint-disable-next-line
+        if (this.parent.parentObject && (this.parent.parentObject as any).element && (this.parent.parentObject as any).element.classList.contains('e-spreadsheet') && this.parent.isCellReference(value)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const indexes: { startIdx: number, endIdx: number, isCol: boolean } = (this.parent.parentObject as any).getIndexes(value);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             value = (this.parent.parentObject as any).getDisplayText((this.parent.parentObject as any).
                 getActiveSheet().rows[indexes.startIdx].cells[indexes.endIdx]);
         }
@@ -3261,9 +3265,11 @@ export class BasicFormulas {
      * @returns {string} - Returns spreadsheet format.
      */
     private spreadsheetFormat(value: string): string {
-        if (this.parent.parentObject && (this.parent.parentObject as any).element &&
-        (this.parent.parentObject as any).element.classList.contains('e-spreadsheet') && this.parent.isCellReference(value)) {
+        // eslint-disable-next-line
+        if (this.parent.parentObject && (this.parent.parentObject as any).element && (this.parent.parentObject as any).element.classList.contains('e-spreadsheet') && this.parent.isCellReference(value)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const index: { startIdx: number, endIdx: number, isCol: boolean } = (this.parent.parentObject as any).getIndexes(value);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             value = (this.parent.parentObject as any).getActiveSheet().rows[index.startIdx].cells[index.endIdx].format;
         }
         return value;

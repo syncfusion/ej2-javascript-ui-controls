@@ -143,7 +143,7 @@ export class WrapText {
                         }
                     }
                     if (isCustomHgt && !isMerge) {
-                        let displayText: string = this.parent.getDisplayText(cell);
+                        const displayText: string = this.parent.getDisplayText(cell);
                         if (args.wrap) {
                             if (ele && ele.classList.contains('e-alt-unwrap')) {
                                 ele.classList.remove('e-alt-unwrap');

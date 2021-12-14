@@ -2452,6 +2452,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {boolean} isCalculate - Value that allow to calculate.
      * @param {number[]} usedRangeCol - Specify the used range collection.
      * @param {boolean} refresh - Specifies for refreshing the value.
+     * @param {string} sheetName - Specifies for sheet name for spreadsheet.
      * @returns {void} - Specifies when changing the value.
      */
     public valueChanged(

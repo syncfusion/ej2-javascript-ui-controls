@@ -82,7 +82,7 @@ export class CellRenderer implements ICellRenderer {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
         const evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address, rowIndex: args.rowIdx, colIndex:
-            args.colIdx };
+            args.colIdx, needHeightCheck: false };
         this.parent.trigger('beforeCellRender', evtArgs);
         this.updateRowHeight({
             rowIdx: args.rowIdx as number,
@@ -92,7 +92,8 @@ export class CellRenderer implements ICellRenderer {
             row: args.row,
             hRow: args.hRow,
             colIdx: args.colIdx,
-            sheet: sheet
+            sheet: sheet,
+            needHeightCheck: evtArgs.needHeightCheck
         });
         this.setWrapByValue(sheet, args);
         return evtArgs.element;
@@ -107,7 +108,7 @@ export class CellRenderer implements ICellRenderer {
                 setCell(args.rowIdx, args.colIdx, sheet, { wrap: true }, true);
                 this.parent.notify(
                     wrapEvent, { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet: sheet,
-                    td: args.td, row: args.row, hRow: args.hRow });
+                        td: args.td, row: args.row, hRow: args.hRow });
             }
         }
     }
@@ -241,6 +242,9 @@ export class CellRenderer implements ICellRenderer {
                 sheet, initial: true, td: args.td, row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && prevHgt > 20
             });
         }
+        if (args.cell && args.cell.validation && args.cell.validation.isHighlighted) {
+            this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
+        }
     }
     private applyStyle(args: CellRenderArgs, style: CellStyleModel): void {
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
@@ -263,7 +267,7 @@ export class CellRenderer implements ICellRenderer {
         this.parent.notify(workbookFormulaOperation, eventArgs);
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
-            getSheet(this.parent, args.sheetIndex)).value;
+                getSheet(this.parent, args.sheetIndex)).value;
     }
     private checkMerged(args: CellRenderArgs): boolean {
         if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
@@ -508,13 +512,13 @@ export class CellRenderer implements ICellRenderer {
 
     private updateRowHeight(
         args: { row: HTMLElement, rowIdx: number, hRow: HTMLElement, cell: HTMLElement, rowHgt: number, lastCell: boolean, colIdx: number,
-        sheet: SheetModel }): void {
-        if (args.cell && args.cell.children.length) {
+            sheet: SheetModel, needHeightCheck?: boolean, }): void {
+        if ((args.cell && args.cell.children.length) || args.needHeightCheck) {
             const clonedCell: HTMLElement = args.cell.cloneNode(true) as HTMLElement;
             clonedCell.style.width = getColumnWidth(args.sheet, args.colIdx, true) + 'px';
             this.tableRow.appendChild(clonedCell);
         }
-        if (args.lastCell && this.tableRow.childElementCount) {
+        if ((args.lastCell && this.tableRow.childElementCount) || args.needHeightCheck) {
             const tableRow: HTMLElement = args.row || this.parent.getRow(args.rowIdx);
             const previouseHeight: number = getRowHeight(args.sheet, args.rowIdx);
             const rowHeight: number = this.getRowHeightOnInit();
@@ -576,6 +580,8 @@ export class CellRenderer implements ICellRenderer {
     /**
      * @hidden
      * @param {number[]} range - Specifies the range.
+     * @param {boolean} refreshing - Specifies the refresh.
+     * @param {boolean} checkWrap - Specifies the range.
      * @returns {void}
      */
     public refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean): void {
@@ -589,7 +595,7 @@ export class CellRenderer implements ICellRenderer {
                     cell = this.parent.getCell(i, j) as HTMLTableCellElement;
                     if (cell) {
                         args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
-                            cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' }
+                            cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' };
                         this.update(args);
                         this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
                         if (checkWrap) { this.setWrapByValue(sheet, args); }

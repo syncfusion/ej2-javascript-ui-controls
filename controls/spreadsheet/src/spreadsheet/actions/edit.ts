@@ -224,7 +224,7 @@ export class Edit {
             if (!sheet.isProtected || closest(e.target as Element, '.e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1]))) {
                 if (this.isEdit) {
                     const editorElem: HTMLElement = this.getEditElement(sheet);
-                    const isFormulaEdit: boolean = checkIsFormula(this.editCellData.value, true)
+                    const isFormulaEdit: boolean = checkIsFormula(this.editCellData.value, true);
                     if (this.isCellEdit || (isFormulaEdit && this.editCellData.value !== editorElem.textContent && e.keyCode !== 16)) {
                         if (actCell[1] < this.parent.frozenColCount(sheet) && (!sheet.frozenRows || actCell[0] >=
                             this.parent.frozenRowCount(sheet)) && editorElem && editorElem.style.height !== 'auto') {
@@ -352,7 +352,11 @@ export class Edit {
             if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
                 this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].remove();
             }
-            this.parent.element.querySelector('.e-sheet-content').appendChild(editor);
+            const sheetContentElem: Element = this.parent.element.querySelector('.e-sheet-content');
+            if (!sheetContentElem) {
+                return;
+            }
+            sheetContentElem.appendChild(editor);
             this.editorElem = editor;
         }
         this.parent.notify(formulaOperation, { action: 'renderAutoComplete' });
@@ -469,7 +473,12 @@ export class Edit {
                     }
                 }
                 if (args.isUnique && this.uniqueColl.split(':')[0] === address.split(':')[0]) {
-                    this.updateUniqueRange('');
+                    const index: number[] = getRangeIndexes(this.uniqueColl);
+                    for (let i: number = index[0]; i <= index[2]; i++) {
+                        for (let j: number = index[1]; j <= index[3]; j++) {
+                            this.parent.updateCell({value: '', formula: ''}, getRangeAddress([i, j]));
+                        }
+                    }
                     this.parent.notify(removeUniquecol, null);
                     this.uniqueColl = '';
                 } else if (args.isUnique) {
@@ -1060,7 +1069,7 @@ export class Edit {
         const cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         const eventArgs: CellEditEventArgs | CellSaveEventArgs = {
             element: this.editCellData.element,
-            value: cell ? cell.value : this.editCellData.value,
+            value: this.editCellData.value,
             oldValue: this.editCellData.oldValue,
             address: this.editCellData.fullAddr,
             displayText: this.parent.getDisplayText(cell)

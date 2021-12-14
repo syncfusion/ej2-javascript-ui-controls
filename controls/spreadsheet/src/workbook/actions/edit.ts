@@ -71,12 +71,13 @@ export class WorkbookEdit {
     private checkDecimalPoint(value: string, formula?: string): string {
         if (Number(value)) {
             const decIndex: number = value.toString().indexOf(this.decimalSep) + 1;
-            const checkDec: boolean = value.toString().substr(decIndex).length <= 6
+            const checkDec: boolean = value.toString().substr(decIndex).length <= 6;
             if (checkDec) {
                 if (!formula || formula.includes('RANDBETWEEN')) {
                     value = decIndex < 7 ? value : (parseFloat(value)).toFixed(0);
                 } else {
-                    value = value.toString().length < 11 ? value : (decIndex < 11 ? parseFloat(value).toFixed(9 - decIndex + 2) : parseFloat(value).toFixed(0));
+                    value = value.toString().length < 11 ? value : (decIndex < 11 ? parseFloat(value).toFixed(9 - decIndex + 2) :
+                        parseFloat(value).toFixed(0));
                 }
             } else {
                 value = decIndex > 7 ? (parseFloat(value)).toFixed(0) : (parseFloat(value)).toFixed(6 - decIndex + 2);

@@ -141,9 +141,9 @@ export class WorkbookChart {
                     if (!isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
                         const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
                         const excelFilter: Chart = getComponent(chartObj, 'chart');
-                        if(excelFilter){
-                        excelFilter.height = args.height;
-                        excelFilter.width = args.width;
+                        if (excelFilter){
+                            excelFilter.height = args.height;
+                            excelFilter.width = args.width;
                         }
                     }
                 }

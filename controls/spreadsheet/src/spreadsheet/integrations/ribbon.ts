@@ -44,11 +44,7 @@ export class Ribbon {
     private datavalidationDdb: DropDownButton;
     private bordersDdb: DropDownButton;
     private cFDdb: DropDownButton;
-    private chartDdb: DropDownButton;
     private clearDdb: DropDownButton;
-    private bordersMenu: Menu;
-    private cFMenu: Menu;
-    private chartMenu: Menu;
     private findDdb: Button;
     private findDialog: FindDialog;
     private border: string = '1px solid #000000';
@@ -59,7 +55,6 @@ export class Ribbon {
     private mergeSplitBtn: SplitButton;
     private findValue: string = '';
     private preTabIdx: number = 1;
-    private addChartMenu: Menu;
     private addChartDdb: DropDownButton;
     private chartThemeDDB: DropDownButton;
     private chartThemeIndex: number = 5;
@@ -152,7 +147,7 @@ export class Ribbon {
                 },
                 {
                     prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
-                    id: id + '_', tooltipText: l10n.getConstant('Image'), click: (): void => {
+                    id: id + '_image', tooltipText: l10n.getConstant('Image'), click: (): void => {
                         select('#' + id + '_imageUpload', this.parent.element).click(); }
                 }]
         },
@@ -224,7 +219,7 @@ export class Ribbon {
         if (this.parent.allowFindAndReplace) {
             items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Home')).content.push(
                 {
-                    template: this.getFindDDb(id), prefixIcon: 'e-tbar-search-icon tb-icons',
+                    template: this.getFindBtn(id), prefixIcon: 'e-tbar-search-icon tb-icons',
                     tooltipText: l10n.getConstant('FindReplaceTooltip'), id: id + '_find'
                 });
         }
@@ -408,6 +403,26 @@ export class Ribbon {
     }
     private tabSelecting(args: SelectingEventArgs): void {
         if (args.selectingIndex !== this.ribbon.selectedTab) {
+            if (this.parent.allowChart) {
+                const l10n: L10n = this.parent.serviceLocator.getService(locale);
+                if (this.ribbon.items[args.selectingIndex] && this.ribbon.items[args.selectingIndex].header.text ===
+                    l10n.getConstant('Insert')) {
+                    this.createChartDdb(document.getElementById(this.parent.element.id + '_chart-btn'), true);
+                }
+                if (this.ribbon.items[args.selectedIndex] && this.ribbon.items[args.selectedIndex].header.text ===
+                    l10n.getConstant('Insert')) {
+                    const ribbonContent: TlbItemModel[] = this.ribbon.items[args.selectedIndex].content;
+                    for (let i: number = ribbonContent.length - 1; i >= 0; i--) {
+                        if (ribbonContent[i].id === this.parent.element.id + '_chart') {
+                            const chartBtn: HTMLElement = ribbonContent[i].template as HTMLElement;
+                            if (chartBtn && chartBtn.classList.contains('e-dropdown-btn')) {
+                                this.destroyComponent(chartBtn, 'dropdown-btn');
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
             this.refreshRibbonContent(args.selectingIndex);
             this.parent.notify(tabSwitch, { activeTab: args.selectingIndex });
         }
@@ -483,9 +498,49 @@ export class Ribbon {
 
     private getChartDDB(id: string, isChart: boolean): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let chartBtn: HTMLElement;
+        if (isChart) {
+            chartBtn = this.parent.createElement('button', { id: id + '_chart-btn' });
+            chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('Chart') }));
+        } else {
+            chartBtn = this.parent.createElement('button', { id: id + '_chart-type-btn' });
+            chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart_type', innerHTML: l10n.getConstant('ChartType') }));
+            this.createChartDdb(chartBtn, false);
+        }
+        return chartBtn;
+    }
+
+    private createChartDdb(chartBtn: HTMLElement, isChart: boolean): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const menuClass: string = isChart ? 'e-chart-menu' : 'e-chart-type-menu';
-        this.chartMenu = new Menu({
-            cssClass: menuClass,
+        const ul: HTMLElement = this.parent.createElement(
+            'ul', { id: `${this.parent.element.id}${isChart ? '_chart_menu' : '_chart_type_menu'}` });
+        let chartMenu: Menu;
+        const chartDdb: DropDownButton = new DropDownButton({
+            iconCss: `e-icons ${isChart ? 'e-chart-icon' : 'e-chart-type-icon'}`,
+            cssClass: isChart ? 'e-chart-ddb' : 'e-chart-type-ddb',
+            target: ul,
+            createPopupOnClick: true,
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                chartMenu = this.createChartMenu(ul, menuClass, l10n, chartDdb);
+                this.tBarDdbBeforeOpen(args.element, chartMenu.items);
+            },
+            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.event && closest(args.event.target as Element, '.' + menuClass)) {
+                    args.cancel = true;
+                } else {
+                    chartMenu.destroy();
+                }
+            },
+            close: (): void => focus(this.parent.element)
+        });
+        chartDdb.createElement = this.parent.createElement;
+        chartDdb.appendTo(chartBtn);
+    }
+
+    private createChartMenu(ul: HTMLElement, cssClass: string, l10n: L10n, chartDdb: DropDownButton): Menu {
+        const chartMenu: Menu = new Menu({
+            cssClass: cssClass,
             items: [
                 {
                     iconCss: 'e-icons e-column', text: l10n.getConstant('Column'),
@@ -541,9 +596,8 @@ export class Ribbon {
                     args.element.parentElement.classList.add('e-scatter-chart');
                 }
             },
-            select: this.chartSelected.bind(this)
+            select: (args: MenuEventArgs): void => this.chartSelected(args, chartDdb)
         });
-        this.chartMenu.createElement = this.parent.createElement;
         const column: HTMLElement = this.parent.createElement('div', { id: 'column_main', className: 'e-column-main' });
         const column1Text: HTMLElement =
             this.parent.createElement('div', { id: 'column1_text', className: 'e-column1-text', innerHTML: l10n.getConstant('Column') });
@@ -672,46 +726,43 @@ export class Ribbon {
             this.parent.createElement('span', { id: 'scatter', className: 'e-scatter e-scatter-icon e-menu-icon e-icons' });
         defscatter.title = l10n.getConstant('Scatter');
         scatterCont.appendChild(defscatter);
-        const ulClass: string = isChart ? '_chart_menu' : '_chart_type_menu';
-        const ul: HTMLElement = this.parent.element.appendChild(this.parent.createElement('ul', {
-            id: id + ulClass, styles: 'display: none;'
-        }));
-        this.chartMenu.appendTo(ul);
+        chartMenu.createElement = this.parent.createElement;
+        chartMenu.appendTo(ul);
         ul.classList.add('e-ul');
-        const ddbIconCss: string = isChart ? 'e-chart-icon' : 'e-chart-type-icon';
-        const ddbCssClass: string = isChart ? 'e-chart-ddb' : 'e-chart-type-ddb';
-        const chartBtnId: string = isChart ? id + '_chart-btn' : id + '_chart-type-btn';
-        this.chartDdb = new DropDownButton({
-            iconCss: `e-icons ${ddbIconCss}`,
-            cssClass: ddbCssClass,
-            target: this.chartMenu.element.parentElement,
-            createPopupOnClick: true,
-            created: (): void => { this.chartMenu.element.style.display = ''; },
-            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.event && closest(args.event.target as Element, '.' + ddbCssClass)) {
-                    if (closest(args.event.target as Element, '.' + ddbCssClass).id !== chartBtnId) {
-                        args.cancel = true;
-                    }
-                }
-            },
-            close: (): void => focus(this.parent.element)
-        });
-        this.chartDdb.createElement = this.parent.createElement;
-        let chartBtn: HTMLElement;
-        if (isChart) {
-            chartBtn = this.parent.createElement('button', { id: chartBtnId});
-            chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('Chart') }));
-        } else {
-            chartBtn = this.parent.createElement('button', { id: chartBtnId});
-            chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart_type', innerHTML: l10n.getConstant('ChartType') }));
-        }
-        this.chartDdb.appendTo(chartBtn);
-        return this.chartDdb.element;
+        return chartMenu;
     }
 
     private getAddChartEleDBB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        this.addChartMenu = new Menu({
+        const ul: HTMLElement = this.parent.createElement('ul', { id: id + '_add_chart_menu' });
+        let addChartMenu: Menu;
+        this.addChartDdb = new DropDownButton({
+            iconCss: 'e-icons e-addchart-icon',
+            cssClass: 'e-addchart-ddb',
+            target: ul,
+            createPopupOnClick: true,
+            close: (): void => focus(this.parent.element),
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                addChartMenu = this.createAddChartMenu(ul, l10n);
+                this.tBarDdbBeforeOpen(args.element, addChartMenu.items);
+            },
+            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.event && closest(args.event.target as Element, '.e-addchart-menu')) {
+                    args.cancel = true;
+                } else {
+                    addChartMenu.destroy();
+                }
+            }
+        });
+        this.addChartDdb.createElement = this.parent.createElement;
+        const addChartBtn: HTMLElement = this.parent.createElement('button', { id: id + '_addchart' });
+        addChartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('AddChartElement') }));
+        this.addChartDdb.appendTo(addChartBtn);
+        return this.addChartDdb.element;
+    }
+
+    private createAddChartMenu(ul: HTMLElement, l10n: L10n): Menu {
+        const addChartMenu: Menu = new Menu({
             cssClass: 'e-addchart-menu', title: l10n.getConstant('AddChartElement'),
             items: [{
                 iconCss: 'e-icons e-axes', text: l10n.getConstant('Axes'),
@@ -781,36 +832,41 @@ export class Ribbon {
             orientation: 'Vertical',
             select: this.addChartEleSelected.bind(this)
         });
-        const ul: HTMLElement = this.parent.element.appendChild(this.parent.createElement('ul', {
-            id: id + '_add_chart_menu', styles: 'display: none;'
-        }));
-        this.addChartMenu.appendTo(ul);
+        addChartMenu.createElement = this.parent.createElement;
+        addChartMenu.appendTo(ul);
         ul.classList.add('e-ul');
-        this.addChartDdb = new DropDownButton({
-            iconCss: 'e-icons e-addchart-icon',
-            cssClass: 'e-addchart-ddb',
-            target: this.addChartMenu.element.parentElement,
-            createPopupOnClick: true,
-            created: (): void => { this.addChartMenu.element.style.display = ''; },
-            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.event && closest(args.event.target as Element, '.e-addchart-ddb')) {
-                    if (closest(args.event.target as Element, '.e-addchart-ddb').id !== id + '_addchart') {
-                        args.cancel = true;
-                    }
-                }
-            },
-            close: (): void => this.parent.element.focus()
-        });
-        this.addChartDdb.createElement = this.parent.createElement;
-        const addChartBtn: HTMLElement = this.parent.createElement('button', { id: id + '_addchart' });
-        addChartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('AddChartElement') }));
-        this.addChartDdb.appendTo(addChartBtn);
-        return this.addChartDdb.element;
+        return addChartMenu;
     }
 
     private getCFDBB(id: string): Element {
+        const ul: HTMLElement = this.parent.createElement('ul', { id: id + '_cf_menu' });
+        let cfMenu: Menu;
+        this.cFDdb = new DropDownButton({
+            iconCss: 'e-icons e-conditionalformatting-icon',
+            cssClass: 'e-cf-ddb',
+            target: ul,
+            createPopupOnClick: true,
+            close: (): void => focus(this.parent.element),
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                cfMenu = this.createCFMenu(ul);
+                this.tBarDdbBeforeOpen(args.element, cfMenu.items);
+            },
+            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.event && closest(args.event.target as Element, '.e-cf-menu')) {
+                    args.cancel = true;
+                } else {
+                    cfMenu.destroy();
+                }
+            }
+        });
+        this.cFDdb.createElement = this.parent.createElement;
+        this.cFDdb.appendTo(this.parent.createElement('button', { id: id + '_conditionalformatting' }));
+        return this.cFDdb.element;
+    }
+
+    private createCFMenu(ul: HTMLElement): Menu {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        this.cFMenu = new Menu({
+        const cFMenu: Menu = new Menu({
             cssClass: 'e-cf-menu',
             items: [{
                 iconCss: 'e-icons e-hlcellrules', text: l10n.getConstant('HighlightCellsRules'),
@@ -882,7 +938,7 @@ export class Ribbon {
         lBBar.title = l10n.getConstant('LightblueDataBar'); pBar.title = l10n.getConstant('PurpleDataBar');
         db1.appendChild(bBar); db1.appendChild(gBar); db1.appendChild(rBar);
         db2.appendChild(oBar); db2.appendChild(lBBar); db2.appendChild(pBar);
-        this.cFMenu.createElement = this.parent.createElement;
+        cFMenu.createElement = this.parent.createElement;
         const colorScales: HTMLElement = this.parent.createElement('div', { id: 'db', className: 'e-cs' });
         const cs1: HTMLElement = this.parent.createElement('div', { id: 'cs1', className: 'e-cs1' });
         const cs2: HTMLElement = this.parent.createElement('div', { id: 'cs2', className: 'e-cs2' });
@@ -1053,24 +1109,10 @@ export class Ribbon {
         ratings5.appendChild(this.createElement('span', 'e-5boxes-3 e-iconsetspan'));
         ratings5.appendChild(this.createElement('span', 'e-5boxes-4 e-iconsetspan'));
         ratings5.appendChild(this.createElement('span', 'e-5boxes-5 e-iconsetspan'));
-
-
-        const ul: HTMLElement = this.parent.element.appendChild(this.parent.createElement('ul', {
-            id: id + '_cf_menu', styles: 'display: none;'
-        }));
-        this.cFMenu.appendTo(ul);
+        cFMenu.createElement = this.parent.createElement;
+        cFMenu.appendTo(ul);
         ul.classList.add('e-ul');
-        this.cFDdb = new DropDownButton({
-            iconCss: 'e-icons e-conditionalformatting-icon',
-            cssClass: 'e-cf-ddb',
-            target: this.cFMenu.element.parentElement,
-            createPopupOnClick: true,
-            created: (): void => { this.cFMenu.element.style.display = ''; },
-            close: (): void => focus(this.parent.element)
-        });
-        this.cFDdb.createElement = this.parent.createElement;
-        this.cFDdb.appendTo(this.parent.createElement('button', { id: id + '_conditionalformatting' }));
-        return this.cFDdb.element;
+        return cFMenu;
     }
 
     private createElement(tag: string, className: string ): HTMLElement {
@@ -1078,8 +1120,48 @@ export class Ribbon {
     }
 
     private getBordersDBB(id: string): Element {
-        let cPickerWrapper: HTMLElement; const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        this.bordersMenu = new Menu({
+        const ul: HTMLElement = this.parent.createElement('ul', { id: id + '_borders_menu' });
+        this.cPickerEle = this.parent.createElement('input', { id: `${id}_cell_border_color`, attrs: { 'type': 'color' } });
+        this.parent.element.appendChild(this.cPickerEle);
+        this.colorPicker = new ColorPicker({
+            cssClass: 'e-border-colorpicker',
+            mode: 'Palette',
+            inline: true,
+            change: (args: ColorPickerEventArgs): void => {
+                const border: string[] = this.border.split(' '); border[2] = args.currentValue.hex;
+                this.border = border.join(' ');
+            }
+        });
+        this.colorPicker.createElement = this.parent.createElement;
+        this.colorPicker.appendTo(this.cPickerEle);
+        let bordersMenu: Menu;
+        this.bordersDdb = new DropDownButton({
+            iconCss: 'e-icons e-bottom-borders',
+            cssClass: 'e-borders-ddb',
+            target: ul,
+            createPopupOnClick: true,
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                bordersMenu = this.createBorderMenu(ul);
+                this.tBarDdbBeforeOpen(args.element, bordersMenu.items, 1);
+            },
+            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.event && closest(args.event.target as Element, '.e-borders-menu')) {
+                    args.cancel = true;
+                } else {
+                    bordersMenu.destroy();
+                }
+            },
+            close: (): void => focus(this.parent.element)
+        });
+        this.bordersDdb.createElement = this.parent.createElement;
+        this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
+        return this.bordersDdb.element;
+    }
+
+    private createBorderMenu(ul: HTMLElement): Menu {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const id: string = this.parent.element.id;
+        const bordersMenu: Menu = new Menu({
             cssClass: 'e-borders-menu',
             items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders') }, {
                 iconCss: 'e-icons e-left-borders',
@@ -1108,7 +1190,7 @@ export class Ribbon {
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.parentItem.text === 'Border Color') {
                     this.colorPicker.refresh();
-                    cPickerWrapper = this.colorPicker.element.parentElement;
+                    const cPickerWrapper: HTMLElement = this.colorPicker.element.parentElement;
                     args.element.firstElementChild.appendChild(cPickerWrapper);
                     cPickerWrapper.style.display = 'inline-block';
                     args.element.parentElement.classList.add('e-border-color');
@@ -1122,6 +1204,7 @@ export class Ribbon {
                         closest(args.event.target as Element, '.e-apply') || closest(args.event.target as Element, '.e-cancel')) {
                         this.colorPicker = <ColorPicker>getComponent(this.cPickerEle, 'colorpicker');
                         if (this.colorPicker.mode === 'Picker') { this.colorPicker.mode = 'Palette'; this.colorPicker.dataBind(); }
+                        const cPickerWrapper: HTMLElement = this.colorPicker.element.parentElement;
                         cPickerWrapper.style.display = '';
                         this.parent.element.appendChild(cPickerWrapper);
                     } else {
@@ -1132,47 +1215,15 @@ export class Ribbon {
             onOpen: (args: OpenCloseMenuEventArgs): void => {
                 if (args.parentItem.text === 'Border Color') { args.element.parentElement.style.overflow = 'visible'; }
             },
-            select: this.borderSelected.bind(this)
+            select: (args: MenuEventArgs): void => this.borderSelected(args, bordersMenu)
         });
-        this.bordersMenu.createElement = this.parent.createElement;
-        const ul: HTMLElement = this.parent.element.appendChild(this.parent.createElement('ul', {
-            id: id + '_borders_menu', styles: 'display: none;'
-        }));
-        this.bordersMenu.appendTo(ul);
+        bordersMenu.createElement = this.parent.createElement;
+        bordersMenu.appendTo(ul);
         ul.classList.add('e-ul');
-        this.cPickerEle = this.parent.createElement('input', { id: `${id}_cell_border_color`, attrs: { 'type': 'color' } });
-        this.parent.element.appendChild(this.cPickerEle);
-        this.colorPicker = new ColorPicker({
-            cssClass: 'e-border-colorpicker',
-            mode: 'Palette',
-            inline: true,
-            change: (args: ColorPickerEventArgs): void => {
-                const border: string[] = this.border.split(' '); border[2] = args.currentValue.hex;
-                this.border = border.join(' ');
-            },
-            created: (): void => { cPickerWrapper = this.colorPicker.element.parentElement; }
-        });
-        this.colorPicker.createElement = this.parent.createElement;
-        this.colorPicker.appendTo(this.cPickerEle);
-        this.bordersDdb = new DropDownButton({
-            iconCss: 'e-icons e-bottom-borders',
-            cssClass: 'e-borders-ddb',
-            target: this.bordersMenu.element.parentElement,
-            createPopupOnClick: true,
-            created: (): void => { this.bordersMenu.element.style.display = ''; },
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.tBarDdbBeforeOpen(
-                <HTMLElement>args.element.firstElementChild, this.bordersMenu.items, 1),
-            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.event && closest(args.event.target as Element, '.e-borders-menu')) { args.cancel = true; }
-            },
-            close: (): void => focus(this.parent.element)
-        });
-        this.bordersDdb.createElement = this.parent.createElement;
-        this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
-        return this.bordersDdb.element;
+        return bordersMenu;
     }
 
-    private chartSelected(args: MenuEventArgs): void {
+    private chartSelected(args: MenuEventArgs, chartDdb: DropDownButton): void {
         const isChart: boolean = !isNullOrUndefined(closest(args.element, '.e-chart-menu'));
         const eleId: string = args.element.id;
         if (('column_chart' + 'bar_chart' + 'area_chart' + 'pie_doughnut_chart' +
@@ -1180,11 +1231,13 @@ export class Ribbon {
             const id: string = (args.event.target as HTMLElement).id;
             this.parent.notify(insertChart, { action: eleId, id: id, isChart: isChart });
         }
+        if (args.item && (!args.item.items || !args.item.items.length)) { chartDdb.toggle(); }
     }
 
     private addChartEleSelected(args: MenuEventArgs): void {
         const eleId: string = args.element.id;
         this.parent.notify(chartDesignTab, { addChartEle: eleId });
+        if (args.item && (!args.item.items || !args.item.items.length)) { this.addChartDdb.toggle(); }
     }
 
     private cFSelected(args: MenuEventArgs): void {
@@ -1209,9 +1262,10 @@ export class Ribbon {
             this.parent.conditionalFormat = null;
             this.parent.notify(clearCFRule, { range: range, isPublic: false });
         }
+        if (args.item && (!args.item.items || !args.item.items.length)) { this.cFDdb.toggle(); }
     }
 
-    private borderSelected(args: MenuEventArgs): void {
+    private borderSelected(args: MenuEventArgs, bordersMenu: Menu): void {
         if (args.item.items.length || args.item.id === `${this.parent.element.id}_border_colors`) { return; }
         if (!args.item.text) {
             const id: string = this.parent.element.id;
@@ -1225,14 +1279,15 @@ export class Ribbon {
                 border[0] = border[1] === 'double' ? '3px' : '1px';
             }
             this.border = border.join(' ');
-            (this.bordersMenu.items[12].items as MenuItemModel[]).forEach((item: MenuItemModel): void => {
+            (bordersMenu.items[12].items as MenuItemModel[]).forEach((item: MenuItemModel): void => {
                 if (item.id === prevStyleId) { item.iconCss = null; }
                 if (item.id === args.item.id) { item.iconCss = 'e-icons e-selected-icon'; }
             });
-            this.bordersMenu.setProperties({ 'items': this.bordersMenu.items }, true);
+            bordersMenu.setProperties({ 'items': bordersMenu.items }, true);
             return;
         }
-        this.bordersDdb.toggle(); this.parent.showSpinner();
+        this.bordersDdb.toggle();
+        this.parent.showSpinner();
         switch (args.item.text) {
         case 'Top Borders':
             this.parent.notify(setCellFormat, { style: { borderTop: this.border }, onActionUpdate: true });
@@ -1551,50 +1606,69 @@ export class Ribbon {
         return this.sortingDdb.element;
     }
 
-    private getFindDDb(id: string): HTMLElement {
+    private getFindBtn(id: string): HTMLElement {
         const findToolbtn: HTMLElement = this.parent.createElement(
             'button', { id: id + '_findbtn', attrs: { 'type': 'button' } }) as HTMLElement;
-        this.findDdb = new Button({
-            cssClass: 'e-spreadsheet-find-ddb e-caret-hide',
-            iconCss: 'e-icons e-search-icon'
-        });
+        this.findDdb = new Button({ cssClass: 'e-spreadsheet-find-ddb', iconCss: 'e-icons e-search-icon' });
         this.findDdb.createElement = this.parent.createElement;
         this.findDdb.appendTo(findToolbtn);
-        findToolbtn.onclick = (): void => {
-            this.findToolDlg();
-        };
+        findToolbtn.onclick = this.findToolDlg.bind(this);
         return this.findDdb.element;
     }
     private findToolDlg(): void {
-        let countArgs: { [key: string]: string };
         if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
             // eslint-disable-next-line prefer-const
             let toolbarObj: Toolbar; const findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
-            const findTextInput: HTMLElement = this.parent.createElement('input', {
-                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' , value: this.findValue }
-            });
+            const findTextInput: HTMLInputElement = this.parent.createElement('input', {
+                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text'  }
+            }) as HTMLInputElement;
+            if (this.findValue) { findTextInput.value = this.findValue; }
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             findTextInput.setAttribute('placeholder', l10n.getConstant('FindValue'));
             const findSpan: HTMLElement = this.parent.createElement('span', { className: 'e-input-group-icon'});
-            findTextInput.onkeyup = (): void => {
-                countArgs = { countOpt: 'count', findCount: '' };
-                this.parent.notify(findHandler, { countArgs: countArgs });
-                findSpan.textContent = countArgs.findCount;
-                const element: HTMLInputElement = document.querySelector('.e-text-findNext-short') as HTMLInputElement;
-                const value: string = element.value;
-                const nextElement: HTMLElement = document.querySelector('.e-findRib-next') as HTMLElement;
-                const prevElement: HTMLElement = document.querySelector('.e-findRib-prev') as HTMLElement;
-                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0 of 0')) {
-                    toolbarObj.enableItems(nextElement, false); toolbarObj.enableItems(prevElement, false);
-                    findSpan.textContent = '0 of 0';
-                } else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0 of 0')) {
-                    toolbarObj.enableItems(nextElement, true); toolbarObj.enableItems(prevElement, true);
+            let prevValue: string = findTextInput.value;
+            findTextInput.onkeyup = (e: KeyboardEvent): void => {
+                const sheet: SheetModel = this.parent.getActiveSheet();
+                const mainHandlerFn: Function = (): void => {
+                    if (!findTextInput) { return; }
+                    if (e.keyCode === 13) {
+                        if (findTextInput.value && findSpan.textContent !== '0 of 0') {
+                            this.parent.notify(findHandler, { findOption: e.shiftKey ? 'prev' : 'next' });
+                            this.updateCount(findSpan, e.shiftKey);
+                        }
+                    } else {
+                        const inputValue: string = findTextInput.value;
+                        if (prevValue === inputValue) {
+                            return;
+                        } else {
+                            prevValue = inputValue;
+                        }
+                        const handlerFn: Function = (): void => {
+                            if (!findTextInput) { return; }
+                            const value: string = findTextInput.value;
+                            if (value !== inputValue) { return; }
+                            const countArgs: { [key: string]: string } = { countOpt: 'count', findCount: '' };
+                            this.parent.notify(findHandler, { countArgs: countArgs });
+                            findSpan.textContent = countArgs.findCount;
+                            if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0 of 0')) {
+                                toolbarObj.enableItems(1, false); toolbarObj.enableItems(2, false);
+                                findSpan.textContent = '0 of 0';
+                            } else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0 of 0')) {
+                                toolbarObj.enableItems(1, true); toolbarObj.enableItems(2, true);
+                            }
+                        };
+                        if (sheet.usedRange.rowIndex * sheet.usedRange.rowIndex < 1000) {
+                            handlerFn();
+                        } else {
+                            setTimeout(handlerFn());
+                        }
+                    }
+                };
+                if (sheet.usedRange.rowIndex * sheet.usedRange.rowIndex < 1000) {
+                    mainHandlerFn();
+                } else {
+                    setTimeout(mainHandlerFn());
                 }
-            };
-            findTextInput.onkeydown = (e: KeyboardEvent): void => {
-                countArgs = { countOpt: 'count', findCount: '' };
-                this.parent.notify(findHandler, { countArgs: countArgs }); const count: string = countArgs.findCount;
-                this.findOnKeyDown(e, count);
             };
             findTextElement.appendChild(findTextInput);
             findTextElement.appendChild(findSpan);
@@ -1613,14 +1687,10 @@ export class Ribbon {
                 clicked: (args: ClickEventArgs): void => {
                     if (args.item.cssClass === 'e-findRib-next') {
                         this.parent.notify(findHandler, { findOption: 'next' });
-                        countArgs = { countOpt: 'count', findCount: '' };
-                        this.parent.notify(findHandler, { countArgs: countArgs });
-                        findSpan.textContent = countArgs.findCount;
+                        this.updateCount(findSpan);
                     } else if (args.item.cssClass === 'e-findRib-prev') {
                         this.parent.notify(findHandler, { findOption: 'prev' });
-                        countArgs = { countOpt: 'count', findCount: '' };
-                        this.parent.notify(findHandler, { countArgs: countArgs });
-                        findSpan.textContent = countArgs.findCount;
+                        this.updateCount(findSpan, true);
                     } else if (args.item.cssClass === 'e-findRib-more') {
                         this.parent.notify(findDlg, null); this.findDialog.hide();
                     }
@@ -1635,11 +1705,17 @@ export class Ribbon {
                     EventHandler.add(document, 'click', this.closeDialog, this);
                 },
                 open: (): void => {
-                    findSpan.textContent = '0 of 0'
+                    if (this.findValue) {
+                        const countArgs: { [key: string]: string } = { countOpt: 'count', findCount: '' };
+                        this.parent.notify(findHandler, { countArgs: countArgs });
+                        findSpan.textContent = countArgs.findCount;
+                    } else {
+                        findSpan.textContent = '0 of 0';
+                    }
                     this.textFocus(toolbarObj.element);
                 },
                 beforeClose: (): void => {
-                    this.findValue = (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement).value;
+                    this.findValue = findTextInput.value || null;
                     toolbarObj.destroy();
                     const element: HTMLElement = document.querySelector('.e-find-toolbar');
                     if (element) { EventHandler.remove(element, 'focus', this.textFocus); }
@@ -1667,20 +1743,18 @@ export class Ribbon {
             }
         }
     }
-    private findOnKeyDown(e: KeyboardEvent, count: string): void {
-        if ((document.querySelector('.e-text-findNext-short') as HTMLInputElement).value) {
-            if (count !== '0 of 0') {
-                if (e.shiftKey) {
-                    if (e.keyCode === 13) {
-                        const buttonArgs: object = { findOption: 'prev' };
-                        this.parent.notify(findHandler, buttonArgs);
-                    }
-                } else if (e.keyCode === 13) {
-                    const buttonArg: object = { findOption: 'next' };
-                    this.parent.notify(findHandler, buttonArg);
-                }
-            }
+    private updateCount(countEle: HTMLElement, isPrev?: boolean): void {
+        const values: string[] = countEle.textContent.split(' ');
+        let newStart: number;
+        if (isPrev) {
+            newStart = Number(values[0]) - 1;
+            if (newStart < 1) { newStart = Number(values[2]); }
+        } else {
+            newStart = Number(values[0]) + 1;
+            if (newStart > Number(values[2])) { newStart = 1; }
         }
+        values[0] = newStart.toString();
+        countEle.textContent = values.join(' ');
     }
     private closeDialog(e: MouseEvent & TouchEvent): void {
         if ((closest(e.target as Element, '.e-findRib-close')) || (!closest(e.target as Element, '.e-spreadsheet'))) {
@@ -1908,7 +1982,7 @@ export class Ribbon {
         });
         customFormatDialog.show({
             header: l10n.getConstant('CustomFormat'),
-            cssClass:'e-custom-format-dlg',
+            cssClass: 'e-custom-format-dlg',
             height: this.parent.cssClass.indexOf('e-bigger') > -1 ? 502 : 480,
             width: 440,
             isModal: true,
@@ -2264,7 +2338,7 @@ export class Ribbon {
             break;
         case 'Tailwind':
             selectedTheme = l10n.getConstant('Tailwind');
-        break;
+            break;
         }
         return selectedTheme;
     }
@@ -2362,15 +2436,16 @@ export class Ribbon {
                 focus(this.parent.element);
                 break;
             case parentId + '_protect':
-                if(this.parent.openModule.isImportedFile && this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) == -1){
+                if (this.parent.openModule.isImportedFile &&
+                    this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) ===  -1) {
                     this.parent.notify(UnProtectWorksheet, {isImportedSheet: true});
                 }
                 else if (sheet.password && sheet.password.length > 0) {
                     this.parent.notify(UnProtectWorksheet, null);
                 } else {
-                this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
-                isActive = sheet.isProtected ? false : true;
-                this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
+                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
+                    isActive = sheet.isProtected ? false : true;
+                    this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
                 }
                 break;
             case parentId + '_undo':
@@ -2783,14 +2858,25 @@ export class Ribbon {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if ((sheet.isProtected && sheet.protectSettings.formatCells) || !sheet.isProtected) {
-            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId, enable: true }]);
+            if (this.parent.allowCellFormatting && this.parent.allowWrap) {
+                this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId, enable: true }]);
+            }
+            if (!this.parent.allowCellFormatting) {
+                this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(2, 14), enable: false }]);
+            }
+            if (!this.parent.allowWrap) {
+                this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(14, 15), enable: false }]);
+            }
             this.parent.notify(setUndoRedo, null);
-
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.disableHomeBtnId, enable: false }]);
         }
         if ((sheet.isProtected && sheet.protectSettings.insertLink) || !sheet.isProtected) {
-            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: true }]);
+            if (!this.parent.allowHyperlink || (sheet.isProtected && sheet.protectSettings.insertLink)) {
+                this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId.slice(0, 1), enable: false }]);
+            } else {
+                this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: true }]);
+            }
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: false }]);
         }
@@ -2833,9 +2919,10 @@ export class Ribbon {
                     this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('ProtectWorkbook');
                 }
             }
-            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: this.parent.allowImage }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId,
+                enable: this.parent.allowDataValidation }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
-            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: true }]);
         }
     }
@@ -2895,18 +2982,42 @@ export class Ribbon {
         this.sortingDdb.destroy(); this.sortingDdb = null;
         this.clearDdb.destroy(); this.clearDdb = null;
         this.colorPicker.destroy(); this.colorPicker = null;
-        this.bordersMenu.destroy(); this.bordersMenu = null;
+        this.destroyComponent(`${id}_borders_menu`, 'menu');
         this.bordersDdb.destroy(); this.bordersDdb = null;
         this.findDdb.destroy(); this.findDdb = null;
-        this.chartDdb.destroy(); this.chartDdb = null;
-        this.chartMenu.destroy(); this.chartMenu = null;
+        this.destroyComponent(id + '_chart_menu', 'menu'); this.destroyComponent(id + '_chart_type_menu', 'menu');
+        this.destroyComponent(id + '_chart-btn', 'dropdown-btn'); this.destroyComponent(id + '_chart-type-btn', 'dropdown-btn');
+        this.destroyComponent(`${id}_cf_menu`, 'menu');
         this.cFDdb.destroy(); this.cFDdb = null;
+        this.detachPopupElement(id);
         this.parent.notify('destroyRibbonComponents', null);
         this.ribbon.destroy();
         if (ribbonEle) { detach(ribbonEle); } this.ribbon = null;
         if (cPickerEle) { detach(cPickerEle); } this.cPickerEle = null;
         if (this.findDialog) {  this.findDialog.destroy(); }
         this.removeEventListener();
+    }
+    private destroyComponent(id: string | HTMLElement, moduleName: string): void {
+        const ele: HTMLElement = typeof id === 'string' ? document.getElementById(id) : id;
+        if (ele) {
+            if (moduleName !== 'menu' || ele.childElementCount) {
+                const compObj: Menu = getComponent(ele, moduleName) as Menu;
+                if (compObj) {
+                    compObj.destroy();
+                    if (moduleName === 'dropdown-btn') {
+                        const popup: HTMLElement = document.getElementById(`${ele.id}-popup`);
+                        if (popup) { detach(popup); }
+                    }
+                }
+            }
+            if (moduleName === 'menu') { detach(ele); }
+        }
+    }
+    private detachPopupElement(id: string): void {
+        ['_conditionalformatting', '_chart-type-btn', '_chart-btn', '_borders'].forEach((selector: string): void => {
+            const ddbPopup: HTMLElement = document.getElementById(`${id}${selector}-popup`);
+            if (ddbPopup) { detach(ddbPopup); }
+        });
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {

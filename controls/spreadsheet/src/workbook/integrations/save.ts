@@ -249,7 +249,7 @@ export class WorkbookSave extends SaveWorker {
 
         inputElem = this.parent.createElement(
             'input', { attrs: { type: 'hidden', name: 'pdfLayoutSettings' } }) as HTMLInputElement;
-            inputElem.value = JSON.stringify(this.pdfLayoutSettings);
+        inputElem.value = JSON.stringify(this.pdfLayoutSettings);
         formElem.appendChild(inputElem);
 
         document.body.appendChild(formElem);

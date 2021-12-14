@@ -48,6 +48,7 @@ export interface SheetRenderArgs {
     initLoad?: boolean;
     prevRowColCnt?: SheetModel;
     isRefreshing?: boolean;
+    isOpen?: boolean;
 }
 
 /** @hidden */
@@ -65,6 +66,7 @@ export interface FilterInfoArgs {
 export interface CellRenderEventArgs extends CellInfoEventArgs {
     /** Defines the cell element. */
     element: HTMLElement;
+    needHeightCheck?: boolean;
 }
 
 export interface StyleType {
@@ -132,7 +134,7 @@ export interface ICellRenderer {
     renderColHeader(index: number): Element;
     renderRowHeader(index: number): Element;
     render(args: CellRenderArgs): Element;
-    refreshRange(range: number[], reCalculateFormula?: boolean): void;
+    refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean): void;
     refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element): void;
 }
 
@@ -312,7 +314,7 @@ export interface CellSaveEventArgs {
 /**
  * CellSaveEventArgs
  */
- export interface ConditionalFormatEventArgs {
+export interface ConditionalFormatEventArgs {
     /** Defines the applied conditional format. */
     conditionalFormat: ConditionalFormatModel;
     /** Defines the cell element. */
@@ -346,6 +348,7 @@ export interface HideShowEventArgs {
     mergeCollection?: MergeArgs[];
     isFiltering?: true;
     aboveViewport?: boolean;
+    cancel?: boolean;
 }
 
 /** @hidden */
@@ -382,13 +385,14 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     isUndoRedo?: boolean;
     pasteSheetIndex: number;
     pastedPictureElement: HTMLElement;
-    fillRange?:string;
+    fillRange?: string;
     dataRange?: string;
     direction?: AutoFillDirection;
     fillType?: AutoFillType;
     selectedRange?: string;
     cFColor?: CFColor;
     sheetIdx?: number;
+    validation?: CellValidationEventArgs;
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
@@ -439,6 +443,7 @@ export interface PreviousCellDetails {
     hyperlink: string | HyperlinkModel;
     image: ImageModel[];
     isLocked?: boolean;
+    validation?: CellValidationEventArgs
 }
 
 export interface BeforePasteEventArgs {
@@ -488,7 +493,7 @@ export interface CellValidationEventArgs {
     value2?: string;
     ignoreBlank?: boolean;
     inCellDropDown?: boolean;
-    cancel: boolean;
+    cancel?: boolean;
 }
 
 /**
@@ -523,4 +528,14 @@ export interface BeforeChartEventArgs {
     posRange?: string;
     isInitCell?: boolean;
     cancel: boolean;
+}
+
+/** @hidden */
+export interface ScrollEventArgs {
+    scrollTop?: number;
+    scrollLeft?: number;
+    preventScroll?: boolean;
+    skipHidden?: boolean;
+    skipRowVirualScroll?: boolean;
+    skipColVirualScroll?: boolean;
 }

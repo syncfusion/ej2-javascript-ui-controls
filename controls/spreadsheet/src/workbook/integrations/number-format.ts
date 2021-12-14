@@ -242,10 +242,11 @@ export class WorkbookNumberFormat {
         return intl.formatDate(intToDate(parseFloat(value)), { type: type, format: format});
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private processCustomFraction(cell: CellModel): string {
-        let fracLength: number = cell.format.split('/')[1].length;
-        let fracValue: string = Number(cell.value).toFixed(fracLength);
-        let suffix: string = '';
+        // const fracLength: number = cell.format.split('/')[1].length;
+        // const fracValue: string = Number(cell.value).toFixed(fracLength);
+        const suffix: string = '';
         // let fractionResult: string;
         // if (cell.value.toString().indexOf(this.decimalSep) > -1 && isNumber(cell.value as string)) {
         //     suffix = cell.value.toString().split(this.decimalSep)[0];
@@ -266,6 +267,7 @@ export class WorkbookNumberFormat {
                     code = code.split('[' + getColorCode(code) + ']').join('');
                 }
                 const cond: string = code.split('[')[1].split(']')[0];
+                // eslint-disable-next-line no-eval
                 if (eval(cell.value + cond)) {
                     cell.format = conditions[i].split('[' + cond + ']')[0] + conditions[i].split('[' + cond + ']')[1];
                     break;
@@ -280,7 +282,7 @@ export class WorkbookNumberFormat {
 
     private processCustomAccounting(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement): string {
         const custFormat: string[] = cell.format.split(';');
-        const cellValue: number = parseFloat(cell.value);
+        const cellValue: number = parseFloat(cell.value.toString().replace(/,/g, ''));
         const orgValue: string = cell.value;
         if (cellValue > 0) {
             cell.format = custFormat[0];
@@ -295,7 +297,7 @@ export class WorkbookNumberFormat {
             cell.format = custFormat[1];
         } else {
             cell.format = custFormat[3];
-            return isNullOrUndefined(custFormat[3]) ? cell.value.toString() : this.processCustomText(cell);
+            return isNullOrUndefined(custFormat[3]) ? cell.value ? cell.value.toString() : '' : this.processCustomText(cell);
         }
         if (cellValue < 0) {
             cell.value = Math.abs(cellValue).toString();
@@ -307,8 +309,8 @@ export class WorkbookNumberFormat {
     }
 
     private processCustomText(cell: CellModel): string {
-        const dupCell: CellModel = {format: cell.format.split('@').join('0'), value: cell.value.split(cell.value).join('0')};
-        const result: string = this.processCustomNumberFormat(dupCell);
+        const result: string = this.processCustomNumberFormat(
+            { format: cell.format.split('@').join('0'), value: cell.value ? cell.value.split(cell.value).join('0') : '' });
         return result && result.split('0').join(cell.value);
     }
 
@@ -374,11 +376,16 @@ export class WorkbookNumberFormat {
         if (cell.format === '') {
             return '';
         }
-        let cellValue: number = 0;
+        let cellValue: number | string = 0;
         let formattedText: string;
         let isFormatted: boolean = false;
-        if (cell && isNumber(cell.value)) {
-            cellValue = parseFloat(cell.value);
+        if(!isNumber(cell.value)){
+            cellValue = cell.value.replace(/,/g, '');
+        }else{
+            cellValue = cell.value;
+        }
+        if (cell && isNumber(cellValue)) {
+            cellValue = parseFloat(cellValue.toString());
             let customFormat: string = this.processCustomColor(cell);
             // if (customFormat === cell.format && cell.style) {
             //     delete cell.style;
@@ -416,7 +423,6 @@ export class WorkbookNumberFormat {
             if (customFormat != null && customFormat.split('.')[0].indexOf('#') > -1 && cellValue < 1) {
                 formattedText = formattedText.toString().replace(/^0+/, '');
             }
-            cell.value = cellValue.toString();
         }
         return formattedText;
     }
@@ -720,7 +726,7 @@ export class WorkbookNumberFormat {
         if (isNullOrUndefined(args.value)) {
             return '';
         }
-        let value: string[] | number[] = args.value.toString().split(this.decimalSep);
+        const value: string[] | number[] = args.value.toString().split(this.decimalSep);
         if (!isNullOrUndefined(value[1])) {
             args.value = parseFloat(value[0] + 1 + this.decimalSep + value[1]) || args.value;
         }
@@ -787,7 +793,7 @@ export class WorkbookNumberFormat {
         if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
             value = checkedDate;
             if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-                dateObj = toDate(value, intl, this.parent.locale, cell && cell.format);
+                dateObj = toDate(value, intl, this.parent.locale);
                 if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                     cell = cell ? cell : {};
                     value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
@@ -844,18 +850,18 @@ export class WorkbookNumberFormat {
             (<CellModel>args.cell).format : getFormatFromType('ShortDate');
         const time: string = getFormatFromType('Time');
         switch (type) {
-            case 'ShortDate':
-            case 'LongDate':
-                args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
-                break;
-            case 'Time':
-                if (beforeText && Number(beforeText) >= 1) {
-                    args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
+        case 'ShortDate':
+        case 'LongDate':
+            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
+            break;
+        case 'Time':
+            if (beforeText && Number(beforeText) >= 1) {
+                args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
                         this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
-                } else {
-                    args.value = this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
-                }
-                break;
+            } else {
+                args.value = this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
+            }
+            break;
         }
         if (!args.value || (args.value && args.value.toString().indexOf('null') > -1)) {
             args.value = beforeText;
@@ -974,9 +980,9 @@ export function getTypeFromFormat(format: string): string {
         break;
     case '$#,##0.00':
     case '$#,##0_);[Red]($#,##0)':
-    // case '$#,##0.00_);[Red]($#,##0.00)':
     case '$#,##0.00_);($#,##0.00)':
     case '$#,##0_);($#,##0)':
+    // case '$#,##0.00_);[Red]($#,##0.00)':
         code = 'Currency';
         break;
     case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
@@ -986,11 +992,11 @@ export function getTypeFromFormat(format: string): string {
         code = 'Accounting';
         break;
     case 'mm-dd-yyyy':
+    case 'dd/MM/yyyy':
+    // case 'yyyy-MM-dd':
     // case 'dd-mm-yyyy':
     // case 'dd-mm-yy':
     // case 'mm-dd-yy':
-    case 'dd/MM/yyyy':
-    // case 'yyyy-MM-dd':
         code = 'ShortDate';
         break;
     case 'dddd, mmmm dd, yyyy':
