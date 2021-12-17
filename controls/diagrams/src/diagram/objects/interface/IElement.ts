@@ -17,6 +17,7 @@ import { Size } from '../../primitives/size';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../annotation-model';
 import { PaletteModel } from '../../../symbol-palette';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../fixed-user-handle-model';
+import { DropInfo } from '@syncfusion/ej2-base';
 
 /**
  * IElement interface defines the base of the diagram objects (node/connector)
@@ -720,6 +721,10 @@ export interface IDragEnterEventArgs {
     diagram: DiagramModel;
     /** parameter returns whether to add or remove the symbol from diagram */
     cancel: boolean;
+    /** returns the node or connector that been dragged into diagram from other component */
+    dragData: DropInfo;
+    /** returns the node or connector that been returned into the diagram */
+    dragItem: NodeModel | ConnectorModel;
 }
 
 /**

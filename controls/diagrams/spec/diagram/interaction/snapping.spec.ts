@@ -10,7 +10,7 @@ import { Rect } from '../../../src/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { MouseEvents } from './mouseevents.spec';
-import { SelectorConstraints, ZoomOptions } from '../../../src/diagram/index';
+import { SelectorConstraints, ZoomOptions, PointPortModel, PortConstraints, PortVisibility } from '../../../src/diagram/index';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(Snapping);
 
@@ -1621,5 +1621,291 @@ describe('SnapSettings', () => {
             expect(diagram.nodes[0].offsetY !== 100).toBe(true);
             done();
         });
+    });
+    describe('Swimlane with snap settings', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let horizontalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
+        let verticalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
+        let snapSettings: SnapSettingsModel = {
+            snapObjectDistance: 5,
+            constraints: (SnapConstraints.ShowLines & SnapConstraints.SnapToLines) | SnapConstraints.SnapToObject,
+            horizontalGridlines, verticalGridlines
+        };
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            
+            let port: PointPortModel[] = [
+                { id:'Port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Default |  PortConstraints.Draw },
+                { id:'Port2',offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Default |  PortConstraints.Draw },
+                { id:'Port3',offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Default |  PortConstraints.Draw },
+                { id:'Port4',offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Default |  PortConstraints.Draw }
+            ]
+            let nodes: NodeModel[] = [
+                {
+                  id: 'swimlane',
+                  shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                      annotation: {
+                        content: 'SALES PROCESS FLOW CHART',
+                        style: { fill: 'transparent' },
+                      },
+                      height: 50,
+                      style: { fontSize: 11 },
+                    },
+                    lanes: [
+                      {
+                        id: 'stackCanvas1',
+                        header: {
+                          annotation: { content: 'Consumer' },
+                          width: 50,
+                          style: { fontSize: 11 },
+                        },
+                        height: 100,
+                        children: [
+                          {
+                            id: 'node1',
+                            annotations: [
+                              {
+                                content: 'Consumer learns \n of product',
+                                style: { fontSize: 11 },
+                              },
+                            ],
+                            margin: { left: 60, top: 30 },
+                            height: 40,
+                            width: 100,
+                            ports: port,
+                          },
+                          {
+                            id: 'node2',
+                            shape: { type: 'Flow', shape: 'Decision' },
+                            annotations: [
+                              {
+                                content: 'Does \nConsumer want \nthe product',
+                                style: { fontSize: 11 },
+                              },
+                            ],
+                            margin: { left: 200, top: 20 },
+                            height: 60,
+                            width: 120,
+                            ports: port,
+                          },
+                          {
+                            id: 'node3',
+                            annotations: [
+                              {
+                                content: 'No sales lead',
+                                style: { fontSize: 11 },
+                              },
+                            ],
+                            margin: { left: 370, top: 30 },
+                            
+                            height: 40,
+                            width: 100,
+                            ports: port,
+                          },
+                          {
+                            id: 'node4',
+                            annotations: [
+                              {
+                                content: 'Sell to consumer',
+                                style: { fontSize: 11 },
+                              },
+                            ],
+                            margin: { left: 510, top: 30 },
+                            height: 40,
+                            width: 100,
+                            ports: port,
+                          },
+                        ],
+                      },
+                      {
+                        id: 'stackCanvas2',
+                        header: {
+                          annotation: { content: 'Marketing' },
+                          width: 50,
+                          style: { fontSize: 11 },
+                        },
+                        height: 100,
+                        children: [
+                          {
+                            id: 'node5',
+                            annotations: [{ content: 'Create marketing campaigns' }],
+                            margin: { left: 60, top: 20 },
+                            height: 40,
+                            width: 100,
+                            ports: port,
+                          },
+                          {
+                            id: 'node6',
+                            annotations: [{ content: 'Marketing finds sales leads' }],
+                            margin: { left: 210, top: 20 },
+                            height: 40,
+                            width: 100,
+                            ports: port,
+                          },
+                        ],
+                      },
+                      {
+                        id: 'stackCanvas3',
+                        header: {
+                          annotation: { content: 'Sales' },
+                          width: 50,
+                          style: { fontSize: 11 },
+                        },
+                        height: 100,
+                        children: [
+                          {
+                            id: 'node7',
+                            annotations: [{ content: 'Sales receives lead' }],
+                            margin: { left: 210, top: 30 },
+                            height: 40,
+                            width: 100,
+                            ports: port,
+                          },
+                        ],
+                      },
+                      {
+                        id: 'stackCanvas4',
+                        header: {
+                          annotation: { content: 'Success' },
+                          width: 50,
+                          style: { fontSize: 11 },
+                        },
+                        height: 100,
+                        children: [
+                          {
+                            id: 'node8',
+                            annotations: [
+                              {
+                                content: 'Success helps \n retain consumer \n as a customer',
+                              },
+                            ],
+                            margin: { left: 510, top: 20 },
+                            height: 50,
+                            width: 100,
+                            ports: port,
+                          },
+                        ],
+                      },
+                    ],
+                    phases: [
+                      {
+                        id: 'phase1',
+                        offset: 170,
+                        header: { annotation: { content: 'Phase' } },
+                      },
+                    ],
+                    phaseSize: 20,
+                  },
+                  offsetX: 500,
+                  offsetY: 300,
+                  height: 100,
+                  width: 650,
+                },
+              ];
+            function getNodeDefaults(node: NodeModel): NodeModel {
+                node.style.strokeColor = "#717171";
+                return node;
+            }
+            //Initializes the connectors for the diagram.
+            //Initializes the connectors for the diagram.
+            let connectors: ConnectorModel[] = [
+                {
+                  id: 'connector1',
+                  sourceID: 'node1',
+                  targetID: 'node2',
+                },
+                {
+                  id: 'connector2',
+                  sourceID: 'node2',
+                  targetID: 'node3',
+                  annotations: [{ content: 'No', style: { fill: 'white' } }],
+                },
+                {
+                  id: 'connector3',
+                  sourceID: 'node4',
+                  targetID: 'node8',
+                },
+                {
+                  id: 'connector4',
+                  sourceID: 'node2',
+                  targetID: 'node6',
+                  annotations: [{ content: 'Yes', style: { fill: 'white' } }],
+                },
+                {
+                  id: 'connector5',
+                  sourceID: 'node5',
+                  targetID: 'node1',
+                },
+                {
+                  id: 'connector6',
+                  sourceID: 'node6',
+                  targetID: 'node7',
+                },
+                {
+                  id: 'connector7',
+                  sourceID: 'node4',
+                  targetID: 'node7',
+                  sourcePortID: 'Port1',
+                  targetPortID: 'Port3',
+                },
+              ];
+            
+            function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+                connector.type = 'Orthogonal';
+                connector.style.strokeColor = "#CCCCCC";
+                connector.sourceDecorator.style.strokeColor = "#CCCCCC";
+                connector.targetDecorator.style.strokeColor = "#CCCCCC";
+                connector.sourceDecorator.style.fill = "#CCCCCC";
+                connector.targetDecorator.style.fill = "#CCCCCC";
+                return connector;
+            }
+
+            diagram = new Diagram({
+                width: 1500, height: 1000, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: getConnectorDefaults,
+                getNodeDefaults: getNodeDefaults,
+                snapSettings: {
+                    constraints: SnapConstraints.All,
+                  }
+                
+            });
+            diagram.appendTo('#diagram');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Lane Child Node - Snapping to vertical', (done: Function) => {
+            var node = diagram.getObject('node1');
+            diagram.select([node]);
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let nodeElement: HTMLElement = document.getElementById('node1_content');
+            let bounds: any = nodeElement.getBoundingClientRect();
+            let x: number = bounds.x + (bounds.width / 2);
+            let y: number = bounds.y + (bounds.height / 2);
+            mouseEvents.mouseDownEvent(diagramCanvas, x, y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x + 200, y + 10);
+            mouseEvents.mouseUpEvent(diagramCanvas, x + 200, y + 10);
+            expect(diagram.selectedItems.nodes[0].offsetX === 490 && diagram.selectedItems.nodes[0].offsetY === 195).toBe(true);
+            done();
+        });
+        
     });
 });

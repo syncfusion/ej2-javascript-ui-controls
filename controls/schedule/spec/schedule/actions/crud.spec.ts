@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { extend, closest } from '@syncfusion/ej2-base';
 import { Query, DataManager, UrlAdaptor } from '@syncfusion/ej2-data';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, ActionEventArgs, ScheduleModel, Timezone, EventSettingsModel
+    Schedule, Day, Week, WorkWeek, Month, Agenda, EJ2Instance, ActionEventArgs, ScheduleModel, Timezone, EventSettingsModel
 } from '../../../src/schedule/index';
+import * as cls from '../../../src/schedule/base/css-constant';
 import { defaultData, stringData, cloneDataSource } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -80,6 +82,120 @@ describe('Schedule CRUD', () => {
             schObj.dataBind();
             schObj.addEvent(eventData);
             expect(schObj.eventsData.length).toEqual(8);
+        });
+    });
+
+    describe('EJ2-54104 Problem with error message when we use more then one validation for fields', () => {
+        let schObj: Schedule;
+        const events: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Testing',
+                StartTime: new Date(2018, 1, 11, 9, 0),
+                EndTime: new Date(2018, 1, 11, 10, 0),
+                IsAllDay: false,
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const customFn = function () {
+                let startDate = (document.querySelector('#StartTime') as any).ej2_instances[0].value;
+                let endDate = (document.querySelector('#EndTime') as any).ej2_instances[0].value;
+                return endDate > startDate;
+            };
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2018, 1, 13), eventSettings: {
+                    query: new Query(), fields: {
+                        id: 'Id',
+                        startTime: { name: 'StartTime', validation: { required: true } },
+                        endTime: {
+                            name: 'EndTime', validation: {
+                                required: true, range: [
+                                    customFn,
+                                    'Please select a date greater than the startDate'
+                                ]
+                            }
+                        }
+                    }
+                }
+            };
+            schObj = util.createSchedule(schOptions, events, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('End time validation', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const endElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            ((endElement as EJ2Instance).ej2_instances[0] as DateTimePicker).value = null;
+            ((endElement as EJ2Instance).ej2_instances[0] as DateTimePicker).dataBind();
+            const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+            expect((dialogElement.querySelector('#EndTime-info') as HTMLElement).innerText)
+                .toEqual('This field is required.');
+            (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            cancelButton.click();
+        });
+
+        it('Start time greater than End time validation', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const endElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            ((endElement as EJ2Instance).ej2_instances[0] as DateTimePicker).value = new Date(2017, 9, 28);
+            ((endElement as EJ2Instance).ej2_instances[0] as DateTimePicker).dataBind();
+            const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+            expect((dialogElement.querySelector('#EndTime-info') as HTMLElement).innerText)
+                .toEqual('Please select a date greater than the startDate');
+            (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            cancelButton.click();
+        });
+    });
+
+    describe('EJ2CORE-624 Script error occurred while saving the event using saveEvent method with timezone property', () => {
+        let schObj: Schedule;
+        const events: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Testing',
+                StartTime: new Date(2018, 1, 11, 9, 0),
+                EndTime: new Date(2018, 1, 11, 10, 0),
+                IsAllDay: false,
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px', timezone: 'UTC',
+                selectedDate: new Date(2018, 1, 13), eventSettings: { query: new Query() }
+            };
+            schObj = util.createSchedule(schOptions, events, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking for save event using saveEvent method', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                const dataObj: Record<string, any>[] = schObj.eventsData;
+                expect(dataObj[0].Subject).toEqual('Edited');
+                done();
+            };
+            const data: Record<string, any> = {
+                Id: 1,
+                Subject: 'Edited',
+                StartTime: '2018-02-11T04:00:00.000Z',
+                EndTime: '2018-02-11T04:00:00.000Z',
+                IsAllDay: false
+            };
+            schObj.actionBegin = function (args) { return args.cancel = false; };
+            schObj.saveEvent(data);
         });
     });
 

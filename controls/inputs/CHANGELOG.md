@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+## 19.4.38 (2021-12-17)
+
+### Signature
+
+The Signature control allows user to draw smooth signatures as vector outline of strokes using variable width Bézier curve interpolation. You can use your finger, pen, or mouse on a tablet, touchscreen, etc., to draw your own signature on this Signature control.
+
+- **Customization** - Support various customization options like background color, background image, stroke color, stroke width, save with background, undo, redo, clear, readonly, and disabled.
+- **Load** - Support to load the signature as base64.
+- **Draw** - Support to draw the text with the different font family and font size.
+- **Save** - Support to save the signature as image like PNG, JPEG, and SVG.
+
+## 19.3.53 (2021-11-12)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- Overflow issue in ColorPicker has been resolved.
+
+## 19.3.48 (2021-11-02)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `createPopupOnClick` property scenario not handled properly in `ColorPicker` has been resolved.
+- `I344127` - Issue with ColorPicker value not updated properly if opacity is set to false has been resolved.
+
+## 19.3.44 (2021-10-05)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#I319166` - Issue with "lazy modifier not working" has been resolved.
+
 ## 19.2.59 (2021-08-31)
 
 ### Uploader

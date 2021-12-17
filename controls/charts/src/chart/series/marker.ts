@@ -204,9 +204,9 @@ export class Marker extends MarkerExplode {
         let y: number = region.y;
         if (series.chart.requireInvertedAxis) {
             y += region.height / 2;
-            x += series.yAxis.isInversed ? region.width : 0;
+            x += series.yAxis.isAxisInverse ? region.width : 0;
         } else {
-            y += series.yAxis.isInversed ? 0 : region.height;
+            y += series.yAxis.isAxisInverse ? 0 : region.height;
             x += region.width / 2;
         }
         return { x: x, y: y };

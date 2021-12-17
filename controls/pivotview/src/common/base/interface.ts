@@ -1,4 +1,4 @@
-import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort } from '../../base/engine';
+import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort, IDrillOptions, FieldItemInfo, IConditionalFormatSettings, IValueSortSettings } from '../../base/engine';
 import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings, IFormatSettings } from '../../base/engine';
 import { IFilter } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes } from '../base/enum';
@@ -10,8 +10,10 @@ import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation } fro
 import { SeriesModel, ExportType, Axis, FontModel, Alignment } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
-import { PivotView } from '../../pivotview/base/pivotview';
+import { DisplayOption, PivotView } from '../../pivotview/base/pivotview';
 import { OlapEngine } from '../../base/olap/engine';
+import { GridSettings } from '../../pivotview/model/gridsettings';
+import { ChartSettings } from '../../pivotview/model/chartsettings';
 
 /**
  * Interface
@@ -451,6 +453,10 @@ export interface ColumnRenderEventArgs {
     columns: PivotColumn[];
     /** Defines the current report. */
     dataSourceSettings: IDataOptions;
+    /**
+     * Defines the grid column information that used to display the column headers (stacked headers) based on its level in the Pivot Table.
+     */
+      stackedColumns?: ColumnModel[];
 }
 
 /**
@@ -1010,4 +1016,276 @@ export interface FetchRawDataArgs {
     columnIndex: number;
     /** Defines the row index. */
     rowIndex: number;
+}
+
+/**
+ * The action begins event arguments provide information about the current UI action, such as the action name, current datasource settings, 
+ * and the selected field information which are configured based on the UI actions like
+ * [`drill down/up`](../../pivotview/drill-down/#drill-down-and-drill-up),
+ * [`value sorting`](../../pivotview/sorting/#value-sorting),
+ * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
+ * [`grouping bar`](../../pivotview/grouping-bar/) and
+ * [`field list`](../../pivotview/field-list/) buttons actions such as 
+ * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
+ * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar), 
+ * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on, 
+ * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
+ */
+export interface PivotActionBeginEventArgs {
+    /** Defines the current data source settings information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list. */
+    dataSourceSettings?: IDataOptions;
+    /** Defines name of the current UI action when it begins. The following are the UI actions and their names:
+     * 
+     * **Pivot Table**
+     * * **Drill down** and **drill up** - Drill down/up.
+     * * **Value sorting** - Sort value.
+     * 
+     * **Toolbar**
+     * * **New report** - Add new report.
+     * * **Save report** - Save current report.
+     * * **Save as report** - Save as current report.
+     * * **Rename report** - Rename current report.
+     * * **Remove report** - Remove current report.
+     * * **Load report** - Load report.
+     * * **Conditional Formatting** - Open conditional formatting dialog.
+     * * **Number Formatting** - Open number formatting dialog.
+     * * **Show Fieldlist** - Open field list.
+     * * **Show Table** - Show table view.
+     * * **Chart menu** - Show chart view.
+     * * **Export menu** - PDF/Excel/CSV export.
+     * * **Sub-totals menu** - Show/hide sub-totals.
+     * * **Grand totals menu** - Show/hide grand totals.
+     * * **MDX** - Open MDX dialog.
+     * 
+     * **Grouping bar** and **Field List** buttons
+     * * **Editing** - Edit calculated field.
+     * * **Remove** - Remove field.
+     * * **Sorting** - Sort field.
+     * * **Filtering** - Filter field.
+     * * **Aggregation** - Aggregate field.
+     * 
+     * **Field List UI**
+     * * **Field list tree** - Sort field tree.
+     * * **Calculated field button** - Open calculated field dialog.
+     * 
+     * **Editing**
+     * * **Edit** - Edit record.
+     * * **Save** - Save edited records.
+     * * **Add** - Add new record.
+     * * **Delete** - Remove record.
+     */
+    actionName?: string;
+    /** 
+     * Defines the current field information on which field the action takes.
+     * > This option is applicable only when the field-based UI actions are performed such as filtering, sorting, field remove, editing and aggregation change.
+     */
+    fieldInfo?: FieldItemInfo;
+    /** Allow to restrict the current UI action. */
+    cancel?: boolean;
+}
+
+/**
+ * The action complete event arguments provide information about the current UI action, such as the current action name, current datasource settings, selected field information, and the current action information
+ * which are configured based on the UI actions like
+ * [`drill down/up`](../../pivotview/drill-down/#drill-down-and-drill-up),
+ * [`value sorting`](../../pivotview/sorting/#value-sorting),
+ * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
+ * [`grouping bar`](../../pivotview/grouping-bar/) and
+ * [`field list`](../../pivotview/field-list/) buttons actions such as 
+ * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
+ * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar), 
+ * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on, 
+ * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
+ */
+export interface PivotActionCompleteEventArgs {
+    /** Defines the current data source settings information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list. */
+    dataSourceSettings?: IDataOptions;
+    /** Defines name of the current UI action completed. The following are the UI actions and their names:
+     * 
+     * **Pivot Table**
+     * * **Drill down** and **drill up** - Drill down/up.
+     * * **Value sorting** - Value sorted.
+     * 
+     * **Toolbar**
+     * * **New report** - New report added.
+     * * **Save report** - Report saved.
+     * * **Save as report** - Report re-saved.
+     * * **Rename report** - Report renamed.
+     * * **Remove report** - Report removed.
+     * * **Load report** - Report loaded.
+     * * **Conditional Formatting** - Conditional formatting applied.
+     * * **Number Formatting** - Number formatting applied.
+     * * **Show Fieldlist** - Field list closed.
+     * * **Show Table** - Table view shown.
+     * * **Chart menu** - Chart view shown.
+     * * **Export menu** - PDF/Excel/CSV exported.
+     * * **Sub-totals menu** - Sub-totals shown/hidden.
+     * * **Grand totals menu** - Grand totals shown/hidden.
+     * * **MDX** - MDX dialog closed.
+     * 
+     * **Grouping bar** and **Field List** buttons
+     * * **Editing** - Calculated field edited.
+     * * **Remove** - Field removed.
+     * * **Sorting** - Field sorted.
+     * * **Filtering** - Field filtered.
+     * * **Aggregation** - Field aggregated.
+     * 
+     * **Field List UI**
+     * * **Field list tree** - Field tree sorted.
+     * * **Calculated field button** - Calculated field applied.
+     * 
+     * **Editing**
+     * * **Save** - Edited records saved.
+     * * **Add** - New record added.
+     * * **Delete** - Record removed.
+     * * **Update** - Edited records updated.
+     */
+    actionName?: string;
+    /** Defines the current field information on which field the action takes.
+     * > This option is applicable only when the field-based UI actions are performed such as filtering, sorting, field remove, editing and aggregation change.
+     */
+    fieldInfo?: FieldItemInfo;
+    /** Defines the unique information of the current UI action performed. */
+    actionInfo?: PivotActionInfo;
+}
+
+/**
+ * When the current UI action fails to achieve the desired result, the action failure event arguments provide necessary information about the current UI action, such as the current action name and failure information
+ * which are configured based on the UI actions like
+ * [`drill down/up`](../../pivotview/drill-down/#drill-down-and-drill-up),
+ * [`value sorting`](../../pivotview/sorting/#value-sorting),
+ * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
+ * [`grouping bar`](../../pivotview/grouping-bar/) and
+ * [`field list`](../../pivotview/field-list/) buttons actions such as 
+ * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
+ * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar), 
+ * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on, 
+ * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
+ */
+export interface PivotActionFailureEventArgs {
+    /** Defines the error information of the current action. */
+    errorInfo?: Error;
+    /** Defines the name of the current action before it is completed. The following are the UI actions and their names:
+     * 
+     * **Pivot Table**
+     * * **Drill down** and **drill up** - Drill down/up.
+     * * **Value sorting** - Sort value.
+     * 
+     * **Toolbar**
+     * * **New report** - Add new report.
+     * * **Save report** - Save current report.
+     * * **Save as report** - Save as current report.
+     * * **Rename report** - Rename current report.
+     * * **Remove report** - Remove current report.
+     * * **Load report** - Load report.
+     * * **Conditional Formatting** - Open conditional formatting dialog.
+     * * **Number Formatting** - Open number formatting dialog.
+     * * **Show Fieldlist** - Open field list.
+     * * **Show Table** - Show table view.
+     * * **Chart menu** - Show chart view.
+     * * **Export menu** - PDF/Excel/CSV export.
+     * * **Sub-totals menu** - Show/hide sub-totals.
+     * * **Grand totals menu** - Show/hide grand totals.
+     * * **MDX** - Open MDX dialog.
+     * 
+     * **Grouping bar** and **Field List** buttons
+     * * **Editing** - Edit calculated field.
+     * * **Remove** - Remove field.
+     * * **Sorting** - Sort field.
+     * * **Filtering** - Filter field.
+     * * **Aggregation** - Aggregate field.
+     * 
+     * **Field List UI**
+     * * **Field list tree** - Sort field tree.
+     * * **Calculated field button** - Open calculated field dialog.
+     * 
+     * **Editing**
+     * * **Edit** - Edit record.
+     * * **Save** - Save edited records.
+     * * **Add** - Add new record.
+     * * **Delete** - Remove record.
+     */
+    actionName?: string;
+}
+
+/** 
+ * Defines the unique information of the current UI action performed such as sorting, filtering, dril, editing, report manipulation, summarization, etc. 
+ */
+export interface PivotActionInfo {
+    /** Defines the selected field’s sort settings to order their members either in ascending or descending that used to be displayed in the pivot table. */
+    sortInfo?: ISort;
+    /** Defines the selected field’s filter settings with either selective or conditional-based filter members that used to be displayed in the pivot table. */
+    filterInfo?: IFilter;
+    /** Defines the selected field’s drilled members settings that used to display the headers to be either expanded or collapsed in the pivot table. */
+    drillInfo?: IDrillOptions;
+    /** Defines the selected calculated field’s settings that used to create new calculated fields from the bound data source or using simple formula with basic arithmetic operators in the pivot table. */
+    calculatedFieldInfo?: ICalculatedFieldSettings;
+    /** Defines the report name that used to create, load, rename save and save as current report. */
+    reportName?: string | PivotReportInfo;
+    /** Defines the export information such as current export type and its additional settings such as page size, orientation, header, footer, etc. */
+    exportInfo?: PivotExportInfo;
+    /** 
+     * Defines the edited information such as current edit type, action and its edited record information such as edited data, previous data and index positions of before editing performed.
+     */
+    editInfo?: PivotEditInfo;
+    /** Defines the current condition formatting settings that used to change the appearance of the pivot table value cells with different style properties such as background color, 
+     * font color, font family, and font size based on specific conditions. 
+     */
+    conditionalFormattingInfo?: IConditionalFormatSettings[];
+    /** Defines the current format settings that used to display the values with specific format that used to be displayed in the pivot table. */
+    numberFormattingInfo?: IFormatSettings[];
+    /** Defines the current toolbar information such as current display options and its settings such as chart settings, grid settings, etc. */
+    toolbarInfo?: PivotToolbarInfo;
+    /** Defines the current value sort settings from current pivot report. */
+    valueSortInfo?: IValueSortSettings;
+}
+
+/** 
+ * Defines the report name that used to create, load, rename save and save as current report. 
+ */
+export interface PivotReportInfo {
+    /** Defines the report name that used to be renamed. */
+    oldName?: string;
+    /** Defines the current report name after renamed. */
+    newName?: string;
+}
+
+/** 
+ * Defines the export information such as current export type and its additional settings such as page size, orientation, header, footer, etc.
+ */
+export interface PivotExportInfo {
+    /** Defines the current export type such as PDF, Excel, and CSV. */
+    type?: string;
+    /** Defines the additional settings for PDF, Excel, and CSV export such as page size, orientation, header, footer, etc. */
+    info?: PdfExportProperties | ExcelExportProperties | string;
+}
+
+/** 
+ * Defines the edited information such as current edit type, action and its edited record information such as edited data, previous data and index positions of before editing performed.
+ */
+export interface PivotEditInfo {
+    /** Defines the current edit type such as batch, inline, dialog and command columns. */
+    type?: string;
+    /** Defines the current edit action such as add, edit, save and delete. */
+    action?: string;
+    /** Defines the data that used to update the pivot table. */
+    data?: IDataSet[];
+    /** Defines the edited raw data */
+    currentData?: IDataSet[];
+    /** Defines the actual raw data */
+    previousData?: IDataSet[];
+    /** Defines the index position of the actual raw data */
+    previousPosition?: number[];
+}
+
+/** 
+ * Defines the current toolbar information such as current display options and its settings such as chart settings, grid settings, etc.
+ */
+export interface PivotToolbarInfo {
+    /** Defines the current display settings such as current view port as either pivot table or pivot chart or both table and chart. */
+    displayOption?: DisplayOption;
+    /** Defines the pivot table settings such as column width, row height, grid lines, text wrap settings, selection settings, etc. */
+    gridSettings?: GridSettings;
+    /** Defines the pivot chart settings such as chart series, chart area, axis labels, legends, border, crosshairs, theme, title, tooltip, zooming, etc. */
+    chartSettings?: ChartSettings;
 }

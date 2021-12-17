@@ -77,7 +77,7 @@ export class AxisRenderer {
         let startAngle: number = axis.startAngle;
         let endAngle: number = axis.endAngle;
         const color: string = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
-        if (axis.lineStyle.width > 0 && this.gauge.isComponentRender) {
+        if (axis.lineStyle.width > 0 && this.gauge.allowComponentRender) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
             appendPath(
                 new PathOption(
@@ -447,19 +447,19 @@ export class AxisRenderer {
                 colorIndex === 0 && range.isLinearCircularGradient ? axis.direction === 'AntiClockWise' ?
                     startAngle - (axis.rangeGap / Math.PI) :
                     startAngle + (axis.rangeGap / Math.PI) : !range.isLinearCircularGradient
-                    ? startAngle + (axis.rangeGap / Math.PI) : startAngle;
+                    ? (axis.direction === 'AntiClockWise' ? startAngle - (axis.rangeGap / Math.PI) :  startAngle + (axis.rangeGap / Math.PI)) : startAngle;
             endAngle = (rangeIndex === axis.ranges.length - 1 && !axis.startAndEndRangeGap) ? endAngle :
                 !isNullOrUndefined(range.linearGradient) && colorIndex === range.linearGradient.colorStop.length - 1
 				&& range.isLinearCircularGradient ?
                     axis.direction === 'AntiClockWise' ? endAngle + (axis.rangeGap / Math.PI) :
                         endAngle - (axis.rangeGap / Math.PI) : !range.isLinearCircularGradient ?
-                        endAngle - (axis.rangeGap / Math.PI) : endAngle;
+                        (axis.direction === 'AntiClockWise' ? endAngle + (axis.rangeGap / Math.PI) : endAngle - (axis.rangeGap / Math.PI)) : endAngle;
         }
-        if (this.gauge.isComponentRender) {
+        if (this.gauge.allowComponentRender) {
             if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle)) && ((range.start >= min && range.end <= max) || (range.end >= min && range.start <= max))) {
                 endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
                 endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
-                const radius: number = range.roundedCornerRadius;
+                const radius: number = typeof range.roundedCornerRadius === 'string' ? parseFloat(<string>range.roundedCornerRadius) : range.roundedCornerRadius;
                 const process: number = (radius * 0.25);
                 const degreeValue: number = getDegree(startAngle, endAngle);
                 oldStart = ((((range.currentRadius - (startWidth / 2)) * ((startAngle * Math.PI) / 180) -
@@ -472,6 +472,10 @@ export class AxisRenderer {
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
                     (degreeValue < (range.roundedCornerRadius / 2) && range.isLinearCircularGradient
                         ? degreeValue <= 1 ? 0 : (radius / 4) : radius)) / (range.currentRadius)) * 180) / Math.PI;
+                if (roundedStartAngle > roundedEndAngle && (roundedStartAngle - roundedEndAngle) <= radius) {
+                    roundedStartAngle = startAngle;
+                    roundedEndAngle = endAngle;
+                }
                 if (this.gauge.gradientModule && ((!isNullOrUndefined(range.linearGradient)
                     && !isNullOrUndefined(range.linearGradient.colorStop)) || (!isNullOrUndefined(range.radialGradient)
                         && !isNullOrUndefined(range.radialGradient.colorStop)))) {

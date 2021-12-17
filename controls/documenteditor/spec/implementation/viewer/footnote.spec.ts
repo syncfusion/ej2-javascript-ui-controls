@@ -1599,7 +1599,8 @@ describe("Footnote with keep with next", () => {
          console.log("Footnote move to next page validation");
          editor.open(JSON.stringify(sfdt));
          editor.editor.handleEnterKey();
-         expect((editor.documentHelper.pages[1].footnoteWidget.childWidgets[0] as ParagraphWidget).y).not.toBe(0);
+		 editor.editor.handleEnterKey();
+         expect((editor.documentHelper.pages[1].footnoteWidget.bodyWidgets[0].childWidgets[0] as ParagraphWidget).y).not.toBe(0);
 
     
      });
@@ -10455,7 +10456,44 @@ describe("Endnote Validation", () => {
      it("Endnote Script error validation", () => {
          console.log("Endnote Script error validation");
          editor.open(JSON.stringify(endnote));
-         expect((editor.documentHelper.pages[0].footnoteWidget.childWidgets[2])).not.toBeUndefined();
+         expect((editor.documentHelper.pages[0].footnoteWidget.bodyWidgets[2])).not.toBeUndefined();
+
+    
+     });
+
+});
+describe("Footnote Delete Validation", () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+     it("Delete validation", () => {
+         console.log("Delete validation");
+		 editor.editor.insertFootnote();
+		 editor.editor.handleBackKey();
+		 editor.editor.handleBackKey();
+		 editor.editor.handleBackKey();
+		 editor.selection.moveToDocumentStart();
+		 editor.editor.insertText("one");
+         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(2);
 
     
      });

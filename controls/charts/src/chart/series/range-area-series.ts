@@ -34,7 +34,7 @@ export class RangeAreaSeries extends LineBase {
 
             let low: number = Math.min(<number>point.low, <number>point.high);
             let high: number = Math.max(<number>point.low, <number>point.high);
-            if (yAxis.isInversed) {
+            if (yAxis.isAxisInverse) {
                 const temp: number = low;
                 low = high;
                 high = temp;

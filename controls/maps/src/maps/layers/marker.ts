@@ -72,15 +72,9 @@ export class Marker {
                     border: markerSettings.border, colorValuePath: markerSettings.colorValuePath,
                     shapeValuePath: markerSettings.shapeValuePath, imageUrlValuePath: markerSettings.imageUrlValuePath
                 };
-                eventArgs = markerColorChoose(eventArgs, data);
-                eventArgs = markerShapeChoose(eventArgs, data);
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                    if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
-                        eventArgs = markerColorChoose(eventArgs, data);
-                    }
-                    if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
-                        eventArgs = markerShapeChoose(eventArgs, data);
-                    }
+                    eventArgs = markerColorChoose(eventArgs, data);
+                    eventArgs = markerShapeChoose(eventArgs, data);
                     const lng: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
                             parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : 0;
@@ -298,7 +292,7 @@ export class Marker {
         if (isNullOrUndefined(options)) {
             return;
         }
-        let eventArgs: IMarkerClickEventArgs = {
+        const eventArgs: IMarkerClickEventArgs = {
             cancel: false, name: markerClick, data: options.data, maps: this.maps,
             marker: options.marker, target: target, x: e.clientX, y: e.clientY,
             latitude: options.data['latitude'] || options.data['Latitude'],

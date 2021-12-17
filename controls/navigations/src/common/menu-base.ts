@@ -1177,7 +1177,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         } else {
                             this.setBlankIconStyle(this.popupWrapper);
                             this.wireKeyboardEvent(this.popupWrapper); rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
-                            this.popupWrapper.style.left = this.left + 'px'; this.popupWrapper.style.top = this.top + 'px';
+                            this.popupWrapper.style.left = this.left + 'px';
+                            this.popupWrapper.style.top = this.top + 'px';
                             const animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
                                 name: this.animationSettings.effect, duration: this.animationSettings.duration,
                                 timingFunction: this.animationSettings.easing

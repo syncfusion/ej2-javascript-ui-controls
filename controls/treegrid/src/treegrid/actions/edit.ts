@@ -10,6 +10,7 @@ import { findChildrenRecords, getParentData, isCountRequired, isRemoteData  } fr
 import { editAction, updateParentRow } from './crud-actions';
 import { RowPosition } from '../enum';
 import { BatchEdit } from './batch-edit';
+import { AggregateRow } from '../models/summary';
 
 /**
  * TreeGrid Edit Module
@@ -279,7 +280,7 @@ export class Edit {
         if (args.action === 'f2') {
             this.recordDoubleClick(args as Object);
         }
-        if (args.action == 'escape') {
+        if (args.action === 'escape') {
             this.parent.closeEdit();
         }
     }
@@ -326,7 +327,7 @@ export class Edit {
                 setValue('isEditCollapse', false, this.parent);
             }
             if (!args.columnObject.allowEditing) {
-                args.cancel = true;   
+                args.cancel = true;
             }
         }
     // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
@@ -387,18 +388,19 @@ export class Edit {
                     if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) { rowIndex = i; return; }
                 });
             } else {
-                let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+                const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
+                                         this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
                 if (freeze) {
-                    if (this.parent.getRows().indexOf(row) != -1) {
+                    if (this.parent.getRows().indexOf(row) !== -1) {
                         rowIndex = this.parent.getRows().indexOf(row);
-                    } else if (this.parent.getFrozenRightRows().indexOf(row) != -1) {
+                    } else if (this.parent.getFrozenRightRows().indexOf(row) !== -1) {
                         rowIndex = this.parent.getFrozenRightRows().indexOf(row);
                     } else {
                         rowIndex = this.parent.getMovableRows().indexOf(row);
                     }
                 } else {
                     rowIndex = (this.parent.getRows().indexOf(row) === -1 && (this.parent.getFrozenColumns() > 0)) ?
-                    this.parent.grid.getMovableRows().indexOf(row) : this.parent.getRows().indexOf(row);
+                        this.parent.grid.getMovableRows().indexOf(row) : this.parent.getRows().indexOf(row);
                 }
             }
             const arg: CellSaveEventArgs = {};
@@ -456,7 +458,8 @@ export class Edit {
             this.isOnBatch = false;
         }
         this.enableToolbarItems('save');
-        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
+                                 this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (freeze) {
             if (args.cell.closest('.e-frozen-left-header') || args.cell.closest('.e-frozen-left-content')) {
                 mRow = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
@@ -490,7 +493,7 @@ export class Edit {
             type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
             previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
         };
-        if (this.parent.aggregates.map((ag) => ag.showChildSummary == true).length) {
+        if (this.parent.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
             this.parent.grid.refresh();
         }
         this.parent.trigger(events.actionComplete, saveArgs);
@@ -533,6 +536,10 @@ export class Edit {
                 }
             }
             setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
+            const adaptor: AdaptorOptions = (this.parent.dataSource as DataManager).adaptor;
+            if ((isRemoteData(this.parent) || adaptor instanceof RemoteSaveAdaptor)) {
+                setValue('uniqueIDCollection.' + data[i].uniqueID, data[i], this.parent);
+            }
             if (!data[i].level) {
                 this.parent.parentData.push(data[i]);
             }
@@ -649,7 +656,8 @@ export class Edit {
                     this.parent.grid.contentModule[r].splice(0, 1);
                     this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
                 }
-                let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+                const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
+                                         this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
                 if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns || freeze) {
                     const movableRows: Object[] = this.parent.getMovableDataRows();
                     const frows: string = 'freezeRows';
@@ -711,13 +719,23 @@ export class Edit {
         }
         if (args.requestType === 'delete') {
             const data: ITreeData[] = <ITreeData[]>args.data;
+            if (isNullOrUndefined((args.data[0] as ITreeData).uniqueID)) {
+                const primaryKeys: string[] = this.parent.getPrimaryKeyFieldNames();
+                for (let i: number = 0; i < data.length; i++) {
+                    this.parent.flatData.filter((e: ITreeData) => {
+                        if (e[primaryKeys[0]] === args.data[i][primaryKeys[0]]) {
+                            data[i] = e;
+                        }
+                    });
+                }
+            }
             for (let i: number = 0; i < data.length; i++) {
                 this.deleteUniqueID(data[i].uniqueID);
                 const childs: ITreeData[] = findChildrenRecords(data[i]);
                 for (let c: number = 0; c < childs.length; c++) {
                     this.deleteUniqueID(childs[c].uniqueID);
                 }
-                args.data = [...data, ...childs];
+                args.data = [...args.data as object[], ...childs];
             }
         }
         if (args.requestType === 'add' || (this.isAddedRowByMethod && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling))) {
@@ -757,6 +775,7 @@ export class Edit {
         }
         if (this.isAddedRowByMethod && args.index !== 0) {
             this.addRowRecord = this.parent.flatData[args.index];
+            this.addRowIndex = args.index;
         }
         if (this.parent.editSettings.newRowPosition === 'Child' && isNullOrUndefined(this.addRowRecord)
         && !isNullOrUndefined(this.parent.getSelectedRecords()[0])) {
@@ -786,6 +805,10 @@ export class Edit {
             let position: string = null;
             value.taskData = isNullOrUndefined(value.taskData) ? extend({}, args.data) : value.taskData;
             const currentData: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
+            if (this.parent.enableVirtualization && args.index !== 0) {
+                this.addRowIndex = this.parent.grid.getCurrentViewRecords().indexOf( this.addRowRecord);
+                this.selectedIndex = parseInt(this.parent.getRows()[this.addRowIndex].getAttribute('aria-rowindex'), 10);
+            }
             let index: number =  this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
             setValue('uniqueIDCollection.' +  value.uniqueID , value, this.parent);

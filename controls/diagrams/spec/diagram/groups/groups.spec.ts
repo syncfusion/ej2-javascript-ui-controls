@@ -1038,6 +1038,46 @@ describe('Group', () => {
            done();
         });
     });
+    describe('Z-index Check For Group', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group_group_width_height' });
+            document.body.appendChild(ele);
+            var nodes = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300,
+                }, {
+                    id: 'node2', width: 50, height: 50, offsetX: 250,
+                    offsetY: 300,
+                    style: { fill: '#6BA5D7', strokeColor: 'white' },
+                },
+            ];
+            diagram = new Diagram({
+                width: '800px', height: '500px', nodes: nodes,
+            });
+            diagram.appendTo('#diagram_group_group_width_height');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Performing BringToFront', (done: Function) => {
+            diagram.select([diagram.nameTable['node1']]);
+            diagram.bringToFront();
+            let zindexValue = diagram.nameTable['node1'].zIndex;
+            diagram.selectAll();
+            diagram.group();
+            expect((diagram.nameTable['node1'].zIndex === zindexValue)).toBe(true);
+            done();
+        });
+    });
     describe('Group - with selection issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

@@ -478,13 +478,21 @@ export class DialogRenderer {
     }
 
     private showCalculatedField(event: Event): void {   /* eslint-disable-line */
-        if (!this.parent.isAdaptive) {
-            if (this.parent.dialogRenderer.fieldListDialog) {
-                this.parent.dialogRenderer.fieldListDialog.hide();
-                addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
+        try {
+            if (!this.parent.isAdaptive) {
+                this.parent.actionObj.actionName = events.openCalculatedField;
+                if (this.parent.actionBeginMethod()) {
+                    return;
+                }
+                if (this.parent.dialogRenderer.fieldListDialog) {
+                    this.parent.dialogRenderer.fieldListDialog.hide();
+                    addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
+                }
             }
+            this.parent.notify(events.initCalculatedField, {});
+        } catch (execption) {
+            this.parent.actionFailureMethod(execption);
         }
-        this.parent.notify(events.initCalculatedField, {});
     }
 
     private showFieldListDialog(event: Event): void {   /* eslint-disable-line */
@@ -493,18 +501,27 @@ export class DialogRenderer {
     }
 
     private onShowFieldList(): void {
-        if (this.parent.allowDeferLayoutUpdate) {
-            if (this.parent.isAdaptive) {
-                this.parent.axisFieldModule.render();
-            }
-            this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
-            this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+        this.parent.actionObj.actionName = events.showFieldList;
+        if (this.parent.actionBeginMethod()) {
+            return;
         }
-        addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
-        this.parent.dialogRenderer.fieldListDialog.show();
-        this.parent.dialogRenderer.fieldListDialog.element.style.top =
-            parseInt(this.parent.dialogRenderer.fieldListDialog.element.style.top, 10) < 0 ?
-                '0px' : this.parent.dialogRenderer.fieldListDialog.element.style.top;
+        this.parent.actionObj.actionName = '';
+        try {
+            if (this.parent.allowDeferLayoutUpdate) {
+                if (this.parent.isAdaptive) {
+                    this.parent.axisFieldModule.render();
+                }
+                this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
+                this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+            }
+            addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
+            this.parent.dialogRenderer.fieldListDialog.show();
+            this.parent.dialogRenderer.fieldListDialog.element.style.top =
+                parseInt(this.parent.dialogRenderer.fieldListDialog.element.style.top, 10) < 0 ?
+                    '0px' : this.parent.dialogRenderer.fieldListDialog.element.style.top;
+        } catch (execption) {
+            this.parent.actionFailureMethod(execption);
+        }
     }
 
     private onCloseFieldList(): void {
@@ -532,6 +549,10 @@ export class DialogRenderer {
             }
         }
         this.parent.dialogRenderer.fieldListDialog.hide();
+        this.parent.actionObj.actionName = events.closeFieldlist;
+        if (this.parent.actionObj.actionName) {
+            this.parent.actionCompleteMethod();
+        }
     }
 
     private removeFieldListIcon(): void {

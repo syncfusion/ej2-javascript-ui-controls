@@ -29,19 +29,21 @@ export class StackingLineSeries extends LineBase {
         const visiblePts: Points[] = this.enableComplexProperty(series);
         const pointsLength: number = visiblePts.length;
         const stackedvalue: StackValues = series.stackedValues;
+        let pointIndex: number, nextPointIndex: number;
         let point1: ChartLocation;
         let point2: ChartLocation;
         for (let i: number = 0; i < pointsLength; i++) {
             visiblePts[i].regions = []; visiblePts[i].symbolLocations = [];
+            pointIndex = visiblePts[i].index;
             if (visiblePts[i].visible && withInRange(visiblePts[i - 1], visiblePts[i], visiblePts[i + 1], series)) {
                 point1 = getCoordinate(
-                    visiblePts[i].xValue, stackedvalue.endValues[i],
+                    visiblePts[i].xValue, stackedvalue.endValues[pointIndex],
                     xAxis, yAxis, isInverted, series
                 );
                 direction = direction.concat((i ? 'L' : 'M') + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
                 visiblePts[i].symbolLocations.push(
                     getCoordinate(
-                        visiblePts[i].xValue, stackedvalue.endValues[i], xAxis, yAxis,
+                        visiblePts[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis,
                         isInverted, series
                     )
                 );
@@ -53,8 +55,9 @@ export class StackingLineSeries extends LineBase {
             } else {
                 if (series.emptyPointSettings.mode !== 'Drop') {
                     if (visiblePts[i + 1] && visiblePts[i + 1].visible) {
+                        nextPointIndex = visiblePts[i + 1].index;
                         point1 = getCoordinate(
-                            visiblePts[i + 1].xValue, stackedvalue.endValues[i + 1],
+                            visiblePts[i + 1].xValue, stackedvalue.endValues[nextPointIndex],
                             xAxis, yAxis, isInverted, series
                         );
                         direction = direction.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');

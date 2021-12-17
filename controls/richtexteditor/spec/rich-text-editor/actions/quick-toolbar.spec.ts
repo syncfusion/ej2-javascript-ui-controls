@@ -919,7 +919,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let QTBarModule: IRenderer;
         let clickEvent: MouseEvent;
         let pageY: number;
-        let htmlStr: string = "<img id='imgTag' style='width: 200px; float: none' alt='Logo'" +
+        let htmlStr: string = "<img id='imgTag' class='e-rte-image' style='width: 200px; float: none' alt='Logo'" +
             " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' /> <br/>" +
             "<a id='linkTag' href='http://www.syncfusion.com'>Syncfusion</a>" +
             "<p> Paragraph </p>";
@@ -949,6 +949,7 @@ describe("Quick Toolbar - Actions Module", () => {
             QTBarModule.textQTBar.hidePopup();
             QTBarModule.linkQTBar.hidePopup();
             QTBarModule.imageQTBar.hidePopup();
+            rteObj.getRange().delete
         });
 
         afterAll(() => {
@@ -1020,6 +1021,9 @@ describe("Quick Toolbar - Actions Module", () => {
 
         it("Image element 'Right' align with click testing", (done: Function) => {
             imgEle.setAttribute('align', 'right');
+            //this.parent.formatter.editorManager.nodeSelection.setSelectionNode(document, document.querySelector('.e-rte-content').contentDocument.querySelector('.e-rte-image'))
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText((document.querySelector('.e-rte-content') as any).contentDocument, (document.querySelector('.e-rte-content') as any).contentDocument.querySelector('.e-rte-image'),
+                (document.querySelector('.e-rte-content') as any).contentDocument.querySelector('.e-rte-image'), 0, 0);
             rteObj.notify('selection-save', {});
             clickEvent.initEvent("mouseup", true, true);
             imgEle.dispatchEvent(clickEvent);
@@ -1031,7 +1035,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 imgEle.setAttribute('align', 'left');
                 done();
-            }, 400);
+            }, 800);
         });
 
         it("Image element bottom section click testing", (done: Function) => {

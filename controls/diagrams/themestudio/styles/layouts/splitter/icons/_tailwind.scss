@@ -1,0 +1,51 @@
+@include export-module('splitter-material-icons') {
+  .e-splitter {
+    .e-split-bar {
+      &.e-split-bar-horizontal {
+        .e-resize-handler::before {
+          content: '\e855';
+          font-family: 'e-icons';
+          font-size: $splitbar-icon-size;
+        }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
+        }
+      }
+
+      &.e-split-bar-vertical {
+        & .e-resize-handler::before {
+          content: '\e858';
+          font-family: 'e-icons';
+          font-size: $splitbar-icon-size;
+        }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger {
+    .e-splitter {
+      .e-split-bar {
+        .e-resize-handler::before {
+          font-size: $bigger-splitbar-icon-size;
+        }
+      }
+    }
+
+    &.e-splitter {
+      .e-split-bar {
+        .e-resize-handler::before {
+          font-size: $bigger-splitbar-icon-size;
+        }
+      }
+    }
+  }
+}

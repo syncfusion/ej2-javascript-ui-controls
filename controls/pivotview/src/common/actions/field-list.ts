@@ -108,7 +108,7 @@ export class FieldList implements IAction {
     private update(): void {
         let currentWidth: number;
         if (this.parent.currentView !== 'Table') {
-            currentWidth = this.parent.chart ? this.parent.chartModule.getCalulatedWidth() : currentWidth;
+            currentWidth = this.parent.chart ? this.parent.pivotChartModule.getCalulatedWidth() : currentWidth;
         } else {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
         }

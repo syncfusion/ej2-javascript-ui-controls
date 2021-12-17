@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData2, unorederedData } from '../base/datasource.spec';
+import { sampleData, projectData2, unorederedData, projectData } from '../base/datasource.spec';
 import { getObject } from '@syncfusion/ej2-grids';
 import { EmitType } from '@syncfusion/ej2-base';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
@@ -744,6 +744,57 @@ describe('Treegrid Row Drop as Child', () => {
       expect((TreeGridObj.grid.dataSource[5].level)).toBe(1);
     });
 
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-53461- Drag and drop after the initial sort', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: projectData,
+          height: 400,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          allowSelection: true,
+          selectionSettings: { type: 'Multiple' },
+          allowSorting: true,
+          sortSettings: { columns: [{ field: 'TaskID', direction: 'Ascending' }] },
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Cell',
+            newRowPosition: 'Below'
+        },
+          allowRowDragAndDrop: true,
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140, isPrimaryKey:true },
+              { field: 'TaskName', headerText: 'Task Name', width: 160 },
+              { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+              { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+              { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110},
+              { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110},
+              { field: 'Priority', headerText: 'Priority', width: 110}
+          ]
+        },
+        done
+      );
+    });
+
+    it('Adding a new record and reordering', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        gridObj.rowDragAndDropModule.reorderRows([4],0,'below');
+        expect(gridObj.parentData.length).toBe(3);
+        done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.addRecord({TaskID:123,TaskName: 'New Task1'}, 0, 'Above');
+    });
     afterAll(() => {
       destroy(gridObj);
     });

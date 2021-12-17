@@ -888,6 +888,21 @@ describe('Tooltip Control', () => {
             expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-right')).toEqual(true);
             triggerMouseEvent(target1, 'mouseleave');
         });
+        it('Tooltip popup reposition mock teste for windowResize event', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:relative;">Tooltip target</div></div>';
+            document.body.appendChild(elem.firstChild);
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                position: 'LeftTop', content: 'collision left and top', target: '#target',
+            }, '#target');
+            tooltip.open();
+            expect((document.getElementsByClassName("e-popup")[0] as any).offsetLeft).toEqual(168);
+            let target1: HTMLElement = document.getElementById('target');
+            target1.style.left = "300px";
+            (tooltip as any).windowResize();
+            expect((document.getElementsByClassName("e-popup")[0] as any).offsetLeft).toEqual(468);
+        });
         it('collision affected position - left and top', () => {
             let elem: HTMLDivElement = document.createElement('div');
             elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;">Tooltip target</div></div>';
@@ -2443,5 +2458,99 @@ describe('Tooltip Control', () => {
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
        
+    });
+
+    describe('Tooltip within container', () => {
+        let tooltip: Tooltip;
+        beforeEach((): void => {
+            tooltip = undefined;
+            let container: HTMLElement = createElement('div', { id: 'container', styles: "height:500px; width:500px;" });
+            let container1: HTMLElement = createElement('div', { id: 'container1', styles: "height:300px; width:300px;" });
+            let ele: HTMLElement = createElement('div', { id: '1tooltip', innerHTML: 'Show Tooltip', styles: "margin-top:300px;" });
+            container.appendChild(ele);
+            document.body.appendChild(container);
+            document.body.appendChild(container1);
+        });
+        afterEach((): void => {
+            if (tooltip) {
+                tooltip.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Check popup finds string selector container', () => {
+            tooltip = new Tooltip({
+                container: "#container"
+            });
+            tooltip.appendTo('#1tooltip');
+            let target: HTMLElement = document.getElementById('1tooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(target, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            triggerMouseEvent(target, 'mouseover');
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseover');
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 0).toBe(true);
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+        });
+
+        it('Check popup finds Element selector container', () => {
+            tooltip = new Tooltip({
+                container: document.getElementById('container')
+            });
+            tooltip.appendTo('#1tooltip');
+            let target: HTMLElement = document.getElementById('1tooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(target, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            triggerMouseEvent(target, 'mouseover');
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseover');
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 0).toBe(true);
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+        });
+
+        it('Check popup changes for dynamic container when Tooltip is open', () => {
+            tooltip = new Tooltip({
+                container: document.getElementById('container'), opensOn: "Custom"
+            });
+            tooltip.appendTo('#1tooltip');
+            let target: HTMLElement = document.getElementById('1tooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            tooltip.open();
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+            tooltip.container = "#container1";
+            tooltip.dataBind();
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(false);
+            expect(document.querySelector("#container1").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+        });
+
+        it('Check popup changes for dynamic container when Tooltip is not open', () => {
+            tooltip = new Tooltip({
+                container: document.getElementById('container')
+            });
+            tooltip.appendTo('#1tooltip');
+            let target: HTMLElement = document.getElementById('1tooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(target, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            triggerMouseEvent(target, 'mouseover');
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseover');
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            tooltip.container = "#container1";
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 0).toBe(true);
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseover');
+            expect(document.querySelector("#container1").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+            triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+        });
     });
 });

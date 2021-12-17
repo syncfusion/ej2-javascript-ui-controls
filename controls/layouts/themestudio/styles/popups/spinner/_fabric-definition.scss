@@ -1,0 +1,55 @@
+$skin-name: 'fabric' !default;
+$theme: 'Fabric' !default;
+$spin-overlay-background: rgba($neutral-black, .4) !default;
+$spin-overlay-stroke-color: $theme-primary !default;
+$spin-overlay-font-color: $neutral-white !default;
+$spin-material-stroke-color: $theme-primary !default;
+$spin-boot4-stroke-color: $theme-primary !default;
+$spin-boot4-stroke-width: 4 !default;
+$spin-fabric-stroke-color: $theme-light !default;
+$spin-fabric-stroke-width: 1.5 !default;
+$spin-fabric-arc-color: $theme-primary !default;
+$spin-bootstrap-stroke-color: $theme-primary !default;
+$spin-label-font-family: 'Segoe UI' !default;
+$spin-label-font-size: 14px !default;
+$spin-label-margin-top: 10px !default;
+$spin-label-color: $theme-primary !default;
+$spin-padding: 10px !default;
+
+@mixin mat-spinner-rotate {
+  animation: material-spinner-rotate 1568.63ms linear infinite;
+}
+
+@mixin fb-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.53, .21, .29, .67);
+}
+
+@mixin boot4-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes material-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes fabric-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

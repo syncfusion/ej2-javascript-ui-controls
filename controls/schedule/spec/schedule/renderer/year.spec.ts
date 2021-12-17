@@ -71,7 +71,7 @@ describe('Schedule year view', () => {
         });
 
         it('cell click', () => {
-            (schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement).click();
+            (schObj.element.querySelectorAll('.e-work-cells:not(.e-other-month)')[0] as HTMLElement).click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(morePopup.firstElementChild.classList.contains('e-more-event-popup')).toBeTruthy();
             expect(schObj.element.querySelector('.e-more-event-popup').firstElementChild.classList.contains('e-more-event-header')).toBeTruthy();
@@ -81,11 +81,11 @@ describe('Schedule year view', () => {
             expect(moreEventHeader.lastElementChild.classList.contains('e-more-event-date-header')).toBeTruthy();
             const moreDateHeader: HTMLElement = schObj.element.querySelector('.e-more-event-date-header');
             expect(moreDateHeader.firstElementChild.classList.contains('e-header-day')).toBeTruthy();
-            expect(moreDateHeader.firstElementChild.innerHTML).toEqual('Sun');
+            expect(moreDateHeader.firstElementChild.innerHTML).toEqual('Fri');
             expect(moreDateHeader.lastElementChild.classList.contains('e-header-date')).toBeTruthy();
-            expect(moreDateHeader.lastElementChild.innerHTML).toEqual('27');
+            expect(moreDateHeader.lastElementChild.innerHTML).toEqual('1');
             expect(moreDateHeader.lastElementChild.getAttribute('tabindex')).toEqual('0');
-            expect(moreDateHeader.lastElementChild.getAttribute('data-date')).toEqual(new Date(2020, 11, 27).getTime().toString());
+            expect(moreDateHeader.lastElementChild.getAttribute('data-date')).toEqual(new Date(2021, 0, 1).getTime().toString());
         });
 
     });

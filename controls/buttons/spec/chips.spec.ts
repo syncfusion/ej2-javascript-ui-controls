@@ -1,4 +1,4 @@
-import { ChipList, ChipModel, ChipDataArgs, SelectedItem, SelectedItems, ClickEventArgs, DeleteEventArgs, Chip } from '../src/chips/index';
+import { ChipList, ChipModel, ChipDataArgs, SelectedItem, SelectedItems, ClickEventArgs, DeleteEventArgs, Chip, ChipDeletedEventArgs } from '../src/chips/index';
 import { createElement, extend } from '@syncfusion/ej2-base';
 
 function deepCloning(data: ChipModel[]) {
@@ -1139,6 +1139,24 @@ describe('Chips', () => {
                     }
                     chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
                     expect(chipCollection.length).toBe(3);
+                });
+            });
+            describe('Deleted Event', () => {
+                afterEach(() => {
+                    chips.destroy();
+                });
+                it('deleted event (Chipset)', () => {
+                    chips = new ChipList({ text: 'chip content', chips: deepCloning(jsonArray), selection: "Single", enableDelete: true, deleted: onDeleted }, '#chip');
+                    let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                    expect(chipCollection.length).toBe(3);
+                    fireEvent(chipCollection[0].querySelector('.e-chip-delete'), 'click');
+                    function onDeleted(e: ChipDeletedEventArgs) {
+                        expect((e.data as ChipModel).text).toBe('chip1');
+                        expect(e.text).toBe('chip1');
+                        expect(e.index).toBe(0);
+                    }
+                    chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                    expect(chipCollection.length).toBe(2);
                 });
             });
         });

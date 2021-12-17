@@ -102,7 +102,8 @@ export class DialogEdit {
             datetimepickeredit: DateTimePicker,
             maskededit: MaskedTextBox,
             numericedit: NumericTextBox,
-            stringedit: TextBox
+            stringedit: TextBox,
+            defaultedit: TextBox
         };
         this.processDialogFields();
         this.wireEvents();
@@ -401,7 +402,7 @@ export class DialogEdit {
         dialogModel.position = position;
         //dialogModel.width = '750px';
         dialogModel.height = this.parent.isAdaptive ? '100%' : 'auto';
-        dialogModel.target = this.parent.element;
+        dialogModel.target = document.body;
         dialogModel.close = this.dialogClose.bind(this);
         dialogModel.closeOnEscape = true;
         dialogModel.open = (args: Record<string, unknown>) => {
@@ -678,13 +679,13 @@ export class DialogEdit {
         if (id === ganttObj.element.id + 'ResourcesTabContainer') {
             this.resourceSelection(id);
         } else if (id === ganttObj.element.id + 'NotesTabContainer') {
-            ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as RichTextEditor).refresh();
+            ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as RichTextEditor).refresh();
         } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
             if (isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate)) {
-                ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as Grid)
+                ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as Grid)
                     .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], false);
             } else {
-                ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as Grid)
+                ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as Grid)
                     .enableToolbarItems([this.parent.element.id + 'SegmentsTabContainer' + '_add'], true);
             }
 
@@ -740,6 +741,7 @@ export class DialogEdit {
             fieldsModel[column.field] = checkboxModel;
             break;
         }
+        case 'defaultedit':        
         case 'stringedit':
         {
             const textBox: TextBox = common as TextBox;
@@ -1113,7 +1115,7 @@ export class DialogEdit {
                             const datePickerModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
                             const value: string = args.rowData[(args.column as GridColumnModel).field];
                             setValue('value', value, datePickerModel);
-                            const datePicker: DatePicker = new DatePicker(datePickerModel);
+							const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i]]].editType](datePickerModel);
                             datePicker.appendTo(args.element as HTMLElement);
                         },
                         read: (args: HTMLElement): Date => {
@@ -1622,7 +1624,7 @@ export class DialogEdit {
     private updateResourceCollection(args: RowSelectEventArgs, resourceTreeGridId: string): void {
         if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {
             const ganttObj: Gantt = this.parent;
-            const treeGridId: HTMLElement = ganttObj.element.querySelector('#' + resourceTreeGridId);
+            const treeGridId: HTMLElement = document.querySelector('#' + resourceTreeGridId);
             const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>treeGridId).ej2_instances[0];
             if (!isNullOrUndefined(resourceTreeGrid) && resourceTreeGrid.getSelectedRecords().length > 0) {
                 const tempRecords: CObject[] = <CObject[]>resourceTreeGrid.getSelectedRecords();
@@ -1695,7 +1697,7 @@ export class DialogEdit {
         return divElement;
     }
     private resourceSelection(id: string) {
-        const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>this.parent.element.querySelector('#' + id)).ej2_instances[0];
+        const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>document.querySelector('#' + id)).ej2_instances[0];
         let currentViewData: Object[] = resourceTreeGrid.getCurrentViewRecords();
         let resources: Object[] = this.ganttResources;
         if (resources && resources.length > 0) {
@@ -1987,7 +1989,10 @@ export class DialogEdit {
                 'taskData.' + this.parent.taskFields.segments,
                 userData,
                 this.rowData);
+            if (dataSource.length <= 0){
+                this.validateDuration(this.rowData);
         }
+    }
     }
     // eslint-disable-next-line
     private updateSegmentsData(segmentForm: HTMLElement, data: IGanttData): void {

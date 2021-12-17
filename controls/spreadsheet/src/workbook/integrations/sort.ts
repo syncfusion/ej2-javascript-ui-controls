@@ -64,8 +64,9 @@ export class WorkbookSort {
         }
 
         let containsHeader: boolean = sortOptions.containsHeader;
-        if (range[0] === range[2]) { //if selected range is a single cell
-            range = getDataRange(range[0], range[1], sheet);
+        const checkForHeader: boolean = (args as { checkForHeader?: boolean }).checkForHeader;
+        if (range[0] === range[2] || checkForHeader) { //if selected range is a single cell
+            if (!checkForHeader) { range = getDataRange(range[0], range[1], sheet); }
             isSingleCell = true;
             if (isNullOrUndefined(sortOptions.containsHeader)) {
                 if (typeof getCell(range[0], range[1], sheet, null, true).value ===
@@ -94,7 +95,7 @@ export class WorkbookSort {
         const header: string = getColumnHeaderText(cell[1] + 1);
         let sortDescriptors: SortDescriptor | SortDescriptor[] = sortOptions.sortDescriptors;
         const address: string = getRangeAddress(range);
-        getData(this.parent, `${sheet.name}!${address}`, true).then((jsonData: { [key: string]: CellModel }[]) => {
+        getData(this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null, cell[1]).then((jsonData: { [key: string]: CellModel }[]) => {
             const dataManager: DataManager = new DataManager(jsonData);
             const query: Query = new Query();
             if (Array.isArray(sortDescriptors)) { //multi-column sorting.
@@ -144,7 +145,9 @@ export class WorkbookSort {
         });
     }
 
-    private isSameStyle(firstCellStyle: CellStyleModel = {}, secondCellStyle: CellStyleModel = {}): boolean {
+    private isSameStyle(firstCellStyle: CellStyleModel, secondCellStyle: CellStyleModel): boolean {
+        if (!firstCellStyle) { firstCellStyle = {}; }
+        if (!secondCellStyle) { secondCellStyle = {}; }
         let sameStyle: boolean = true;
         const keys: string[] = Object.keys(firstCellStyle);
         for (let i: number = 0; i < keys.length; i++) {
@@ -170,19 +173,24 @@ export class WorkbookSort {
     private sortComparer(sortDescriptor: SortDescriptor, caseSensitive: boolean, x: CellModel, y: CellModel): number {
         const direction: string = sortDescriptor.order || '';
         const comparer: Function = DataUtil.fnSort(direction);
+        let isXStringVal: boolean = false; let isYStringVal: boolean = false;
         const caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
         if (x && y && (typeof x.value === 'string' || typeof y.value === 'string')) {
             if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
                 x.value = <string>parseIntValue(x.value);
+                isXStringVal = true;
             }
             if (isNumber(y.value)) {
                 y.value = <string>parseIntValue(y.value);
+                isYStringVal = true;
             }
-            const collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
-            if (!direction || direction.toLowerCase() === 'ascending') {
-                return collator.compare(x.value as string, y.value as string);
-            } else {
-                return collator.compare(x.value as string, y.value as string) * -1;
+            if (!isYStringVal && !isYStringVal) {
+                const collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
+                if (!direction || direction.toLowerCase() === 'ascending') {
+                    return collator.compare(x.value as string, y.value as string);
+                } else {
+                    return collator.compare(x.value as string, y.value as string) * -1;
+                }
             }
         }
         if ((x === null || x && isNullOrUndefined(x.value)) && (y === null || y && isNullOrUndefined(y.value))) {

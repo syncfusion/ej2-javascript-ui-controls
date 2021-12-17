@@ -1,6 +1,6 @@
 import { DocumentEditor, XmlHttpRequestEventArgs } from '../../src/index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import './../node_modules/es6-promise/dist/es6-promise';
+import './../../node_modules/es6-promise/dist/es6-promise';
 import { TestHelper } from './../test-helper.spec';
 import { XmlHttpRequestHandler } from '../../src/document-editor/base/ajax-helper';
 import { Regular } from '../../src/document-editor/implementation/text-helper/regular';

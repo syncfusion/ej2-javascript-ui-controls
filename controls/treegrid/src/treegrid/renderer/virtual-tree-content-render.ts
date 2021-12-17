@@ -5,7 +5,7 @@ import { RowPosition } from '../enum';
 import { InterSectionObserver, RowSelectEventArgs  } from '@syncfusion/ej2-grids';
 import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-generator';
 import * as events from '../base/constant';
-import { isNullOrUndefined, EventHandler, getValue, setValue, Browser, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, EventHandler, getValue, setValue, Browser, KeyboardEventArgs, debounce } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { isCountRequired } from '../utils';
 
@@ -82,9 +82,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
         && (this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || !isCountRequired(this.parent)) {
             this.parent[action]('data-ready', this.onDataReady, this);
-            //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
+            this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
             this.fn = () => {
-                this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs));
+                this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs), this.onEnteredAction());
                 this.parent.off('content-ready', this.fn);
             };
             this.parent.addEventListener('dataBound', this.dataBoundEvent.bind(this));
@@ -117,7 +117,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         && (this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || !isCountRequired(this.parent)) {
             if (!isNullOrUndefined(e.count)) {
                 this.totalRecords = e.count;
-                getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
+                if (!this.parent.enableColumnVirtualization) {
+                    getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
+                }
             }
             if ((!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') || this.isDataSourceChanged) {
                 this.contents.scrollTop = 0;
@@ -173,7 +175,14 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private toSelectVirtualRow(args: { selectedIndex: number }): void {
         if (this.parent.isEdit) { return; }
         const selectVirtualRow: string = 'selectVirtualRow';
-        super[selectVirtualRow](args);
+        const containerRect: string = 'containerRect';
+        if (isNullOrUndefined(this.observer[containerRect])) {
+            this.observer[containerRect] = this.observers[containerRect];
+        }
+        if (isNullOrUndefined (this.parent['clipboardModule'].treeGridParent.editModule) || args.selectedIndex !== 0 ||
+        isNullOrUndefined(this.parent['clipboardModule'].treeGridParent.editModule['addRowIndex'])) {
+            super[selectVirtualRow](args);
+        }
     }
 
     private refreshCell(rowObj: Row<Column>): void {
@@ -297,15 +306,39 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         super[actionComplete](args);
     }
 
+    private onEnteredAction(): Function {
+        return (element: HTMLElement, current: SentinelType, direction: string, e: Offsets, isWheel: boolean, check: boolean) => {
+            const directVirtualRender: string = 'directVirtualRender';
+            if (!this.parent[directVirtualRender]) { // with this property, columns are rendered without debouncing on horizontal scroll.
+                const preventEvent: string = 'preventEvent';
+                if (Browser.isIE && !isWheel && check && !this[preventEvent]) {
+                    this.parent.showSpinner();
+                }
+                const xAxis: boolean = current.axis === 'X';
+                let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0]
+                                - 1);
+                if (xAxis) {
+                    const idx: number = Object.keys(this.vgenerator.cOffsets).length - this.prevInfo.columnIndexes.length;
+                    const maxLeft: number = this.vgenerator.cOffsets[idx - 1];
+                    x = x > maxLeft ? maxLeft : x; //TODO: This fix horizontal scrollbar jumping issue in column virtualization.
+                }
+                this.virtualEle.adjustTable(x, this.translateY);
+                if (this.parent.enableColumnVirtualization) {
+                    this.header.virtualEle.adjustTable(x, 0);
+                }
+            }
+        };
+    }
+
     public scrollListeners(scrollArgs: ScrollArg) : void {
         const info: SentinelType = scrollArgs.sentinel;
-        const outBuffer: number = 10; //this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
+        const outBuffer: number = this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 2);
         const content: HTMLElement = this.parent.getContent().querySelector('.e-content');
         const scrollHeight: number = outBuffer * this.parent.getRowHeight();
         const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0;
         const downScroll: boolean = Math.ceil(scrollArgs.offset.top - this.translateY) >= scrollHeight;
         const selectedRowIndex: string = 'selectedRowIndex';
-        if (upScroll) {
+        if (upScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left')) {
             const vHeight: number = +(this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
                 this.parent.element.getBoundingClientRect().height);
             let index: number = (~~(content.scrollTop / this.parent.getRowHeight())
@@ -321,7 +354,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 const lastInx: number = this.totalRecords - 1;
                 const remains: number = this.endIndex % lastInx;
                 this.endIndex = lastInx;
-                this.startIndex = (this.startIndex - remains) < 0 ? 0: (this.startIndex - remains);
+                this.startIndex = (this.startIndex - remains) < 0 ? 0 : (this.startIndex - remains);
             }
             //var firsttdinx = parseInt(this.parent.getContent().querySelector('.e-content td').getAttribute('index'), 0);
             let rowPt: number = Math.ceil(scrollArgs.offset.top / this.parent.getRowHeight());
@@ -340,7 +373,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.translateY = (scrollArgs.offset.top - (outBuffer * height) > 0) ?
                     scrollArgs.offset.top - (outBuffer * height) + 10 : 0;
             }
-        } else if (downScroll) {
+        } else if (downScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left')) {
             let nextSetResIndex: number = ~~(content.scrollTop / this.parent.getRowHeight());
             const isLastBlock: boolean = (this[selectedRowIndex] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
             if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] !== -1 &&
@@ -360,14 +393,17 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.translateY = scrollArgs.offset.top;
             }
         }
-        if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
-          || (upScroll)) {
-            const viewInfo: VirtualInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
+        if (((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
+            || (upScroll)) || (scrollArgs.direction === 'right' || scrollArgs.direction === 'left')) {
+            const viewInfo: VirtualInfo = this.currentInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
             this.previousInfo = viewInfo;
+            this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
             const page: number = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
             this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
-            viewInfo.event = viewInfo.event === 'refresh-virtual-block' ? 'model-changed' : viewInfo.event;
-            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+            if (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left') {
+                viewInfo.event = viewInfo.event === 'refresh-virtual-block' ? 'model-changed' : viewInfo.event;
+            }
+            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
         }
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {
@@ -382,8 +418,14 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           getValue('currentInfo', this).page && getValue('currentInfo', this).page !== e.virtualInfo.page ?
                 getValue('currentInfo', this) : e.virtualInfo;
             const cBlock: number = (info.columnIndexes[0]) - 1;
-            const cOffset: number = this.getColumnOffset(cBlock);
-            this.virtualEle.setWrapperWidth(null, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
+            const cOffset: number = this.getColumnOffset(cBlock); let width: string;
+            if (this.parent.enableColumnVirtualization) {
+                this.header.virtualEle.adjustTable(cOffset, 0);
+                const cIndex: number[] = info.columnIndexes;
+                width = this.getColumnOffset(cIndex[cIndex.length - 1]) - this.getColumnOffset(cIndex[0] - 1) + '';
+                this.header.virtualEle.setWrapperWidth(width);
+            }
+            this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
             target = this.parent.createElement('tbody');
             target.appendChild(newChild);
             const replace: string = 'replaceWith';
@@ -394,7 +436,11 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.isExpandCollapse = false;
             }
             setValue('prevInfo', this.previousInfo ? this.previousInfo : info, this);
+            if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
+                this.parent.notify(events.autoCol, {});
+            }
             const focusCell: string = 'focusCell'; const restoreAdd: string = 'restoreAdd';
+            const ensureSelectedRowPosition: string = 'ensureSelectedRowPosition';
             super[focusCell](e);
             const isAdd: string = 'isAdd';
             if (this[isAdd] && !this.parent.getContent().querySelector('.e-content').querySelector('.e-addedrow')) {
@@ -409,6 +455,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
             this.restoreEditState();
             super[restoreAdd]();
+            super[ensureSelectedRowPosition]();
         }
     }
 
@@ -439,25 +486,32 @@ export class TreeInterSectionObserver extends InterSectionObserver {
     private newPos: number = 0;
     private lastPos: number = 0;
     private timer: number = 0;
-    public observes(callback: Function): void {
+    public observes(callback: Function, onEnterCallback: Function): void {
         const containerRect: string = 'containerRect';
         super[containerRect] = getValue('options', this).container.getBoundingClientRect();
-        EventHandler.add(getValue('options', this).container, 'scroll', this.virtualScrollHandlers(callback), this);
+        EventHandler.add(getValue('options', this).container, 'scroll', this.virtualScrollHandlers(callback, onEnterCallback), this);
     }
     private clear(): void {
         this.lastPos = null;
     }
-    private virtualScrollHandlers(callback: Function) : Function {
-        let prevTop: number = 0; let prevLeft: number = 0;
+    private virtualScrollHandlers(callback: Function, onEnterCallback: Function) : Function {
+        const delay: number = Browser.info.name === 'chrome' ? 200 : 100;
+        const options: string = 'options'; const movableEle: string = 'movableEle';
+        const element: string = 'element'; const fromWheel: string = 'fromWheel';
+        const debounced100: Function = debounce(callback, delay);
+        const debounced50: Function = debounce(callback, 50);
+        this[options].prevTop = this[options].prevLeft = 0;
         return (e: Event) => {
-            const scrollTop: number = (<HTMLElement>e.target).scrollTop;
-            const scrollLeft: number = (<HTMLElement>e.target).scrollLeft;
-            let direction: ScrollDirection = prevTop < scrollTop ? 'down' : 'up';
-            direction = prevLeft === scrollLeft ? direction : prevLeft < scrollLeft ? 'right' : 'left';
-            prevTop = scrollTop; prevLeft = scrollLeft;
-            const current: SentinelType = getValue('sentinelInfo', this)[direction];
+            const top: number = this[options].movableContainer ? this[options].container.scrollTop : (<HTMLElement>e.target).scrollTop;
+            const left: number = this[options].movableContainer ? this[options].scrollbar.scrollLeft : (<HTMLElement>e.target).scrollLeft;
+            let direction: ScrollDirection = this[options].prevTop < top ? 'down' : 'up';
+            direction = this[options].prevLeft === left ? direction : this[options].prevLeft < left ? 'right' : 'left';
+            this[options].prevTop = top; this[options].prevLeft = left;
+
+            const current: SentinelType = this.sentinelInfo[direction];
+
             let delta: number = 0;
-            this.newPos = scrollTop;
+            this.newPos = top;
             if ( this.lastPos != null ) { // && newPos < maxScroll
                 delta = this.newPos -  this.lastPos;
             }
@@ -466,19 +520,37 @@ export class TreeInterSectionObserver extends InterSectionObserver {
                 clearTimeout(this.timer);
             }
             this.timer = setTimeout(this.clear, 0);
-            /*if (this.options.axes.indexOf(current.axis) === -1) {
-            return;
-        }*/
-            /*if(delta > 45 || delta < -45){
-          this.isWheeling = true;
-        }*/
             if ((delta > 100 || delta < -100) && (e && e.preventDefault)) {
                 e.returnValue = false;
                 e.preventDefault();
             }
-            callback({ direction: direction, isWheel: this.isWheeling,
-                sentinel: current, offset: { top: scrollTop, left: scrollLeft },
-                focusElement: document.activeElement});
+
+
+            if (this[options].axes.indexOf(current.axis) === -1) {
+                return;
+            }
+
+            const check: boolean = this.check(direction);
+            if (current.entered && current.axis === 'X') {
+                if (this[movableEle] && (direction === 'right' || direction === 'left')) {
+                    onEnterCallback(this[movableEle], current, direction, { top: top, left: left }, this[fromWheel], check);
+                } else {
+                    onEnterCallback(this[element], current, direction, { top: top, left: left }, this[fromWheel], check);
+                }
+            }
+
+            if (check) {
+                let fn: Function = debounced100;
+                if (current.axis === 'X') {
+                    fn = debounced50;
+                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                        focusElement: document.activeElement});
+                } else {
+                    callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                        focusElement: document.activeElement});
+                }
+            }
+            this[fromWheel] = false;
         };
     }
 }

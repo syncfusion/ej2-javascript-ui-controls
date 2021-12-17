@@ -197,7 +197,7 @@ export namespace Input {
         if (args.floatLabelType === 'Auto') {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             args.element.addEventListener('input', (event: KeyboardEvent) => {
-                updateLabelState(args.element.value, floatLabelElement);
+                updateLabelState(args.element.value, floatLabelElement, args.element);
             });
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             args.element.addEventListener('blur', (event: FocusEvent) => {
@@ -249,17 +249,20 @@ export namespace Input {
         }
     }
 
-    function updateLabelState(value: string | number, label: HTMLElement): void {
+    function updateLabelState(value: string | number, label: HTMLElement, element: HTMLElement = null): void {
         if (value) {
             addClass([label], CLASSNAMES.LABELTOP);
             if (label.classList.contains(CLASSNAMES.LABELBOTTOM)) {
                 removeClass([label], CLASSNAMES.LABELBOTTOM);
             }
         } else {
-            if (label.classList.contains(CLASSNAMES.LABELTOP)) {
-                removeClass([label], CLASSNAMES.LABELTOP);
+            const isNotFocused =  element != null ? element !== document.activeElement : true;
+            if(isNotFocused) {
+                if (label.classList.contains(CLASSNAMES.LABELTOP)) {
+                    removeClass([label], CLASSNAMES.LABELTOP);
+                }
+                addClass([label], CLASSNAMES.LABELBOTTOM);
             }
-            addClass([label], CLASSNAMES.LABELBOTTOM);
         }
     }
 
@@ -332,7 +335,7 @@ export namespace Input {
         const parent: HTMLElement = getParentNode(element);
         if (parent.classList.contains(CLASSNAMES.FLOATINPUT) && floatLabelType === 'Auto') {
             const label: HTMLElement = <HTMLElement> getParentNode(element).getElementsByClassName('e-float-text')[0];
-            updateLabelState(element.value, label);
+            updateLabelState(element.value, label, element);
         }
     }
 

@@ -133,6 +133,8 @@ export interface RowExpandingEventArgs {
     row?: HTMLTableRowElement;
     /** Cancel the row expanding action */
     cancel?: boolean;
+    /** Provides an option to ExpandAll the nested parent rows of the current row. */
+    expandAll?: boolean
 }
 export interface RowCollapsedEventArgs {
     /**
@@ -155,6 +157,8 @@ export interface RowCollapsingEventArgs {
     row?: HTMLTableRowElement;
     /** Cancel the row collapsing action */
     cancel?: boolean;
+    /** Provides an option to CollapseAll the nested parent rows of the current row. */
+    collapseAll?: boolean
 }
 export interface CellSaveEventArgs extends SaveEventArgs {
     /** Defines edited column */

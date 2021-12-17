@@ -5,7 +5,7 @@ import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, compl
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getSheet, selectionComplete } from '../../workbook/index';
+import { getSheetNameFromAddress, getSheet, selectionComplete, clearRange } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
@@ -241,7 +241,7 @@ export class Edit {
                             editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(editorElem.style.maxWidth, 10)) {
                             editorElem.style.overflow = 'auto';
                         }
-                        this.refreshEditor(editorElem.textContent, this.isCellEdit);
+                        this.refreshEditor(editorElem.textContent, this.isCellEdit, false, false, false);
                     }
                     if (!e.altKey) {
                         switch (keyCode) {
@@ -253,7 +253,7 @@ export class Edit {
                                 const text: string = editorElem.textContent;
                                 if (text && text.indexOf('\n') > -1) {
                                     wrapText(this.parent.getActiveSheet().selectedRange, true, this.parent as Workbook);
-                                    this.refreshEditor(editorElem.textContent, this.isCellEdit);
+                                    this.refreshEditor(editorElem.textContent, this.isCellEdit, false, false, false);
                                     this.isAltEnter = false;
                                 }
                             }
@@ -378,8 +378,8 @@ export class Edit {
             this.parent.notify(
                 formulaBarOperation, { action: 'refreshFormulabar', value: value });
         }
-        if (editorElem && trigEvent && this.editCellData.value === editorElem.textContent) {
-            if (this.triggerEvent('cellEditing')) {
+        if (this.parent.isEdit && editorElem && trigEvent && this.editCellData.value === editorElem.textContent) {
+            if (this.triggerEvent('cellEditing').cancel) {
                 this.cancelEdit();
             }
         }
@@ -459,8 +459,10 @@ export class Edit {
                 let range: number[] = getIndexesFromAddress(address);
                 range = range[0] > range[2] ? getSwapRange(range) : range;
                 address = getRangeAddress(range);
-                this.parent.notify(beginAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
-                this.parent.clearRange(address, null, true);
+                const cellDeleteArgs: { address: string } = { address: sheet.name + '!' + address };
+                this.parent.notify(beginAction, { action: 'cellDelete', eventArgs: cellDeleteArgs });
+                address = getRangeFromAddress(cellDeleteArgs.address); range = getRangeIndexes(address);
+                clearRange(this.parent, range, this.parent.activeSheetIndex, true);
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
                 this.parent.notify(selectionComplete, {});
                 const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
@@ -751,7 +753,7 @@ export class Edit {
                 }
                 if (!isUndefined(value)) { this.refreshEditor(value, false, true, false, false); }
                 if (refreshCurPos) { this.setCursorPosition(); }
-                if (this.triggerEvent('cellEdit')) {
+                if (this.triggerEvent('cellEdit').cancel) {
                     this.cancelEdit(true, false);
                 }
             });
@@ -819,8 +821,8 @@ export class Edit {
         }
     }
 
-    private updateEditedValue(tdRefresh: boolean = true): boolean {
-        const oldCellValue: string = this.editCellData.oldValue; const newVal: string = this.editCellData.value;
+    private updateEditedValue(tdRefresh: boolean = true, value?: string): boolean {
+        const oldCellValue: string = this.editCellData.oldValue;
         const oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
         let isValidate: boolean = true;
         const address: string | number[] = this.editCellData.addr;
@@ -828,10 +830,14 @@ export class Edit {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
         const column: ColumnModel = getColumn(sheet, cellIndex[1]);
+        if (value) {
+            this.editCellData.value = value;
+        }
+        const newVal: string = this.editCellData.value;
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
         if (this.parent.allowDataValidation && ((cell && cell.validation) || (column && column.validation)))  {
-            const value: string = this.getEditElement(sheet).innerText;
+            const value: string = newVal ? newVal : this.getEditElement(sheet).innerText;
             const isCell: boolean = true;
             const sheetIdx: number = this.parent.activeSheetIndex;
             let range: number[];
@@ -1030,13 +1036,14 @@ export class Edit {
             fSize = (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize;
         }
         if (refreshFormulaBar) { this.refreshEditor(this.editCellData.oldValue, false, true, false, false); }
-        if (this.triggerEvent('beforeCellSave')) {
+        const triggerEventArgs: CellEditEventArgs = this.triggerEvent('beforeCellSave');
+        if (triggerEventArgs.cancel) {
             event.preventDefault();
             return;
         }
-        const isValidate: boolean = this.updateEditedValue();
+        const isValidate: boolean = this.updateEditedValue(true, triggerEventArgs.value);
         if (isValidate) {
-            this.triggerEvent('cellSave', event);
+            this.triggerEvent('cellSave', event, triggerEventArgs.value);
             this.resetEditState();
             this.focusElement();
         } else if (event) {
@@ -1047,6 +1054,9 @@ export class Edit {
         }
         if (this.parent.showSheetTabs && !this.parent.isProtected) {
             this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
+        }
+        if (this.parent.isValidationHighlighted && getCell(actCell[0], actCell[1], sheet).validation) {
+            this.parent.addInvalidHighlight();
         }
     }
 
@@ -1065,11 +1075,11 @@ export class Edit {
         this.parent.notify(enableToolbarItems, [{ enable: true }]);
     }
 
-    private triggerEvent(eventName: string, event?: MouseEvent & TouchEvent | KeyboardEventArgs): boolean {
+    private triggerEvent(eventName: string, event?: MouseEvent & TouchEvent | KeyboardEventArgs, value?: string): CellEditEventArgs {
         const cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         const eventArgs: CellEditEventArgs | CellSaveEventArgs = {
             element: this.editCellData.element,
-            value: this.editCellData.value,
+            value: value ? value : this.editCellData.value,
             oldValue: this.editCellData.oldValue,
             address: this.editCellData.fullAddr,
             displayText: this.parent.getDisplayText(cell)
@@ -1081,19 +1091,20 @@ export class Edit {
             if (args.isUnique) { eventArgs.isSpill = this.isSpill; }
         }
         if (eventArgs.value !== eventArgs.oldValue) {
+            if (eventName !== 'cellSave') { (<CellEditEventArgs>eventArgs).cancel = false; }
+            if (eventName === 'beforeCellSave') {
+                this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'cellSave', preventAction: true });
+            }
+            this.parent.trigger(eventName, eventArgs);
             if (eventName === 'cellSave') {
-                if (this.editCellData.formula) {
-                    eventArgs.formula = this.editCellData.formula;
-                }
+                if (this.editCellData.formula) { eventArgs.formula = this.editCellData.formula; }
                 eventArgs.originalEvent = event;
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
             }
-            if (eventName !== 'cellSave') {
-                (<CellEditEventArgs>eventArgs).cancel = false;
-            }
+        } else if (eventName !== 'cellSave' && eventName !== 'beforeCellSave') {
+            this.parent.trigger(eventName, eventArgs);
         }
-        this.parent.trigger(eventName, eventArgs);
-        return (<CellEditEventArgs>eventArgs).cancel;
+        return { value: eventArgs.value, oldValue: null, element: null, address: null, cancel: (<CellEditEventArgs>eventArgs).cancel };
     }
 
     private altEnter(): void {

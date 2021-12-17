@@ -187,20 +187,20 @@ export class DiagramRenderer {
      */
     public renderElement(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement, transform?: Transforms,
-        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, isPreviewNode?: boolean):
+        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, isPreviewNode?: boolean, centerPoint?: object):
         void {
         let isElement: boolean = true;
         if (element instanceof Container) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             isElement = false;
             element.id = element.id ? element.id : randomId();
-            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode);
+            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode,centerPoint);
         } else if (element instanceof ImageElement) {
             this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof PathElement) {
             this.renderPathElement(element, canvas, transform, parentSvg, fromPalette, isPreviewNode);
         } else if (element instanceof TextElement) {
-            this.renderTextElement(element, canvas, transform, parentSvg, fromPalette);
+            this.renderTextElement(element, canvas, transform, parentSvg, fromPalette, centerPoint);
         } else if (element instanceof DiagramNativeElement) {
             this.renderNativeElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof DiagramHtmlElement) {
@@ -1334,10 +1334,14 @@ export class DiagramRenderer {
     public renderTextElement(
         element: TextElement, canvas: HTMLCanvasElement | SVGElement,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
+        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, centerPoint?: object):
         void {
 
         const options: BaseAttributes = this.getBaseAttributes(element, transform);
+        if (centerPoint) {
+            options.x = (centerPoint as any).cx - 2;
+            options.y = (centerPoint as any).cy - 2;
+        }
         (options as RectAttributes).cornerRadius = 0;
         (options as TextAttributes).whiteSpace = whiteSpaceToString(element.style.whiteSpace, element.style.textWrapping);
         (options as TextAttributes).content = element.content;
@@ -1525,7 +1529,7 @@ export class DiagramRenderer {
     public renderContainer(
         group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean,
-        indexValue?: number, isPreviewNode?: boolean):
+        indexValue?: number, isPreviewNode?: boolean, centerPoint?: object):
         void {
         const svgParent: SvgParent = { svg: parentSvg, g: canvas };
         if (this.diagramId) {
@@ -1569,7 +1573,7 @@ export class DiagramRenderer {
                 if (!this.isSvgMode) {
                     child.flip = group.flip;
                 }
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, isPreviewNode);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, isPreviewNode, centerPoint);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
                     this.renderFlipElement(child, parentG, flip);
@@ -1673,8 +1677,11 @@ export class DiagramRenderer {
         void {
         const options: RectAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
         options.cornerRadius = element.cornerRadius || 0;
+        if (element.isExport) {
+            options.cornerRadius *= element.exportScaleValue.x;
+        }
         const ariaLabel: Object = element.description ? element.description : element.id;
-        this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg, ariaLabel);
+        this.renderer.drawRectangle(canvas, options, this.diagramId, element.isExport, undefined, parentSvg, ariaLabel);
     }
 
     /**
@@ -1859,10 +1866,10 @@ export class DiagramRenderer {
      */
     public updateNode(
         element: DiagramElement, diagramElementsLayer: HTMLCanvasElement, htmlLayer: HTMLElement,
-        transform?: Transforms, insertIndex?: number): void {
+        transform?: Transforms, insertIndex?: number, centerPoint?: object): void {
         this.renderElement(
             element as Container, diagramElementsLayer, htmlLayer, transform,
-            this.getParentSvg(element), undefined, undefined, insertIndex);
+            this.getParentSvg(element), undefined, undefined, insertIndex, null, centerPoint);
     }
 
 

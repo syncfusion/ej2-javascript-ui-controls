@@ -78,7 +78,7 @@ export class Aggregate {
                         let item: Object; item = {};
                         for (let i: number = 0; i < columns.length; i++) {
                             const  field: string = (isNullOrUndefined(getObject('field', columns[i]))) ?
-                            columns[i] : getObject('field', (columns[i]));
+                                columns[i] : getObject('field', (columns[i]));
                             item[field] = null;
                         }
                         item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);

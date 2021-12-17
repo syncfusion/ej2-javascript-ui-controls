@@ -159,6 +159,38 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 { 'color': '#F87171' }]
         };
         break;
+    case 'bootstrap5':
+        style = {
+            heatMapTitle: '#343A40',
+            axisTitle: '#343A40',
+            axisLabel: '#495057',
+            cellBorder: '#D1D5DB',
+            background: 'transparent',
+            cellTextColor: '#111827',
+            toggledColor: 'transparent',
+            emptyCellColor: '#E5E7EB',
+            legendLabel: '#343A40',
+            palette: [{ 'color': '#668E1F' },
+                { 'color': '#262E0B' },
+                { 'color': '#AF6E10' }]
+        };
+        break;
+    case 'bootstrap5dark':
+        style = {
+            heatMapTitle: '#E9ECEF',
+            axisTitle: '#E9ECEF',
+            axisLabel: '#CED4DA',
+            cellBorder: '#4B5563',
+            background: 'transparent',
+            cellTextColor: '#FFFFFF',
+            toggledColor: 'transparent',
+            emptyCellColor: '#343A40',
+            legendLabel: '#E9ECEF',
+            palette: [{ 'color': '#A860F1' },
+                { 'color': '#5ECB9B' },
+                { 'color': '#557EF7' }]
+        };
+        break;
     default:
         style = {
             heatMapTitle: '#424242',

@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
 
 ### Chips
 
-#### Bug Fixes
+#### New Features
 
-- `F167517` - The issue with "JEST test case failure with Chip component" has been resolved.
+- `#I308047` - Provided the `deleted` event support for the Chips component.
 
 ## 19.2.47 (2021-07-13)
 

@@ -299,12 +299,13 @@ export class Crosshair {
         this.isBottom = false; this.isTop = false; this.isLeft = false; this.isRight = false;
         const labelValue: number = (axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks')
             ? 0.5 : 0;
+        const isOpposed: boolean = axis.isAxisOpposedPosition;
         if (axis.orientation === 'Horizontal') {
             value = getValueXByPoint(Math.abs(this.valueX - axis.rect.x), axis.rect.width, axis) + labelValue;
-            this.isBottom = !axis.opposedPosition; this.isTop = axis.opposedPosition;
+            this.isBottom = !isOpposed; this.isTop = isOpposed;
         } else {
             value = getValueYByPoint(Math.abs(this.valueY - axis.rect.y), axis.rect.height, axis) + labelValue;
-            this.isRight = axis.opposedPosition; this.isLeft = !axis.opposedPosition;
+            this.isRight = isOpposed; this.isLeft = !isOpposed;
         }
         if (axis.valueType === 'DateTime') {
             return axis.format(new Date(value));
@@ -332,7 +333,7 @@ export class Crosshair {
         let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
             ? axis.scrollBarHeight : 0;
         this.elementSize = measureText(text, axis.crosshairTooltip.textStyle);
-
+        const isOpposed: boolean = axis.isAxisOpposedPosition;
         if (axis.orientation === 'Horizontal') {
             const yLocation: number = islabelInside ? axisRect.y - this.elementSize.height - (padding * 2 + arrowPadding) :
                 axisRect.y + scrollBarHeight;
@@ -343,7 +344,7 @@ export class Crosshair {
                 (this.valueX - (this.elementSize.width / 2) - padding), height + (!islabelInside ? scrollBarHeight : 0),
                 this.elementSize.width + padding * 2, this.elementSize.height + padding * 2
             );
-            if (axis.opposedPosition) {
+            if (isOpposed) {
                 tooltipRect.y = islabelInside ? axisRect.y : axisRect.y -
                     (this.elementSize.height + padding * 2 + arrowPadding) - scrollBarHeight;
             }
@@ -360,7 +361,7 @@ export class Crosshair {
                 this.arrowLocation.x = tooltipRect.x + this.rx + arrowPadding / 2;
             }
         } else {
-            scrollBarHeight = scrollBarHeight * (axis.opposedPosition ? 1 : -1);
+            scrollBarHeight = scrollBarHeight * (isOpposed ? 1 : -1);
             this.arrowLocation = new ChartLocation(axisRect.x, this.valueY);
             const width: number = islabelInside ? axisRect.x - scrollBarHeight :
                 axisRect.x - (this.elementSize.width) - (padding * 2 + arrowPadding);
@@ -368,7 +369,7 @@ export class Crosshair {
                 width + scrollBarHeight, this.valueY - (this.elementSize.height / 2) - padding,
                 this.elementSize.width + (padding * 2), this.elementSize.height + padding * 2
             );
-            if (axis.opposedPosition) {
+            if (isOpposed) {
                 tooltipRect.x = islabelInside ? axisRect.x - this.elementSize.width - arrowPadding :
                     axisRect.x + arrowPadding + scrollBarHeight;
                 if ((tooltipRect.x + tooltipRect.width) > this.chart.availableSize.width) {

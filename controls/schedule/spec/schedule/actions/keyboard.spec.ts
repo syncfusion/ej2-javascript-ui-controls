@@ -3138,6 +3138,564 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('Year view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4), views: ['Year'] };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('home key', () => {
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            expect(firstWorkCell.classList).not.toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
+            keyModule.keyActionHandler({ action: 'home' });
+            expect(firstWorkCell.classList).toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+        });
+        it('right and left arrow key', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(1);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+            keyModule.keyActionHandler({ action: 'leftArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('down and up arrow key', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+            keyModule.keyActionHandler({ action: 'upArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('navigate to next and previous month using right and left arrow', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const target: HTMLTableCellElement = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'))[30];
+            keyModule.keyActionHandler({ action: 'rightArrow', target: target });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(3);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+            keyModule.keyActionHandler({ action: 'leftArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(2);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
+        });
+        it('navigate to next and previous month by down and up keys', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const target: HTMLTableCellElement = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'))[30];
+            keyModule.keyActionHandler({ action: 'downArrow', target: target });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(2);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+            keyModule.keyActionHandler({ action: 'upArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(2);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
+        });
+        it('navigate to previous and next year', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(6);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
+            keyModule.keyActionHandler({ action: 'rightArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+    });
+
+    describe('Horizontal year view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4), views: ['TimelineYear'] };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('home key', () => {
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            expect(firstWorkCell.classList).not.toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
+            keyModule.keyActionHandler({ action: 'home' });
+            expect(firstWorkCell.classList).toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+        });
+        it('right and left arrow key', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(1);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+            keyModule.keyActionHandler({ action: 'leftArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('down and up arrow key', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+            keyModule.keyActionHandler({ action: 'upArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('navigate to next month using shift right arrow', () => {
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            cells[0].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = cells[0];
+            keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: cells[30] });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(3);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+            keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(33);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(4);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+        });
+        it('navigate to previous month using shift left arrow', () => {
+            const target: HTMLTableCellElement = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'))[40];
+            target.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = target;
+            keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: target });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(30);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+            keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(29);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('navigate to next month using shift down arrow', () => {
+            const target: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)');
+            target.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = target;
+            keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: target });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(3);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+            keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(60);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(3);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
+        });
+        it('navigate to previous month using shift up arrow', () => {
+            const target: HTMLTableCellElement = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'))[77];
+            target.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = target;
+            keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: target });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(29);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(3);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+            keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(57);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(3);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+    });
+
+    describe('Horizontal year view with resource', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = {
+                views: ['TimelineYear'],
+                group: { resources: ['Categories'] },
+                resources: [{
+                    field: 'TaskId', title: 'Category', name: 'Categories', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Nancy', id: 1, color: '#df5286' },
+                        { text: 'Steven', id: 2, color: '#7fa900' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('home key', () => {
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            expect(firstWorkCell.classList).not.toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
+            keyModule.keyActionHandler({ action: 'home' });
+            expect(firstWorkCell.classList).toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+        });
+        it('down arrow', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
+            const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+        });
+        it('shift down arrow', () => {
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            cells[0].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = cells[0];
+            keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: cells[20] });
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(0);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(11);
+        });
+        it('up arrow', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            keyModule.keyActionHandler({ action: 'upArrow', target: cells[1] });
+            const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('shift up arrow', () => {
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            cells[22].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = cells[22];
+            keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: cells[2] });
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(0);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+    });
+
+    describe('Vertical year view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2017, 9, 4),
+                views: [{ option: 'TimelineYear', displayName: 'Vertical Timeline Year', orientation: 'Vertical' }]
+            };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('home key', () => {
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            expect(firstWorkCell.classList).not.toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
+            keyModule.keyActionHandler({ action: 'home' });
+            expect(firstWorkCell.classList).toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+        });
+        it('right and left arrow key', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(1);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+            keyModule.keyActionHandler({ action: 'leftArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('down and up arrow key', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
+            let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
+            keyModule.keyActionHandler({ action: 'upArrow', target: focusedEle });
+            focusedEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('navigate to next month using shift right arrow', () => {
+            const target: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)');
+            target.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = target;
+            keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(1);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
+            keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(60);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(2);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
+        });
+        it('navigate to previous month using shift left arrow', () => {
+            const target: HTMLTableCellElement = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'))[38];
+            target.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = target;
+            keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: target });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(29);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(1);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
+            keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(57);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(0);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
+        });
+        it('navigate to next month using shift down arrow', () => {
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            cells[0].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = cells[0];
+            keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: cells[360] });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(1);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
+            keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(33);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(1);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
+        });
+        it('navigate to previous month using shift up arrow', () => {
+            const target: HTMLTableCellElement = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'))[37];
+            target.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = target;
+            keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: target });
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(0);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(30);
+            keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: focuesdEle });
+            focuesdEle = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(0);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(29);
+        });
+    });
+
+    describe('Vertical year view with resource', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = {
+                views: [{ option: 'TimelineYear', orientation: 'Vertical', displayName: 'Vertical Timeline Year' }],
+                group: { resources: ['Categories'] },
+                resources: [{
+                    field: 'TaskId', title: 'Category', name: 'Categories', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Nancy', id: 1, color: '#df5286' },
+                        { text: 'Steven', id: 2, color: '#7fa900' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('home key', () => {
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            expect(firstWorkCell.classList).not.toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
+            keyModule.keyActionHandler({ action: 'home' });
+            expect(firstWorkCell.classList).toContain('e-selected-cell');
+            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+        });
+        it('right arrow', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'rightArrow', target: targetCell });
+            const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(1);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('shift right arrow', () => {
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            cells[0].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = cells[0];
+            keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: cells[10] });
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(11);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('left arrow', () => {
+            keyModule.keyActionHandler({ action: 'home' });
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            keyModule.keyActionHandler({ action: 'leftArrow', target: cells[1] });
+            const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focusedEle.classList).toContain('e-selected-cell');
+            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focusedEle.cellIndex).toEqual(0);
+            expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+        it('shift left arrow', () => {
+            const cells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            cells[11].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.initialTarget = cells[11];
+            keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: cells[1] });
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(0);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+        });
+    });
+
     describe('EJ2-49958 - Enter key with enabled readonly property', () => {
         let schObj: Schedule;
         let keyModule: any;

@@ -13,6 +13,36 @@ function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
 
 describe('insert image', () => {
 
+    describe(' Quick Toolbar open testing after selecting some text', () => {
+        let rteObj: any;
+        let ele: HTMLElement;
+        it(" selecting some text and then clicking on image test ", () => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
+                " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />"
+            });
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 2);
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('#imgTag');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+    });
     describe('div content-rte testing', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -950,6 +980,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).contentModule.getEditPanel().querySelector('span.e-rte-img-caption')).not.toBe(null);
             expect((<any>rteObj).contentModule.getEditPanel().querySelector('span.e-img-wrap')).not.toBe(null);
             expect((<any>rteObj).imageModule.captionEle.querySelector('img').classList.contains('e-rte-image')).toBe(true);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
             trget.dispatchEvent(clickEvent);
             (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
             let imagePop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
@@ -1035,7 +1066,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).element.querySelector('.e-rte-image').width).toBe(180);
             expect((<any>rteObj).element.querySelector('.e-rte-image').height).toBe(180);
             let eventsArgs: any = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
-            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));   
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
             // set and pass the click action point for check the condtion in mouseup event handler
             (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
             eventsArgs.clientY = 100;
@@ -1848,6 +1879,159 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        let innerHTML1: string = ` 
+            <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Checking image delete action being removed with no removeUrl configured', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('img');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(function () {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
+                expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+                quickTBItem.item(3).click();
+                expect(rteObj.contentModule.getEditPanel().querySelector('.e-rte-image')).toBe(null);
+                (rteObj.imageModule as any).triggerPost();
+                done();
+            }, 200);
+        });
+    });
+
+    describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let innerHTML1: string = `testing
+        <span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" style=""><span class="e-img-inner" contenteditable="true">image caption</span></span></span>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Image delete action checking using backspace key', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].lastChild;
+            setCursorPoint(node, 0);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-img-caption')).toBe(null);
+            done();
+        });
+    });
+
+    describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML1: string = `testing<span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" style=""><span class="e-img-inner" contenteditable="true">image caption</span></span></span>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Image delete action checking using delete key', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].firstChild;
+            setCursorPoint(node, 7);
+            keyBoardEvent.keyCode = 46;
+            keyBoardEvent.code = 'Delete';
+            keyBoardEvent.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-img-caption')).toBe(null);
+            done();
+        });
+    });
+
+    describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let innerHTML1: string = `<p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" style=""><span class="e-img-inner" contenteditable="true">image caption</span></span></span></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Image delete action checking using backspace key with nodes', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0];
+            setCursorPoint(node, 1);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-img-caption')).toBe(null);
+            done();
+        });
+    });
+    
     describe('Mouse Click for image testing when showOnRightClick enabled', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {
@@ -1919,7 +2103,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe(' ActionComplete event triggered twice when replace the inserted image using quicktoolbar - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
-        let actionCompleteCalled: boolean;
+        let actionCompleteCalled: boolean = true;
         beforeEach((done: Function) => {
             rteObj = renderRTE({
                 value: `<p><img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`,
@@ -2186,12 +2370,13 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(isNullOrUndefined(quickPop)).toBe(true);
                 done();
-            }, 200);
+            }, 400);
         });
         it(" leftClick with `which` as '3' with quickpopup availability testing ", (done: Function) => {
             rteObj = renderRTE({
@@ -2210,12 +2395,13 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(isNullOrUndefined(quickPop)).toBe(true);
                 done();
-            }, 200);
+            }, 400);
         });
         it(" leftClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
             rteObj = renderRTE({
@@ -2234,13 +2420,14 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
                 expect(quickPop.length > 0).toBe(true);
                 expect(isNullOrUndefined(quickPop[0])).toBe(false);
                 done();
-            }, 200);
+            }, 400);
         });
         it(" rightClick with `which` as '2' with quickpopup availability testing ", (done: Function) => {
             rteObj = renderRTE({
@@ -2259,12 +2446,13 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(isNullOrUndefined(quickPop)).toBe(true);
                 done();
-            }, 200);
+            }, 400);
         });
         it(" rightClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
             rteObj = renderRTE({
@@ -2283,12 +2471,13 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(isNullOrUndefined(quickPop)).toBe(true);
                 done();
-            }, 200);
+            }, 400);
         });
         it(" rightClick with `which` as '3' with quickpopup availability testing ", (done: Function) => {
             rteObj = renderRTE({
@@ -2307,13 +2496,14 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
                 expect(quickPop.length > 0).toBe(true);
                 expect(isNullOrUndefined(quickPop[0])).toBe(false);
                 done();
-            }, 200);
+            }, 400);
         });
         it(" Android - 'leftClick' with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
@@ -2333,6 +2523,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2360,7 +2551,9 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
-            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#img-container img'));
+            rteObj.triggerEditArea(eventsArg);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#img-container img'));
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2393,6 +2586,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2425,7 +2619,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
-            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#img-container img'));
+            rteObj.triggerEditArea(eventsArg);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2453,6 +2648,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2480,7 +2676,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
-            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#img-container img'));
+            rteObj.triggerEditArea(eventsArg);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2513,6 +2710,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2545,7 +2743,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             let target: HTMLElement = ele.querySelector('#img-container img');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
-            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#img-container img'));
+            rteObj.triggerEditArea(eventsArg);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2914,8 +3113,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
             dispatchEvent((rteObj.element.querySelector('#rteImg') as HTMLElement), 'mouseup');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#rteImg'));
             setTimeout(() => {
                 (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[2] as HTMLElement).click();
+                rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#rteImg'));
                 dispatchEvent((rteObj.element.querySelector('#rteImg') as HTMLElement), 'mouseup');
                 setTimeout(() => {
                     (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[4] as HTMLElement).click();
@@ -3145,6 +3346,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(ele.classList.contains('e-rte-image')).toBe(true);
                 expect(ele.classList.contains('e-imginline')).toBe(true);
                 expect(ele.classList.contains('e-resize')).toBe(true);
+                expect(document.getElementsByClassName("e-upload-files").length).toBe(0);
                 done();
             }, 2000);
         
@@ -3268,6 +3470,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 value: `<div><p>First p node-0</p></div>`,
                 placeholder: 'Type something',
                 imageUploading: function (args) {
+                    expect(rteObj.toolbarModule.baseToolbar.toolbarObj.element.classList.contains('e-overlay')).toBe(true);
                     imgSize = size;
                     sizeInBytes = args.fileData.size;
                     if ( imgSize < sizeInBytes ) {

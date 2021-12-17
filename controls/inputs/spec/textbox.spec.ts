@@ -3120,4 +3120,40 @@ describe('TextBox ', () => {
             expect(inputObj.element.hasAttribute('placeholder')).toBe(true);
         });
     });
+   describe('EJ2-54142', function (){
+        let textbox: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (textbox) {
+                textbox.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Using static clear button ',function() {
+            textbox = new TextBox({
+                placeholder: 'Select',
+                showClearButton: true,
+                value: 'Tested',
+                blur: function(args){
+                    expect(args.value=="").toBe(true);
+                },
+                change: function(args){
+                    expect(args.value=="").toBe(true);
+                },
+                cssClass: 'e-static-clear',
+            });
+            textbox.appendTo('#textbox');
+            expect(textbox.textboxWrapper.container.classList.contains('e-static-clear')).toBe(true);
+            let mouseEvent = document.createEvent('MouseEvents');
+            expect(textbox.textboxWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+            textbox.resetInputHandler(mouseEvent);
+            expect(textbox.element.value).toBe('');
+            expect(textbox.textboxWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+            textbox.element.blur();
+            expect(textbox.textboxWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+         });
+    });
 })

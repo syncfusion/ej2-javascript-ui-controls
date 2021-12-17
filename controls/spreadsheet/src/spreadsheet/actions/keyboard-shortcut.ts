@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, fillRange } from '../common/index';
-import { findDlg, gotoDlg } from '../common/index';
+import { findDlg, gotoDlg, initiateFilterUI } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind } from '../../workbook/common/index';
-import { CellModel, SheetModel, getColumn, isLocked as isCellLocked } from '../../workbook/index';
+import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialog } from '../../workbook/index';
 import { setCell, getCell } from '../../workbook/base/cell';
 import { RowModel } from '../../workbook/base/row-model';
 import { isNullOrUndefined, closest, select } from '@syncfusion/ej2-base';
@@ -40,6 +40,7 @@ export class KeyboardShortcut {
         && !closest(trgt, '.e-find-dlg') && !closest(trgt, '.e-hyperlink-dlg') &&
         !closest(trgt, '.e-sheet-tab') && !closest(trgt, '.e-name-box') && !closest(trgt, '.e-link-dialog'));
     }
+
     private keyDownHandler(e: KeyboardEvent): void {
         if ((e.ctrlKey || e.metaKey) && this.isTrgtNotInput(e)) {
             if (!closest(e.target as Element, '.e-find-dlg')) {
@@ -52,7 +53,7 @@ export class KeyboardShortcut {
             if (e.keyCode === 79) {
                 select('#' + this.parent.element.id + '_fileUpload', this.parent.element).click();
             } else if (e.keyCode === 83) {
-                if (this.parent.saveUrl && this.parent.allowSave) { this.parent.save(); }
+                if (this.parent.saveUrl && this.parent.allowSave) { this.parent.notify(exportDialog, null); }
             } else if (e.keyCode === 67) {
                 this.parent.notify(copy, { promise: Promise });
             } else if (e.keyCode === 75) {
@@ -125,7 +126,7 @@ export class KeyboardShortcut {
                 }
                 if (e.shiftKey) {
                     if (e.keyCode === 76) { /* Ctrl + Shift + L */
-                        if (!this.parent.isEdit) { e.preventDefault(); this.parent.applyFilter(); }
+                        if (!this.parent.isEdit) { e.preventDefault(); this.parent.notify(initiateFilterUI, {}); }
                     }
                 }
             }

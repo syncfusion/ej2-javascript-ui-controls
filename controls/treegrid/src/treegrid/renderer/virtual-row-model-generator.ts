@@ -1,4 +1,4 @@
-import { VirtualRowModelGenerator } from '@syncfusion/ej2-grids';
+import { VirtualInfo, VirtualRowModelGenerator } from '@syncfusion/ej2-grids';
 import { NotifyArgs, Row, Column, IGrid, Grid, VirtualContentRenderer } from '@syncfusion/ej2-grids';
 import { ITreeData } from '../base';
 import * as events from '../base/constant';
@@ -23,7 +23,24 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     private getDatas(args: {data: ITreeData[]}): void {
         this.visualData = args.data;
     }
+    private getDataInfo(): VirtualInfo{
+        return super.getData();
+    }
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
+        if (!isNullOrUndefined(notifyArgs.virtualInfo) && notifyArgs.virtualInfo.loadNext && notifyArgs.virtualInfo.nextInfo.page !== this.parent.pageSettings.currentPage) {
+            this.parent.setProperties({ pageSettings: { currentPage: notifyArgs.virtualInfo.nextInfo.page } }, true);
+        }
+        else if (!isNullOrUndefined(notifyArgs.virtualInfo) && !notifyArgs.virtualInfo.loadNext && notifyArgs.virtualInfo.page !== this.parent.pageSettings.currentPage) {
+            this.parent.setProperties({ pageSettings: { currentPage: notifyArgs.virtualInfo.page } }, true);
+        }
+        const info: VirtualInfo = this.getDataInfo();
+        if (!isNullOrUndefined(notifyArgs.virtualInfo)) {
+            if (notifyArgs.virtualInfo.direction !== 'right' && notifyArgs.virtualInfo.direction !== 'left') {
+                notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
+            } else {
+                notifyArgs.virtualInfo.blockIndexes = this.getBlockIndexes(notifyArgs.virtualInfo.page);
+            }
+        }
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
         && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             return super.generateRows(data, notifyArgs);

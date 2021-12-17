@@ -296,6 +296,7 @@ export interface InsertDeleteModelArgs {
     checkCount?: number;
     definedNames?: DefineNameModel[];
     isUndoRedo?: boolean;
+    refreshSheet?: boolean;
 }
 
 /**
@@ -366,6 +367,7 @@ export interface InsertDeleteEventArgs {
     definedNames?: DefineNameModel[];
     isMethod?: boolean;
     isUndoRedo?: boolean;
+    refreshSheet?: boolean;
 }
 
 /**

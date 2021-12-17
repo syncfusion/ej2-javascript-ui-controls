@@ -104,7 +104,7 @@ export class StyleDialog {
         let styleTypeDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-type-div' });
         let styleTypeValue: HTMLSelectElement = createElement('select', { id: 'e-de-style-style-type' }) as HTMLSelectElement;
 
-        styleTypeValue.innerHTML = '<option value="Paragraph">' + localValue.getConstant('Paragraph') + '</option><option value="Character">' + localValue.getConstant('Character') + '</option><option value="Linked(Paragraph and Character)">' + localValue.getConstant('Linked Style') + '</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
+        styleTypeValue.innerHTML = '<option value="Paragraph">' + localValue.getConstant('Paragraph') + '</option><option value="Character">' + localValue.getConstant('Character') + '</option><option value="Linked Style">' + localValue.getConstant('Linked Style') + '</option>';
         styleTypeDivElement.appendChild(styleTypeValue);
         this.styleType = new DropDownList({ change: this.styleTypeChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleType.appendTo(styleTypeValue);
@@ -547,12 +547,12 @@ export class StyleDialog {
     public styleTypeChange = (args: ChangeEventArgs): void => {
         if (args.isInteracted) {
             let type: StyleType;
-            if (args.value === this.localObj.getConstant('Character')) {
+            if (args.value === 'Character') {
                 this.style = new WCharacterStyle();
                 type = 'Character';
             }
 
-            if (args.value === this.localObj.getConstant('Paragraph') || args.value === this.localObj.getConstant('Linked Style')) {
+            if (args.value === 'Paragraph' || args.value === 'Linked Style') {
                 this.style = new WParagraphStyle();
                 type = 'Paragraph';
             }
@@ -661,13 +661,13 @@ export class StyleDialog {
                 this.style.type = this.getTypeValue();
                 this.style.basedOn = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
 
-                if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
+                if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
                     this.style.next = this.documentHelper.styles.findByName(this.styleParagraph.value as string) as WStyle;
                     (this.style as WParagraphStyle).characterFormat.mergeFormat((style as WParagraphStyle).characterFormat);
                     (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat, true);
                     this.updateList();
 
-                    this.style.link = (this.styleType.value === this.localObj.getConstant('Linked Style')) ? this.createLinkStyle(styleName, this.isEdit) : undefined;
+                    this.style.link = (this.styleType.value === 'Linked Style') ? this.createLinkStyle(styleName, this.isEdit) : undefined;
                 }
 
                 //Updating existing style implementation
@@ -682,7 +682,7 @@ export class StyleDialog {
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);
                 let basedOn: any = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
-                if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
+                if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
                     if (styleName === this.styleParagraph.value) {
                         tmpStyle.next = tmpStyle;
                     } else {
@@ -691,7 +691,7 @@ export class StyleDialog {
                     this.updateList();
                 }
 
-                tmpStyle.link = (this.styleType.value === this.localObj.getConstant('Linked Style')) ? this.createLinkStyle(styleName) : undefined;
+                tmpStyle.link = (this.styleType.value === 'Linked Style') ? this.createLinkStyle(styleName) : undefined;
                 tmpStyle.type = this.getTypeValue();
                 tmpStyle.name = styleName;
                 tmpStyle.basedOn = basedOn;
@@ -868,7 +868,7 @@ export class StyleDialog {
     private getTypeValue(): StyleType {
         let type: StyleType;
 
-        if (this.styleType.value === this.localObj.getConstant('Linked Style') || this.styleType.value === this.localObj.getConstant('Paragraph')) {
+        if (this.styleType.value === 'Linked Style' || this.styleType.value === 'Paragraph') {
             return 'Paragraph';
         } else {
             return 'Character';

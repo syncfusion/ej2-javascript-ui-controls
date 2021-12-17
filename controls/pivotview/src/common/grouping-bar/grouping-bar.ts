@@ -383,7 +383,7 @@ export class GroupingBar implements IAction {
         if (this.parent.currentView === 'Table') {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
         } else {
-            currentWidth = this.parent.chart ? this.parent.chartModule.getCalulatedWidth() : currentWidth;
+            currentWidth = this.parent.chart ? this.parent.pivotChartModule.getCalulatedWidth() : currentWidth;
         }
         if (currentWidth) {
             let actWidth: number = currentWidth < 400 ? 400 : currentWidth;

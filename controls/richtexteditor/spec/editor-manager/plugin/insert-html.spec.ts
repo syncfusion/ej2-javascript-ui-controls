@@ -300,34 +300,28 @@ describe('Testing the insert method for html content paste', function () {
     });
 });
 
-describe('EJ2-52017-RichTextEditor hangs when pasting the word content after the cleared the value', function () {
-    let innervalue: string = '<p><br></p>';
-    let rangeNodes: Node[] = [];
+describe('EJ2-55078 - Insert HTML insert content outside', function () {
+    let innervalue: string = '<div style="font-family: Calibri, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(0, 0, 0);">test auto reply<br /><p class="focusElement"><br /><br /></p></div>';
     let range: Range;
-    let nodeCutter: NodeCutter = new NodeCutter();
     let divElement: HTMLElement = document.createElement('div');
-    let wrapperDivElement: HTMLElement = document.createElement('div');
-    let pasteElement: HTMLElement = document.createElement('div');
     divElement.id = 'divElement';
-    pasteElement.classList.add('pasteContent');
-    pasteElement.style.display = 'inline';
     divElement.contentEditable = 'true';
     divElement.innerHTML = innervalue;
-    pasteElement.innerHTML = innervalue;
+    let domSelection: NodeSelection = new NodeSelection();
     beforeAll(function () {
-        wrapperDivElement.appendChild(divElement);
-        document.body.appendChild(wrapperDivElement);
+        document.body.appendChild(divElement);
     });
     afterAll(function () {
         detach(divElement);
     });
-    it('Inserting pasted element without replacing nearest e-content element', function () {
+    it('Insert HTML insert content outside when P has two br tags', function () {
+        let focusElement: any = document.querySelector('.focusElement');
         range = document.createRange();
-        range.setStart(divElement, 0);
-        range.setEnd(divElement, 0);
-        rangeNodes.push(divElement.firstElementChild);
-        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
-        expect((divElement as any).childNodes[0].parentElement.hasAttribute("contenteditable")).toBe(true);
+        range.setStart(focusElement, 1);
+        range.setEnd(focusElement, 1);
+        domSelection.setSelectionText(document, focusElement, focusElement, 1, 1);
+        (InsertHtml as any).Insert(document, '<p>Inserted Content</p>', divElement ,true);
+        expect((divElement as any).innerHTML === '<div style="font-family: Calibri, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(0, 0, 0);">test auto reply<br><p class="focusElement"><br></p><p>Inserted Content</p></div>').toBe(true);
     });
 });
 
@@ -358,5 +352,93 @@ describe('EJ2-52641- Text inserted outside of the RichTextEditor after Shift + E
         rangeNodes.push(nonElement);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
         expect((divElement as any).childNodes[1].childNodes.length).toBe(1);
+    });
+});
+
+describe('EJ2-53098- Numbered List order in the Rich Text Editor goes incorrect when copying and pasting a list from MS word', function () {
+    let innervalue: string = '<ol><li>Initial 1</li><li>Initial 2</li><li>Initial 3<br></li></ol>';
+    let rangeNodes: Node[] = [];
+    let range: Range;
+    let nodeCutter: NodeCutter = new NodeCutter();
+    let divElement: HTMLElement = document.createElement('div');
+    let wrapperDivElement: HTMLElement = document.createElement('div');
+    let pasteElement: HTMLElement = document.createElement('div');
+    divElement.id = 'divElement';
+    pasteElement.classList.add('pasteContent');
+    pasteElement.style.display = 'inline';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    pasteElement.innerHTML = innervalue;
+    beforeAll(function () {
+        wrapperDivElement.appendChild(divElement);
+        document.body.appendChild(wrapperDivElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Inserting li element at last in the existing OL', function () {
+        range = document.createRange();
+        range.setStart(divElement.lastElementChild.lastElementChild.firstChild, 9);
+        range.setEnd(divElement.lastElementChild.lastElementChild.firstChild, 9);
+        rangeNodes.push(divElement.lastElementChild.lastElementChild.firstChild);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect(divElement.childNodes[0].childNodes[3].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[3].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[3].childNodes[3].textContent).toBe('Initial 3');
+    });
+    it('Inserting li element at middle in the existing OL', function () {
+        divElement.innerHTML = innervalue;
+        range = document.createRange();
+        range.setStart(divElement.lastElementChild.childNodes[1].firstChild, 9);
+        range.setEnd(divElement.lastElementChild.childNodes[1].firstChild, 9);
+        rangeNodes.push(divElement.lastElementChild.childNodes[1].firstChild);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[3].textContent).toBe('Initial 3');
+    });
+});
+
+describe('EJ2-53098- Unordered List order in the Rich Text Editor goes incorrect when copying and pasting a list from MS word', function () {
+    let innervalue: string = '<ul><li>Initial 1</li><li>Initial 2</li><li>Initial 3<br></li></ul>';
+    let rangeNodes: Node[] = [];
+    let range: Range;
+    let nodeCutter: NodeCutter = new NodeCutter();
+    let divElement: HTMLElement = document.createElement('div');
+    let wrapperDivElement: HTMLElement = document.createElement('div');
+    let pasteElement: HTMLElement = document.createElement('div');
+    divElement.id = 'divElement';
+    pasteElement.classList.add('pasteContent');
+    pasteElement.style.display = 'inline';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    pasteElement.innerHTML = innervalue;
+    beforeAll(function () {
+        wrapperDivElement.appendChild(divElement);
+        document.body.appendChild(wrapperDivElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Inserting li element at last in the existing UL', function () {
+        range = document.createRange();
+        range.setStart(divElement.lastElementChild.lastElementChild.firstChild, 9);
+        range.setEnd(divElement.lastElementChild.lastElementChild.firstChild, 9);
+        rangeNodes.push(divElement.lastElementChild.lastElementChild.firstChild);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect(divElement.childNodes[0].childNodes[3].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[3].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[3].childNodes[3].textContent).toBe('Initial 3');
+    });
+    it('Inserting li element at middle in the existing UL', function () {
+        divElement.innerHTML = innervalue;
+        range = document.createRange();
+        range.setStart(divElement.lastElementChild.childNodes[1].firstChild, 9);
+        range.setEnd(divElement.lastElementChild.childNodes[1].firstChild, 9);
+        rangeNodes.push(divElement.lastElementChild.childNodes[1].firstChild);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[3].textContent).toBe('Initial 3');
     });
 });

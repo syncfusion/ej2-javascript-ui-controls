@@ -568,7 +568,7 @@ describe('Gantt Edit module', () => {
         });
         it('Editing task name with dialog close arguments', () => {
             ganttObj.actionBegin = function (args: any): void {
-                if (args.requestType === "beforeOpenEdiaDialog") {
+                if (args.requestType === "beforeOpenEditDialog") {
                     args.dialogModel.animationSettings = { 'effect': 'none' };
                 }
             };
@@ -592,7 +592,7 @@ describe('Gantt Edit module', () => {
                     if (element && !isNullOrUndefined(element.value)) {
                         let input: any = (element as any).ej2_instances[0];
                         input.value = 'updated';
-                        let save: any = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                        let save: any = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
                         triggerMouseEvent(save, 'click');
                         expect(ganttObj.currentViewData[1].ganttProperties.notes).toBe('updated');
                     }
@@ -890,7 +890,6 @@ describe('Work', () => {
          let taskType: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(13)') as HTMLElement;
          triggerMouseEvent(taskType, 'dblclick');
          let taskInput: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontroltaskType') as HTMLElement;
-         debugger
          if (taskInput) {
              let input: any = taskInput.ej2_instances[0];
              input.value = 'FixedDuration';
@@ -1289,7 +1288,7 @@ describe('taskType with resourceUnit mapping', () => {
             let notesTab: RichTextEditor = (document.getElementById(ganttObj.element.id + 'NotesTabContainer') as any).ej2_instances[0]
             notesTab.value = "Updated";
 			notesTab.dataBind();
-            let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
     });
@@ -1349,9 +1348,9 @@ describe('taskType with resourceUnit mapping', () => {
             setTimeout(done, 1000);
         });
         it('update taskID using updateTaskId method', () => {
-            let gantt: any = (document.getElementsByClassName('e-gantt')[0] as any).ej2_instances[0];
-            gantt.updateTaskId(2,24);
-            expect(gantt.currentViewData[1]['TaskID']).toBe('24');
+            // let gantt: any = (document.getElementsByClassName('e-gantt')[0] as any).ej2_instances[0];
+            ganttObj.updateTaskId(2,40);
+            expect(ganttObj.currentViewData[1]['TaskID']).toBe('40');
         });
     });
 });

@@ -211,8 +211,8 @@ export class AxisLayoutPanel {
      */
 
     private calculateNumericInterval(axis: Axis, rect: Rect): number {
-        const isComponentRender: boolean = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
-        if (!isComponentRender) {
+        const allowComponentRender: boolean = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
+        if (!allowComponentRender) {
             return 0;
         } else if (axis.majorTicks.interval !== null) {
             return axis.majorTicks.interval;
@@ -396,7 +396,7 @@ export class AxisLayoutPanel {
             element = gauge.renderer.createGroup({
                 id: gauge.element.id + '_Axis_Group_' + index
             });
-            this.gauge.isComponentRender = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
+            this.gauge.allowComponentRender = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
             renderer.checkAngles(axis);
             renderer.drawAxisOuterLine(axis, index, element, gauge);
             renderer.drawAxisRange(axis, index, element);

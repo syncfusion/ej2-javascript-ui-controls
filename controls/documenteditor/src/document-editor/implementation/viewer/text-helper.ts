@@ -15,7 +15,7 @@ export interface TextSizeInfo {
 /**
  * @private
  */
- export interface FontSizeInfo {
+export interface FontSizeInfo {
     HeightFactor?: number
     BaselineFactor?: number
 }
@@ -28,7 +28,7 @@ export interface TextHeightInfo {
 /**
  * @private
  */
- export interface FontHeightInfo {
+export interface FontHeightInfo {
     [key: string]: FontSizeInfo
 }
 /**
@@ -216,6 +216,15 @@ export class TextHelper {
         return true;
     }
 
+    public containsCombinationText(element: TextElementBox): boolean {
+        /* eslint-disable */
+        if (element.text.match(/^[0-9]+$/) && element.paragraph.bidi) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public inverseCharacter(ch: string): string {
         switch (ch) {
             //Specify the '('
@@ -282,20 +291,20 @@ export class TextHelper {
         if (!isNullOrUndefined(text)) {
             for (let i: number = 0; i < text.length; i++) {
                 let temp: string = text[i];
-                if ((temp >= '\u0590' && temp <= '\u05ff') //Hebrew characters
-                    || (temp >= '\u0600' && temp <= '\u06ff') //Arabic - Urdu characters
-                    || (temp >= '\u0750' && temp <= '\u077f') //Arabic - Urdu characters
-                    || (temp >= '\u08a0' && temp <= '\u08ff') //Arabic characters
-                    || (temp >= '\ufb50' && temp <= '\ufdff') //Arabic - Urdu characters
-                    || (temp >= '\ufe70' && temp <= '\ufeff') //Arabic - Urdu characters
-                    || (temp >= '\ua980' && temp <= '\ua9df') //Javanese characters
-                    || (temp >= '\u0700' && temp <= '\u074f') //Syriac characters
-                    || (temp >= '\u0780' && temp <= '\u07bf') //Thaana characters
-                    || (temp >= '\u0840' && temp <= '\u085f') //Mandiac characters
-                    || (temp >= '\u07c0' && temp <= '\u07ff') //N'Ko characters
-                    || (temp >= '\u0800' && temp <= '\u083f') //Samaritan characters
+                if ((temp >= String.fromCharCode(1424) && temp <= String.fromCharCode(1535)) //Hebrew characters
+                    || (temp >= String.fromCharCode(1536) && temp <= String.fromCharCode(1791)) //Arabic - Urdu characters
+                    || (temp >= String.fromCharCode(1872) && temp <= String.fromCharCode(1919)) //Arabic - Urdu characters
+                    || (temp >= String.fromCharCode(2208) && temp <= String.fromCharCode(2303)) //Arabic characters
+                    || (temp >= String.fromCharCode(64336) && temp <= String.fromCharCode(65023)) //Arabic - Urdu characters
+                    || (temp >= String.fromCharCode(65136) && temp <= String.fromCharCode(65279)) //Arabic - Urdu characters
+                    || (temp >= String.fromCharCode(43392) && temp <= String.fromCharCode(43487)) //Javanese characters
+                    || (temp >= String.fromCharCode(1792) && temp <= String.fromCharCode(1871)) //Syriac characters
+                    || (temp >= String.fromCharCode(1920) && temp <= String.fromCharCode(1983)) //Thaana characters
+                    || (temp >= String.fromCharCode(2112) && temp <= String.fromCharCode(2143)) //Mandiac characters
+                    || (temp >= String.fromCharCode(1984) && temp <= String.fromCharCode(2047)) //N'Ko characters
+                    || (temp >= String.fromCharCode(2048) && temp <= String.fromCharCode(2111)) //Samaritan characters
                     //Tifinag characters 
-                    || (temp >= '\u2d30' && temp <= '\u2d7f')) {
+                    || (temp >= String.fromCharCode(11568) && temp <= String.fromCharCode(11647))) {
                     isRTL = true;
                     break;
                 }
@@ -312,28 +321,28 @@ export class TextHelper {
         if (isNullOrUndefined(text) || text === '') {
             return { isRtl: false, id: 0 };
         }
-        if (text >= '\u0590' && text <= '\u05ff') {
+        if (text >= String.fromCharCode(1424) && text <= String.fromCharCode(1535)) {
             return { isRtl: true, id: 1 };
             //Arabic - Urdu characters
-        } else if ((text >= '\u0600' && text <= '\u06ff')
-            || (text >= '\u0750' && text <= '\u077f')
-            || (text >= '\u08a0' && text <= '\u08ff')
-            || (text >= '\ufb50' && text <= '\ufdff')
-            || (text >= '\ufe70' && text <= '\ufeff')) {
+        } else if ((text >= String.fromCharCode(1536) && text <= String.fromCharCode(1791))
+            || (text >= String.fromCharCode(1872) && text <= String.fromCharCode(1919))
+            || (text >= String.fromCharCode(2208) && text <= String.fromCharCode(2303))
+            || (text >= String.fromCharCode(64336) && text <= String.fromCharCode(65023))
+            || (text >= String.fromCharCode(65136) && text <= String.fromCharCode(65279))) {
             return { isRtl: true, id: 2 };
-        } else if (text >= '\ua980' && text <= '\ua9df') {
+        } else if (text >= String.fromCharCode(43392) && text <= String.fromCharCode(43487)) {
             return { isRtl: true, id: 3 };
-        } else if (text >= '\u0700' && text <= '\u074f') {
+        } else if (text >= String.fromCharCode(1792) && text <= String.fromCharCode(1871)) {
             return { isRtl: true, id: 4 };
-        } else if (text >= '\u0780' && text <= '\u07bf') {
+        } else if (text >= String.fromCharCode(1920) && text <= String.fromCharCode(1983)) {
             return { isRtl: true, id: 5 };
-        } else if (text >= '\u0840' && text <= '\u085f') {
+        } else if (text >= String.fromCharCode(2112) && text <= String.fromCharCode(2143)) {
             return { isRtl: true, id: 6 };
-        } else if (text >= '\u07c0' && text <= '\u07ff') {
+        } else if (text >= String.fromCharCode(1984) && text <= String.fromCharCode(2047)) {
             return { isRtl: true, id: 7 };
-        } else if (text >= '\u0800' && text <= '\u083f') {
+        } else if (text >= String.fromCharCode(2048) && text <= String.fromCharCode(2111)) {
             return { isRtl: true, id: 8 };
-        } else if (text >= '\u2d30' && text <= '\u2d7f') {
+        } else if (text >= String.fromCharCode(11568) && text <= String.fromCharCode(11647)) {
             return { isRtl: true, id: 9 };
         }
         return { isRtl: false, id: 0 };

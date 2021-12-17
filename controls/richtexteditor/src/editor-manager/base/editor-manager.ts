@@ -118,7 +118,7 @@ export class EditorManager {
     public execCommand<T>(
         command: ExecCommand, value: T, event?: Event, callBack?: Function, text?: string | Node, exeValue?: T,
         selector?: string, enterAction?: string): void {
-        switch (command.toLocaleLowerCase()) {
+        switch (command.toLowerCase()) {
         case 'lists':
             this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack,
                 selector: selector, item: exeValue, enterAction: enterAction });
@@ -206,7 +206,9 @@ export class EditorManager {
             this.observer.notify(CONSTANT.INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });
             break;
         case 'clear':
-            this.observer.notify(CONSTANT.CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector, enterAction: enterAction });
+            this.observer.notify(
+                CONSTANT.CLEAR_TYPE,
+                { subCommand: value, event: event, callBack: callBack, selector: selector, enterAction: enterAction });
             break;
         case 'actions':
             this.observer.notify(EVENTS.ACTION, { subCommand: value, event: event, callBack: callBack, selector: selector });

@@ -1,7 +1,7 @@
-import { WCharacterFormat } from "../format/character-format";
-import { DocumentHelper } from "../viewer";
-import { TextSizeInfo } from "../viewer/text-helper";
-import { createElement, isNullOrUndefined } from "@syncfusion/ej2-base";
+import { WCharacterFormat } from '../format/character-format';
+import { DocumentHelper } from '../viewer';
+import { TextSizeInfo } from '../viewer/text-helper';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Class which performs regular text measuring logic to find font height.
  */
@@ -14,6 +14,7 @@ export class Regular {
 
     /**
      * Gets module name.
+     *
      * @returns {string} - the module name.
      */
     private getModuleName(): string {
@@ -21,6 +22,7 @@ export class Regular {
     }
     /**
      * Constructor to initialize Regular module.
+     *
      * @param {DocumentHelper} documentHelper - the document helper object
      */
     public constructor(documentHelper: DocumentHelper) {
@@ -29,17 +31,17 @@ export class Regular {
 
     /**
      * @private
-     * @param {WCharacterFormat} characterFormat - character format to apply. 
-     * @returns {TextSizeInfo} returns text size information. 
+     * @param {WCharacterFormat} characterFormat - character format to apply.
+     * @returns {TextSizeInfo} returns text size information.
      */
     public getHeightInternal(characterFormat: WCharacterFormat): TextSizeInfo {
         let textHeight: number = 0;
         let baselineOffset: number = 0;
         const spanElement: HTMLSpanElement = document.createElement('span');
         spanElement.innerText = 'm';
-        let iframe: HTMLIFrameElement = createElement('iframe') as HTMLIFrameElement;
+        const iframe: HTMLIFrameElement = createElement('iframe') as HTMLIFrameElement;
         document.body.appendChild(iframe);
-        let innerHtml = '<!DOCTYPE html>'
+        const innerHtml: string = '<!DOCTYPE html>'
             + '<html><head></head>'
             + '<body>'
             + '</body>'
@@ -50,16 +52,16 @@ export class Regular {
             iframe.contentDocument.close();
         }
         this.applyStyle(spanElement, characterFormat);
-        let parentDiv = document.createElement('div');
+        const parentDiv: HTMLDivElement = document.createElement('div');
         parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
-        let tempDiv = document.createElement('div');
+        const tempDiv: HTMLDivElement = document.createElement('div');
         tempDiv.setAttribute('style', 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;');
         parentDiv.appendChild(spanElement);
         parentDiv.appendChild(tempDiv);
         iframe.contentDocument.body.appendChild(parentDiv);
         textHeight = spanElement.offsetHeight;
-        let textTopVal = spanElement.offsetTop;
-        let tempDivTopVal = tempDiv.offsetTop;
+        const textTopVal: number = spanElement.offsetTop;
+        const tempDivTopVal: number = tempDiv.offsetTop;
         baselineOffset = tempDivTopVal - textTopVal;
         document.body.removeChild(iframe);
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
@@ -86,9 +88,9 @@ export class Regular {
         }
     }
     /**
-   * @private
-   * @returns {void}
-   */
+     * @private
+     * @returns {void}
+     */
     public destroy(): void {
         this.documentHelper = undefined;
     }

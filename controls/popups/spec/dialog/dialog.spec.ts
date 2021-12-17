@@ -35,6 +35,59 @@ function destroyDialog(dialogObj: Dialog): void {
     }
 }
 
+describe('getDimension method testing while resizing the dialog', () => {
+    let dialog: any;
+    let resizeTarget: any;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+    });
+    afterAll(() => {
+        destroyDialog(dialog);
+        detach(resizeTarget);
+    });
+    afterEach(() => {
+        dialog.destroy();
+    });
+    it('getDimension while resizing', (done: Function) => {
+        dialog = new Dialog({
+            header: 'Delete Multiple Items',
+            showCloseIcon: true,
+            content: 'Test',
+            enableResize: true,
+            height: '400px',
+            width: '300px',
+            resizeStart: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizing: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizeStop: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+            }
+        });
+        dialog.appendTo('#dialog1');
+        let mouseEvent = document.createEvent('MouseEvents');
+        mouseEvent.initEvent('mousedown', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent('mousemove', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent('mouseup', true, true);
+        document.dispatchEvent(mouseEvent);
+        done();
+        let dlgHeight = dialog.getDimension()["height"];
+        let dlgWidth = dialog.getDimension()["width"];
+        expect(document.getElementById('dialog1').offsetHeight).toEqual(dlgHeight);
+        expect(document.getElementById('dialog1').offsetWidth).toEqual(dlgWidth);
+    });
+});
+
 // utility dialog spec
 describe('create alert utility dialog with button click as typeof function', () => {
     let dialogObj: Dialog;
@@ -363,6 +416,14 @@ describe('Dialog Control', () => {
         });
         afterEach((): void => {
             destroyDialog(dialog);
+        });
+        it('getDimension method testing', () => {
+            dialog = new Dialog({ animationSettings: { effect: 'None', duration: 0, delay: 0 }, header: "Dialog", height: "200px", width: "250px", visible: false, content: "Your information is updated successfully" }, '#dialog');
+            dialog.show();
+            let dlgHeight = dialog.getDimension()["height"];
+            let dlgWidth = dialog.getDimension()["width"];
+            expect(document.getElementById('dialog').offsetHeight).toEqual(dlgHeight);
+            expect(document.getElementById('dialog').offsetWidth).toEqual(dlgWidth);
         });
         it('Control class testing', () => {
             dialog = new Dialog({ header: 'Dialog' });

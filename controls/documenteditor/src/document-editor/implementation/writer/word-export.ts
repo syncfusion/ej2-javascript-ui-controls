@@ -1674,7 +1674,7 @@ export class WordExport {
             this.serializeBodyItems(writer, this.document.footnotes.continuationSeparator, true);
             writer.writeEndElement();
             if (this.document.footnotes.continuationNotice) {
-                writer.writeStartElement('w', 'endnote', this.wNamespace);
+                writer.writeStartElement('w', 'footnote', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationNotice');
                 writer.writeAttributeString(undefined, 'id', this.wNamespace, '1');
                 this.serializeBodyItems(writer, this.document.footnotes.continuationNotice, true);
@@ -4813,7 +4813,7 @@ export class WordExport {
                 let type: any = formFieldData.textInput.type;
                 if (type === 'Number' || 'Date') {
                     writer.writeStartElement(undefined, 'type', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.type.toString().toLowerCase());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.type == 'Calculation' ? 'calculated' : formFieldData.textInput.type.toString().toLowerCase());
                     writer.writeEndElement();
                 }
                 writer.writeStartElement(undefined, 'default', this.wNamespace);

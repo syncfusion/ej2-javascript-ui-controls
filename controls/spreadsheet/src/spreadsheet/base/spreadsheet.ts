@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook, refreshSheetTabs, positionAutoFillElement, getFilteredColumn } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook, refreshSheetTabs, positionAutoFillElement } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -97,6 +97,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     @Property(true)
     public allowResizing: boolean;
+
+    /**
+     * If `showAggregate` is set to true, spreadsheet will show the AVERAGE, SUM, COUNT, MIN and MAX values based on the selected cells.
+     *
+     * @default true
+     */
+    @Property(true)
+    public showAggregate: boolean
 
     /**
      * It enables or disables the clipboard operations (cut, copy, and paste) of the Spreadsheet.
@@ -738,6 +746,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public dataValidationRange: string = '';
 
     /** @hidden */
+    public isValidationHighlighted: boolean = false;
+
+    /** @hidden */
     public createdHandler: Function | object;
 
     /** @hidden */
@@ -1277,8 +1288,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             range: getIndexesFromAddress(address),
             sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))] ?
                 this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.getActiveSheet().id,
-            promise: promise, isAction: true
-        } : { promise: promise, isAction: true });
+            promise: promise, invokeCopy: true, isPublic: true
+        } : { promise: promise, invokeCopy: true, isPublic: true });
         return promise;
     }
 
@@ -1298,8 +1309,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             range: getIndexesFromAddress(address),
             sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))] ?
                 this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.getActiveSheet().id,
-            promise: promise, isAction: true
-        } : { promise: promise, isAction: true });
+            promise: promise, invokeCopy: true, isPublic: true
+        } : { promise: promise, invokeCopy: true, isPublic: true });
         return promise;
     }
 
@@ -1316,7 +1327,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.notify(paste, {
             range: address ? getIndexesFromAddress(address) : address,
             sIdx: address ? getSheetIndex(this as Workbook, getSheetNameFromAddress(address)) : address,
-            type: type, isAction: false, isInternal: true
+            type: type, isAction: true, isInternal: true
         });
     }
 
@@ -1419,13 +1430,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             if (sheet === this.getActiveSheet()) {
                 if (rowIndex <= this.viewport.bottomIndex && rowIndex >= this.viewport.topIndex) {
                     if (this.scrollSettings.enableVirtualization) { rowIndex = rowIndex - this.viewport.topIndex; }
-                    let trgt: HTMLElement;
-                    if (sheet.showHeaders) {
-                        trgt = this.getRowHeaderContent().getElementsByClassName('e-header-cell')[rowIndex].parentElement as HTMLElement;
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        trgt = this.getContentTable().getElementsByClassName('e-row')[rowIndex] as HTMLElement;
-                    }
                     const eleHeight: number = getRowHeight(sheet, rowIndex, true);
                     let threshold: number = getDPRValue(parseInt(rowHeight, 10)) - eleHeight;
                     if (threshold < 0 && eleHeight < -(threshold)) {
@@ -1729,6 +1733,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public addInvalidHighlight(range?: string): void {
         const ranges: string = range ? range : this.dataValidationRange;
+        this.isValidationHighlighted = true;
         if (ranges.indexOf(',') > - 1) {
             const splitRange: string[] = ranges.split(',');
             for (let i: number = 0; i < splitRange.length - 1; i++) {
@@ -1749,6 +1754,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public removeInvalidHighlight(range?: string): void {
         const address: string = range ? range : this.dataValidationRange;
+        this.isValidationHighlighted = false;
         if (address.indexOf(',') > - 1) {
             const splitRange: string[] = address.split(',');
             for (let i: number = 0; i < splitRange.length - 1; i++) {
@@ -2110,21 +2116,20 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public refreshNode(td: Element, args?: RefreshValueArgs): void {
         let value: string;
         if (td) {
-            const spanElem: Element = select('#' + this.element.id + '_currency', td);
-            const spanFillElem: Element = select('.' + 'e-fill', td);
-            const spanFillSecElem: Element = select('.' + 'e-fill-sec', td);
-            let alignClass: string = 'e-right-align';
             if (args) {
                 args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
                 if (!args.isRowFill) {
+                    const spanFillElem: Element = select('.' + 'e-fill', td);
                     if (spanFillElem) {
                         detach(spanFillElem);
                         (td as HTMLElement).style.display = 'table-cell';
                     }
+                    const spanFillSecElem: Element = select('.' + 'e-fill-sec', td);
                     if (spanFillSecElem) {
                         detach(spanFillSecElem);
                     }
                 }
+                const spanElem: Element = select('#' + this.element.id + '_currency', td);
                 if (spanElem) { detach(spanElem); }
                 if (args.type === 'Accounting' && isNumber(args.value)) {
                     if (td.querySelector('a')) {
@@ -2140,45 +2145,46 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     if (!td.querySelector('a')) {
                         td.innerHTML += args.result.split(args.curSymbol).join('');
                     }
-                    td.classList.add(alignClass);
+                    td.classList.add('e-right-align');
                     return;
                 } else {
+                    let alignClass: string;
                     if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
                         args.result = args.result.toUpperCase();
                         alignClass = 'e-center-align';
                         args.isRightAlign = true; // Re-use this to center align the cell.
+                    } else {
+                        alignClass = 'e-right-align';
                     }
                     value = args.result;
-                }
-                if (args.isRightAlign) {
-                    td.classList.add(alignClass);
-                } else {
-                    td.classList.remove(alignClass);
+                    if (args.isRightAlign) {
+                        td.classList.add(alignClass);
+                    } else {
+                        td.classList.remove(alignClass);
+                    }
                 }
             }
             value = !isNullOrUndefined(value) ? value : '';
-            if (!isNullOrUndefined(td)) {
-                let node: Node = td.lastChild;
-                const wrapContent: Element = td.querySelector('.e-wrap-content');
-                if (td.querySelector('.e-databar-value')) {
-                    node = td.querySelector('.e-databar-value').lastChild;
+            let node: Node = td.lastChild;
+            if (td.querySelector('.e-databar-value')) {
+                node = td.querySelector('.e-databar-value').lastChild;
+            }
+            if (td.querySelector('.e-hyperlink')) {
+                node = td.querySelector('.e-hyperlink').lastChild;
+            }
+            const wrapContent: Element = td.querySelector('.e-wrap-content');
+            if (wrapContent) {
+                if (!wrapContent.lastChild) {
+                    wrapContent.appendChild(document.createTextNode(''));
                 }
-                if (td.querySelector('.e-hyperlink')) {
-                    node = td.querySelector('.e-hyperlink').lastChild;
+                node = wrapContent.lastChild;
+            }
+            if (node && (node.nodeType === 3 || node.nodeType === 1)) {
+                if (!args.isRowFill) {
+                    node.nodeValue = value;
                 }
-                if (wrapContent) {
-                    if (!wrapContent.lastChild) {
-                        wrapContent.appendChild(document.createTextNode(''));
-                    }
-                    node = wrapContent.lastChild;
-                }
-                if (node && (node.nodeType === 3 || node.nodeType === 1)) {
-                    if (!args.isRowFill) {
-                        node.nodeValue = value;
-                    }
-                } else {
-                    td.appendChild(document.createTextNode(value));
-                }
+            } else {
+                td.appendChild(document.createTextNode(value));
             }
         }
     }
@@ -2667,7 +2673,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     header.style.marginRight = getScrollBarWidth() + 'px'; header.style.marginLeft = '';
                     document.getElementById(this.element.id + '_sheet_panel').classList.remove('e-rtl');
                 }
-                this.renderModule.refreshSheet();
+                if (Object.keys(newProp).indexOf('locale') === -1) {
+                    this.renderModule.refreshSheet();
+                }
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
@@ -2851,15 +2859,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - To clear the filter.
      */
     public clearFilter(field?: string): void {
-        if (field) {
-            this.notify(clearFilter, { field: field });
-        } else {
-            const eventArgs: { [key: string]: boolean } = { isFiltered: false, isClearAll: true };
-            this.notify(getFilteredColumn, eventArgs);
-            if (eventArgs.isFiltered) {
-                super.clearFilter();
-            }
-        }
+        this.notify(clearFilter, { field: field });
     }
 
     /**
@@ -2869,10 +2869,16 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * @param {PredicateModel[]} predicates - Specifies the predicates.
      * @param {string} range - Specify the range.
-     * @returns {void} - to apply the filter.
+     * @returns {Promise<void>} - to apply the filter.
      */
-    public applyFilter(predicates?: PredicateModel[], range?: string): void {
-        this.notify(initiateFilterUI, { predicates: predicates, range: range });
+    public applyFilter(predicates?: PredicateModel[], range?: string): Promise<void> {
+        if (!this.allowFiltering) { return Promise.reject(); }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const promise: Promise<void> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        const filterArgs: { promise: Promise<void>, predicates?: PredicateModel[], range?: string, isInternal: boolean } = { predicates:
+            predicates, range: range, isInternal: true, promise: promise };
+        this.notify(initiateFilterUI, filterArgs);
+        return filterArgs.promise as Promise<void>;
     }
 
     /**

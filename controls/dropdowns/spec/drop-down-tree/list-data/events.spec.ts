@@ -14,7 +14,8 @@ describe('DropDown Tree control List datasource', () => {
             target: null,
             stopImmediatePropagation: (): void => { },
         };
-        let i: number = 0, j: number = 0;
+        let i: number = 0, j: number = 0; let isInteracted: boolean;
+        let action: string;
         function clickFn(): void {
             i++;
         }
@@ -219,6 +220,52 @@ describe('DropDown Tree control List datasource', () => {
             expect(ddTreeObj.text).toBe("Australia");
             ddTreeObj.onFocusOut();
             expect(i).toEqual(1);
+        });
+        it('select event args testing with showselectall', (done: Function) => {
+            ddTreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+                showSelectAll: true, 
+                showCheckBox: true, 
+                select: function(e) {
+                    isInteracted = e.isInteracted;
+                    action = e.action;
+                },
+                mode: 'Delimiter' 
+            }, '#tree1');
+            ddTreeObj.showPopup();
+            var selectAllElement = ddTreeObj.popupEle.firstElementChild;
+            expect(selectAllElement.classList.contains('e-selectall-parent')).toBe(true);
+            expect(selectAllElement.querySelector('.e-all-text').textContent).toBe('Select All');
+            let checkEle: Element = <Element & NodeListOf<Element>>selectAllElement.querySelector('.e-checkbox-wrapper');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle.querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle.querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle.querySelector('.e-frame').dispatchEvent(e);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(ddTreeObj.value.length).toBe(24);
+                expect(isInteracted).toBe(true);
+                expect(action).toBe("select");
+                expect(selectAllElement.querySelector('.e-all-text').textContent).toBe('Unselect All');
+                expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+                let ncheckEle: Element = <Element & NodeListOf<Element>>selectAllElement.querySelector('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                ncheckEle.querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                ncheckEle.querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                ncheckEle.querySelector('.e-frame').dispatchEvent(e);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(ddTreeObj.value.length).toBe(0);
+                    expect(isInteracted).toBe(true);
+                    expect(action).toBe("un-select");
+                    expect(selectAllElement.querySelector('.e-all-text').textContent).toBe('Select All');
+                    expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 400);
+            }, 400);
         });
     });
 });

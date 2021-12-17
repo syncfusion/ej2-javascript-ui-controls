@@ -1021,6 +1021,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1088,6 +1089,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1112,6 +1114,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1137,6 +1140,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
@@ -1167,6 +1171,7 @@ describe('IE 11 insert link', () => {
             rteObj.quickToolbarSettings.showOnRightClick = false;
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
             rteObj.mouseUp(eventsArg);
@@ -1197,6 +1202,7 @@ describe('IE 11 insert link', () => {
             rteObj.quickToolbarSettings.showOnRightClick = true;
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
             rteObj.touchHandler({ originalEvent: eventsArg });
@@ -1224,6 +1230,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1249,6 +1256,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
@@ -1279,6 +1287,7 @@ describe('IE 11 insert link', () => {
             rteObj.quickToolbarSettings.showOnRightClick = false;
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
             rteObj.mouseUp(eventsArg);
@@ -1309,6 +1318,7 @@ describe('IE 11 insert link', () => {
             rteObj.quickToolbarSettings.showOnRightClick = true;
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
+            new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
             rteObj.touchHandler({ originalEvent: eventsArg });

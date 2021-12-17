@@ -821,28 +821,40 @@ export class TreeViewRenderer implements IAction {
     private updateSorting(args: Event): void {
         let target: HTMLElement = (args.target as HTMLElement);
         let option: string = target.getAttribute('data-sort');
-        if (target.className.indexOf('e-selected') === -1) {
-            switch (option) {
-                case 'None':
-                    this.fieldListSort = 'None';
-                    addClass([target], 'e-selected');
-                    removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
-                    removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
-                    break;
-                case 'Ascend':
-                    this.fieldListSort = 'Ascend';
-                    addClass([target], 'e-selected');
-                    removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
-                    removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
-                    break;
-                case 'Descend':
-                    this.fieldListSort = 'Descend';
-                    addClass([target], 'e-selected');
-                    removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
-                    removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
-                    break;
+        this.parent.actionObj.actionName = events.sortFieldTree;
+        if (this.parent.actionBeginMethod()) {
+            return;
+        }
+        try {
+            if (target.className.indexOf('e-selected') === -1) {
+                switch (option) {
+                    case 'None':
+                        this.fieldListSort = 'None';
+                        addClass([target], 'e-selected');
+                        removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
+                        removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
+                        break;
+                    case 'Ascend':
+                        this.fieldListSort = 'Ascend';
+                        addClass([target], 'e-selected');
+                        removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
+                        removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
+                        break;
+                    case 'Descend':
+                        this.fieldListSort = 'Descend';
+                        addClass([target], 'e-selected');
+                        removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
+                        removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
+                        break;
+                }
+                this.refreshTreeView();
             }
-            this.refreshTreeView();
+        } catch (execption) {
+            this.parent.actionFailureMethod(execption);
+        }
+        this.parent.actionObj.actionName = this.parent.getActionCompleteName();
+        if (this.parent.actionObj.actionName) {
+            this.parent.actionCompleteMethod();
         }
     }
     /* eslint-disable */

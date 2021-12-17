@@ -537,9 +537,13 @@ export class Drawing {
             freeTextEle.rotateValue = undefined;
             freeTextEle.content = obj.dynamicText;
             freeTextEle.style.opacity = obj.opacity;
-            freeTextEle.margin.left = 2;
-            freeTextEle.margin.top = 5;
-            freeTextEle.style.textWrapping = 'Wrap';
+            freeTextEle.margin.left = 4;
+            freeTextEle.margin.top = 5 * (obj.fontSize/16);
+            if (this.pdfViewer.freeTextSettings.enableAutoFit) {
+                freeTextEle.style.textWrapping = 'Wrap';
+            } else {
+                freeTextEle.style.textWrapping = 'WrapWithOverflow';
+            }
             freeTextEle.relativeMode = 'Point';
             freeTextEle.setOffsetWithRespectToBounds(0, 0, null);
             freeTextEle.relativeMode = 'Point';
@@ -765,7 +769,7 @@ export class Drawing {
         const index: number = obj.pageIndex;
         for (let i: number = 0; i < this.pdfViewer.annotations.length; i++) {
             const annotation: PdfAnnotationBaseModel = this.pdfViewer.annotations[i];
-            if (annotation.id === obj.id || annotation.wrapper.id === obj.id || annotation.id.split('_')[0] === obj.id || annotation.id.split('_')[0] === obj.id.split('_')[0] || annotation.id === obj.id) {
+            if ((annotation.id && (annotation.id === obj.id || annotation.id.split('_')[0] === obj.id)) || (annotation.wrapper && annotation.wrapper.id === obj.id)) {
                 this.pdfViewer.annotations.splice(i, 1);
                 const objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(obj.pageIndex);
                 for (let j: number = 0; j < objects.length; j++) {
@@ -780,7 +784,7 @@ export class Drawing {
                         }
                     }
                 }
-                // need to add code snippet to remove from z index table
+               // need to add code snippet to remove from z index table   
             }
         }
 
@@ -820,7 +824,7 @@ export class Drawing {
                 this.pdfViewer.renderDrawing(undefined, index);
                 const field: IFormField = {
                     // eslint-disable-next-line
-                    value: (obj as any).value, fontFamily: obj.fontFamily, fontSize: obj.fontSize, fontStyle: (obj as any).fontStyle,
+                    name: (obj as any).name, value: (obj as any).value, fontFamily: obj.fontFamily, fontSize: obj.fontSize, fontStyle: (obj as any).fontStyle,
                     // eslint-disable-next-line
                     color: (obj as any).color, backgroundColor: (obj as any).backgroundColor, alignment: (obj as any).alignment, isReadonly: (obj as any).isReadonly, visibility: (obj as any).visibility,
                     // eslint-disable-next-line
@@ -859,6 +863,11 @@ export class Drawing {
             const height: number = diagramLayer.height / this.pdfViewer.viewerBase.getZoomFactor();
             const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
             const ctx: CanvasRenderingContext2D = diagramLayer.getContext('2d');
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            if (zoom < 1) {
+                ctx.lineWidth =  ctx.lineWidth / zoom;
+            }
             ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
             ctx.clearRect(0, 0, width, height);
 
@@ -3320,6 +3329,9 @@ export class Drawing {
                         this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageNumber - 1, this.pdfViewer);
                     }
                     this.pdfViewer.select([newNode.id], this.pdfViewer.annotationSelectorSettings);
+                    if (!addedAnnot.formFieldAnnotationType) {
+                        this.pdfViewer.annotationModule.triggerAnnotationAddEvent(newNode);
+                    };
                 }
             }
             this.pdfViewer.renderDrawing(undefined, index);

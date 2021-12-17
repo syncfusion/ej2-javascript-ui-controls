@@ -119,7 +119,7 @@ describe('Gantt virtual scroll', () => {
             setTimeout(done, 1000);
             let taskName: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
             taskName.value='Updated';
-            let saveRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
         });
         it('CollapseAll handler function', () => {       

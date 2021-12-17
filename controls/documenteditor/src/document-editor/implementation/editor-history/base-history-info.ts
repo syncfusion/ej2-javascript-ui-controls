@@ -17,7 +17,7 @@ import { Action } from '../../index';
 import { TextPosition, ImageInfo } from '../index';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ElementBox } from '../viewer/page';
+import { ElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { TableResizer } from '../editor/table-resizer';
 import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle } from '../format/index';
 import { ParagraphInfo, HelperMethods } from '../editor/editor-helper';
@@ -172,6 +172,11 @@ export class BaseHistoryInfo {
         const editPosition: string = this.insertPosition;
         const comment: CommentElementBox = this.removedNodes[0] as CommentElementBox;
         let insert: boolean = false;
+        if (this.action === 'ResolveComment') {
+            this.editorHistory.currentBaseHistoryInfo = this;
+            this.owner.editor.resolveOrReopenComment(comment, !comment.isResolved);
+            return;
+        }
         if (this.action === 'InsertCommentWidget') {
             insert = (this.editorHistory.isRedoing);
         } else if (this.action === 'DeleteCommentWidget') {
@@ -223,7 +228,7 @@ export class BaseHistoryInfo {
             this.revertEditRangeRegion();
             return;
         }
-        if (this.action === 'InsertCommentWidget' || this.action === 'DeleteCommentWidget') {
+        if (this.action === 'InsertCommentWidget' || this.action === 'DeleteCommentWidget' || this.action === 'ResolveComment') {
             this.revertComment();
             return;
         }
@@ -355,7 +360,9 @@ export class BaseHistoryInfo {
         // Updates insert position of history info instance.
         this.insertPosition = start;
         this.endPosition = end;
-        if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Reject All')) {
+        if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
+            (this.editorHistory.currentHistoryInfo.action === 'Accept All'
+                || this.editorHistory.currentHistoryInfo.action === 'Reject All' || this.editorHistory.currentHistoryInfo.action === 'RemoveComment')) {
             if (this.owner.documentHelper.blockToShift) {
                 this.owner.documentHelper.layout.shiftLayoutedItems(false);
             }
@@ -1320,7 +1327,7 @@ export class BaseHistoryInfo {
                 let node: IWidget = this.removedNodes[i];
                 if (node instanceof ParagraphWidget) {
                     (node as ParagraphWidget).destroyInternal(this.viewer);
-                } else if (node instanceof ElementBox) {
+                } else if (node instanceof ElementBox && !(node instanceof CommentCharacterElementBox)) {
                     (node as ElementBox).destroy();
                 }
                 this.removedNodes.splice(this.removedNodes.indexOf(node), 1);

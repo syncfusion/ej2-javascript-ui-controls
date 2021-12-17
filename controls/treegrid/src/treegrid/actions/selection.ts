@@ -6,7 +6,7 @@ import { QueryCellInfoEventArgs, parentsUntil, getObject } from '@syncfusion/ej2
 import { CellSaveEventArgs } from '../base/interface';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
-import { getParentData, isRemoteData, isCheckboxcolumn } from '../utils';
+import { getParentData, isRemoteData, isCheckboxcolumn, findChildrenRecords } from '../utils';
 
 /**
  * TreeGrid Selection module
@@ -271,19 +271,19 @@ export class Selection {
 
     private headerSelection(checkAll?: boolean): void {
         let index: number = -1; let length: number = 0;
-        if(!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0){
-            var filterResult = this.parent.filterModule.filteredResult;
-            if(this.filteredList.length == 0){
+        if (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) {
+            const filterResult: Object[] = this.parent.filterModule.filteredResult;
+            if (this.filteredList.length === 0){
                 this.filteredList = filterResult;
             }
             else{
-                if(this.filteredList != filterResult){
+                if (this.filteredList !== filterResult) {
                     this.filteredList = filterResult;
                 }
             }
         }
-        if(this.filteredList.length > 0){
-            if(!this.parent.filterSettings.columns.length && this.filteredList.length){
+        if (this.filteredList.length > 0){
+            if (!this.parent.filterSettings.columns.length && this.filteredList.length){
                 this.filteredList = [];
             }
         }
@@ -364,7 +364,11 @@ export class Selection {
                 this.selectedIndexes.push(recordIndex);
             }
             if (this.selectedItems.indexOf(checkedRecord) === -1 && (recordIndex !== -1 &&
-          (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
+            (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
+                this.selectedItems.push(checkedRecord);
+            }
+            if (this.selectedItems.indexOf(checkedRecord) === -1 && this.parent.enableVirtualization && (
+                (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
                 this.selectedItems.push(checkedRecord);
             }
             if (this.selectedItems.indexOf(checkedRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
@@ -432,10 +436,28 @@ export class Selection {
                     childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
                         this.parent.getCurrentViewRecords() : this.parent.flatData;
                     childData.forEach((record: ITreeData) => {
-                        if (record.hasChildRecords) {
-                            this.updateParentSelection(record);
-                        } else {
-                            this.updateSelectedItems(record, record.checkboxState);
+                        if (this.parent.enableVirtualization) {
+                            if (record.hasChildRecords) {
+                                this.updateParentSelection(record);
+                            } else {
+                                this.updateSelectedItems(record, record.checkboxState);
+                            }
+                            let child: ITreeData[] = findChildrenRecords(record);
+                            child = this.getFilteredChildRecords (child);
+                            for (let i: number = 0; i < child.length; i++) {
+                                if (child[i].hasChildRecords) {
+                                    this.updateParentSelection(child[i]);
+                                } else if (!(child[i].hasChildRecords) && !isNullOrUndefined(child[i])) {
+                                    this.updateSelectedItems(child[i], child[i].checkboxState);
+                                }
+                            }
+                        }
+                        else {
+                            if (record.hasChildRecords) {
+                                this.updateParentSelection(record);
+                            } else {
+                                this.updateSelectedItems(record, record.checkboxState);
+                            }
                         }
                     });
                     this.headerSelection();

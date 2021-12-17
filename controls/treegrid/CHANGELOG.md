@@ -2,13 +2,19 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
 
 ### Tree Grid
 
 #### New Features
 
-- `#314841` - Provided support to freeze the columns on right, left or both sides.
+- Provided support for `expandByKey`, `collapseByKey` methods and improved `expantAtLevel`, `collapseAtLevel` methods for nested records in tree grid.
+- Provided Adaptive UI layout support for all devices.
+
+#### Bug Fixes
+
+- `#I348001`,`#I349046`,`#I349018` Throws script error while performing scroll on Virtualization enabled has been fixed.
+- `#F167694`  Resolved state changes not reflected for Treegrid column directive.
 
 ## 19.2.44 (2021-06-30)
 

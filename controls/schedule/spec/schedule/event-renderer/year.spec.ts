@@ -128,7 +128,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
 
         it('Rendered appointments elements checking', () => {
             const appointments: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
-            expect(appointments.length).toEqual(8);
+            expect(appointments.length).toEqual(7);
             const recurrenceApps: NodeListOf<Element> = schObj.element.querySelectorAll('[data-id="Appointment_18"]');
             expect(recurrenceApps.length).toEqual(2);
         });
@@ -139,13 +139,13 @@ describe('Year and TimelineYear View Event Render Module', () => {
                 expect(appointments.length).toEqual(35);
                 const allDayApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]');
                 expect(allDayApp.offsetWidth).toEqual(100);
-                expect(allDayApp.offsetTop).toEqual(474);
+                expect(allDayApp.offsetTop).toEqual(518);
                 const allDayAppWithNonEqualDates: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]');
                 expect(allDayAppWithNonEqualDates.offsetWidth).toEqual(500);
                 expect(allDayAppWithNonEqualDates.offsetTop).toEqual(252);
                 const spannedApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_6"]');
                 expect(spannedApp.offsetWidth).toEqual(700);
-                expect(spannedApp.offsetTop).toEqual(430);
+                expect(spannedApp.offsetTop).toEqual(496);
                 done();
             };
             schObj.rowAutoHeight = true;

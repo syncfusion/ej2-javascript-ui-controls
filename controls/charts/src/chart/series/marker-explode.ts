@@ -30,6 +30,7 @@ export class MarkerExplode extends ChartData {
     constructor(chart: Chart) {
         super(chart);
         this.elementId = chart.element.id;
+        this.commonXvalues = [];
     }
 
     /**

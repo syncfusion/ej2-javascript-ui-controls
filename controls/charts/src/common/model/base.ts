@@ -221,6 +221,15 @@ export class ChartArea extends ChildProperty<ChartArea> {
     @Property(null)
     public backgroundImage: string;
 
+    /**
+     * Defines the width for the chart area element. Takes value in percentage and in pixel.
+     *
+     * @default null
+     */
+
+    @Property(null)
+    public width: string;
+
 }
 /**
  * Configures the chart margins.

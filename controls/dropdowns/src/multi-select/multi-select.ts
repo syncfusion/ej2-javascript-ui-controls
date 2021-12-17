@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';
-import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
+import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -534,6 +534,15 @@ export class MultiSelect extends DropDownBase implements IInput {
     @Property(true)
     public openOnClick: boolean;
     /**
+     * By default, the typed value is converting into chip or update as value of the component when you press the enter key or select from the popup.
+     * If you want to convert the typed value into chip or update as value of the component while focusing out the component, then enable this property.
+     * If custom value is enabled, both custom value and value present in the list are converted into tag while focusing out the component; Otherwise, value present in the list is converted into tag while focusing out the component.
+     *
+     * @default false
+     */
+     @Property(false)
+     public addTagOnBlur: boolean; 
+    /**
      * Fires each time when selection changes happened in list items after model and input value get affected.
      *
      * @event change
@@ -998,7 +1007,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.mainList = ulElement.cloneNode ? <HTMLElement>ulElement.cloneNode(true) : ulElement;
             this.mainData = list;
             this.mainListCollection = this.liCollections;
-        } else if (!isNullOrUndefined(this.mainData) && this.mainData.length === 0) {
+        } else if (isNullOrUndefined(this.mainData) || this.mainData.length === 0) {
             this.mainData = list;
         }
         if ((this.remoteCustomValue || list.length <= 0) && this.allowCustomValue && this.inputFocus && this.allowFiltering &&
@@ -1392,6 +1401,18 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.inputFocus = false;
         this.overAllWrapper.classList.remove(FOCUS);
+        if (this.addTagOnBlur) {
+            const dataChecks: string | boolean | number = this.getValueByText(this.inputElement.value, this.ignoreCase, this.ignoreAccent);
+            const listLiElement: HTMLElement = this.findListElement(this.list, 'li', 'data-value', dataChecks);
+            const className: string = this.hideSelectedItem ? HIDE_LIST : dropDownBaseClasses.selected;
+            const allowChipAddition: boolean = (listLiElement && !listLiElement.classList.contains(className)) ? true : false;
+            if (allowChipAddition) {
+                this.updateListSelection(listLiElement, eve);
+                if (this.mode === 'Delimiter') {
+                    this.updateDelimeter(this.delimiterChar);
+                }
+            }
+        }
         this.refreshListItems(null);
         if (this.mode !== 'Box' && this.mode !== 'CheckBox') {
             this.updateDelimView();
@@ -1618,6 +1639,13 @@ export class MultiSelect extends DropDownBase implements IInput {
         const focusedItem: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownBaseClasses.focus);
         if (!isNullOrUndefined(focusedItem)) {
             this.inputElement.setAttribute('aria-activedescendant', focusedItem.id);
+            if(this.allowFiltering){
+                var filterInput = this.popupWrapper.querySelector('.' + FILTERINPUT);
+                filterInput && filterInput.setAttribute('aria-activedescendant', focusedItem.id);
+            }
+            else if(this.mode == "CheckBox"){
+                this.overAllWrapper.setAttribute('aria-activedescendant', focusedItem.id);
+            }
         }
     }
 
@@ -1733,7 +1761,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.keyAction = true;
         if (document.activeElement.classList.contains(FILTERINPUT)
         || (this.mode === 'CheckBox' && !this.allowFiltering && document.activeElement !== this.list)) {
-            this.list.focus();
             EventHandler.add(this.list, 'keydown', this.onKeyDown, this);
         }
         this.updateAriaAttribute();
@@ -2741,7 +2768,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             EventHandler.add(this.inputElement, 'input', this.onInput, this);
         }
         EventHandler.add(this.inputElement, 'blur', this.onBlurHandler, this);
-        EventHandler.add(this.componentWrapper, 'mousemove', this.mouseIn, this);
+        EventHandler.add(this.componentWrapper, 'mouseover', this.mouseIn, this);
         const formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
         if (formElement) {
             EventHandler.add(formElement, 'reset', this.resetValueHandler, this);
@@ -2954,6 +2981,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         setValue(this.fields.value, value, newValue);
                         const noDataEle: HTMLElement = this.popupWrapper.querySelector('.' + dropDownBaseClasses.noData);
                         this.addItem(newValue, indexItem);
+                        element= element ? element : this.findListElement(this.hideSelectedItem ? this.ulElement : this.list, 'li', 'data-value', value);
                         if (this.popupWrapper.contains(noDataEle)) {
                             this.list.setAttribute('style', noDataEle.getAttribute('style'));
                             this.popupWrapper.replaceChild(this.list, noDataEle);
@@ -2988,7 +3016,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
         if (this.value && (this.value as string[]).indexOf(li.getAttribute('data-value')) > -1) {
             this.mainList = this.ulElement;
-            addClass([li], HIDE_LIST);
+             if (this.hideSelectedItem) {
+                addClass([li], HIDE_LIST);
+            }
         }
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -2999,10 +3029,13 @@ export class MultiSelect extends DropDownBase implements IInput {
             remove(this.popupWrapper.querySelector('.e-content'));
             this.popupObj = null;
             this.renderPopup();
+         } else if  (this.allowCustomValue) {
+            this.list = list;
+            this.mainList = this.ulElement = list.querySelector('ul');
         }
     }
     protected updateDataList(): void {
-        if (this.mainList && this.ulElement && this.mainList.childElementCount < this.ulElement.childElementCount) {
+        if (this.mainList && this.ulElement && (this.mainList.childElementCount < this.ulElement.childElementCount || ((this.ulElement.childElementCount > 0 && this.ulElement.children[0].childElementCount > 0) && ( this.mainList.children[0].childElementCount < this.ulElement.children[0].childElementCount)))) {
             this.mainList = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;
         }
     }
@@ -3465,16 +3498,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 l10n = new L10n('dropdowns', l10nLocale, this.locale);
             }
             const remainContent: string = l10n.getConstant('overflowCountTemplate');
+            const totalContent: string = l10n.getConstant('totalCountTemplate');
             const raminElement: HTMLElement = this.createElement('span', {
                 className: REMAIN_WRAPPER
             });
-            const compiledString: Function = compile(remainContent);
-            const totalCompiledString: Function = compile(l10n.getConstant('totalCountTemplate'));
-            // eslint-disable-next-line
-            let remainCompildTemp: any = compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
-            if (remainCompildTemp && remainCompildTemp.length > 0) {
-                raminElement.appendChild(remainCompildTemp[0]);
-            }
+            let remainCompildTemp = remainContent.replace('${count}',this.value.length.toString());
+            raminElement.innerText = remainCompildTemp;
             this.viewWrapper.appendChild(raminElement);
             this.renderReactTemplates();
             const remainSize: number = raminElement.offsetWidth;
@@ -3525,10 +3554,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (remaining > 0) {
                 const totalWidth: number = overAllContainer - downIconWidth - this.clearIconWidth;
                 this.viewWrapper.appendChild(
-                    this.updateRemainTemplate( raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth)
+                    this.updateRemainTemplate( raminElement, this.viewWrapper, remaining, remainContent, totalContent, totalWidth)
                 );
                 this.updateRemainWidth(this.viewWrapper, totalWidth);
-                this.updateRemainingText(raminElement, downIconWidth, remaining, compiledString, totalCompiledString);
+                this.updateRemainingText(raminElement, downIconWidth, remaining, remainContent, totalContent);
             }
         } else {
             this.viewWrapper.innerHTML = '';
@@ -3551,22 +3580,16 @@ export class MultiSelect extends DropDownBase implements IInput {
         raminElement: HTMLElement,
         viewWrapper: HTMLElement,
         remaining: number,
-        compiledString: Function,
-        totalCompiledString: Function,
+        remainContent: string,
+        totalContent: string,
         totalWidth?: number): HTMLElement {
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3 && viewWrapper.firstChild.nodeValue === '') {
             viewWrapper.removeChild(viewWrapper.firstChild);
         }
         raminElement.innerHTML = '';
-        // eslint-disable-next-line
-        let remainTemp: any = compiledString(
-            { 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate, null, raminElement);
-        // eslint-disable-next-line
-        let totalTemp: any = totalCompiledString(
-            { 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate, null, raminElement);
-        raminElement.appendChild(
-            (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-                remainTemp && remainTemp[0] : totalTemp && totalTemp[0]);
+        let remainTemp: string = remainContent.replace('${count}', remaining.toString());
+        let totalTemp: string = totalContent.replace('${count}', remaining.toString());
+        raminElement.innerText = (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ? remainTemp : totalTemp;
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         } else {
@@ -3579,8 +3602,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         raminElement: HTMLElement,
         downIconWidth: number,
         remaining: number,
-        compiledString: Function,
-        totalCompiledString: Function): void {
+        remainContent: string,
+        totalContent: string): void {
         const overAllContainer: number = this.componentWrapper.offsetWidth -
             parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
             parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
@@ -3599,7 +3622,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 wrapperleng = this.viewWrapper.offsetWidth;
             }
             const totalWidth: number = overAllContainer - downIconWidth;
-            this.updateRemainTemplate( raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth);
+            this.updateRemainTemplate( raminElement, this.viewWrapper, remaining, remainContent, totalContent, totalWidth);
         }
     }
     private getOverflowVal(index: number): string {
@@ -3632,7 +3655,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             EventHandler.remove(formElement, 'reset', this.resetValueHandler);
         }
         EventHandler.remove(this.inputElement, 'blur', this.onBlurHandler);
-        EventHandler.remove(this.componentWrapper, 'mousemove', this.mouseIn);
+        EventHandler.remove(this.componentWrapper, 'mouseover', this.mouseIn);
         EventHandler.remove(this.componentWrapper, 'mouseout', this.mouseOut);
         EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
         EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
@@ -4033,6 +4056,29 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.renderPopup();
     }
+    private presentItemValue(ulElement: HTMLElement) {
+        let valuecheck: string[] = [];
+        for (let i: number = 0; i < this.value.length; i++) {
+            let checkEle: Element = this.findListElement(
+                ((this.allowFiltering && !isNullOrUndefined(this.mainList)) ? this.mainList : ulElement),
+                'li',
+                'data-value',
+                this.value[i]);
+            if (!checkEle) {
+                valuecheck.push(this.value[i] as string);
+            }
+        }
+        return valuecheck;
+    };
+    private addNonPresentItems(valuecheck: string[], ulElement: HTMLElement,
+        list: { [key: string]: Object }[] | number[] | boolean[] | string[],
+        event?: Object):  void {
+        (this.dataSource as DataManager).executeQuery(this.getForQuery(valuecheck)).then((e: Object) => {
+            this.addItem((e as ResultData).result, list.length);
+            this.updateActionList(ulElement, list, event);
+        });
+    };
+
     private updateVal(
         newProp: string[] | boolean[] | number[],
         oldProp: string[] | boolean[] | number[],
@@ -4042,31 +4088,43 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else if ((this.dataSource instanceof DataManager) && (!this.listData || !(this.mainList && this.mainData))) {
             this.onLoadSelect();
         } else {
-            if (prop === 'text') {
-                this.initialTextUpdate();
-                newProp = this.value;
+            let valuecheck: string[] = [];
+            if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
+                valuecheck = this.presentItemValue(this.ulElement);
             }
-            if (isNullOrUndefined(this.value) || this.value.length === 0) {
-                this.tempValues = oldProp;
+            if (prop == 'value' && valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
+                && this.listData != null) {
+                this.mainData = null;
+                this.setDynValue = true;
+                this.addNonPresentItems(valuecheck, this.ulElement, this.listData)
             }
-            // eslint-disable-next-line
-            if (this.allowCustomValue && (this.mode === 'Default' || this.mode === 'Box') && (this as any).isReact && this.inputFocus
-                && this.isPopupOpen() && this.mainData !== this.listData) {
-                const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
-                this.onActionComplete(list, this.mainData);
+            else {
+                if (prop === 'text') {
+                    this.initialTextUpdate();
+                    newProp = this.value;
+                }
+                if (isNullOrUndefined(this.value) || this.value.length === 0) {
+                    this.tempValues = oldProp;
+                }
+                // eslint-disable-next-line
+                if (this.allowCustomValue && (this.mode === 'Default' || this.mode === 'Box') && (this as any).isReact && this.inputFocus
+                    && this.isPopupOpen() && this.mainData !== this.listData) {
+                    const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
+                    this.onActionComplete(list, this.mainData);
+                }
+                this.initialValueUpdate();
+                if (this.mode !== 'Box' && !this.inputFocus) {
+                    this.updateDelimView();
+                }
+                if (!this.inputFocus) {
+                    this.refreshInputHight();
+                }
+                this.refreshPlaceHolder();
+                if (this.mode !== 'CheckBox' && this.changeOnBlur) {
+                    this.updateValueState(null, newProp, oldProp);
+                }
+                this.checkPlaceholderSize();
             }
-            this.initialValueUpdate();
-            if (this.mode !== 'Box' && !this.inputFocus) {
-                this.updateDelimView();
-            }
-            if (!this.inputFocus) {
-                this.refreshInputHight();
-            }
-            this.refreshPlaceHolder();
-            if (this.mode !== 'CheckBox' && this.changeOnBlur) {
-                this.updateValueState(null, newProp, oldProp);
-            }
-            this.checkPlaceholderSize();
         }
         if (!this.changeOnBlur) {
             this.updateValueState(null, newProp, oldProp);

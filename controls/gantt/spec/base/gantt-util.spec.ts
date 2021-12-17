@@ -1,6 +1,9 @@
 import { createElement, remove, getUniqueID, extend, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt, GanttModel } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 /**
  * 
  */

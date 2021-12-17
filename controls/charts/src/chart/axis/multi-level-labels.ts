@@ -122,8 +122,8 @@ export class MultiLevelLabel {
         let endX: number; let pathRect: string = '';
         let start: number | Date; let end: number | Date;
         let labelSize: Size; const isOutside: boolean = axis.labelPosition === 'Outside';
-        let gap: number; let anchor: string; const isInversed: boolean = axis.isInversed;
-        let argsData: IAxisMultiLabelRenderEventArgs; const opposedPosition: boolean = axis.opposedPosition;
+        let gap: number; let anchor: string; const isInversed: boolean = axis.isAxisInverse;
+        let argsData: IAxisMultiLabelRenderEventArgs; const opposedPosition: boolean = axis.isAxisOpposedPosition;
         const scrollBarHeight: number = axis.scrollbarSettings.enable || (isOutside && isNullOrUndefined(axis.crossesAt)) ?
             axis.scrollBarHeight : 0;
         const clipY: number = ((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ?
@@ -284,9 +284,9 @@ export class MultiLevelLabel {
         let startY: number; let path: string = '';
         let endY: number; let argsData: IAxisMultiLabelRenderEventArgs;
         let pointIndex: number;
-        const isInversed: boolean = axis.isInversed;
+        const isInversed: boolean = axis.isAxisInverse;
         let start: number | Date; let end: number | Date;
-        let gap: number; const anchor: string = 'middle'; const opposedPosition: boolean = axis.opposedPosition;
+        let gap: number; const anchor: string = 'middle'; const opposedPosition: boolean = axis.isAxisOpposedPosition;
         let scrollBarHeight: number = isOutside && isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
         scrollBarHeight = scrollBarHeight * (opposedPosition ? 1 : -1);
         const clipX: number = ((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ?

@@ -52,14 +52,16 @@ export class WorkbookNumberFormat {
      * @returns {string} - to get formatted cell.
      */
     public getFormattedCell(args: { [key: string]: string | number | boolean | CellModel }): string {
-        const fResult: string = isNullOrUndefined(args.value as string) ? '' : args.value as string;
-        const sheet: SheetModel = this.parent.sheets[isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex :
-            <number>args.sheetIndex];
-        const range: number[] = getRangeIndexes(sheet.activeCell);
-        const sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetIndex;
+        const fResult: string = args.value === undefined || args.value === null ? '' : args.value as string;
+        const sheetIdx: number = args.sheetIndex === undefined ? this.parent.activeSheetIndex : args.sheetIndex as number;
+        const sheet: SheetModel = this.parent.sheets[sheetIdx];
+        let range: number[];
+        if (args.rowIndex === undefined) {
+            range = getRangeIndexes(sheet.activeCell);
+        } else {
+            range = [args.rowIndex as number, args.colIndex as number];
+        }
         let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
-        const rowIdx: number = args.cell as CellModel && !isNullOrUndefined(args.rowIndex) ? args.rowIndex as number : range[0];
-        const colIdx: number = args.cell as CellModel && !isNullOrUndefined(args.colIndex) ? args.colIndex as number : range[1];
         let rightAlign: boolean = false;
         const option: { currency?: string } = {};
         const intl: Internationalization = new Internationalization();
@@ -68,7 +70,7 @@ export class WorkbookNumberFormat {
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             const dateEventArgs: { [key: string]: string | number | boolean } = {
-                value: <string>args.value, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: this.parent.activeSheetIndex,
+                value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetIndex,
                 updatedVal: <string>args.value, isDate: false, isTime: false
             };
             this.checkDateFormat(dateEventArgs);
@@ -90,12 +92,12 @@ export class WorkbookNumberFormat {
             cell.format = cell.format.split('\\').join('');
             this.parent.notify(updateCustomFormatsFromImport, { format: cell.format });
             args.type = 'Custom';
-            this.currentRange = getCellAddress(rowIdx, colIdx);
+            this.currentRange = getCellAddress(range[0], range[1]);
             if (cell.format.indexOf(';') > -1) {
                 if (cell.format.indexOf('<') > -1 || cell.format.indexOf('>') > -1) {
                     args.value = args.result = this.processCustomConditions(cell);
                 } else {
-                    args.value = args.result = this.processCustomAccounting(cell, rowIdx, colIdx, <HTMLElement>args.td);
+                    args.value = args.result = this.processCustomAccounting(cell, range[0], range[1], <HTMLElement>args.td);
                     isCustomText = (!isNumber(cell.value) ||  cell.format && cell.format.indexOf('@') > -1) ? true : false;
                 }
                 cell.format = orgFormat;
@@ -107,7 +109,7 @@ export class WorkbookNumberFormat {
                 isCustomText = true;
                 args.value = args.result = this.processCustomText(cell);
             } else if (isNumber(cell.value)) {
-                args.value = args.result = this.processCustomNumberFormat(cell, rowIdx, colIdx, <HTMLElement>args.td);
+                args.value = args.result = this.processCustomNumberFormat(cell, range[0], range[1], <HTMLElement>args.td);
             }
             if (isCustomText) {
                 args.isRightAlign = false;
@@ -282,7 +284,8 @@ export class WorkbookNumberFormat {
 
     private processCustomAccounting(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement): string {
         const custFormat: string[] = cell.format.split(';');
-        const cellValue: number = parseFloat(cell.value.toString().replace(/,/g, ''));
+        const cellValue: number = !isNullOrUndefined(cell.value) ?
+            parseFloat(cell.value.toString().replace(/,/g, '')) : parseFloat(cell.value);
         const orgValue: string = cell.value;
         if (cellValue > 0) {
             cell.format = custFormat[0];
@@ -350,7 +353,9 @@ export class WorkbookNumberFormat {
     private processDigits(cell: CellModel): string {
         const custFormat: string = cell.format.split('?').join('0');
         cell.value = this.getFormattedNumber(custFormat, parseFloat(cell.value));
-        cell.value = cell.value.split('.')[0] + '.' + cell.value.split('.')[1].split('0').join('  ');
+        if (!isNullOrUndefined(cell.value)) {
+            cell.value = cell.value.split('.')[0] + '.' + cell.value.split('.')[1].split('0').join('  ');
+        }
         return cell.value;
     }
 
@@ -379,12 +384,12 @@ export class WorkbookNumberFormat {
         let cellValue: number | string = 0;
         let formattedText: string;
         let isFormatted: boolean = false;
-        if(!isNumber(cell.value)){
+        if (!isNullOrUndefined(cell.value) && !isNumber(cell.value)) {
             cellValue = cell.value.replace(/,/g, '');
-        }else{
+        }else {
             cellValue = cell.value;
         }
-        if (cell && isNumber(cellValue)) {
+        if (cell && isNumber(cell.value)) {
             cellValue = parseFloat(cellValue.toString());
             let customFormat: string = this.processCustomColor(cell);
             // if (customFormat === cell.format && cell.style) {
@@ -406,7 +411,7 @@ export class WorkbookNumberFormat {
             if (cell.format.indexOf('"') > -1 || cell.format.indexOf('\\') > -1) {
                 customFormat = this.processText(customFormat);
             }
-            if (customFormat && customFormat.indexOf('?') > -1) {
+            if (customFormat && formattedText && customFormat.indexOf('?') > -1) {
                 formattedText = formattedText.replace('?', ' ');
             }
             if (customFormat.indexOf('*') > -1) {
@@ -690,6 +695,16 @@ export class WorkbookNumberFormat {
     }
 
     private shortDateFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
+        if ((args.format === 'dd/MM/yyyy' || args.format === 'dd-MM-yyyy') && args.value && (args.value.toString().indexOf('/') > -1 || args.value.toString().indexOf('-') > -1)) {
+            const intl: Internationalization = new Internationalization();
+            const dateObj: Date = toDate(args.value.toString(), intl, this.parent.locale, args.format.toString()).dateObj;
+            if (!isNullOrUndefined(dateObj) && dateObj.toString() !== 'Invalid Date') {
+                args.value = dateToInt(dateObj);
+                if (args.cell) {
+                    (args.cell as CellModel).value = args.value.toString();
+                }
+            }
+        }
         const shortDate: Date = intToDate(args.value as number);
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('ShortDate')
             : args.format.toString();
@@ -793,7 +808,7 @@ export class WorkbookNumberFormat {
         if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
             value = checkedDate;
             if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-                dateObj = toDate(value, intl, this.parent.locale);
+                dateObj = toDate(value, intl, this.parent.locale, '', cell);
                 if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                     cell = cell ? cell : {};
                     value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
@@ -843,6 +858,9 @@ export class WorkbookNumberFormat {
     }
 
     private formattedBarText(args: { [key: string]: CellModel | string }): void {
+        if (args.value === '') {
+            return;
+        }
         const type: string = getTypeFromFormat((<CellModel>args.cell) ? (<CellModel>args.cell).format : '');
         const intl: Internationalization = new Internationalization();
         const beforeText: string = <string>args.value;

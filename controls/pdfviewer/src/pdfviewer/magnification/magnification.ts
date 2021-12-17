@@ -1,6 +1,6 @@
 /* eslint-disable */
-import { Browser, isBlazor } from '@syncfusion/ej2-base';
-import { PdfViewer, PdfViewerBase } from '../index';
+import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { PdfViewer, PdfViewerBase, TileRenderingSettingsModel } from '../index';
 import { getDiagramElement, PointModel } from '@syncfusion/ej2-drawings';
 
 /**
@@ -74,6 +74,10 @@ export class Magnification {
      * @private
      */
     public isAutoZoom: boolean = false;
+    /**
+     * @private
+     */
+    public isFormFieldPageZoomed: boolean = false;
     private isWebkitMobile: boolean = false;
     private isFitToPageMode: boolean = true;
     /**
@@ -192,8 +196,10 @@ export class Magnification {
             } else {
                 this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
             }
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.viewerContainer.scrollTop = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top * this.zoomFactor;
+            if (this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1]) {
+                // eslint-disable-next-line max-len
+                this.pdfViewerBase.viewerContainer.scrollTop = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top * this.zoomFactor;
+            }
         }
     }
 
@@ -228,7 +234,7 @@ export class Magnification {
             this.isFitToPageMode = true;
             const pageLeft: number = 10;
             const scaleX: number = ((viewerWidth - this.scrollWidth - pageLeft) / this.pdfViewerBase.highestWidth);
-            let scaleY: number = ( viewerHeight / this.pdfViewerBase.highestHeight);
+            let scaleY: number = (viewerHeight / this.pdfViewerBase.highestHeight);
             if (scaleY > scaleX) {
                 scaleY = scaleX;
                 this.isFitToPageMode = false;
@@ -431,6 +437,9 @@ export class Magnification {
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.maintainSelectionOnZoom(false, true);
         }
+        if (this.pdfViewer.formDesignerModule) { 
+            this.isFormFieldPageZoomed = true;
+        }
         if (!this.isInitialLoading) {
             this.isMagnified = true;
         }
@@ -612,7 +621,7 @@ export class Magnification {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];
-            const pageDivs: NodeList = document.querySelectorAll('canvas[id*="' + this.pdfViewer.element.id + '_pageCanvas_"]');
+            const pageDivs: NodeList = document.querySelectorAll('img[id*="' + this.pdfViewer.element.id + '_pageCanvas_"]');
             const viewPortWidth: number = 816;
             for (let i: number = 0; i < pageDivs.length; i++) {
                 // eslint-disable-next-line radix
@@ -620,13 +629,13 @@ export class Magnification {
                 const pageWidth: number = this.pdfViewerBase.pageSize[pageNumber].width;
                 if ((viewPortWidth < pageWidth) && this.pdfViewer.tileRenderingSettings.enableTileRendering) {
                     if (this.pdfViewer.restrictZoomRequest) {
-                        (pageDivs[i] as HTMLCanvasElement).style.width = pageWidth * this.pdfViewerBase.getZoomFactor() + 'px';
+                        (pageDivs[i] as HTMLImageElement).style.width = pageWidth * this.pdfViewerBase.getZoomFactor() + 'px';
                         // eslint-disable-next-line max-len
-                        (pageDivs[i] as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
+                        (pageDivs[i] as HTMLImageElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
                     } else {
-                        (pageDivs[i] as HTMLCanvasElement).style.width = pageWidth * this.pdfViewerBase.getZoomFactor() + 'px';
+                        (pageDivs[i] as HTMLImageElement).style.width = pageWidth * this.pdfViewerBase.getZoomFactor() + 'px';
                         // eslint-disable-next-line max-len
-                        (pageDivs[i] as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
+                        (pageDivs[i] as HTMLImageElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
                     }
 
                 }
@@ -676,12 +685,13 @@ export class Magnification {
     // eslint-disable-next-line
     private initiateRerender(proxy: any): void {
         let isReRender: boolean = false;
-        if (this.previousZoomFactor < 0.4  || this.pdfViewerBase.isMinimumZoom) {
+        if (this.previousZoomFactor < 0.4 || this.pdfViewerBase.isMinimumZoom) {
             isReRender = true;
         }
         // eslint-disable-next-line max-len
         if (((proxy.pageRerenderCount === proxy.pdfViewerBase.reRenderedCount) || isReRender) && proxy.pageRerenderCount !== 0 && proxy.pdfViewerBase.reRenderedCount !== 0) {
             proxy.reRenderAfterPinch(this.reRenderPageNumber);
+            proxy.isFormFieldPageZoomed = false;
         }
     }
 
@@ -698,16 +708,13 @@ export class Magnification {
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + i);
             const pageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
-            if (pageCanvas) {
-                pageCanvas.style.display = 'block';
-            }
             const oldCanvas: HTMLElement = this.pdfViewerBase.getElement('_oldCanvas_' + i);
             if (oldCanvas) {
                 oldCanvas.parentNode.removeChild(oldCanvas);
             }
             if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotations(i);
-            } else if(this.pdfViewer.formDesignerModule) {
+            } else if (this.pdfViewer.formDesignerModule) {
                 this.rerenderAnnotations(i);
                 this.pdfViewer.renderDrawing(undefined, currentPageIndex);
             }
@@ -731,17 +738,17 @@ export class Magnification {
      * @private
      */
     public rerenderAnnotations(pageNumber: number): void {
-            // eslint-disable-next-line
-            let oldCanvasCollection: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_old_annotationCanvas_' + pageNumber);
-            for (let i: number = 0; i < oldCanvasCollection.length; i++) {
-                if (oldCanvasCollection[i]) {
-                    oldCanvasCollection[i].parentElement.removeChild(oldCanvasCollection[i]);
-                }
+        // eslint-disable-next-line
+        let oldCanvasCollection: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_old_annotationCanvas_' + pageNumber);
+        for (let i: number = 0; i < oldCanvasCollection.length; i++) {
+            if (oldCanvasCollection[i]) {
+                oldCanvasCollection[i].parentElement.removeChild(oldCanvasCollection[i]);
             }
-            const newCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-            if (newCanvas) {
-                newCanvas.style.display = 'block';
-            }
+        }
+        const newCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+        if (newCanvas) {
+            newCanvas.style.display = 'block';
+        }
     }
 
     private designNewCanvas(currentPageIndex: number): void {
@@ -758,18 +765,14 @@ export class Magnification {
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             const canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
+            let width: number = this.pdfViewerBase.pageSize[i].width * this.zoomFactor;
+            let height: number = this.pdfViewerBase.pageSize[i].height * this.zoomFactor;
             if (canvas && !this.pdfViewer.restrictZoomRequest) {
-                canvas.id = this.pdfViewer.element.id + '_oldCanvas_' + i;
-                canvas.style.backgroundColor = '#fff';
-                if (this.pdfViewerBase.isTextMarkupAnnotationModule() || this.pdfViewer.formDesignerModule) {
-                    const annotationCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + i);
-                    annotationCanvas.id = this.pdfViewer.element.id + '_old_annotationCanvas_' + i;
-                }
                 // eslint-disable-next-line max-len
-                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i, 'none');
+                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), width, height, i, 'none');
             } else if (!this.pdfViewer.restrictZoomRequest) {
                 // eslint-disable-next-line max-len
-                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i, 'none');
+                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), width, height, i, 'none');
             }
         }
         this.isRerenderCanvasCreated = true;
@@ -837,13 +840,9 @@ export class Magnification {
                         isSelectionAvailable = this.pdfViewer.textSelectionModule.isSelectionAvailableOnScroll(i);
                     }
                     if (this.pdfViewerBase.pageSize[i] != null) {
-                        const width: number = this.pdfViewerBase.pageSize[i].width * this.zoomFactor;
+                        let width: number = this.pdfViewerBase.pageSize[i].width * this.zoomFactor;
                         const height: number = this.pdfViewerBase.pageSize[i].height * this.zoomFactor;
-                        if (this.pdfViewerBase.isMixedSizeDocument && this.pdfViewerBase.highestWidth > 0) {
-                            pageDiv.style.width = (this.pdfViewerBase.highestWidth * this.zoomFactor) + 'px';
-                        } else {
-                            pageDiv.style.width = width + 'px';
-                        }
+                        pageDiv.style.width = width + 'px';
                         pageDiv.style.height = height + 'px';
                         // eslint-disable-next-line max-len
                         pageDiv.style.top = ((this.pdfViewerBase.pageSize[i].top) * this.zoomFactor) + 'px';
@@ -854,12 +853,104 @@ export class Magnification {
                         }
                         const canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
                         if (canvas) {
-                            canvas.style.width = width + 'px';
+                            canvas.style.width = (width) + 'px';
                             canvas.style.height = height + 'px';
                             if (this.pdfViewer.annotation) {
                                 this.pdfViewer.annotationModule.resizeAnnotations(width, height, i);
                             } else if (this.pdfViewer.formDesignerModule) {
                                 this.pdfViewer.formDesignerModule.resizeAnnotations(width, height, i);
+                            }
+                        }
+                        let zoomFactor = this.pdfViewerBase.retrieveCurrentZoomFactor();
+                        let tileCount: number = this.pdfViewerBase.getTileCount(this.pdfViewerBase.pageSize[i].width);
+                        let noTileX: number;
+                        let noTileY: number;
+                        noTileX = noTileY = tileCount;
+                        const tileSettings: TileRenderingSettingsModel = this.pdfViewer.tileRenderingSettings;
+                        if (tileSettings.enableTileRendering && tileSettings.x > 0 && tileSettings.y > 0) {
+                            if ((1200 < this.pdfViewerBase.pageSize[i].width || this.pdfViewerBase.getZoomFactor() > 2)) {
+                                noTileX = tileSettings.x;
+                                noTileY = tileSettings.y;
+                            }
+                        }
+                        let tileRequestCount: number = noTileX * noTileY;
+                        if (tileRequestCount === 1) {
+                            let storedData: any = this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) ? this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) : this.pdfViewerBase.getPinchZoomPage(i);
+                            if (storedData) {
+                                storedData = JSON.parse(storedData);
+                                let imageData: string = storedData['image'];
+                                if (imageData) {
+                                    (canvas as HTMLImageElement).src = imageData;
+                                    canvas.style.display = 'block';
+                                    const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + this.pdfViewer.element.id + '_tileimg_' + i + '_"]');
+                                    const pageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + i);
+                                    for (let k: number = 0; k < oldCanvases.length; k++) {
+                                        let tileImgId: string[] = oldCanvases[k].id.split('_');
+                                        if (parseFloat(tileImgId[tileImgId.length - 3]) != this.pdfViewerBase.getZoomFactor())
+                                            pageCanvas.removeChild(oldCanvases[k]);
+                                    }
+                                    const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + this.pdfViewer.element.id + '_oldCanvas"]');
+                                    for (let j: number = 0; j < oldPageDiv.length; j++) {
+                                        pageDiv.removeChild(oldPageDiv[j]);
+                                    }
+                                }
+                                this.pdfViewerBase.isReRenderRequired = false;
+                            } else {
+                                this.pdfViewerBase.isReRenderRequired = true;
+                            }
+                        } else {
+                            const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + this.pdfViewer.element.id + '_tileimg_' + i + '_"]');
+                            for (let l: number = 0; l < oldCanvases.length; l++) {
+                                let tileImgId: string[] = oldCanvases[l].id.split('_');
+                                let tileX: number = parseFloat(tileImgId[tileImgId.length - 2]);
+                                let tileY: number = parseFloat(tileImgId[tileImgId.length - 1]);
+                                // eslint-disable-next-line
+                                let tileData: any = JSON.parse(this.pdfViewerBase.getWindowSessionStorageTile(i, tileX, tileY, zoomFactor));
+                                if (tileData && tileData.zoomFactor) {
+                                    zoomFactor = tileData.zoomFactor;
+                                }
+                                if (parseFloat(tileImgId[tileImgId.length - 4]) === i) {
+                                    canvas.style.display = 'none';
+                                    let node: Node = oldCanvases[l];
+                                    // Make sure it's really an Element
+                                    if (node.nodeType == Node.ELEMENT_NODE) {
+                                        let dataScaleFactor: number = 1.5;
+                                        if (!isNullOrUndefined(tileData)) {
+                                            dataScaleFactor = (!isNullOrUndefined(tileData.scaleFactor)) ? tileData.scaleFactor : 1.5;
+                                        }
+                                        let pageWidth:number=this.pdfViewerBase.pageSize[i].width;
+                                        let serverImageWidth: number = pageWidth * zoomFactor * dataScaleFactor;
+                                        let serverImageHeight: number = this.pdfViewerBase.pageSize[i].height * zoomFactor * dataScaleFactor;
+                                        let tilewidth: number = serverImageWidth / noTileX;
+                                        let tileHeight: number = serverImageHeight / noTileY;
+                                        let originalWidth: number = tilewidth;
+                                        let originalLeft: number = parseFloat(tileImgId[tileImgId.length - 2]) * tilewidth;
+                                        let originalTop: number = parseFloat(tileImgId[tileImgId.length - 1]) * tileHeight;
+                                        (node as any).width =(((originalWidth * this.pdfViewerBase.getZoomFactor()) / zoomFactor) / dataScaleFactor);
+                                        (node as any).style.width =(((originalWidth * this.pdfViewerBase.getZoomFactor()) / zoomFactor) / dataScaleFactor) +'px';
+                                        (node as HTMLElement).style.left =(((originalLeft * this.pdfViewerBase.getZoomFactor()) / zoomFactor) / dataScaleFactor) + 'px';
+                                        (node as HTMLElement).style.top =(((originalTop * this.pdfViewerBase.getZoomFactor()) / zoomFactor) / dataScaleFactor) + 'px';
+                                        (node as HTMLElement).id = this.pdfViewer.element.id + '_tileimg_' + i + '_' + this.pdfViewerBase.getZoomFactor() + '_' + tileX + '_' + tileY;
+                                        if (tileData) {
+                                            let imageData: string = tileData['image'];
+                                            if (imageData) {
+                                                (node as HTMLImageElement).src = imageData;
+                                            }
+                                            this.pdfViewerBase.isReRenderRequired = false;
+                                        } else {
+                                            this.pdfViewerBase.isReRenderRequired = true;
+                                        }
+                                    }
+                                }
+                            }
+                            if (oldCanvases.length === 0) {
+                                this.pdfViewerBase.isReRenderRequired = true;
+                            }
+                        }
+                        const aElement: any = pageDiv.getElementsByTagName('a');
+                        if (aElement.length !== 0) {
+                            for (let index: number = aElement.length - 1; index >= 0; index--) {
+                                aElement[index].parentNode.removeChild(aElement[index]);
                             }
                         }
                         if (textLayer) {
@@ -962,48 +1053,48 @@ export class Magnification {
         const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
         const isCommandKey: boolean = isMac ? event.metaKey : false;
         switch (event.keyCode) {
-        case 38: // up arrow
-        case 37: // left arrow
-        case 33: // page up
-            if (this.fitType === 'fitToPage' && !((event.ctrlKey || isCommandKey) && event.shiftKey)) {
-                event.preventDefault();
-                this.upwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
-            }
-            break;
-        case 40: // down arrow
-        case 39: // right arrow
-        case 34: // page down
-            if (this.fitType === 'fitToPage' && !((event.ctrlKey || isCommandKey) && event.shiftKey)) {
-                event.preventDefault();
-                this.downwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
-            }
-            break;
-        case 187: // equal key
-            if (event.ctrlKey || isCommandKey) {
-                event.preventDefault();
-                this.zoomIn();
-            }
-            break;
-        case 189: // minus key
-            if (event.ctrlKey || isCommandKey) {
-                event.preventDefault();
-                this.zoomOut();
-            }
-            break;
-        case 48: // zero key
-            if ((event.ctrlKey || isCommandKey) && !event.shiftKey) {
-                event.preventDefault();
-                this.fitToPage();
-            }
-            break;
-        case 49: // one key
-            if ((event.ctrlKey || isCommandKey) && !event.shiftKey) {
-                event.preventDefault();
-                this.zoomTo(100);
-            }
-            break;
-        default:
-            break;
+            case 38: // up arrow
+            case 37: // left arrow
+            case 33: // page up
+                if (this.fitType === 'fitToPage' && !((event.ctrlKey || isCommandKey) && event.shiftKey)) {
+                    event.preventDefault();
+                    this.upwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
+                }
+                break;
+            case 40: // down arrow
+            case 39: // right arrow
+            case 34: // page down
+                if (this.fitType === 'fitToPage' && !((event.ctrlKey || isCommandKey) && event.shiftKey)) {
+                    event.preventDefault();
+                    this.downwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
+                }
+                break;
+            case 187: // equal key
+                if (event.ctrlKey || isCommandKey) {
+                    event.preventDefault();
+                    this.zoomIn();
+                }
+                break;
+            case 189: // minus key
+                if (event.ctrlKey || isCommandKey) {
+                    event.preventDefault();
+                    this.zoomOut();
+                }
+                break;
+            case 48: // zero key
+                if ((event.ctrlKey || isCommandKey) && !event.shiftKey) {
+                    event.preventDefault();
+                    this.fitToPage();
+                }
+                break;
+            case 49: // one key
+                if ((event.ctrlKey || isCommandKey) && !event.shiftKey) {
+                    event.preventDefault();
+                    this.zoomTo(100);
+                }
+                break;
+            default:
+                break;
         }
     }
 

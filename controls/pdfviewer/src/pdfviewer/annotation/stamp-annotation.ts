@@ -5,6 +5,7 @@ import { PdfViewer, PdfViewerBase, IPageAnnotations, ICommentsCollection, IRevie
 import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings';
 import { AnnotationSelectorSettings } from '../pdfviewer';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
+import { Browser } from '@syncfusion/ej2-base';
 
 
 /**
@@ -566,7 +567,7 @@ export class StampAnnotation {
      */
     // eslint-disable-next-line
     public updateDeleteItems(pageNumber: number, annotation: any, opacity?: number): any {
-        this.pdfViewer.isDocumentEdited = true;
+        this.pdfViewerBase.updateDocumentEditedProperty(true);
         let annotationObject: IStampAnnotation = null;
         let isStampSaved: boolean = false;
         annotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
@@ -644,17 +645,19 @@ export class StampAnnotation {
                 annotationObject.stampAnnotationPath = csData;
             }
             annotation.creationDate = new Date().toLocaleDateString();
-            annotationObject.bounds.width = annotation.wrapper.actualSize.width;
-            annotationObject.bounds.height = annotation.wrapper.actualSize.height;
-            annotationObject.bounds.left = annotation.wrapper.bounds.x;
-            annotationObject.bounds.top = annotation.wrapper.bounds.y;
+            if (!Browser.isDevice) {
+                annotationObject.bounds.width = annotation.wrapper.actualSize.width;
+                annotationObject.bounds.height = annotation.wrapper.actualSize.height;
+                annotationObject.bounds.left = annotation.wrapper.bounds.x;
+                annotationObject.bounds.top = annotation.wrapper.bounds.y;
+            }
             annotationObject.opacity = opacity;
             if (this.pdfViewerBase.stampAdded) {
                 this.storeStampInSession(pageNumber, annotationObject);
                 isStampSaved = true;
                 // eslint-disable-next-line
                 let bounds: any = { left: annotationObject.bounds.left, top: annotationObject.bounds.top, width: annotationObject.bounds.width, height: annotationObject.bounds.height };
-                this.pdfViewer.isDocumentEdited = true;
+                this.pdfViewerBase.updateDocumentEditedProperty(true);
                 // eslint-disable-next-line max-len
                 // eslint-disable-next-line
                 let settings: any = { opacity: annotationObject.opacity, author: annotationObject.author, modifiedDate: annotationObject.modifiedDate };
@@ -1405,7 +1408,7 @@ export class StampAnnotation {
      */
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IStampAnnotation {
-        this.pdfViewer.isDocumentEdited = true;
+        this.pdfViewerBase.updateDocumentEditedProperty(true);
         let currentAnnotObject: IStampAnnotation = null;
         let pageAnnotations: IStampAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {

@@ -53,6 +53,13 @@ export interface TooltipModel extends ComponentModel{
     content?: string | HTMLElement;
 
     /**
+     * It is used to set the container element in which the Tooltip’s pop-up will be appended. It accepts value as both string and HTML Element.
+     * It's default value is `body`, in which the Tooltip’s pop-up will be appended.
+     *
+     */
+    container?: string | HTMLElement;
+
+    /**
      * It is used to denote the target selector where the Tooltip need to be displayed.
      * The target element is considered as parent container.
      *
@@ -99,7 +106,7 @@ export interface TooltipModel extends ComponentModel{
     showTipPointer?: boolean;
 
     /**
-     * It enables or disables the parsing of HTML string content into HTML DOM elements for Tooltip. 
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for Tooltip.
      * If the value of the property is set to false, the tooltip content will be displayed as HTML string instead of HTML DOM elements.
      *
      * @default true
@@ -107,8 +114,8 @@ export interface TooltipModel extends ComponentModel{
     enableHtmlParse?: boolean;
 
     /**
-     * It is used to set the collision target element as page viewport (window) or Tooltip element, when using the target. 
-     * If this property is enabled, tooltip will perform the collision calculation between the target elements 
+     * It is used to set the collision target element as page viewport (window) or Tooltip element, when using the target.
+     * If this property is enabled, tooltip will perform the collision calculation between the target elements
      * and viewport(window) instead of Tooltip element.
      *
      * @default false

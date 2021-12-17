@@ -816,6 +816,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (!isBlazor()) {
             this.accordionElement.refresh();
         }
+        else {
+            this.updatePalettes();
+        }
         this.allowServerDataBinding = isEnableServerDatabind;
     }
     //end region - protected methods
@@ -1864,7 +1867,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         //add the symbols into search palette
         if (symbolGroup.length > 0) {
             for (const symbol of symbolGroup) {
-                this.getSymbolContainer(symbol, element);
+                if ((symbol as Node | Connector).parentId === "") {
+                    this.getSymbolContainer(symbol, element);
+                }
             }
         } else if (value !== '') {
             const emptyDiv: HTMLElement = createHtmlElement('div', { 'id': 'EmptyDiv', 'style': 'text-align:center;font-style:italic' });

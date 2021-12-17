@@ -1,0 +1,225 @@
+@include export-module('grid-bootstrap4-icons') {
+  /*! component icons */
+
+  .e-icon-check::before {
+    content:  '\e718';
+  }
+
+  #{&}.e-grid,
+  .e-grid-menu {
+
+    .e-group-animate .e-drag.e-icon-drag::before {
+      content: '\e7d6';
+    }
+
+    .e-group-animate .e-nextgroup.e-icon-next::before {
+      content: '\e76a';
+    }
+
+    .e-icon-ascending::before {
+      content: '\e7d1';
+    }
+
+    .e-icon-descending::before {
+      content: '\e7b9';
+    }
+
+    .e-icon-hide::before {
+      content: '\e745';
+    }
+
+    .e-ungroupbutton.e-icon-hide::before {
+      content: '\e745';
+    }
+
+    .e-icon-rowselect::before {
+      content: '\e7cc';
+    }
+
+    .e-icon-sortdirect::before {
+      content: '\e7c2';
+    }
+
+    .e-icon-gdownarrow::before {
+      content: '\e744';
+    }
+
+    .e-icon-grightarrow::before {
+      content: '\e70b';
+    }
+
+    .e-icon-filter::before,
+    .e-icon-filter.e-filtered::before {
+      content: '\e714';
+    }
+
+    .e-resfilter-icon::before {
+      content: '\e714';
+    }
+
+    .e-ressort-icon::before {
+      content: '\e741';
+    }
+
+    .e-excl-filter-icon::before {
+      content: '\e714';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e748';
+    }
+
+    &.e-rtl {
+      .e-icon-grightarrow::before {
+        content: '\e71f';
+      }
+    }
+
+    .e-icon-group::before {
+      content: '\e7d5';
+    }
+
+    .e-icon-ungroup::before {
+      content: '\e7d5';
+    }
+
+    .e-icon-reorderuparrow::before {
+      content: '\e78d';
+    }
+
+    .e-icon-reorderdownarrow::before {
+      content: '\e798';
+    }
+
+    .e-print::before {
+      content: '\e743';
+    }
+
+    .e-add::before {
+      content: '\e759';
+    }
+
+    .e-resback-icon::before {
+      content: '\e728';
+    }
+
+    .e-wordexport::before {
+      content: '\e7b0';
+    }
+
+    .e-pdfexport::before {
+      content: '\e727';
+    }
+
+    .e-csvexport::before {
+      content: '\e725';
+    }
+
+    .e-excelexport::before {
+      content: '\e74e';
+    }
+
+    .e-edit::before {
+      content: '\e78f';
+    }
+
+    .e-columnmenu::before,
+    .e-columnmenu.e-filtered::before {
+      content: '\e781';
+    }
+
+    .e-delete::before {
+      content: '\e773';
+    }
+
+    .e-cancel::before {
+      content: '\e745';
+    }
+
+    .e-copy::before {
+      content: '\e77b';
+    }
+
+    .e-save::before {
+      content: '\e74d';
+    }
+
+    .e-update::before {
+      content: '\e74d';
+    }
+
+    .e-search-icon::before {
+      content: '\e724';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e745';
+    }
+
+    .e-columnchooserdiv::before {
+      content: '\e714';
+    }
+
+    .e-ccsearch-icon::before {
+      content: '\e724';
+    }
+
+    .e-columnchooser::before {
+      content: '\e21e';
+    }
+
+    .e-columnchooser-btn::before {
+      content: '\e744';
+    }
+
+    .e-cc-icon::before {
+      content: '\e744';
+    }
+
+    .e-icon-rowdragicon::before {
+      content: '\e7d6';
+    }
+
+    &.e-rtl {
+      .e-icon-rowdragicon::before {
+        content: '\e7d6';
+       }
+    }
+
+    .e-ccsearch-icon.e-cc-cancel::before,
+    .e-chkcancel-icon::before {
+      content: '\e745';
+    }
+  }
+}
+
+.e-responsive-dialog {
+  & .e-resfilterback::before {
+    content: '\e728';
+  }
+
+  & .e-filterset::before {
+    content: '\e714';
+  }
+
+  & .e-search-icon::before {
+    content: '\e724';
+  }
+
+  & .e-chkcancel-icon::before {
+    content: '\e7a7';
+  }
+
+  & .e-icon-filter-clear::before {
+    content: '\e748';
+  }
+}
+
+.e-row-responsive-filter {
+  & .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e728';
+    }
+  }
+}
+  

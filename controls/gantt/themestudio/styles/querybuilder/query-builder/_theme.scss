@@ -1,0 +1,165 @@
+@include export-module('querybuilder-theme') {
+  .e-query-builder {
+    background-color: $qrybldr-bg-color;
+    border-color: $qrybldr-brdr-color;
+
+    & .e-group-header .e-btn-group {
+      border-color: $qrybldr-brdr-color;
+    }
+
+    &.e-rtl .e-btn-group.e-rtl {
+
+      & .e-qb-toggle.e-btn.e-small {
+        @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' or $skin-name == 'fabric-dark' {
+          border-right: 1px solid $qrybldr-brdr-color;
+        }
+
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap-dark' {
+          border-left: 1px solid $qrybldr-brdr-color;
+          border-right: 1px solid $qrybldr-brdr-color;
+        }
+      }
+
+      & .e-qb-toggle.e-btn.e-small.e-active-toggle {
+        @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' or $skin-name == 'fabric-dark' {
+          border-right: 1px solid $qrybldr-btngroup-active-bgcolor;
+        }
+
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap-dark' {
+          border-left: 1px solid $qrybldr-btngroup-active-bgcolor;
+          border-right: 1px solid $qrybldr-btngroup-active-bgcolor;
+        }
+      }
+
+      & .e-btn.e-btngroup-and-lbl.e-not {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
+          border-right: transparent;
+        }
+        @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' {
+          border-right: transparent;
+        }
+      }
+    }
+
+    & .e-group-container {
+      border-color: $groupborder-color;
+    }
+
+    & .e-rule-container {
+      background-color: $groupfill-bgcolor;
+      border-color: $groupborder-color;
+    }
+
+    & .e-rule-container.e-joined-rule {
+      border-top-color: $qrybldr-rule-list-border-color;
+    }
+
+    & .e-rule-list .e-group-container {
+      background-color: $qrybldr-bg-color;
+    }
+
+    & .e-rule-list>::after,
+    & .e-rule-list>::before {
+      border-color: $qrybldr-rule-list-border-color;
+    }
+
+    & .e-btn-group input:checked + label.e-btn,
+    & .e-btn-group .e-btn.e-qb-toggle.e-active-toggle {
+      background: $qrybldr-btngroup-active-bgcolor;
+      border-color: $qrybldr-btngroup-active-bgcolor;
+      color: $qrybldr-btngroup-active-color;
+    }
+
+    & .e-btn-group:not(.e-rtl) .e-qb-toggle.e-btn.e-small {
+      @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
+        border-right: transparent;
+      }
+      @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' {
+        border-right: transparent;
+      }
+    }
+
+    & .e-btn-group:not(.e-rtl) .e-btn.e-btngroup-and-lbl.e-not {
+      @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' {
+        border-left: transparent;
+      }
+    }
+
+    & .e-btn-group input + label.e-btn,
+    & .e-group-action .e-btn,
+    & .e-qb-toggle,
+    & .e-removerule.e-btn.e-round,
+    & .e-removerule.e-btn.e-round:hover {
+      @if $skin-name == 'bootstrap4' {
+        background: $qrybldr-btngroup-bgcolor;
+        border-color: $qrybldr-brdr-color;
+        color: $qrybldr-btngroup-color;
+        }
+    }
+
+    & .e-group-header .e-btn-group:not(.e-rtl) .e-qb-toggle:last-of-type {
+      @if $skin-name == 'highcontrast' {
+        border-left: 1px solid;
+      }
+    }
+
+    & .e-group-header .e-btn-group .e-qb-toggle.e-active-toggle:last-of-type {
+      @if $skin-name == 'highcontrast' {
+        border-left-color: $qrybldr-btngroup-active-bgcolor;
+      }
+    }
+
+    & .e-removerule.e-btn.e-round {
+      background-color: $groupfill-color;
+      @if $skin-name == 'bootstrap4' {
+        background-color: $qrybldr-btngroup-bgcolor;
+      }
+
+      &.e-readonly {
+        display: none;
+      }
+    }
+
+    & .e-summary-content textarea {
+      background-color: $qrybldr-bg-color;
+      color: $qrybldr-color;
+    }
+
+    & .e-collapse-rule {
+      background-color: $qrybldr-bg-color;
+      border-color: $qrybldr-collapse-brdr-color;
+      color: $qrybldr-color;
+
+      &:focus,
+      &:active,
+      &:hover {
+        background-color: $qrybldr-brdr-color;
+     }
+
+    }
+    }
+}
+
+.e-tooltip-wrap.e-querybuilder-error,
+.e-control.e-tooltip-wrap.e-popup.e-querybuilder-error {
+  background-color: $qrybldr-val-error-bg-color;
+  border-color: $qrybldr-val-error-bg-color;
+  }
+
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-top {
+  border-bottom-color: $qrybldr-val-error-bg-color;
+  color: $qrybldr-val-error-bg-color;
+  }
+
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-bottom,
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-bottom {
+  border-top-color: $qrybldr-val-error-bg-color;
+  color: $qrybldr-val-error-bg-color;
+  }
+
+.e-tooltip-wrap.e-querybuilder-error .e-tip-content,
+.e-tooltip-wrap.e-querybuilder-error .e-tip-content label {
+  color: $qrybldr-val-error-color;
+  }
+  

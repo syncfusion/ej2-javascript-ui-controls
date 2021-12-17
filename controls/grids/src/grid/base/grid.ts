@@ -686,7 +686,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
      * @default ''
      */
     @Property()
-    public captionTemplate: string;
+    public captionTemplate: string | Object;
 
     /**
      * The Lazy load grouping, allows the Grid to render only the initial level caption rows in collapsed state while grouping.
@@ -2967,7 +2967,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.removeMediaListener();
         this.notify(events.destroy, {});
         this.destroyDependentModules();
-        this.destroyTemplate(['template']);
+        if ((<{ isReact?: boolean }>this).isReact || (<{ isVue?: boolean }>this).isVue) {
+            this.destroyTemplate(['template']);
+        }
         if (hasGridChild) { super.destroy(); }
         this.toolTipObj.destroy();
         const modules: string[] = ['renderModule', 'headerModule', 'contentModule', 'valueFormatterService',
@@ -5905,7 +5907,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private isChildGrid(e: MouseEvent | KeyboardEvent | TouchEvent): boolean {
         const gridElement: Element = parentsUntil((e.target as HTMLElement), 'e-grid');
-        if (gridElement && gridElement.id !== this.element.id) {
+        if ((gridElement && gridElement.id !== this.element.id) || (parentsUntil(e.target as Element, 'e-unboundcelldiv') &&
+            isNullOrUndefined(gridElement))) {
             return true;
         }
         return false;

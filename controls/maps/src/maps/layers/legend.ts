@@ -454,22 +454,25 @@ export class Legend {
                     shapeId, collection['Fill'], strokeWidth, strokeColor, legend.opacity,
                     isNullOrUndefined(shapeBorder.opacity) ? legend.opacity : shapeBorder.opacity, ''
                 );
-                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
+                const legendTextStyle: FontModel = {
+                    fontFamily: legend.textStyle.fontFamily, fontStyle: legend.textStyle.fontStyle,
+                    fontWeight: legend.textStyle.fontWeight, size: legend.textStyle.size, color: legend.textStyle.color, opacity: legend.textStyle.opacity
+                };
+                legendTextStyle.color = (legendTextStyle.color !== null) ? legendTextStyle.color :
                     this.maps.themeStyle.legendTextColor;
-                legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
-                legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                legendTextStyle.fontFamily = map.themeStyle.fontFamily || legendTextStyle.fontFamily;
+                legendTextStyle.size = map.themeStyle.legendFontSize || legendTextStyle.size;
                 if (i === 0) {
                     this.renderLegendBorder();
                 }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
                 const legendRectSize : number = collection['Rect']['x'] + collection['Rect']['width'];
                 if (legendRectSize > this.legendBorderRect.width) {
-                    const trimmedText : string = this.legendTextTrim(this.legendBorderRect.width, legendText,
-                                                                     legend.textStyle, legendRectSize);
+                    const trimmedText: string = this.legendTextTrim(this.legendBorderRect.width, legendText, legendTextStyle, legendRectSize);
                     legendText = trimmedText;
                 }
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                renderTextElement(textOptions, legendTextStyle, legendTextStyle.color, legendElement);
                 this.legendGroup.appendChild(legendElement);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (i === ((<any[]>this.totalPages[page]['Collection']).length - 1)) {
@@ -546,7 +549,7 @@ export class Legend {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const collection: any[] = this.maps.legendModule.legendCollection;
         let length: number;
-        const multiSelectEnable: boolean = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
+        const multiSelectEnable: boolean = !isNullOrUndefined(collection[0]['data'][0]['layerIndex']) ? this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect : false;
         let selectLength: number = 0;
         let interactProcess: boolean = true;
         const idIndex: number = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
@@ -1194,7 +1197,10 @@ export class Legend {
         const map: Maps = this.maps;
         const legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
         const legendTitle: string = legend.title.text;
-        const textStyle: FontModel = legend.titleStyle;
+        const textStyle: FontModel = {
+            fontFamily: legend.titleStyle.fontFamily, fontStyle: legend.titleStyle.fontStyle,
+            fontWeight: legend.titleStyle.fontWeight, size: legend.titleStyle.size, color: legend.titleStyle.color, opacity: legend.titleStyle.opacity
+        };
         let textOptions: TextOption;
         const spacing: number = 10;
         const trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
@@ -1221,6 +1227,7 @@ export class Legend {
         map.svgObject.appendChild(this.legendGroup);
         if (legendTitle) {
             textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTitleFontColor;
+            textStyle.fontFamily = !isNullOrUndefined(textStyle.fontFamily) ? textStyle.fontFamily : this.maps.themeStyle.fontFamily;
             textOptions = new TextOption(
                 map.element.id + '_LegendTitle',
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
@@ -1323,7 +1330,7 @@ export class Legend {
                     }
                     const text: string = isNullOrUndefined(data[field]) ? '' : data[field];
                     const legendFill: string = !isNullOrUndefined(marker.colorValuePath) ? data[marker.colorValuePath] : marker.fill;
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const newData: any[] = [];
                     if (this.maps.legendSettings.removeDuplicateLegend) {
                         newData.push(this.getMarkerLegendData(layerIndex, text, legendFill));
@@ -1333,23 +1340,26 @@ export class Legend {
                             shape: !isNullOrUndefined(marker.shapeValuePath) ? data[marker.shapeValuePath] : marker.shape});
                         this.getOverallLegendItemsCollection(text, legendFill, newData, showLegend);
                     }
-                    
                 }
             });
         });
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getMarkerLegendData(layerIndex: number, text: string, legendFill: string): any[] {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const legendData: any[] = [];
         this.maps.layers[layerIndex].markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markerData: any[] = <any[]>markerSettings.dataSource;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             Array.prototype.forEach.call(markerData, (data: any, dataIndex: number) => {
-                let marker: MarkerSettingsModel = this.maps.layers[layerIndex].markerSettings[markerIndex];
-                if ((text === data[marker.legendText] || text === '') && legendFill == data[marker.colorValuePath]) {
+                const marker: MarkerSettingsModel = this.maps.layers[layerIndex].markerSettings[markerIndex];
+                if ((text === data[marker.legendText] || text === '') && legendFill === data[marker.colorValuePath]) {
                     legendData.push({layerIndex : layerIndex, markerIndex: markerIndex, dataIndex: dataIndex, value: legendFill, name: text,
                         shape: !isNullOrUndefined(marker.shapeValuePath) ? data[marker.shapeValuePath] : marker.shape});
                 }
-            })
-        })
+            });
+        });
         return legendData;
     }
 
@@ -1660,7 +1670,7 @@ export class Legend {
         this.maps.on(click, this.legendClick, this);
     }
 
-    private markerToggleSelection(mapElement: Element, layerIndex: number, markerIndex: number, legendIndex: number) {
+    private markerToggleSelection(mapElement: Element, layerIndex: number, markerIndex: number, legendIndex: number): void {
         mapElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
         mapElement.setAttribute('stroke', this.maps.layers[layerIndex].markerSettings[markerIndex].border.color);
         mapElement.setAttribute('fill-opacity', (this.maps.layers[layerIndex].markerSettings[markerIndex].opacity).toString());
@@ -1670,7 +1680,7 @@ export class Legend {
             this.maps.layers[layerIndex].markerSettings[markerIndex].border.opacity).toString());
     }
 
-    private bubbleToggleSelection(mapElement: Element, layerIndex: number, bubbleIndex: number, legendIndex: number) {
+    private bubbleToggleSelection(mapElement: Element, layerIndex: number, bubbleIndex: number, legendIndex: number): void {
         mapElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
         mapElement.setAttribute('stroke', this.maps.layers[layerIndex].bubbleSettings[bubbleIndex].border.color);
         mapElement.setAttribute('fill-opacity', (this.maps.layers[layerIndex].bubbleSettings[bubbleIndex].opacity).toString());
@@ -1707,14 +1717,14 @@ export class Legend {
                                 '_BubbleIndex_' + j + '_dataIndex_' + shape['dataIndex'], this.maps.element.id) : querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
                                 '_MarkerIndex_' + j + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
                             if (!isNullOrUndefined(shape['shape']) && shape['shape'] === 'Balloon') {
-                                    mapElement = mapElement.children[0];
+                                mapElement = mapElement.children[0];
                             }
                             if (isVisible && mapElement !== null) {
                                 if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
                                     mapElement.setAttribute('fill', this.maps.layers[k].shapeSettings.fill);
                                     mapElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
                                     mapElement.setAttribute('fill-opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
-                                    mapElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                    mapElement.setAttribute('stroke-width', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.width) ? 0 : this.maps.layers[k].shapeSettings.border.width).toString());
                                     mapElement.setAttribute('stroke-opacity', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.opacity) ?
                                         this.maps.layers[k].shapeSettings.opacity :
                                         this.maps.layers[k].shapeSettings.border.opacity).toString());
@@ -1772,7 +1782,7 @@ export class Legend {
                                     layerElement.setAttribute('fill', this.maps.layers[j].shapeSettings.fill);
                                     layerElement.setAttribute('fill-opacity', (this.maps.layers[j].shapeSettings.opacity).toString());
                                     layerElement.setAttribute('stroke', this.maps.layers[j].shapeSettings.border.color);
-                                    layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
+                                    layerElement.setAttribute('stroke-width', (isNullOrUndefined(this.maps.layers[j].shapeSettings.border.width) ? 0 : this.maps.layers[j].shapeSettings.border.width).toString());
                                     layerElement.setAttribute('stroke-opacity', (isNullOrUndefined(this.maps.layers[j].shapeSettings.border.opacity) ?
                                         this.maps.layers[j].shapeSettings.opacity :
                                         this.maps.layers[j].shapeSettings.border.opacity).toString());
@@ -1800,7 +1810,7 @@ export class Legend {
                                 layerElement.setAttribute('stroke-opacity', (isNullOrUndefined(this.maps.layers[j].shapeSettings.border.opacity) ?
                                     this.maps.layers[j].shapeSettings.opacity :
                                     this.maps.layers[j].shapeSettings.border.opacity).toString());
-                                layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
+                                layerElement.setAttribute('stroke-width', (isNullOrUndefined(this.maps.layers[j].shapeSettings.border.width) ? 0 : this.maps.layers[j].shapeSettings.border.width).toString());
                                 layerElement.setAttribute('fill-opacity', (this.maps.layers[j].shapeSettings.opacity).toString());
                                 layerElement.setAttribute('stroke', this.maps.layers[j].shapeSettings.border.color);
                                 if (targetEle !== null) {
@@ -1841,7 +1851,7 @@ export class Legend {
                                 if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
                                     LegendInteractive.setAttribute('fill', this.maps.layers[k].shapeSettings.fill);
                                     LegendInteractive.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
-                                    LegendInteractive.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                    LegendInteractive.setAttribute('stroke-width', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.width) ? 0 : this.maps.layers[k].shapeSettings.border.width).toString());
                                     LegendInteractive.setAttribute('stroke-opacity', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.opacity) ?
                                         this.maps.layers[k].shapeSettings.opacity :
                                         this.maps.layers[k].shapeSettings.border.opacity).toString());
@@ -1900,7 +1910,7 @@ export class Legend {
                                     mapLegendElement.setAttribute('fill', this.maps.layers[0].shapeSettings.fill);
                                     mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
                                     mapLegendElement.setAttribute('fill-opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
-                                    mapLegendElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                    mapLegendElement.setAttribute('stroke-width', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.width) ? 0 : this.maps.layers[k].shapeSettings.border.width).toString());
                                     mapLegendElement.setAttribute('stroke-opacity', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.opacity) ?
                                         this.maps.layers[k].shapeSettings.opacity :
                                         this.maps.layers[k].shapeSettings.border.opacity).toString());
@@ -1925,7 +1935,7 @@ export class Legend {
                                     this.maps.toggledShapeElementId.splice(toggledShapeIdIndex, 1);
                                 }
                                 mapLegendElement.setAttribute('fill-opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
-                                mapLegendElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                mapLegendElement.setAttribute('stroke-width', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.width) ? 0 : this.maps.layers[k].shapeSettings.border.width).toString());
                                 mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
                                 mapLegendElement.setAttribute('stroke-opacity', (isNullOrUndefined(this.maps.layers[k].shapeSettings.border.opacity) ?
                                     this.maps.layers[k].shapeSettings.opacity : this.maps.layers[k].shapeSettings.border.opacity).toString());

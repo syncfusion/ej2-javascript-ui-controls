@@ -33,6 +33,9 @@ export class TimelineYear extends Year {
             tr.appendChild(leftHeaderCells);
             leftHeaderCells.appendChild(this.renderResourceHeader(cls.LEFT_INDENT_WRAP_CLASS));
         }
+        const isHorizontal: boolean = this.parent.activeViewOptions.orientation === 'Horizontal';
+        const isGroup: boolean = this.parent.activeViewOptions.group.resources.length > 0;
+        this.isInverseTableSelect = isHorizontal && !isGroup ? false : true;
         const td: HTMLElement = createElement('td');
         tr.appendChild(td);
         const container: HTMLElement = createElement('div', { className: cls.DATE_HEADER_CONTAINER_CLASS });
@@ -303,10 +306,10 @@ export class TimelineYear extends Year {
                 });
                 addClass([td], classList);
                 td.setAttribute('data-group-index', groupIndex.toString());
-                this.renderCellTemplate({ date: date, type: 'workCells', groupIndex: groupIndex }, td);
+                this.renderCellTemplate({ date: date, type: 'resourceGroupCells', groupIndex: groupIndex }, td);
                 this.wireEvents(td, 'cell');
                 tr.appendChild(td);
-                this.parent.trigger(event.renderCell, { elementType: 'workCells', element: td, date: date });
+                this.parent.trigger(event.renderCell, { elementType: 'resourceGroupCells', element: td, date: date });
             }
         }
         if (this.parent.activeViewOptions.orientation === 'Vertical') {

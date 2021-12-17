@@ -122,6 +122,12 @@ export class ContextMenu {
             position = this.item;
             data = extend({}, {}, this.rowData.taskData, true);
             taskfields = this.parent.taskFields;
+            if (data[taskfields.startDate]) {
+                this.parent.setRecordValue(taskfields.startDate, this.rowData.ganttProperties.startDate, data, true);
+            }
+            if (data[taskfields.endDate]) {
+                this.parent.setRecordValue(taskfields.endDate, this.rowData.ganttProperties.endDate, data, true);
+            }
             if (!isNullOrUndefined(taskfields.dependency)) {
                 data[taskfields.dependency] = null;
             }
@@ -265,6 +271,11 @@ export class ContextMenu {
         const target: Element = args.event ? args.event.target as Element :
             !this.parent.focusModule ? this.parent.focusModule.getActiveElement() :
                 this.parent.ganttChartModule.targetElement;
+        // Closed edited cell before opening context menu
+        // eslint-disable-next-line
+        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit && target.parentElement.classList.contains('e-row')) {
+            this.parent.treeGrid.closeEdit();
+        }
         if (!isNullOrUndefined(args.element) && args.element.id === this.parent.element.id + '_contextmenu') {
             this.clickedPosition = getValue('event', args).clientX;
         }
@@ -313,7 +324,12 @@ export class ContextMenu {
             for (const item of args.items) {
                 // let target: EventTarget = target;
                 if (!item.separator) {
-                    this.updateItemStatus(item, target, rowIndex);
+                    if ((target.classList.contains('e-gantt-unscheduled-taskbar')) && ((item.text === this.getLocale('splitTask')) || (item.text === this.getLocale('mergeTask')))) {
+                            this.hideItems.push(item.text);
+                        }
+                        else {
+                            this.updateItemStatus(item, target, rowIndex);
+                        }
                 }
             }
             args.rowData = this.rowData;
@@ -422,24 +438,32 @@ export class ContextMenu {
                 break;
             case 'Indent':
             {
-                const index: number = this.parent.selectedRowIndex;
-                const isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
-                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-                const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
-                if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
-                        this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
-                    this.updateItemVisibility(item.text);
-                }
-                break;
+               if (!this.parent.allowSelection) {
+                   this.hideItems.push(item.text);
+               } else {
+                   const index: number = this.parent.selectedRowIndex;
+                   const isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                   this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                   const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+                   if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
+                       this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
+                       this.updateItemVisibility(item.text);
+                   }
+               }
+               break;
             }
             case 'Outdent':
             {
-                const ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
-                const isSelect: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
-                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-                if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
+                if (!this.parent.allowSelection) {
+                    this.hideItems.push(item.text);
+                } else {
+                    const ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
+                    const isSelect: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                    this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                    if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
                         this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[ind].level === 0) {
-                    this.updateItemVisibility(item.text);
+                        this.updateItemVisibility(item.text);
+                    }
                 }
                 break;
             }
@@ -496,7 +520,7 @@ export class ContextMenu {
     }
     private contextMenuOpen(args: CMenuOpenEventArgs): void {
         this.isOpen = true;
-        const firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide)')[0];
+        const firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide):not(.e-disabled)')[0];
         addClass([firstMenuItem], 'e-focused');
     }
 

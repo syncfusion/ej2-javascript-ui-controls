@@ -1,0 +1,14 @@
+@include export-module('dropdownlist-fluent-icons') {
+  .e-ddl .e-search-icon::before {
+    content: '\e754';
+  }
+
+  .e-ddl .e-back-icon::before {
+    content: '\e773';
+  }
+
+  .e-ddl.e-input-group.e-control-wrapper .e-ddl-icon::before {
+    content: '\e7c3';
+    font-family: 'e-icons';
+  }
+}

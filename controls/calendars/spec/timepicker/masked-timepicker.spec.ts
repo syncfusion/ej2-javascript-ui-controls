@@ -579,5 +579,113 @@ describe('Timepicker', () => {
         //     expect(timepicker.value).toBe(null);
         // });
 });
-
+describe('EJ2-54456-When enabling mask support, the change event will not be triggered', () => {
+    let timepicker: any;
+    let maskedDateTime: any;
+    let keyEventArgs: any = {
+        preventDefault: (): void => { /** NO Code */ },
+        stopPropagation:(): void=>{},
+        action: 'ArrowUp',
+        code: 'ArrowUp',
+        key: 'ArrowUp'
+    };
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+    });
+    afterAll(() => {
+        if (timepicker) {
+            timepicker.destroy();
+        }
+        document.body.innerHTML = '';
+        maskedDateTime = new MaskedDateTime();
+        maskedDateTime.destroy();
+    });
+    it('Testing change event ', () => { 
+        let inputEle: HTMLElement = createElement('input', { id: 'timepicker' });
+        document.body.appendChild(inputEle);
+        timepicker = new TimePicker({enableMask: true , format: 'h:mm a', change: function(args){
+            expect(args.text === timepicker.inputElement.value).toBe(true);
+        },
+     });
+        timepicker.appendTo('#timepicker');
+        timepicker.focusIn();
+        expect(timepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(true);
+         timepicker.liCollections[0].click();
+        expect(timepicker.liCollections[0].classList.contains('e-active')).toBe(true);
+        expect(timepicker.inputElement.value === "12:00 AM").toBe(true);
+        timepicker.element.selectionStart = 0;
+        timepicker.element.selectionEnd = 2;
+        keyEventArgs.action = 'shiftTab';
+        timepicker.inputHandler(keyEventArgs);
+        timepicker.inputBlurHandler();
+        expect(timepicker.inputElement.value === "1:00 AM").toBe(true);
+        timepicker.element.selectionStart = 0;
+        timepicker.element.selectionEnd = 2;
+        keyEventArgs.key = 'ArrowDown';
+        timepicker.inputHandler(keyEventArgs);
+        timepicker.inputBlurHandler();
+        expect(timepicker.inputElement.value === "12:00 AM").toBe(true);
+      });
+    });
+      describe('EJ2-54761', () => {
+        let timepicker: any;
+        let maskedDateTime: any;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            stopPropagation:(): void=>{}
+        };
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+            maskedDateTime = new MaskedDateTime();
+            maskedDateTime.destroy();
+        });
+        it('Mask support in TimePicker is not working properly when typing value starts with 0', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'timepicker' });
+            document.body.appendChild(inputEle);
+            timepicker = new TimePicker({enableMask: true , format: "HH:mm a"});
+            timepicker.appendTo('#timepicker');
+            timepicker.focusIn();
+            expect(timepicker.element.value).toBe('hour:minute AM');
+            timepicker.element.selectionStart= 0;
+            timepicker.element.selectionEnd= 4 
+            timepicker.mouseUpHandler(mouseEventArgs);
+            timepicker.element.value = '0:minute AM';
+            timepicker.element.selectionStart = 1;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('00:minute AM');
+            expect(timepicker.value).toBe(null);
+            timepicker.element.selectionStart = 0;
+            timepicker.element.selectionEnd = 1;
+            timepicker.element.value = '1:minute AM';
+            timepicker.element.selectionStart = 1;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:minute AM');
+            expect(timepicker.element.selectionStart).toBe(3);
+            expect(timepicker.element.selectionEnd).toBe(9);
+            timepicker.element.selectionStart = 3;
+            timepicker.element.selectionEnd = 9;
+            timepicker.element.value = '01:2 AM';
+            timepicker.element.selectionStart = 4;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:02 AM');
+            expect(timepicker.value).toBe(null);
+            timepicker.element.selectionStart = 3;
+            timepicker.element.selectionEnd = 5;
+            timepicker.element.value = '01:3 AM';
+            timepicker.element.selectionStart = 4;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:23 AM');
+            expect(timepicker.element.selectionStart).toBe(6);
+            expect(timepicker.element.selectionEnd).toBe(8);
+        });
+    });
 });

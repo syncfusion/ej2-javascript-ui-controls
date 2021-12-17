@@ -257,4 +257,23 @@ export interface ViewsModel {
      */
     headerRows?: HeaderRowsModel[];
 
+    /**
+     * This property customizes the number of weeks that are shown in month view. By default, it shows all weeks in the current month.
+     *  Use displayDate property to customize the starting week of month.
+     * {% codeBlock src='schedule/numberOfWeeks/index.md' %}{% endcodeBlock %}
+     *
+     * @default 0
+     * @aspType int
+     */
+    numberOfWeeks?: number;
+
+    /**
+     * Specifies the starting week date at an initial rendering of month view. This property is only applicable for month view.
+     *  If this property value is not set, then the month view will be rendered from the first week of the month.
+     * {% codeBlock src='schedule/displayDate/index.md' %}{% endcodeBlock %}
+     *
+     * @default null
+     */
+    displayDate?: Date;
+
 }

@@ -25,7 +25,6 @@ export class SheetTabs {
     private addBtnRipple: Function;
     private aggregateDropDown: DropDownButton;
     private aggregateContent: string = '';
-    private isSelectCancel: boolean = false;
     private selaggregateCnt: string = 'Sum';
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -78,22 +77,29 @@ export class SheetTabs {
         this.dropDownInstance.createElement = this.parent.createElement;
         this.dropDownInstance.appendTo(ddb);
         const sheetTab: HTMLElement = this.parent.createElement('div', { className: 'e-sheet-tab' });
+        let cancelSelect: boolean;
         this.tabInstance = new Tab({
             selectedItem: this.parent.activeSheetIndex,
             overflowMode: 'Scrollable',
             items: items.tabItems,
             scrollStep: 250,
             selecting: (args: SelectingEventArgs): void => {
-                const beginEventArgs: { previousSheetIndex: number, currentSheetIndex: number, cancel: boolean } = {
-                    currentSheetIndex: args.selectingIndex, previousSheetIndex: args.selectedIndex, cancel: false
-                };
-                if (!this.isSelectCancel) {
+                if (args.selectingIndex === args.selectedIndex) { return; }
+                if (cancelSelect) {
+                    cancelSelect = false;
+                } else {
+                    const beginEventArgs: { previousSheetIndex: number, currentSheetIndex: number, cancel: boolean } = { currentSheetIndex:
+                        args.selectingIndex, previousSheetIndex: args.selectedIndex, cancel: false };
                     this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'gotoSheet' });
+                    cancelSelect = beginEventArgs.cancel;
                 }
-                this.isSelectCancel = beginEventArgs.cancel;
             },
             selected: (args: SelectEventArgs): void => {
                 if (args.selectedIndex === args.previousIndex) { return; }
+                if (cancelSelect) {
+                    this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
+                    focus(this.parent.element); return;
+                }
                 this.parent.notify(removeDesignChart, {});
                 if (this.parent.isEdit) {
                     const selection: Selection = window.getSelection();
@@ -106,24 +112,18 @@ export class SheetTabs {
                     }
                     if (!formula) { this.parent.endEdit(); }
                 }
-                if (this.isSelectCancel) {
-                    this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
-                    focus(this.parent.element);
-                } else {
-                    this.parent.activeSheetIndex = args.selectedIndex;
-                    this.parent.dataBind();
-                    this.updateDropDownItems(args.selectedIndex, args.previousIndex);
-                    focus(this.parent.element);
-                    const completeEventArgs: { previousSheetIndex: number, currentSheetIndex: number } = {
-                        previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex
-                    };
-                    this.parent.notify(completeAction, { eventArgs: completeEventArgs, action: 'gotoSheet' });
-                    const eventArgs: { action: string, sheetID: string } = {
-                        action: 'registerGridInCalc',
-                        sheetID: (args.selectedIndex + 1).toString()
-                    };
-                    this.parent.notify(workbookFormulaOperation, eventArgs);
-                }
+                this.parent.activeSheetIndex = args.selectedIndex;
+                this.parent.dataBind();
+                this.updateDropDownItems(args.selectedIndex, args.previousIndex);
+                focus(this.parent.element);
+                const eventArgs: { action: string, sheetID: string } = {
+                    action: 'registerGridInCalc',
+                    sheetID: (args.selectedIndex + 1).toString()
+                };
+                this.parent.notify(workbookFormulaOperation, eventArgs);
+                this.parent.notify(
+                    completeAction, { eventArgs: { previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex },
+                        action: 'gotoSheet' });
             },
             created: (): void => {
                 const tBarItems: HTMLElement = this.tabInstance.element.querySelector('.e-toolbar-items');
@@ -266,10 +266,10 @@ export class SheetTabs {
         }
         if (this.parent.password.length > 0 || this.parent.isProtected) {
             if (disableItems.indexOf(`${id}_insert_sheet`) > -1) {
-                disableItems.push(`${id}_insert_sheet`)
+                disableItems.push(`${id}_insert_sheet`);
             }
             if (disableItems.indexOf(`${id}_delete_sheet`) > -1) {
-                disableItems.push(`${id}_delete_sheet`)
+                disableItems.push(`${id}_delete_sheet`);
             }
             disableItems.push(`${id}_duplicate`, `${id}_rename`);
         }

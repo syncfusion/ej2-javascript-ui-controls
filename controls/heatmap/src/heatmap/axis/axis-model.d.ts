@@ -54,7 +54,6 @@ export interface AxisModel {
      *
      * @default Category
      * @aspType Syncfusion.EJ2.HeatMap.ValueType
-     * @blazorType Syncfusion.EJ2.HeatMap.ValueType
      * @isEnumeration true
      */
 

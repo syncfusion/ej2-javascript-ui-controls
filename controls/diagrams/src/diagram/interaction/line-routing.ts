@@ -260,7 +260,9 @@ export class LineRouting {
             this.findEdgeBoundary(targetPortID, targetLeft, targetRight, targetTop, targetBottom, false);
             this.startGrid.totalDistance = 0; this.startGrid.previousDistance = 0;
             this.intermediatePoints.push({ x: this.startGrid.gridX, y: this.startGrid.gridY }); this.startArray.push(this.startGrid);
-            this.checkObstacles(connector,diagram, targetLeft, targetRight, targetTop, targetBottom);
+            if (connector && targetLeft && targetRight && targetTop && targetBottom) {
+                this.checkObstacles(connector, diagram, targetLeft, targetRight, targetTop, targetBottom);
+            }
             // eslint-disable-next-line no-labels
             renderPathElement: while (this.startArray.length > 0) {
                 let startGridNode: VirtualBoundaries = this.startArray.pop();
@@ -487,21 +489,23 @@ export class LineRouting {
             target = target.parent;
         }
         this.intermediatePoints.reverse();
-        if (this.intermediatePoints[0].x === this.intermediatePoints[1].x) {
-            if (this.intermediatePoints[0].y < this.intermediatePoints[1].y) {
-                distance = this.neigbour(this.startGrid, 'bottom', undefined, true);
-                this.intermediatePoints[0].y += distance - 1;
+        if (this.intermediatePoints.length >= 1) {
+            if (this.intermediatePoints[0].x === this.intermediatePoints[1].x) {
+                if (this.intermediatePoints[0].y < this.intermediatePoints[1].y) {
+                    distance = this.neigbour(this.startGrid, 'bottom', undefined, true);
+                    this.intermediatePoints[0].y += distance - 1;
+                } else {
+                    distance = this.neigbour(this.startGrid, 'top', undefined, true);
+                    this.intermediatePoints[0].y -= distance - 1;
+                }
             } else {
-                distance = this.neigbour(this.startGrid, 'top', undefined, true);
-                this.intermediatePoints[0].y -= distance - 1;
-            }
-        } else {
-            if (this.intermediatePoints[0].x < this.intermediatePoints[1].x) {
-                distance = this.neigbour(this.startGrid, 'right', undefined, true);
-                this.intermediatePoints[0].x += distance - 1;
-            } else {
-                distance = this.neigbour(this.startGrid, 'left', undefined, true);
-                this.intermediatePoints[0].x -= distance - 1;
+                if (this.intermediatePoints[0].x < this.intermediatePoints[1].x) {
+                    distance = this.neigbour(this.startGrid, 'right', undefined, true);
+                    this.intermediatePoints[0].x += distance - 1;
+                } else {
+                    distance = this.neigbour(this.startGrid, 'left', undefined, true);
+                    this.intermediatePoints[0].x -= distance - 1;
+                }
             }
         }
     }
@@ -553,7 +557,7 @@ export class LineRouting {
                         points[j].x = points[j - 1].x -= this.size / 2;
                     }
                     if (((targetPoint.x - points[j + 1].x) > 0) &&
-                            (Math.abs(targetPoint.x - points[j].x) < connector.targetDecorator.width + 1)) {
+                        (Math.abs(targetPoint.x - points[j].x) < connector.targetDecorator.width + 1)) {
                         points[j].x = points[j - 1].x += this.size / 2;
                     }
                     points[j + 1].x = targetPoint.x;
@@ -576,7 +580,7 @@ export class LineRouting {
                         points[j].y = points[j - 1].y -= this.size / 2;
                     }
                     if (((targetPoint.y - points[j + 1].y) > 0) &&
-                            (Math.abs(targetPoint.y - points[j].y) < connector.targetDecorator.width + 1)) {
+                        (Math.abs(targetPoint.y - points[j].y) < connector.targetDecorator.width + 1)) {
                         points[j].y = points[j - 1].y += this.size / 2;
                     }
                     points[j + 1].y = targetPoint.y;
@@ -778,9 +782,9 @@ export class LineRouting {
     private isWalkable(x: number, y: number, isparent?: boolean): boolean {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
             const grid: VirtualBoundaries = this.gridCollection[x][y];
-            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId||( this.considerWalkable.indexOf(grid) !== -1))) &&
-                    (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
-                        this.considerWalkable.indexOf(grid) !== -1)))) {
+            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId || (this.considerWalkable.indexOf(grid) !== -1))) &&
+                (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
+                    this.considerWalkable.indexOf(grid) !== -1)))) {
                 if ((isparent && !grid.parent) || !isparent) {
                     return true;
                 }
@@ -886,5 +890,5 @@ export interface VirtualBoundaries {
     afterDistance?: number;
     totalDistance?: number;
     parent?: VirtualBoundaries;
-    parentNodeId ?: string;
+    parentNodeId?: string;
 }

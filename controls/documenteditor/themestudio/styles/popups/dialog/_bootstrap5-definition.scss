@@ -1,0 +1,87 @@
+//Layout Variables Start
+$dialog-close-button-left: 0 !default;
+$dialog-header-border: 1px solid $border-light !default;
+$dialog-close-icon-font-size: 16px !default;
+$dialog-bigger-close-icon-font-size: 20px !default;
+$footer-content-border-radius: 0 !default;
+$header-content-border-radius: 0 !default;
+$dialog-border-radius: 6px !default;
+$dialog-border: 1px solid $border-light !default;
+$dialog-content-font-size: $text-sm !default;
+$dialog-header-line-height: $leading-tight !default;
+$dialog-content-line-height: $leading-normal !default;
+$dialog-content-padding-top: 12px !default;
+$dialog-bigger-content-padding-top: 16px !default;
+$dialog-header-icon-hover-border-radius: 50% !default;
+$dialog-close-button-height: 20px !default;
+$dialog-close-button-width: 20px !default;
+$dialog-header-content-padding: 12px 14px !default;
+$dialog-content-padding: 12px !default;
+$dialog-footer-content-padding: 12px !default;
+$dialog-footer-content-border-top: 1px solid $border-light !default;
+$dialog-bigger-header-content-padding: 16px !default;
+$dialog-bigger-content-padding: 16px !default;
+$dialog-bigger-footer-content-padding: 16px !default;
+$dialog-bigger-footer-button-margin-left: 12px !default;
+$dialog-footer-button-margin-left: 8px !default;
+$dialog-bigger-footer-button-margin-right: 12px !default;
+$dialog-footer-button-margin-right: 8px !default;
+$dialog-close-icon-margin-left: 0 !default;
+$dialog-close-icon-width: 12px !default;
+$dialog-bigger-close-icon-height: 14px !default;
+$dialog-bigger-close-icon-width: 14px !default;
+$dialog-close-icon-top: 0 !default;
+$dialog-headericon-bottom: 5px !default;
+$dialog-bigger-header-content-font-size: $text-xl !default;
+$dialog-bigger-content-font-size: $text-base !default;
+$dialog-bigger-close-icon-top: 0 !default;
+$dialog-bigger-close-icon-margin-left: 0 !default;
+$dialog-bigger-close-icon-margin-right: 0 !default;
+$dialog-bigger-close-button-bottom: 7px !default;
+$dialog-bigger-close-button-left: 0 !default;
+$dialog-bigger-close-button-height: 20px !default;
+$dialog-bigger-close-button-width: 20px !default;
+$dialog-resize-handler-width: 15px;
+$dialog-resize-handler-height: 15px;
+$dialog-resize-handler-position: 0;
+//Layout Variables End
+
+//Theme Variables Start
+$dialog-header-font-size: $text-base !default;
+$dialog-device-content-font-size: $text-base !default;
+$dialog-bg-color: $content-bg-color !default;
+$dialog-icon-color: $icon-color !default;
+$dialog-active-icon-color: $icon-color-pressed !default;
+$dialog-hover-icon-color: $icon-color-hover !default;
+$dialog-icon-bg-normal: $transparent !default;
+$dialog-header-bg-color: $transparent !default;
+$dialog-content-bg-color: $content-bg-color !default;
+$dialog-footer-bg-color: $transparent !default;
+$dialog-shadow-color: $shadow-lg !default;
+$dialog-header-font-weight: $font-weight-medium !default;
+$dialog-header-font-color: $content-text-color !default;
+$dialog-content-font-weight: $font-weight-normal !default;
+$dialog-content-font-color: $content-text-color !default;
+$dialog-closeicon-btn-hover-color: $transparent !default;
+$dialog-closeicon-btn-active-color: $transparent !default;
+$dialog-btn-border-color: $transparent !default;
+$dialog-btn-bg-color: $transparent !default;
+$dialog-active-btn-border-color: $transparent !default;
+$dialog-hover-focus-btn-bg-color: $transparent !default;
+$dialog-active-btn-bg-color: transparent !default;
+$dialog-close-icon-normal-opacity: initial !default;
+$dialog-close-icon-active-opacity: initial !default;
+$dialog-overlay-bg-color: $overlay-bg-color !default;
+$dialog-overlay-opacity: 1 !default;
+//Theme Variables End
+
+$dialog-footer-btn-bg-color: $primary !default;
+$dialog-footer-btn-color: $primary-text-color !default;
+$dialog-footer-btn-border-color: $primary-border-color !default;
+$dialog-footer-hover-btn-color: $primary-bg-color-hover !default;
+
+$dialog-footer-flat-btn-bg-color: $secondary-bg-color !default;
+$dialog-footer-flat-hover-btn-bg-color: $secondary-bg-color-hover !default;
+$dialog-footer-flat-btn-border-color: $secondary-bg-color !default;
+$dialog-footer-flat-btn-content-color: $primary-text-color !default;
+$dialog-enable-resize-padding-bottom: 15px !default;

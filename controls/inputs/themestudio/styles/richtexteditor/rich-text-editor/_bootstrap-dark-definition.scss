@@ -1,0 +1,187 @@
+//default
+$rte-border-size: 1px !default;
+$rte-2px-border-size: 2px !default;
+$rte-border-type: solid !default;
+
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
+$rte-split-btn-line-height: 39px !default;
+$rte-big-split-btn-line-height: 38px !default;
+$skin-name: 'bootstrap' !default;
+$rte-border-color: $grey-99 !default;
+$rte-full-screen-bg: $grey-white !default;
+$rte-content-bg: $grey-base !default;
+$rte-content-font-color: $grey-dark-font !default;
+$rte-item-color: $grey-dark-font !default;
+$rte-icons-color: $grey-dark-font !default;
+
+$rte-big-quick-item-btn-width: 39px !default;
+$rte-quick-item-btn-width: 27px !default;
+$rte-big-quick-item-btn-height: 34px !default;
+$rte-quick-item-btn-height: 26px !default;
+$rte-big-quick-item-padding: 0 !default;
+$rte-quick-item-padding: 0 !default;
+$rte-quick-item-icon-min-width: 25px !default;
+$rte-big-quick-item-line-height: normal !default;
+$rte-quick-item-line-height: 20px !default;
+$rte-quick-item-active-bg: rgba($grey-base, .12) !default;
+$rte-quick-item-active-font-color: $grey-dark-font !default;
+$rte-quick-item-border: $rte-border-size solid transparent !default;
+$rte-quick-item-hover-border-color: $grey-8c !default;
+$rte-quick-item-active-border-color: $grey-8c !default;
+
+$rte-big-quick-drop-btn-line-height: 33px !default;
+$rte-quick-drop-btn-line-height: 24px !default;
+$rte-big-quick-drop-btn-margin: 4px 0 !default;
+$rte-quick-drop-btn-margin: 4px 0 !default;
+$rte-big-quick-drop-btn-padding: 0 !default;
+$rte-quick-drop-btn-padding: 0 !default;
+$rte-big-quick-drop-btn-icon-size: 16px !default;
+$rte-quick-drop-btn-icon-size: 14px !default;
+$rte-big-quick-drop-btn-caret-icon-size: 10px !default;
+$rte-quick-drop-btn-caret-icon-size: 12px !default;
+$rte-big-quick-drop-btn-caret-font-size: 11px !default;
+$rte-quick-drop-btn-caret-font-size: 10px !default;
+$rte-quick-drop-btn-border-color: $grey-white !default;
+$rte-quick-drop-btn-hover-border-color: $grey-8c !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
+
+$rte-quick-pop-border: 0 !default;
+$rte-quick-tb-border: 1px solid $grey-99 !default;
+$rte-quick-pop-bg: $grey !default;
+$rte-quick-vr-line-color: rgba($grey-base, .05) !default;
+$rte-quick-pop-shadow: 0 2px 6px rgba($grey-base, .26) !default;
+$rte-quick-pop-item-focus-bg: rgba($grey-base, .12) !default;
+$rte-quick-tb-btn-hover: rgba($grey-base, .12) !default;
+$rte-mob-drop-down-pop-shadow: rgba($grey-base, .12) !default;
+
+$rte-big-tb-items-margin-left: 3px !default;
+$rte-tb-items-margin-left: 6px !default;
+$rte-big-tb-items-padding-left: 3px !default;
+$rte-tb-items-padding-left: 6px !default;
+$rte-big-active-tb-item-btn-padding: 0 6px !default;
+$rte-active-tb-item-btn-padding: 0 1.5px !default;
+$rte-tb-item-active-bg: rgba($grey-base, .12) !default;
+$rte-tb-active-font-color: $grey-dark-font !default;
+$rte-tb-item-active-border: $rte-border-size $rte-border-type $grey-8c !default;
+$rte-expand-tb-border-bottom: $rte-border-size $rte-border-type $grey-99 !default;
+$rte-color-picker-active-bg: inherit !default;
+$rte-drop-btn-active-bg: $grey-8c !default;
+$rte-drop-btn-active-color: $grey-dark-font !default;
+$rte-drop-btn-active-border-color: $grey-8c !default;
+$rte-split-btn-active-hover-font-color: $grey-dark-font !default;
+$font-weight: 500 !default;
+$rte-table-popup-bdr-radius: 0 !default;
+
+$rte-split-btn-color: $grey-dark-font !default;
+$rte-split-btn-active-color: $grey-dark-font !default;
+$rte-split-btn-hover-bg: none !default;
+$rte-split-btn-active-bg: none !default;
+$rte-split-btn-span-hover-bg: $grey-dark !default;
+$rte-split-btn-span-focus-bg: $grey-dark !default;
+$rte-split-btn-span-active-bg: $grey-dark !default;
+$rte-split-btn-bar-bg: $grey-ad !default;
+$rte-split-btn-active-bar-bg: $grey-ad !default;
+$rte-split-btn-bar-size: 1px !default;
+$rte-split-btn-active-border: 1px solid $grey-ad !default;
+$rte-split-btn-active-color-icon-line-height: 30px !default;
+$rte-big-split-btn-active-color-icon-line-height: 34px !default;
+
+$rte-link-valid-color: #f00 !default;
+$rte-img-popup-color: #000 !default;
+$rte-img-border-color: #ccc !default;
+$rte-img-popup-border: 1px solid $rte-img-border-color !default;
+$rte-img-popup-box-shadow: 0 2px 3px 1px rgba($rte-img-popup-color, .21) !default;
+$rte-upload-drag-border-clr: $grey-99 !default;
+$rte-img-header-clr: $grey-light-font !default;
+$rte-drop-text-clr: $grey-ad !default;
+$rte-default-character-count-color: #f0f0f0 !default;
+$rte-warning-character-count-color: #ffb74d !default;
+$rte-error-character-count-color: #c62828 !default;
+$rte-img-border: solid 2px $brand-primary !default;
+$rte-font-family: $font-family !default;
+$rte-content-color: $rte-content-font-color !default;
+$rte-content-blockquote-border-left-color: solid 2px $rte-content-font-color !default;
+$rte-dropdown-selection-bgcolor: $brand-primary !default;
+$rte-format-btn-min-width: 75px !default;
+$rte-font-name-btn-min-width: 67px !default;
+$rte-font-size-btn-min-width: 36px !default;
+$rte-drop-btn-padding-left: 9px !default;
+$rte-drop-btn-padding-right: 3.5px !default;
+$rte-drop-btn-action-padding-left: 8px !default;
+$rte-drop-btn-action-padding-right: 2.5px !default;
+$rte-big-drop-btn-padding-left: 12px !default;
+$rte-big-drop-btn-padding-right: 7px !default;
+$rte-big-drop-btn-action-padding-left: 11px !default;
+$rte-big-drop-btn-action-padding-right: 6px !default;
+$rte-ext-tbar-overlay-icons-color: $grey-dark-font !default;
+$rte-colorpicker-parent-padding: 1px !default;
+$rte-colorpicker-parent-padding-hover: 0 !default;
+$rte-colorpicker-parent-padding-active-hover: 1px !default;
+$rte-overlay-color: #383838 !default;
+$rte-font-icon-width: 30px !default;
+$rte-font-arrow-width: 18px !default;
+$rte-font-arrow-touch-width: 20px !default;
+$rte-font-icon-line-height: 1 !default;
+$rte-colorpicker-padding: 1.5px 0 !default;
+$rte-dropdown-selection-color: $brand-primary-font !default;
+$rte-anchor-color: #2895ff !default;
+$rte-ext-tbar-overlay-dropdown-color: $grey-dark !default;
+$rte-placeholder-line-height: 18px !default;
+$rte-img-resize-back-color: $brand-primary !default;
+$rte-img-resize-color: $brand-primary-font !default;
+$rte-table-header-color: $grey-dark-font !default;
+$rte-table-span-bg-color: $grey-dark !default;
+$rte-table-span-border: 1px solid $grey-cc !default;
+$rte-table-span-active-bg-color: rgba($brand-primary, .2) !default;
+$rte-table-span-active-border-color: lighten($brand-primary, 0%) !default;
+$rte-table-select-border-color: #0478d7 !default;
+$rte-table-popup-bg: $grey-dark !default;
+$rte-table-popup-color: rgb(255, 0, 0) !default;
+$rte-table-popup-box: 0 3px 8px 0 rgba($grey-base, .26) !default;
+$rte-table-border-color: $grey-e6 !default;
+$rte-table-alternate-color: #222 !default;
+$rte-table-header-bg: #303030 !default;
+
+$rte-insert-dialog-label-padding-top: 20px !default;
+$rte-insert-dialog-label-padding-bottom: 20px !default;
+$rte-big-quick-tbar-item-min-height: 34px !default;
+$rte-big-quick-tbar-item-min-width: 39px !default;
+$rte-content-font-size: 14px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
+
+$rte-dropdown-caret-icon-size: 12px !default;
+$rte-big-dropdown-caret-icon-size: 12px !default;
+
+$rte-big-inline-tmp-min-width: 56px;
+$rte-inline-tmp-min-width: 61px;
+$rte-big-inline-tmp-size-min-width: 64px;
+$rte-inline-tmp-size-min-width: 69px;
+$rte-big-inline-tmp-color-min-width: 54px;
+$rte-inline-tmp-color-min-width: 57px;
+
+$rte-resize-handler-width: 15px;
+$rte-resize-handler-height: 15px;
+$rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;
+//enddefault
+
+@include export-module('richtexteditor-bootstrap') {
+  .e-rte-toolbar,
+  .e-rte-toolbar.e-extended-toolbar {
+    .e-toolbar-popup {
+      .e-rte-backgroundcolor-dropdown,
+      .e-rte-fontcolor-dropdown,
+      .e-rte-numberformatlist-dropdown,
+      .e-rte-bulletformatlist-dropdown {
+
+        &.e-active {
+          border-radius: 4px;
+        }
+      }
+    }
+  }
+}

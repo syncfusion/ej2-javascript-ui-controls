@@ -1023,8 +1023,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const focusEle: Element = this.list.querySelector('.' + dropDownListClasses.focus);
         if (this.isSelectFocusItem(focusEle)) {
             this.setSelection(focusEle, e);
-        } else {
-
+        }  else if(!isNullOrUndefined(this.liCollections)) {
             let index: number = e.action === 'down' ? this.activeIndex + 1 : this.activeIndex - 1;
             let startIndex: number = 0;
             if (this.getModuleName() === 'autocomplete') {
@@ -2417,6 +2416,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }) as HTMLSelectElement;
         prepend([this.hiddenElement], this.inputWrapper.container);
         this.validationAttribute(this.element, this.hiddenElement);
+        this.setReadOnly();
         this.setFields();
         this.inputWrapper.container.style.width = formatUnit(this.width);
         this.inputWrapper.container.classList.add('e-ddl');
@@ -2545,6 +2545,8 @@ export class DropDownList extends DropDownBase implements IInput {
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
             this.actionData = this.actionCompleteData;
         } else if (this.allowFiltering && newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
+            this.actionCompleteData = this.getModuleName() === 'combobox' ?
+                { ulElement: null, list: null, isUpdated: false } : this.actionCompleteData;
             this.actionData = this.actionCompleteData;
         }
     }
@@ -2606,6 +2608,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (this.getModuleName() !== 'dropdownlist') {
                     Input.setReadonly(newProp.readonly, this.inputElement as HTMLInputElement);
                 }
+                this.setReadOnly();
                 break;
             case 'cssClass': this.setCssClass(newProp.cssClass, oldProp.cssClass); break;
             case 'enableRtl': this.setEnableRtl(); break;
@@ -2746,6 +2749,14 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
             }
         };
+    }
+    
+    protected setReadOnly(): void {
+        if (this.readonly) {
+            addClass([this.inputWrapper.container], ['e-readonly']);
+        } else {
+            removeClass([this.inputWrapper.container], ['e-readonly']);
+        }
     }
 
     private setCssClass(newClass: string, oldClass: string): void {

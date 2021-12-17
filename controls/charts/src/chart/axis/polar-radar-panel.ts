@@ -114,13 +114,19 @@ export class PolarRadarPanel extends LineBase {
      */
     public measure(): void {
         const chart: Chart = this.chart;
-        chart.verticalAxes.push(<Axis>chart.primaryYAxis);
+        const yAxis : Axis = <Axis>chart.primaryYAxis;
+        yAxis.isRTLEnabled = chart.enableRtl;
+        yAxis.setIsInversedAndOpposedPosition(true);
+        chart.verticalAxes.push(yAxis);
         const row: Row = <Row>chart.rows[0];
-        row.axes[0] = <Axis>chart.primaryYAxis;
+        row.axes[0] = yAxis;
         chart.rows[0] = row;
-        chart.horizontalAxes.push(<Axis>chart.primaryXAxis);
+        const xAxis : Axis = <Axis>chart.primaryXAxis;
+        xAxis.isRTLEnabled = chart.enableRtl;
+        xAxis.setIsInversedAndOpposedPosition(true);
+        chart.horizontalAxes.push(xAxis);
         const column: Column = <Column>chart.columns[0];
-        column.axes[0] = <Axis>chart.primaryXAxis;
+        column.axes[0] = xAxis;
         chart.columns[0] = column;
     }
 
@@ -570,7 +576,7 @@ export class PolarRadarPanel extends LineBase {
                     }
                 }
             }
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, !chart.enableRtl ? textAnchor : textAnchor == 'end' ? 'start' : textAnchor == 'start' ? 'end' : textAnchor, labelText, '', 'central');
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }

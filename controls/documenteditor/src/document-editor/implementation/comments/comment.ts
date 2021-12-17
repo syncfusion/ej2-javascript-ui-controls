@@ -232,7 +232,7 @@ export class CommentReviewPane {
             }
         } else {
             this.owner.showComments = false;
-            this.owner.showRevisions = false;
+            //this.owner.showRevisions = false;
             this.owner.documentHelper.currentSelectedComment = undefined;
             this.owner.documentHelper.currentSelectedRevision = undefined;
             this.owner.notify('reviewPane', {changes: false, comment: false});
@@ -363,7 +363,9 @@ export class CommentReviewPane {
         for (let i: number = 0; i < keys.length; i++) {
             const commentView: CommentView = this.commentPane.comments.get(keys[i]);
             if (this.owner.isReadOnly) {
-                commentView.replyViewTextBox.style.display = 'none';
+                if(!isNullOrUndefined(commentView.replyViewTextBox)) {
+                    commentView.replyViewTextBox.style.display = 'none';
+                }
                 commentView.menuBar.style.display = 'none';
             } else {
                 commentView.replyViewTextBox.style.display = 'block';

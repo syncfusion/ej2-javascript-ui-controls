@@ -127,14 +127,20 @@ export class Tooltip {
             offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
         }
         if (this.heatMap.theme === 'Tailwind') {
-            this.heatMap.setProperties({ tooltipSettings : { textStyle : { size : "12px", fontFamily : "Inter", fontWeight : "500" }}}, true);
+            this.heatMap.setProperties({ tooltipSettings : { textStyle : { size : '12px', fontFamily : 'Inter', fontWeight : '500' }}}, true);
         }
         if (this.heatMap.theme === 'TailwindDark') {
-            this.heatMap.setProperties({ tooltipSettings : { fill : "#F9FAFB", textStyle : { size: "12px", fontFamily : "Inter", fontWeight : "500", color : "#1F2937" }}}, true);
+            this.heatMap.setProperties({ tooltipSettings : { fill : '#F9FAFB', textStyle : { size: '12px', fontFamily : 'Inter', fontWeight : '500', color : '#1F2937' }}}, true);
+        }
+        if (this.heatMap.theme === 'Bootstrap5') {
+            this.heatMap.setProperties({ tooltipSettings : { textStyle : { size: '14px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500' }}}, true);
+        }
+        if (this.heatMap.theme === 'Bootstrap5Dark') {
+            this.heatMap.setProperties({ tooltipSettings : { fill : '#E9ECEF', textStyle : { size: '14px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500', color : '#212529' }}}, true);
         }
         this.tooltipObject = new tool(
             {
-                opacity: (this.heatMap.theme == 'Tailwind' || this.heatMap.theme === 'TailwindDark') ? 1 : 0.75,
+                opacity: (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark' || this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark' ) ? 1 : 0.75,
                 enableAnimation: false,
                 offset: offset,
                 location: { x: x, y: y },
@@ -258,7 +264,7 @@ export class Tooltip {
                 //     hetmapSeries.hoverYAxisLabel);
                 const content: string[] = this.getTooltipContent(currentRect, hetmapSeries);
                 const argData: ITooltipEventArgs = {
-                    heatmap: (this.heatMap.isBlazor ? null : this.heatMap),
+                    heatmap: this.heatMap,
                     cancel: false,
                     name: 'tooltipRender',
                     value: currentRect.value,

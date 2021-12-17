@@ -1,0 +1,94 @@
+@import 'definition.scss';
+
+$skin-name: 'material';
+$diagram-endpoint-handle-color: $primary-font;
+$diagram-endpoint-handle-connected-border: $primary-font;
+$diagram-endpoint-handle-connected-color: $accent;
+
+$diagram-resize-handle-color: $accent;
+$diagram-resize-handle-stroke: $accent;
+$diagram-border-stroke: $accent;
+
+$diagram-resize-handle-disable-color: $grey-400;
+$diagram-resize-handle-disable-stroke: $primary-font;
+$diagram-border-stroke-disabled: $grey-400;
+
+$diagram-rotate-handle-color: $accent;
+
+$diagram-bezier-handle-color: $primary-font;
+$diagram-bezier-line-color: $accent;
+
+$diagram-highlighter-stroke: $accent;
+$diagram-selected-region-stroke: $accent;
+$diagram-pivot-line-stroke: $accent;
+
+$diagram-helper-stroke: $accent;
+
+$diagram-text-edit-selection-color: $primary-font;
+$diagram-text-edit-selection-background: $accent;
+
+$diagram-symbolpalette-hover: $grey-400;
+$diagram-symbolpalette-shape-radius: 4px;
+$diagram-symbolpalette-selected: $grey-700;
+
+$diagram-tooltip: none;
+
+$diagram-ruler-color: $grey-100;
+$diagram-ruler-font-size: 10px;
+$diagram-ruler-marker-stroke: $accent;
+$diagram-ruler-marker-background-color: $grey-800;
+$diagram-ruler-label-fill: $grey-400;
+$diagram-ruler-tick-stroke: $grey-500;
+
+$palette-background-color: $grey-300;
+
+$diagram-background-color: $primary-font;
+
+$diagram-editbox-background: $primary-font;
+$diagram-editbox-fontcolor: $grey-black;
+$diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
+$diagram-border-strokes: $primary;
+$diagram-lane-border-strokes: $primary;
+
+.e-icons {
+  font-family: 'e-icons';
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-transform: none;
+}
+
+@include export-module('diagram-material-icons') {
+  .e-diagram-menu {
+    .e-bringforward::before { content: '\e5a1'; }
+    .e-bringfront::before { content: '\e5a2'; }
+    .e-sendback::before { content: '\e5a3'; }
+    .e-sendbackward::before { content: '\e5a4'; }
+    .e-delete::before { content: '\e94a'; }
+    .e-ungroup::before { content: '\e5a6'; }
+    .e-group::before { content: '\e5a7'; }
+    .e-undo::before { content: '\e341'; }
+    .e-cut::before { content: '\e33b'; }
+    .e-save::before { content: '\e735'; }
+    .e-paste::before { content: '\e355'; }
+    .e-copy::before { content: '\e33d'; }
+    .e-redo::before { content: '\e354'; }
+    .e-zoomin::before { content: '\e349'; }
+    .e-italic::before { content: '\e35a'; }
+    .e-close::before { content: '\ec0f'; }
+    .e-pan::before { content: '\ec1a'; }
+    .e-bold::before { content: '\e339'; }
+    .e-underline::before { content: '\e343'; }
+    .e-zoomout::before { content: '\e351'; }
+    .e-export::before { content: '\e711'; }
+    .e-print::before { content: '\e34b'; }
+    .e-order::before { content: '\e4a4'; }
+  }
+
+  .e-symbolpalette {
+    .e-clear-searchtext::before { content: '\ec0f'; }
+  }
+}

@@ -56,7 +56,7 @@ export function filter(parent: IFileManager, event: string): void {
     let filterData: Object;
     // eslint-disable-next-line
     const filterDataVal: Object = parent.filterData ? extend(filterData, data, parent.filterData) : data;
-    createAjax(parent, filterData, filterSuccess, event, getValue('action', filterDataVal));
+    createAjax(parent, filterDataVal, filterSuccess, event, getValue('action', filterDataVal));
 }
 
 /**

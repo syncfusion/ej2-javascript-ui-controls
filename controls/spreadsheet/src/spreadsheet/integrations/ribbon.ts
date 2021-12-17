@@ -1,12 +1,12 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer } from '../common/index';
+import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF, focus, freeze } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
 import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
-import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
+import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink, clearFilter } from '../common/index';
 import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hideToolbarItems, enableRibbonTabs } from '../common/index';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { ItemModel as TlbItemModel } from '@syncfusion/ej2-navigations';
@@ -18,8 +18,8 @@ import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFo
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, SaveType, setMerge, updateCustomFormatsFromImport } from '../../workbook/common/index';
-import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs } from '../../workbook/common/index';
+import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, setMerge, updateCustomFormatsFromImport } from '../../workbook/common/index';
+import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
 import { sheetsDestroyed, SortOrder, NumberFormatType, SetCellFormatArgs, getRangeAddress, clearCFRule } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -1582,10 +1582,10 @@ export class Ribbon {
             select: (args: MenuEventArgs): void => {
                 switch (args.item.text) {
                 case l10n.getConstant('Filter'):
-                    this.parent.applyFilter();
+                    this.parent.notify(initiateFilterUI, {});
                     break;
                 case l10n.getConstant('ClearAllFilter'):
-                    this.parent.clearFilter();
+                    this.parent.notify(clearFilter, { isAction: true });
                     break;
                 case l10n.getConstant('ReapplyFilter'):
                     this.parent.notify(reapplyFilter, null);
@@ -1786,9 +1786,7 @@ export class Ribbon {
                 { text: l10n.getConstant('ClearContents') },
                 { text: l10n.getConstant('ClearHyperlinks') }],
             createPopupOnClick: true,
-            select: (args: MenuEventArgs): void => {
-                this.parent.notify(clearViewer, { options: { type: args.item.text } });
-            },
+            select: (args: MenuEventArgs): void => this.parent.notify(clearViewer, { options: { type: args.item.text } }),
             close: (): void => focus(this.parent.element)
         });
         this.clearDdb.createElement = this.parent.createElement;
@@ -2356,7 +2354,7 @@ export class Ribbon {
             case `${id}_Xls`:
             case `${id}_Csv`:
             case `${id}_Pdf`:
-                this.parent.save({ saveType: <SaveType>args.item.id.split(`${id}_`)[1] });
+                this.parent.notify(exportDialog, args);
                 break;
             case `${id}_New`:
                 dialogInst = (this.parent.serviceLocator.getService(dialog) as Dialog);
@@ -2868,6 +2866,7 @@ export class Ribbon {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(14, 15), enable: false }]);
             }
             this.parent.notify(setUndoRedo, null);
+
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.disableHomeBtnId, enable: false }]);
         }
@@ -2903,9 +2902,10 @@ export class Ribbon {
                     this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('ProtectWorkbook');
                 }
             }
-            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: this.parent.allowImage }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId,
+                enable: this.parent.allowDataValidation }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
-            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: false }]);
         } else {
             if (this.parent.isProtected && this.parent.element.querySelector('#' + this.parent.element.id + '_protectworkbook') &&
@@ -2919,10 +2919,9 @@ export class Ribbon {
                     this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('ProtectWorkbook');
                 }
             }
-            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: this.parent.allowImage }]);
-            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId,
-                enable: this.parent.allowDataValidation }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: true }]);
         }
     }

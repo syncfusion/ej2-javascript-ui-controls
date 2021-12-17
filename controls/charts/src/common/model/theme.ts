@@ -127,9 +127,6 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
         palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
             '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
         break;
-        // palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
-        //     '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
-        // break;
     case 'Tailwind':
         palette = ['#5A61F6', '#65A30D', '#334155', '#14B8A6', '#8B5CF6',
                 '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
@@ -146,6 +143,14 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
         palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
                     '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
         break;
+    // case 'FluentDark':
+    //     palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+    //                 '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+    //     break;
+    // case 'Fluent':
+    //     palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+    //                 '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+    //     break;
     default:
         palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
             '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
@@ -332,6 +337,60 @@ case 'TailwindDark':
             selectionCircleStroke: '#6B7280'
         };
         break;
+    // case 'Fluent':
+    //     style = {
+    //         axisLabel: '#3B3A39',
+    //         axisTitle: '#201F1E',
+    //         axisLine: '#D2D0CE',
+    //         majorGridLine: '#EDEBE9',
+    //         minorGridLine: '#EDEBE9',
+    //         majorTickLine: '#D2D0CE',
+    //         minorTickLine: ' #D2D0CE',
+    //         chartTitle: '#201F1E',
+    //         legendLabel: '#323130',
+    //         background: 'transparent',
+    //         areaBorder: '#EDEBE9',
+    //         errorBar: '#A19F9D',
+    //         crosshairLine: '#A19F9D',
+    //         crosshairFill: '#FFFFFF',
+    //         crosshairLabel: '#323130',
+    //         tooltipFill: '#FFFFFF',
+    //         tooltipBoldLabel: '#323130',
+    //         tooltipLightLabel: '#323130',
+    //         tooltipHeaderLine: '#D2D0CE',
+    //         markerShadow: null,
+    //         selectionRectFill: 'rgba(79,70,229, 0.1)',
+    //         selectionRectStroke: '#4F46E5',
+    //         selectionCircleStroke: '#6B7280'
+    //     };
+    //     break;
+    // case 'FluentDark':
+    //     style = {
+    //         axisLabel: '#C8C6C4',
+    //         axisTitle: '#F3F2F1',
+    //         axisLine: '#3B3A39',
+    //         majorGridLine: '#292827',
+    //         minorGridLine: '#292827',
+    //         majorTickLine: '#3B3A39',
+    //         minorTickLine: '#3B3A39',
+    //         chartTitle: '#F3F2F1',
+    //         legendLabel: '#D2D0CE',
+    //         background: 'transparent',
+    //         areaBorder: '#292827',
+    //         errorBar: '#797775',
+    //         crosshairLine: '#797775',
+    //         crosshairFill: '#252423',
+    //         crosshairLabel: '#F3F2F1',
+    //         tooltipFill: '#252423',
+    //         tooltipBoldLabel: '#F3F2F1',
+    //         tooltipLightLabel: '#F3F2F1',
+    //         tooltipHeaderLine: '#3B3A39',
+    //         markerShadow: null,
+    //         selectionRectFill: 'rgba(79,70,229, 0.1)',
+    //         selectionRectStroke: '#4F46E5',
+    //         selectionCircleStroke: '#6B7280'
+    //     };
+    //     break;
     default:
         style = {
             axisLabel: '#686868',
@@ -399,6 +458,40 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
             grip: '#a6a6a6'
         };
         break;
+    case 'MaterialDark':
+    case 'FabricDark':
+    case 'BootstrapDark':
+    case 'Bootstrap5Dark':
+    case 'TailwindDark':
+        scrollStyle = {
+            backRect: '#252423',
+            thumb: '#323130',
+            circle: '#484644',
+            circleHover: '#323130',
+            arrow: '#A19F9D',
+            grip: '#A19F9D'
+        };
+        break;
+    // case 'Fluent':
+    //     scrollStyle = {
+    //         backRect: '#F3F2F1',
+    //         thumb: '#E1DFDD',
+    //         circle: '#FFFFFF',
+    //         circleHover: '#E1DFDD',
+    //         arrow: '#605E5C',
+    //         grip: '#605E5C'
+    //     };
+    //     break;
+    // case 'FluentDark':
+    //     scrollStyle = {
+    //         backRect: '#252423',
+    //         thumb: '#323130',
+    //         circle: '#484644',
+    //         circleHover: '#323130',
+    //         arrow: '#A19F9D',
+    //         grip: '#A19F9D'
+    //     };
+    //     break;
     default:
         scrollStyle = {
             backRect: '#f5f5f5',
@@ -409,7 +502,6 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
             grip: '#9e9e9e'
         };
         break;
-
     }
     return scrollStyle;
 }

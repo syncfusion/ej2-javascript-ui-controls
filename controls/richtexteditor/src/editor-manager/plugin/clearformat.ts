@@ -24,12 +24,13 @@ export class ClearFormat {
      *
      * @param {Document} docElement - specifies the document element.
      * @param {Node} endNode - specifies the end node
+     * @param {string} enterAction - specifies the enter key action
      * @param {string} selector - specifies the string value
      * @returns {void}
      * @hidden
      * @deprecated
      */
-    public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string,): void {
+    public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string): void {
         this.domNode = new DOMNode((endNode as HTMLElement), docElement);
         this.defaultTag = enterAction === 'P' ? this.defaultTag : 'div';
         const nodeSelection: NodeSelection = new NodeSelection();

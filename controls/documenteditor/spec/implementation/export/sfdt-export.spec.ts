@@ -12416,3 +12416,39 @@ describe('Shape validation', () => {
         expect(tab).not.toBe(true);
     });
 });
+
+describe('Sfdt export for Empty Para tracking', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    let exportData: any;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(SfdtExport, Editor, Selection);
+        editor = new DocumentEditor({ enableSfdtExport: true, enableEditor: true, enableSelection: true, });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Empty Para tracking', () => {
+        editor.openBlank();
+        editor.enableTrackChanges = true;
+        editor.editor.onEnter();
+        exportData = JSON.parse(editor.sfdtExportModule.serialize());
+        expect(exportData.sections[0].blocks[0].characterFormat.revisionIds.length).toBe(1);
+    });
+});

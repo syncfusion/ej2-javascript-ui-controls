@@ -1,0 +1,25 @@
+// Avatar Base
+$avatar-base-border-radius: 2px !default;
+$avatar-base-background-color: $content-bg-color-alt3 !default;
+$avatar-base-font-size: $text-sm !default;
+$avatar-base-width: 40px !default;
+$avatar-base-height: 40px !default;
+$avatar-base-line-height: 22px !default;
+$avatar-base-text-color: $icon-color !default;
+$avatar-base-font-weight: $font-weight-medium !default;
+$avatar-base-img-height: 100% !default;
+
+// Circle Avatar
+$avatar-circle-border-radius: 50% !default;
+
+// Avatar size
+$avatar-xsmall-font-size: $text-xxs !default;
+$avatar-small-font-size: $text-xs !default;
+$avatar-large-font-size: $text-lg !default;
+$avatar-xlarge-font-size: $text-xl !default;
+
+// Avatar Line Height
+$avatar-base-xsmall-line-height: 16px !default;
+$avatar-base-small-line-height: 18px !default;
+$avatar-base-large-line-height: 28px !default;
+$avatar-base-xlarge-line-height: 28px !default;

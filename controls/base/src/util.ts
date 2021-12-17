@@ -359,6 +359,12 @@ export function throwError(message: string): void {
 export function print(element: Element, printWindow?: Window): Window {
     const div: Element = document.createElement('div');
     const links: HTMLElement[] = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('base, link, style'));
+    const blinks: HTMLElement[] = [].slice.call(document.getElementsByTagName('body')[0].querySelectorAll('link, style'));
+    if (blinks.length) {
+        for (let l: number = 0, len: number = blinks.length; l < len; l++) {
+            links.push(blinks[l]);
+        }
+    }
     let reference: string = '';
     if (isNullOrUndefined(printWindow)) {
         printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
@@ -393,7 +399,7 @@ export function print(element: Element, printWindow?: Window): Window {
  */
 export function formatUnit(value: number | string): string {
     const result: string = <string>value + '';
-    if (result === 'auto' || result.indexOf('%') !== -1 || result.indexOf('px') !== -1) {
+    if (result.match(/auto|cm|mm|in|px|pt|pc|%|em|ex|ch|rem|vw|vh|vmin|vmax/)) {
         return result;
     }
 

@@ -280,7 +280,7 @@ describe('Map layer testing', () => {
         it('checking with MaterialDarkmaps Legend text  ', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('container_Legend_Text_Index_0');
-                expect(element.getAttribute('fill')).toBe('#757575');
+                expect(element.getAttribute('fill')).toBe('#DADADA');
             };
 			maps.theme ='MaterialDark';
             maps.refresh();
@@ -298,7 +298,7 @@ describe('Map layer testing', () => {
         it('maps Legend title  ', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('container_LegendTitle');
-                expect(element.getAttribute('fill')).toBe('#757575');
+                expect(element.getAttribute('fill')).toBe('#DADADA');
             };
 			maps.theme ='MaterialDark';
             maps.refresh();
@@ -417,7 +417,7 @@ describe('Map layer testing', () => {
         it('checking with Highcontrastmaps Legend text  ', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('container_Legend_Text_Index_0');
-                expect(element.getAttribute('fill')).toBe('#757575');
+                expect(element.getAttribute('fill')).toBe('#FFFFFF');
             };
 			maps.theme ='HighContrast';
             maps.refresh();
@@ -435,7 +435,7 @@ describe('Map layer testing', () => {
         it('maps Legend title  ', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('container_LegendTitle');
-                expect(element.getAttribute('fill')).toBe('#757575');
+                expect(element.getAttribute('fill')).toBe('#FFFFFF');
             };
 			maps.theme ='HighContrast';
             maps.refresh();
@@ -484,7 +484,7 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
+            expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#000000');
         });
         it('checking with Highcontrast tooltip default color', () => {
             element = getElement(markerId + 1);
@@ -552,7 +552,7 @@ describe('Map layer testing', () => {
         it('checking with Bootstrap4maps Legend text  ', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('container_Legend_Text_Index_0');
-                expect(element.getAttribute('fill')).toBe('#757575');
+                expect(element.getAttribute('fill')).toBe('#212529');
             };
 			maps.theme ='Bootstrap4';
             maps.refresh();
@@ -570,7 +570,7 @@ describe('Map layer testing', () => {
         it('maps Legend title  ', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('container_LegendTitle');
-                expect(element.getAttribute('fill')).toBe('#757575');
+                expect(element.getAttribute('fill')).toBe('#212529');
             };
 			maps.theme ='Bootstrap4';
             maps.refresh();
@@ -578,7 +578,7 @@ describe('Map layer testing', () => {
         it('checking with Bootstrap4maps Legend title font family  ', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('container_LegendTitle');
-                expect(element.getAttribute('font-family')).toBe('Roboto, Noto, Sans-serif');
+                expect(element.getAttribute('font-family')).toBe('HelveticaNeue-Medium');
             };
 			maps.theme ='Bootstrap4';
             maps.refresh();

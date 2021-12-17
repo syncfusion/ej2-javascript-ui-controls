@@ -2099,30 +2099,30 @@ describe('EJ2-44363- When setting value dynamically in remote data, text is auto
         dropDowns.destroy();
         element.remove();
     });
-    it('custom value is set to the control with remote datasource', (done) => {
-        let remoteData: DataManager = new DataManager({ url: "https://ej2services.syncfusion.com/production/web-services/api/Employees",
-            adaptor: new ODataV4Adaptor, crossDomain: true });
-        dropDowns = new AutoComplete({
-            dataSource: remoteData,
-            fields: { value: 'FirstName' },
-            showPopupButton: true,
-            suggestionCount: 5,
-            query: new Query()
-                .select(["FirstName", "EmployeeID"])
-                .take(10)
-                .requiresCount(),
-            sortOrder: "Ascending",
-            autofill: true,
-            filterType: "StartsWith"
-        });
-        dropDowns.appendTo(element);
-        dropDowns.value = "a";
-        dropDowns.dataBind();
-        setTimeout(() => {
-            expect(dropDowns.inputElement.value).toBe("a");
-            done();
-        }, 800);
-    });
+    // it('custom value is set to the control with remote datasource', (done) => {
+    //     let remoteData: DataManager = new DataManager({ url: "https://ej2services.syncfusion.com/production/web-services/api/Employees",
+    //         adaptor: new ODataV4Adaptor, crossDomain: true });
+    //     dropDowns = new AutoComplete({
+    //         dataSource: remoteData,
+    //         fields: { value: 'FirstName' },
+    //         showPopupButton: true,
+    //         suggestionCount: 5,
+    //         query: new Query()
+    //             .select(["FirstName", "EmployeeID"])
+    //             .take(10)
+    //             .requiresCount(),
+    //         sortOrder: "Ascending",
+    //         autofill: true,
+    //         filterType: "StartsWith"
+    //     });
+    //     dropDowns.appendTo(element);
+    //     dropDowns.value = "a";
+    //     dropDowns.dataBind();
+    //     setTimeout(() => {
+    //         expect(dropDowns.inputElement.value).toBe("a");
+    //         done();
+    //     }, 800);
+    // });
     it('custom value is set to the control with local datasource', (done) => {
         dropDowns = new AutoComplete({
             dataSource: countries,
@@ -2290,5 +2290,30 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
             atcObj.destroy();
             done();
         }, 450)
+    });
+    describe('EJ2-54666-While preventing the request to the server using actionBegin event throws console error', () => {
+        let dropDowns: any;
+        let e: any = { preventDefault: function () { }, target: null };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            dropDowns.destroy();
+            element.remove();
+        });
+        it('actionBegin', () => {
+            dropDowns = new AutoComplete({
+                dataSource: sportsData,
+                actionBegin: (e: any) => {
+                    e.cancel = true;
+                }
+            });
+            dropDowns.appendTo(element);
+            e.type = 'keydown';
+            e.action = 'down';
+            dropDowns.keyActionHandler(e);
+            expect(isNullOrUndefined(dropDowns.liCollections)).toBe(true);
+        });
     });
 });

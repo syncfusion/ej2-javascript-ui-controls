@@ -1,0 +1,115 @@
+//dimention variables
+
+//Mouse Mode
+
+$toast-icon-nrml-height: 24px !default;
+$toast-icon-nrml-width: 24px !default;
+$toast-icon-nrml-size: 16px !default;
+$toast-icon-nrml-right-margin: 8px !default;
+$toast-close-icon-nrml-height: 24px !default;
+$toast-close-icon-nrml-width: 24px !default;
+$toast-close-icon-nrml-size: 10px !default;
+$toast-position-nrml-distance: 10px !default;
+$multitoast-nrml-gap-distance: 10px !default;
+$toast-nrml-min-height: 44px !default;
+$toast-nrml-padding: 12px !default;
+$toast-action-btn-nrml-padding: 5px 0 0 0 !default;
+$toast-action-btn-nrml-margin: 10px !default;
+$toast-progressbar-nrml-height: 4px !default;
+$toast-content-nrml-padding: 10px 0 5px 0 !default;
+$toast-nrml-border-radious: 4px !default;
+$toast-font-nrml-size: 14px !default;
+$toast-title-font-nrml-size: 14px !default;
+
+//Touch Mode
+$toast-icon-bgr-height: 24px !default;
+$toast-icon-bgr-width: 24px !default;
+$toast-icon-bgr-size: 20px !default;
+$toast-icon-bgr-right-margin: 10px !default;
+$toast-close-icon-bgr-height: 24px !default;
+$toast-close-icon-bgr-width: 24px !default;
+$toast-close-icon-bgr-size: 12px !default;
+$toast-position-bgr-distance: 10px !default;
+$multitoast-bgr-gap-distance: 10px !default;
+$toast-bgr-min-height: 44px !default;
+$toast-bgr-padding: 12px !default;
+$toast-action-btn-bgr-padding: 5px 0 0 0 !default;
+$toast-action-btn-bgr-margin: 10px !default;
+$toast-progressbar-bgr-height: 4px !default;
+$toast-content-bgr-padding: 10px 0 5px 0 !default;
+$toast-bgr-border-radious: 4px !default;
+$toast-font-bgr-size: 14px !default;
+
+//theme variables
+
+$toast-box-shadow: 0 4px 5px 0 rgba($black, .1) !default;
+$toast-hover-box-shadow: 0 4px 6px 0 rgba($black, .1) !default;
+$toast-progress-color: $primary !default;
+$toast-bg-color: rgba($content-bg, .85) !default;
+$toast-hover-bg-color: $white !default;
+$toast-active-bg-color: $white !default;
+$toast-font-color: $gray-900 !default;
+$toast-icon-color: rgba($black, .5) !default;
+$toast-close-icon-color: rgba($black, .5) !default;
+$toast-title-color: $gray-600 !default;
+$toast-content-color: $gray-900 !default;
+
+// Toast Types theme definitions
+
+$toast-border-color: rgba($black, .1) !default;
+
+$toast-success-bg-color: #d4edda !default;
+$toast-success-color: #155724 !default;
+$toast-success-title-color: $toast-success-color !default;
+$toast-success-icon-color: $toast-success-color !default;
+$toast-success-content-color: $toast-success-color !default;
+$toast-success-border-color: #c3e6cb !default;
+$toast-success-hover-bg-color: #c2e5cb !default;
+$toast-success-hover-color: $toast-success-color !default;
+$toast-success-hover-border-color: #b1debb !default;
+$toast-success-hover-box-shadow: 0 4px 12px !default;
+
+
+$toast-info-bg-color: #cce5ff !default;
+$toast-info-color: #004085 !default;
+$toast-info-title-color: $toast-info-color !default;
+$toast-info-icon-color: $toast-info-color !default;
+$toast-info-content-color: $toast-info-color !default;
+$toast-info-border-color: #b8daff !default;
+$toast-info-hover-bg-color: #b3d8ff !default;
+$toast-info-hover-color: $toast-info-color !default;
+$toast-info-hover-border-color: #9ecdff !default;
+$toast-info-hover-box-shadow: 0 4px 12px !default;
+
+
+$toast-warning-bg-color: #fff3cd !default;
+$toast-warning-color: #856404 !default;
+$toast-warning-title-color: $toast-warning-color !default;
+$toast-warning-icon-color: $toast-warning-color !default;
+$toast-warning-content-color: $toast-warning-color !default;
+$toast-warning-border-color: #ffeeba !default;
+$toast-warning-hover-bg-color: #ffedb3 !default;
+$toast-warning-hover-color: $toast-warning-color !default;
+$toast-warning-hover-border-color: #ffe8a0 !default;
+$toast-warning-hover-box-shadow: 0 4px 12px !default;
+
+
+$toast-danger-bg-color: #f8d7da  !default;
+$toast-danger-color: #721c24 !default;
+$toast-danger-title-color: $toast-danger-color !default;
+$toast-danger-icon-color: $toast-danger-color !default;
+$toast-danger-content-color: $toast-danger-color !default;
+$toast-danger-border-color: #f5c6cb !default;
+$toast-danger-hover-bg-color: #f4c1c6 !default;
+$toast-danger-hover-color: $toast-danger-color !default;
+$toast-danger-hover-border-color: #f1b0b7 !default;
+$toast-danger-hover-box-shadow: 0 4px 12px !default;
+
+//icon variabels
+
+$toast-close-icon: '\e745' !default;
+$toast-success-icon: '\e7d9' !default;
+$toast-error-icon: '\e761' !default;
+$toast-info-icon: '\e729' !default;
+
+$toast-title-font-weight: bold !default;

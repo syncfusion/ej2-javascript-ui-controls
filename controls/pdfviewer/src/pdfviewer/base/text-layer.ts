@@ -63,7 +63,7 @@ export class TextLayer {
     // eslint-disable-next-line
     public renderTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any): void {
         const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
-        const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageNumber);
+        const canvasElement: HTMLElement = createElement("canvas");
         if (canvasElement && textLayer.childNodes.length === 0) {
             for (let i: number = 0; i < textContents.length; i++) {
                 // eslint-disable-next-line
@@ -114,7 +114,7 @@ export class TextLayer {
     // eslint-disable-next-line
     public resizeTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any, isTextSearch?: boolean): void {
         const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
-        const canvasElement: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + pageNumber);
+        const canvasElement: HTMLElement = createElement("canvas");
         if (canvasElement) {
             for (let i: number = 0; i < textLayer.childNodes.length; i++) {
                 // eslint-disable-next-line
@@ -579,7 +579,7 @@ export class TextLayer {
                 if (this.pdfViewer.textSearchModule) {
                     this.pdfViewer.textSearch.isMessagePopupOpened = false;
                 }
-                this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenNotificationPopup');
+                this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenNotificationPopup', text);
             }
         }
     }

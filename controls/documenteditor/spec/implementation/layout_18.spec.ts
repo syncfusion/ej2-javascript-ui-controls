@@ -25225,3 +25225,57 @@ describe('Table Align Validation', () => {
         expect(cell1.width).toBe(cell2.width);
     });
 });
+describe('RTL character format validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor, SfdtExport, WordExport);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableWordExport: true, enableSfdtExport: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('RTL character format validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('شلاؤي شلاؤي شلا');
+        editor.selection.select('0;0;6', '0;0;11');
+        editor.selection.toggleBold();
+        editor.selection.toggleHighlightColor();
+        let para: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        let line: LineWidget = para.childWidgets[0] as LineWidget;
+        expect(line.children[1].characterFormat.bold).toBe(true);
+        expect(line.children[1].characterFormat.highlightColor).toBe('Yellow');
+        expect(line.children[0].characterFormat.bold).toBe(false);
+        expect(line.children[0].characterFormat.highlightColor).toBe('NoColor');
+        expect(line.children[2].characterFormat.bold).toBe(false);
+        expect(line.children[2].characterFormat.highlightColor).toBe('NoColor');
+
+        editor.openBlank();
+        editor.editor.insertText('شلاؤي شلاؤي شلا');
+        editor.selection.paragraphFormat.bidi = true;
+        editor.selection.select('0;0;6', '0;0;11');
+        editor.selection.toggleBold();
+        editor.selection.toggleHighlightColor();
+        para = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        line = para.childWidgets[0] as LineWidget;
+        expect(line.children[2].characterFormat.bold).toBe(true);
+        expect(line.children[2].characterFormat.highlightColor).toBe('Yellow');
+        expect(line.children[0].characterFormat.bold).toBe(false);
+        expect(line.children[0].characterFormat.highlightColor).toBe('NoColor');
+        expect(line.children[4].characterFormat.bold).toBe(false);
+        expect(line.children[4].characterFormat.highlightColor).toBe('NoColor');
+    });
+});

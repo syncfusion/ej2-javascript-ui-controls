@@ -1,6 +1,6 @@
 import { Workbook, CellModel, getCell, SheetModel, setCell, isHiddenRow, isHiddenCol } from '../base/index';
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, isNumber, refreshCell, intToDate, dateToInt, getFillInfo } from './../common/index';
-import { checkIsFormula, workbookEditOperation, getColumnHeaderText } from './../common/index';
+import { checkIsFormula, workbookEditOperation, getColumnHeaderText, getCellAddress } from './../common/index';
 
 /**
  * WorkbookAutoFill module allows to perform auto fill functionalities.
@@ -80,13 +80,13 @@ export class WorkbookAutoFill {
     }
 
     private autoFill(options: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
-        isFillOptClick ?: boolean, isLockedCell ?: boolean }): void {
+        isFillOptClick?: boolean, isLockedCell ?: boolean }): void {
         if (!options.dataRange || !options.fillRange || !options.direction || !this.parent.allowEditing ||
             (this.parent.getActiveSheet().isProtected && options.isLockedCell)) {
             return;
         }
-        const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection } =
-        { dataRange: null, fillRange: null, fillType: null, direction: null };
+        const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection } = {
+            dataRange: null, fillRange: null, fillType: null, direction: null };
         const dataRangeIndices: number[] = getSwapRange(getRangeIndexes(options.dataRange));
         const fillRangeIndices: number[] = getSwapRange(getRangeIndexes(options.fillRange));
         this.fillInfo = this.getFillInfo({ dataRange: dataRangeIndices, fillRange: fillRangeIndices, fillType: options.fillType,
@@ -213,16 +213,15 @@ export class WorkbookAutoFill {
                     break;
                 }
                 l = j % dlen;
-                prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet);
+                prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, false, true);
                 if (withFrmt) {
                     Object.assign(cellProps, data[l], null, true);
-                }
-                else {
-                    cellProps.style = prevCellData && prevCellData.style;
-                    cellProps.format = prevCellData && prevCellData.format;
-                    cellProps.wrap = prevCellData && prevCellData.wrap;
-                    cellProps.rowSpan = prevCellData && prevCellData.rowSpan;
-                    cellProps.colSpan = prevCellData && prevCellData.colSpan;
+                } else {
+                    cellProps.style = prevCellData.style;
+                    cellProps.format = prevCellData.format;
+                    cellProps.wrap = prevCellData.wrap;
+                    cellProps.rowSpan = prevCellData.rowSpan;
+                    cellProps.colSpan = prevCellData.colSpan;
                 }
                 cellProps.value = val;
                 if (checkIsFormula(val)) {
@@ -236,6 +235,12 @@ export class WorkbookAutoFill {
                             cellIdx.colIndex], value: cellProps.formula ? cellProps.formula : cellProps.value
                     });
                 this.parent.notify(refreshCell, { rowIndex: cellIdx.rowIndex, colIndex: cellIdx.colIndex });
+                if (cellProps.value !== prevCellData.value) {
+                    this.parent.trigger(
+                        'cellSave', { value: cellProps.value, oldValue: prevCellData.value, formula: cellProps.formula, address:
+                            `${sheet.name}!${getCellAddress(cellIdx.rowIndex, cellIdx.colIndex)}`,
+                        displayText: this.parent.getDisplayText(cellProps) });
+                }
                 cellProps = {};
                 j++;
             }
@@ -295,12 +300,12 @@ export class WorkbookAutoFill {
                     cellProperty = {};
                     j++;
                 }
-            }
-            else {
+            } else {
                 while (j < clen) {
                     k = j % dlen;
                     cellIdx = cells[j];
                     Object.assign(cellProperty, data[k], null, true);
+                    prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, false, true);
                     setCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, cellProperty);
                     this.parent.notify(
                         workbookEditOperation,
@@ -309,6 +314,12 @@ export class WorkbookAutoFill {
                                 cellIdx.colIndex], value: cellProperty.formula ? cellProperty.formula : cellProperty.value
                         });
                     this.parent.notify(refreshCell, { rowIndex: cellIdx.rowIndex, colIndex: cellIdx.colIndex });
+                    if (cellProperty.value !== prevCellData.value) {
+                        this.parent.trigger(
+                            'cellSave', { value: cellProperty.value, oldValue: prevCellData.value, formula: cellProperty.formula, address:
+                                `${sheet.name}!${getCellAddress(cellIdx.rowIndex, cellIdx.colIndex)}`,
+                            displayText: this.parent.getDisplayText(cellProperty) });
+                    }
                     cellProperty = {};
                     j++;
                 }

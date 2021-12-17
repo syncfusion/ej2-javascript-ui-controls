@@ -427,11 +427,15 @@ export class Kanban extends Component<HTMLElement> {
     /**
      * Returns the properties to be maintained in the persisted state.
      *
-     * @returns {string} Returns the presistance state.
+     * @returns {string} Returns the persistance state.
      * @private
      */
     protected getPersistData(): string {
-        return this.addOnPersist(['columns', 'dataSource', 'swimlaneToggleArray']);
+        if ((this.dataSource as Record<string, any>[]).length > 0) {
+            return this.addOnPersist(['columns', 'dataSource', 'swimlaneToggleArray']);
+        } else {
+            return this.addOnPersist(['columns', 'kanbanData', 'swimlaneToggleArray']);
+        }
     }
 
     /**

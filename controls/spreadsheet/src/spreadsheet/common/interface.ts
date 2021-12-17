@@ -48,6 +48,7 @@ export interface SheetRenderArgs {
     initLoad?: boolean;
     prevRowColCnt?: SheetModel;
     isRefreshing?: boolean;
+    insertDelete?: boolean;
     isOpen?: boolean;
 }
 
@@ -134,8 +135,8 @@ export interface ICellRenderer {
     renderColHeader(index: number): Element;
     renderRowHeader(index: number): Element;
     render(args: CellRenderArgs): Element;
-    refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean): void;
-    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element): void;
+    refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean): void;
+    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCf?: boolean): void;
 }
 
 /**
@@ -150,7 +151,8 @@ export interface RefreshArgs {
     refresh: RefreshType;
     skipUpdateOnFirst?: boolean;
     frozenIndexes?: number[];
-    skipTranslate?: boolean
+    skipTranslate?: boolean;
+    insertDelete?: boolean;
 }
 
 /**
@@ -264,6 +266,8 @@ export interface CellRenderArgs {
     insideFreezePane?: boolean;
     isRefreshing?: boolean;
     sheetIndex?: number;
+    checkCf?: boolean;
+    onActionUpdate?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {

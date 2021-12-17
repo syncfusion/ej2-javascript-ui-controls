@@ -74,10 +74,10 @@ export class ContextMenu {
             let indexes: number[];
             switch (args.item.id) {
             case id + '_cut':
-                this.parent.notify(cut, { isAction: true, promise: Promise });
+                this.parent.notify(cut, { invokeCopy: true, promise: Promise });
                 break;
             case id + '_copy':
-                this.parent.notify(copy, { isAction: true, promise: Promise });
+                this.parent.notify(copy, { invokeCopy: true, promise: Promise });
                 break;
             case id + '_paste':
                 this.parent.notify(paste, { isAction: true, isInternal: true });

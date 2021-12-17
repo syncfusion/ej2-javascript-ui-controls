@@ -271,6 +271,14 @@ export interface TabModel extends ComponentModel{
     showCloseButton?: boolean;
 
     /**
+     * Determines whether to re-order tab items to show active tab item in the header area or popup when OverflowMode is Popup.
+     *  True, if active tab item should be visible in header area instead of pop-up. The default value is true.
+     *
+     * @default true
+     */
+    reorderActiveTab?: boolean;
+
+    /**
      * Specifies the scrolling distance in scroller.
      *
      * @default null
@@ -307,42 +315,42 @@ export interface TabModel extends ComponentModel{
     created?: EmitType<Event>;
 
     /**
-     * The event will be fired before adding the item to the Tab.
+     * The event will be fired before adding the item to the Tab.
      *
      * @event
      */
     adding?: EmitType<AddEventArgs>;
 
     /**
-     * The event will be fired after adding the item to the Tab.
+     * The event will be fired after adding the item to the Tab.
      *
      * @event
      */
     added?: EmitType<AddEventArgs>;
 
     /**
-     * The event will be fired before the item gets selected.
+     * The event will be fired before the item gets selected.
      *
      * @event
      */
     selecting?: EmitType<SelectingEventArgs>;
 
     /**
-     * The event will be fired after the item gets selected.
+     * The event will be fired after the item gets selected.
      *
      * @event
      */
     selected?: EmitType<SelectEventArgs>;
 
     /**
-     * The event will be fired before removing the item from the Tab.
+     * The event will be fired before removing the item from the Tab.
      *
      * @event
      */
     removing?: EmitType<RemoveEventArgs>;
 
     /**
-     * The event will be fired after removing the item from the Tab.
+     * The event will be fired after removing the item from the Tab.
      *
      * @event
      */

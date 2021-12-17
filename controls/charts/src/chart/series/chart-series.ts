@@ -985,6 +985,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     @Property(false)
     public enableComplexProperty: boolean;
 
+    private isAdvancedColor: boolean = undefined;
     /**
      * Process data for the series.
      *
@@ -1011,7 +1012,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             this.isRectTypeSeries = this.type.indexOf('Column') > -1 || this.type.indexOf('Bar') > -1
                                     || this.type.indexOf('Histogram') > -1;
         }
-        const len: number = Object.keys(this.currentViewData).length;
+        const len: number = (this.currentViewData as object[] || []).length;
         this.points = [];
         this.xMin = Infinity; this.xMax = -Infinity;
         this.yMin = Infinity; this.yMax = -Infinity;
@@ -1086,26 +1087,23 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     protected dataPoint(i: number, textMappingName: string, xName: string): Points {
         this.points[i] = new Points();
         const point: Points = <Points>this.points[i];
-        const currentViewData: Object = this.currentViewData;
+        const currentViewData: Object = this.currentViewData[i];
         const getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
-        point.x = getObjectValueByMappingString(xName, currentViewData[i]);
-        point.high = getObjectValueByMappingString(this.high, currentViewData[i]);
-        point.low = getObjectValueByMappingString(this.low, currentViewData[i]);
-        point.open = getObjectValueByMappingString(this.open, currentViewData[i]);
-        point.close = getObjectValueByMappingString(this.close, currentViewData[i]);
-        point.volume = getObjectValueByMappingString(this.volume, currentViewData[i]);
-        point.interior = getObjectValueByMappingString(this.pointColorMapping, currentViewData[i]) as string;
+        point.x = getObjectValueByMappingString(xName, currentViewData);
+        point.high = getObjectValueByMappingString(this.high, currentViewData);
+        point.low = getObjectValueByMappingString(this.low, currentViewData);
+        point.open = getObjectValueByMappingString(this.open, currentViewData);
+        point.close = getObjectValueByMappingString(this.close, currentViewData);
+        point.volume = getObjectValueByMappingString(this.volume, currentViewData);
+        point.interior = getObjectValueByMappingString(this.pointColorMapping, currentViewData) as string;
         if (this instanceof Series) {
-            point.y = getObjectValueByMappingString(this.yName, currentViewData[i]);
-            point.size = getObjectValueByMappingString(this.size, currentViewData[i]);
-            point.text = getObjectValueByMappingString(textMappingName, currentViewData[i]) as string;
-            point.tooltip = getObjectValueByMappingString(this.tooltipMappingName, currentViewData[i]) as string;
-            if (this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.isAdvancedColorSupported()) {
-                if (this.colorName && this.colorName.length > 0) {
-                    point.colorValue = getObjectValueByMappingString(this.colorName, currentViewData[i]);
-                } else {
-                    point.colorValue = getObjectValueByMappingString(this.yName, currentViewData[i]);
-                }
+            point.y = getObjectValueByMappingString(this.yName, currentViewData);
+            point.size = getObjectValueByMappingString(this.size, currentViewData);
+            point.text = getObjectValueByMappingString(textMappingName, currentViewData) as string;
+            point.tooltip = getObjectValueByMappingString(this.tooltipMappingName, currentViewData) as string;
+            if (this.isAdvancedColorSupported()) {
+                this.rangeColorName = this.colorName.length > 0 ? this.colorName : this.yName;
+                point.colorValue = getObjectValueByMappingString(this.rangeColorName, currentViewData);
                 point.interior = this.getPointFillColor(point.interior, point.colorValue);
             }
         }
@@ -1113,12 +1111,16 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
 
     private isAdvancedColorSupported(): boolean {
-        if (this.chart.visibleSeries.length === 1 &&
-            (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
-                this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble')) {
-            return true;
+        if (isNullOrUndefined(this.isAdvancedColor)) {
+            if (this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 &&
+                (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
+                    this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble')) {
+                this.isAdvancedColor = true;
+            } else {
+                this.isAdvancedColor = false;
+            }
         }
-        return false;
+        return this.isAdvancedColor;
     }
 
     private getPointFillColor(pointFill: string, value: number): string {
@@ -1294,10 +1296,11 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             }
         }
         if (!this.xAxis.isIndexed) {
-            if (this.xAxis.labels.indexOf(pointX) < 0) {
+            if (this.xAxis.indexLabels[pointX] === undefined) {
+                this.xAxis.indexLabels[pointX] = this.xAxis.labels.length;
                 this.xAxis.labels.push(pointX);
             }
-            point.xValue = this.xAxis.labels.indexOf(pointX);
+            point.xValue = this.xAxis.indexLabels[pointX];
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             this.xAxis.labels[index] ? this.xAxis.labels[index] += ', ' + pointX :
@@ -1568,6 +1571,16 @@ export class Series extends SeriesBase {
      */
     @Property(0)
     public zOrder: number;
+
+    /**
+     * Defines the name that specifies the chart series are mutually exclusive and can be overlaid.
+     * The axis in the same group shares the same baseline and location on the corresponding axis.
+     *
+     * @default ''
+     */
+
+    @Property('')
+    public groupName: string;
 
 
     /**
@@ -1876,6 +1889,8 @@ export class Series extends SeriesBase {
     public lowDrawPoints: ControlPoints[] = [];
     /** @private */
     public delayedAnimation: boolean = false;
+    /** @private */
+    public rangeColorName: string = this.colorName.length > 0 ? this.colorName : this.yName;
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
@@ -1892,6 +1907,7 @@ export class Series extends SeriesBase {
             return null;
         }
         this.xAxis.labels = [];
+        this.xAxis.indexLabels = {};
         for (const item of this.xAxis.series) {
             if (item.visible && item.category !== 'TrendLine') {
                 item.xMin = Infinity; item.xMax = -Infinity;

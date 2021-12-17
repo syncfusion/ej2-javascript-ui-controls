@@ -295,7 +295,6 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
      * The width of the border in pixels.
      *
      * @default 1
-     * @blazorDefaultValue 0
      */
     @Property(1)
     public width: number;
@@ -344,7 +343,6 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
      *
      * @default null
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public start: number | Date | string;
@@ -353,7 +351,6 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
      *
      * @default null
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public end: number | Date | string;
@@ -370,7 +367,6 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
      *
      * @default null
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public maximumTextWidth: number;

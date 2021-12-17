@@ -1,0 +1,73 @@
+@include export-module('ribbon-theme') {
+  .e-ribbon {
+    background-color: $ribbon-header-bg-color;
+
+    & .e-tab {
+      & .e-tab-header {
+        background-color: inherit;
+
+        @if $skin-name == 'bootstrap' {
+          &::before {
+            border-bottom-color: $ribbon-border-color;
+          }
+
+          & .e-toolbar-item.e-active {
+            border-bottom-color: $ribbon-content-bg-color;
+            border-left-color: $ribbon-border-color;
+            border-right-color: $ribbon-border-color;
+            border-top-color: $ribbon-border-color;
+          }
+        }
+      }
+
+      @if $skin-name == 'material' {
+        & .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
+          border-color: $separator-border-color;
+        }
+
+        & .e-tab-header:not(.e-vertical) .e-toolbar-item.e-active {
+          border: 0;
+        }
+      }
+    }
+
+    & .e-drop-icon {
+      color: $expand-icon-color;
+    }
+
+    & .e-tab .e-content .e-toolbar {
+      border-bottom-color: transparent;
+      border-top-color: transparent;
+    }
+
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+      & .e-tab {
+        & .e-tab-header .e-toolbar-item {
+          &.e-active {
+            background: $ribbon-content-bg-color;
+          }
+        }
+
+        & .e-content .e-toolbar {
+          background: $ribbon-content-bg-color;
+
+          & .e-toolbar-items,
+          & .e-toolbar-item .e-btn.e-tbar-btn:not(:hover):not(:focus),
+          & .e-toolbar-item.e-overlay {
+            background: transparent;
+          }
+        }
+      }
+    }
+
+    & .e-menu-wrapper {
+      background-color: transparent;
+
+      @if $skin-name == 'bootstrap4' {
+        & ul {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+}

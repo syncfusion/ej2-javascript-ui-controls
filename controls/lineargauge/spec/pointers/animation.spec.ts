@@ -138,6 +138,29 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
 
+        it('bar animation - RoundedRectangle container width as zero', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            gauge.container.type = 'RoundedRectangle';
+            gauge.container.width = 0;
+            gauge.axes[0].isInversed = false;
+            gauge.refresh();
+        });
+
+        it('bar animation - Thermometer container width as zero', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            gauge.container.type = 'Thermometer';
+            gauge.container.width = 0;
+            gauge.refresh();
+        });
+
         // it('bar animation - vertical - thermometer', (done: Function): void => {
         //     gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
         //         let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');

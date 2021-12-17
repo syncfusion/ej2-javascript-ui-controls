@@ -52,6 +52,7 @@ export class Image {
     private changedHeightValue: string;
     private inputWidthValue: string;
     private inputHeightValue: string;
+    private removingImgName: string;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -350,14 +351,16 @@ export class Image {
             return;
         }
         const width: number = img.style.width !== '' ? img.style.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(img.style.width) :
-        parseInt(img.style.width, 10) : img.width;
+            parseInt(img.style.width, 10) : img.width;
         const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
         if (width > height) {
             img.style.minWidth = '20px';
             if (this.parent.insertImageSettings.resizeByPercent) {
-                if (parseInt('' + img.getBoundingClientRect().width + '') !== 0 && parseInt('' + width + '') !== 0) {
-                    const percentageValue = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement));
-                    img.style.width = Math.min(Math.round((percentageValue / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
+                if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
+                    const percentageValue = this.pixToPerc(
+                        (width / height * expectedY), (img.previousElementSibling || img.parentElement));
+                    img.style.width = Math.min(
+                        Math.round((percentageValue / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
                 } else {
                     img.style.width = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
                 }
@@ -366,16 +369,20 @@ export class Image {
             } else if (img.style.width === '' && img.style.height !== '') {
                 img.style.height = expectedY + 'px';
             } else if (img.style.width !== '' && img.style.height === '') {
-                img.style.width = ((width / height * expectedY) + width / height).toString() + 'px';
+                let currentWidth: number = ((width / height * expectedY) + width / height) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
+                ((width / height * expectedY) + width / height) : (this.parent.inputElement.getBoundingClientRect().right - 32);
+                img.style.width = currentWidth.toString() + 'px';
             } else if (img.style.width !== '') {
-                img.style.width = (width / height * expectedY) + 'px';
+                let currentWidth: number = (width / height * expectedY) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
+                (width / height * expectedY) : (this.parent.inputElement.getBoundingClientRect().right - 32);
+                img.style.width = currentWidth + 'px';
                 img.style.height = expectedY + 'px';
             } else {
                 img.setAttribute('width', ((width / height * expectedY) + width / height).toString());
             }
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
-                if (parseInt('' + img.getBoundingClientRect().width + '') !== 0 && parseInt('' + width + '') !== 0) {
+                if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
                     img.style.width = Math.min(Math.round((width / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
                 } else {
                     img.style.width = this.pixToPerc((expectedX / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
@@ -466,7 +473,7 @@ export class Image {
     }
     private resizeImgDupPos(e: HTMLImageElement): void {
         this.imgDupPos = {
-            width: (e.style.height !== '') ? this.imgEle.style.width : e.width + 'px',
+            width: (e.style.width !== '') ? this.imgEle.style.width : e.width + 'px',
             height: (e.style.height !== '') ? this.imgEle.style.height : e.height + 'px'
         };
     }
@@ -637,6 +644,25 @@ export class Image {
             for (let i: number = 0; i < this.deletedImg.length; i++) {
                 const src: string = (this.deletedImg[i] as HTMLImageElement).src;
                 this.imageRemovePost(src as string);
+            }
+            if (range.startContainer.nodeType === 3) {
+                if (originalEvent.code === 'Backspace') {
+                    if ((range.startContainer as HTMLElement).previousElementSibling && range.startOffset === 0 &&
+                        (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPTION) &&
+                        (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
+                        detach((range.startContainer as HTMLElement).previousElementSibling);
+                    }
+                } else {
+                    if ((range.startContainer as HTMLElement).nextElementSibling &&
+                        range.endContainer.textContent.length === range.endOffset &&
+                        (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPTION) &&
+                        (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
+                        detach((range.startContainer as HTMLElement).nextElementSibling);
+                    }
+                }
+            } else if ((range.startContainer.nodeType === 1 &&
+                (range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE))) {
+                detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE));
             }
             break;
         case 'insert-image':
@@ -1052,9 +1078,7 @@ export class Image {
         return regexp.test(url);
     }
     private deleteImg(e: IImageNotifyArgs, keyCode?: number): void {
-        if (e.selectNode[0].nodeName !== 'IMG') {
-            return;
-        }
+        if (e.selectNode[0].nodeName !== 'IMG') { return; }
         const args: AfterImageDeleteEventArgs = {
             element: e.selectNode[0],
             src: (e.selectNode[0] as HTMLElement).getAttribute('src')
@@ -1073,7 +1097,7 @@ export class Image {
                 captionClass: classes.CLS_CAPTION,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
-        this.imageRemovePost(args.src as string);
+        this.imageRemovePost(args.src);
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
         }
@@ -1083,11 +1107,32 @@ export class Image {
         }
     }
     private imageRemovePost(src: string): void {
+        const proxy: Image = this;
+        let absoluteUrl: string = '';
+        if (isNOU(this.parent.insertImageSettings.removeUrl) || this.parent.insertImageSettings.removeUrl === '') { return; }
+        if (src.indexOf('http://') > -1 || src.indexOf('https://') > -1) {
+            absoluteUrl = src;
+        } else {
+            absoluteUrl = new URL(src, document.baseURI).href;
+        }
+        this.removingImgName = absoluteUrl.replace(/^.*[\\\/]/, '');
+        const xhr: XMLHttpRequest = new XMLHttpRequest();
+        xhr.addEventListener("readystatechange", function() {
+            if (this.readyState == 4 && this.status == 200) {
+                proxy.triggerPost(this.response);
+            }
+        });
+        xhr.open('GET', absoluteUrl);
+        xhr.responseType = 'blob';
+        xhr.send();
+    }
+    private triggerPost(response: Blob): void {
         const removeUrl: string = this.parent.insertImageSettings.removeUrl;
         if (isNOU(removeUrl) || removeUrl === '') { return; }
+        const file = new File([response], this.removingImgName);
         const ajax: Ajax = new Ajax(removeUrl, 'POST', true, null);
         const formData: FormData = new FormData();
-        formData.append(name, src as string);
+        formData.append('UploadFiles', file);
         ajax.send(formData);
     }
     private caption(e: IImageNotifyArgs): void {
@@ -1328,9 +1373,14 @@ export class Image {
             !closest(target, '#' + this.parent.getID() + '_toolbar_Image') &&
             !target.querySelector('#' + this.parent.getID() + '_toolbar_Image')))
         ) {
-            this.dialogObj.hide({ returnValue: true } as Event);
-            this.parent.isBlur = true;
-            dispatchEvent(this.parent.element, 'focusout');
+            /* eslint-disable */
+            if (e.offsetX > (e.target as HTMLImageElement).clientWidth || e.offsetY > (e.target as HTMLImageElement).clientHeight) {
+            } else {
+                this.dialogObj.hide({ returnValue: true } as Event);
+                this.parent.isBlur = true;
+                dispatchEvent(this.parent.element, 'focusout');
+            }
+            /* eslint-enable */
         }
         if ((e.target as HTMLElement).tagName !== 'IMG' && this.imgResizeDiv && !(this.quickToolObj &&
             this.quickToolObj.imageQTBar && this.quickToolObj.imageQTBar.element.contains(e.target as HTMLElement)) &&
@@ -1437,11 +1487,11 @@ export class Image {
         const imgWidth: string = this.i10n.getConstant('imageWidth');
         const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' });
         const widthVal: string = isNullOrUndefined(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
-            selectNode.style.width !== "") ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
-            this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString())).toString();
+            selectNode.style.width !== '') ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
+            this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString(), 10)).toString();
         const heightVal: string = isNullOrUndefined(this.changedHeightValue) && (selectNode.style.height.toString() === 'auto' ||
-            selectNode.style.height !== "") ? selectNode.style.height : !isNullOrUndefined(this.changedHeightValue) ?
-            this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString())).toString();
+            selectNode.style.height !== '') ? selectNode.style.height : !isNullOrUndefined(this.changedHeightValue) ?
+            this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
         this.changedWidthValue = null;
         this.changedHeightValue = null;
         const content: string = '<div class="e-rte-label"><label>' + imgWidth +
@@ -1482,7 +1532,7 @@ export class Image {
         }
         else
         {
-            return "auto";
+            return 'auto';
         }
     }
 
@@ -1891,7 +1941,7 @@ export class Image {
         imageTag.addEventListener('load', () => {
             this.parent.trigger(events.actionComplete, e);
         });
-
+        detach(parentElement);
     }
 
     /**
@@ -1927,6 +1977,9 @@ export class Image {
                 this.popupObj.destroy();
                 detach(this.popupObj.element);
                 this.popupObj = null;
+                if (!this.parent.inlineMode.enable) {
+                    this.parent.toolbarModule.baseToolbar.toolbarObj.disable(false);
+                }
             }
         });
         this.popupObj.element.style.display = 'none';
@@ -1958,6 +2011,10 @@ export class Image {
                 isUploading = false;
                 detach(imageElement);
                 this.popupObj.close();
+                this.quickToolObj.imageQTBar.hidePopup();
+                setTimeout(() => {
+                    this.uploadObj.destroy();
+                }, 900);
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {
                 if (this.parent.isServerRendered) {
@@ -1968,6 +2025,9 @@ export class Image {
                     this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
                         if (beforeUploadArgs.cancel) {
                             return;
+                        }
+                        if (!this.parent.inlineMode.enable) {
+                            this.parent.toolbarModule.baseToolbar.toolbarObj.disable(true);
                         }
                         /* eslint-disable */
                         (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
@@ -1980,6 +2040,9 @@ export class Image {
                     });
                 } else {
                     this.parent.trigger(events.beforeImageUpload, args);
+                    if (!this.parent.inlineMode.enable) {
+                        this.parent.toolbarModule.baseToolbar.toolbarObj.disable(true);
+                    }
                 }
             },
             uploading: (e: UploadingEventArgs) => {
@@ -1990,7 +2053,7 @@ export class Image {
                             if (!isNullOrUndefined(imageElement)) {
                                 detach(imageElement);
                             }
-                            if(!isNullOrUndefined(this.popupObj.element)) {
+                            if (!isNullOrUndefined(this.popupObj.element)) {
                                 detach(this.popupObj.element);
                             }
                         } else {
@@ -2021,6 +2084,9 @@ export class Image {
                 }, 900);
             },
             success: (e: ImageSuccessEventArgs) => {
+                if(e.operation === "cancel"){
+                    return;
+                }
                 isUploading = false;
                 this.parent.inputElement.contentEditable = 'true';
                 const args: IShowPopupArgs = {

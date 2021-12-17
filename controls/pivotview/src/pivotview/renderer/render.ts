@@ -21,6 +21,7 @@ import { PivotUtil } from '../../base/util';
 import { SelectedCellsInfo } from '../../common/popups/grouping';
 import { AggregateTypes } from '../../common/base/enum';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
+import { FieldOptionsModel } from '../model/datasourcesettings-model';
 
 /**
  * Module to render PivotGrid control
@@ -69,34 +70,40 @@ export class Render {
         this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
             (this.parent.isAdaptive ? 140 : 200);
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
-        this.gridSettings = parent.gridSettings;
+        this.gridSettings = this.parent.gridSettings;
         this.formatList = this.getFormatList();
         this.aggMenu = new AggregateMenu(this.parent);
     }
 
     /* eslint-disable-next-line */
     /** @hidden */
-    public render(): void {
-        let parent: PivotView = this.parent;
-        let engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+    public render(refreshRequired?: boolean): void {
+        if (refreshRequired) {
+            this.initProperties();
+        }
+        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
+            (this.parent.isAdaptive ? 140 : 200);
+        this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        this.gridSettings = this.parent.gridSettings;
+        this.formatList = this.getFormatList();
         this.parent.gridHeaderCellInfo = [];
         this.parent.gridCellCollection = {};
-        this.injectGridModules(parent);
+        this.injectGridModules(this.parent);
         this.rowStartPos = this.getRowStartPos();
         if (this.parent.grid && this.parent.grid.element && this.parent.element.querySelector('.e-grid')) {
             this.parent.notEmpty = true;
-            if (!engine.isEngineUpdated) {
-                engine.headerContent = this.frameDataSource('header');
-                engine.valueContent = this.frameDataSource('value');
+            if (!this.engine.isEngineUpdated) {
+                this.engine.headerContent = this.frameDataSource('header');
+                this.engine.valueContent = this.frameDataSource('value');
             } else {
                 if (this.parent.enableValueSorting) {
-                    engine.valueContent = this.frameDataSource('value');
+                    this.engine.valueContent = this.frameDataSource('value');
                 }
-                engine.isEngineUpdated = false;
+                this.engine.isEngineUpdated = false;
             }
             this.parent.grid.setProperties({
                 columns: this.frameStackedHeaders(), dataSource: (this.parent.dataType === 'olap' ? true :
-                    parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData ? engine.valueContent :
+                    this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData ? this.engine.valueContent :
                     this.frameDataSource('value')
             }, true);
             if (this.parent.grid.height === 'auto') {
@@ -134,6 +141,31 @@ export class Render {
             this.parent.grid.appendTo('#' + this.parent.element.id + '_grid');
         }
         this.parent.grid.on(headerRefreshed, this.refreshHeader, this);
+    }
+
+    private initProperties(): void {
+        this.rowStartPos = undefined;
+        this.maxIndent = undefined;
+        this.resColWidth = undefined;
+        this.isOverflows = undefined;
+        this.indentCollection = {};
+        this.formatList = undefined;
+        this.colPos = 0;
+        this.colGrandPos = undefined;
+        this.rowGrandPos = undefined;
+        this.lastSpan = 0;
+        this.field = undefined;
+        this.fieldCaption = undefined;
+        this.lvlCollection = {};
+        this.hierarchyCollection = {};
+        this.lvlPosCollection = {};
+        this.hierarchyPosCollection = {};
+        this.position = 0;
+        this.measurePos = 0;
+        this.maxMeasurePos = 0;
+        this.hierarchyCount = 0;
+        this.actualText = '';
+        this.timeOutObj = undefined;
     }
 
     private refreshHeader(): void {
@@ -351,9 +383,9 @@ export class Render {
             (this.parent as any).renderReactTemplates();    /* eslint-disable-line */
         }
         if (this.parent.isInitial) {
+            this.parent.isInitial = false;
             this.parent.refreshData();
         }
-        this.parent.isInitial = false;
         this.parent.notify(events.contentReady, {});
     }
 
@@ -1040,6 +1072,8 @@ export class Render {
         if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             let customClass: string = this.parent.hyperlinkSettings.cssClass;
             let cell: IAxisSet = (args.data as IGridValues)[0] as IAxisSet;
+            let isRowFieldsAvail: boolean = cell.valueSort && cell.valueSort.levelName === (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row' &&
+                this.parent.localeObj.getConstant('grandTotal') + (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText));
             tCell.setAttribute('index', cell.rowIndex ? cell.rowIndex.toString() : '0');
             if (tCell.getAttribute('aria-colindex') === '0') {
                 if (this.parent.dataType === 'pivot') {
@@ -1091,10 +1125,16 @@ export class Render {
                     if (cell.type === 'grand sum') {
                         this.rowGrandPos = cell.rowIndex;
                         tCell.classList.add('e-gtot');
-                        localizedText = isNullOrUndefined(cell.valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') : cell.formattedText;
+                        let values: FieldOptionsModel[] = this.parent.dataSourceSettings.values;
+                        localizedText = isNullOrUndefined(cell.valueSort.axis) ? (this.parent.dataSourceSettings.rows.length === 0 && values.length === 1 && this.parent.dataSourceSettings.valueAxis === 'row') ?
+                            this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(values[values.length - 1].type) + ' ' +
+                            this.parent.localeObj.getConstant('of') + ' ' + (!isNullOrUndefined(values[values.length - 1].caption) ? values[values.length - 1].caption : values[values.length - 1].name) :
+                            this.parent.localeObj.getConstant('grandTotal') : cell.formattedText;
                     } else if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
                         (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
                         tCell.classList.add('e-gtot');
+                        localizedText = isRowFieldsAvail ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType) + ' '
+                            + this.parent.localeObj.getConstant('of') + ' ' + cell.formattedText : localizedText;
                     } else {
                         tCell.classList.add('e-stot');
                     }
@@ -1115,8 +1155,9 @@ export class Render {
                 }));
                 let vSort: IValueSortSettings = this.parent.pivotView.dataSourceSettings.valueSortSettings;
                 if (this.parent.enableValueSorting) {
-                    if (vSort && vSort.headerText && this.parent.dataSourceSettings.valueAxis === 'row'
-                        && (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
+                    if (vSort && vSort.headerText && this.parent.dataSourceSettings.valueAxis === 'row' &&
+                        this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] &&
+                        (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
                         if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
                             === vSort.headerText) {
                             let style: string = (tCell.querySelector('.e-expand') || tCell.querySelector('.e-collapse')) ?
@@ -1136,10 +1177,11 @@ export class Render {
                 tCell.classList.add(cls.VALUESCONTENT);
                 cell = (args.data as IGridValues)[Number(tCell.getAttribute('aria-colindex'))] as IAxisSet;
                 cell = isNullOrUndefined(cell) ? (args.column.customAttributes.cell as IAxisSet) : cell;
+                cell.isGrandSum = isRowFieldsAvail ? true : cell.isGrandSum;
                 if (cell.isSum) {
                     tCell.classList.add(cls.SUMMARY);
                 }
-                let isGrandSum: boolean = (isNullOrUndefined(cell.isGrandSum) && this.parent.dataSourceSettings.valueAxis === 'column' && this.parent.dataType === 'olap' &&
+                let isGrandSum: boolean = (isNullOrUndefined(cell.isGrandSum) && (!isNullOrUndefined(this.parent.olapEngineModule) && this.parent.olapEngineModule.olapValueAxis === 'column') && this.parent.dataType === 'olap' &&
                     ((this.colGrandPos - this.parent.dataSourceSettings.values.length) < Number(tCell.getAttribute('aria-colindex'))));
                 if (cell.isGrandSum || (isGrandSum || this.colGrandPos === Number(tCell.getAttribute('aria-colindex'))) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
                     tCell.classList.add('e-gtot');
@@ -1279,6 +1321,12 @@ export class Render {
                 }
                 lvlPos++;
             }
+            if (this.parent.dataSourceSettings.grandTotalsPosition === 'Top' && (!isNullOrUndefined(this.parent.olapEngineModule) && this.parent.olapEngineModule.olapValueAxis === 'row') && this.parent.dataType === 'olap' &&
+                (cell.valueSort.levelName.toString()).indexOf(this.parent.localeObj.getConstant('grandTotal') + this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) === 0) {
+                tCell.appendChild(createElement('span', {
+                    className: cls.NEXTSPAN,
+                }));
+            }
             if (cell.memberType === 3 && cell.level === -1 && Object.keys(this.lvlCollection).length > 1) {
                 tCell.appendChild(createElement('span', {
                     className: cls.NEXTSPAN,
@@ -1340,15 +1388,19 @@ export class Render {
                 } else {
                     tCell = this.onOlapColumnCellBoundEvent(tCell, cell);
                 }
-                if (cell.type) {
+                let isColumnFieldsAvail: boolean = (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column' && cell.valueSort &&
+                    cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') + (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText)));
+                if (cell.type || isColumnFieldsAvail) {
                     tCell.classList.add(cell.type === 'grand sum' ? 'e-gtot' : 'e-stot');
                     if (cell.type === 'grand sum') {
                         this.colGrandPos = cell.colIndex;
-                    } else {
+                    } else if (cell.type) {
                         tCell.classList.add('e-colstot');
                     }
                     let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') : cell.formattedText) :
                         cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
+                    localizedText = isColumnFieldsAvail ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType)
+                        + ' ' + this.parent.localeObj.getConstant('of') + ' ' + cell.formattedText : localizedText;
                     if ((tCell.querySelector('.e-headertext') as HTMLElement) !== null) {
                         (tCell.querySelector('.e-headertext') as HTMLElement).innerText = localizedText;
                     } else {
@@ -1585,8 +1637,8 @@ export class Render {
         if (this.parent.currentView !== 'Chart') {
             if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {
                 let rowColHeight: number = (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
-                let gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) ?
-                    (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
+                let gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) ?
+                    (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
                 let toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
                 gridHeight = parHeight - (gBarHeight + toolBarHeight) - 1;
                 gridHeight = gridHeight < 40 ? 40 : gridHeight;
@@ -1789,8 +1841,40 @@ export class Render {
         return formatArray;
     }
 
+    private getValidHeader(args: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs | ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs, axis: string): any {
+        let values: FieldOptionsModel[] = this.parent.dataSourceSettings.values;
+        if (axis === 'row') {
+            let cellInfo: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs = args as ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs;
+            if (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) {
+                if (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row' && (this.parent.localeObj.getConstant('grandTotal') +
+                    this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + cellInfo.value) === ((cellInfo.data as IGridValues)[0] as IAxisSet).valueSort.levelName) {
+                    return this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cellInfo.value.toString()].aggregateType)
+                        + ' ' + this.parent.localeObj.getConstant('of') + ' ' + cellInfo.value.toString();
+                } else if (values.length === 1 && this.parent.dataSourceSettings.rows.length === 0) {
+                    return this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(values[values.length - 1].type)
+                        + ' ' + this.parent.localeObj.getConstant('of') + ' ' + (!isNullOrUndefined(values[values.length - 1].caption) ? values[values.length - 1].caption : values[values.length - 1].name);
+                }
+            }
+            return cellInfo.value;
+        } else if (axis === 'column') {
+            let cellInfo: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs = args as ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs;
+            if (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) {
+                if (!isNullOrUndefined(((args as any).gridCell as any).column.customAttributes) && this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column' &&
+                    (this.parent.localeObj.getConstant('grandTotal') + this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + (cellInfo.gridCell as any).column.customAttributes.cell.formattedText)
+                    === (cellInfo.gridCell as any).column.customAttributes.cell.valueSort.levelName) {
+                    return this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[(cellInfo
+                        .gridCell as any).column.customAttributes.cell.actualText].aggregateType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + (cellInfo.gridCell as any).column.customAttributes.cell.formattedText;
+                }
+            }
+            return ((cellInfo as any).cell).value;
+        }
+    }
+
     /* eslint-disable */
     private excelColumnEvent(args: ExcelHeaderQueryCellInfoEventArgs): void {
+        if (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column') {
+            ((args as any).cell).value = this.getValidHeader(args, 'column');
+        }
         if (args.gridCell !== undefined && (args.gridCell as any).column.width === 'auto') {
             this.parent.lastColumn = (args.gridCell as any).column;
             (args.gridCell as any).column.width = (args.gridCell as any).column.minWidth;
@@ -1800,6 +1884,9 @@ export class Render {
     }
 
     private pdfColumnEvent(args: PdfHeaderQueryCellInfoEventArgs): void {
+        if (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column') {
+            ((args as any).cell).value = this.getValidHeader(args, 'column');
+        }
         if (args.gridCell !== undefined && (args.gridCell as any).column.width === 'auto') {
             this.parent.lastColumn = (args.gridCell as any).column;
             (args.gridCell as any).column.width = (args.gridCell as any).column.minWidth;
@@ -1838,6 +1925,9 @@ export class Render {
             }
         }
         args = this.exportContentEvent(args);
+        if (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row') {
+            args.value = args.column.field === '0.formattedText' ? this.getValidHeader(args, 'row') : args.value;
+        }
         this.parent.trigger(events.excelQueryCellInfo, args);
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1860,6 +1950,9 @@ export class Render {
             }
             args.style = { paragraphIndent: level * 10 };
             this.lastSpan = isValueCell ? this.lastSpan : level;
+            if (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row') {
+                args.value = this.getValidHeader(args, 'row');
+            }
         }
         this.parent.trigger(events.pdfQueryCellInfo, args);
     }

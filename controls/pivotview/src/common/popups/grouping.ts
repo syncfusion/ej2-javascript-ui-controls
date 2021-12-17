@@ -7,6 +7,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { PivotUtil } from '../../base/util';
+import { PivotExportUtil } from '../../base/export-util';
 import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -604,7 +605,7 @@ export class Grouping implements IAction {
                     for (let j: number = 0, len: number = field.customGroups.length; j < len; j++) {
                         if (field.customGroups[j]) {
                             let group: ICustomGroups = field.customGroups[j];
-                            if (group.items && PivotUtil.isContainCommonElements(group.items, selectedOptions)) {
+                            if (group.items && PivotExportUtil.isContainCommonElements(group.items, selectedOptions)) {
                                 splicedItems = this.mergeArray(splicedItems, [group.groupName]);
                                 newItems = this.mergeArray(newItems, group.items);
                                 field.customGroups.splice(j, 1);

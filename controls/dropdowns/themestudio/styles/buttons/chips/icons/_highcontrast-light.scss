@@ -1,0 +1,17 @@
+#{&}.e-chip-list {
+  .e-chip-text {
+    margin-top: -2px;
+  }
+
+  .e-chip-delete {
+    &.e-dlt-btn::before {
+      content: '\e7fc';
+    }
+  }
+
+  &.e-multi-selection .e-chip {
+    &::before {
+      content: '\e7ff';
+    }
+  }
+}

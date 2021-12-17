@@ -281,6 +281,7 @@ export class Resize {
         const oldValue: string = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
             `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
         const contentClone: HTMLElement[] = [];
+        let oldHeight: number = 0;
         const contentTable: HTMLElement = mainContent.getElementsByClassName('e-content-table')[0] as HTMLElement;
         if (this.parent.getActiveSheet().showHeaders) {
             const headerTable: HTMLElement = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
@@ -340,7 +341,7 @@ export class Resize {
                 contentFit = this.getFloatingElementWidth(contentFit, idx);
             }
             let autofitValue: number = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
-            const threshold: number = parseInt(oldValue, 10) > autofitValue ?
+            let threshold: number = parseInt(oldValue, 10) > autofitValue ?
                 -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
             if (isCol) {
                 if (idx >= this.parent.viewport.leftIndex && idx <= this.parent.viewport.rightIndex) {
@@ -361,12 +362,18 @@ export class Resize {
             } else if (!isCol) {
                 if (idx >= this.parent.viewport.topIndex && idx <= this.parent.viewport.bottomIndex) {
                     autofitValue = autofitValue > 20 ? autofitValue : 20;
+                    oldHeight = getRowHeight(sheet, idx);
+                    if (autofitValue > 0) {
+                        threshold = -(oldHeight - autofitValue);
+                    } else {
+                        threshold = -oldHeight;
+                    }
                     setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
                     setRow(sheet, idx, { customHeight: false });
                     this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
                     this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
                 } else {
-                    const oldHeight: number = getRowHeight(sheet, idx);
+                    oldHeight = getRowHeight(sheet, idx);
                     let threshold: number;
                     if (autofitValue > 0) {
                         threshold = -(oldHeight - autofitValue);
@@ -378,6 +385,7 @@ export class Resize {
                 }
             }
         }
+        this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
     }
 
     private createResizeHandler(trgt: HTMLElement, className: string): void {

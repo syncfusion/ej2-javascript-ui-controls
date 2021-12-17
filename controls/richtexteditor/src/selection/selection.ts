@@ -136,7 +136,8 @@ export class NodeSelection {
         const endNode: Node = range.endContainer.childNodes[
             (range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer;
-        if (startNode === endNode && startNode.childNodes.length === 0) {
+        if ((startNode === endNode || (startNode.nodeName === 'BR' && startNode === range.endContainer.childNodes[range.endOffset])) &&
+        startNode.childNodes.length === 0) {
             return [startNode];
         }
         if (range.startOffset === range.endOffset && range.startOffset !== 0 && range.startContainer.nodeName === 'PRE') {

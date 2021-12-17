@@ -78,7 +78,7 @@ describe('Heatmap Control', () => {
             heatmap.height = "100%",
             heatmap.dataBind();
             tempElement = document.getElementById('container_svg');
-            expect((tempElement.getAttribute('width') == '767' || tempElement.getAttribute('width') == '769') && tempElement.getAttribute('height') == '450').toBe(true);
+            expect((tempElement.getAttribute('width') == '769' || tempElement.getAttribute('width') == '758') && tempElement.getAttribute('height') == '450').toBe(true);
         });
         it('Check the heat map with HighContrast light theme', () => {
             heatmap.theme = "HighContrastLight",
@@ -151,6 +151,68 @@ describe('Heatmap Control', () => {
             tempElement = document.getElementById("container_svg").querySelector("text");
             expect(tempElement.getAttribute('fill') == '#D1D5DB').toBe(true);
             expect(tempElement.getAttribute('font-family') == 'Inter').toBe(true);
+        });
+    });
+    describe('Heatmap with Bootstrap5 theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: SVGTextElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                titleSettings: {
+                    text: 'Heatmap component',
+                },
+                width: "100%",
+                height: "300px",
+                dataSource: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                load: function(args: ILoadedEventArgs): void {
+                   args.heatmap.theme = "Bootstrap5"
+                }
+            });
+            heatmap.appendTo('#container');
+        });
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Checking title font-family on Heatmap component using Bootstrap5 theme', () => {
+            tempElement = document.getElementById("container_svg").querySelector("text");
+            expect(tempElement.getAttribute('fill') == '#343A40').toBe(true);
+            expect(tempElement.getAttribute('font-family') == 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"').toBe(true);
+        });
+    });
+    describe('Heatmap with Bootstrap5Dark theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: SVGTextElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                titleSettings: {
+                    text: 'Heatmap component',
+                },
+                width: "100%",
+                height: "300px",
+                dataSource: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                load: function(args: ILoadedEventArgs): void {
+                   args.heatmap.theme = "Bootstrap5Dark"
+                }
+            });
+            heatmap.appendTo('#container');
+        });
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Checking title font-family on Heatmap component using Bootstrap5Dark theme', () => {
+            tempElement = document.getElementById("container_svg").querySelector("text");
+            expect(tempElement.getAttribute('fill') == '#E9ECEF').toBe(true);
+            expect(tempElement.getAttribute('font-family') == 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"').toBe(true);
         });
     });
     it('memory leak', () => {     

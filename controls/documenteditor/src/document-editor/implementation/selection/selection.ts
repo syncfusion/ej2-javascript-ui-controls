@@ -598,6 +598,7 @@ export class Selection {
      * @returns {void}
      */
     public goToPage(pageNumber: number): void {
+        this.owner.scrollToPage(pageNumber);
         if (pageNumber >= 1 && pageNumber <= this.owner.documentHelper.pages.length) {
             const page: Page = this.owner.documentHelper.pages[pageNumber - 1];
             this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
@@ -1606,7 +1607,7 @@ export class Selection {
      */
     public nextFootnote(): void {
         if (this.isinFootnote) {
-            const footNoteElement: FootnoteElementBox = this.start.paragraph.footNoteReference;
+            const footNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
             const colLength: number = this.documentHelper.footnoteCollection.length;
             const indexCount: number = this.documentHelper.footnoteCollection.indexOf(footNoteElement);
             let nextFootnoteElement: ElementBox = this.documentHelper.footnoteCollection[indexCount + 1];
@@ -1616,11 +1617,11 @@ export class Selection {
             const start: TextPosition = this.start.clone();
             const end: TextPosition = this.end.clone();
             for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-                const referenceElement: Widget = this.documentHelper.pages[i].footnoteWidget;
-                for (let j: number = 1; j < referenceElement.childWidgets.length; j++) {
-                    const element: FootnoteElementBox = (referenceElement.childWidgets[j] as BlockWidget).footNoteReference;
+                const referenceElement: FootNoteWidget = this.documentHelper.pages[i].footnoteWidget;
+                for (let j: number = 1; j < referenceElement.bodyWidgets.length; j++) {
+                    const element: FootnoteElementBox = (referenceElement.bodyWidgets[j]).footNoteReference;
                     if (element === nextFootnoteElement) {
-                        start.setPositionParagraph((referenceElement.childWidgets[j] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        start.setPositionParagraph((referenceElement.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                         end.setPositionInternal(start);
                         this.selectRange(start, end);
                     }
@@ -1635,7 +1636,7 @@ export class Selection {
      */
     public previousFootnote(): void {
         if (this.isinFootnote) {
-            const footNoteElement: FootnoteElementBox = this.start.paragraph.footNoteReference;
+            const footNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
             const colLength: number = this.documentHelper.footnoteCollection.length;
             const indexCount: number = this.documentHelper.footnoteCollection.indexOf(footNoteElement);
             let previousFootnote: FootnoteElementBox = this.documentHelper.footnoteCollection[indexCount - 1];
@@ -1645,12 +1646,11 @@ export class Selection {
             const startPosition: TextPosition = this.start.clone();
             const endPosition: TextPosition = this.end.clone();
             for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-                const footnote: Widget = this.documentHelper.pages[i].footnoteWidget;
-                for (let j: number = 1; j < footnote.childWidgets.length; j++) {
-                    const element: FootnoteElementBox = (footnote.childWidgets[j] as BlockWidget).footNoteReference;
+                const footnote: FootNoteWidget = this.documentHelper.pages[i].footnoteWidget;
+                for (let j: number = 1; j < footnote.bodyWidgets.length; j++) {
+                    const element: FootnoteElementBox = (footnote.bodyWidgets[j]).footNoteReference;
                     if (element === previousFootnote) {
-
-                        startPosition.setPositionParagraph((footnote.childWidgets[j] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        startPosition.setPositionParagraph((footnote.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                         endPosition.setPositionInternal(startPosition);
                         this.selectRange(startPosition, endPosition);
                     }
@@ -1665,8 +1665,7 @@ export class Selection {
      */
     public nextEndnote(): void {
         if (this.isinEndnote) {
-            const endNoteElement: FootnoteElementBox = this.start.paragraph.footNoteReference;
-            const colLength: number = this.documentHelper.endnoteCollection.length;
+            const endNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
             const indexCount: number = this.documentHelper.endnoteCollection.indexOf(endNoteElement);
             let nextEndnote: ElementBox = this.documentHelper.endnoteCollection[indexCount + 1];
             if (isNullOrUndefined(nextEndnote)) {
@@ -1674,11 +1673,11 @@ export class Selection {
             }
             const startPosition: TextPosition = this.start.clone();
             const endPosition: TextPosition = this.end.clone();
-            const endnoteElement: Widget = this.documentHelper.pages[this.endPage - 1].endnoteWidget;
+            const endnoteElement: FootNoteWidget = this.documentHelper.pages[this.endPage - 1].endnoteWidget;
             for (let j: number = 0; j < endnoteElement.childWidgets.length; j++) {
-                const element: FootnoteElementBox = (endnoteElement.childWidgets[j] as BlockWidget).footNoteReference;
+                const element: FootnoteElementBox = (endnoteElement.bodyWidgets[j]).footNoteReference;
                 if (element === nextEndnote) {
-                    startPosition.setPositionParagraph((endnoteElement.childWidgets[j] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    startPosition.setPositionParagraph((endnoteElement.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                     endPosition.setPositionInternal(startPosition);
                     this.selectRange(startPosition, endPosition);
                 }
@@ -1692,8 +1691,7 @@ export class Selection {
      */
     public previousEndnote(): void {
         if (this.isinEndnote) {
-            const endNoteElement: FootnoteElementBox = this.start.paragraph.footNoteReference;
-            const colLength: number = this.documentHelper.endnoteCollection.length;
+            const endNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
             const indexCount: number = this.documentHelper.endnoteCollection.indexOf(endNoteElement);
             let inline: FootnoteElementBox = this.documentHelper.endnoteCollection[indexCount - 1];
             if (isNullOrUndefined(inline)) {
@@ -1701,11 +1699,11 @@ export class Selection {
             }
             const startPosition: TextPosition = this.start.clone();
             const endPosition: TextPosition = this.end.clone();
-            const referenceElement: Widget = this.documentHelper.pages[this.endPage - 1].endnoteWidget;
+            const referenceElement: FootNoteWidget = this.documentHelper.pages[this.endPage - 1].endnoteWidget;
             for (let j: number = 0; j < referenceElement.childWidgets.length; j++) {
-                const element: FootnoteElementBox = (referenceElement.childWidgets[j] as BlockWidget).footNoteReference;
+                const element: FootnoteElementBox = (referenceElement.bodyWidgets[j]).footNoteReference;
                 if (element === inline) {
-                    startPosition.setPositionParagraph((referenceElement.childWidgets[j] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    startPosition.setPositionParagraph((referenceElement.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                     endPosition.setPositionInternal(startPosition);
                     this.selectRange(startPosition, endPosition);
                 }
@@ -2749,7 +2747,7 @@ export class Selection {
                 if (isNullOrUndefined(this.documentHelper.pages[i].footnoteWidget)) {
                     continue;
                 } else {
-                    documentStart = this.setPositionForBlock((this.documentHelper.pages[i].footnoteWidget.firstChild as BlockWidget), true);
+                    documentStart = this.setPositionForBlock((this.documentHelper.pages[i].footnoteWidget.bodyWidgets[0].firstChild as BlockWidget), true);
                     break;
                 }
             }
@@ -2757,16 +2755,17 @@ export class Selection {
                 if (isNullOrUndefined(this.documentHelper.pages[j].footnoteWidget)) {
                     continue;
                 } else {
-                    const child: number = this.documentHelper.pages[j].footnoteWidget.childWidgets.length;
+                    const child: number = this.documentHelper.pages[j].footnoteWidget.bodyWidgets.length;
+                    const lastChild: number = this.documentHelper.pages[j].footnoteWidget.bodyWidgets[child - 1].childWidgets.length
 
-                    documentEnd = this.setPositionForBlock((this.documentHelper.pages[j].footnoteWidget.childWidgets[child - 1] as BlockWidget), false);
+                    documentEnd = this.setPositionForBlock((this.documentHelper.pages[j].footnoteWidget.bodyWidgets[child - 1].childWidgets[lastChild - 1] as BlockWidget), false);
                     break;
                 }
             }
         } else if (container instanceof FootNoteWidget && container.footNoteType === 'Endnote') {
             const endNotes: FootNoteWidget = this.getContainerWidget(this.start.paragraph) as FootNoteWidget;
-            documentStart = this.setPositionForBlock(endNotes.firstChild as BlockWidget, true);
-            documentEnd = this.setPositionForBlock(endNotes.lastChild as BlockWidget, false);
+            documentStart = this.setPositionForBlock((endNotes.bodyWidgets[0] as BodyWidget).firstChild as BlockWidget, true);
+            documentEnd = this.setPositionForBlock((endNotes.bodyWidgets[endNotes.bodyWidgets.length - 1] as BodyWidget).firstChild as BlockWidget, false);
         } else {
             documentStart = this.owner.documentStart;
             documentEnd = this.owner.documentEnd;
@@ -3030,7 +3029,12 @@ export class Selection {
                 const sectionIndex: number = block.page.sectionIndex;
                 index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
             } else {
-                index = block.index + ';' + offset;
+                if (block instanceof BodyWidget && !isNullOrUndefined(block.containerWidget) && block.containerWidget instanceof FootNoteWidget) {
+                    let ind: number = block.containerWidget.bodyWidgets.indexOf(block);
+                    index = ind + ';' + offset;
+                } else {
+                    index = block.index + ';' + offset;
+                }
             }
             if (block instanceof TextFrame) {
                 const indexInOwner: string = block.containerShape.indexInOwner.toString();
@@ -3128,7 +3132,7 @@ export class Selection {
         index = parseInt(value, 10);
         return this.getBodyWidgetInternal(sectionIndex, index);
     }
-    private getFootNoteWidget(position: IndexInfo): FootNoteWidget {
+    private getFootNoteWidget(position: IndexInfo): BodyWidget {
         let index1: number = position.index.indexOf(';');
         let value1: string = position.index.substring(0, index1);
         position.index = position.index.substring(index1).replace(';', '');
@@ -3138,10 +3142,14 @@ export class Selection {
         position.index = position.index.substring(index1).replace(';', '');
         index1 = parseInt(value1, 10);
         const page: Page = this.documentHelper.pages[index1];
+        index1 = position.index.indexOf(';');
+        value1 = position.index.substring(0, index1);
+        position.index = position.index.substring(index1).replace(';', '');
+        index1 = parseInt(value1, 10);
         if (footNote) {
-            return page.footnoteWidget;
+            return page.footnoteWidget.bodyWidgets[index1];
         } else {
-            return page.endnoteWidget;
+            return page.endnoteWidget.bodyWidgets[index1];
         }
     }
     private getHeaderFooterWidget(position: IndexInfo): HeaderFooterWidget {
@@ -3622,8 +3630,8 @@ export class Selection {
      * @param element 
      * @returns 
      */
-    public isElementInSelection(element:ElementBox): boolean {
-        let offset: number = element.line.getOffset(element, 0);
+    public isElementInSelection(element: ElementBox, isStart: boolean): boolean {
+        let offset: number = element.line.getOffset(element, isStart ? 0 : 1);
         let elemPosition: TextPosition = new TextPosition(this.owner);
         elemPosition.setPositionParagraph(element.line, offset);
         let start: TextPosition = this.start;
@@ -3687,12 +3695,17 @@ export class Selection {
                         block.index;
 
                 }
-                if ((start.containerWidget instanceof BodyWidget && block.containerWidget instanceof BodyWidget)
-                    || start.containerWidget instanceof FootNoteWidget && block.containerWidget instanceof FootNoteWidget) {
+                if ((start.containerWidget instanceof BodyWidget && block.containerWidget instanceof BodyWidget)) {
                     //Splitted blocks
                     const startPage: number = this.documentHelper.pages.indexOf(start.containerWidget.page);
                     const endPage: number = this.documentHelper.pages.indexOf(block.containerWidget.page);
-                    return startPage < endPage;
+                    if (startPage === endPage && start.containerWidget.containerWidget instanceof FootNoteWidget && block.containerWidget.containerWidget instanceof FootNoteWidget) {
+                        const startindex: number = this.documentHelper.pages[startPage].footnoteWidget.bodyWidgets.indexOf(start.containerWidget);
+                        const endindex: number = this.documentHelper.pages[endPage].footnoteWidget.bodyWidgets.indexOf(block.containerWidget);
+                        return startindex < endindex;
+                    } else {
+                        return startPage < endPage;
+                    }
                 }
             }
         }
@@ -5827,11 +5840,10 @@ export class Selection {
                 }
             }
         }
-        for (let i: number = 0; i < widget.childWidgets.length; i++) {
-            const childWidget: IWidget = widget.childWidgets[i];
-            if (childWidget instanceof FootNoteWidget) {
-                for (let j: number = 0; j < childWidget.childWidgets.length; j++) {
-                    const footChild: IWidget = childWidget.childWidgets[j];
+        if (widget instanceof FootNoteWidget) {
+            for (let j: number = 0; j < widget.bodyWidgets.length; j++) {
+                for (let k: number = 0; k < widget.bodyWidgets[j].childWidgets.length; k++) {
+                    const footChild: IWidget = widget.bodyWidgets[j].childWidgets[k];
                     if (footChild instanceof Widget && (footChild as Widget).y <= point.y
                         && ((footChild as Widget).y + (footChild as Widget).height) >= point.y) {
                         if (footChild instanceof ParagraphWidget) {
@@ -5841,6 +5853,12 @@ export class Selection {
                         }
                     }
                 }
+            }
+        }
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            const childWidget: IWidget = widget.childWidgets[i];
+            if (childWidget instanceof FootNoteWidget) {
+                return childWidget[i];
             } else {
                 if (childWidget instanceof Widget && (childWidget as Widget).y <= point.y
                     && ((childWidget as Widget).y + (childWidget as Widget).height) >= point.y) {
@@ -7029,9 +7047,9 @@ export class Selection {
             }
         }
         let currentRevision: Revision[] = this.getCurrentRevision();
-        if (currentRevision) {
-            this.owner.showRevisions = true;
+        if (!isNullOrUndefined(currentRevision) &&  this.owner.showRevisions) {
             this.owner.trackChangesPane.currentSelectedRevision = currentRevision[0];
+            this.owner.notify('reviewPane', { comment: this.owner.showComments, changes: true });
         } else if (!isNullOrUndefined(this.owner.trackChangesPane.currentSelectedRevision)) {
             this.owner.trackChangesPane.currentSelectedRevision = undefined;
         }
@@ -7360,7 +7378,11 @@ export class Selection {
         if (block.containerWidget instanceof TextFrame) {
             bodyWidget = block.containerWidget.containerShape.line.paragraph.bodyWidget;
         } else if (block.containerWidget instanceof BlockContainer) {
-            bodyWidget = block.containerWidget;
+            if (!isNullOrUndefined(block.containerWidget.containerWidget) && block.containerWidget.containerWidget instanceof FootNoteWidget) {
+                bodyWidget = block.containerWidget.containerWidget;
+            } else {
+                bodyWidget = block.containerWidget;
+            }
         } else {
             bodyWidget = block.containerWidget;
             while (!(bodyWidget instanceof BlockContainer)) {
@@ -7978,8 +8000,21 @@ export class Selection {
                     left = (widget as Widget).x;
                 }
                 let widgetInfo: SelectionWidgetInfo = this.selectedWidgets.get(widget as IWidget) as SelectionWidgetInfo;
-                isSelected = widgetInfo.left <= point.x && top <= point.y &&
-                    top + (widget as Widget).height >= point.y && widgetInfo.left + widgetInfo.width >= point.x;
+                if (widgetInfo instanceof SelectionWidgetInfo) {
+                    isSelected = widgetInfo.left <= point.x && top <= point.y &&
+                        top + (widget as Widget).height >= point.y && widgetInfo.left + widgetInfo.width >= point.x;
+                } else {
+                    let widgetIn: SelectionWidgetInfo[] = widgetInfo as SelectionWidgetInfo[];
+                    for (let j: number = 0; j < widgetIn.length; j++) {
+                        if (widgetIn[j] instanceof SelectionWidgetInfo) {
+                            isSelected = widgetIn[j].left <= point.x && top <= point.y &&
+                                top + (widget as Widget).height >= point.y && widgetIn[j].left + widgetIn[j].width >= point.x;
+                            if (isSelected) {
+                                break;
+                            }
+                        }
+                    }
+                }
             }
             widget = (widget instanceof LineWidget) ? widget.paragraph : (widget as Widget).containerWidget;
         } while (!isNullOrUndefined(widget) && !isSelected);
@@ -8295,7 +8330,6 @@ export class Selection {
         } else if (event.item.text === locale.getConstant('OverwriteCells')) {
             this.owner.editor.applyTablePasteOptions('OverwriteCells');
         } else {
-            this.owner.editor.previousParaFormat = undefined;
             this.owner.editor.applyPasteOptions('KeepTextOnly');
         }
     }
@@ -9838,8 +9872,8 @@ export class Selection {
      */
     public selectComment(comment: CommentElementBox): void {
         if (!isNullOrUndefined(comment)) {
-            let startPosition: TextPosition = this.getElementPosition(comment.commentStart).startPosition;
-            let endPosition: TextPosition = this.getElementPosition(comment.commentEnd).startPosition;
+            let startPosition: TextPosition = this.getElementPosition(comment.commentStart, true).startPosition;
+            let endPosition: TextPosition = this.getElementPosition(comment.commentEnd, false).startPosition;
             this.selectPosition(startPosition, endPosition);
             if (this.owner.commentReviewPane) {
                 this.owner.commentReviewPane.selectComment(comment);
@@ -10052,7 +10086,7 @@ export class Selection {
     }
     private highlightEditRegions(editRangeStart: EditRangeStartElementBox, startPosition: TextPosition, endPosition: TextPosition): void {
         if (!editRangeStart.line.paragraph.isInsideTable
-            || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable)) {
+            || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable) || editRangeStart.columnFirst === -1) {
             this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
             if (this.isHighlightNext) {
                 this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
@@ -10141,23 +10175,52 @@ export class Selection {
         return this.checkSelectionIsAtEditRegion();
     }
     public checkSelectionIsAtEditRegion(start?: TextPosition, end?: TextPosition): boolean {
+        if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
+            start = this.start;
+            end = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+        }
         for (let i: number = 0; i < this.editRangeCollection.length; i++) {
             let editRangeStart: EditRangeStartElementBox = this.editRangeCollection[i];
-            let positionInfo: PositionInfo = this.getPosition(editRangeStart);
-            let startPosition: TextPosition = positionInfo.startPosition;
-            let endPosition: TextPosition = positionInfo.endPosition;
-            if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
-                start = this.start;
-                end = this.end;
-                if (!this.isForward) {
-                    start = this.end;
-                    end = this.start;
+            if (!editRangeStart.line.paragraph.isInsideTable
+                || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable)
+                || editRangeStart.columnFirst === -1) {
+                if (this.isSelectionInsideEditRange(editRangeStart, start, end)) {
+                    return true;
+                }
+            } else {
+                if (editRangeStart.paragraph.isInsideTable && editRangeStart.editRangeEnd &&
+                    editRangeStart.editRangeEnd.line.paragraph.isInsideTable) {
+                    let editRangeRow: TableRowWidget = editRangeStart.paragraph.associatedCell.ownerRow;
+                    let startCell: TableCellWidget = start.paragraph.associatedCell;
+                    let endCell: TableCellWidget = end.paragraph.associatedCell;
+                    if (!isNullOrUndefined(startCell) && !isNullOrUndefined(endCell)) {
+                        if (editRangeRow.equals(startCell.ownerRow) && editRangeRow.equals(endCell.ownerRow)
+                            && startCell.index >= editRangeStart.columnFirst && startCell.index <= editRangeStart.columnLast) {
+                            if (this.isEmpty && startCell.index === editRangeStart.line.paragraph.associatedCell.index) {
+                                if (this.isSelectionInsideEditRange(editRangeStart, start, end)) {
+                                    return true;
+                                }
+                            } else if (!this.isCellSelected(startCell, start, end)) {
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
-            if ((start.isExistAfter(startPosition) || start.isAtSamePosition(startPosition))
-                && (end.isExistBefore(endPosition) || end.isAtSamePosition(endPosition))) {
-                return true;
-            }
+        }
+        return false;
+    }
+    private isSelectionInsideEditRange(editRangeStart: EditRangeStartElementBox, start: TextPosition, end: TextPosition): boolean {
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        if ((start.isExistAfter(startPosition) || start.isAtSamePosition(startPosition))
+            && (end.isExistBefore(endPosition) || end.isAtSamePosition(endPosition))) {
+            return true;
         }
         return false;
     }
@@ -10313,7 +10376,7 @@ export class Selection {
         let container: Widget = this.getContainerWidget(start.paragraph);
         let count: number = 0;
         if (container instanceof FootNoteWidget) {
-            let footNoteElement: FootnoteElementBox = this.start.paragraph.footNoteReference;
+            let footNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
             for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
                 count = 0;
                 let page: Page = this.documentHelper.pages[i];
@@ -10321,17 +10384,44 @@ export class Selection {
                     let bodyWidget: BodyWidget = page.bodyWidgets[j];
                     for (let k: number = 0; k < bodyWidget.childWidgets.length; k++) {
                         let paragraph: Widget = bodyWidget.childWidgets[k] as BlockWidget;
-                        for (let l: number = 0; l < (paragraph as BlockWidget).childWidgets.length; l++) {
-                            let lines: LineWidget = (paragraph as BlockWidget).childWidgets[l] as LineWidget;
-                            count = 0;
-                            if (!isNullOrUndefined(lines.children)) {
-                                for (let m: number = 0; m < lines.children.length; m++) {
-                                    let child: ElementBox = (lines as LineWidget).children[m];
-                                    count += child.length;
-                                    if (child instanceof FootnoteElementBox && child === footNoteElement) {
-                                        start.setPositionParagraph(lines, count - 1);
-                                        end.setPositionParagraph(lines, count);
-                                        this.selectRange(start, end);
+                        if (paragraph instanceof TableWidget) {
+                            for (let tr: number = 0; tr < paragraph.childWidgets.length; tr++) {
+                                let tablerow: TableRowWidget = paragraph.childWidgets[tr] as TableRowWidget;
+                                for (let tc: number = 0; tc < tablerow.childWidgets.length; tc++) {
+                                    let tablecell: TableCellWidget = tablerow.childWidgets[tc] as TableCellWidget;
+                                    for (let para: number = 0; para < tablecell.childWidgets.length; para++) {
+                                        let paragr: BlockWidget = tablecell.childWidgets[para] as BlockWidget;
+                                        for (let line: number = 0; line < paragr.childWidgets.length; line++) {
+                                            let lines: LineWidget = paragr.childWidgets[line] as LineWidget;
+                                            count = 0;
+                                            if (!isNullOrUndefined(lines.children)) {
+                                                for (let m: number = 0; m < lines.children.length; m++) {
+                                                    let child: ElementBox = lines.children[m];
+                                                    count += child.length;
+                                                    if (child instanceof FootnoteElementBox && child === footNoteElement) {
+                                                        start.setPositionParagraph(lines, count - 1);
+                                                        end.setPositionParagraph(lines, count);
+                                                        this.selectRange(start, end);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            for (let l: number = 0; l < (paragraph as BlockWidget).childWidgets.length; l++) {
+                                let lines: LineWidget = (paragraph as BlockWidget).childWidgets[l] as LineWidget;
+                                count = 0;
+                                if (!isNullOrUndefined(lines.children)) {
+                                    for (let m: number = 0; m < lines.children.length; m++) {
+                                        let child: ElementBox = (lines as LineWidget).children[m];
+                                        count += child.length;
+                                        if (child instanceof FootnoteElementBox && child === footNoteElement) {
+                                            start.setPositionParagraph(lines, count - 1);
+                                            end.setPositionParagraph(lines, count);
+                                            this.selectRange(start, end);
+                                        }
                                     }
                                 }
                             }

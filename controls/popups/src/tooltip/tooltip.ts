@@ -52,6 +52,7 @@ const POPUP_OPEN: string = 'e-popup-open';
 const POPUP_CLOSE: string = 'e-popup-close';
 const POPUP_LIB: string = 'e-lib';
 const HIDE_POPUP: string = 'e-hidden';
+const POPUP_CONTAINER: string = 'e-tooltip-popup-container';
 /**
  * Describes the element positions.
  */
@@ -156,6 +157,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private autoCloseTimer: number;
     private mouseMoveEvent: MouseEvent & TouchEvent = null;
     private mouseMoveTarget: HTMLElement = null;
+    private containerElement: HTMLElement = null;
+    private isBodyContainer: boolean = true;
 
     // Tooltip Options
     /**
@@ -186,6 +189,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property()
     public content: string | HTMLElement;
+    /**
+     * It is used to set the container element in which the Tooltip’s pop-up will be appended. It accepts value as both string and HTML Element.
+     * It's default value is `body`, in which the Tooltip’s pop-up will be appended.
+     *
+     */
+    @Property('body')
+    public container: string | HTMLElement;
     /**
      * It is used to denote the target selector where the Tooltip need to be displayed.
      * The target element is considered as parent container.
@@ -233,7 +243,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public showTipPointer: boolean;
     /**
-     * It enables or disables the parsing of HTML string content into HTML DOM elements for Tooltip. 
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for Tooltip.
      * If the value of the property is set to false, the tooltip content will be displayed as HTML string instead of HTML DOM elements.
      *
      * @default true
@@ -241,8 +251,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public enableHtmlParse: boolean;
     /**
-     * It is used to set the collision target element as page viewport (window) or Tooltip element, when using the target. 
-     * If this property is enabled, tooltip will perform the collision calculation between the target elements 
+     * It is used to set the collision target element as page viewport (window) or Tooltip element, when using the target.
+     * If this property is enabled, tooltip will perform the collision calculation between the target elements
      * and viewport(window) instead of Tooltip element.
      *
      * @default false
@@ -463,16 +473,25 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private getTooltipPosition(target: HTMLElement): OffsetPosition {
         this.tooltipEle.style.display = 'block';
-        const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
+        const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY, !this.isBodyContainer,
+            this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
         const offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
-        const elePos: OffsetPosition = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
+        const collisionPosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
+        const collisionLeft: number = collisionPosition[0];
+        const collisionTop: number = collisionPosition[1];
+        const elePos: OffsetPosition = this.collisionFlipFit(target, collisionLeft, collisionTop);
         this.tooltipEle.style.display = '';
         return elePos;
     }
+    private windowResize(): void {
+        this.reposition(this.findTarget());
+    }
     private reposition(target: HTMLElement): void {
-        const elePos: OffsetPosition = this.getTooltipPosition(target);
-        this.popupObj.position = { X: elePos.left, Y: elePos.top };
-        this.popupObj.dataBind();
+        if (this.popupObj && target) {
+            const elePos: OffsetPosition = this.getTooltipPosition(target);
+            this.popupObj.position = { X: elePos.left, Y: elePos.top };
+            this.popupObj.dataBind();
+        }
     }
     private openPopupHandler(): void {
         if (!this.mouseTrail && this.needTemplateReposition()) {
@@ -724,7 +743,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private mouseMoveBeforeRemove(): void {
         if (this.mouseMoveTarget) {
-            EventHandler.remove(this.mouseMoveTarget, "mousemove touchstart", this.mouseMoveBeforeOpen);
+            EventHandler.remove(this.mouseMoveTarget, 'mousemove touchstart', this.mouseMoveBeforeOpen);
         }
     }
 
@@ -734,7 +753,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.openDelay && this.mouseTrail) {
             this.mouseMoveBeforeRemove();
             this.mouseMoveTarget = target;
-            EventHandler.add(this.mouseMoveTarget, "mousemove touchstart", this.mouseMoveBeforeOpen, this);
+            EventHandler.add(this.mouseMoveTarget, 'mousemove touchstart', this.mouseMoveBeforeOpen, this);
         }
         this.tooltipEventArgs = {
             type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
@@ -782,6 +801,24 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private appendContainer(ctrlObj: Tooltip): void {
+        if (typeof this.container == 'string') {
+            if (this.container === 'body') {
+                this.containerElement = document.body;
+            }
+            else {
+                this.isBodyContainer = false;
+                this.containerElement = select(this.container, document) as HTMLElement;
+            }
+        } else if (this.container instanceof HTMLElement) {
+            this.containerElement = this.container;
+            this.isBodyContainer = this.containerElement.tagName === 'BODY';
+        }
+        if (!this.isBodyContainer) {
+            addClass([this.containerElement], POPUP_CONTAINER);
+        }
+        this.containerElement.appendChild(ctrlObj.tooltipEle);
+    }
 
     private tooltipBeforeRender(target: HTMLElement, ctrlObj: Tooltip): void {
         if (target) {
@@ -792,7 +829,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 ctrlObj.tooltipEle.style.maxWidth = formatUnit(ctrlObj.width);
             }
             ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
-            document.body.appendChild(ctrlObj.tooltipEle);
+            this.appendContainer(ctrlObj);
             removeClass([ctrlObj.tooltipEle], HIDE_POPUP);
             ctrlObj.addDescribedBy(target, ctrlObj.ctrlId + '_content');
             ctrlObj.renderContent(target);
@@ -856,7 +893,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if (this.popupObj) {
                         this.popupObj.show(openAnimation, target);
-                        if (this.mouseMoveEvent && this.mouseTrail) { this.onMouseMove(this.mouseMoveEvent);}
+                        if (this.mouseMoveEvent && this.mouseTrail) { this.onMouseMove(this.mouseMoveEvent); }
                     }
                 };
                 this.showTimer = setTimeout(show, this.openDelay);
@@ -890,6 +927,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return elePos;
     }
+
+    private calculateElementPosition(pos: OffsetPosition, offsetPos: OffsetPosition): Array<number> {
+        return [this.isBodyContainer ? pos.left + offsetPos.left :
+            (pos.left - this.containerElement.offsetLeft) + offsetPos.left + window.pageXOffset + this.containerElement.scrollLeft,
+        this.isBodyContainer ? pos.top + offsetPos.top :
+            (pos.top - this.containerElement.offsetTop) + offsetPos.top + window.pageYOffset + this.containerElement.scrollTop];
+    }
+
     private collisionFlipFit(target: HTMLElement, x: number, y: number): OffsetPosition {
         const elePos: ElementPosition = this.checkCollision(target, x, y);
         let newpos: Position = elePos.position;
@@ -913,19 +958,21 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             element: this.tooltipEle, collidedPosition: newpos
         };
         this.trigger('beforeCollision', this.tooltipEventArgs);
+        const elePosVertical: string = elePos.vertical;
+        const elePosHorizontal: string = elePos.horizontal;
         if (elePos.position !== newpos) {
-            const pos: OffsetPosition = calculatePosition(target, elePos.horizontal, elePos.vertical);
-            this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
+            const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
+                this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
+            this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
             const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
-            offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
-                ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
-            offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
-                ('RightLeft'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetX) : 0;
+            offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
+            offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
             elePos.position = newpos;
-            elePos.left = pos.left + offsetPos.left;
-            elePos.top = pos.top + offsetPos.top;
+            const elePosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
+            elePos.left = elePosition[0];
+            elePos.top = elePosition[1];
         } else {
-            this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
+            this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
         }
         const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
         const left: number = fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: false }, eleOffset).left;
@@ -943,6 +990,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEle.style.display = '';
         eleOffset.left = left;
         return eleOffset;
+    }
+
+    private getOffSetPosition(positionString: string, newPos: Position, offsetType: number): number {
+        return ((positionString.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+                (positionString.indexOf(newPos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * offsetType) : 0;
     }
 
     private checkCollideTarget(): HTMLElement {
@@ -986,7 +1038,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
         });
     }
-   
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
         if (target) { this.restoreElement(target); }
         this.isHidden = true;
@@ -1162,6 +1213,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         EventHandler.add(document, 'touchend', this.touchEnd, this);
         EventHandler.add(document, 'scroll wheel', this.scrollHandler, this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResize, this);
         EventHandler.add(document, 'keydown', this.keyDown, this);
     }
     private getTriggerList(trigger: string): string[] {
@@ -1229,6 +1281,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         EventHandler.remove(document, 'touchend', this.touchEnd);
         EventHandler.remove(document, 'scroll wheel', this.scrollHandler);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.windowResize);
         EventHandler.remove(document, 'keydown', this.keyDown);
     }
     private unwireFocusEvents(): void {
@@ -1360,6 +1413,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 break;
+            case 'container':
+                removeClass([this.containerElement], POPUP_CONTAINER);
+                this.container = newProp.container;
+                if (this.tooltipEle && targetElement) {
+                    this.appendContainer(this);
+                    this.reposition(targetElement);
+                }
             }
         }
     }

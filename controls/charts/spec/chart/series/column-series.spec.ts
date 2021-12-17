@@ -1862,6 +1862,96 @@ describe('Column Series', () => {
             columnChart.refresh();
         });
     });
+
+        /**
+     * Checking groupName support with column series
+     */
+    describe('Column series with grouping support', () => {
+        let columnChart: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let columnContainer: HTMLElement = createElement('div', { id: 'groupColumn' });
+        beforeAll(() => {
+            document.body.appendChild(columnContainer);
+            columnChart = new Chart(
+                {
+                 primaryXAxis: {
+                     valueType: 'Category', interval: 1, majorGridLines: { width: 0 }
+                 },
+                 chartArea: { border: { width: 0 } },
+                 primaryYAxis:
+                 {
+                     majorGridLines: { width: 0 },
+                     majorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelStyle: { color: 'transparent' }
+                 },
+                 enableSideBySidePlacement: true,
+                 series: [
+                     {
+                         type: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Total',
+                         dataSource: [{ x: 'Jamesh', y: 10, text: 'Total 10' },
+                             { x: 'Michael', y: 9, text: 'Total 9' }, { x: 'John', y: 11, text: 'Total 11' }],
+                         columnWidth: 0.6,
+                         groupName: 'A',
+                         marker: { dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } }
+                     },
+                     {
+                         type: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Orange',
+                         dataSource: [{ x: 'Jamesh', y: 4 }, { x: 'Michael', y: 3 }, { x: 'John', y: 4 }],
+                         columnWidth: 0.4,
+                         groupName: 'A',
+                         marker: { dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } }
+                     },
+                     {
+                         type: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Orange',
+                         dataSource: [{ x: 'Jamesh', y: 3 }, { x: 'Michael', y: 3 }, { x: 'John', y: 4 }],
+                         columnWidth: 0.6,
+                         groupName: 'B',
+                         marker: { dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } }
+                     },
+                     {
+                         type: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Grapes',
+                         dataSource: [{ x: 'Jamesh', y: 2 }, { x: 'Michael', y: 2 }, { x: 'John', y: 2 }],
+                         columnWidth: 0.4,
+                         groupName: 'B',
+                         marker: { dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } }
+                     }
+                 ],
+                 // Initialize the chart title
+                 title: 'Fruit Consumption',
+                 tooltip: { enable: true, shared: true },
+                });
+            columnChart.appendTo('#groupColumn');
+
+        });
+        afterAll((): void => {
+            columnChart.destroy();
+            columnContainer.remove();
+        });
+
+        it('Column series group support', (done: Function) => {
+            loaded = (): void => {
+                let direction: string[] = document.getElementById('groupColumn_Series_0_Point_0').getAttribute('d').split(' ');
+                let point: number = parseFloat(direction[direction.indexOf('L') + 1]);
+                let direction1: string[] = document.getElementById('groupColumn_Series_1_Point_0').getAttribute('d').split(' ');
+                let point1: number = parseFloat(direction1[direction1.indexOf('L') + 1]);
+                expect(point > point1).toBe(true);
+                let direction2: string[] = document.getElementById('groupColumn_Series_2_Point_0').getAttribute('d').split(' ');
+                let point2: number = parseFloat(direction2[direction2.indexOf('L') + 1]);
+                let direction3: string[] = document.getElementById('groupColumn_Series_3_Point_0').getAttribute('d').split(' ');
+                let point3: number = parseFloat(direction3[direction3.indexOf('L') + 1]);
+                expect(point2 > point3).toBe(true);
+                columnChart.loaded = null;
+                done();
+            };
+            columnChart.series[0].animation.enable = false;
+            columnChart.series[1].animation.enable = false;
+            columnChart.series[2].animation.enable = false;
+            columnChart.series[3].animation.enable = false;
+            columnChart.loaded = loaded;
+            columnChart.refresh();
+        });
+     });
+     
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -226,10 +226,10 @@ export class TableCommand {
         const colIndex: number = Array.prototype.slice.call((curRow as HTMLElement).querySelectorAll(':scope > td, :scope > th')).indexOf(selectedCell);
         const previousWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll(':scope > td, :scope > th').length);
         const currentWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll(':scope > td, :scope > th').length + 1);
-        let currentTabElm: Element = closest(curRow as HTMLElement, 'table');
-        let thTdElm: NodeListOf<HTMLElement> = closest(curRow as HTMLElement, 'table').querySelectorAll('th,td');
+        const currentTabElm: Element = closest(curRow as HTMLElement, 'table');
+        const thTdElm: NodeListOf<HTMLElement> = closest(curRow as HTMLElement, 'table').querySelectorAll('th,td');
         for (let i: number = 0; i < thTdElm.length; i++) {
-            thTdElm[i].dataset.oldWidth = (thTdElm[i].offsetWidth / (currentTabElm as HTMLElement).offsetWidth * 100) + "%";
+            thTdElm[i].dataset.oldWidth = (thTdElm[i].offsetWidth / (currentTabElm as HTMLElement).offsetWidth * 100) + '%';
         }
         for (let i: number = 0; i < allRows.length; i++) {
             curCell = allRows[i].querySelectorAll(':scope > td, :scope > th')[colIndex];
@@ -242,11 +242,11 @@ export class TableCommand {
             // eslint-disable-next-line
             (e.item.subCommand === 'InsertColumnLeft') ? curCell.parentElement.insertBefore(colTemplate, curCell) :
                 this.insertAfter((colTemplate as HTMLElement), (curCell as Element));
-            (colTemplate as HTMLElement).style.width = currentWidth.toFixed(4) + "%";
+            (colTemplate as HTMLElement).style.width = currentWidth.toFixed(4) + '%';
             delete (colTemplate as HTMLElement).dataset.oldWidth;
         }
         for (let i: number = 0; i < thTdElm.length; i++) {
-            thTdElm[i].style.width = (Number(thTdElm[i].dataset.oldWidth.split('%')[0]) * currentWidth / previousWidth).toFixed(4) + "%";
+            thTdElm[i].style.width = (Number(thTdElm[i].dataset.oldWidth.split('%')[0]) * currentWidth / previousWidth).toFixed(4) + '%';
             delete thTdElm[i].dataset.oldWidth;
         }
         e.item.selection.setSelectionText(this.parent.currentDocument, selectedCell, selectedCell, 0, 0);

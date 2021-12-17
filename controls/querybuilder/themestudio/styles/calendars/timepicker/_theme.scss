@@ -1,0 +1,68 @@
+@include export-module('timepicker-theme') {
+  /*! timepicker theme */
+  .e-time-wrapper {
+    #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
+        background: $timepicker-icon-active-bg-color;
+        border-color: $timepicker-active-border-color;
+      }
+      color: $timepicker-list-active-icon-color;
+    }
+
+    #{if(&, '&', '*')}.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $timepicker-list-popup-icon-active-color;
+    }
+  }
+
+  #{&}.e-timepicker.e-popup {
+    border: $timepicker-list-border-color;
+    border-radius: $timepicker-popup-border-radius;
+    box-shadow: $timepicker-popup-shadow;
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      background-color: $timepicker-list-bg-color;
+
+      #{if(&, '&', '*')} li.e-list-item {
+        border: $timepicker-list-default-border-style;
+        color: $timepicker-list-default-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-disabled {
+        color: $timepicker-disable-text;
+        opacity: $timepicker-disable-opacity;
+        pointer-events: none;
+        touch-action: none;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover,
+      #{if(&, '&', '*')} .e-list-item.e-navigation,
+      #{if(&, '&', '*')} .e-list-item:focus {
+        background-color: $timepicker-list-hover-bg-color;
+        border: $timepicker-list-hover-border-color;
+        color: $timepicker-list-hover-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active {
+        background-color: $timepicker-list-active-bg-color;
+        color: $timepicker-list-active-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
+        background-color: $timepicker-list-active-hover-bg-color;
+        color: $timepicker-list-active-hover-font-color;
+      }
+    }
+  }
+
+  .e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup,
+  .e-bigger.e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger.e-small#{&}.e-timepicker.e-popup {
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      #{if(&, '&', '*')} .e-list-item {
+        color: $timepicker-list-small-font-color;
+      }
+    }
+  }
+}

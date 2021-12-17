@@ -272,8 +272,11 @@ export class Table {
         if ((args.args as ClickEventArgs) && (args.args as ClickEventArgs).item.cssClass) {
             const classList: string[] = (args.args as ClickEventArgs).item.cssClass.split(' ');
             for (let i: number = 0; i < classList.length; i++) {
-                (table.classList.contains(classList[i])) ? table.classList.remove(classList[i]) :
-                table.classList.add(classList[i]);
+                if (table.classList.contains(classList[i])) {
+                    table.classList.remove(classList[i]);
+                } else {
+                    table.classList.add(classList[i]);
+                }
             }
         }
         this.parent.formatter.saveData();
@@ -431,7 +434,9 @@ export class Table {
             }
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
             const closestTable: Element = closest(target, 'table');
-            if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
+            const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
+            const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
+            if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && startNode === endNode && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
                 && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
                 const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
@@ -525,7 +530,6 @@ export class Table {
             tdNode as HTMLTableCellElement : target;
         removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL);
         if (target && (target.tagName === 'TD' || target.tagName === 'TH')) {
-            target.removeAttribute('class');
             addClass([target], classes.CLS_TABLE_SEL);
             this.activeCell = target;
             this.curTable = (this.curTable) ? this.curTable : closest(target, 'table') as HTMLTableElement;
@@ -628,6 +632,7 @@ export class Table {
             top: 0,
             left: 0
         };
+        // eslint-disable-next-line
         const offset: OffsetPosition = elem.getBoundingClientRect();
         const doc: Document = elem.ownerDocument;
         let offsetParent: Node = elem.offsetParent || doc.documentElement;
@@ -640,6 +645,7 @@ export class Table {
             offsetParent = closest(offsetParent, '.e-rte-content');
         }
         if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
+            // eslint-disable-next-line
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
         return {

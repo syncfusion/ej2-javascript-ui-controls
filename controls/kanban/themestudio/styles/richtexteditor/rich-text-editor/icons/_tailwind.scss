@@ -1,0 +1,304 @@
+/*! component's theme wise override definitions and variables */
+
+@include export-module('richtexteditor-material-icons') {
+  /*! richtexteditor icons */
+
+  .e-rte-toolbar,
+  .e-rte-dropdown-popup {
+
+    .e-alignments::before {
+      content: '\e7ae';
+    }
+
+    .e-justify-left::before {
+      content: '\e7ae';
+    }
+
+    .e-justify-center::before {
+      content: '\e74f';
+    }
+
+    .e-justify-right::before {
+      content: '\e772';
+    }
+
+    .e-justify-full::before {
+      content: '\e723';
+    }
+
+    .e-font-name::before {
+      content: '\e766';
+    }
+
+    .e-font-color::before {
+      content: '\e775';
+    }
+
+    .e-background-color::before {
+      content: '\e782';
+    }
+
+    .e-bold::before {
+      content: '\e79d';
+    }
+
+    .e-italic::before {
+      content: '\e722';
+    }
+
+    .e-underline::before {
+      content: '\e7d4';
+    }
+
+    .e-strike-through::before {
+      content: '\e760';
+    }
+
+    .e-clear-format::before {
+      content: '\e76b';
+    }
+
+    .e-clear-all::before {
+      content: '\e76b';
+    }
+
+    .e-cut::before {
+      content: '\e763';
+    }
+
+    .e-copy::before {
+      content: '\e7ce';
+    }
+
+    .e-paste::before {
+      content: '\e75e';
+    }
+
+    .e-unorder-list::before {
+      content: '\e743';
+    }
+
+    .e-order-list::before {
+      content: '\e71f';
+    }
+
+    .e-indent::before {
+      content: '\e7ac';
+    }
+
+    .e-outdent::before {
+      content: '\e735';
+    }
+
+    .e-undo::before {
+      content: '\e7bd';
+    }
+
+    .e-redo::before {
+      content: '\e7b9';
+    }
+
+    .e-super-script::before {
+      content: '\e7cb';
+    }
+
+    .e-sub-script::before {
+      content: '\e7b4';
+    }
+
+    .e-create-link::before {
+      content: '\e74a';
+    }
+
+    .e-open-link::before {
+      content: '\e778';
+    }
+
+    .e-edit-link::before {
+      content: '\e7d2';
+    }
+
+    .e-remove-link::before {
+      content: '\e776';
+    }
+
+    .e-image::before {
+      content: '\e7da';
+    }
+
+    .e-replace::before {
+      content: '\e71c';
+    }
+
+    .e-align::before {
+      content: '\e7ae';
+    }
+
+    .e-caption::before {
+      content: '\e785';
+    }
+
+    .e-remove::before {
+      content: '\e78d';
+    }
+
+    .e-insert-link::before {
+      content: '\e74a';
+    }
+
+    .e-display::before {
+      content: '\e7c7';
+    }
+
+    .e-alt-text::before {
+      content: '\e70d';
+    }
+
+    .e-img-dimension::before {
+      content: '\e756';
+    }
+
+    .e-maximize::before {
+      content: '\e77c';
+    }
+
+    .e-minimize::before {
+      content: '\e734';
+    }
+
+    .e-zoom-in::before {
+      content: '\e70a';
+    }
+
+    .e-zoom-out::before {
+      content: '\e779';
+    }
+
+    .e-lower-case::before {
+      content: '\e720';
+    }
+
+    .e-upper-case::before {
+      content: '\e79e';
+    }
+
+    .e-print::before {
+      content: '\e76c';
+    }
+
+    .e-formats::before {
+      content: '\e72d';
+    }
+
+    .e-source-code::before {
+      content: '\e748';
+    }
+
+    .e-preview::before {
+      content: '\e7d0';
+    }
+
+    .e-view-side::before {
+      content: '\e7c0';
+    }
+
+    .e-insert-code::before {
+      content: '\e759';
+    }
+
+    .e-table-header::before {
+      content: '\e787';
+    }
+
+    .e-table-remove::before {
+      content: '\e78d';
+    }
+
+    .e-table-rows::before {
+      content: '\e78e';
+    }
+
+    .e-table-columns::before {
+      content: '\e7dc';
+    }
+
+    .e-table-cell-ver-align::before {
+      content: '\e7cc';
+    }
+
+    .e-table-edit-properties::before {
+      content: '\e7d2';
+    }
+
+    .e-create-table::before {
+      content: '\e7a1';
+    }
+
+    .e-align-bottom::before {
+      content: '\e73e';
+    }
+
+    .e-align-middle::before {
+      content: '\e7cc';
+    }
+
+    .e-align-top::before {
+      content: '\e709';
+    }
+
+    .e-insert-column-left::before {
+      content: '\e7db';
+    }
+
+    .e-insert-column-right::before {
+      content: '\e710';
+    }
+
+    .e-delete-column::before {
+      content: '\e721';
+    }
+
+    .e-insert-row-before::before {
+      content: '\e7dd';
+    }
+
+    .e-insert-row-after::before {
+      content: '\e757';
+    }
+
+    .e-delete-row::before {
+      content: '\e75a';
+    }
+
+    .e-style::before {
+      content: '\e724';
+    }
+
+    .e-rte-file-manager::before {
+      content: '\e7d3';
+    }
+  }
+
+  .e-richtexteditor {
+    .e-south-east::before,
+    .e-south-west::before {
+      content: '\e715';
+    }
+  }
+
+  .e-cell-merge::before {
+    content: '\e90f';
+  }
+
+  .e-cell-horizontal-split::before {
+    content: '\e90c';
+  }
+
+  .e-cell-vertical-split::before {
+    content: '\e90a';
+  }
+
+  .e-table-cell::before {
+    content: '\e917';
+  }
+}

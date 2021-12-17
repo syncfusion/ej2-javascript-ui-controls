@@ -76,7 +76,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 ele = getIdElement(id + '_sparkline_column_1');
                 trigger.mousemoveEvent(ele, 0, 0, 30, 30);
                 ele = getIdElement(id + '_sparkline_tracker');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#000000');
                 expect(ele.getAttribute('stroke')).toBe('#000000');
             };
             sparkline.appendTo('#' + id);
@@ -91,7 +91,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 expect(ele.firstChild.textContent).toBe('50');
                 expect(ele.lastChild.textContent).toBe('50');
                 ele = getIdElement(id + '_sparkline_tracker');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#000000');
                 expect(ele.getAttribute('stroke')).toBe('#000000');
             };
             sparkline.appendTo('#' + id);
@@ -201,7 +201,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 ele = getIdElement(id + '_sparkline_column_1');
                 trigger.mousemoveEvent(ele, 0, 0, 30, 30);
                 ele = getIdElement(id + '_sparkline_tracker');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#ffffff');
                 expect(ele.getAttribute('stroke')).toBe('#ffffff');
             };
             sparkline.appendTo('#' + id);
@@ -216,7 +216,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 expect(ele.firstChild.textContent).toBe('50');
                 expect(ele.lastChild.textContent).toBe('50');
                 ele = getIdElement(id + '_sparkline_tracker');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#ffffff');
                 expect(ele.getAttribute('stroke')).toBe('#ffffff');
             };
             sparkline.appendTo('#' + id);
@@ -325,7 +325,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 ele = getIdElement(id + '_sparkline_column_1');
                 trigger.mousemoveEvent(ele, 0, 0, 30, 30);
                 ele = getIdElement(id + '_sparkline_tracker');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#212529');
                 expect(ele.getAttribute('stroke')).toBe('#212529');
             };
             sparkline.appendTo('#' + id);
@@ -340,7 +340,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 expect(ele.firstChild.textContent).toBe('50');
                 expect(ele.lastChild.textContent).toBe('50');
                 ele = getIdElement(id + '_sparkline_tracker');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#212529');
                 expect(ele.getAttribute('stroke')).toBe('#212529');
                 expect(ele.getAttribute('opacity')).toBe('1');
             };

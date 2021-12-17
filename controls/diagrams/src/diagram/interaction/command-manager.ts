@@ -1174,9 +1174,12 @@ export class CommandHandler {
         obj.children = [];
         selectedItems = this.diagram.selectedItems.nodes;
         selectedItems = selectedItems.concat(this.diagram.selectedItems.connectors);
-        for (let i: number = 0; i < selectedItems.length; i++) {
-            if (!(selectedItems[i] as Node).parentId) {
-                obj.children.push(selectedItems[i].id);
+        let order: (NodeModel | ConnectorModel)[] = selectedItems.sort(function (a, b) {
+            return a.zIndex - b.zIndex;
+        });
+        for (let i: number = 0; i < order.length; i++) {
+            if (!(order[i] as Node).parentId) {
+                obj.children.push(order[i].id);
             }
         }
         const group: Node | Connector = this.diagram.add(obj as IElement);
@@ -1814,6 +1817,7 @@ export class CommandHandler {
         } else {
             this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
         }
+        let oldSelectedItems = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
         const canDoMultipleSelection: number = canMultiSelect(this.diagram);
         const canDoSingleSelection: number = canSingleSelect(this.diagram);
         if (canDoSingleSelection || canDoMultipleSelection) {
@@ -1857,6 +1861,9 @@ export class CommandHandler {
                         }
                     }
                 }
+            }
+            if (oldValue === undefined) {
+                oldValue = oldSelectedItems;
             }
             arg = {
                 oldValue: oldValue ? oldValue : [] as NodeModel[],
@@ -2131,8 +2138,12 @@ export class CommandHandler {
     public unSelect(obj: NodeModel | ConnectorModel): void {
         const objArray: (NodeModel | ConnectorModel)[] = [];
         objArray.push(obj);
+        let items = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
+        let selectedObjects = items.filter(function (items) {
+            return items.id !== obj.id;
+        });
         let arg: ISelectionChangeEventArgs | IBlazorSelectionChangeEventArgs = {
-            oldValue: objArray, newValue: [], cause: this.diagram.diagramActions,
+            oldValue: items, newValue: selectedObjects, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Removal', cancel: false
         };
         if (!this.diagram.currentSymbol) {
@@ -2151,12 +2162,12 @@ export class CommandHandler {
                 selectormodel.connectors.splice(index, 1);
             }
             arg = {
-                oldValue: objArray, newValue: [], cause: this.diagram.diagramActions,
+                oldValue: items, newValue: selectedObjects, cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Removal', cancel: false
             };
             this.updateBlazorSelectorModel(objArray);
             arg = {
-                oldValue: cloneBlazorObject(objArray) as NodeModel[], newValue: [], cause: this.diagram.diagramActions,
+                oldValue: cloneBlazorObject(items) as NodeModel[], newValue: selectedObjects, cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Removal', cancel: arg.cancel
             };
             if (!arg.cancel) {
@@ -5100,7 +5111,6 @@ Remove terinal segment in initial
         if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule && !canLayout) {
             this.diagram.allowServerDataBinding = false;
             this.layoutAnimateModule.expand(this.diagram.layout.enableAnimation, objects, node, this.diagram);
-            this.diagram.allowServerDataBinding = true;
         } else {
             const arg: IExpandStateChangeEventArgs = {
                 element: cloneBlazorObject(clone(node)), state: (node.isExpanded) ? true : false

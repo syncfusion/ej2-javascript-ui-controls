@@ -996,5 +996,125 @@ it('memory leak', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-})
+});
+
+describe('Checking RTL Behaviour for legend', () => {
+    let ele: HTMLElement;
+    let id: string = 'ej2-container';
+    let textEle: Element;
+    let legendTextId: string = id + '_chart_legend_text_0';
+    let legendTitleId: string = id +'_chart_legend_title';
+    let accumulation: AccumulationChart;
+    let posX: string;
+    let textAnchor: string;
+    let loaded: EmitType<IAccLoadedEventArgs>;
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        accumulation = new AccumulationChart({
+            border: { width: 1, color: 'blue' },
+            series: [
+                {
+                    type: 'Pie',
+                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y',
+                }
+            ], 
+            width: '600', 
+            height: '400', 
+            legendSettings: { visible: true },
+        });
+        accumulation.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        accumulation.loaded = null;
+        accumulation.destroy();
+        removeElement(id);
+    });
+    it('Default legend group position', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(legendTextId);
+            posX = textEle.getAttribute('x');
+            expect(posX == '510.75' || posX == '510').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.refresh();
+    });
+    it('Default legend group position with Bottom', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(legendTextId);
+            posX = textEle.getAttribute('x');
+            expect(posX == '166' || posX == '165.5').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.legendSettings.position = 'Bottom';
+        accumulation.refresh();
+    });
+    it('RTL legend group position', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(legendTextId);
+            posX = textEle.getAttribute('x');
+            expect(posX == '501.75' || posX == '502').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.legendSettings.position = 'Right';
+        accumulation.enableRtl = true;
+        accumulation.refresh();
+    });
+    it('RTL legend group position with Bottom', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(legendTextId);
+            posX = textEle.getAttribute('x');
+            expect(posX == '427' || posX == '427.5').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.legendSettings.position = 'Bottom';
+        accumulation.refresh();
+    });
+    it('Default Title anchor & legend text position', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(legendTitleId);
+            textAnchor = textEle.getAttribute('text-anchor');
+            expect(textAnchor).toBe('');
+            textEle = getElement(legendTextId);
+            posX = textEle.getAttribute('x');
+            expect(posX == '206.5' || posX == '209').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.legendSettings.title = 'Legend Groups';
+        accumulation.legendSettings.titlePosition = 'Left';
+        accumulation.enableRtl = false;
+        accumulation.refresh();
+    });
+    it('RTL Title anchor & legend text position', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(legendTitleId);
+            textAnchor = textEle.getAttribute('text-anchor');
+            expect(textAnchor).toBe('end');
+            textEle = getElement(legendTextId);
+            posX = textEle.getAttribute('x');
+            expect(posX == '472.5' || posX == '476').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.enableRtl = true;
+        accumulation.refresh();
+    });
+    it('Checking the legend reverse behaviour', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(legendTextId);
+            posX = textEle.getAttribute('x');
+            expect(posX == '472.5' || posX == '476').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.enableRtl = true;
+        accumulation.refresh();
+    });
+  });
 });

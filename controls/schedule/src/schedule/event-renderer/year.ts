@@ -460,7 +460,7 @@ export class YearEvent extends TimelineEvent {
                     appointmentsList.push(app);
                 }
             } else {
-                if (((util.resetTime(appStart).getTime() <= dateStart) && (util.resetTime(appEnd).getTime() > dateStart)) ||
+                if (((util.resetTime(appStart).getTime() <= dateStart) && (util.resetTime(appEnd).getTime() >= dateStart)) ||
                     (util.resetTime(appStart).getTime() >= dateStart) && (util.resetTime(appEnd).getTime() <= dateEnd)) {
                     appointmentsList.push(app);
                 }

@@ -1,0 +1,234 @@
+@include export-module('grid-tailwind-icons') {
+  /*! component icons */
+
+  .e-icon-check::before {
+    content:  '\e75d';
+  }
+
+  #{&}.e-grid,
+  .e-grid-menu {
+
+    .e-group-animate .e-drag.e-icon-drag::before {
+      content: '\e781';
+    }
+
+    .e-group-animate .e-nextgroup.e-icon-next::before {
+      content: '\e7b7';
+    }
+
+    .e-icon-ascending::before {
+      content: '\e7c2';
+    }
+
+    .e-icon-descending::before {
+      content: '\e78f';
+    }
+
+    .e-icon-hide::before {
+      content: '\e771';
+    }
+
+    .e-ungroupbutton.e-icon-hide::before {
+      content: '\e771';
+    }
+
+    .e-icon-rowselect::before {
+      content: '\e76a';
+    }
+
+    .e-icon-sortdirect::before {
+      content: '\e73c';
+    }
+
+    .e-icon-gdownarrow::before {
+      content: '\e706';
+    }
+
+    .e-icon-grightarrow::before {
+      content: '\e7b7';
+    }
+
+    .e-icon-filter::before,
+    .e-icon-filter.e-filtered::before {
+      content: '\e71b';
+    }
+
+    .e-resfilter-icon::before {
+      content: '\e71b';
+    }
+
+    .e-ressort-icon::before {
+      content: '\e745';
+    }
+
+    .e-excl-filter-icon::before {
+      content: '\e71b';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e774';
+    }
+
+    &.e-rtl {
+      .e-icon-grightarrow::before {
+        content: '\e70f';
+      }
+    }
+
+    .e-icon-group::before {
+      content: '\e731';
+    }
+
+    .e-icon-ungroup::before {
+      content: '\e731';
+    }
+
+    .e-icon-reorderuparrow::before {
+      content: '\e768';
+    }
+
+    .e-icon-reorderdownarrow::before {
+      content: '\e732';
+    }
+
+    .e-print::before {
+      content: '\e76c';
+    }
+
+    .e-add::before {
+      content: '\e78a';
+    }
+
+    .e-resback-icon::before {
+      content: '\e7a5';
+    }
+
+    .e-wordexport::before {
+      content: '\e803';
+    }
+
+    .e-pdfexport::before {
+      content: '\e741';
+    }
+
+    .e-csvexport::before {
+      content: '\e73d';
+    }
+
+    .e-excelexport::before {
+      content: '\e780';
+    }
+
+    .e-edit::before {
+      content: '\e7d2';
+    }
+
+    .e-columnmenu::before,
+    .e-columnmenu.e-filtered::before {
+      content: '\e75b';
+    }
+
+    .e-delete::before {
+      content: '\e78d';
+    }
+
+    .e-cancel::before {
+      content: '\e771';
+    }
+
+    .e-copy::before {
+      content: '\e7ce';
+    }
+
+    .e-save::before {
+      content: '\e704';
+    }
+
+    .e-update::before {
+      content: '\e704';
+    }
+
+    .e-search-icon::before {
+      content: '\e737';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e771';
+    }
+
+    .e-columnchooserdiv::before {
+      content: '\e71b';
+    }
+
+    .e-ccsearch-icon::before {
+      content: '\e737';
+    }
+
+    .e-columnchooser::before {
+      content: '\e21e';
+    }
+
+    .e-columnchooser-btn::before {
+      content: '\e7c6';
+    }
+
+    .e-cc-icon::before {
+      content: '\e7c6';
+    }
+
+    .e-icon-rowdragicon::before {
+      content: '\e781';
+    }
+
+    &.e-rtl {
+      .e-icon-rowdragicon::before {
+        content: '\e781';
+      }
+    }
+
+    .e-ccsearch-icon.e-cc-cancel::before,
+    .e-chkcancel-icon::before {
+      content: '\e771';
+    }
+  }
+}
+
+.e-responsive-dialog {
+  & .e-resfilterback::before {
+    content: '\e7a5';
+  }
+
+  & .e-filterset::before {
+    content: '\e71b';
+  }
+
+  & .e-search-icon::before {
+    content: '\e737';
+  }
+
+  & .e-chkcancel-icon::before {
+    content: '\e771';
+  }
+
+  & .e-icon-filter-clear::before {
+    content: '\e774';
+  }
+}
+
+.e-row-responsive-filter {
+  & .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e7a5';
+    }
+  }
+}
+
+.e-checkboxfilter {
+  .e-search-icon::before {
+    content: '\e737';
+  }
+
+  .e-chkcancel-icon::before {
+    content: '\e771';
+  }
+}

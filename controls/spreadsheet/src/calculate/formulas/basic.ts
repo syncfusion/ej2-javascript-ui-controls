@@ -179,7 +179,8 @@ export class BasicFormulas {
         { formulaName: 'MINUTE', category: 'Date & Time', description: 'Returns the number of minutes in a specified time string.' },
         { formulaName: 'SECOND', category: 'Date & Time', description: 'Returns the number of seconds in a specified time string.' },
         { formulaName: 'NOW', category: 'Date & Time', description: 'Returns the current date and time.' },
-        { formulaName: 'MONTH', category: 'Date & Time', description: 'Returns the number of months in a specified date string.' }
+        { formulaName: 'MONTH', category: 'Date & Time', description: 'Returns the number of months in a specified date string.' },
+        { formulaName: 'PROPER', category: 'Text', description: 'Converts a text to proper case; first letter to uppercase and other letters to lowercase.' }
     ];
     private isConcat: boolean = false;
     constructor(parent?: Calculate) {
@@ -294,6 +295,64 @@ export class BasicFormulas {
             const dt: Date = new Date(Date.now());
             str = dt.getFullYear() + '/' + this.parent.calculateDate((dt.getMonth() + 1).toString()) + '/'
                 + this.parent.calculateDate(dt.getDate().toString());
+        }
+        return str;
+    }
+
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {string} - Compute to the Proper casing.
+     */
+    public ComputePROPER(...args: string[]): string {
+        let str: string;
+        if (args && args[0] === '' || args.length !== 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        } else {
+            const arg1: string = this.parent.getValueFromArg(args[0]).split(this.parent.tic).join('');
+            if (arg1 === this.parent.getErrorStrings()[CommonErrors.name]) {
+                return this.parent.getErrorStrings()[CommonErrors.name];
+            }
+            const splitArgs1: string[] = arg1.toLowerCase().split(' ');
+            for (let i: number = 0; i < splitArgs1.length; i++) {
+                if (splitArgs1[i][0]) {
+                    for (let j: number = 0; j < splitArgs1[i].length; j++) {
+                        if (splitArgs1[i].charCodeAt(j) >= 97 && splitArgs1[i].charCodeAt(j) <= 122) {
+                            splitArgs1[i] = splitArgs1[i].replace(splitArgs1[i][j], splitArgs1[i][j].toUpperCase());
+                            break;
+                        }
+                    }
+                }
+            }
+            str = splitArgs1.join(' ');
+            if (str.indexOf('-') > 0) {
+                const splitArgs2: string[] = str.split('-');
+                for (let i: number = 0; i < splitArgs2.length; i++) {
+                    if (splitArgs2[i][0]) {
+                        for (let j: number = 0; j < splitArgs2[i].length; j++) {
+                            if (splitArgs2[i].charCodeAt(j) >= 97 && splitArgs2[i].charCodeAt(j) <= 122) {
+                                splitArgs2[i] = splitArgs2[i].replace(splitArgs2[i][j], splitArgs2[i][j].toUpperCase());
+                                break;
+                            }
+                        }
+                    }
+                }
+                str = splitArgs2.join('-');
+            }
+            if (str.indexOf(',') > 0) {
+                const splitArgs3: string[] = str.split(',');
+                for (let i: number = 0; i < splitArgs3.length; i++) {
+                    if (splitArgs3[i][0]) {
+                        for (let j: number = 0; j < splitArgs3[i].length; j++) {
+                            if (splitArgs3[i].charCodeAt(j) >= 97 && splitArgs3[i].charCodeAt(j) <= 122) {
+                                splitArgs3[i] = splitArgs3[i].replace(splitArgs3[i][j], splitArgs3[i][j].toUpperCase());
+                                break;
+                            }
+                        }
+                    }
+                }
+                str = splitArgs3.join(',');
+            }
         }
         return str;
     }
@@ -840,8 +899,7 @@ export class BasicFormulas {
                 }
                 let sheetIndex: string | number = '';
                 if (argArr[0].indexOf('!') === 0) {
-                    sheetIndex = argArr[0]; sheetIndex = sheetIndex.replace('!', ''); sheetIndex = sheetIndex.indexOf('!');
-                    sheetIndex = argArr[0].substring(0, sheetIndex + 2);
+                    sheetIndex = argArr[0].substring(0, argArr[0].replace('!', '').indexOf('!') + 2);
                 }
                 argArr[0] = sheetIndex + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(endColIdx) + endRowIdx;
 
@@ -921,14 +979,7 @@ export class BasicFormulas {
                                     this.parent.uniqueRange.indexOf(this.parent.actCell + ':' + getAlphalabel(j) + i) === - 1) {
                                     this.parent.uniqueRange.push(this.parent.actCell + ':' + getAlphalabel(j) + i);
                                 }
-                            }
-                        }
-                        for (let i: number = actRowIdx, diff: number = tmp.length + actRowIdx; i < diff; i++) {
-                            const splitValue: string[] = tmp[0].split('+');
-                            for (let j: number = actColIdx, diff2: number = splitValue.length + actColIdx; j < diff2; j++) {
-                                const value: string = this.parent.getValueFromArg(getAlphalabel(j) + i, true);
-                                if (value !== '' && value.indexOf('UNIQUE') !== 1 &&
-                                    value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
+                                if (this.checkSpill(j, i)) {
                                     return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
                                 }
                             }
@@ -941,14 +992,7 @@ export class BasicFormulas {
                                     this.parent.uniqueRange.indexOf(this.parent.actCell + ':' + getAlphalabel(i) + j) === - 1) {
                                     this.parent.uniqueRange.push(this.parent.actCell + ':' + getAlphalabel(i) + j);
                                 }
-                            }
-                        }
-                        for (let i: number = actColIdx, diff: number = tmp.length + actColIdx; i < diff; i++) {
-                            const splitValue: string[] = tmp[0].split('+');
-                            for (let j: number = actRowIdx, diff2: number = splitValue.length + actRowIdx; j < diff2; j++) {
-                                const value: string = this.parent.getValueFromArg(getAlphalabel(i) + j, true);
-                                if (value !== '' && value.indexOf('UNIQUE') !== 1 &&
-                                    value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
+                                if (this.checkSpill(i, j)) {
                                     return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
                                 }
                             }
@@ -997,6 +1041,22 @@ export class BasicFormulas {
             result = this.parent.getValueFromArg(argArr[0]);
         }
         return result;
+    }
+
+    private checkSpill(i: number, j: number): boolean {
+        let spill: boolean = false;
+        const value: string = this.parent.getValueFromArg(getAlphalabel(i) + j, true);
+        const formulaAddress: string = '!' + this.parent.getSheetID(this.parent.grid) + '!' + getAlphalabel(i) + j;
+        let formulaString: string;
+        if (this.parent.getFormulaInfoTable().get(formulaAddress)) {
+            formulaString = this.parent.getFormulaInfoTable().get(formulaAddress).formulaText;
+        }
+        if (value && (value.indexOf('UNIQUE') < 0 ||
+            (formulaString && !formulaString.toUpperCase().includes('UNIQUE'))) &&
+            value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
+            spill = true;
+        }
+        return spill;
     }
 
     public clearDependency(value: string): void {

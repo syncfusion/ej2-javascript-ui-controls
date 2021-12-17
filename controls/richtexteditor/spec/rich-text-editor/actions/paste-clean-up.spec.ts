@@ -711,6 +711,36 @@ third line`;
       done();
     }, 100);
   });
+
+  it("EJ2-55021 - Paste notepad contents with &para content in the link", (done) => {
+    keyBoardEvent.clipboardData = {
+      getData: (e: any) => {
+        if (e === "text/plain") {
+          return `http://www.google.com?first=a&parameters=foo`;
+        } else {
+          return '';
+        }
+      },
+      items: []
+    };
+    rteObj.value = '<p>160</p>';
+    rteObj.pasteCleanupSettings.prompt = false;
+    rteObj.pasteCleanupSettings.plainText = false;
+    rteObj.pasteCleanupSettings.keepFormat = true;
+    rteObj.dataBind();
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      let pastedElm: any = (rteObj as any).inputElement.innerHTML;
+      let expected: boolean = false;
+      let expectedElem: string = `<p><span><a classname="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank">http://www.google.com?first=a&amp;parameters=foo </a></span>160</p>`;
+      if (pastedElm === expectedElem) {
+        expected = true;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
   
   it("Paste content from Visual Studio with have HTML tags", (done) => {
     keyBoardEvent.clipboardData = {
@@ -1954,5 +1984,54 @@ describe("EJ2-51489 - Pasting image and checking width and height - ", () => {
 
     afterAll(() => {
         destroy(rteObj);
+    });
+});
+
+describe("EJ2-52017 - EJ2-53762 - Pasting content removes content editable div issue", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+  
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: false
+        }
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Pasting content removes content editable div when range node is contenteditable div", (done) => {
+      let localElem: string = `<p>Content to be pasted in the editor</p>`;
+      keyBoardEvent.clipboardData = {
+        getData: () => {
+          return localElem;
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.prompt = false;
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      editorObj.nodeSelection.setSelectionText(document, (rteObj as any).inputElement, (rteObj as any).inputElement, 0, 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        expect((rteObj as any).inputElement.innerHTML === '<p>Content to be pasted in the editor</p>').toBe(true)
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
     });
 });

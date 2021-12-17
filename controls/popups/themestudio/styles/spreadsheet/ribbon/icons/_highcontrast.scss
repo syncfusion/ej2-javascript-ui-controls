@@ -1,0 +1,9 @@
+@include export-module('ribbon-highcontrast-icons') {
+  .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e966';
+      }
+    }
+  }
+}

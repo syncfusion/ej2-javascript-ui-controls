@@ -1,0 +1,231 @@
+@include export-module('schedule-tailwind-icons') {
+  .e-schedule {
+    .e-schedule-toolbar {
+      & .e-icon-prev::before {
+        content: '\e70f';
+      }
+
+      & .e-icon-next::before {
+        content: '\e7b7';
+      }
+
+      & .e-icon-add::before {
+        content: '\e78a';
+      }
+
+      & .e-icon-today::before {
+        content: '\e767';
+      }
+
+      & .e-icon-down-arrow::before {
+        content: '\e7b3';
+      }
+
+      & .e-icon-day::before {
+        content: '\e742';
+      }
+
+      & .e-icon-week::before {
+        content: '\e795';
+      }
+
+      & .e-icon-workweek::before {
+        content: '\e795';
+      }
+
+      & .e-icon-month::before {
+        content: '\e719';
+      }
+
+      & .e-icon-month-agenda::before {
+        content: '\e770';
+      }
+
+      & .e-icon-agenda::before {
+        content: '\e718';
+      }
+
+      & .e-icon-year::before {
+        content: '\e719';
+      }
+
+      & .e-icon-timeline-year-vertical::before {
+        content: '\e740';
+      }
+
+      & .e-icon-timeline-year-horizontal::before {
+        content: '\e740';
+      }
+
+      & .e-icon-timeline-day::before {
+        content: '\e7e6';
+      }
+
+      & .e-icon-timeline-week::before {
+        content: '\e74e';
+      }
+
+      & .e-icon-timeline-workweek::before {
+        content: '\e73a';
+      }
+
+      & .e-icon-timeline-month::before {
+        content: '\e740';
+      }
+
+      &.e-toolbar {
+        .e-popup-down-icon::before {
+          content: '\e75b';
+        }
+
+        .e-popup-up-icon::before {
+          content: '\e75b';
+        }
+      }
+
+      &.e-rtl {
+        & .e-icon-prev::before {
+          content: '\e7b7';
+        }
+
+        & .e-icon-next::before {
+          content: '\e70f';
+        }
+      }
+    }
+
+    .e-schedule-resource-toolbar {
+      & .e-icon-menu::before {
+        content: '\e75c';
+      }
+
+      & .e-icon-next::before {
+        content: '\e707';
+      }
+    }
+
+    .e-close-icon::before {
+      content: '\e771';
+    }
+
+    .e-block-indicator::before {
+      content: '\e77e';
+    }
+
+    .e-appointment {
+      .e-recurrence-icon::before {
+        content: '\e71d';
+      }
+
+      .e-recurrence-edit-icon::before {
+        content: '\e72b';
+      }
+
+      .e-up-icon::before {
+        content: '\e798';
+      }
+
+      .e-down-icon::before {
+        content: '\e738';
+      }
+
+      .e-left-icon::before {
+        content: '\e78b';
+      }
+
+      .e-right-icon::before {
+        content: '\e751';
+      }
+    }
+
+    .e-vertical-view .e-all-day-cells {
+      .e-all-day-appointment-section::before {
+        content: '\e706';
+      }
+    }
+
+    &.e-rtl {
+      .e-appointment {
+        & .e-left-icon::before {
+          content: '\e751';
+        }
+
+        & .e-right-icon::before {
+          content: '\e78b';
+        }
+      }
+    }
+
+    .e-resource-tree-icon::before {
+      content: '\e707';
+    }
+  }
+
+  .e-schedule-dialog.e-device {
+    .e-back-icon::before {
+      content: '\e7a5';
+    }
+
+    .e-save-icon::before {
+      content: '\e704';
+    }
+
+    .e-recurrence-container {
+      .e-recurrence-edit-button {
+        .e-recurrence-edit.e-icons::before {
+          content: '\e7d2';
+        }
+      }
+    }
+  }
+
+  .e-schedule-dialog.e-device.e-rtl {
+    .e-back-icon::before {
+      content: '\e7a8';
+    }
+  }
+
+  .e-quick-popup-wrapper {
+    .e-edit-icon::before {
+      content: '\e7d2';
+    }
+
+    .e-delete-icon::before {
+      content: '\e78d';
+    }
+
+    .e-close-icon::before {
+      content: '\e771';
+    }
+
+    .e-time-icon::before {
+      content: '\e730';
+    }
+
+    .e-location-icon::before {
+      content: '\e755';
+    }
+
+    .e-time-zone-icon::before {
+      content: '\e736';
+    }
+
+    .e-description-icon::before {
+      content: '\e7b6';
+    }
+
+    .e-resource-icon::before {
+      content: '\e790';
+    }
+
+    .e-date-time-icon::before {
+      content: '\e7e6';
+    }
+  }
+
+  .e-more-popup-wrapper.e-device {
+    .e-close-icon::before {
+      content: '\e771';
+    }
+  }
+}

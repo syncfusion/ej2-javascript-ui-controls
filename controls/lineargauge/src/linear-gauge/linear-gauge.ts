@@ -1,6 +1,6 @@
 /* eslint-disable valid-jsdoc */
-import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
-import { EmitType, INotifyPropertyChanged, setCulture, Browser, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { EmitType, INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
 import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';
 import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';
@@ -11,7 +11,7 @@ import { LinearGaugeModel } from './linear-gauge-model';
 import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';
 import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';
 import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';
-import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange } from './utils/helper';
+import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange, getExtraWidth } from './utils/helper';
 import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';
 import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';
 import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';
@@ -270,7 +270,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers after the gauge gets rendered.
      *
      * @event
-     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -279,7 +278,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers before the gauge gets rendered.
      *
      * @event
-     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
@@ -288,7 +286,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers after completing the animation for pointer.
      *
      * @event
-     * @blazorProperty 'AnimationCompleted'
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -297,7 +294,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers before each axis label gets rendered.
      *
      * @event
-     * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -306,7 +302,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers before the pointer is dragged.
      *
      * @event
-     * @blazorProperty 'OnDragStart'
      */
 
     @Event()
@@ -316,7 +311,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers while dragging the pointers.
      *
      * @event
-     * @blazorProperty 'OnDragMove'
      */
 
     @Event()
@@ -326,7 +320,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers after the pointer is dragged.
      *
      * @event
-     * @blazorProperty 'OnDragEnd'
      */
     @Event()
     public dragEnd: EmitType<IPointerDragEventArgs>;
@@ -335,7 +328,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers before each annotation gets rendered.
      *
      * @event
-     * @blazorProperty 'AnnotationRendering'
      */
     @Event()
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
@@ -345,7 +337,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      *
      * @event
      * @deprecated
-     * @blazorProperty 'TooltipRendering'
      */
 
     @Event()
@@ -355,7 +346,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers when performing the mouse move operation on gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseMove'
      */
 
     @Event()
@@ -366,7 +356,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers when performing the mouse leave operation from the gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseLeave'
      */
 
     @Event()
@@ -376,7 +365,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers when performing the mouse down operation on gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseDown'
      */
 
     @Event()
@@ -386,7 +374,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers when performing mouse up operation on gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseUp'
      */
 
     @Event()
@@ -396,7 +383,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers while changing the value of the pointer by UI interaction.
      *
      * @event
-     * @blazorProperty 'ValueChange'
      */
 
     @Event()
@@ -406,7 +392,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers after window resize.
      *
      * @event
-     * @blazorProperty 'Resizing'
      */
 
     @Event()
@@ -416,7 +401,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Triggers before the prints gets started.
      *
      * @event
-     * @blazorProperty 'OnPrint'
      */
 
     @Event()
@@ -487,9 +471,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     public themeStyle: IThemeStyle;
 
-    /** @private */
-    public isBlazor: boolean;
-
     /**
      * @private
      * Constructor for creating the widget
@@ -506,9 +487,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
 
     protected preRender(): void {
-        this.isBlazor = isBlazor();
         this.unWireEvents();
-        this.trigger(load, { gauge: !this.isBlazor ? this : null });
+        this.trigger(load, { gauge: this });
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
@@ -559,9 +539,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
 
     public removeSvg(): void {
-        for (let i: number = 0; i < this.annotations.length; i++) {
-            resetBlazorTemplate(this.element.id + '_ContentTemplate' + i, 'ContentTemplate');
-        }
         removeElement(this.element.id + '_Secondary_Element');
         if (!(isNullOrUndefined(this.svgObject)) && !isNullOrUndefined(this.svgObject.parentNode)) {
             remove(this.svgObject);
@@ -578,15 +555,19 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.availableSize = new Size(width, height);
     }
 
-    /**
-     * To Initialize the control rendering
-     */
-    protected render(): void {
+    private renderElements(): void {
         this.setTheme();
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
         this.renderComplete();
+    }
+
+    /**
+     * To Initialize the control rendering
+     */
+    protected render(): void {
+       this.renderElements();
     }
 
     /**
@@ -638,7 +619,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();
         }
-        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
+        this.trigger(loaded, { gauge: this });
         removeElement('gauge-measuretext');
     }
 
@@ -742,7 +723,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     public gaugeResize(e: Event): boolean {
         const args: IResizeEventArgs = {
-            gauge: !this.isBlazor ? this : null,
+            gauge: this,
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
@@ -757,12 +738,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.resizeTo = window.setTimeout(
                 (): void => {
                     this.createSvg();
-                    this.renderGaugeElements();
-                    this.calculateBounds();
-                    this.renderAxisElements();
                     args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
                     this.trigger(resized, args);
-                    this.render();
+                    this.renderElements();
                 },
                 500);
         }
@@ -786,6 +764,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let width: number; let height: number; let x: number; let y: number;
         let options: PathOption;
         const labelPadding: number = 20;
+        const extraPadding: number = 30;
         let path: string = '';
         const fill: string = (this.container.backgroundColor !== 'transparent'
             || (this.theme !== 'Bootstrap4' && this.theme !== 'Material'))
@@ -802,10 +781,16 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             }
         }
         if (this.orientation === 'Vertical') {
-            height = this.actualRect.height;
-            height = (this.container.height > 0 ? this.container.height : ((height / 2) - ((height / 2) / 4)) * 2);
+            if (this.allowMargin) {
+                height = this.actualRect.height;
+                height = (this.container.height > 0) ? this.container.height :
+                    ((height / 2) - ((height / 2) / 4)) * 2;
+                height = (this.container.type === 'Thermometer') ? height - (bottomRadius * 2) - topRadius : height;
+            } else {
+                height = this.actualRect.height - labelPadding - extraPadding;
+                height = (this.container.type === 'Thermometer') ? (radius !== 0) ? (this.actualRect.height - (bottomRadius * 2) - topRadius - extraPadding) : height : height;
+            }
             width = this.container.width;
-            height = (this.container.type === 'Thermometer') ? height - (bottomRadius * 2) - topRadius : height;
             x = (this.actualRect.x + ((this.actualRect.width / 2) - (this.container.width / 2))) + this.container.offset;
             y = this.actualRect.y + ((this.actualRect.height / 2) - ((this.container.type === 'Thermometer') ?
                 ((height + (bottomRadius * 2) - topRadius)) / 2 : height / 2));
@@ -824,7 +809,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             height = this.container.width;
         }
         this.containerBounds = (!allowContainerRender) ? { x: 0, y: 0, width: 0, height: 0 } : { x: x, y: y, width: width, height: height };
-        if (this.containerBounds.width > 0) {
+        if ((this.containerBounds.width > 0 && this.orientation === 'Vertical') || (this.containerBounds.height > 0 && this.orientation === 'Horizontal')) {
             this.containerObject = this.renderer.createGroup({ id: this.element.id + '_Container_Group', transform: 'translate( 0, 0)' });
             if (this.container.type === 'Normal') {
                 let containerBorder: BorderModel = { color: this.container.border.color || this.themeStyle.containerBorderColor,
@@ -903,12 +888,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     const pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
                     const axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                     if (currentPointer.pointer.enableDrag) {
-                        this.trigger(dragStart, this.isBlazor ? {
-                            name: dragStart,
-                            currentValue: this.activePointer.currentValue,
-                            pointerIndex: pointInd,
-                            axisIndex: axisInd
-                        } as IPointerDragEventArgs : {
+                        this.trigger(dragStart, 
+                        {
                             axis: this.activeAxis,
                             name: dragStart,
                             pointer: this.activePointer,
@@ -944,11 +925,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.mouseX = args.x;
             this.mouseY = args.y;
             let dragArgs: IPointerDragEventArgs;
-            let dragBlazorArgs: IPointerDragEventArgs;
             if (args.target && !args.cancel) {
                 if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
                     const pointerIndex: number = parseInt(args.target.id.slice(-1), 10);
-                    const axisIndex: number = parseInt(args.target.id.match(/\d/g)[0], 10);
+                    const axisIndex: number = parseInt(args.target.id.split('AxisIndex_')[1].match(/\d/g)[0], 10);
                     if (this.axes[axisIndex].pointers[pointerIndex].enableDrag) {
                         current = this.moveOnPointer(args.target as HTMLElement);
                         if (!(isNullOrUndefined(current)) && current.pointer) {
@@ -967,20 +947,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                                 axisIndex: dragAxisInd,
                                 pointerIndex: dragPointInd
                             };
-                            dragBlazorArgs = {
-                                previousValue: this.activePointer.currentValue,
-                                name: dragMove,
-                                currentValue: null,
-                                pointerIndex: dragPointInd,
-                                axisIndex: dragAxisInd
-                            };
                             if (args.target.id.indexOf('MarkerPointer') > -1) {
                                 this.markerDrag(this.activeAxis, (this.activeAxis.pointers[dragPointInd]) as Pointer);
                             } else {
                                 this.barDrag(this.activeAxis, (this.activeAxis.pointers[dragPointInd]) as Pointer);
                             }
-                            dragArgs.currentValue = dragBlazorArgs.currentValue = this.activePointer.currentValue;
-                            this.trigger(dragMove, this.isBlazor ? dragBlazorArgs : dragArgs);
+                            dragArgs.currentValue = this.activePointer.currentValue;
+                            this.trigger(dragMove, dragArgs);
                         }
                     }
                 } else {
@@ -1103,20 +1076,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const isImage: boolean = isNullOrUndefined(this.activePointer) ? false : this.activePointer.markerType === 'Image';
         const isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         const args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        const blazorArgs: IMouseEventArgs = {
-            cancel: args.cancel, target: args.target, name: args.name, x: args.x, y: args.y
-        };
-        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
+        this.trigger(gaugeMouseUp, args);
         if (this.activeAxis && this.activePointer) {
             const pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
             const axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
             if (this.activePointer.enableDrag) {
-                this.trigger(dragEnd, this.isBlazor ? {
-                    name: dragEnd,
-                    currentValue: this.activePointer.currentValue,
-                    pointerIndex: pointerInd,
-                    axisIndex: axisInd
-                } as IPointerDragEventArgs : {
+                this.trigger(dragEnd, 
+                {
                     name: dragEnd,
                     axis: this.activeAxis,
                     pointer: this.activePointer,
@@ -1195,7 +1161,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         location.y += isTouch ? (<TouchEvent & PointerEvent>e).changedTouches[0].clientY : e.clientY;
         return {
             cancel: false, name: name,
-            model: !this.isBlazor ? this : null,
+            model: this,
             x: location.x, y: location.y,
             target: isTouch ? <Element>(<TouchEvent & PointerEvent>e).target : <Element>e.target
         };
@@ -1219,7 +1185,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             if (this.orientation === 'Vertical') {
                 pointer.bounds.y = this.mouseY;
             } else {
-                pointer.bounds.x = this.mouseX;
+                pointer.bounds.x = this.mouseX + getExtraWidth(this.element);
             }
             pointer.currentValue = value;
             options = calculateShapes(
@@ -1256,7 +1222,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (this.orientation === 'Vertical') {
             isDrag = (!axis.isInversed) ? (this.mouseY > value2 && this.mouseY < value1) : (this.mouseY > value1 && this.mouseY < value2);
             if (isDrag) {
-                if (this.container.type === 'Normal') {
+                if ((this.container.type === 'Normal' || this.container.width === 0) && !isNullOrUndefined(this.mouseElement)) {
                     if (!axis.isInversed) {
                         this.mouseElement.setAttribute('y', this.mouseY.toString());
                     }
@@ -1269,22 +1235,24 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 }
             }
         } else {
-            isDrag = (!axis.isInversed) ? (this.mouseX > value1 && this.mouseX < value2) : (this.mouseX > value2 && this.mouseX < value1);
+            const extraWidth: number = getExtraWidth(this.element);
+            isDrag = (!axis.isInversed) ? (this.mouseX + extraWidth > value1 && this.mouseX + extraWidth < value2) :
+                (this.mouseX + extraWidth > value2 && this.mouseX + extraWidth < value1);
             if (isDrag) {
-                if (this.container.type === 'Normal') {
+                if ((this.container.type === 'Normal' || this.container.width === 0) && !isNullOrUndefined(this.mouseElement)) {
                     if (axis.isInversed) {
-                        this.mouseElement.setAttribute('x', this.mouseX.toString());
+                        this.mouseElement.setAttribute('x', (this.mouseX + extraWidth).toString());
                     }
-                    this.mouseElement.setAttribute('width', Math.abs(value1 - this.mouseX).toString());
+                    this.mouseElement.setAttribute('width', Math.abs(value1 - (this.mouseX + extraWidth)).toString());
                 } else {
                     if (axis.isInversed) {
-                        pointer.bounds.x = this.mouseX;
+                        pointer.bounds.x = this.mouseX + extraWidth;
                     }
-                    pointer.bounds.width = Math.abs(value1 - this.mouseX);
+                    pointer.bounds.width = Math.abs(value1 - (this.mouseX + extraWidth));
                 }
             }
         }
-        if (isDrag && this.mouseElement.tagName === 'path') {
+        if (isDrag && !isNullOrUndefined(this.mouseElement) && this.mouseElement.tagName === 'path') {
             path = getBox(
                 pointer.bounds, this.container.type, this.orientation,
                 new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.container.width, axis, pointer.roundedCornerRadius);
@@ -1304,18 +1272,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.element, activeElement, this.orientation, active.axis, 'tooltip', null);
         let dragArgs: IValueChangeEventArgs = {
             name: 'valueChange',
-            gauge: !this.isBlazor ? this : null,
+            gauge: this,
             element: activeElement,
             axisIndex: active.axisIndex,
-            axis: !this.isBlazor ? active.axis : null,
+            axis: active.axis,
             pointerIndex: active.pointerIndex,
-            pointer: !this.isBlazor ? active.pointer : null,
+            pointer: active.pointer,
             value: value
         };
-        if (this.isBlazor) {
-            const { gauge, axis, pointer, ...blazorArgsData } : IValueChangeEventArgs = dragArgs;
-            dragArgs = blazorArgsData;
-        }
         this.trigger(valueChange, dragArgs, (pointerArgs : IValueChangeEventArgs) => {
             this.setPointerValue(pointerArgs.axisIndex, pointerArgs.pointerIndex, pointerArgs.value);
         });
@@ -1334,6 +1298,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const pointer: Pointer = <Pointer>axis.pointers[pointerIndex];
         const id: string = this.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + pointerIndex;
         const pointerElement: Element = getElement(id);
+        value = (value < axis.visibleRange.min) ? axis.visibleRange.min : ((value > axis.visibleRange.max) ? axis.visibleRange.max : value);
         pointer.currentValue = value;
         if (
             (pointerElement !== null) && withInRange(
@@ -1362,9 +1327,15 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (content !== null) {
             removeElement(this.element.id + '_Annotation_' + annotationIndex);
             annotation.content = content;
-            annotation.axisValue = axisValue ? axisValue : annotation.axisValue;
+            annotation.axisValue = !isNullOrUndefined(axisValue) ? axisValue : annotation.axisValue;
             this.annotationsModule.createAnnotationTemplate(element, annotationIndex);
-            if (!elementExist) {
+            if (!isNullOrUndefined(annotation.axisIndex)) {
+                const axis: Axis = <Axis>this.axes[annotation.axisIndex];
+                const range: VisibleRange = axis.visibleRange;
+                if (!elementExist && annotation.axisValue >= range.min && annotation.axisValue <= range.max) {
+                    element.appendChild(getElement(this.element.id + '_Annotation_' + annotationIndex));
+                }
+            } else if (!elementExist) {
                 element.appendChild(getElement(this.element.id + '_Annotation_' + annotationIndex));
             }
         }

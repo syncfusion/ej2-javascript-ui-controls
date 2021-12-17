@@ -106,9 +106,9 @@ export class Print {
         element.classList.remove('e-gridhover');
         document.body.appendChild(element);
         const printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
-        if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {
-            for (let i: number = 0; i < printGrid.columns.length; i++) {
-                (printGrid.columns[i] as Column) = extend({}, printGrid.columns[i]) as Column;
+        for (let i: number = 0; i < printGrid.columns.length; i++) {
+            (printGrid.columns[i] as Column) = extend({}, printGrid.columns[i]) as Column;
+            if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {
                 (printGrid.columns[i] as Column).freeze = undefined;
             }
         }
@@ -228,7 +228,7 @@ export class Print {
         for (let i: number = 0; i < groupCaption.length; i++) {
             (<HTMLElement>groupCaption[i]).setAttribute('colspan', colSpan);
         }
-        const colGroups: HTMLElement[] = selectAll(`colgroup${id}colGroup`, element);
+        const colGroups: HTMLElement[] = selectAll(`colgroup${id}colgroup`, element);
         const contentColGroups: HTMLElement[] = selectAll('.e-content colgroup', element);
         this.hideColGroup(colGroups, depth);
         this.hideColGroup(contentColGroups, depth);

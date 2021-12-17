@@ -558,7 +558,7 @@ export class Predicate {
      * filter data with case insensitive.
      */
     public and(
-        field: string | Predicate, operator?: string, value?: string | number | Date | null,
+        field: string | Predicate, operator?: string, value?: string | number | Date | boolean | null,
         ignoreCase?: boolean, ignoreAccent?: boolean): Predicate {
             return Predicate.combine(this, field, operator, value, 'and', ignoreCase, ignoreAccent);
         }
@@ -580,7 +580,7 @@ export class Predicate {
      * filter data with case insensitive.
      */
     public or(
-        field: string | Predicate, operator?: string, value?: string | number | Date | null, ignoreCase?: boolean,
+        field: string | Predicate, operator?: string, value?: string | number | Date | boolean | null, ignoreCase?: boolean,
         ignoreAccent?: boolean): Predicate {
             return Predicate.combine(this, field, operator, value, 'or', ignoreCase, ignoreAccent);
         }
@@ -664,7 +664,7 @@ export class Predicate {
     }
 
     private static combine(
-        pred: Predicate, field: string | Predicate, operator: string, value: string | number | Date | null,
+        pred: Predicate, field: string | Predicate, operator: string, value: string | number | Date | boolean | null,
         condition: string, ignoreCase?: boolean, ignoreAccent?: boolean): Predicate {
         if (field instanceof Predicate) {
             return Predicate[condition](pred, field);

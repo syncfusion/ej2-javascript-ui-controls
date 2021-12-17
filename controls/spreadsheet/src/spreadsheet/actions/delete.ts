@@ -51,25 +51,27 @@ export class Delete {
                 }
             }
         } else {
-            if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.rightIndex) {
-                if (args.freezePane) {
+            if (args.refreshSheet !== false && (!this.parent.scrollSettings.enableVirtualization ||
+                args.startIndex <= this.parent.viewport.rightIndex)) {
+                if (args.freezePane || args.refreshSheet === true) {
                     this.parent.renderModule.refreshSheet();
                 } else if (this.parent.scrollSettings.enableVirtualization) {
                     if (args.startIndex < this.parent.viewport.leftIndex) { this.parent.viewport.leftIndex -= args.model.length; }
                     this.parent.renderModule.refreshUI({
                         skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(
                             this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
-                        colIndex: this.parent.viewport.leftIndex
+                        colIndex: this.parent.viewport.leftIndex, insertDelete: true
                     });
                     this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 } else {
                     this.parent.renderModule.refreshUI({
                         skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
-                        colIndex: args.startIndex
+                        colIndex: args.startIndex, insertDelete: true
                     });
                     this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
                 }
             }
+            delete args.refreshSheet;
         }
         this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (isAction) {

@@ -224,22 +224,22 @@ export class Paragraph {
     }
     private updateSelectedBulletListType(listText: string): void {
         switch (listText) {
-        case '\uf0b7':
+        case String.fromCharCode(61623):
             this.dotBullet.classList.add('de-list-item-selected');
             break;
-        case '\uf06f' + '\u0020':
+        case String.fromCharCode(61551) + String.fromCharCode(32):
             this.circleBullet.classList.add('de-list-item-selected');
             break;
-        case '\uf0a7':
+        case String.fromCharCode(61607):
             this.squareBullet.classList.add('de-list-item-selected');
             break;
-        case '\uf076':
+        case String.fromCharCode(61558):
             this.flowerBullet.classList.add('de-list-item-selected');
             break;
-        case '\uf0d8':
+        case String.fromCharCode(61656):
             this.arrowBullet.classList.add('de-list-item-selected');
             break;
-        case '\uf0fc':
+        case String.fromCharCode(61692):
             this.tickBullet.classList.add('de-list-item-selected');
             break;
         default:
@@ -708,7 +708,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedBulletStyle = 'dot';
-            this.documentEditor.editor.applyBullet('\uf0b7', 'Symbol');
+            this.documentEditor.editor.applyBullet(String.fromCharCode(61623), 'Symbol');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -720,7 +720,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedBulletStyle = 'circle';
-            this.documentEditor.editor.applyBullet('\uf06f' + '\u0020', 'Symbol');
+            this.documentEditor.editor.applyBullet(String.fromCharCode(61551) + String.fromCharCode(32), 'Symbol');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -732,7 +732,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedBulletStyle = 'square';
-            this.documentEditor.editor.applyBullet('\uf0a7', 'Wingdings');
+            this.documentEditor.editor.applyBullet(String.fromCharCode(61607), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -744,7 +744,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedBulletStyle = 'flower';
-            this.documentEditor.editor.applyBullet('\uf076', 'Wingdings');
+            this.documentEditor.editor.applyBullet(String.fromCharCode(61558), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -756,7 +756,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedBulletStyle = 'arrow';
-            this.documentEditor.editor.applyBullet('\uf0d8', 'Wingdings');
+            this.documentEditor.editor.applyBullet(String.fromCharCode(61656), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -768,7 +768,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedBulletStyle = 'tick';
-            this.documentEditor.editor.applyBullet('\uf0fc', 'Wingdings');
+            this.documentEditor.editor.applyBullet(String.fromCharCode(61692), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);

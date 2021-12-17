@@ -1,0 +1,13 @@
+#{&}.e-chip-list {
+  .e-chip-delete {
+    &.e-dlt-btn::before {
+      content: '\e771';
+    }
+  }
+
+  &.e-multi-selection .e-chip {
+    &::before {
+      content: '\e75d';
+    }
+  }
+}

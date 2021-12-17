@@ -118,7 +118,7 @@ describe('Gantt - Base', () => {
             expect(ganttObj.renderBaseline).toEqual(true);
             ganttObj.baselineColor = 'red';
             ganttObj.dataBind();
-            let ele: HTMLElement = document.getElementsByClassName('e-baseline-bar')[0] as HTMLElement;
+            let ele: HTMLElement = ganttObj.element.getElementsByClassName('e-baseline-bar')[0] as HTMLElement;
             expect(ele.style.backgroundColor).toBe('red');
             ganttObj.resources = [
                 { resourceId: 1, resourceName: 'Martin Tamer' },

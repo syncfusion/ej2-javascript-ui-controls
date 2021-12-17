@@ -922,6 +922,9 @@ export class QuickPopups {
 
     private closeClick(event: Event): void {
         this.dialogEvent = event;
+        if (this.parent.currentView === 'Year' && this.parent.activeCellsData && this.parent.activeCellsData.element) {
+            this.parent.selectCell(this.parent.activeCellsData.element as HTMLTableCellElement);
+        }
         this.quickPopupHide();
         this.morePopup.hide();
     }

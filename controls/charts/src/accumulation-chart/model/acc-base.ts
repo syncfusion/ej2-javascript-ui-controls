@@ -755,6 +755,8 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         let length: number = Object.keys(result).length;
         this.sumOfPoints = 0;
         if (length === 0) {
+            // fix for Pie datalabels are not removed for empty datasource
+            this.points = [];
             return null;
         }
         this.findSumOfPoints(result);

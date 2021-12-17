@@ -39,7 +39,7 @@ import { PointModel, IElement, Rect, cornersPointsBeforeRotation } from '@syncfu
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 // eslint-disable-next-line max-len
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs } from './base';
 // eslint-disable-next-line max-len
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -2512,6 +2512,12 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     @Property(false)
     public isReadonly: boolean;
 
+    /**
+     * Enable or disable auto fit mode for FreeText annotation in the Pdfviewer. FALSE by default.
+     */
+    @Property(false)
+    public enableAutoFit: boolean;
+
 }
 
 /**
@@ -4350,7 +4356,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Get or set the initial field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: {displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
+    @Property({ initialIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: {displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
     public initialFieldSettings: InitialFieldSettingsModel;
 
     /**
@@ -4475,7 +4481,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of free text annotation.
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false, enableAutoFit: false })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
@@ -5016,6 +5022,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationMove: EmitType<AnnotationMoveEventArgs>;
 
     /**
+     * Triggers while moving an annotation.
+     *
+     * @event
+     * @blazorProperty 'AnnotationMoving'
+     */
+     @Event()
+     public annotationMoving: EmitType<AnnotationMovingEventArgs>;
+ 
+    /**
      * Triggers when mouse over the annotation object.
      *
      * @event
@@ -5504,7 +5519,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
                 break;
             case 'documentPath':
-                this.load(newProp.documentPath, null);
+                if (!isBlazor()) {
+                    this.load(newProp.documentPath, null);
+                }
+                else {
+                    this._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', newProp.documentPath);
+                }
                 break;
             case 'interactionMode':
                 this.interactionMode = newProp.interactionMode;
@@ -5908,6 +5928,42 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Loads the given PDF document in the PDF viewer control
+     * @private
+     */
+     public loadDocument(documentId: string, isFileName: boolean, fileName: string): void {
+        if (this.pageCount !== 0) {
+            this.viewerBase.clear(true);
+        } else {
+            this.viewerBase.clear(false);
+        }
+        this.pageCount = 0;
+        this.currentPageNumber = 0;
+        this.viewerBase.blazorUIAdaptor.resetToolbar();
+        this.fileName = fileName;
+        this.viewerBase.initiateLoadDocument(documentId, isFileName, fileName);
+    }
+
+    /**
+     * Loads the PDF document with the document details in the PDF viewer control
+    * @private
+    */
+    public loadSuccess(documentDetails: any): void {
+        this.viewerBase.loadSuccess(documentDetails);
+    }
+
+    /**
+     * Set the focus of the given element
+    * @private
+    */
+    public focusElement(elementId: string): void {
+        let element: HTMLElement = document.getElementById(elementId);
+        if (element != null) {
+            element.focus();
+        }
+    }
+
+    /**
      * Downloads the PDF document being loaded in the ejPdfViewer control.
      *
      * @returns void
@@ -6057,7 +6113,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public importAnnotation(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
             if (typeof (importData) === 'string') {
-                let isXfdfFile: boolean = (importData.indexOf('.xfdf') > -1) ? true : false;
+                let isXfdfFile: boolean =((importData.indexOf('.xfdf') > -1) || (annotationDataFormat.indexOf('Xfdf') > -1)) ? true : false;
                 if (annotationDataFormat) {
                     if (importData.indexOf('</xfdf>') > -1) {
                         this.viewerBase.importAnnotations(importData, annotationDataFormat, false);
@@ -6486,9 +6542,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @data
      * @private
      */
-    public fireAjaxRequestSuccess(action: string, data: any): void {
-        const eventArgs: AjaxRequestSuccessEventArgs = { name: 'ajaxRequestSuccess', documentName: this.fileName, action: action, data: data };
+    public fireAjaxRequestSuccess(action: string, data: any): any {
+        const eventArgs: AjaxRequestSuccessEventArgs = { name: 'ajaxRequestSuccess', documentName: this.fileName, action: action, data: data, cancel: false };
         this.trigger('ajaxRequestSuccess', eventArgs);
+        if(eventArgs.cancel){
+            return true;
+        } else {
+           return false;
+        }
     }
     /**
      * @param action
@@ -7210,7 +7271,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public renderDrawing(canvas?: HTMLCanvasElement, index?: number): void {
-        if (!index && this.viewerBase.activeElements.activePageID && !this.viewerBase.isPrint) {
+        if (isNullOrUndefined(index) && this.viewerBase.activeElements.activePageID && !this.viewerBase.isPrint) {
             index = this.viewerBase.activeElements.activePageID;
         }
         if (this.annotation) {
@@ -7339,6 +7400,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('annotationResize', eventArgs);
     }
     /**
+     * @param pageNumber
+     * @param id
+     * @param type
+     * @param annotationSettings
+     * @param previousPosition
+     * @param currentPosition
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireAnnotationMoving(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any, previousPosition: object, currentPosition: object): void {
+        const eventArgs: AnnotationMovingEventArgs = { name: 'annotationMoving', pageIndex: pageNumber, annotationId: id, annotationType: type, annotationSettings: annotationSettings, previousPosition: previousPosition, currentPosition: currentPosition };
+        this.trigger('annotationMoving', eventArgs);
+    }
+
+     /**
      * @param pageNumber
      * @param id
      * @param type
@@ -7766,7 +7842,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.fireFormFieldUnselectEvent("formFieldUnselect", field, formField.pageIndex);
                 }
             }
-        }
+        } 
         this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
         this.enableServerDataBinding(allowServerDataBind, true);
     }

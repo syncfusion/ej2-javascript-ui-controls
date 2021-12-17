@@ -9,6 +9,11 @@ export class MouseEvents {
         click.initEvent('click', true, false);
         element.dispatchEvent(click);
     }
+    public doubleClickEvent(element: Element): void {
+        let dblclick: Event = document.createEvent('MouseEvent');
+        dblclick.initEvent('dblclick', true, false);
+        element.dispatchEvent(dblclick);
+    }
     public mousedownEvent(element: Element, sx: number, sy: number, cx: number, cy: number): void {
         let mousedown: MouseEvent = document.createEvent('MouseEvent');
         mousedown.initMouseEvent('mousedown', false, false, window, 1, sx, sy, cx, cy, false, false, false, false, 0, null);

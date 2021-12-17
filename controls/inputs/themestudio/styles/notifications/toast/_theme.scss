@@ -1,0 +1,220 @@
+.e-toast-container {
+
+  .e-toast {
+    background-color: $toast-bg-color;
+    box-shadow: $toast-box-shadow;
+    color: $toast-font-color;
+
+    @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap4' {
+      border: 1px solid  $toast-border-color;
+    }
+
+    .e-toast-close-icon {
+      color: $toast-close-icon-color;
+
+      &.e-blazor-toast-close-icon,
+      &.e-blazor-toast-close-icon:focus,
+      &.e-blazor-toast-close-icon:active {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+        outline: 0;
+      }
+    }
+
+    &.e-toast-success {
+      background-color: $toast-success-bg-color;
+      color: $toast-success-color;
+
+      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        border-color: $toast-success-border-color;
+      }
+
+      .e-toast-message .e-toast-title {
+        color: $toast-success-title-color;
+        }
+
+      .e-toast-message .e-toast-content {
+        color: $toast-success-content-color;
+        }
+
+      .e-toast-icon {
+        color: $toast-success-icon-color;
+      }
+
+      .e-toast-close-icon {
+        color: $toast-success-icon-color;
+      }
+
+      &:hover {
+        background-color: $toast-success-hover-bg-color;
+        box-shadow: $toast-success-hover-box-shadow;
+        color: $toast-success-hover-color;
+
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          border-color: $toast-success-hover-border-color;
+        }
+      }
+    }
+
+    &.e-toast-info {
+      background-color: $toast-info-bg-color;
+      color: $toast-info-color;
+
+      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        border-color: $toast-info-border-color;
+      }
+
+      .e-toast-message .e-toast-title {
+        color: $toast-info-title-color;
+        }
+
+      .e-toast-message .e-toast-content {
+        color: $toast-info-content-color;
+        }
+
+      .e-toast-icon {
+        color: $toast-info-icon-color;
+      }
+
+      .e-toast-close-icon {
+        color: $toast-info-icon-color;
+      }
+
+      &:hover {
+        background-color: $toast-info-hover-bg-color;
+        box-shadow: $toast-info-hover-box-shadow;
+        color: $toast-info-hover-color;
+
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          border-color: $toast-info-hover-border-color;
+        }
+      }
+    }
+
+    &.e-toast-warning {
+      background-color: $toast-warning-bg-color;
+      color: $toast-warning-color;
+
+      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        border-color: $toast-warning-border-color;
+      }
+
+      .e-toast-message .e-toast-title {
+        color: $toast-warning-title-color;
+        }
+
+      .e-toast-message .e-toast-content {
+        color: $toast-warning-content-color;
+        }
+
+      .e-toast-icon {
+        color: $toast-warning-icon-color;
+      }
+
+      .e-toast-close-icon {
+        color: $toast-warning-icon-color;
+      }
+
+      &:hover {
+        background-color: $toast-warning-hover-bg-color;
+        box-shadow: $toast-warning-hover-box-shadow;
+        color: $toast-warning-hover-color;
+
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          border-color: $toast-warning-hover-border-color;
+        }
+      }
+    }
+
+    &.e-toast-danger {
+      background-color: $toast-danger-bg-color;
+      color: $toast-danger-color;
+
+      @if $skin-name == 'highcontrast' {
+        border-color: $toast-danger-border-color;
+      }
+
+      .e-toast-message .e-toast-title {
+        color: $toast-danger-title-color;
+        }
+
+      .e-toast-message .e-toast-content {
+        color: $toast-danger-content-color;
+        }
+
+      .e-toast-icon {
+        color: $toast-danger-icon-color;
+      }
+
+      .e-toast-close-icon {
+        color: $toast-danger-icon-color;
+      }
+
+      &:hover {
+        background-color: $toast-danger-hover-bg-color;
+        box-shadow: $toast-danger-hover-box-shadow;
+        color: $toast-danger-hover-color;
+
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          border-color: $toast-danger-hover-border-color;
+        }
+      }
+    }
+
+    &:hover {
+      background-color: $toast-hover-bg-color;
+      box-shadow: $toast-hover-box-shadow;
+
+      @if $skin-name == 'highcontrast' {
+        border-color: $toast-hover-border-color;
+      }
+    }
+
+    .e-toast-icon {
+      color: $toast-icon-color;
+    }
+
+    .e-toast-message {
+
+      .e-toast-title {
+        color: $toast-title-color;
+      }
+
+      .e-toast-content {
+        color: $toast-content-color;
+      }
+    }
+
+    .e-toast-progress {
+      background-color: $toast-progress-color;
+    }
+
+    @if $skin-name == 'material' {
+      .e-toast-actions {
+
+        .e-btn {
+          background-color: $toast-btn-flat-bgcolor;
+          border-color: $toast-btn-flat-border-color;
+          box-shadow: $toast-btn-flat-box-shadow;
+          color:  $toast-btn-flat-color;
+
+          &:hover {
+            background-color: $toast-btn-flat-hover-bgcolor;
+            color:  $toast-btn-flat-hover-color;
+          }
+
+          &:focus {
+            background-color: $toast-btn-flat-focus-bgcolor;
+            color:  $toast-btn-flat-focus-color;
+          }
+
+          &:active {
+            background-color: $toast-btn-flat-active-bgcolor;
+            color:  $toast-btn-flat-active-color;
+          }
+        }
+      }
+    }
+  }
+}

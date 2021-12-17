@@ -66,7 +66,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 expect(path[2]).toBe('5');
                 expect(path[4]).toBe('24.5');
                 expect(path[5]).toBe('95');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#000000');
                 expect(ele.getAttribute('stroke')).toBe('#000000');
                 expect(ele.getAttribute('stroke-width')).toBe('2');
             };
@@ -81,7 +81,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             expect(path[2]).toBe('5');
             expect(path[4]).toBe('63.5');
             expect(path[5]).toBe('95');
-            expect(ele.getAttribute('fill')).toBe('transparent');
+            expect(ele.getAttribute('fill')).toBe('#000000');
             expect(ele.getAttribute('stroke')).toBe('#000000');
             expect(ele.getAttribute('stroke-width')).toBe('2');
         });
@@ -94,7 +94,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             expect(path[2]).toBe('5');
             expect(path[4]).toBe('180.5');
             expect(path[5]).toBe('95');
-            expect(ele.getAttribute('fill')).toBe('transparent');
+            expect(ele.getAttribute('fill')).toBe('#000000');
             expect(ele.getAttribute('stroke')).toBe('#000000');
             expect(ele.getAttribute('stroke-width')).toBe('2');
         });
@@ -171,7 +171,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 expect(ele.firstChild.textContent).toBe('50');
                 expect(ele.lastChild.textContent).toBe('50');
                 ele = getIdElement(id + '_sparkline_tracker');
-                expect(ele.getAttribute('fill')).toBe('transparent');
+                expect(ele.getAttribute('fill')).toBe('#000000');
                 expect(ele.getAttribute('stroke')).toBe('#000000');
                 expect(ele.getAttribute('stroke-width')).toBe('1');
             };

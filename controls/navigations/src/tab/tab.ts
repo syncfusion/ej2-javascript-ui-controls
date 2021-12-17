@@ -68,6 +68,7 @@ const CLS_VRIGHT: string = 'e-vertical-right';
 const CLS_HBOTTOM: string = 'e-horizontal-bottom';
 const CLS_FILL: string = 'e-fill-mode';
 const TABITEMPREFIX: string = 'tabitem_';
+const CLS_REORDER_ACTIVE_ITEM: string = 'e-reorder-active-item';
 
 /** An interface that holds options to control the selected item action. */
 export interface SelectEventArgs extends BaseEventArgs {
@@ -85,6 +86,8 @@ export interface SelectEventArgs extends BaseEventArgs {
     cancel?: boolean
     /** Defines the selected content. */
     selectedContent: HTMLElement
+    /** Determines whether the event is triggered via user interaction or programmatic way. True, if the event is triggered by user interaction. */
+    isInteracted?: boolean
 }
 /** An interface that holds options to control the selecting item action. */
 export interface SelectingEventArgs extends SelectEventArgs {
@@ -309,6 +312,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private maxHeight: number = 0;
     private title: Str = 'Close';
     private initRender: boolean;
+    private isInteracted: boolean = false;
     private prevActiveEle: string;
     private lastIndex: number = 0;
     private isSwipeed: boolean;
@@ -326,7 +330,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private droppedIndex: number;
     private draggingItems: TabItemModel[];
     private draggableItems: Draggable[] = [];
-    private tbId : string;
+    private tbId: string;
     private resizeContext: EventListenerObject = this.refreshActElePosition.bind(this);
     /**
      * Contains the keyboard configuration of the Tab.
@@ -468,6 +472,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     @Property(false)
     public showCloseButton: boolean;
     /**
+     * Determines whether to re-order tab items to show active tab item in the header area or popup when OverflowMode is Popup.
+     *  True, if active tab item should be visible in header area instead of pop-up. The default value is true.
+     *
+     * @default true
+     */
+    @Property(true)
+    public reorderActiveTab: boolean;
+    /**
      * Specifies the scrolling distance in scroller.
      *
      * @default null
@@ -504,42 +516,42 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     @Event()
     public created: EmitType<Event>;
     /**
-     * The event will be fired before adding the item to the Tab.
+     * The event will be fired before adding the item to the Tab.
      *
      * @event
      */
     @Event()
     public adding: EmitType<AddEventArgs>;
     /**
-     * The event will be fired after adding the item to the Tab.
+     * The event will be fired after adding the item to the Tab.
      *
      * @event
      */
     @Event()
     public added: EmitType<AddEventArgs>;
     /**
-     * The event will be fired before the item gets selected.
+     * The event will be fired before the item gets selected.
      *
      * @event
      */
     @Event()
     public selecting: EmitType<SelectingEventArgs>;
     /**
-     * The event will be fired after the item gets selected.
+     * The event will be fired after the item gets selected.
      *
      * @event
      */
     @Event()
     public selected: EmitType<SelectEventArgs>;
     /**
-     * The event will be fired before removing the item from the Tab.
+     * The event will be fired before removing the item from the Tab.
      *
      * @event
      */
     @Event()
     public removing: EmitType<RemoveEventArgs>;
     /**
-     * The event will be fired after removing the item from the Tab.
+     * The event will be fired after removing the item from the Tab.
      *
      * @event
      */
@@ -857,7 +869,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
     private parseObject(items: TabItemModel[], index: number): object[] {
-        const tbCount: number = selectAll('.' + CLS_TB_ITEM, this.element).length;
+        const tbCount: number = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element).length;
         const tItems: Object[] = [];
         let txtWrapEle: HTEle;
         const spliceArray: number[] = [];
@@ -1122,7 +1134,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             trg.click();
         } else {
             if (!isNOU(trgParent) && trgParent.classList.contains(CLS_ACTIVE) === false) {
-                this.select(trgIndex);
+                this.selectTab(trgIndex, null, true);
                 if (!isNOU(this.popEle)) {
                     this.popObj.hide(this.hide);
                 }
@@ -1383,8 +1395,18 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private setActiveBorder(): void {
         const trgHdrEle: Element = this.getTabHeader();
         const trg: HTEle = <HTEle>select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, trgHdrEle);
-        if (trg === null) {
+        if (isNOU(trg)) {
             return;
+        }
+        if (!this.reorderActiveTab) {
+            if (trg.classList.contains(CLS_TB_POPUP) && !this.bdrLine.classList.contains(CLS_HIDDEN)) {
+                this.bdrLine.classList.add(CLS_HIDDEN);
+            }
+            if (trgHdrEle && !trgHdrEle.classList.contains(CLS_REORDER_ACTIVE_ITEM)) {
+                trgHdrEle.classList.add(CLS_REORDER_ACTIVE_ITEM);
+            }
+        } else if (trgHdrEle) {
+            trgHdrEle.classList.remove(CLS_REORDER_ACTIVE_ITEM);
         }
         const root: HTEle = <HTEle>closest(trg, '.' + CLS_TAB);
         if (this.element !== root) {
@@ -1415,11 +1437,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 setStyle(bar, { 'left': 'auto', 'right': 'auto' });
             }
         }
-        if (!isNOU(this.bdrLine)) {
+        if (!isNOU(this.bdrLine) && !trg.classList.contains(CLS_TB_POPUP)) {
             this.bdrLine.classList.remove(CLS_HIDDEN);
         }
     }
-    private setActive(value: number, skipDataBind: boolean = false): void {
+    private setActive(value: number, skipDataBind: boolean = false, isInteracted: boolean = false): void {
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         const trg: HTEle = this.tbItem[value];
         if (value < 0 || isNaN(value) || this.tbItem.length === 0) {
@@ -1488,7 +1510,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 selectedItem: trg,
                 selectedIndex: value,
                 selectedContent: <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.selectingID, this.content),
-                isSwiped: this.isSwipeed
+                isSwiped: this.isSwipeed,
+                isInteracted: isInteracted
             };
             this.trigger('selected', eventArg);
         }
@@ -1579,7 +1602,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else {
             this.isPopup = false;
             if (!isNOU(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
-                this.select(trgIndex, args.originalEvent);
+                this.selectTab(trgIndex, args.originalEvent, true);
             }
         }
     }
@@ -1594,14 +1617,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (e.swipeDirection === 'Right' && this.selectedItem !== 0) {
             for (let k: number = this.selectedItem - 1; k >= 0; k--) {
                 if (!this.tbItem[k].classList.contains(CLS_HIDDEN)) {
-                    this.select(k);
+                    this.selectTab(k, null, true);
                     break;
                 }
             }
         } else if (e.swipeDirection === 'Left' && (this.selectedItem !== selectAll('.' + CLS_TB_ITEM, this.element).length - 1)) {
             for (let i: number = this.selectedItem + 1; i < this.tbItem.length; i++) {
                 if (!this.tbItem[i].classList.contains(CLS_HIDDEN)) {
-                    this.select(i);
+                    this.selectTab(i, null, true);
                     break;
                 }
             }
@@ -1631,55 +1654,55 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const item: HTEle = <HTEle>closest(document.activeElement, '.' + CLS_TB_ITEM);
         const trgParent: HTEle = <HTEle>closest(trg, '.' + CLS_TB_ITEM);
         switch (e.action) {
-        case 'space':
-        case 'enter':
-            if (trg.parentElement.classList.contains(CLS_DISABLE)) {
-                return;
-            }
-            if (e.action === 'enter' && trg.classList.contains('e-hor-nav')) {
-                this.showPopup(this.show);
-                break;
-            }
-            this.keyPressed(trg);
-            break;
-        case 'tab':
-        case 'shiftTab':
-            if (trg.classList.contains(CLS_WRAP)
-                    && (<HTEle>closest(trg, '.' + CLS_TB_ITEM)).classList.contains(CLS_ACTIVE) === false) {
-                trg.setAttribute('tabindex', '-1');
-            }
-            if (this.popObj && isVisible(this.popObj.element)) {
-                this.popObj.hide(this.hide);
-            }
-            actEle.children.item(0).setAttribute('tabindex', '0');
-            break;
-        case 'moveLeft':
-        case 'moveRight':
-            if (!isNOU(item)) {
-                this.refreshItemVisibility(item);
-            }
-            break;
-        case 'openPopup':
-            e.preventDefault();
-            if (!isNOU(this.popEle) && this.popEle.classList.contains(CLS_POPUP_CLOSE)) {
-                this.popObj.show(this.show);
-            }
-            break;
-        case 'delete':
-            if (this.showCloseButton === true && !isNOU(trgParent)) {
-                const nxtSib: HTEle = <HTEle>trgParent.nextSibling;
-                if (!isNOU(nxtSib) && nxtSib.classList.contains(CLS_TB_ITEM)) {
-                    (<HTEle>nxtSib.firstElementChild).focus();
+            case 'space':
+            case 'enter':
+                if (trg.parentElement.classList.contains(CLS_DISABLE)) {
+                    return;
                 }
-                this.removeTab(this.getEleIndex(trgParent));
-            }
-            this.setActiveBorder();
-            break;
+                if (e.action === 'enter' && trg.classList.contains('e-hor-nav')) {
+                    this.showPopup(this.show);
+                    break;
+                }
+                this.keyPressed(trg);
+                break;
+            case 'tab':
+            case 'shiftTab':
+                if (trg.classList.contains(CLS_WRAP)
+                    && (<HTEle>closest(trg, '.' + CLS_TB_ITEM)).classList.contains(CLS_ACTIVE) === false) {
+                    trg.setAttribute('tabindex', '-1');
+                }
+                if (this.popObj && isVisible(this.popObj.element)) {
+                    this.popObj.hide(this.hide);
+                }
+                actEle.children.item(0).setAttribute('tabindex', '0');
+                break;
+            case 'moveLeft':
+            case 'moveRight':
+                if (!isNOU(item)) {
+                    this.refreshItemVisibility(item);
+                }
+                break;
+            case 'openPopup':
+                e.preventDefault();
+                if (!isNOU(this.popEle) && this.popEle.classList.contains(CLS_POPUP_CLOSE)) {
+                    this.popObj.show(this.show);
+                }
+                break;
+            case 'delete':
+                if (this.showCloseButton === true && !isNOU(trgParent)) {
+                    const nxtSib: HTEle = <HTEle>trgParent.nextSibling;
+                    if (!isNOU(nxtSib) && nxtSib.classList.contains(CLS_TB_ITEM)) {
+                        (<HTEle>nxtSib.firstElementChild).focus();
+                    }
+                    this.removeTab(this.getEleIndex(trgParent));
+                }
+                this.setActiveBorder();
+                break;
         }
     }
     private refreshActElePosition(): void {
         const activeEle: Element = select('.' + CLS_TB_ITEM + '.' + CLS_TB_POPUP + '.' + CLS_ACTIVE, this.element);
-        if (!isNOU(activeEle)) {
+        if (!isNOU(activeEle) && this.reorderActiveTab) {
             this.select(this.getEleIndex(<HTEle>activeEle));
         }
         this.refreshActiveBorder();
@@ -1717,73 +1740,75 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const changedProp: Object[] = Object.keys(newProp.items);
             for (let i: number = 0; i < changedProp.length; i++) {
                 const index: number = parseInt(Object.keys(newProp.items)[i], 10);
-                const property: Str = Object.keys(newProp.items[index])[0];
-                const oldVal: Str = Object(oldProp.items[index])[property];
-                const newVal: Str | Object = Object(newProp.items[index])[property];
-                const hdr: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_TB_ITEM)[index];
-                let itemIndex: number;
-                if (hdr && !isNOU(hdr.id) && hdr.id !== '') {
-                    const num: number = (hdr.id.indexOf('_'));
-                    itemIndex = parseInt(hdr.id.substring(num + 1), 10);
-                } else {
-                    itemIndex = index;
-                }
-                const hdrItem: HTEle = <HTEle>select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM + this.tabId + '_' + itemIndex, this.element);
-                const cntItem: HTEle = <HTEle>select('.' + CLS_CONTENT + ' #' + CLS_CONTENT + this.tabId + '_' + itemIndex, this.element);
-                if (property === 'header' || property === 'headerTemplate') {
-                    const icon: Str | Object = (isNOU(this.items[index].header) ||
-                        isNOU(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
-                    const textVal: Str | Object = this.items[index].headerTemplate || this.items[index].header.text;
-                    if ((textVal === '') && (icon === '')) {
-                        this.removeTab(index);
+                const properties: string[] = Object.keys(newProp.items[index]);
+                for (let j: number = 0; j < properties.length; j++) {
+                    const oldVal: Str = Object(oldProp.items[index])[properties[j]];
+                    const newVal: Str | Object = Object(newProp.items[index])[properties[j]];
+                    const hdr: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_TB_ITEM)[index];
+                    let itemIndex: number;
+                    if (hdr && !isNOU(hdr.id) && hdr.id !== '') {
+                        const num: number = (hdr.id.lastIndexOf('_'));
+                        itemIndex = parseInt(hdr.id.substring(num + 1), 10);
                     } else {
-                        this.tbId = hdr.id;
-                        const arr: Object[] = [];
-                        arr.push(<TabItemModel>this.items[index]);
-                        this.items.splice(index, 1);
-                        this.itemIndexArray.splice(index, 1);
-                        this.tbObj.items.splice(index, 1);
-                        const isHiddenEle: boolean = hdrItem.classList.contains(CLS_HIDDEN);
-                        detach(hdrItem);
-                        this.isReplace = true;
-                        this.addTab(arr, index);
-                        if (isHiddenEle) {
-                            this.hideTab(index);
+                        itemIndex = index;
+                    }
+                    const hdrItem: HTEle = <HTEle>select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM + this.tabId + '_' + itemIndex, this.element);
+                    const cntItem: HTEle = <HTEle>select('.' + CLS_CONTENT + ' #' + CLS_CONTENT + this.tabId + '_' + itemIndex, this.element);
+                    if (properties[j] === 'header' || properties[j] === 'headerTemplate') {
+                        const icon: Str | Object = (isNOU(this.items[index].header) ||
+                            isNOU(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
+                        const textVal: Str | Object = this.items[index].headerTemplate || this.items[index].header.text;
+                        if ((textVal === '') && (icon === '')) {
+                            this.removeTab(index);
+                        } else {
+                            this.tbId = hdr.id;
+                            const arr: Object[] = [];
+                            arr.push(<TabItemModel>this.items[index]);
+                            this.items.splice(index, 1);
+                            this.itemIndexArray.splice(index, 1);
+                            this.tbObj.items.splice(index, 1);
+                            const isHiddenEle: boolean = hdrItem.classList.contains(CLS_HIDDEN);
+                            detach(hdrItem);
+                            this.isReplace = true;
+                            this.addTab(arr, index);
+                            if (isHiddenEle) {
+                                this.hideTab(index);
+                            }
+                            this.isReplace = false;
                         }
-                        this.isReplace = false;
                     }
-                }
-                if (property === 'content' && !isNOU(cntItem)) {
-                    const strVal: boolean = typeof newVal === 'string' || isNOU((<HTEle>newVal).innerHTML);
-                    if (strVal && ((<Str>newVal)[0] === '.' || (<Str>newVal)[0] === '#') && (<Str>newVal).length) {
-                        const eleVal: HTEle = <HTEle>document.querySelector(<Str>newVal);
-                        cntItem.appendChild(eleVal);
-                        eleVal.style.display = '';
-                    } else if (newVal === '' && oldVal[0] === '#') {
-                        (<HTEle>document.body.appendChild(this.element.querySelector(oldVal))).style.display = 'none';
-                        cntItem.innerHTML = <Str>newVal;
-                    } else if ((this as any).isReact && typeof newVal === 'object') {
-                        cntItem.innerHTML = '';
-                        this.templateCompile(cntItem, <Str>newVal, index);
-                    } else if (typeof newVal !== 'function') {
-                        cntItem.innerHTML = <Str>newVal;
+                    if (properties[j] === 'content' && !isNOU(cntItem)) {
+                        const strVal: boolean = typeof newVal === 'string' || isNOU((<HTEle>newVal).innerHTML);
+                        if (strVal && ((<Str>newVal)[0] === '.' || (<Str>newVal)[0] === '#') && (<Str>newVal).length) {
+                            const eleVal: HTEle = <HTEle>document.querySelector(<Str>newVal);
+                            cntItem.appendChild(eleVal);
+                            eleVal.style.display = '';
+                        } else if (newVal === '' && oldVal[0] === '#') {
+                            (<HTEle>document.body.appendChild(this.element.querySelector(oldVal))).style.display = 'none';
+                            cntItem.innerHTML = <Str>newVal;
+                        } else if ((this as any).isReact) {
+                            cntItem.innerHTML = '';
+                            this.templateCompile(cntItem, <Str>newVal, index);
+                        } else if (typeof newVal !== 'function') {
+                            cntItem.innerHTML = <Str>newVal;
+                        }
                     }
-                }
-                if (property === 'cssClass') {
-                    if (!isNOU(hdrItem)) {
-                        hdrItem.classList.remove(oldVal);
-                        hdrItem.classList.add(<Str>newVal);
+                    if (properties[j] === 'cssClass') {
+                        if (!isNOU(hdrItem)) {
+                            hdrItem.classList.remove(oldVal);
+                            hdrItem.classList.add(<Str>newVal);
+                        }
+                        if (!isNOU(cntItem)) {
+                            cntItem.classList.remove(oldVal);
+                            cntItem.classList.add(<Str>newVal);
+                        }
                     }
-                    if (!isNOU(cntItem)) {
-                        cntItem.classList.remove(oldVal);
-                        cntItem.classList.add(<Str>newVal);
+                    if (properties[j] === 'disabled') {
+                        this.enableTab(index, ((newVal === true) ? false : true));
                     }
-                }
-                if (property === 'disabled') {
-                    this.enableTab(index, ((newVal === true) ? false : true));
-                }
-                if (property === 'visible') {
-                    this.hideTab(index, ((newVal === true) ? false : true));
+                    if (properties[j] === 'visible') {
+                        this.hideTab(index, ((newVal === true) ? false : true));
+                    }
                 }
             }
         } else {
@@ -2005,7 +2030,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 } else {
                     (<HTEle>this.dragItem.querySelector('.' + CLS_WRAP)).style.visibility = '';
                     removeClass([<HTEle>this.tbItems.querySelector('.' + CLS_INDICATOR)], CLS_HIDDEN);
-                    this.select(this.droppedIndex);
+                    this.selectTab(this.droppedIndex, null, true);
                 }
             }
         });
@@ -2014,8 +2039,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * Enables or disables the specified Tab item. On passing value as `false`, the item will be disabled.
      *
-     * @param  {number} index - Index value of target Tab item.
-     * @param  {boolean} value - Boolean value that determines whether the command should be enabled or disabled.
+     * @param {number} index - Index value of target Tab item.
+     * @param {boolean} value - Boolean value that determines whether the command should be enabled or disabled.
      * By default, isEnable is true.
      * @returns {void}.
      */
@@ -2043,8 +2068,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * Adds new items to the Tab that accepts an array as Tab items.
      *
-     * @param  {TabItemModel[]} items - An array of item that is added to the Tab.
-     * @param  {number} index - Number value that determines where the items to be added. By default, index is 0.
+     * @param {TabItemModel[]} items - An array of item that is added to the Tab.
+     * @param {number} index - Number value that determines where the items to be added. By default, index is 0.
      * @returns {void}.
      */
     public addTab(items: TabItemModel[], index?: number): void {
@@ -2069,7 +2094,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.items = items;
             this.reRenderItems();
         } else {
-            const itemsCount: number = selectAll('.' + CLS_TB_ITEM, this.element).length;
+            const itemsCount: number = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element).length;
             if (itemsCount !== 0) {
                 lastEleIndex = this.lastIndex + 1;
             }
@@ -2124,7 +2149,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * Removes the items in the Tab from the specified index.
      *
-     * @param  {number} index - Index of target item that is going to be removed.
+     * @param {number} index - Index of target item that is going to be removed.
      * @returns {void}.
      */
     public removeTab(index: number): void {
@@ -2164,8 +2189,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * Shows or hides the Tab that is in the specified index.
      *
-     * @param  {number} index - Index value of target item.
-     * @param  {boolean} value - Based on this Boolean value, item will be hide (false) or show (true). By default, value is true.
+     * @param {number} index - Index value of target item.
+     * @param {boolean} value - Based on this Boolean value, item will be hide (false) or show (true). By default, value is true.
      * @returns {void}.
      */
     public hideTab(index: number, value?: boolean): void {
@@ -2221,13 +2246,20 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.tbObj.refreshOverflow();
         }
     }
+
+    private selectTab(args: number | HTEle, event: Event = null, isInteracted: boolean = false): void {
+        this.isInteracted = isInteracted;
+        this.select(args, event);
+    }
+
     /**
      * Specifies the index or HTMLElement to select an item from the Tab.
      *
-     * @param  {number | HTMLElement} args - Index or DOM element is used for selecting an item from the Tab.
+     * @param {number | HTMLElement} args - Index or DOM element is used for selecting an item from the Tab.
      * @param {Event} event - An event which takes place in DOM.
-     * @returns {void}.
+     * @returns {void}
      */
+
     public select(args: number | HTEle, event?: Event): void {
         const tabHeader: HTMLElement = this.getTabHeader();
         this.tbItems = <HTEle>select('.' + CLS_TB_ITEMS, tabHeader);
@@ -2261,20 +2293,22 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             selectingContent: !isNOU(this.content) ?
                 <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.selectingID, this.content) : null,
             isSwiped: this.isSwipeed,
+            isInteracted: this.isInteracted,
             cancel: false
         };
         if (!this.initRender) {
             this.trigger('selecting', eventArg, (selectArgs: SelectingEventArgs) => {
                 if (!selectArgs.cancel) {
-                    this.selectingContent(args);
+                    this.selectingContent(args, this.isInteracted);
                 }
             });
         } else {
-            this.selectingContent(args);
+            this.selectingContent(args, this.isInteracted);
         }
+        this.isInteracted = false;
     }
 
-    private selectingContent(args: number | HTEle): void {
+    private selectingContent(args: number | HTEle, isInteracted?: boolean): void {
         if (typeof args === 'number') {
             if (!isNOU(this.tbItem[args]) && (this.tbItem[<number>args].classList.contains(CLS_DISABLE) ||
                 this.tbItem[<number>args].classList.contains(CLS_HIDDEN))) {
@@ -2288,8 +2322,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
             if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
                 this.prevIndex = this.selectedItem;
-                if (this.tbItem[args].classList.contains(CLS_TB_POPUP)) {
-                    this.setActive(this.popupHandler(this.tbItem[args]));
+                if (this.tbItem[args].classList.contains(CLS_TB_POPUP) && this.reorderActiveTab) {
+                    this.setActive(this.popupHandler(this.tbItem[args]), null, isInteracted);
                     if ((!isNOU(this.items) && this.items.length > 0) && this.allowDragAndDrop) {
                         this.tbItem = selectAll('.' + CLS_TB_ITEMS + ' .' + CLS_TB_ITEM, this.hdrEle);
                         let item: TabItemModel = this.items[args];
@@ -2297,13 +2331,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         this.items.splice(this.tbItem.length - 1, 0, item);
                     }
                 } else {
-                    this.setActive(args);
+                    this.setActive(args, null, isInteracted);
                 }
             } else {
-                this.setActive(0);
+                this.setActive(0, null, isInteracted);
             }
         } else if (args instanceof (HTMLElement)) {
-            this.setActive(this.getEleIndex(args));
+            this.setActive(this.getEleIndex(args), null, isInteracted);
         }
     }
     /**
@@ -2382,6 +2416,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     break;
                 case 'showCloseButton':
                     this.setCloseButton(newProp.showCloseButton);
+                    break;
+                case 'reorderActiveTab':
+                    this.refreshActElePosition();
                     break;
                 case 'selectedItem':
                     this.selectedItem = oldProp.selectedItem;

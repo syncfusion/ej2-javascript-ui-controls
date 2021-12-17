@@ -243,6 +243,10 @@ export class ViewBase {
     }
 
     public isCurrentMonth(date: Date): boolean {
+        if (this.parent.activeViewOptions.displayDate || this.parent.activeViewOptions.numberOfWeeks > 0) {
+            return this.parent.activeView.getStartDate().getTime() <= this.parent.getCurrentTime().getTime() &&
+                this.parent.activeView.getEndDate().getTime() >= this.parent.getCurrentTime().getTime();
+        }
         return date.getFullYear() ===
             this.parent.getCurrentTime().getFullYear() && date.getMonth() === this.parent.getCurrentTime().getMonth();
     }
@@ -479,6 +483,11 @@ export class ViewBase {
                     setStyleAttribute(resourceColumn, { 'height': formatUnit(content.clientHeight) });
                 }
             }
+            const headerCellElements: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.HEADER_CELLS_CLASS));
+            headerCellElements.forEach((ele: HTMLElement) => {
+                const headerCellColSpan: number = parseInt(ele.getAttribute('colspan'), 10);
+                setStyleAttribute(ele, { 'width': formatUnit(colWidth * headerCellColSpan) });
+            });
         }
     }
 

@@ -312,7 +312,14 @@ export class NavigationPane {
         const commentPanelTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentPanelTitleContainer', className: 'e-pv-comment-panel-title-container' });
         // eslint-disable-next-line max-len
         const commentpanelTilte: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentPanelTitle', className: 'e-pv-comment-panel-title', attrs: { 'tabindex': '-1' } });
-        commentpanelTilte.innerText = this.pdfViewer.localeObj.getConstant('Comments');
+        if (isBlazor()) {
+            const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Comments');
+            promise.then((value: string) => {
+                commentpanelTilte.innerText = value;
+            });
+        } else {
+            commentpanelTilte.innerText = this.pdfViewer.localeObj.getConstant('Comments');
+        }
         const annotationButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_annotations_btn' });
         annotationButton.setAttribute('aria-label', 'annotation button');
         annotationButton.setAttribute('type', 'button');
@@ -477,7 +484,14 @@ export class NavigationPane {
                     };
                 } else {
                     this.pdfViewer.fireImportFailed(uploadedFile, this.pdfViewer.localeObj.getConstant('Import Failed'));
-                    this.pdfViewerBase.openImportExportNotificationPopup(this.pdfViewer.localeObj.getConstant('Import Failed'));
+                    if (isBlazor()) {
+                        const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_ImportFailed');
+                        promise.then((value: string) => {
+                            this.pdfViewerBase.openImportExportNotificationPopup(value);
+                        });
+                    } else {
+                        this.pdfViewerBase.openImportExportNotificationPopup(this.pdfViewer.localeObj.getConstant('Import Failed'));
+                    }
                 }
             }
         }
@@ -1447,7 +1461,15 @@ export class NavigationPane {
      * @private
      * @returns {void}
      */
-    public destroy(): void {
+    public destroy(): void { 
+        let bookmarkButtonInstance: any = this.bookmarkButton;
+        let thumbnailButtonInstance: any = this.thumbnailButton;
+        if (bookmarkButtonInstance.ej2_instances){
+            bookmarkButtonInstance.ej2_instances[0].destroy();
+        }
+        if (thumbnailButtonInstance.ej2_instances){
+            thumbnailButtonInstance.ej2_instances[0].destroy();
+        }        
         if (this.annotationMenuObj) {
             this.annotationMenuObj.destroy();
         }

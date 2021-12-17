@@ -7,7 +7,7 @@ import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../.
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs } from '../../common/base/interface';
 import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
 import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';
 import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';
@@ -123,6 +123,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private request: XMLHttpRequest = new XMLHttpRequest();
     private savedDataSourceSettings: DataSourceSettingsModel;
     private remoteData: string[][] | IDataSet[] = [];
+    /** @hidden */
+    public actionObj: PivotActionCompleteEventArgs = {};
+
     //Property Declarations
 
     /* eslint-disable */
@@ -301,6 +304,16 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     @Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
     public aggregateTypes: AggregateTypes[];
 
+    /**
+     * Allows values with a specific country currency format to be displayed in the pivot table. 
+     * Standard currency codes referred to as ISO 4217 can be used for the formatting of currency values. 
+     * For example, to display "US Dollar($)" currency values, set the `currencyCode` to **USD**. 
+     * > It is applicable ony for Relational data.
+     * @private
+     */
+    @Property('USD')
+    private currencyCode: string;
+
     //Event Declarations
     /**
      * It allows any customization of Pivot Field List properties on initial rendering.
@@ -416,6 +429,48 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public beforeServiceInvoke: EmitType<BeforeServiceInvokeEventArgs>;
+
+    /**
+     * It triggers when UI action begins in the Pivot FieldList. The UI actions used to trigger this event such as
+     * sorting fields through icon click in the field list tree,
+     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * Button actions such as 
+     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list/#sorting-members),
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * @event
+     */
+    @Event()
+    public actionBegin: EmitType<PivotActionBeginEventArgs>;
+
+    /**
+     * It triggers when UI action in the Pivot FieldList completed. The UI actions used to trigger this event such as
+     * sorting fields through icon click in the field list tree,
+     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * Button actions such as 
+     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list/#sorting-members),
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * @event
+     */
+    @Event()
+    public actionComplete: EmitType<PivotActionCompleteEventArgs>;
+
+    /**
+     * It triggers when UI action failed to achieve the desired results in the Pivot FieldList. The UI actions used to trigger this event such as
+     * sorting fields through icon click in the field list tree,
+     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * Button actions such as 
+     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list/#sorting-members),
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * @event
+     */
+    @Event()
+    public actionFailure: EmitType<PivotActionFailureEventArgs>;
 
     /**
      * Constructor for creating the widget
@@ -655,7 +710,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
                 localeObj: localeObj,
-                clonedReport: this.clonedReport
+                clonedReport: this.clonedReport,
+                globalize: this.globalize,
+                currenyCode: this.currencyCode
             };
         }
         return customProperties;
@@ -1328,6 +1385,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement as HTMLElement;
             }
         });
+        let actionName: string = this.getActionCompleteName();
+        this.actionObj.actionName = actionName;
+        if (this.actionObj.actionName) {
+            this.actionCompleteMethod();
+        }
     }
 
     private updateOlapDataSource(pivot: PivotFieldList, isSorted: boolean, isCalcChange: boolean, isOlapDataRefreshed: boolean): boolean {
@@ -1361,6 +1423,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public update(control: PivotView): void {
         if (control) {
             this.clonedDataSet = control.clonedDataSet;
+            this.clonedReport = control.clonedReport;
             this.setProperties({ dataSourceSettings: control.dataSourceSettings, showValuesButton: control.showValuesButton }, true);
             this.engineModule = control.engineModule;
             this.olapEngineModule = control.olapEngineModule;
@@ -1395,6 +1458,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public updateView(control: PivotView): void {
         if (control) {
             control.clonedDataSet = this.clonedDataSet;
+            control.clonedReport = this.clonedReport;
             control.setProperties({ dataSourceSettings: this.dataSourceSettings, showValuesButton: this.showValuesButton }, true);
             control.engineModule = this.engineModule;
             control.olapEngineModule = this.olapEngineModule;
@@ -1436,6 +1500,51 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.engineModule.pivotValues = observedArgs.pivotValues;
             }
         });
+    }
+
+    /** @hidden */
+    public actionBeginMethod(): boolean {
+        let eventArgs: PivotActionBeginEventArgs = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings),
+            actionName: this.actionObj.actionName,
+            fieldInfo: this.actionObj.fieldInfo,
+            cancel: false
+        }
+        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        control.trigger(events.actionBegin, eventArgs);
+        return eventArgs.cancel;
+    }
+
+    /** @hidden */
+    public actionCompleteMethod(): void {
+        let eventArgs: PivotActionCompleteEventArgs = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings),
+            actionName: this.actionObj.actionName,
+            fieldInfo: this.actionObj.fieldInfo,
+            actionInfo: this.actionObj.actionInfo
+        }
+        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        control.trigger(events.actionComplete, eventArgs);
+        this.actionObj.actionName = '';
+        this.actionObj.actionInfo = undefined;
+        this.actionObj.fieldInfo = undefined;
+    }
+
+    /** @hidden */
+    public actionFailureMethod(error: Error): void {
+        let eventArgs: PivotActionFailureEventArgs = {
+            actionName: this.actionObj.actionName,
+            errorInfo: error
+        }
+        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        control.trigger(events.actionFailure, eventArgs);
+    }
+
+    /** @hidden */
+    public getActionCompleteName(): any {
+        let actionName: string = (this.actionObj.actionName == events.openCalculatedField) ? events.calculatedFieldApplied : (this.actionObj.actionName == events.editCalculatedField) ? events.calculatedFieldEdited : (this.actionObj.actionName == events.sortField) ? events.fieldSorted
+            : (this.actionObj.actionName == events.filterField) ? events.fieldFiltered : (this.actionObj.actionName == events.removeField) ? events.fieldRemoved : (this.actionObj.actionName == events.aggregateField) ? events.fieldAggregated : this.actionObj.actionName == events.sortFieldTree ? events.fieldTreeSorted : this.actionObj.actionName;
+        return actionName;
     }
 
     /**
@@ -1511,6 +1620,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         if (this.clonedDataSet) {
             this.clonedDataSet = null;
+        }
+        if (this.clonedReport) {
+            this.clonedReport = null;
         }
         if (this.clonedFieldList) {
             this.clonedFieldList = null;

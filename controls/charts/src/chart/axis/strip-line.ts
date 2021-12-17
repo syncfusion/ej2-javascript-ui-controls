@@ -98,7 +98,7 @@ export class StripLine {
         let from: number = (!stripline.isRepeat && startFromAxis) ? axis.visibleRange.min : start;
         let to: number = this.getToValue(Math.max(start, isNullOrUndefined(end) ? start : end), from, size, axis, end, stripline);
         from = this.findValue(from, axis); to = this.findValue(to, axis);
-        return { from: valueToCoefficient(axis.isInversed ? to : from, axis), to: valueToCoefficient(axis.isInversed ? from : to, axis) };
+        return { from: valueToCoefficient(axis.isAxisInverse ? to : from, axis), to: valueToCoefficient(axis.isAxisInverse ? from : to, axis) };
     }
     /**
      * Finding end value of the strip line

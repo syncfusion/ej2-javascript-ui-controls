@@ -1,0 +1,458 @@
+@include export-module('toast-layout') {
+  /*! toast layout */
+  // sass-lint:disable no-vendor-prefixes
+  .e-bigger .e-toast-container,
+  .e-toast-container.e-bigger {
+
+    &.e-toast-top-left {
+      left: $toast-position-bgr-distance;
+      top: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-bottom-left {
+      bottom: $toast-position-bgr-distance;
+      left: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-top-right {
+      right: $toast-position-bgr-distance;
+      top: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-bottom-right {
+      bottom: $toast-position-bgr-distance;
+      right: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-bottom-center {
+      bottom: $toast-position-bgr-distance;
+
+      .e-toast {
+        margin: 0 auto $multitoast-bgr-gap-distance;
+      }
+    }
+
+    &.e-toast-top-center {
+      top: $toast-position-bgr-distance;
+
+      .e-toast {
+        margin: 0 auto $multitoast-bgr-gap-distance;
+      }
+    }
+
+    &.e-toast-full-width {
+      left: 0;
+      right: 0;
+
+      .e-toast {
+        margin: 0 auto $multitoast-bgr-gap-distance;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-toast {
+
+        .e-toast-message .e-toast-actions {
+          text-align: left;
+
+          > * {
+            margin-left: initial;
+            margin-right: $toast-action-btn-bgr-margin;
+          }
+        }
+
+        .e-toast-close-icon {
+          margin-left: initial;
+          margin-right: auto;
+        }
+
+        .e-toast-icon {
+          margin-left: $toast-icon-bgr-right-margin;
+          margin-right: initial;
+        }
+
+        .e-toast-progress {
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+
+    .e-toast {
+      border-radius: $toast-bgr-border-radious;
+      font-size: $toast-font-bgr-size;
+      margin: 0 0 $multitoast-bgr-gap-distance;
+      min-height: $toast-bgr-min-height;
+
+      .e-toast-message {
+
+        .e-toast-content {
+          padding: $toast-content-bgr-padding;
+
+          &:first-child {
+            padding: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 8px;
+              padding-left: 48px;
+              padding-right: 12px;
+              padding-top: 8px;
+            }
+          }
+
+          &:last-child {
+            padding-bottom: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 8px;
+            }
+          }
+
+          + .e-toast-actions {
+            padding: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding: $toast-action-btn-bgr-padding;
+            }
+          }
+          @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+            + .e-toast-actions {
+              padding: $toast-action-btn-bgr-padding;
+            }
+          }
+        }
+
+        .e-toast-actions {
+          padding: $toast-action-btn-bgr-padding;
+          text-align: right;
+          @if $skin-name == 'bootstrap5' {
+            border-top: 1px solid $border;
+            margin-left: 16px;
+            margin-right: 16px;
+          }
+
+          > * {
+            margin-left: $toast-action-btn-bgr-margin;
+          }
+        }
+      }
+
+      .e-toast-close-icon {
+        font-size: $toast-close-icon-bgr-size;
+        height: $toast-close-icon-bgr-height;
+        width: $toast-close-icon-bgr-width;
+        @if $skin-name == 'bootstrap5' {
+          margin-top: 13px;
+          position: absolute;
+          right: 12px;
+        }
+      }
+
+      .e-toast-icon {
+        font-size: $toast-icon-bgr-size;
+        height: $toast-icon-bgr-height;
+        margin-right: $toast-icon-bgr-right-margin;
+        width: $toast-icon-bgr-width;
+        @if $skin-name == 'bootstrap5' {
+          left: 18px;
+          margin-top: 13px;
+          position: absolute;
+        }
+      }
+
+      .e-toast-progress {
+        height: $toast-progressbar-bgr-height;
+      }
+    }
+  }
+
+
+
+  .e-toast-container {
+    display: inline-flex;
+    flex-direction: column;
+    position: relative;
+
+    &.e-toast-top-left {
+      left: $toast-position-nrml-distance;
+      top: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-bottom-left {
+      bottom: $toast-position-nrml-distance;
+      left: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-top-right {
+      right: $toast-position-nrml-distance;
+      top: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-bottom-right {
+      bottom: $toast-position-nrml-distance;
+      right: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-bottom-center {
+      bottom: $toast-position-nrml-distance;
+      pointer-events: none;
+      right: 0;
+      width: 100%;
+
+      .e-toast {
+        margin: 0 auto $multitoast-nrml-gap-distance;
+        pointer-events: auto;
+      }
+    }
+
+    &.e-toast-top-center {
+      pointer-events: none;
+      right: 0;
+      top: $toast-position-nrml-distance;
+      width: 100%;
+
+      .e-toast {
+        margin: 0 auto $multitoast-nrml-gap-distance;
+        pointer-events: auto;
+      }
+    }
+
+    &.e-toast-full-width {
+      left: 0;
+      right: 0;
+      width: 100%;
+
+      .e-toast {
+        margin: 0 auto $multitoast-nrml-gap-distance;
+        width: 96%;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-toast {
+
+        .e-toast-actions {
+          text-align: left;
+
+          > * {
+            margin-left: initial;
+            margin-right: $toast-action-btn-nrml-margin;
+          }
+        }
+
+        .e-toast-close-icon {
+          margin-left: initial;
+          margin-right: auto;
+        }
+
+        .e-toast-icon {
+          margin-left: $toast-icon-nrml-right-margin;
+          margin-right: initial;
+        }
+
+        .e-toast-progress {
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+
+    .e-toast {
+      border-radius: $toast-nrml-border-radious;
+      display: inline-flex;
+      font-size: $toast-font-nrml-size;
+      margin: 0 0 $multitoast-nrml-gap-distance;
+      overflow: hidden;
+      padding: $toast-nrml-padding;
+      position: relative;
+
+      .e-toast-icon,
+      .e-toast-message {
+        display: inline-flex;
+      }
+
+      > * {
+        word-break: break-word;
+        word-wrap: break-word;
+      }
+
+      .e-toast-message {
+        align-self: center;
+        flex-direction: column;
+        overflow: hidden;
+        width: inherit;
+
+        .e-toast-title,
+        .e-toast-content {
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          &:first-child {
+            padding: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 12px;
+              padding-left: 12px;
+              padding-right: 12px;
+              padding-top: 12px;
+            }
+          }
+
+          &:last-child {
+            padding-bottom: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding-bottom: 12px;
+            }
+          }
+
+          > * {
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .e-toast-title {
+          font-size: $toast-title-font-nrml-size;
+          font-weight: $toast-title-font-weight;
+          letter-spacing: .5px;
+          @if $skin-name == 'bootstrap5' {
+            border-bottom: 1px solid $border;
+          }
+        }
+
+        .e-toast-content {
+          padding: $toast-content-nrml-padding;
+          word-break: break-word;
+          word-wrap: break-word;
+
+          + .e-toast-actions {
+            padding-top: 0;
+            @if $skin-name == 'bootstrap5' {
+              padding: $toast-action-btn-bgr-padding;
+            }
+          }
+        }
+
+        .e-toast-actions {
+          @if $skin-name == 'highcontrast' {
+            margin: 1px 0 0 3px;
+          }
+          @else {
+            margin: 1px;
+          }
+          @if $skin-name == 'bootstrap5' {
+            border-top: 1px solid $border;
+            margin-left: 12px;
+            margin-right: 12px;
+          }
+          padding: $toast-action-btn-nrml-padding;
+          text-align: right;
+
+          > * {
+            margin-left: $toast-action-btn-nrml-margin;
+          }
+        }
+      }
+
+      &.e-toast-header-icon {
+        .e-toast-message {
+          .e-toast-title,
+          .e-toast-content {
+            &:first-child {
+              @if $skin-name == 'bootstrap5' {
+                padding-left: 48px;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-toast-header-close-icon {
+        .e-toast-message {
+          .e-toast-title,
+          .e-toast-content {
+            &:first-child {
+              @if $skin-name == 'bootstrap5' {
+                padding-right: 30px;
+              }
+            }
+          }
+        }
+      }
+
+      .e-toast-close-icon {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        font-size: $toast-close-icon-nrml-size;
+        height: $toast-close-icon-nrml-height;
+        justify-content: center;
+        margin-left: auto;
+        width: $toast-close-icon-nrml-width;
+        @if $skin-name == 'material' {
+          opacity: .7;
+        }
+        @if $skin-name == 'bootstrap5' {
+          margin-top: 13px;
+          position: absolute;
+          right: 8px;
+        }
+      }
+
+      .e-toast-icon {
+        align-items: center;
+        font-size: $toast-icon-nrml-size;
+        height: $toast-icon-nrml-height;
+        justify-content: center;
+        margin-right: $toast-icon-nrml-right-margin;
+        width: $toast-icon-nrml-width;
+        @if $skin-name == 'bootstrap5' {
+          left: 16px;
+          margin-top: 13px;
+          position: absolute;
+        }
+      }
+
+      .e-toast-progress {
+        bottom: 0;
+        height: $toast-progressbar-nrml-height;
+        left: 0;
+        position: absolute;
+      }
+    }
+  }
+
+  .e-content-placeholder.e-toast.e-placeholder-toast {
+    background-size: 400px 100px;
+    min-height: 100px;
+  }
+
+  .e-bigger .e-content-placeholder.e-toast.e-placeholder-toast,
+  .e-bigger.e-content-placeholder.e-toast.e-placeholder-toast {
+    background-size: 400px 100px;
+    min-height: 100px;
+  }
+
+  .e-blazor-toast-hidden {
+    visibility: hidden;
+  }
+
+  .e-toast-container .e-toast .e-toast-close-icon.blazor-toast-close-icon {
+    background-color: transparent;
+    border-color: transparent;
+    border-radius: 50%;
+    bottom: 6px;
+    height: 20px;
+    position: relative;
+    width: 22px;
+  }
+
+  @if $skin-name == 'tailwind' {
+    .e-bigger.e-toast,
+    .e-toast .e-toast {
+      padding: 20px;
+    }
+
+    .e-bigger .e-toast-container .e-toast .e-toast-message .e-toast-title {
+      font-size: 16px;
+    }
+  }
+}

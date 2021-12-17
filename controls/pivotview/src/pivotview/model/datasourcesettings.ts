@@ -8,6 +8,7 @@ import { FieldOptionsModel, FilterModel, SortModel, FormatSettingsModel, GroupSe
 import { DrillOptionsModel, ValueSortSettingsModel, CalculatedFieldSettingsModel } from './datasourcesettings-model';
 import { DataManager } from '@syncfusion/ej2-data';
 import { ConditionalFormatSettingsModel, AuthenticationModel } from './datasourcesettings-model';
+import { GrandTotalsPosition } from '../../common/base/enum';
 
 /**
  * Allows specific fields associated with field information that needs to be displayed in the field axes of pivot table. The following configurations which are applicable are as follows:
@@ -942,8 +943,8 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * > It is applicale only for relational data source.
      * @default '-1'
      */
-     @Property(-1)
-     public valueIndex: number;
+    @Property(-1)
+    public valueIndex: number;
 
     /**
      * Allows specific fields associated with either selective or conditional-based filter members that used to be displayed in the pivot table.
@@ -1022,6 +1023,14 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      */
     @Property(true)
     public showGrandTotals: boolean;
+
+    /**
+     * Allows the grand totals to be displayed at the top or bottom of the pivot table's row and column axes.
+     * > By default, the grand totals are displayed at the bottom of the pivot table's row and column axes.
+     * @default Bottom
+     */
+    @Property('Bottom')
+    public grandTotalsPosition: GrandTotalsPosition;
 
     /**
      * Allows to show or hide grand totals in row axis of the pivot table.

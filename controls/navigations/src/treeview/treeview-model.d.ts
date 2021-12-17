@@ -186,6 +186,16 @@ export interface TreeViewModel extends ComponentModel{
     allowMultiSelection?: boolean;
 
     /**
+     * Enables or disables text wrapping when text exceeds the bounds in the TreeView node.  
+     * When the allowTextWrap property is set to true, the TreeView node text content will wrap to the next line 
+     * when it exceeds the width of the TreeView node.
+     * The TreeView node height will be adjusted automatically based on the TreeView node content.  
+     *
+     * @default false
+     */
+    allowTextWrap?: boolean;
+
+    /**
      * Specifies the type of animation applied on expanding and collapsing the nodes along with duration.
      *
      * @default {expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },

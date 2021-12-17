@@ -560,3 +560,49 @@ describe('stacked header with template tree column- EJ2-48776', () => {
     destroy(gridObj);
   });
 }); 
+
+describe('EJ2-53066 - getCheckedRecords method when collapsing records after filtering with virtualization', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: '410',
+          autoCheckHierarchy: true,
+          enableCollapseAll: true,
+          enableVirtualization:true,
+          allowResizing:true,
+          allowSorting:true,
+          allowFiltering: true,
+          filterSettings: { type: 'Excel'},
+          allowSelection: true,
+          selectionSettings: { type: 'Multiple',checkboxOnly: true},
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right',showCheckbox:true },
+              { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left' },
+              { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+              { field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+              { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+              { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+          ],
+      },
+      done
+    );
+  });
+
+  it('Column CheckBox after collapsing with Virtualization', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treecheckselect')[0]).click();
+       expect(gridObj.getCheckedRecords().length).toBe(4);
+       done();
+    }
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.filterByColumn("startDate","equal","2/3/2017");
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

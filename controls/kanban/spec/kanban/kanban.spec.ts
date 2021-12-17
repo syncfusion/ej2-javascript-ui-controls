@@ -1601,6 +1601,228 @@ describe('Kanban base module', () => {
             expect(kanbanObj.dialogSettings.model.width === 1000).toBe(true);
         });
     });
+    describe('EJ2-54420-Swimlane row is not created when kanban keyField has 0 value alone -', () => {
+        let kanbanObj: Kanban;
+        let allKeys: string[];
+        let rows: string[];
+        beforeAll((done: DoneFn) => {
+            const kanbanData: Record<string, any>[] = [
+                {
+                    'Id': 1,
+                    'Status': 0,
+                    'Summary': 'Analyze the new requirements gathered from the customer.',
+                    'Type': 'Story',
+                    'Priority': 'Low',
+                    'Tags': 'Analyze,Customer',
+                    'Estimate': 3.5,
+                    'Assignee': 'group 0',
+                    'RankId': 0
+                },
+                {
+                    'Id': 2,
+                    'Status': 0,
+                    'Summary': 'Improve application performance',
+                    'Type': 'Improvement',
+                    'Priority': 'Normal',
+                    'Tags': 'Improvement',
+                    'Estimate': 6,
+                    'Assignee': 'group 0',
+                    'RankId': 0
+                },
+                {
+                    'Id': 3,
+                    'Status': 0,
+                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Critical',
+                    'Tags': 'Meeting',
+                    'Estimate': 5.5,
+                    'Assignee': 'group 0',
+                    'RankId': 2
+                },
+                {
+                    'Id': 4,
+                    'Status': 2,
+                    'Summary': 'Fix the issues reported in the IE browser.',
+                    'Type': 'Bug',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'IE',
+                    'Estimate': 2.5,
+                    'Assignee': 'group 2',
+                    'RankId': 2
+                },
+                {
+                    'Id': 5,
+                    'Status': 1,
+                    'Summary': 'Fix the issues reported by the customer.',
+                    'Type': 'Bug',
+                    'Priority': 'Low',
+                    'Tags': 'Customer',
+                    'Estimate': '3.5',
+                    'Assignee': 'group 1',
+                    'RankId': 1
+                },
+                {
+                    'Id': 6,
+                    'Status': 2,
+                    'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Low',
+                    'Tags': 'Meeting',
+                    'Estimate': 2,
+                    'Assignee': 'group 2',
+                    'RankId': 1
+                },
+                {
+                    'Id': 7,
+                    'Status': 1,
+                    'Summary': 'Validate new requirements',
+                    'Type': 'Improvement',
+                    'Priority': 'Low',
+                    'Tags': 'Validation',
+                    'Estimate': 1.5,
+                    'Assignee': 'group 1',
+                    'RankId': 1
+                },
+                {
+                    'Id': 8,
+                    'Status': 2,
+                    'Summary': 'Login page validation',
+                    'Type': 'Story',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'Validation,Fix',
+                    'Estimate': 2.5,
+                    'Assignee': 'group 3',
+                    'RankId': 2
+                },
+                {
+                    'Id': 9,
+                    'Status': 1,
+                    'Summary': 'Fix the issues reported in Safari browser.',
+                    'Type': 'Bug',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'Fix,Safari',
+                    'Estimate': 1.5,
+                    'Assignee': 'group 2',
+                    'RankId': 2
+                },
+                {
+                    'Id': 10,
+                    'Status': 3,
+                    'Summary': 'Test the application in the IE browser.',
+                    'Type': 'Story',
+                    'Priority': 'Low',
+                    'Tags': 'Testing,IE',
+                    'Estimate': 5.5,
+                    'Assignee': 'group 3',
+                    'RankId': 3
+                }
+            ];
+            const model: KanbanModel = {
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 0 },
+                    { headerText: 'In Progress', keyField: 1 },
+                    { headerText: 'Testing', keyField: 2 },
+                    { headerText: 'Done', keyField: 3 }
+                ],
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                },
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+            allKeys = kanbanData.map((obj: { [key: string]: string }) => obj[kanbanObj.swimlaneSettings.keyField]);
+            rows = allKeys.filter((key: string, index: number) => allKeys.indexOf(key) === index).sort();
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Check swimlane rendered when Kanban KeyField has value as zero', () => {
+            expect(kanbanObj.element.querySelectorAll('.e-swimlane-row').length).toEqual(rows.length);
+            expect(kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)').length).toEqual(rows.length);
+        });
+    });
+
+    describe('EJ2-54004-Card is not rendered when Kanban KeyField has value 0 -', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const kanbanData: Record<string, any>[] = [
+                {
+                    'Id': 10,
+                    'Status': 'Backlog',
+                    'Summary': 'Analyze the new requirements gathered from the customer.',
+                    'Type': 'Story',
+                    'Assignee': 'Janet Leverling',
+                    'RankId': 1
+                },
+                {
+                    'Id': 9,
+                    'Status': 'InProgress',
+                    'Summary': 'Improve application performance',
+                    'Type': 'Improvement',
+                    'Assignee': 'Janet Leverling',
+                    'RankId': 0
+                },
+                {
+                    'Id': 8,
+                    'Status': 'Backlog',
+                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                    'Type': 'Others',
+                    'Assignee': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 7,
+                    'Status': 'InProgress',
+                    'Summary': 'Fix the issues reported in the IE browser.',
+                    'Type': 'Bug',
+                    'Assignee': 'Janet Leverling',
+                    'RankId': 2
+                },
+                {
+                    'Id': 6,
+                    'Status': 'Done',
+                    'Summary': 'Fix the issues reported by the customer.',
+                    'Type': 'Bug',
+                    'Assignee': 'Janet',
+                    'RankId': 0
+                }
+            ];
+            const model: KanbanModel = {
+                columns: [
+                    { headerText: 'Backlog', keyField: 0},
+                    { headerText: 'In Progress', keyField: 1 },
+                    { headerText: 'Testing', keyField: 0 },
+                    { headerText: 'Done', keyField: 2 }
+                ],
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                },
+                cardSettings: {
+                    showHeader: true,
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                },
+                keyField: 'RankId',
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Check card rendered when Kanban KeyField has value as zero', () => {
+            expect(document.querySelector('tr[data-key="Janet"] .e-item-count').innerHTML).toEqual('- 2 items');
+            expect(document.querySelector('tr[data-key="Janet Leverling"] .e-item-count').innerHTML).toEqual('- 3 items');
+        });
+    });
 
     describe('Check kanban with scroller', () => {
         let kanbanObj: Kanban;

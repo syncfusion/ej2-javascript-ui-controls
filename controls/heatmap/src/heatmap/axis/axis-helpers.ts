@@ -532,9 +532,13 @@ export class AxisHelper {
         axis.multiLevelLabels.map((multiLevel: MultiLevelLabels, level: number) => {
             labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_XAxisMultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
+                if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}, true);
+                }
                 if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (multiLevel as any).setProperties({ textStyle : { fontFamily: "Inter" }}, true);
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Inter' }}, true);
                 }
                 tooltip = false;
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
@@ -674,9 +678,13 @@ export class AxisHelper {
             startY = axis.multiLevelPosition[level].y;
             labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_YAxisMultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
-                if (this.heatMap.theme === "Tailwind" || this.heatMap.theme === "TailwindDark") {
+                if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (multiLevel as any).setProperties({ textStyle : { fontFamily: "Inter" }}, true);
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Inter' }}, true);
+                }
+                if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}, true);
                 }
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
                 end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));

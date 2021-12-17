@@ -1043,8 +1043,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.sliderBarClick(e);
         if (e.currentTarget === this.firstHandle) {
             this.firstHandle.classList.add(classNames.sliderHandleFocused);
+            this.firstHandle.classList.add(classNames.sliderTabHandle);
         } else {
             this.secondHandle.classList.add(classNames.sliderHandleFocused);
+            this.secondHandle.classList.add(classNames.sliderTabHandle);
         }
         EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
         EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
@@ -1471,6 +1473,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
+    private focusHandle(): void {
+        if (!this.getHandle().classList.contains(classNames.sliderTabHandle)) {
+            this.getHandle().classList.add(classNames.sliderTabHandle);
+        }
+    }
+
     private repeatHandlerUp(e: MouseEvent): void {
         this.changeEvent('changed', e);
         this.closeTooltip();
@@ -1847,6 +1855,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.tooltipToggle(this.getHandle());
         this.getHandle().focus();
+        this.focusHandle();
         if ((args.currentTarget as HTMLElement).classList.contains(classNames.firstButton)) {
             EventHandler.add(this.firstBtn, 'mouseup touchend', this.buttonUp, this);
         }
@@ -2796,6 +2805,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         event.preventDefault();
         this.focusSliderElement();
         this.sliderBarClick(event);
+        this.focusHandle();
     }
 
     private wireEvents(): void {

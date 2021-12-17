@@ -1410,17 +1410,19 @@ export class TextSelection {
                 } else {
                     endOffset = textElement.textContent.length;
                 }
-                const newRange: Range = document.createRange();
-                for (let k: number = 0; k < textElement.childNodes.length; k++) {
-                    const node: Node = textElement.childNodes[k];
-                    newRange.setStart(node, startOffset);
-                    newRange.setEnd(node, endOffset);
-                }
-                const boundingRect: IRectangle = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
-                selectionBounds.push(boundingRect);
-                newRange.detach();
-                if (j === focusTextId) {
-                    break;
+                if (startOffset !== 0 || endOffset !== 0) {
+                    const newRange: Range = document.createRange();
+                    for (let k: number = 0; k < textElement.childNodes.length; k++) {
+                        const node: Node = textElement.childNodes[k];
+                        newRange.setStart(node, startOffset);
+                        newRange.setEnd(node, endOffset);
+                    }
+                    const boundingRect: IRectangle = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
+                    selectionBounds.push(boundingRect);
+                    newRange.detach();
+                    if (j === focusTextId) {
+                        break;
+                    }
                 }
             }
         } else {
@@ -1786,6 +1788,7 @@ export class TextSelection {
     }
 
     private createTouchSelectElement(event: TouchEvent): void {
+        let topMargin: number = 10;
         this.isTouchSelection = true;
         const selection: Selection = window.getSelection();
         if (selection.type === 'Range') {
@@ -1798,6 +1801,7 @@ export class TextSelection {
             this.dropDivElementLeft.appendChild(this.dropElementLeft);
             this.dropElementRight = createElement('div', { className: 'e-pv-touch-ellipse' });
             this.dropElementRight.style.transform = 'rotate(-90deg)';
+            this.dropElementRight.style.margin = '0 9px 0 0';
             this.dropDivElementRight.appendChild(this.dropElementRight);
             this.pdfViewerBase.pageContainer.appendChild(this.dropDivElementLeft);
             this.pdfViewerBase.pageContainer.appendChild(this.dropDivElementRight);
@@ -1828,7 +1832,7 @@ export class TextSelection {
             this.dropDivElementRight.addEventListener('touchmove', this.onRightTouchSelectElementTouchMove);
             this.dropDivElementRight.addEventListener('touchend', this.onRightTouchSelectElementTouchEnd);
             // eslint-disable-next-line max-len
-            this.calculateContextMenuPosition(event.touches[0].clientY, event.touches[0].clientX);
+            this.calculateContextMenuPosition((event.touches[0].clientY + this.dropDivElementLeft.clientHeight + topMargin), (parseInt(this.dropDivElementLeft.style.left,10) - topMargin));
         }
     }
     /**
@@ -1837,8 +1841,8 @@ export class TextSelection {
      * @private
      */
     // eslint-disable-next-line
-    public calculateContextMenuPosition(top: any, left: any): any {
-        top = top - this.pdfViewerBase.toolbarHeight;
+    public calculateContextMenuPosition(top: any, left: any): any { 
+        let topMargin: number = 10;
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             // eslint-disable-next-line
             let contextTop: any = top - this.contextMenuHeight;
@@ -1847,13 +1851,33 @@ export class TextSelection {
             } else {
                 top = contextTop;
             }
+            if ((top + this.contextMenuHeight) > window.innerHeight) {
+                top = top - this.contextMenuHeight;
+            }
         }
         if (this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
             left = left - 50;
         }
-        // eslint-disable-next-line max-len
-        this.pdfViewerBase.contextMenuModule.open(top, left - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);
-    }
+        let proxy: any = this;
+        setTimeout(
+            () => {
+            let leftValue: number = 35;
+            let selectedContent: any = document.getElementsByClassName("e-pv-maintaincontent")[0].getBoundingClientRect();
+            if (selectedContent) {
+            if ((selectedContent.bottom + proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight) > window.innerHeight) {
+                top = selectedContent.top - (proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight - topMargin); 
+            } else {
+                top = selectedContent.bottom + proxy.pdfViewerBase.toolbarHeight - topMargin;
+            }
+                left =  selectedContent.left - leftValue;
+                let toolbarModule: any = this.pdfViewer.toolbarModule ? this.pdfViewer.toolbarModule.annotationToolbarModule : 'null';
+                if (!toolbarModule || !toolbarModule.textMarkupToolbarElement || toolbarModule.textMarkupToolbarElement.children.length === 0) {
+                    // eslint-disable-next-line max-len
+                    proxy.pdfViewerBase.contextMenuModule.open(top, left, proxy.pdfViewerBase.viewerContainer);
+                }
+            }
+          });
+        }
     private onLeftTouchSelectElementTouchStart = (event: TouchEvent): void => {
         this.initiateSelectionByTouch();
     };
@@ -1895,6 +1919,7 @@ export class TextSelection {
 
     // eslint-disable-next-line
     private terminateSelectionByTouch(event: any): void {
+        let topMargin: number = 10;
         this.maintainSelectionOnZoom(true, false);
         this.applySpanForSelection();
         if (this.pdfViewerBase.getTextMarkupAnnotationMode()) {
@@ -1902,8 +1927,33 @@ export class TextSelection {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.drawTextMarkupAnnotations(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode);
         } else {
             this.fireTextSelectEnd();
+            let top: any = event.changedTouches[0].clientY + event.currentTarget.clientHeight;
+            var spanBounds = this.getSpanBounds();
+            if ((spanBounds.bottom + this.contextMenuHeight + this.pdfViewerBase.toolbarHeight) > window.innerHeight) {
+                top = spanBounds.top - (this.contextMenuHeight + this.pdfViewerBase.toolbarHeight);
+            } else {
+                top = spanBounds.bottom + this.pdfViewerBase.toolbarHeight - topMargin;
+            }
+            this.pdfViewerBase.contextMenuModule.open(top, (spanBounds.right - spanBounds.left) / 2, this.pdfViewerBase.viewerContainer);
+        }
+    }
+
+    private getSpanBounds(): any {
+        let spanWidth: Array<number> = [];
+        let spanRight: Array<number> = [];
+        let spanLeft: Array<number> = [];
+        let spanHeight: number = 0; 
+        let selectedContent: any = document.getElementsByClassName("e-pv-maintaincontent");
+        if(selectedContent.length > 0) {
+            for (let i: number = 0; i < selectedContent.length; i++) {
+                let spanElement: any = selectedContent[i].getBoundingClientRect();
+                spanHeight = spanHeight + spanElement.height;
+                spanWidth.push(spanElement.width); 
+                spanRight.push(spanElement.right);
+                spanLeft.push(spanElement.left);
+            }
             // eslint-disable-next-line max-len
-            this.pdfViewerBase.contextMenuModule.open(event.changedTouches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop + this.pdfViewerBase.contextMenuModule.contextMenuElement.clientHeight, event.changedTouches[0].clientX - this.pdfViewerBase.viewerContainer.offsetLeft, this.pdfViewerBase.viewerContainer);
+            return {top: selectedContent[0].getBoundingClientRect().top, bottom: selectedContent[selectedContent.length - 1].getBoundingClientRect().bottom, left: Math.min.apply(null, spanLeft) , right: Math.max.apply(null, spanRight), width: Math.max.apply(null, spanWidth), height: spanHeight} ;
         }
     }
 

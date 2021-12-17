@@ -1,7 +1,7 @@
 import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { DropDownTree } from '../../src/drop-down-tree/drop-down-tree';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { listData } from '../../spec/drop-down-tree/dataSource.spec'
+import { listData , hierarchicalData3 } from '../../spec/drop-down-tree/dataSource.spec'
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 describe('DropDownTree control', () => {
@@ -168,6 +168,56 @@ describe('DropDownTree control', () => {
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
         });
 
+        it('mouse up on clear icon of chip element testing', () => {
+            ddtreeObj = new DropDownTree({ value: ["1", "2"], showCheckBox: true,  fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#ddtree');
+            var ele = ddtreeObj.element;
+            var ttTarget = (ddtreeObj as any).element.parentElement.querySelectorAll(".e-chips-close")[1];
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ttTarget.dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            (ddtreeObj as any).onFocusOut();
+            expect(ddtreeObj.value.length).toBe(2);
+        });
+
+        it('Selecting values using fullrow and clearing it', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, showCheckBox: true }, '#ddtree');
+            var ele = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-fullrow');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.text).toBe("Australia");
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>(ddtreeObj as any).treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(checkEle[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            var icon: HTMLElement = (ddtreeObj as any).element.nextElementSibling;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            icon.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            icon.dispatchEvent(e);
+            expect(ddtreeObj.value.length).toBe(0);
+            (ddtreeObj as any).onFocusOut();
+            var ele1 = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-fullrow');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.text).toBe("Australia");
+            expect(ddtreeObj.value.length).toBe(1);
+            let ncheckEle: Element[] = <Element[] & NodeListOf<Element>>(ddtreeObj as any).treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(ncheckEle[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+        });
+
         it('dropdown treeview mouse hover and mouse leave testing', () => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#ddtree');
             let ele = ddtreeObj.element;
@@ -210,6 +260,119 @@ describe('DropDownTree control', () => {
             scrollBy({top: 500, behavior: 'smooth'});
             (ddtreeObj as any).popupObj.trigger('targetExitViewport');
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
+        });
+        it('Value changed dynamically while focus in - Delimiter', () => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+                placeholder: "Select items",
+                showCheckBox: true,
+                mode: 'Delimiter'
+            }, '#ddtree');
+            let ele = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(true);
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(false);
+            expect((ddtreeObj as any).element.value).toBe("Australia")
+            expect((ddtreeObj as any).inputEle.classList.contains('e-chip-input')).toBe(false);
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+            ddtreeObj.value = ['3'];
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).element.value).toBe("Victoria")
+            expect((ddtreeObj as any).inputEle.classList.contains('e-chip-input')).toBe(false);
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+        });
+        it('Value changed dynamically while focus in - Default', () => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+                placeholder: "Select items",
+                showCheckBox: true,
+            }, '#ddtree');
+            let ele = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(true);
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(false);
+            expect((ddtreeObj as any).element.value).toBe("Australia")
+            expect((ddtreeObj as any).inputEle.classList.contains('e-chip-input')).toBe(true);
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+            ddtreeObj.value = ['3'];
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).element.value).toBe("Victoria")
+            expect((ddtreeObj as any).inputEle.classList.contains('e-chip-input')).toBe(true);
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+        });
+        it('empty value at initial rendering - Default', () => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+                placeholder: "Select items",
+                showCheckBox: true,
+                value: [],
+                mode: 'Default'
+            }, '#ddtree');
+            var chipWrapper = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
+            let ele = ddtreeObj.element;
+            ele.focus();
+            ddtreeObj.showPopup();
+            expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(true);
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(false);
+            expect((ddtreeObj as any).element.value).toBe("Australia")
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+            ddtreeObj.value = ['3'];
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).element.value).toBe("Victoria");
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(false);
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+            (ddtreeObj as any).onFocusOut();
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
+        });
+        it('empty value at initial rendering - Box', () => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+                placeholder: "Select items",
+                showCheckBox: true,
+                value: [],
+                mode: 'Box'
+            }, '#ddtree');
+            var chipWrapper = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
+            expect(ddtreeObj.element.classList.contains('e-chip-input')).toBe(false);
+            let ele = ddtreeObj.element;
+            ele.focus();
+            ddtreeObj.showPopup();
+            expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(true);
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(false);
+            expect(ddtreeObj.element.classList.contains('e-chip-input')).toBe(true);
+            expect((ddtreeObj as any).element.value).toBe("Australia")
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+            ddtreeObj.value = ['3'];
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).element.value).toBe("Victoria");
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(false);
+            expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
+            (ddtreeObj as any).onFocusOut();
+            expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
         });
     });
 
@@ -503,5 +666,70 @@ describe('Dropdown Tree With Id starts with number', () => {
         expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
         expect((ddtreeObj as any).inputWrapper.getAttribute("aria-expanded")).toBe('false');
         (ddtreeObj as any).onFocusOut();
+    });
+});
+
+describe('Tab focus testing', () => {
+    let ddtreeObj: any;
+    let ddtreeObj1: any;
+    let originalTimeout: any;
+    let mouseEventArgs: any;
+    let keyboardEventArgs: any
+    let tapEvent: any;
+    beforeEach((): void => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        mouseEventArgs = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false,
+            originalEvent: { target: null }
+        };
+        keyboardEventArgs = {
+            preventDefault: (): void => { },
+            action: null,
+            target: null,
+            currentTarget: null,
+            stopImmediatePropagation: (): void => { },
+        };
+
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        let ele1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree1' });
+        document.body.appendChild(ele);
+        document.body.appendChild(ele1);
+        ddtreeObj = undefined;
+        ddtreeObj1 = undefined
+    });
+    afterEach((): void => {
+        if (ddtreeObj)
+            ddtreeObj.destroy();
+        if (ddtreeObj1)
+            ddtreeObj1.destroy();
+        document.body.innerHTML = '';
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
+
+    it('tab key pressed', () => {
+        ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" } }, '#ddtree');
+        ddtreeObj1 = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } });
+        ddtreeObj1.appendTo('#ddtree1');
+        const input = document.getElementsByTagName("input")[0];
+        input.focus();
+        input.dispatchEvent(new KeyboardEvent('keypress',  {'key':'tab'}));
+        expect(ddtreeObj.inputWrapper.classList.contains('e-input-focus')).toBe(true);
+        expect(ddtreeObj1.inputWrapper.classList.contains('e-input-focus')).toBe(false);
+        const input_a = document.getElementsByTagName("input")[1];
+        input_a.focus();
+        input_a.dispatchEvent(new KeyboardEvent('keypress',  {'key':'tab'}));
+        expect(ddtreeObj.inputWrapper.classList.contains('e-input-focus')).toBe(false);
+        expect(ddtreeObj1.inputWrapper.classList.contains('e-input-focus')).toBe(true);
     });
 });

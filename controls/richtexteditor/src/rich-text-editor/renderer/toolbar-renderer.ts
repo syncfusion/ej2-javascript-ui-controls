@@ -1,4 +1,4 @@
-import { addClass, Browser, removeClass, EventHandler, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { addClass, Browser, removeClass, EventHandler, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { getInstance, closest, MouseEventArgs, selectAll, detach } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -82,7 +82,8 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
-        if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1) {
+        if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1 && !isNOU(args.element.parentElement.querySelector('.e-cell-merge')) &&
+        (!isNOU(args.element.parentElement.querySelector('.e-cell-horizontal-split')) || !isNOU(args.element.parentElement.querySelector('.e-cell-vertical-split')))) {
             const listEle: NodeListOf<HTMLElement> = args.element.querySelectorAll('li');
             if (this.parent.inputElement.querySelectorAll('.e-cell-select').length === 1) {
                 addClass([listEle[0]], 'e-disabled');
@@ -204,7 +205,6 @@ export class ToolbarRenderer implements IRenderer {
      * renderListDropDown method
      *
      * @param {IDropDownModel} args - specifies the the arguments.
-     * @param {string} item - specifies the string value
      * @returns {void}
      * @hidden
      * @deprecated
@@ -252,7 +252,7 @@ export class ToolbarRenderer implements IRenderer {
         if (args.element.childElementCount === 1) {
             dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         }
-        args.element.tabIndex = -1; 
+        args.element.tabIndex = -1;
         dropDown.element.removeAttribute('type');
         return dropDown;
     }
@@ -477,6 +477,7 @@ export class ToolbarRenderer implements IRenderer {
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
             inline: true,
+            value: '#fff',
             created: () => {
                 const value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
                 colorPicker.setProperties({ value: value });

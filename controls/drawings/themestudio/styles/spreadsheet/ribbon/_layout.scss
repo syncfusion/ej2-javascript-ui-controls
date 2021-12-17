@@ -1,0 +1,227 @@
+@import 'mixin.scss';
+@include export-module('ribbon-layout') {
+  .e-ribbon {
+    border: $ribbon-border;
+    position: relative;
+
+    & .e-tab {
+      @if $skin-name == 'highcontrast' {
+        border-width: 0;
+      }
+
+      & .e-content .e-toolbar {
+        @if $skin-name == 'material' {
+          border: 0;
+        }
+        @else {
+          border-left-width: 0;
+          border-right-width: 0;
+        }
+      }
+
+      & .e-tab-header {
+        @if $skin-name != 'bootstrap4' {
+          @include tab-header-layout;
+        }
+
+        & .e-hscroll {
+          display: inline-block !important; // sass-lint:disable-line no-important
+          width: calc(100% - 28px);
+        }
+
+        & .e-toolbar-items .e-toolbar-item:nth-child(2) {
+          @if $skin-name == 'bootstrap' {
+            border-width: 0;
+          }
+
+          @if $skin-name == 'fabric' {
+            margin-right: 0;
+          }
+
+          & .e-tab-wrap {
+            padding: $file-menu-wrap-padding;
+
+            @if $skin-name == 'bootstrap4' {
+              border-width: 0;
+            }
+          }
+
+          & .e-text-wrap {
+            vertical-align: top;
+          }
+        }
+
+        & .e-indicator {
+          z-index: 1;
+        }
+
+        @if $skin-name == 'material' {
+          & .e-toolbar-item .e-tab-wrap {
+            padding: 0 12px;
+          }
+        }
+
+        & .e-toolbar-items .e-toolbar-item.e-hide {
+          display: none;
+        }
+      }
+
+      @if $skin-name == 'bootstrap5' {
+        & .e-content .e-toolbar .e-toolbar-items {
+          height: 38px;
+        }
+      }
+
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        & .e-tab-header {
+          margin-top: 10px;
+        }
+
+        & .e-content .e-toolbar {
+          border-radius: 0;
+        }
+      }
+
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        & .e-content .e-item {
+          padding: 0;
+        }
+      }
+    }
+
+    @include default-props;
+
+    & .e-drop-icon {
+      cursor: pointer;
+      font-family: 'e-icons';
+      margin: $drop-icon-margin;
+      position: absolute;
+      right: 0;
+      text-align: center;
+      top: 0;
+      transform: rotate(180deg);
+      transition: transform 300ms ease;
+      width: 18px;
+
+      @if $skin-name != 'bootstrap4' {
+        font-size: 10px;
+      }
+
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        font-size: 18px;
+      }
+
+      &.e-disabled {
+        cursor: default;
+        pointer-events: none;
+      }
+    }
+
+    &.e-collapsed {
+      & .e-content,
+      & .e-indicator,
+      & .e-tab-header .e-toolbar-item.e-active .e-text-wrap::before {
+        display: none;
+      }
+
+
+
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        & .e-tab .e-tab-header:not(.e-vertical) {
+          &::before {
+            border-width: 0;
+          }
+        }
+      }
+
+      & .e-drop-icon {
+        transform: rotate(0deg);
+      }
+    }
+
+    @if $skin-name == 'fabric' {
+      & .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
+        min-height: 24px;
+      }
+    }
+
+    @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      .e-tab-header .e-menu-wrapper.e-file-menu ul.e-menu {
+        font-size: 14px;
+      }
+    }
+
+    & .e-content .e-toolbar {
+      @if $skin-name == 'highcontrast' {
+        border-color: transparent;
+
+        & .e-toolbar-items .e-toolbar-item.e-overlay {
+          opacity: .5;
+        }
+      }
+
+      &.e-overlay .e-toolbar-items .e-toolbar-item.e-overlay {
+        opacity: 1;
+      }
+    }
+
+    & .e-menu-wrapper {
+      border-width: 0;
+
+      & ul {
+        &.e-menu {
+          padding: 0;
+        }
+
+        @if $skin-name != 'bootstrap4' {
+          & .e-menu-item.e-menu-caret-icon {
+            height: 35px;
+            line-height: 35px;
+
+            & .e-caret {
+              line-height: 35px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-ribbon,
+  .e-bigger.e-ribbon {
+    & .e-menu-wrapper.e-file-menu ul.e-menu {
+      padding: 0;
+
+      & .e-menu-item.e-menu-caret-icon {
+        height: 41px;
+        line-height: 41px;
+
+        & .e-caret {
+          line-height: 41px;
+        }
+      }
+
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        font-size: 15px;
+      }
+    }
+
+    & .e-drop-icon {
+      font-size: 12px;
+      margin: $bigger-drop-icon-margin;
+
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        font-size: 18px;
+        line-height: 8px;
+      }
+    }
+
+    @if $skin-name == 'material' {
+      & .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
+        padding: 0 16px;
+      }
+    }
+
+    @include bigger-tab-header-layout;
+  }
+}

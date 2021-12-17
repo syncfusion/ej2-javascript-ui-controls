@@ -35,7 +35,7 @@ export class ImageCommand {
      * @deprecated
      */
     public imageCommand(e: IHtmlItem): void {
-        switch (e.value.toString().toLocaleLowerCase()) {
+        switch (e.value.toString().toLowerCase()) {
         case 'image':
         case 'replace':
             this.createImage(e);
@@ -110,20 +110,8 @@ export class ImageCommand {
             const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
             const imgElm: Element = (e.value === 'Replace' || isReplaced) ? (e.item.selectParent[0] as Element) :
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
-            let preventLoadCall: boolean = false;
             imgElm.addEventListener('load', () => {
-                if (e.value === 'Replace' || isReplaced) {
-                    if (!preventLoadCall) {
-                        e.callBack({
-                            requestType: 'Images',
-                            editorMode: 'HTML',
-                            event: e.event,
-                            range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                            elements: [imgElm]
-                        });
-                        preventLoadCall = true;
-                    }
-                } else {
+                if (e.value !== 'Replace' || !isReplaced) {
                     e.callBack({
                         requestType: 'Images',
                         editorMode: 'HTML',
@@ -246,10 +234,16 @@ export class ImageCommand {
         const selectNode: HTMLImageElement = e.item.selectNode[0] as HTMLImageElement;
         selectNode.style.height = '';
         selectNode.style.width = '';
-        e.item.width !== 'auto' ? selectNode.style.width = formatUnit(e.item.width as number) :
+        if (e.item.width !== 'auto') {
+            selectNode.style.width =  formatUnit(e.item.width as number);
+        } else {
             selectNode.removeAttribute('width');
-        e.item.height !== 'auto' ? selectNode.style.height = formatUnit(e.item.height as number) :
+        }
+        if (e.item.height !== 'auto') {
+            selectNode.style.height = formatUnit(e.item.height as number);
+        } else {
             selectNode.removeAttribute('height');
+        }
         this.callBack(e);
     }
     private imageCaption(e: IHtmlItem): void {

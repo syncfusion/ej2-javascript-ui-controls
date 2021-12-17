@@ -224,6 +224,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     public isPreventSelect: boolean;
     /**
      * Specifies the callback function for drag event.
+
      * @event
      */
     @Event()
@@ -324,7 +325,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
      */
     @Property(750)
     public tapHoldThreshold: number;
-    /**
+     /**
      * @private
      */
     @Property(false)
@@ -352,6 +353,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private prevTop: number = 0;
     private dragProcessStarted: boolean = false;
     /* tslint:disable no-any */
+    private eleTop: number = 0;
     private tapHoldTimer: any = 0;
     private dragElePosition: any;
     public currentStateTarget: any;
@@ -572,6 +574,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             if (this.clone && marginTop !== 0) {
                 pos.top += marginTop;
             }
+            this.eleTop = !isNaN(parseFloat(styles.top)) ? parseFloat(styles.top) - this.offset.top : 0;
+            /* istanbul ignore next */
+            // if (this.eleTop > 0) {
+            //     pos.top += this.eleTop;
+            // }
             if (this.enableScrollHandler && !this.clone) {
                 pos.top -= this.parentScrollY;
                 pos.left -= this.parentScrollX;
@@ -688,7 +695,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let dLeft: number = this.position.left - this.diffX;
         let dTop: number = this.position.top - this.diffY;
         let styles: CSSStyleDeclaration = getComputedStyle(helperElement);
-        let marginTop: number = parseFloat(styles.marginTop);
         if (this.dragArea) {
             if (this.pageX !== pagex || this.skipDistanceCheck) {
                 let helperWidth: number = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
@@ -732,37 +738,42 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             this.dragLimit.top = this.clone ? this.dragLimit.top : 0;
             draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
             draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
-            // when drag-element has margin-top
-            /* istanbul ignore next */
-            if (marginTop > 0) {
-                if (this.clone) {
-                    draEleTop += this.element.offsetTop;
-                    if (dTop < 0) {
-                        if ((this.element.offsetTop + dTop) >= 0) {
-                            draEleTop = this.element.offsetTop + dTop;
-                        } else {
-                            draEleTop -= this.element.offsetTop;
-                        }
-                    }
-                    draEleTop = (this.dragLimit.bottom < draEleTop) ? this.dragLimit.bottom : draEleTop;
-                }
-                if ((top - iTop) < 0) {
-                    if (dTop + marginTop + (helperElement.offsetHeight - iTop) >= 0) {
-                        let tempDraEleTop: number = this.dragLimit.top + dTop - iTop;
-                        if ((tempDraEleTop + marginTop + iTop) < 0) {
-                            draEleTop -= marginTop + iTop;
-                        } else {
-                            draEleTop = tempDraEleTop;
-                        }
-                    } else {
-                        draEleTop -= marginTop + iTop;
-                    }
-                }
-            }
         } else {
             draEleTop = top - iTop;
             draEleLeft = left - iLeft;
         }
+        let marginTop: number = parseFloat(getComputedStyle(this.element).marginTop);
+        // when drag-element has margin-top
+        /* istanbul ignore next */
+        if (marginTop > 0) {
+            if (this.clone) {
+                draEleTop += marginTop;
+                if (dTop < 0) {
+                    if ((marginTop + dTop) >= 0) {
+                        draEleTop = marginTop + dTop;
+                    } else {
+                        draEleTop -= marginTop;
+                    }
+                }
+                draEleTop = (this.dragLimit.bottom < draEleTop) ? this.dragLimit.bottom : draEleTop;
+            }
+            if ((top - iTop) < 0) {
+                if (dTop + marginTop + (helperElement.offsetHeight - iTop) >= 0) {
+                    let tempDraEleTop: number = this.dragLimit.top + dTop - iTop;
+                    if ((tempDraEleTop + marginTop + iTop) < 0) {
+                        draEleTop -= marginTop + iTop;
+                    } else {
+                        draEleTop = tempDraEleTop;
+                    }
+                } else {
+                    draEleTop -= marginTop + iTop;
+                }
+            }
+        }
+        /* istanbul ignore next */
+        // if(this.eleTop > 0) {
+        //      draEleTop += this.eleTop;
+        // }
         if (this.enableScrollHandler && !this.clone) {
             draEleTop -= this.parentScrollY;
             draEleLeft -= this.parentScrollX;
@@ -937,11 +948,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         } else {
             pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
             pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
-        }
-        if (!this.clone && this.dragArea && !isdragscroll) {
-            this.getScrollableValues();
-            pageY -=  this.tempScrollHeight ? this.parentScrollY : 0;
-            pageX -=  this.tempScrollWidth ? this.parentScrollX : 0;
         }
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),

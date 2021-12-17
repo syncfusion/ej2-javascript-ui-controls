@@ -37,9 +37,9 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
         id: scrollbar.component.element.id + '_' + 'scrollBar_svg' + scrollbar.axis.name,
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
-        style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 :
+        style: 'position: absolute;top: ' + ((scrollbar.axis.isAxisOpposedPosition && isHorizontalAxis ? -16 :
             (enablePadding ? markerHeight : 0)) + rect.y) + 'px;left: ' +
-            (((scrollbar.axis.opposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) - (scrollbar.isVertical ? scrollbar.height : 0))
+            (((scrollbar.axis.isAxisOpposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) - (scrollbar.isVertical ? scrollbar.height : 0))
             + 'px;cursor:auto;'
     });
     scrollbar.elements.push(scrollbar.svgObject);
@@ -86,12 +86,13 @@ export class ScrollElements {
      */
 
     public renderElements(scroll: ScrollBar, renderer: SvgRenderer): Element {
+        const isInverse: boolean = scroll.axis.isAxisInverse;
         const scrollGroup: Element = renderer.createGroup({
             id: this.chartId + 'scrollBar_' + scroll.axis.name,
-            transform: 'translate(' + ((scroll.isVertical && scroll.axis.isInversed) ? scroll.height : scroll.axis.isInversed ?
-                scroll.width : '0') + ',' + (scroll.isVertical && scroll.axis.isInversed ? '0' : scroll.axis.isInversed ?
-                scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && scroll.axis.isInversed ?
-                '90' : scroll.isVertical ? '270' : scroll.axis.isInversed ? '180' : '0') + ')'
+            transform: 'translate(' + ((scroll.isVertical && isInverse) ? scroll.height : isInverse ?
+                scroll.width : '0') + ',' + (scroll.isVertical && isInverse ? '0' : isInverse ?
+                scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && isInverse ?
+                '90' : scroll.isVertical ? '270' : isInverse ? '180' : '0') + ')'
         });
         const backRectGroup: Element = renderer.createGroup({
             id: this.chartId + 'scrollBar_backRect_' + scroll.axis.name

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.3.46 (2021-10-19)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#I342551` - Issue with "unable to select the time from the popup when its has selected class" has been resolved.
+
 ## 19.2.44 (2021-06-30)
 
 ### DatePicker

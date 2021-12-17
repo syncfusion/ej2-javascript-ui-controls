@@ -1191,7 +1191,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'RowFormat'
 | 'CellFormat'
 | 'TableProperties'
-| 'Paste' |
+| 'Paste' | 'RemoveComment' |
 'DeleteCells' | 'ClearCells' | 'InsertTable' | 'RowResizing' | 'CellResizing' | 'MergeCells' | 'ClearFormat' | 'ClearCharacterFormat' |
 'ClearParagraphFormat' | 'AutoList' | 'BordersAndShading'
 | 'TableMarginsSelection' | 'CellMarginsSelection' | 'CellOptions' | 'TableOptions' |
@@ -1206,7 +1206,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
 'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
 'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase'| 'PasteColumn'|
-'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline';
+'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline' | 'ResolveComment';
 /**
  * Enum for direction
  */
@@ -1520,10 +1520,28 @@ export type FootEndNoteNumberFormat = 'Arabic' | 'UpperCaseRoman' | 'LowerCaseRo
  * Specifies the image format to export.
  */
 export type ImageFormat = 'Png' | 'Jpeg';
+
 /**
- * Specifies the compatibility mode
+ * Represents the compatibility mode of the document.
  */
-export type CompatibilityMode = 'Word2003' | 'Word2007' | 'Word2010' | 'Word2013';
+export type CompatibilityMode =
+/**
+ * Specifies the Word 2003 compatibility mode.
+ */
+'Word2003' |
+/**
+ * Specifies the Word 2007 compatibility mode.
+ */
+'Word2007' |
+/**
+ * Specifies the Word 2010 compatibility mode.
+ */
+'Word2010' |
+/**
+ * Specifies the Word 2013 compatibility mode.
+ */
+'Word2013';
+
 /**
  * Specifies the server action types.
  */

@@ -348,8 +348,10 @@ export class HeaderRenderer {
             enableRtl: this.parent.enableRtl
         });
         const calendarView: CalendarView = this.getCalendarView();
+        const isDisplayDate: boolean = this.parent.currentView === 'Month' &&
+            !isNullOrUndefined(this.parent.activeViewOptions.displayDate) && !this.hasSelectedDate();
         this.headerCalendar = new Calendar({
-            value: this.parent.selectedDate,
+            value: isDisplayDate ? this.parent.activeViewOptions.displayDate : this.parent.selectedDate,
             min: this.parent.minDate,
             max: this.parent.maxDate,
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
@@ -392,6 +394,7 @@ export class HeaderRenderer {
         const strClass: string = args.item.cssClass.replace('e-views ', '');
         let data: CellClickEventArgs;
         let isSameTime: boolean;
+        let currentTime: Date;
         switch (strClass) {
         case 'e-date-range':
             if (!this.headerPopup) {
@@ -440,8 +443,13 @@ export class HeaderRenderer {
             this.parent.changeView('TimelineYear', args.originalEvent, undefined, this.calculateViewIndex(args));
             break;
         case 'e-today':
-            if (this.parent.currentView === 'Agenda' || !this.parent.isSelectedDate(util.resetTime(this.parent.getCurrentTime()))) {
-                this.parent.changeDate(util.resetTime(this.parent.getCurrentTime()), args.originalEvent);
+            currentTime = util.resetTime(this.parent.getCurrentTime());
+            if (this.parent.currentView === 'Agenda' || !this.parent.isSelectedDate(currentTime) ||
+                this.parent.currentView === 'Month' && this.parent.activeViewOptions.displayDate && !this.hasSelectedDate() &&
+                util.resetTime(this.parent.activeViewOptions.displayDate) !== currentTime || this.parent.currentView === 'Month' &&
+                this.parent.activeViewOptions.numberOfWeeks > 0 && !this.hasSelectedDate()
+                && util.resetTime(util.firstDateOfMonth(this.parent.selectedDate)) !== currentTime) {
+                this.parent.changeDate(currentTime, args.originalEvent);
             }
             break;
         case 'e-prev':
@@ -474,6 +482,12 @@ export class HeaderRenderer {
         if (toolbarPopUp && args.item.type !== 'Input') {
             ((toolbarPopUp as EJ2Instance).ej2_instances[0] as Popup).hide({ name: 'SlideUp', duration: 100 });
         }
+    }
+
+    private hasSelectedDate(): boolean {
+        const selectedTime: number = util.resetTime(this.parent.selectedDate).getTime();
+        return selectedTime >= this.parent.activeView.getStartDate().getTime() &&
+            selectedTime <= this.parent.activeView.getEndDate().getTime();
     }
 
     public getHeaderElement(): HTMLElement {
@@ -519,9 +533,11 @@ export class HeaderRenderer {
             lastDate = util.addDays(firstDate, 7 * this.parent.activeViewOptions.interval);
         }
         if (this.parent.currentView === 'Month') {
-            firstDate = util.firstDateOfMonth(this.parent.selectedDate);
-            const lastMonthFirstDate: Date = util.addMonths(firstDate, this.parent.activeViewOptions.interval - 1);
-            lastDate = util.lastDateOfMonth(lastMonthFirstDate);
+            const isCustomMonth: boolean = !isNullOrUndefined(this.parent.activeViewOptions.displayDate) ||
+                this.parent.activeViewOptions.numberOfWeeks > 0;
+            firstDate = isCustomMonth ? this.parent.activeView.getStartDate() : util.firstDateOfMonth(this.parent.selectedDate);
+            lastDate = isCustomMonth ? this.parent.activeView.getEndDate() :
+                util.lastDateOfMonth(util.addMonths(firstDate, this.parent.activeViewOptions.interval - 1));
         }
         if (!isNullOrUndefined(prevNavEle)) {
             this.toolbarObj.enableItems(prevNavEle, firstDate > this.parent.minDate);

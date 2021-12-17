@@ -1417,10 +1417,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {boolean} valueOnly - Specifies the bool value.
      * @returns {void} - To clear range.
      */
-    public clearRange(address?: string, sheetIndex?: number, valueOnly: boolean = true): void {
-        clearRange(
-            this, address || this.getActiveSheet().selectedRange,
-            isNullOrUndefined(sheetIndex) ? this.activeSheetIndex : sheetIndex, valueOnly);
+    public clearRange(address?: string, sheetIndex?: number, valueOnly?: boolean): void {
+        address = address || this.getActiveSheet().selectedRange;
+        sheetIndex = isNullOrUndefined(sheetIndex) ? this.activeSheetIndex : sheetIndex;
+        valueOnly = valueOnly === null || valueOnly === undefined;
+        clearRange(this, getIndexesFromAddress(address), sheetIndex, valueOnly);
     }
 
     /**
@@ -1496,16 +1497,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         const filterArgs: { [key: string]: BeforeFilterEventArgs | Promise<FilterEventArgs> } = { args: eventArgs, promise: promise };
         this.notify(events.initiateFilter, filterArgs);
         return filterArgs.promise as Promise<FilterEventArgs>;
-    }
-
-    /**
-     * Clears the filter changes of the sheet.
-     * {% codeBlock src='spreadsheet/clearFilter/index.md' %}{% endcodeBlock %}
-     *
-     * @returns {void}
-     */
-    public clearFilter(): void {
-        this.notify(events.clearAllFilter, null);
     }
 
     /**

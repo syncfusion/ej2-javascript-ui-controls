@@ -138,7 +138,8 @@ export class Crud {
                     const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                     let promise: Promise<any>;
                     if (addArgs.addedRecords instanceof Array) {
-                        for (const event of addArgs.addedRecords) {
+                        for (let event of addArgs.addedRecords) {
+                            event = this.parent.eventBase.updateEventDateTime(event);
                             const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
                             editParams.addedRecords.push(eventData);
                         }
@@ -192,7 +193,8 @@ export class Crud {
                         const fields: EventFieldsMapping = this.parent.eventFields;
                         const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                         if (saveArgs.changedRecords instanceof Array) {
-                            for (const event of saveArgs.changedRecords) {
+                            for (let event of saveArgs.changedRecords) {
+                                event = this.parent.eventBase.updateEventDateTime(event);
                                 const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
                                 editParams.changedRecords.push(eventData);
                             }

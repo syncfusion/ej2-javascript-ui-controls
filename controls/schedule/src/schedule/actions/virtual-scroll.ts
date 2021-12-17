@@ -171,7 +171,8 @@ export class VirtualScroll {
         if (firstTDIndex === 0) {
             this.translateY = conWrap.scrollTop;
         } else {
-            const height: number = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
+            let height: number = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
+            height = (height > 0) ? height : this.itemSize;
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
         }

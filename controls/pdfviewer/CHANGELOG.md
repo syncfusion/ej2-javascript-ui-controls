@@ -2,6 +2,88 @@
 
 ## [Unreleased]
 
+## 19.4.38 (2021-12-17)
+
+### PDF Viewer
+
+#### New Features
+
+- `#354638` - Provided auto fit support to the free text annotations.
+
+#### Bug Fixes
+
+- `346343`- Now, the text wraps based on the word length regardless of character length in free-text annotation.
+
+## 19.3.56 (2021-12-02)
+
+### PDF Viewer
+
+#### New Features
+
+- `#336589`, `#339329`, `#346113` - Provided annotation toolbar settings support in mobile view.
+
+#### Bug Fixes
+
+- `#347402`, `#347555`- Now, the signature dialog is opened correctly on clicking the signature field in Firefox and Safari browser.
+- `#344549`- The ink annotations are preserved correctly in the Adobe.
+- `#346607`- Now, the signature dialog width is proper on resizing the browser window.
+- `#345897`- The ink annotations are now drawn over the free-text annotations when the 'allowEditTextOnly' property is enabled.
+- `#347427`- The form designer tooltip is now hidden when the 'showToolTip' property is set to FALSE.
+- `#348023`- The 'isReadOnly' property is now updated correctly once we set the value to TRUE.
+- `#345130`- Now, the exact shape of the image is maintained when added to the signature field.
+- `#347558`- Now, the custom stamp position is added properly in mobile view.
+
+## 19.3.54 (2021-11-17)
+
+- `#346152`- The script error will not be thrown for the document which contains link annotation.
+
+## 19.3.48 (2021-11-02)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#344888`, `#F169870` - Now, signature dialog settings is working properly for the handwritten signature dialog.
+- `#346090`- Now, the primary toolbar should not hide if form designer toolbar is visible.
+- `#344897`, `#345574` - Now, the indicator text and required properties for signature fields settings are working properly.
+- `#344082`- Now, signature text annotation is rendered properly on loading the document.
+
+## 19.3.47 (2021-10-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#344034` - The Script error will no longer be thrown if we select text markup annotation when text selection is disabled.
+
+## 19.3.46 (2021-10-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#339329`, `#341199` - Now, the default context menu of browser will no longer be shown on selecting the text in mobile view.
+
+## 19.3.45 (2021-10-12)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#F169102` - Now, the download action is working properly after importing the provided customer document.
+- `#342951` - Now, the Bookmark navigation is working properly in mobile mode.
+- `#343011` - Now, the download action is working properly after adding the text markup annotation.
+
+## 19.3.44 (2021-10-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#297147`, `#339056` - Now, the free text annotations with 90 and 270 rotated angle are rotated properly.
+- `#341677` - Now, the opacity is applied properly for the custom stamps.
+- `#341074` - Now, the search icon is visible to close the search dialog.
+
 ## 19.1.67 (2021-06-08)
 
 ### PDF Viewer

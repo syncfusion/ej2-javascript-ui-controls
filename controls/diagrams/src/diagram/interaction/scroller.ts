@@ -335,10 +335,46 @@ export class DiagramScroller {
         const oObjects: (NodeModel | ConnectorModel)[] = this.diagram.spatialSearch.findObjects(
             new Rect(-this.horizontalOffset / this.currentZoom, -this.verticalOffset / this.currentZoom, viewWidth, viewHeight)
         );
-        const oObjectsID: string[] = [];
-        for (let i: number = 0; i < oObjects.length; i++) {
-            oObjectsID.push(oObjects[i].id);
+        let oObjectsID: string[] = [];
+        let renderOrder: string[] = [];
+
+        for (let j = 0; j < oObjects.length; j++) {
+            let bpmnShape: any = oObjects[j].shape;
+            if (bpmnShape.type === "Bpmn" && bpmnShape.activity.subProcess && bpmnShape.activity.subProcess.processes && bpmnShape.activity.subProcess.processes.length > 0) {
+                for (var k = 0; k < bpmnShape.activity.subProcess.processes.length; k++) {
+                    renderOrder.push(bpmnShape.activity.subProcess.processes[k]);
+                }
+                renderOrder.push(oObjects[j].id);
+            } else if ((oObjects[j] as any).processId === "") {
+                renderOrder.push(oObjects[j].id);
+            }
         }
+
+        oObjectsID = renderOrder;
+
+        let zindexOrder: string[] = [];
+
+        for (let j = 0; j < oObjects.length; j++) {
+            let items: any = oObjects[j].shape;
+            if (items.type === "Bpmn" && items.activity.subProcess && items.activity.subProcess.processes && items.activity.subProcess.processes.length > 0) {
+                zindexOrder.push(oObjects[j].id);
+                for (let t = 0; t < items.activity.subProcess.processes.length; t++) {
+                    zindexOrder.push(items.activity.subProcess.processes[t]);
+                }
+            } else if ((oObjects[j] as any).processId === "") {
+                zindexOrder.push(oObjects[j].id);
+            }
+        }
+
+        for (let j = 0; j < oObjects.length; j++) {
+            for (let k = 0; k < zindexOrder.length; k++) {
+                if (oObjects[j].id === zindexOrder[k]) {
+                    oObjects[j].zIndex = k;
+                    break;
+                }
+            }
+        }
+
         const newObjects: string[] = this.getObjects(oObjectsID, this.oldCollectionObjects);
         if (this.oldCollectionObjects.length === 0) {
             this.oldCollectionObjects = oObjectsID;
@@ -716,28 +752,30 @@ export class DiagramScroller {
      * @private
      */
     public bringIntoView(rect: Rect): void {
-        let x: number = 0;
-        let y: number = 0;
-        const scale: number = this.currentZoom;
-        let bounds: Rect = rect;
-        const hoffset: number = - this.horizontalOffset;
-        const voffset: number = -this.verticalOffset;
-        bounds = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
-        const view: Rect = new Rect(hoffset, voffset, this.viewPortWidth, this.viewPortHeight);
-        if (!(view.containsRect(bounds))) {
-            if (bounds.right > (-hoffset + this.viewPortWidth)) {
-                x = bounds.right - this.viewPortWidth;
+        if (rect && rect.width && rect.height) {
+            let bounds: Rect = rect;
+            if (bounds.x > 0 && bounds.x >= bounds.width) {
+                bounds.width = bounds.x + bounds.x / 3;
             }
-            if (bounds.x < -hoffset) {
-                x = bounds.x;
+            if (bounds.x > 0 && bounds.y >= bounds.height) {
+                bounds.height = bounds.y + bounds.y / 3;
             }
-            if (bounds.bottom > (-voffset + this.viewPortHeight)) {
-                y = bounds.bottom - this.viewPortHeight;
-            }
-            if (bounds.y < -voffset) {
-                y = bounds.y;
-            }
-            this.zoom(1, -this.horizontalOffset - x, -this.verticalOffset - y, null);
+            const scale: PointModel = { x: 0, y: 0 };
+            scale.x = (this.viewPortWidth - 50) / (bounds.width);
+            scale.y = (this.viewPortHeight - 50) / (bounds.height);
+            let zoomFactor: number;
+            let centerX: number;
+            let centerY: number;
+            let factor: number;
+            let deltaX: number = -this.horizontalOffset;
+            let deltaY: number = -this.verticalOffset;
+            zoomFactor = Math.min(scale.x, scale.y);
+            factor = (zoomFactor / this.currentZoom);
+            centerX = (this.viewPortWidth - (bounds.width) * zoomFactor) / 2 - bounds.x * zoomFactor;
+            centerY = (this.viewPortHeight - (bounds.height) * zoomFactor) / 2 - bounds.y * zoomFactor;
+            deltaX += centerX;
+            deltaY += centerY;
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
         }
     }
 

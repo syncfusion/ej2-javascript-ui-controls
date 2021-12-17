@@ -118,6 +118,7 @@ export class RangeNavigatorAxis extends DateTime {
             this.gridLines.appendChild(control.renderer.drawPath(path) as HTMLElement);
         }
         control.chartSeries.xAxis.visibleLabels = control.chartSeries.xAxis.visibleLabels.concat(secondaryAxis.visibleLabels);
+        labelElement.setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
         labelElement.appendChild(firstLevelElement);
         labelElement.appendChild(secondLevelElement);
 

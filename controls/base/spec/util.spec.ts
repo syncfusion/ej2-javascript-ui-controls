@@ -190,19 +190,23 @@ describe('Util', () => {
         }, 1000);
     });
 
-    it('formatunit method auto value testing', () => {
+    it('formatunit method value testing', () => {
         expect(Util.formatUnit('auto')).toEqual('auto');
-    });
-
-    it('formatunit method percentage value testing', () => {
-        expect(Util.formatUnit('100%')).toEqual('100%');
-    });
-
-    it('formatunit method pixel value testing', () => {
+        expect(Util.formatUnit('100cm')).toEqual('100cm');
+        expect(Util.formatUnit('100mm')).toEqual('100mm');
+        expect(Util.formatUnit('100in')).toEqual('100in');
         expect(Util.formatUnit('100px')).toEqual('100px');
-    });
-
-    it('formatunit method number value testing', () => {
+        expect(Util.formatUnit('100pt')).toEqual('100pt');
+        expect(Util.formatUnit('100pc')).toEqual('100pc');
+        expect(Util.formatUnit('100%')).toEqual('100%');
+        expect(Util.formatUnit('100em')).toEqual('100em');
+        expect(Util.formatUnit('100ex')).toEqual('100ex');
+        expect(Util.formatUnit('100ch')).toEqual('100ch');
+        expect(Util.formatUnit('100rem')).toEqual('100rem');
+        expect(Util.formatUnit('100vw')).toEqual('100vw');
+        expect(Util.formatUnit('100vh')).toEqual('100vh');
+        expect(Util.formatUnit('100vmin')).toEqual('100vmin');
+        expect(Util.formatUnit('100vmax')).toEqual('100vmax');
         expect(Util.formatUnit(100)).toEqual('100px');
     });
     describe('addInstance function', () => {

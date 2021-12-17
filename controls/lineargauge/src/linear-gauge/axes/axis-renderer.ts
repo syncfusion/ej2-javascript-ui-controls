@@ -331,7 +331,7 @@ export class AxisRenderer extends Animations {
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
-        if (this.gauge.container.type === 'Normal') {
+        if (this.gauge.container.type === 'Normal' || this.gauge.container.width === 0) {
             rectOptions = new RectOption(
                 pointerID, (gradientBarColor) ?
                     gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
@@ -365,7 +365,7 @@ export class AxisRenderer extends Animations {
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
         pointerElement.setAttribute('cursor', 'pointer');
         if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
-            if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
+            if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0  && this.gauge.container.width > 0) {
                 clipRectElement = this.gauge.renderer.drawClipPath(
                     new RectOption(
                         this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + pointerIndex,
@@ -385,7 +385,7 @@ export class AxisRenderer extends Animations {
             range = <Range>axis.ranges[j];
             if (!(isNullOrUndefined(range.path))) {
                 options = new PathOption(
-                    this.gauge.element.id + '_AxisIndex_' + axisIndex + '_Range_' + j, range.interior, range.border.width,
+                    this.gauge.element.id + '_AxisIndex_' + axisIndex + '_Range_' + j, range.interior, (range.start !== range.end) ? range.border.width : 0,
                     range.border.color, 1, null, range.path);
                 rangeElement.appendChild(this.gauge.renderer.drawPath(options) as SVGAElement);
             }

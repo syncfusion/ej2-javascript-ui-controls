@@ -309,8 +309,8 @@ export class PdfExport {
                 } else {
                     sRows = summaryModel.generateRows(returnType.result, <SummaryData>returnType.aggregates, null, null, column);
                 }
-                this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font,
-                                       captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false, null, null, null, true);
+                this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font, captionThemeStyle.brush,
+                                       captionThemeStyle.backgroundBrush, false, null, null, null, isGrouping ? false : true);
             }
         } else {
             const row: PdfGridRow = pdfGrid.rows.addRow();
@@ -865,9 +865,13 @@ export class PdfExport {
                 index += 1;
             }
             if (!isAggregate) {
-                for (let i: number = this.parent.groupSettings.columns.length; i < value.length - 1; i++) {
-                    value[i] = value[i + 1];
-                    value[i + 1] = value[i + 2] ? value[i + 2] : '';
+                if (!isCaption) {
+                    value.splice(0, 1);
+                } else {
+                    for (let i: number = this.parent.groupSettings.columns.length; i < value.length - 1; i++) {
+                        value[i] = value[i + 1];
+                        value[i + 1] = value[i + 2] ? value[i + 2] : '';
+                    }
                 }
             }
             if (!isEmpty) {

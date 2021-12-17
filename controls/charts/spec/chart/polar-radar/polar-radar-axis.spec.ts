@@ -947,6 +947,17 @@ describe('Chart Control', () => {
             chartObj.primaryXAxis.labelPosition = 'Inside';
             chartObj.refresh();
         });
+        it('Check X axis labels with rtl', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('trimContainer0_AxisLabel_0');
+                expect(ele.getAttribute('text-anchor')).toBe('start');
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = false;
+            chartObj.primaryXAxis.labelPosition = 'Outside';
+            chartObj.enableRtl = true;
+            chartObj.refresh();
+        });
     });
     describe('Polar Axis: Trim Axis Labels after legend enabled', () => {
         let chartObj: Chart;

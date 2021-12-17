@@ -393,6 +393,7 @@ export function getEditValue(value: string, rteObj: IRichTextEditor): string {
 }
 /**
  * @param {string} value - specifies the value
+ * @param {IRichTextEditor} rteObj - specifies the rich text editor instance.
  * @returns {string} - returns the string
  * @hidden
  */

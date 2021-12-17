@@ -278,22 +278,22 @@ export class BulletsAndNumberingDialog {
             this.symbol = undefined;
             this.fontFamily = undefined;
         } else if (args.currentTarget.classList.contains('e-bullet-dot')) {
-            this.symbol = '\uf0b7';
+            this.symbol = String.fromCharCode(61623);
             this.fontFamily = 'Symbol';
         } else if (args.currentTarget.classList.contains('e-bullet-circle')) {
-            this.symbol = '\uf06f' + '\u0020';
+            this.symbol = String.fromCharCode(61551) + String.fromCharCode(32);
             this.fontFamily = 'Symbol';
         } else if (args.currentTarget.classList.contains('e-bullet-square')) {
-            this.symbol = '\uf0a7';
+            this.symbol = String.fromCharCode(61607);
             this.fontFamily = 'Wingdings';
         } else if (args.currentTarget.classList.contains('e-bullet-flower')) {
-            this.symbol = '\uf076';
+            this.symbol = String.fromCharCode(61558);
             this.fontFamily = 'Wingdings';
         } else if (args.currentTarget.classList.contains('e-bullet-arrow')) {
-            this.symbol = '\uf0d8';
+            this.symbol = String.fromCharCode(61656);
             this.fontFamily = 'Wingdings';
         } else if (args.currentTarget.classList.contains('e-bullet-tick')) {
-            this.symbol = '\uf0fc';
+            this.symbol = String.fromCharCode(61692);
             this.fontFamily = 'Wingdings';
         }
     };

@@ -218,10 +218,10 @@ export class CanvasRenderer implements IRenderer {
      *  @param { RectAttributes} options - Provide the Rect attributes .
      *  @private
      */
-    public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes): void {
+    public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes, diagramId: string, isExport: boolean): void {
         if (options.visible === true) {
             if (options.cornerRadius) {
-                if (options.width < 30 || options.height < 30) {
+                if (!isExport && (options.width < 30 || options.height < 30)) {
                     this.drawRoundedRect(canvas, options);
                 } else {
                     (options as PathAttributes).data = getRectanglePath(options.cornerRadius, options.height, options.width);

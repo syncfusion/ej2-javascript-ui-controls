@@ -180,6 +180,7 @@ function wordWrapping(text: TextAttributes, textValue?: string): SubTextElement[
     let childNodes: SubTextElement[] = []; let txtValue: string = ''; let j: number = 0;
     let i: number = 0; let wrap: boolean = text.whiteSpace !== 'nowrap' ? true : false;
     let content: string = textValue || text.content;
+    let bounds1: number;
     let eachLine: string[] = content.split('\n'); let txt: string;
     let words: Object[]; let newText: string;
 
@@ -189,26 +190,65 @@ function wordWrapping(text: TextAttributes, textValue?: string): SubTextElement[
         txt = '';
         words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
         for (i = 0; i < words.length; i++) {
-            txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
-            newText = txtValue + (words[i + 1] || '');
-            let width: number = bBoxText(newText, text);
-            if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
-                childNodes[childNodes.length] = {
-                    text: txtValue, x: 0, dy: 0,
-                    width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
-                };
-                txtValue = '';
-            } else {
-                if (i === words.length - 1) {
-                    childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
-                    txtValue = '';
+            bounds1 = bBoxText(words[i] as string, text);
+            if (bounds1 > text.width && (words[i] as string).length > 0) {
+                if (eachLine.length > 1) {
+                    words[i] = words[i] + '\n';
                 }
+                text.content = words[i] as string;
+                childNodes = wrapText(text, txtValue, childNodes);
+            } else {
+                txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
+                newText = txtValue + (words[i + 1] || '');
+                let width: number = bBoxText(newText, text);
+                if (eachLine.length > 1 && i === words.length - 1) {
+                    txtValue = txtValue + '\n';
+                }
+                if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
+                    childNodes[childNodes.length] = {
+                        text: (txtValue.indexOf('\n') === -1) ? txtValue + ' ' : textValue, x: 0, dy: 0,
+                        width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
+                    };
+                    txtValue = '';
+                } else {
+                    if (i === words.length - 1) {
+                        childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                        txtValue = '';
+                    }
+                }
+                existingText = newText;
+                existingWidth = width;
             }
-            existingText = newText;
-            existingWidth = width;
         }
     }
     return childNodes;
+}
+
+function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextElement[]): SubTextElement[] {
+    let k: number = 0;
+    let txtValue: string; let bounds1: number;
+    let content: string = textValue || txt.content;
+    txtValue = '';
+    txtValue += content[0];
+    for (k = 0; k < content.length; k++) {
+        bounds1 = bBoxText(txtValue, txt);
+        if (bounds1 >= txt.width && txtValue.length > 0) {
+            childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: bounds1 };
+            txtValue = '';
+        } else {
+            txtValue = txtValue + (content[k + 1] || '');
+            let width: number = bBoxText(txtValue, txt);
+            if ((Math.ceil(width) + 2 >= txt.width && txtValue.length > 0) || (txtValue.indexOf('\n') > -1)) {
+                childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                txtValue = '';
+            }
+            if (k === content.length - 1 && txtValue.length > 0) {
+                childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                txtValue = '';
+            }
+        }
+    }
+    return childNode;
 }
 
 function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): TextBounds {

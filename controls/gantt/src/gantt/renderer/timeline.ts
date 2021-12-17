@@ -827,6 +827,9 @@ export class Timeline {
             parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell);
             scheduleDateCollection.push(new Date(startDate.toString()));
             increment = this.getIncrement(startDate, count, mode);
+            if(this.parent.isInDst(startDate)) {
+                increment = increment + (1000 * 60 * 60);
+            }
             newTime = startDate.getTime() + increment;
             startDate.setTime(newTime);
             if (startDate >= endDate) {
@@ -889,11 +892,19 @@ export class Timeline {
                 dayIntervel - 1 : dayIntervel : dayIntervel;
             lastDay.setDate(lastDay.getDate() + (dayIntervel + (7 * count)));
             increment = lastDay.getTime() - firstDay.getTime();
+            if ((this.parent.isInDst(lastDay) && !this.parent.isInDst(firstDay)) ||
+                (!this.parent.isInDst(lastDay) && this.parent.isInDst(firstDay))) {
+                    increment = increment - (1000 * 60 * 60);
+            }
             break;
         }
         case 'Day':
             lastDay.setHours(24, 0, 0, 0);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24 * (count - 1));
+            if((this.parent.isInDst(lastDay) && !this.parent.isInDst(firstDay))||
+            (!this.parent.isInDst(lastDay) && this.parent.isInDst(firstDay))) {
+                increment -= (1000 * 60 * 60);
+            }
             break;
         case 'Hour':
             lastDay.setMinutes(60);
@@ -991,7 +1002,12 @@ export class Timeline {
      * @private
      */
     private calculateWidthBetweenTwoDate(mode: string, scheduleWeeks: Date, endDate: Date): number {
-        const balanceDay: number = ((endDate.getTime() - scheduleWeeks.getTime()) / (1000 * 60 * 60 * 24));
+        let timeDifference: number = (endDate.getTime() - scheduleWeeks.getTime());
+        if ((this.parent.isInDst(scheduleWeeks) && !this.parent.isInDst(endDate)) ||
+                (!this.parent.isInDst(scheduleWeeks) && this.parent.isInDst(endDate))) {
+                    timeDifference = timeDifference - (1000 * 60 * 60);
+            }
+        const balanceDay: number = (timeDifference / (1000 * 60 * 60 * 24));
         return balanceDay * this.parent.perDayWidth;
     }
 

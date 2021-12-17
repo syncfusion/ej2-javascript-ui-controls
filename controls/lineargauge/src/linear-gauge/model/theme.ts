@@ -119,6 +119,102 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             containerBorderColor: '#4b5563'
         };
         break;
+    case 'bootstrap5':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#343A40',
+            tooltipFillColor: '#212529',
+            tooltipFontColor: '#F9FAFB',
+            labelColor: '#495057',
+            lineColor: '#E5E7EB',
+            majorTickColor: '#9CA3AF',
+            minorTickColor: '#9CA3AF',
+            pointerColor: '#1F2937',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            labelFontFamily: 'Helvetica Neue',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            containerBackground: 'rgba(255,255,255, 0.0)',
+            titleFontStyle: 'normal',
+            titleFontWeight: '500',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#E5E7EB'
+        };
+        break;
+    case 'bootstrap5dark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#E9ECEF',
+            tooltipFillColor: '#E9ECEF',
+            tooltipFontColor: '#212529',
+            labelColor: '#CED4DA',
+            lineColor: '#343A40',
+            majorTickColor: '#6C757D',
+            minorTickColor: '#6C757D',
+            pointerColor: '#ADB5BD',
+            fontFamily: 'Helvetica Neue',
+            fontSize: '14px',
+            labelFontFamily: 'Helvetica Neue',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            containerBackground: 'rgba(255,255,255, 0.0)',
+            titleFontStyle: 'normal',
+            titleFontWeight: '500',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#4b5563'
+        };
+        break;
+    case 'fluentui':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#201F1E',
+            tooltipFillColor: '#FFFFFF',
+            tooltipFontColor: '#323130',
+            labelColor: '#3B3A39',
+            lineColor: '#EDEBE9',
+            majorTickColor: '#C8C6C4',
+            minorTickColor: '#C8C6C4',
+            pointerColor: '#A19F9D',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            containerBackground: 'rgba(255,255,255, 0.0)',
+            titleFontStyle: 'normal',
+            titleFontWeight: '600',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#EDEBE9'
+        };
+        break;
+    case 'fluentuidark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#F3F2F1',
+            tooltipFillColor: '#252423',
+            tooltipFontColor: '#F3F2F1',
+            labelColor: '#C8C6C4',
+            lineColor: '#292827',
+            majorTickColor: '#484644',
+            minorTickColor: '#484644',
+            pointerColor: '#797775',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            containerBackground: 'rgba(255,255,255, 0.0)',
+            titleFontStyle: 'normal',
+            titleFontWeight: '600',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#292827'
+        };
+        break;
     default:
         style = {
             backgroundColor: '#FFFFFF',

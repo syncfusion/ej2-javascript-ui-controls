@@ -232,12 +232,28 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     private onCellClick(e: Event): void {
-        const target: Element = closest((e.target as Element), '.' + cls.WORK_CELLS_CLASS);
+        let target: Element = closest((e.target as Element), '.' + cls.WORK_CELLS_CLASS);
         const startDate: Date = this.parent.getDateFromElement(target);
-        const endDate: Date = util.addDays(new Date(startDate.getTime()), 1);
-        const filteredEvents: Record<string, any>[] = this.parent.eventBase.filterEvents(startDate, endDate);
-        const moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: e.target } as EventClickArgs;
-        this.parent.quickPopup.moreEventClick(moreEventArgs, endDate);
+        this.parent.activeCellsData = this.parent.getCellDetails(target);
+        const isPrevious: boolean = startDate.getTime() < this.getStartDate().getTime();
+        if (isPrevious || startDate.getTime() > this.getEndDate().getTime()) {
+            this.parent.changeDate(this.parent.activeView.getNextPreviousDate(isPrevious ? 'previous' : 'next'), e);
+            const activeDate: number = this.parent.activeCellsData.startTime.getTime();
+            const inRange: boolean = activeDate >= this.getStartDate().getTime() && activeDate <= this.getEndDate().getTime();
+            const dateAttr: number = inRange ? activeDate : (isPrevious ? this.getEndDate() : this.getStartDate()).getTime();
+            const selectedCell: HTMLTableCellElement = this.parent.element.querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + dateAttr  + '"]');
+            this.parent.selectCell(selectedCell);
+            this.parent.activeCellsData = this.parent.getCellDetails(selectedCell);
+        } else {
+            const endDate: Date = util.addDays(new Date(startDate.getTime()), 1);
+            const filteredEvents: Record<string, any>[] = this.parent.eventBase.filterEvents(startDate, endDate);
+            const moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: e.target } as EventClickArgs;
+            if (target.classList.contains(cls.OTHERMONTH_CLASS)) {
+                target = this.parent.element.querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + target.getAttribute('data-date') + '"]') as HTMLTableCellElement;
+            }
+            this.parent.activeCellsData = this.parent.getCellDetails(target);
+            this.parent.quickPopup.moreEventClick(moreEventArgs, endDate);
+        }
     }
 
     public onContentScroll(e: Event): void {
@@ -284,20 +300,20 @@ export class Year extends ViewBase implements IRenderer {
         this.retainScrollPosition();
     }
 
-    private getStartDate(): Date {
+    public getStartDate(): Date {
         return new Date(this.parent.selectedDate.getFullYear(), this.parent.firstMonthOfYear % 12, 1);
     }
 
-    private getEndDate(): Date {
+    public getEndDate(): Date {
         return util.addDays(util.addMonths(this.getStartDate(), this.parent.monthsCount), -1);
     }
 
     public startDate(): Date {
-        return util.getWeekFirstDate(this.getStartDate(), this.parent.firstDayOfWeek);
+        return this.parent.currentView === 'Year' ? util.getWeekFirstDate(this.getStartDate(), this.parent.firstDayOfWeek) : this.getStartDate();
     }
 
     public endDate(): Date {
-        return util.addDays(util.getWeekLastDate(this.getEndDate(), this.parent.firstDayOfWeek), 1);
+        return this.parent.currentView === 'Year' ? util.addDays(util.getWeekLastDate(this.getEndDate(), this.parent.firstDayOfWeek), 1) : this.getEndDate();
     }
 
     public getEndDateFromStartDate(start: Date): Date {
@@ -345,6 +361,7 @@ export class Year extends ViewBase implements IRenderer {
             if (this.parent.currentView !== 'TimelineYear') {
                 EventHandler.add(element, 'click', this.onCellClick, this);
             } else {
+                EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
                 EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
                 if (!this.parent.isAdaptive) {
                     EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);

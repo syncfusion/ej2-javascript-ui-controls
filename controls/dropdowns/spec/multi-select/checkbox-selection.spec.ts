@@ -26,6 +26,8 @@ let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon
 let datasource2: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
 { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'Python' }, { id: 'list5', text: 'Oracle' }];
 
+let datasource3: { [key: string]: Object }[] = [{ id: 'id1', text: 'java' }];
+
 let multiSelectData: multiSelectStyles = {
     container: "e-multi-select-wrapper",
     selectedListContainer: "e-chips-collection",
@@ -2561,10 +2563,10 @@ describe('MultiSelect', () => {
         });
 
         it(' default value changes ', () => {
-            mulObj.dispatchEvent(mulObj.componentWrapper, "mousemove");
+            mulObj.dispatchEvent(mulObj.componentWrapper, "mouseover");
             expect(mulObj.overAllClear.style.display === '').toBe(true);
             mulObj.showClearButton = false;
-            mulObj.dispatchEvent(mulObj.componentWrapper, "mousemove");
+            mulObj.dispatchEvent(mulObj.componentWrapper, "mouseover");
             expect(mulObj.overAllClear.style.display === 'none').toBe(true);
         });
     });
@@ -3438,5 +3440,102 @@ describe('EJ2-44211- The focus class maintained after move the focus to another 
             expect((<any>listObj2).overAllWrapper.classList.contains('e-input-focus')).toBe(false);
         done();
         }, 800);
+    });
+});
+describe('EJ2-54401- Select all checkbox is not displayed properly while selecting an item from the list ', () => {
+    let listObj: any;
+    let checkObj: any;
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        if (element) {
+            listObj.destroy();
+            element.remove();
+        }
+        checkObj = new CheckBoxSelection();
+        checkObj.destroy();
+    });
+    it('Initially load datasoure with number of items', (done) => {
+        listObj = new MultiSelect({
+            dataSource: datasource, showSelectAll: true, mode: 'CheckBox',
+            fields: { text: "text", value: "id" }
+        });
+        listObj.appendTo(element);
+        listObj.showPopup();
+        setTimeout(() => {
+            expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.innerText === "Select All").toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.lastElementChild.classList.contains('e-all-text')).toBe(true);
+            listObj.value = ["list1"];
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: block;');
+            listObj.showOverAllClear();
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: block;');
+            listObj.destroy();
+            done();
+        }, 450);
+    });
+    it('Initially load datasoure with only one item', (done) => {
+        listObj = new MultiSelect({
+            dataSource: datasource3, showSelectAll: true, mode: 'CheckBox',
+            fields: { text: "text", value: "id" }
+        });
+        listObj.appendTo(element);
+        listObj.showPopup();
+        setTimeout(() => {
+            expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: none;');
+            listObj.value = ["id1"];
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: none;');
+            listObj.showOverAllClear();
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: none;');
+            listObj.destroy();
+            done();
+        }, 450);
+    });
+    it('Dynamically load datasoure with number of items', (done) => {
+        listObj = new MultiSelect({
+            dataSource: [], showSelectAll: true, mode: 'CheckBox',
+            fields: { text: "text", value: "id" }
+        });
+        listObj.appendTo(element);
+        listObj.dataSource = datasource;
+        listObj.dataBind();
+        listObj.showPopup();
+        setTimeout(() => {
+            expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.innerText === "Select All").toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.lastElementChild.classList.contains('e-all-text')).toBe(true);
+            listObj.value = ["list1"];
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: block;');
+            listObj.showOverAllClear();
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: block;');
+            listObj.destroy();
+            done();
+        }, 450);
+    });
+    it('Dynamically load datasoure with only one item', (done) => {
+        listObj = new MultiSelect({
+            dataSource: [], showSelectAll: true, mode: 'CheckBox',
+            fields: { text: "text", value: "id" }
+        });
+        listObj.appendTo(element);
+        listObj.dataSource = datasource3;
+        listObj.dataBind();
+        listObj.showPopup();
+        setTimeout(() => {
+            expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: none;');
+            listObj.value = ["id1"];
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: none;');
+            listObj.showOverAllClear();
+            expect(listObj.checkBoxSelectionModule.checkAllParent.getAttribute('style')).toBe('display: none;');
+            listObj.destroy();
+            done();
+        }, 450);
     });
 });

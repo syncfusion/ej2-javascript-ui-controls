@@ -284,6 +284,10 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isAddSuccess;
     private isNotValueChange;
     private isRoot;
+    private prevItemData;
+    private isFieldChange;
+    private isFieldClose;
+    private isDestroy;
     /**
      * Triggers when the component is created.
      *
@@ -521,6 +525,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private changeValue;
     private filterValue;
     private changeValueSuccessCallBack;
+    private fieldClose;
     private changeField;
     private changeRule;
     private changeFilter;
@@ -741,6 +746,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private sqlParser;
     private parseSqlStrings;
     private checkLiteral;
+    private checkNumberLiteral;
     private getOperator;
     private getTypeFromColumn;
     private processParser;

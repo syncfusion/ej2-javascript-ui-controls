@@ -41,8 +41,8 @@ export class ToolbarStatus {
         const range: Range = nodeSelection.getRange(docElement);
         for (let index: number = 0; index < nodes.length; index++) {
             while (nodes[index].nodeType === 3 && range.startContainer.nodeType === 3 && nodes[index].parentNode &&
-                nodes[index].parentNode.lastElementChild && nodes[index].parentNode.lastElementChild.nodeName !== "BR" &&
-                (this.getImmediateBlockNode(nodes[index].parentNode as Node, targetNode) as HTMLElement).textContent.replace(/\u200B/g, '').length === 0 &&
+                nodes[index].parentNode.lastElementChild && nodes[index].parentNode.lastElementChild.nodeName !== 'BR' &&
+                (this.getImmediateBlockNode(nodes[index].parentNode as Node)).textContent.replace(/\u200B/g, '').length === 0 &&
                 range.startContainer.textContent.replace(/\u200B/g, '').length === 0 &&
                 nodeSelection.get(docElement).toString().replace(/\u200B/g, '').length === 0) {
                 nodes[index] = nodes[index].parentNode.lastElementChild.firstChild;
@@ -119,7 +119,7 @@ export class ToolbarStatus {
         return nodeCollection;
     }
 
-    private static getImmediateBlockNode(node: Node, editNode: Node): Node {
+    private static getImmediateBlockNode(node: Node): Node {
         do {
             node = node.parentNode;
         } while (node && CONSTANT.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0);

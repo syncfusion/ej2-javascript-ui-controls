@@ -1022,7 +1022,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (event.keyCode === 27 && this.closeOnEscape) {
             this.dlgClosedBy = DLG_ESCAPE_CLOSED;
-            this.hide(event);
+            // 'document.querySelector' is used to find the elements rendered based on body
+            if (!document.querySelector('.e-popup-open:not(.e-dialog)')) {
+                this.hide(event);
+            }
         }
         if ((event.keyCode === 13 && !event.ctrlKey && element.tagName.toLowerCase() !== 'textarea' &&
                 isTagName && !isNullOrUndefined(this.primaryButtonEle)) ||
@@ -1966,6 +1969,17 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.popupObj.refreshPosition();
     }
     /**
+     * Returns the current width and height of the Dialog
+     * 
+     * @returns {DialogDimension}
+     * @public
+     */
+     public getDimension(): DialogDimension {
+        let dialogWidth = this.element.offsetWidth;
+        let dialogHeight = this.element.offsetHeight;
+        return {width: dialogWidth, height: dialogHeight};
+    }
+    /**
      * Opens the dialog if it is in hidden state.
      * To open the dialog with full screen width, set the parameter to true.
      *
@@ -2422,6 +2436,11 @@ interface ResizeMouseEventArgs extends MouseEvent  {
     cancel?: boolean
 }
 
-interface ResizeTouchEventArgs extends MouseEvent  {
+interface ResizeTouchEventArgs extends TouchEvent  {
     cancel?: boolean
 }
+
+interface DialogDimension {
+    width: number;
+    height: number;
+} 

@@ -1,0 +1,113 @@
+@include export-module('gantt-tailwind-dark-icons') {
+  #{&}.e-gantt {
+    .e-add::before {
+      content: '\e78a';
+    }
+
+    .e-edit::before {
+      content: '\e7d2';
+    }
+
+    .e-delete::before {
+      content: '\e78d';
+    }
+
+    .e-cancel::before {
+      content: '\e771';
+    }
+
+    .e-save::before {
+      content: '\e704';
+    }
+
+    .e-update::before {
+      content: '\e704';
+    }
+
+    .e-search-icon::before {
+      content: '\e737';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e771';
+    }
+
+    .e-notes-info::before {
+      content: '\e7a6';
+    }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e75b';
+    }
+
+    .e-expandall::before {
+      content: '\e762';
+    }
+
+    .e-collapseall::before {
+      content: '\e750';
+    }
+
+    .e-prevtimespan::before {
+      content: '\e7a5';
+    }
+
+    .e-nexttimespan::before {
+      content: '\e7a8';
+    }
+
+    .e-zoomin::before {
+      content: '\e70a';
+    }
+
+    .e-zoomout::before {
+      content: '\e779';
+    }
+
+    .e-zoomtofit::before {
+      content: '\e808';
+    }
+
+    .e-csvexport::before {
+      content: '\e73d';
+    }
+
+    .e-excelexport::before {
+      content: '\e780';
+    }
+
+    .e-pdfexport::before {
+      content: '\e741';
+    }
+
+    .e-indent::before {
+      content: '\e7ac';
+    }
+
+    .e-outdent::before {
+      content: '\e735';
+    }
+
+    .e-add-above::before {
+      content: '\e7dd';
+    }
+
+    .e-add-below::before {
+      content: '\e757';
+    }
+  }
+
+  #{&}.e-gantt.e-device {
+    .e-backarrowspan::before,
+    .e-icon-dlg-close::before {
+      content: '\e7a5';
+      }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e781';
+      }
+  }
+}
+  

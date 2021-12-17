@@ -150,14 +150,14 @@ export class Highlight {
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
         }
         const border: BorderModel = {
-            color: this.highlightSettings.border.color,
-            width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale),
+            color: (targetEle.parentElement.id.indexOf('LineString') === -1) ? this.highlightSettings.border.color : (this.highlightSettings.border.color || this.highlightSettings.fill),
+            width: (targetEle.parentElement.id.indexOf('LineString') === -1) ? (this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)) : (this.highlightSettings.border.width / this.maps.scale),
             opacity: this.highlightSettings.border.opacity
         };
-        let eventArgs: ISelectionEventArgs = {
+        const eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
-            fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
-                ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
+            fill: (targetEle.parentElement.id.indexOf('LineString') === -1) ? (targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
+                ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none') : 'transparent',
             border: border,
             name: itemHighlight,
             target: targetEle.id,

@@ -101,6 +101,17 @@ describe('FileManager control Grid view', () => {
             expect(feObj.viewerObj.visible).toBe(true);
         });
 
+        it('Opening context menu in empty space area related test case', () => {
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let gridEle: any = feObj.detailsviewModule.element.querySelector(".e-gridcontent .e-content");
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            gridEle.dispatchEvent(evt);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Sort by');
+            expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
+        });
+
         it('non-image file context menu open process testing', (done) => {
             let li: Element = feObj.detailsviewModule.gridObj.getRowByIndex(0).getElementsByTagName('td')[2];
             let obj = (feObj.detailsviewModule.gridObj as any);

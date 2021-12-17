@@ -5,29 +5,62 @@
 /**
  * AccumulationChart Selection src file
  */
-import { extend, isNullOrUndefined  } from '@syncfusion/ej2-base';
+import { Browser, extend, isNullOrUndefined  } from '@syncfusion/ej2-base';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
-import { indexFinder } from '../../common/utils/helper';
+import { indexFinder, getElement } from '../../common/utils/helper';
+import { AccumulationSelectionMode, AccumulationHighlightMode } from '../model/enum';
 import { AccumulationChart } from '../accumulation';
 import { AccumulationSeries, pointByIndex, AccPoints } from '../model/acc-base';
 import { AccumulationSeriesModel } from '../model/acc-base-model';
 import { Indexes, Index } from '../../common/model/base';
 import { BaseSelection } from '../../common/user-interaction/selection';
 import { AccumulationTooltip } from './tooltip';
+import { IAccSelectionCompleteEventArgs } from '../model/pie-interface';
+import { selectionComplete } from '../../common/model/constants';
 
 /**
  * `AccumulationSelection` module handles the selection for accumulation chart.
  */
 export class AccumulationSelection extends BaseSelection {
-    private renderer: SvgRenderer | CanvasRenderer;
+    /** @private */
+    public renderer: SvgRenderer | CanvasRenderer;
     /** @private */
     public rectPoints: Rect;
+    /** @private */
     public selectedDataIndexes: Indexes[];
-    private series: AccumulationSeries[];
+    /** @private */
+    public highlightDataIndexes: Indexes[];
+    /** @private */
+    public series: AccumulationSeries[];
+    /** @private */
+    public accumulation: AccumulationChart;    
+    /** @private */
+    public currentMode: AccumulationSelectionMode | AccumulationHighlightMode;
+    /** @private */
+    public previousSelectedElement: Element[];
 
     constructor(accumulation: AccumulationChart) {
         super(accumulation);
+        this.accumulation = accumulation;
         this.renderer = accumulation.renderer;
+        this.addEventListener();
+    }
+    /**
+     * Binding events for selection module.
+     */
+    private addEventListener(): void {
+        if (this.accumulation.isDestroyed) { return; }
+        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        this.accumulation.on(Browser.touchMoveEvent, this.mouseMove, this);
+        this.accumulation.on('click', this.calculateSelectedElements, this);
+    }
+    /**
+     * UnBinding events for selection module.
+     */
+    private removeEventListener(): void {
+        if (this.accumulation.isDestroyed) { return; }
+        this.accumulation.off(Browser.touchMoveEvent, this.mouseMove);
+        this.accumulation.off('click', this.calculateSelectedElements);
     }
     /**
      * To initialize the private variables
@@ -48,12 +81,24 @@ export class AccumulationSelection extends BaseSelection {
         this.initPrivateVariables(accumulation);
         this.series = <AccumulationSeries[]>extend({}, accumulation.visibleSeries, null, true);
         this.seriesStyles();
+        this.currentMode = accumulation.selectionMode;
         this.selectDataIndex(this.concatIndexes(accumulation.selectedDataIndexes, this.selectedDataIndexes), accumulation);
     }
     /**
      * To get series selection style by series.
      */
     private generateStyle(series: AccumulationSeriesModel): string {
+        return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index);
+    }
+    /**
+     * To get series selection style while hovering legend
+     */
+     private generateLegendClickStyle(series: AccumulationSeriesModel, event ?: Event | PointerEvent): string {
+        if (event.type === 'mousemove') {
+            this.styleId = this.accumulation.element.id + '_ej2_chart_highlight';
+        } else if (event.type === 'click') {
+            this.styleId = this.accumulation.element.id + '_ej2_chart_selection';
+        }
         return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index);
     }
     /**
@@ -70,16 +115,72 @@ export class AccumulationSelection extends BaseSelection {
         return document.getElementById(elementId);
     }
     /**
+    * To find the selected element.
+     * @return {void}
+     * @private
+     */
+     public isAlreadySelected(event : Event | PointerEvent): boolean {
+        if (event.type === 'mousemove') {
+            this.currentMode = this.accumulation.highlightMode;
+            this.highlightDataIndexes = [];
+            this.styleId = this.accumulation.element.id + '_ej2_chart_highlight';
+        } else if (event.type === 'click') {
+            this.currentMode = this.accumulation.selectionMode;
+            this.styleId = this.accumulation.element.id + '_ej2_chart_selection';
+        }  
+        if (this.accumulation.highlightMode !== 'None' && this.accumulation.selectionMode === 'None') {
+            if (event.type === 'click') {
+                return false;
+            }
+        }
+        let targetElement: Element = <Element>event.target;
+        if ((this.accumulation.highlightMode !== 'None' && this.previousSelectedElement && this.previousSelectedElement[0])) {
+            let parentNodeId: string = (<Element>targetElement.parentNode).id; let isValidElement: boolean;
+            if (targetElement.parentNode) {
+                isValidElement = (parentNodeId.indexOf('SeriesGroup') > 0 ||
+                parentNodeId.indexOf('SymbolGroup') > 0) ? true : false;
+            }
+            for (let i: number = 0; i < this.previousSelectedElement.length; i++) {
+                if (this.previousSelectedElement[i].hasAttribute('class')) {
+                    if (this.previousSelectedElement[i].getAttribute('class').indexOf('highlight') > -1 && (isValidElement || event.type === 'click')) {
+                        this.previousSelectedElement[i].removeAttribute('class');
+                        this.addOrRemoveIndex(this.highlightDataIndexes, indexFinder((<HTMLElement>this.previousSelectedElement[i]).id));
+                    } else if (!isValidElement && this.previousSelectedElement[i].getAttribute('class').indexOf('highlight') > -1) {
+                        this.performSelection(indexFinder(this.previousSelectedElement[i].id), this.accumulation, this.previousSelectedElement[i]);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    /**
      * To calculate selected elements on mouse click or touch
      *
      * @private
      */
     public calculateSelectedElements(accumulation: AccumulationChart, event: Event): void {
-        if ((<HTMLElement>event.target).id.indexOf(accumulation.element.id + '_') === -1) {
+        if (isNullOrUndefined(event.target)) {
             return;
         }
-        if ((<HTMLElement>event.target).id.indexOf('_Series_') > -1 || (<HTMLElement>event.target).id.indexOf('_datalabel_') > -1) {
-            this.performSelection(indexFinder((<HTMLElement>event.target).id), accumulation, <Element>event.target);
+        let targetEle: HTMLElement = <HTMLElement>event.target;        
+        if ((accumulation.highlightMode === 'None' && accumulation.selectionMode === 'None') ||
+            targetEle.id.indexOf(accumulation.element.id + '_') === -1) {
+            return;
+        }
+        if (event.type === 'mousemove') {
+            if (!isNullOrUndefined(targetEle.parentNode) && (
+                <Element>targetEle.parentNode).hasAttribute('class') &&
+                ((<Element>targetEle.parentNode).getAttribute('class').indexOf('highlight') > 0 ||
+                    (<Element>targetEle.parentNode).getAttribute('class').indexOf('selection') > 0)) {
+                return;
+            }
+        } if (targetEle.getAttribute('id').indexOf('_connector_') > -1) {
+            return;
+        } else {
+            this.isAlreadySelected(event);
+            if (targetEle.id.indexOf('_Series_') > -1 || targetEle.id.indexOf('_datalabel_') > -1) {
+                this.performSelection(indexFinder(targetEle.id), accumulation, <Element>event.target);
+            }
         }
     }
     /**
@@ -89,26 +190,58 @@ export class AccumulationSelection extends BaseSelection {
         element = element.id.indexOf('datalabel') > -1 ?
         <Element>accumulation.getSeriesElement().childNodes[index.series].childNodes[index.point]
             : element;
-        switch (accumulation.selectionMode) {
+        switch (this.currentMode) {
         case 'Point':
             if (!isNaN(index.point)) {
                 this.selection(accumulation, index, [element]);
+                this.selectionComplete(accumulation, <AccumulationSeries>accumulation.series[0]);
                 this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
             }
             break;
         }
     }
+
+    /**
+     *  Method to get the selected data index
+     *
+     * @private
+     */
+    private selectionComplete(accumulation: AccumulationChart, series: AccumulationSeries): void {
+        let pointIndex: number;
+        const selectedPointValues: { x?: string | number | Date, y?: number, seriesIndex?: number, pointIndex?: number }[] = [];
+        for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
+            pointIndex = this.selectedDataIndexes[i].point;
+            if (!isNaN(pointIndex)) {
+                selectedPointValues.push({
+                    x: series.dataSource[pointIndex][series.xName], y: series.points[pointIndex].y,
+                    seriesIndex: this.selectedDataIndexes[i].series, pointIndex: pointIndex
+                });
+            }
+        }
+        const args: IAccSelectionCompleteEventArgs = {
+            name: selectionComplete,
+            selectedDataValues: selectedPointValues,
+            cancel: false
+        };
+        accumulation.trigger(selectionComplete, args);
+    }
+
     /**
      * To select the element by index. Adding or removing selection style class name.
      */
     private selection(accumulation: AccumulationChart, index: Index, selectedElements: Element[]): void {
-        if (!accumulation.isMultiSelect) {
+        if (!accumulation.isMultiSelect && this.styleId.indexOf('highlight') === -1 &&
+            accumulation.selectionMode !== 'None') {
             this.removeMultiSelectEelments(accumulation, this.selectedDataIndexes, index, accumulation.series);
         }
         const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
         if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
             this.removeStyles(selectedElements, index);
-            this.addOrRemoveIndex(this.selectedDataIndexes, index);
+            if (this.styleId.indexOf('highlight') > 0 && accumulation.highlightMode !== 'None') {
+                this.addOrRemoveIndex(this.highlightDataIndexes, index);
+            } else {
+                this.addOrRemoveIndex(this.selectedDataIndexes, index);
+            }
             if (accumulation.enableBorderOnMouseMove) {
                 const borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
                 if (!isNullOrUndefined(borderElement)) {
@@ -116,14 +249,22 @@ export class AccumulationSelection extends BaseSelection {
                 }
             }
         } else {
-            this.applyStyles(selectedElements, index);
+            this.previousSelectedElement = accumulation.highlightMode !== 'None' ? selectedElements : [];
+            if (className.indexOf('selection') < 0) {
+                this.applyStyles(selectedElements, index);
+            }
             if (accumulation.enableBorderOnMouseMove) {
                 const borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
                 if (!isNullOrUndefined(borderElement)) {
+                    this.removeSvgClass(borderElement, borderElement.getAttribute('class'));
                     this.addSvgClass(borderElement, selectedElements[0].getAttribute('class'));
                 }
             }
-            this.addOrRemoveIndex(this.selectedDataIndexes, index, true);
+            if (this.styleId.indexOf('highlight') > 0 && accumulation.highlightMode !== 'None') {
+                this.addOrRemoveIndex(this.highlightDataIndexes, index, true);
+            } else {
+                this.addOrRemoveIndex(this.selectedDataIndexes, index, true);
+            }
         }
     }
     /**
@@ -132,8 +273,14 @@ export class AccumulationSelection extends BaseSelection {
      * @private
      */
     public redrawSelection(accumulation: AccumulationChart): void {
-        const selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.selectedDataIndexes, null, true);
-        this.removeSelectedElements(accumulation, this.selectedDataIndexes);
+        let selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.selectedDataIndexes, null, true);
+        let highlightDataIndexes: Indexes[] = <Indexes[]>extend([], this.highlightDataIndexes, null, true);
+        if (this.styleId.indexOf('highlight') > 0 && highlightDataIndexes.length > 0 ) {
+            this.removeSelectedElements(accumulation, this.highlightDataIndexes);
+            selectedDataIndexes = highlightDataIndexes;
+        } else {
+            this.removeSelectedElements(accumulation, this.selectedDataIndexes);
+        }
         this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
         this.selectDataIndex(selectedDataIndexes, accumulation);
     }
@@ -150,10 +297,26 @@ export class AccumulationSelection extends BaseSelection {
      *
      * @private
      */
-    public legendSelection(accumulation: AccumulationChart, series: number, pointIndex: number): void {
-        const seriesElements: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
-        this.selection(accumulation, new Index(series, pointIndex), [seriesElements]);
-        this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
+    public legendSelection(accumulation: AccumulationChart, series: number, pointIndex: number, event: Event): void {
+        let targetEle: Element = <Element>event.target;
+        if (event.type === 'mousemove') {
+            if ((<Element>event.target).id.indexOf('text') > 1) {
+                targetEle = getElement((<Element>event.target).id.replace('text', 'shape'));
+            }
+            if (targetEle.hasAttribute('class') && (targetEle.getAttribute('class').indexOf('highlight') > -1 ||
+                targetEle.getAttribute('class').indexOf('selection') > -1)) {
+                return;
+            }
+            this.currentMode = this.accumulation.highlightMode;
+        }
+        let isPreSelected: boolean = this.isAlreadySelected(event);
+        if (isPreSelected) {
+            let element: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
+            let seriesStyle: string = this.generateLegendClickStyle(accumulation.visibleSeries[series], event);
+            let seriesElements: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
+            this.selection(accumulation, new Index(series, pointIndex), [seriesElements]);
+            this.blurEffect(accumulation.element.id, accumulation.visibleSeries);            
+        }
     }
     /**
      * To select the element by selected data indexes.
@@ -186,7 +349,8 @@ export class AccumulationSelection extends BaseSelection {
      * To apply the opacity effect for accumulation chart series elements.
      */
     private blurEffect(pieId: string, visibleSeries: AccumulationSeries[]): void {
-        const visibility: boolean = this.checkPointVisibility(this.selectedDataIndexes); // legend click scenario
+        const visibility: boolean = (this.checkVisibility(this.highlightDataIndexes) ||
+            this.checkVisibility(this.selectedDataIndexes)); // legend click scenario
         for (const series of visibleSeries) {
             if (series.visible) {
                 this.checkSelectionElements(document.getElementById(pieId + '_SeriesCollection'),
@@ -202,13 +366,28 @@ export class AccumulationSelection extends BaseSelection {
         let legendShape: Element;
         let elementClass: string;
         let parentClass: string;
+        let selectElement: Element = element;
         for (let i: number = 0; i < children.length; i++) {
             elementClass = (children[i] as HTMLElement).getAttribute('class') || '';
             parentClass = (<Element>children[i].parentNode).getAttribute('class') || '';
+            if (this.accumulation.selectionMode !== 'None' && this.accumulation.highlightMode !== 'None') {
+                className = elementClass.indexOf('selection') > 0 ||
+                    elementClass.indexOf('highlight') > 0 ? elementClass : className;
+                className = (parentClass.indexOf('selection') > 0 ||
+                    parentClass.indexOf('highlight') > 0) ? parentClass : className;
+            }
             if (elementClass.indexOf(className) === -1 && parentClass.indexOf(className) === -1 && visibility) {
                 this.addSvgClass(children[i] as HTMLElement, this.unselected);
             } else {
                 this.removeSvgClass(children[i] as HTMLElement, this.unselected);
+            }
+            if (elementClass.indexOf(className) === -1 &&
+                parentClass.indexOf(className) === -1 && visibility) {
+                this.addSvgClass(children[i] as HTMLElement, this.unselected);
+            } else {
+                selectElement = children[i] as HTMLElement;
+                this.removeSvgClass(children[i] as HTMLElement, this.unselected);
+                this.removeSvgClass(<Element>children[i].parentNode, this.unselected);
             }
             if ((this.control as AccumulationChart).accumulationLegendModule && this.control.legendSettings.visible) {
                 legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + i);
@@ -232,7 +411,7 @@ export class AccumulationSelection extends BaseSelection {
             if (element) {
                 if ((this.control as AccumulationChart).accumulationLegendModule && this.control.legendSettings.visible) {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
-                    this.removeSvgClass(legendShape, this.unselected);
+                    this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
                     this.addSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
                 this.removeSvgClass(<Element>element.parentNode, this.unselected);
@@ -289,6 +468,26 @@ export class AccumulationSelection extends BaseSelection {
     private checkEquals(first: Index, second: Index): boolean {
         return ((first.point === second.point) && (first.series === second.series));
     }
+    /** @private */
+    public mouseMove(event: PointerEvent | TouchEvent): void{
+        let accumulation: AccumulationChart = this.accumulation;
+        let targetElement: Element = <Element>event.target;
+        if (accumulation.highlightMode !== 'None') {
+            if (!isNullOrUndefined(targetElement)) {
+                if ((<Element>event.target).id.indexOf('text') > 1) {
+                    targetElement = getElement((<Element>event.target).id.replace('text', 'shape'));
+                }
+                if ((targetElement).hasAttribute('class') && (targetElement).getAttribute('class').indexOf('highlight') > -1) {
+                    return;
+                }
+                this.calculateSelectedElements(accumulation, event);
+                return;
+            }
+        }
+        if (accumulation.selectionMode === 'None') {
+            return;
+        }
+    }
     /**
      * To check selected points are visibility
      */
@@ -316,5 +515,6 @@ export class AccumulationSelection extends BaseSelection {
      */
     public destroy(): void {
         // Destroy method performed here
+        this.removeEventListener();
     }
 }

@@ -1,8 +1,8 @@
 import { Spreadsheet, ICellRenderer, clearViewer, beginAction, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook, clearFormulaDependentCells, activeCellChanged} from '../../workbook/index';
-import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook, clearFormulaDependentCells} from '../../workbook/index';
+import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule, activeCellChanged } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
@@ -66,10 +66,6 @@ export class CellFormat {
                 //     Object.assign(cell.style, args.style);
                 // }
                 Object.assign(cell.style, args.style);
-                if (cell.firstElementChild && cell.firstElementChild.classList.contains('e-wrap-content')){
-                    const wrapEle: HTMLElement = cell.firstElementChild as HTMLElement;
-                    Object.assign(wrapEle.style, args.style);
-                }
                 const CellElem: CellModel = getCell(args.rowIdx, args.colIdx, sheet); // Need to remove after adding span support to merge
                 if (CellElem && (CellElem.rowSpan || CellElem.colSpan) && cell.offsetHeight > 0) {
                     const height: number = getTextHeight(this.parent as Workbook, CellElem.style || this.parent.cellStyle);

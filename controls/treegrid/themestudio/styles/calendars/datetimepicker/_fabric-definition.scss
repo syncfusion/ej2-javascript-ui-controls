@@ -1,0 +1,48 @@
+$datetime-default-text-indent: 10px !default;
+$datetime-list-bigger-line-height: 48px !default;
+$datetime-list-normal-line-height: 36px !default;
+$datetime-list-normal-font-size: 14px !default;
+$datetime-list-bigger-font-size: 14px !default;
+$datetime-list-normal-text-indent: $datetime-default-text-indent !default;
+$datetime-list-bigger-text-indent: 12px !default;
+$datetime-list-font-weight: 400 !default;
+$datetime-popup-border-radius: 0 !default;
+$datetime-popup-shadow: 0 0 5px 0 rgba($neutral-black, .4) !default;
+$datetime-list-default-font-color: $theme-light-font !default;
+$datetime-list-border-color: 1px solid $neutral-light !default;
+$datetime-list-bg-color: $content-bg-color !default;
+$datetime-list-active-bg-color: $theme-primary !default;
+$datetime-list-active-font-color: $theme-primary-font !default;
+$datetime-list-active-icon-color: $neutral-light-font !default;
+$datetime-list-hover-bg-color:  $neutral-light !default;
+$datetime-list-hover-font-color: $neutral-light-font !default;
+$datetime-list-popup-icon-active-color: $theme-primary-font !default;
+$datetime-list-active-hover-bg-color: $theme-primary !default;
+$datetime-list-active-hover-font-color: $theme-primary-font !default;
+$datetime-list-normal-padding: 0 !default;
+$datetime-list-bigger-padding: 8px !default;
+$datetime-time-font-icon: '\e97f' !default;
+$datetime-icon-normal-font-size: 16px !default;
+$datetime-icon-bigger-font-size: 20px !default;
+$datetime-date-icon-margin: 0 !default;
+$datetime-time-icon-margin: 0 !default;
+$datetime-time-bigger-icon-margin: 0 !default;
+$datetime-time-rtl-icon-margin: 0 !default;
+$datetime-time-rtl-bigger-icon-margin: 0 !default;
+$datetime-time-icon-border: 0 !default;
+$datetime-time-icon-border-style: none !default;
+$datetime-list-hover-border-color: none !default;
+$datetime-list-default-border-style: none !default;
+$datetime-default-overlay: rgba($neutral-black, .6) !default;
+//mouse small
+$datetime-list-small-line-height: 26px !default;
+$datetime-list-small-text-indent: 10px !default;
+$datetime-list-small-font-size: 13px !default;
+// mouse small icon
+$datetime-icon-small-font-size: 14px !default;
+//touch small
+$datetime-list-bigger-small-line-height: 40px !default;
+$datetime-list-bigger-small-text-indent: 16px !default;
+$datetime-list-bigger-small-font-size: 14px !default;
+// touch small icon
+$datetime-icon-bigger-small-font-size: 18px !default;

@@ -41,7 +41,6 @@ export class Font extends ChildProperty<Font> {
     /**
      * Sets and gets the opacity of the text.
      *
-     * @blazorDefaultValue 1
      */
     @Property(1)
     public opacity: number;
@@ -174,7 +173,6 @@ export class Annotation extends ChildProperty<Annotation> {
      * Sets and gets the value of axis in linear gauge.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     @Property(null)
     public axisValue: number;
@@ -233,7 +231,6 @@ export class Container extends ChildProperty<Container> {
     /**
      * Sets and gets the value to place the container in the linear gauge component.
      *
-     * @blazorDefaultValue 0
      */
     @Property(0)
     public offset: number;

@@ -9,6 +9,7 @@ import { ConditionalFormatSettingsModel } from '../../pivotview/model/datasource
 import { Condition } from '../../base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
+import { PivotActionInfo } from '../base/interface';
 
 /**
  * Module to render Conditional Formatting Dialog
@@ -75,15 +76,17 @@ export class ConditionalFormatting {
             },
             {
                 click: this.applyButtonClick.bind(this),
+                isFlat: true,
                 buttonModel: {
-                    cssClass: cls.FLAT_CLASS + ' ' + cls.FORMAT_APPLY_BUTTON,
+                    isPrimary: true, cssClass: cls.FORMAT_APPLY_BUTTON,
                     content: this.parent.localeObj.getConstant('apply')
                 }
             },
             {
                 click: this.cancelButtonClick.bind(this),
+                isFlat: true,
                 buttonModel: {
-                    cssClass: cls.FLAT_CLASS + ' ' + cls.FORMAT_CANCEL_BUTTON,
+                    cssClass: cls.FORMAT_CANCEL_BUTTON,
                     content: this.parent.localeObj.getConstant('cancel')
                 }
             }
@@ -138,6 +141,10 @@ export class ConditionalFormatting {
     private applyButtonClick(): void {
         if (this.refreshConditionValues()) {
             this.parent.setProperties({ dataSourceSettings: { conditionalFormatSettings: this.newFormat } }, true);
+            let actionInfo: PivotActionInfo = {
+                conditionalFormattingInfo: this.parent.dataSourceSettings.conditionalFormatSettings as IConditionalFormatSettings[]
+            }
+            this.parent.actionObj.actionInfo = actionInfo;
             this.parent.renderPivotGrid();
             this.dialog.close();
         }

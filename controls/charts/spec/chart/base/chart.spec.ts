@@ -13,7 +13,7 @@ import { seriesData1 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { wheel } from '../../chart/user-interaction/zooming.spec';
-import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IMouseEventArgs } from '../../../src/chart/model/chart-interface';
 import { profile , inMB, getMemoryProfile} from '../../common.spec';
 import { Legend, Category } from '../../../src/index';
 import { categoryData } from './data.spec';
@@ -537,7 +537,8 @@ describe('Chart Control', () => {
         let chart: Chart;
         let ele: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
-        let element: Element;
+        let element: Element;        
+        let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             ele = createElement('div', { id: 'seriesData' });
             document.body.appendChild(ele);
@@ -631,6 +632,133 @@ describe('Chart Control', () => {
             chart.loaded = loaded;
             chart.theme = 'BootstrapDark';
             chart.refresh();
+        });
+        it('checking chart double click event', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById(args.chart.element.id);
+                trigger.doubleClickEvent(element);
+            };
+            chart.chartDoubleClick = (args: IMouseEventArgs) =>{
+                expect(args.name).toEqual('chartDoubleClick');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
+
+    describe('Fixed chart area width', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'seriesData' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal' },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [{ dataSource: categoryData, xName: 'x', yName: 'y', name: 'Gold', fill: 'red', animation: { enable: false }, type: 'Column' }],
+                    height: '400', width: '900',
+                    chartArea: {
+                        width: '600'
+                    },
+                    legendSettings: { visible: true }
+                });
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('checking default with pixel width for chart area', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesData_ChartAreaBorder');
+                expect(element.getAttribute('width') === '600').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo(ele);
+        });
+        it('checking with legend right position', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesData_ChartAreaBorder');
+                expect(element.getAttribute('width') === '600').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.position = "Right";
+            chart.primaryYAxis.opposedPosition = false;
+            chart.dataBind();
+        });
+    });
+
+    describe('Check the RTL behaviour for title', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal' },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [{ dataSource: categoryData, xName: 'x', yName: 'y', fill: 'red', animation: { enable: false } }],
+                    height: '400px', width: '900px',
+                    title: 'Syncfusion Chart',
+                    titleStyle: {
+                        textAlignment : 'Near'                    
+                    },
+                    subTitle: 'Since 2012',
+                    subTitleStyle: {
+                        textAlignment : 'Far'
+                    }
+                });
+            
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('Checking the title with out RTL', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor') == 'start').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#container');
+        });
+        it('Checking the SubTitle with out RTL', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartSubTitle');
+                expect(element.getAttribute('text-anchor') == 'end').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#container');
+        });
+        it('Checking the title with RTL', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor') == 'end').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableRtl = true;
+            chart.appendTo('#container');
+        });
+        it('Checking the SubTitle with RTL', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartSubTitle');
+                expect(element.getAttribute('text-anchor') == 'start').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#container');
         });
     });
 });

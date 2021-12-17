@@ -1,0 +1,27 @@
+@include export-module('multiselect-tailwind-icons') {
+  .e-multiselect.e-input-group .e-ddl-icon::before {
+    content: '\e732';
+    font-family: 'e-icons';
+  }
+
+  .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    content: '\e771';
+    cursor: pointer;
+    left: $ddl-chip-close-left;
+    position: relative;
+    top: $ddl-chip-close-top;
+  }
+
+  .e-multi-select-wrapper .e-close-hooker::before {
+    content: '\e771';
+    cursor: pointer;
+    left: $ddl-overall-close-left;
+    position: relative;
+    top: $ddl-overall-close-top;
+  }
+
+  .e-multiselect.e-input-group .e-ddl-disable-icon::before {
+    content: '';
+  }
+}
+  

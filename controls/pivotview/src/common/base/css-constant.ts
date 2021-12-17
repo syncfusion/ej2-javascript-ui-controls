@@ -671,3 +671,5 @@ export const PIVOTCHART_TYPE_DIALOG: string = 'e-pivotchart-type-dialog';
 export const FORMAT_FONT_COLOR_PICKER: string = 'e-format-font-color-picker';
 /** @hidden */
 export const GROUP_PIVOT_ROW: string = 'e-group-pivot-rows';
+/** @hidden */
+export const TOOLBAR_MENU: string = 'e-pivot-toolbar-menu';

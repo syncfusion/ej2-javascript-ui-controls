@@ -1,0 +1,17 @@
+@include export-module('input-bootstrap4-icons') {
+  .e-float-input,
+  .e-float-input.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e745';
+      font-family: 'e-icons';
+    }
+  }
+
+  .e-input-group,
+  .e-input-group.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e745';
+      font-family: 'e-icons';
+    }
+  }
+}

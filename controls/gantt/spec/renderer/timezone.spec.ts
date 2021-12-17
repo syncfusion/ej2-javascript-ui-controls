@@ -61,7 +61,7 @@ describe('Gantt-Timezone', () => {
             let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
             textObj.value = '5 hours';
             textObj.dataBind();
-            let saveRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             ganttObj.actionComplete = (args: IActionBeginEventArgs): void => {
                 if (args.requestType === 'save') {

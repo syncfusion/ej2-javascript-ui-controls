@@ -1,4 +1,4 @@
-import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend } from '@syncfusion/ej2-base';
+import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
 import { IDropDownItemModel } from './../base/interface';
@@ -156,7 +156,8 @@ export class Link {
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             const isPopupOpen: boolean = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&
-            ((e.args as MouseEvent).target as HTMLElement).nodeName !== 'IMG') {
+            ((e.args as MouseEvent).target as HTMLElement).nodeName !== 'IMG' &&
+            !isNOU(closest(this.parent.getRange().startContainer.parentElement, 'A')) && !isNOU(closest(this.parent.getRange().endContainer.parentElement, 'A'))) {
                 if (isPopupOpen) {
                     return;
                 }
@@ -196,7 +197,7 @@ export class Link {
             const selectNodeEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             const selectParentEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             const eventArgs: NotifyArgs = {
-                args: event ? event.args : { 
+                args: event ? event.args : {
                     item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel,
                     originalEvent: undefined
                 },
@@ -416,7 +417,8 @@ export class Link {
         }
         (this as NotifyArgs).selfLink.parent.formatter.process(
             (this as NotifyArgs).selfLink.parent, argsValue,
-            (!isNullOrUndefined((this as NotifyArgs).args as ClickEventArgs) && ((this as NotifyArgs).args as ClickEventArgs).originalEvent), value);
+            (!isNullOrUndefined((this as NotifyArgs).args as ClickEventArgs) &&
+            ((this as NotifyArgs).args as ClickEventArgs).originalEvent), value);
         ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }
     private isUrl(url: string): boolean {

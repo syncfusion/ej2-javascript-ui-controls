@@ -1,0 +1,7 @@
+@include export-module('signature-theme') {
+  .e-signature {
+    background-color: $signature-background-color;
+    border: $signature-border;
+    border-color: $signature-border-color;
+  }
+}

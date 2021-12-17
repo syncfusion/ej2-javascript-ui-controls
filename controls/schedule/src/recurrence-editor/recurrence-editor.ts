@@ -20,6 +20,7 @@ const INTERVALCLASS: string = 'e-interval';
 const DAYWRAPPER: string = 'e-days';
 const WEEKWRAPPER: string = 'e-non-week';
 const WEEKPOSITION: string = 'e-week-position';
+const DAYPOSITION: string = 'e-day-position';
 const YEAREXPANDERWRAPPER: string = 'e-year-expander';
 const YEAREXPANDERELEMENT: string = 'e-year-expander-element';
 const MONETHEXPANDERWRAPPER: string = 'e-month-expander';
@@ -474,7 +475,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         });
         this.endType.appendTo(<HTMLElement>this.element.querySelector('.' + ENDONELEMENT));
 
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const renderDropDownList: Function = (dropDownData: [{ [key: string]: string | number }]) => {
             return new DropDownList({
                 dataSource: dropDownData,
@@ -835,7 +835,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             '<td><div class="' + INPUTWARAPPER + ' ' + WEEKPOSITION + '" >' +
             '<input type="text" tabindex="0" class="' + MONTHPOS + '"title="' + this.localeObj.getConstant('monthPosition') + '" />' +
             '</div></td>' +
-            '<td><div class="' + INPUTWARAPPER + '" style="min-width: 120px;">' +
+            '<td><div class="' + INPUTWARAPPER + ' ' + DAYPOSITION + '">' +
             '<input type="text" tabindex="0" class="' + MONTHWEEK + '"title="' + this.localeObj.getConstant('monthWeek') + '" />' +
             '</div></td></tr></table>' +
             '</div></div>' +

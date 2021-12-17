@@ -6,6 +6,7 @@ import { ILoadedEventArgs, ILoadEventArgs } from '../../src/linear-gauge/model/i
 import { LinearGauge } from '../../src/linear-gauge/linear-gauge';
 import { Annotations } from '../../src/linear-gauge/annotations/annotations';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { Pointer } from '../../src';
 LinearGauge.Inject(Annotations);
 
 describe('Linear gauge control', () => {
@@ -393,6 +394,52 @@ describe('Linear gauge control', () => {
                 expect(svg != null).toBe(true);
             };
             gauge.setPointerValue(0, 0, 30);
+        });
+
+        it('checking with setPointerValue Method in horizontal orientation with value greater than axis maximum', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg: HTMLElement = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                gauge.setPointerValue(0, 0, 60);
+                let pointer:Pointer = <Pointer>gauge.axes[0].pointers[0];
+                expect(pointer.currentValue == 50).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 50;
+        });
+
+        it('checking with setPointerValue Method in horizontal orientation with value less than axis minimum', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg: HTMLElement = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                gauge.setPointerValue(0, 0, -20);
+                let pointer:Pointer = <Pointer>gauge.axes[0].pointers[0];
+                expect(pointer.currentValue == 0).toBe(true);
+            };
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 50;
+        });
+
+        it('checking with setPointerValue Method in vertical orientation with value greater than axis maximum', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg: HTMLElement = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                gauge.setPointerValue(0, 0, 60);
+                let pointer:Pointer = <Pointer>gauge.axes[0].pointers[0];
+                expect(pointer.currentValue == 50).toBe(true);
+            };
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 50;
+            gauge.orientation = 'Vertical';
+        });
+
+        it('checking with setPointerValue Method in vertical orientation with value less than axis minimum', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svg: HTMLElement = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                gauge.setPointerValue(0, 0, -20);
+                let pointer:Pointer = <Pointer>gauge.axes[0].pointers[0];
+                expect(pointer.currentValue == 0).toBe(true);
+            };
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 50;
         });
     });
     describe('Checking onproperty changed method ', () => {

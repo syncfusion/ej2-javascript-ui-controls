@@ -28,6 +28,7 @@ export class Tooltip extends BaseTooltip {
      */
     constructor(chart: Chart) {
         super(chart);
+        this.commonXvalues = [];
         this.addEventListener();
     }
 
@@ -179,9 +180,9 @@ export class Tooltip extends BaseTooltip {
 
     private triggerTooltipRender(point: PointData, isFirst: boolean, textCollection: string,
                                  headerText: string): void {
-        let template: string;
+        let tooltipTemplate: string;
         const argsData: ITooltipRenderEventArgs = {
-            cancel: false, name: tooltipRender, text: textCollection, headerText : headerText, template : template,
+            cancel: false, name: tooltipRender, text: textCollection, headerText : headerText, template : tooltipTemplate,
             series: this.chart.isBlazor ? {} as Series : point.series, textStyle: this.textStyle,  point: point.point,
             data : { pointX: point.point.x , pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
                 pointIndex: point.point.index, pointText: point.point.text  }
@@ -200,7 +201,7 @@ export class Tooltip extends BaseTooltip {
                     point.series.clipRect, point.point, this.findShapes(),
                     this.findMarkerHeight(<PointData>this.currentPoints[0]),
                     this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point),
-                    this.chart.tooltip.template ? argsData.template : ''
+                    this.template ? argsData.template : ''
                 );
             } else {
                 this.removeHighlight();
@@ -244,7 +245,7 @@ export class Tooltip extends BaseTooltip {
         case 'Waterfall':
             return this.getWaterfallRegion(data, location);
         case 'RangeArea':
-        case 'SplineRangeArea':   
+        case 'SplineRangeArea':
             return this.getRangeArea(data, location);
         default:
             return location;
@@ -279,7 +280,7 @@ export class Tooltip extends BaseTooltip {
     }
 
     private getTemplateText(data : PointData) : Points {
-        if (this.chart.tooltip.template) {
+        if (this.template) {
             const point: Points = extend({}, data.point) as Points;
             point.x = this.formatPointValue(data.point, data.series.xAxis, 'x', true, false);
             if ((data.series.seriesType === 'XY')) {
@@ -377,8 +378,8 @@ export class Tooltip extends BaseTooltip {
                                this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,  null,
                                this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
                                chart.chartAxisLayoutPanel.seriesClipRect, extraPoints,
-                               this.chart.tooltip.template ? this.getTemplateText(data) : null,
-                               this.chart.tooltip.template ? argument.template : '');
+                               this.template ? this.getTemplateText(data) : null,
+                               this.template ? argument.template : '');
         } else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
@@ -434,7 +435,7 @@ export class Tooltip extends BaseTooltip {
         sharedTooltipSuccess.bind(this, point, extraPoints);
         this.chart.trigger(tooltipRender, argsData, sharedTooltipSuccess);
         if (argsData.template) {
-            this.chart.tooltip.template = argsData.template;
+            this.template = argsData.template;
         }
     }
 

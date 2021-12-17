@@ -79,8 +79,9 @@ export class MultiColoredSeries extends LineBase {
             for (let i : number = 0; i < segments.length ; i++) {
                 segment = segments[i];
                 value = isXSegment ? currentPoint.xValue : currentPoint.yValue;
-                if (value <= this.getAxisValue(segment.value, isXSegment ? series.xAxis : series.yAxis, series.chart) || !segment.value) {
-                    currentPoint.interior =  segment.color;
+                if (value <= this.getAxisValue(segment.value, isXSegment ? series.xAxis : series.yAxis, series.chart) ||
+                    (!segment.value && segment.value !== 0)) {
+                    currentPoint.interior = segment.color;
                     break;
                 }
             }

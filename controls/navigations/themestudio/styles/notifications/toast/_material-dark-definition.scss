@@ -1,0 +1,116 @@
+//Mouse Mode
+$toast-icon-nrml-height: 24px !default;
+$toast-icon-nrml-width: 24px !default;
+$toast-icon-nrml-size: 18px !default;
+$toast-icon-nrml-right-margin: 14px !default;
+$toast-close-icon-nrml-height: 24px !default;
+$toast-close-icon-nrml-width: 24px !default;
+$toast-close-icon-nrml-size: 14px !default;
+$toast-position-nrml-distance: 10px !default;
+$multitoast-nrml-gap-distance: 10px !default;
+$toast-nrml-min-height: 48px !default;
+$toast-nrml-padding: 14px !default;
+$toast-action-btn-nrml-padding: 10px 0 0 0 !default;
+$toast-action-btn-nrml-margin: 10px !default;
+$toast-progressbar-nrml-height: 4px !default;
+$toast-content-nrml-padding: 14px 0 10px 0 !default;
+$toast-nrml-border-radious: 2px !default;
+$toast-font-nrml-size: 14px !default;
+$toast-title-font-nrml-size: 15px !default;
+
+//Touch Mode
+$toast-icon-bgr-height: 24px !default;
+$toast-icon-bgr-width: 24px !default;
+$toast-icon-bgr-size: 18px !default;
+$toast-icon-bgr-right-margin: 14px !default;
+$toast-close-icon-bgr-height: 24px !default;
+$toast-close-icon-bgr-width: 24px !default;
+$toast-close-icon-bgr-size: 14px !default;
+$toast-position-bgr-distance: 10px !default;
+$multitoast-bgr-gap-distance: 10px !default;
+$toast-bgr-min-height: 48px !default;
+$toast-bgr-padding: 14px !default;
+$toast-action-btn-bgr-padding: 10px 0 0 0 !default;
+$toast-action-btn-bgr-margin: 10px !default;
+$toast-progressbar-bgr-height: 4px !default;
+$toast-content-bgr-padding: 14px 0 10px 0 !default;
+$toast-bgr-border-radious: 2px !default;
+$toast-font-bgr-size: 14px !default;
+
+$toast-title-font-weight: bold !default;
+
+//theme variables
+
+$toast-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+$toast-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+$toast-progress-color: $accent !default;
+$toast-bg-color: $grey-800 !default;
+$toast-hover-bg-color: #3d3d3d !default;
+$toast-active-bg-color: $grey-800 !default;
+$toast-font-color: $grey-dark-font !default;
+$toast-icon-color: $grey-dark-font !default;
+$toast-close-icon-color: $grey-dark-font !default;
+$toast-title-color: $grey-dark-font !default;
+$toast-content-color: $grey-dark-font !default;
+
+// Flat Button Customization
+
+$toast-btn-flat-color: lighten($accent, 15%) !default;
+$toast-btn-flat-bgcolor: transparent !default;
+$toast-btn-flat-border-color: transparent !default;
+$toast-btn-flat-box-shadow: none !default;
+$toast-btn-flat-hover-color: $toast-btn-flat-color !default;
+$toast-btn-flat-hover-bgcolor: transparent !default;
+$toast-btn-flat-focus-color: $toast-btn-flat-color !default;
+$toast-btn-flat-focus-bgcolor: transparent !default;
+$toast-btn-flat-active-color: $toast-btn-flat-color !default;
+$toast-btn-flat-active-bgcolor: transparent !default;
+
+
+// Toast Types theme definitions
+
+$toast-success-bg-color: $success-bg !default;
+$toast-success-color: $message-font !default;
+$toast-success-title-color: $message-font !default;
+$toast-success-icon-color: $message-font !default;
+$toast-success-content-color: $message-font !default;
+$toast-success-hover-bg-color: #49a84d !default;
+$toast-success-hover-color: $message-font !default;
+$toast-success-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+
+
+$toast-info-bg-color: $info-bg !default;
+$toast-info-color: $message-font !default;
+$toast-info-title-color: $message-font !default;
+$toast-info-icon-color: $message-font !default;
+$toast-info-content-color: $message-font !default;
+$toast-info-hover-bg-color: #03a2ea !default;
+$toast-info-hover-color: $message-font !default;
+$toast-info-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+
+
+$toast-warning-bg-color: $warning-bg !default;
+$toast-warning-color: $message-font !default;
+$toast-warning-title-color: $message-font !default;
+$toast-warning-icon-color: $message-font !default;
+$toast-warning-content-color: $message-font !default;
+$toast-warning-hover-bg-color: #f59200 !default;
+$toast-warning-hover-color: $message-font !default;
+$toast-warning-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+
+
+$toast-danger-bg-color: $error-bg !default;
+$toast-danger-color: $message-font !default;
+$toast-danger-title-color: $message-font !default;
+$toast-danger-icon-color: $message-font !default;
+$toast-danger-content-color: $message-font !default;
+$toast-danger-hover-bg-color: #ff5d48 !default;
+$toast-danger-hover-color: $message-font !default;
+$toast-danger-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+//icon variabels
+
+$toast-close-icon: '\e7fc' !default;
+$toast-success-icon: '\ea84' !default;
+$toast-error-icon: '\e208' !default;
+$toast-info-icon: '\e607' !default;
+//enddefault

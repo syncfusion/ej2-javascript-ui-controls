@@ -1,0 +1,2941 @@
+
+$de-background: $default-bg-color !default;
+$search-result-highlight-bg-color: transparent !default;
+$search-result-hightlight-bdr-clr-hvr: #bdbdbd !default;
+$search-result-item-padding-top: 20px !default;
+$search-result-item-padding-bottom: 20px !default;
+$search-result-hightlight-bdr-clr: #3f51b5 !default;
+$search-icon-bdr-clr: #ddd !default;
+$search-icon-hvr: #ddd !default;
+$spin-down-bdr-clr: #ddd !default;
+$spin-down-hvr: #ddd !default;
+$spin-up-bdr-clr: #ddd !default;
+$de-font-style-margin: 10px !default;
+$de-font-dlg-width-big: 375px;
+$spin-up-hvr: #ddd !default;
+$de-style-font-size: 13px;
+$de-toc-lbl-mrgn-left: 194px;
+$de-toc-lbl-mrgn-rgt: 180px;
+$de-dlg-heading-main-header: rgba(0, 0, 0, .87) !default;
+$de-para-dlg-heading-font-size: 14px !default;
+$de-para-dlg-small-heading-font-size: 14px !default;
+$de-spellcheck-listview-border-color: #e4e4e4;
+$de-spellcheck-container-height: 140px !default;
+$de-spellcheck-container-gap: 25px !default;
+$de-para-dlg-heading-font-weight: 400 !default;
+$de-para-title-bottom-margin: 5px !default;
+$de-para-dlg-height: 450px !default;
+$de-para-dlg-width: 400px !default;
+$de-toc-dlg-right-container-left: 1px !default;
+$de-toc-dlg-heading-font-size: 14px !default;
+$de-toc-dlg-heading-font-weight: 400 !default;
+$de-toc-dlg-main-heading-font-weight: 500 !default;
+$de-toc-title-bottom-margin: 5px !default;
+$de-toc-dlg-height: 471px !default;
+$de-toc-dlg-container-margin: 6px !default;
+$de-toc-dlg-width: 469px !default;
+$de-toc-sub-container-bottom: 20px !default;
+$de-toc-list-view-border-color: #808080 !default;
+$de-toc-reset-button-margin-top: 10px !default;
+$de-toc-modify-button-margin-top: 10px !default;
+$de-toc-list-view-font-size: 12px !default;
+$de-toc-list-view-height: 194px !default;
+$de-toc-dlg-sub-margin: 10px 15px 5px 15px !default;
+$de-toc-dlg-style-label-left: 50px !default;
+$de-toc-dlg-style-label-top: 58px !default;
+$de-para-sub-title-bottom-margin: 15px !default;
+$de-para-sub-title-top-margin: 8px !default;
+$de-para-sub-container-bottom: 25px !default;
+$de-para-dlg-right-contaner-top: 17px !default;
+$de-hyperlink-dlg-margin-bottom: 8px !default;
+$de-hyperlink-dlg-margin-top: 8px !default;
+$de-hyperlink-dlg-input-bottom: 20px !default;
+$de-hyperlink-dlg-input-width: 230px !default;
+$de-hyperlink-dlg-input-height: 16px !default;
+$de-font-dlg-header-margin-bottom: 8px !default;
+$de-font-dlg-main-header-margin-right: 15px !default;
+$e-de-font-dlg-cb-margin-right: 40px !default;
+$de-dropdown-margin-right: 40px !default;
+$de-op-border-clr: #e1e1e1 !default;
+$de-op-padding-left: 16px !default;
+$de-op-padding-top: 24px !default;
+$de-op-title-clr: rgba(0, 0, 0, .87) !default;
+$de-op-header-font-family: 'Roboto' !default;
+$de-op-header-font-weight: 500 !default;
+$de-op-header-bottm-margin: 20px !default;
+$de-op-tab-height: 36px !default;
+$de-op-icon-color: rgba(0, 0, 0, .54) !default;
+$de-op-close-icon-clr: rgba(0, 0, 0, .54) !default;
+$de-op-close-icon-width: 20px !default;
+$de-op-close-button-top: 18px !default;
+$search-result-hightlight-bdr-item: #ddd !default;
+$de-op-search-txt: #3f51b5 !default;
+$de-cell-margin-dia-common-font: 12px !default;
+$de-cell-margin-dia-common-margin-bottom: 8px !default;
+$de-cell-margin-dia-common-margin-top: 8px !default;
+$de-cell-margin-dia-common-width: 150px !default;
+$de-cell-margin-dia-options-font: 14px !default;
+$de-border-dlg-border-label-fontsize: 14px !default;
+$de-border-dlg-border-label-fontweight: normal !default;
+$de-border-dlg-border-preview-div-width: 1px !default;
+$de-border-dlg-border-label-paddingbottom: 20px !default;
+$de-border-dlg-setting-label-fontsize: 14px !default;
+$de-border-dlg-setting-label-paddingbottom: 20px !default;
+$de-border-dlg-settinglabels-fontsize: 12px !default;
+$de-border-dlg-border-preview-div-opacity: rgba(0, 0, 0, .54) !default;
+$de-border-dlg-preview-inside-divs-opacity: .54 !default;
+$de-table-align-border-width: 1px !default;
+$de-table-align-border-color: #ddd !default;
+$de-table-align-height: 60px !default;
+$de-table-align-margin-right: 10px !default;
+$de-table-align-width: 60px !default;
+$de-table-alignment-label-font-size: 12px !default;
+$de-table-alignment-label-margin-top: 8px !default;
+$de-table-alignment-label-margin-left: 10px !default;
+$de-table-separator-line-color: rgb(0, 0, 0) !default;
+$de-table-separator-line-height: 1px !default;
+$de-table-separator-line-left: 1px !default;
+$de-table-separator-line-opacity: .12 !default;
+$de-table-separtor-line-top: 371px !default;
+$de-table-separtor-line-top-touch: 84px !default;
+$de-table-separator-line-width: 100% !default;
+$de-table-options-font-size: 14px !default;
+$de-table-options-font-weight: 400 !default;
+$de-table-options-padding-bottom: 15px !default;
+$de-table-options-padding-top: 20px !default;
+$de-page-setup-dlg-height: 246px !default;
+$de-page-setup-dlg-width: 354px !default;
+$de-page-setup-ppty-tab-border: 0 !default;
+$de-page-setup-sub-container-bottom: 25px !default;
+$de-page-setup-sub-container-port-bottom: 25px !default;
+$de-page-setup-dlg-left-container-top: 17px !default;
+$de-page-setup-dlg-right-container-top: 17px !default;
+$de-page-setup-margin-dia-common-font: 12px !default;
+$de-page-setup-margin-dia-common-margin-bottom: 3px !default;
+$de-page-setup-margin-dia-common-margin-top: 8px !default;
+$de-page-setup-common-margin-top: 12px !default;
+$de-page-setup-sub-container-height-style: 40px !default;
+$de-page-setup-dlg-sub-label-font-size: 13px !default;
+$de-page-setup-dlg-sub-label-font-weight: 500 !default;
+$de-page-setup-dlg-orientation-prop-margin-top: 13px !default;
+$de-page-setup-sub-size-container-height: 65px !default;
+$de-page-setup-sub-size-container-bottom: 20px !default;
+$de-page-setup-layout-sub-container-height: 60px !default;
+$de-page-setup-layout-sub-container-bottom: 20px !default;
+$de-page-setup-layout-sub-container-top: 17px !default;
+$de-page-setup-checkbox-label-font-size: 12px !default;
+$de-page-setup-dlg-layout-container-top: 10px !default;
+$de-list-dlg-header-font-weight: normal !default;
+$de-list-dlg-header-margin-bottom: 20px !default;
+$de-list-dlg-header-margin-top: 20px !default;
+$de-tbl-dlg-footer: 27px !default;
+$de-row-ht-padding-top: 15px !default;
+$de-cell-width-padding-top: 11px !default;
+$de-tbl-opt-btn-left: 425px !default;
+$de-tbl-opt-btn-top: 300px !default;
+$de-list-dlg-subheader-font-weight: normal !default;
+$de-list-dlg-subheader-margin-bottom: 10px !default;
+$de-list-dlg-subheader-margin-top: 10px !default;
+$e-de-list-subdiv-margin-top: 51px !default;
+$e-de-list-div-margin-top: 46px !default;
+$de-ok-insert-button-margin-right: 10px !default;
+$de-options-buttons-left: 415px !default;
+$de-op-btn-icon-hover-clr: rgba(0, 0, 0, .54) !default;
+$de-tooltip-bg-clr: #fff !default;
+$de-tooltip-shadow: 0 3px 8px 0 rgba(0, 0, 0, .26) !default;
+$de-op-btn-icon-bg: transparent !default;
+$de-op-btn-icon-border: transparent !default;
+$de-op-btn-icon-active-clr: rgba(0, 0, 0, .54) !default;
+$de-input-color: #000 !default;
+$de-dlg-btn-height: 36px !default;
+$de-dlg-header-font-size: 16px !default;
+$de-dlg-header-font-weight: 400 !default;
+$de-dlg-header-margin-top: 4px !default;
+$de-dlg-footer-margin-top: 19px !default;
+$de-dlg-footer-padding-top: 13px !default;
+$de-dlg-header-content-padding: 20px 25px 13px 25px !default;
+$de-dlg-content-padding: 28px 25px 15px 25px !default;
+$de-dlg-footer-padding-right: 25px !default;
+$de-dlg-footer-content-padding-top: 1px !default;
+$de-dlg-footer-content-padding-top: 1px !default;
+$de-dlg-close-font-size: 14px !default;
+$e-de-dlg-border-radius: 4px !default;
+$de-dlg-close-icon-left: 6px !default;
+$de-dlg-clr-pkr-top: 159px !default;
+$de-op-result-container-margin-top: 12px !default;
+$de-op-bg-color: #fff !default;
+$de-op-tab-header-margin-bottom: 20px !default;
+$de-op-tab-header-margin-top: 1px !default;
+$de-font-color-border: 1px #ddd !default;
+$de-tbl-measure-lbl-font-size: 11px;
+$de-font-color-border-radius: 4px !default;
+$de-icon-table-row-above-top: 7px !default;
+$de-icon-table-row-below-top: 41px !default;
+$de-icon-table-column-left-top: 75px !default;
+$de-icon-table-column-right-top: 109px !default;
+$de-icon-table-delete-top: 7px !default;
+$de-icon-table-row-delete-top: 41px !default;
+$de-icon-table-column-delete-top: 75px !default;
+$de-bullet-list-hover-color: #ddd !default;
+$de-number-list-hover-color: #ddd !default;
+$de-multilevel-list-hover-color: #ddd !default;
+$de-list-dialog-hover-color: #ddd !default;
+$de-cell-options-left: 339px !default;
+$de-cell-options-top: 229px !default;
+$de-font-color-margin-bottom: 7px !default;
+$de-font-color-margin-top: 18px !default;
+$de-font-dlg-effect-margin-left: 15px !default;
+$de-font-dlg-margin-right: 6px !default;
+$de-font-dlg-color-margin-right: 10px !default;
+$de-font-dlg-color-margin-top: 6px !default;
+$de-font-content-checkbox-left: 43px !default;
+$de-font-content-checkbox-left-bg: 68px !default;
+$de-font-checkbox-left: 67px !default;
+$de-font-dlg-margin-top: 15px !default;
+$de-table-container-margin-top: 20px !default;
+$de-table-header-padding-top: 6px !default;
+$de-table-subheader-padding-top: 16px !default;
+$de-cell-subheader-top: 57px !default;
+$de-cell-margin-header-left: -7px !default;
+$de-cell-margin-header-top: 310px !default;
+$de-tbl-margin-sub-header: 20px !default;
+$de-tbl-btn-separator: 57% !default;
+$de-op-container-messagediv-color: #000 !default;
+$de-save-dlg-format-type-padding: 10px !default;
+$de-op-search-tab-content-margin-top: 1px !default;
+$de-op-search-text-box-container-width: 267px !default;
+$de-font-dlg-height: 239px !default;
+$de-font-dlg-width: 380px !default;
+$de-hyper-link-height: 175px !default;
+$de-hyper-link-width: 230px !default;
+$de-insert-table-height: 131px !default;
+$de-insert-table-width: 230px !default;
+$de-insert-footnote-height: 139px !default;
+$de-insert-footnote-width: 247px !default;
+$de-insert-spellchecker-height: 350px !default;
+$de-insert-spellchecker-width: 513px !default;
+$de-spellcheck-listview-height: 122px !default;
+$de-insert-table-title-bottom-margin: 8px !default;
+$de-insert-table-title-top-margin: 8px !default;
+$de-insert-table-dlg-input-bottom: 15px !default;
+$de-list-dlg-height: 400px !default;
+$de-list-dlg-width: 420px !default;
+$de-save-dlg-height: 135px !default;
+$de-save-dlg-width: 230px !default;
+$de-table-ppty-dlg-height: 300px !default;
+$de-table-ppty-dlg-width: 426px !default;
+$de-table-border-shading-dlg-height: 380px !default;
+$de-table-border-shading-dlg-width: 450px !default;
+$de-table-cell-margin-dlg-height: 222px !default;
+$de-table-cell-margin-dlg-width: 380px !default;
+$de-table-options-dlg-height: 242px !default;
+$de-table-options-dlg-width: 380px !default;
+$de-table-border-none-top: 25px !default;
+$de-table-border-box-top: 95px !default;
+$de-table-border-all-top: 165px !default;
+$de-table-border-custom-top: 235px !default;
+$de-table-shading-preview-top: 385px !default;
+$de-checkbox-wrapper-color: rgba(0, 0, 0, .87) !default;
+$de-checkbox-height: 15px !default;
+$de-checkbox-line-height: 11px !default;
+$de-checkbox-width: 15px !default;
+$de-checkbox-margin-right: 15px !default;
+$de-op-dlg-footer-margin-top: 15px !default;
+$de-op-search-input-width: 185px !default;
+$de-op-replacewith-width: 95% !default;
+$de-table-ppty-tab-border: 0 !default;
+$de-list-info-btn-padding: 3px 0 0 0 !default;
+$bookmark-listview-border-color: #c8c8c8 !default;
+$de-table-border-dlg-alignments-left: 48% !default;
+$de-table-border-preview-top: 48% !default;
+$de-table-border-dlg-alignments-transform: translate(-50%, -50%) !default;
+$de-style-dialog-height: 343px !default;
+$de-style-dialog-width: 434px !default;
+$de-style-heading-font-size: 14px !default;
+$de-style-heading-font-weight: 400 !default;
+$de-style-dialog-style-ppties-bottom-margin: 15px !default;
+$de-style-dialog-style-formatting-bottom-margin: 20px !default;
+$de-style-dialog-style-name-type-div-bottom-margin: 20px !default;
+$de-style-dialog-style-based-para-div-bottom-margin: 30px !default;
+$de-style-paragraph-width: 182px !default;
+$de-style-name-input-top: 108px !default;
+$de-style-type-div-top: 150px !default;
+$de-style-based-on-div-top: 195px !default;
+$de-style-paragraph-div-top: 239px !default;
+$de-style-font-margin-right: 15px !default;
+$de-style-font-margin-left: 5px !default;
+$de-style-para-margin-right: 15px !default;
+$de-style-para-margin-left: 5px !default;
+$de-style-list-margin-left: 10px !default;
+$de-style-template-top: 405px !default;
+$de-style-dialog-style-left-div-right-margin: 40px !default;
+$de-style-dialog-option-div-bottom-margin: 20px !default;
+$de-style-dialog-label-bottom-margin: 8px !default;
+$de-style-btn-active-bg-border-color: #c8c8c8 !default;
+$de-style-btn-active-text-color: #000 !default;
+$de-style-toggle-btn-color: #e0e0e0 !default;
+$e-de-style-input-text-height: 30px !default;
+$de-font-checkbox-label-font-size: 12px !default;
+$de-op-icon-font-size: 10px !default;
+$de-op-close-icon-size: 12px !default;
+$de-op-close-icon-margin-left: -4px !default;
+$de-table-align-hover-color: #f17eb8 !default;
+$de-table-tab-hover-color: $de-table-align-hover-color !default;
+$de-cell-align-hover-color: $de-table-align-hover-color !default;
+$de-table-align-active-color: #ff4081 !default;
+$de-table-setting-hover-color: $de-table-align-hover-color !default;
+$de-table-preview-hover-color: $de-table-setting-hover-color !default;
+$de-table-setting-color: $de-table-align-active-color !default;
+$de-table-preview-setting-color: $de-table-setting-color !default;
+$de-table-alignment-font-size: 46px !default;
+$de-table-alignment-top: 137px !default;
+$de-tablecell-alignment-font-size: 51px !default;
+$de-border-dlg-border-setting-inside-border: rgb(0, 0, 0) !default;
+$de-border-dlg-border-setting-divs-color: rgba(0, 0, 0, .26) !default;
+$de-border-dlg-border-preview-divs-color: rgba(0, 0, 0, .26) !default;
+$de-border-none-setting-font-size: 46px !default;
+$de-border-setting-font-size: 42px !default;
+$de-td-table-border-top: 4px !default;
+$de-context-menu-cut-icon: '\e279' !default;
+$de-context-menu-copy-icon: '\e280' !default;
+$de-context-menu-paste-icon: '\e501' !default;
+$de-context-menu-insertlink: '\e290' !default;
+$de-context-menu-open-hyperlink: '\e278' !default;
+$de-context-menu-copy-hyperlink: '\e295' !default;
+$de-context-menu-edit-hyperlink: '\e289' !default;
+$de-context-menu-remove-hyperlink: '\e286' !default;
+$de-context-menu-font-icon: '\e273' !default;
+$de-context-menu-paragraph-icon: '\e75e' !default;
+$de-context-menu-table-properties-icon: '\e294' !default;
+$de-context-menu-insert-above-icon: '\e506' !default;
+$de-context-menu-insert-below-icon: '\e505' !default;
+$de-context-menu-insert-left-icon: '\e285' !default;
+$de-context-menu-insert-right-icon: '\e284' !default;
+$de-context-menu-delete-table-icon: '\e292' !default;
+$de-context-menu-delete-row-icon: '\e283' !default;
+$de-context-menu-delete-column-icon: '\e282' !default;
+$de-context-menu-continue-numbering-icon: '\e503' !default;
+$de-context-menu-restart-at-icon: '\e277' !default;
+$de-hyperlink-bookmark-check-margin-top: 20px !default;
+$de-table-ppty-dlg-measure-div-margin-left: 40px !default;
+$de-table-ppty-dlg-measure-div-margin-top: 6px !default;
+$de-table-ppty-dlg-left-indent-container-margin-right: 89px !default;
+$de-cell-width-top-margin-top: -23px !default;
+$de-cell-width-top-margin-left: 20px !default;
+$de-tbl-dlg-border-btn-margin-right: 103px !default;
+$de-tbl-dlg-border-btn-margin-top: 32px !default;
+$de-table-subheader-div-margin-top: -40px !default;
+$de-table-subheader-div-margin-right: 115px !default;
+$de-table-ppty-dlg-row-height-label-margin-top: -62px !default;
+$de-table-ppty-dlg-row-height-label-margin-right: 161px !default;
+$de-table-ppty-dlg-preferred-width-margin-top: 6px !default;
+$de-table-ppty-dlg-preferred-width-margin-left: 20px !default;
+$de-table-ppty-options-break-margin-bottom: 15px !default;
+$de-table-cell-subheader-div-margin-right: 125px !default;
+$de-table-cell-subheader-div-margin-top: -37px !default;
+$de-table-ppty-dlg-cell-tab-measure-label-margin-right: 172px !default;
+$de-table-ppty-dlg-cell-tab-measure-label-margin-top: -64px !default;
+$de-table-ppty-dlg-table-header-padding: 24px !default;
+$styles-listview-border-color: #808080 !default;
+$de-table-ppty-dlg-table-header-padding-left: 1px !default;
+$de-border-dlg-border-label-font-weight: 400 !default;
+$de-toc-dlg-build-table-margin-top: 30px !default;
+$de-toc-styles-table-div-margin-top: 15px !default;
+$de-toc-table-div-width: 211px !default;
+$de-toc-dlg-right-sub-container-margin-right: 2px !default;
+$de-toc-dlg-styles-margin-bottom: 11px !default;
+$de-toc-dlg-styles-margin-left: 38px !default;
+$de-toc-dlg-styles-margin-top: 30px !default;
+$de-toc-list-view-width: 211px !default;
+$de-toc-styles-table-div-border-radius: 4px !default;
+$de-toc-modify-button-margin-left: 156px !default;
+$de-toc-dlg-outline-levels-width: 150px !default;
+$de-bookmark-content-margin-top: 24px !default;
+$de-bookmark-textbox-margin-bottom: 10px !default;
+$de-bookmark-textbox-height: 34px !default;
+$de-bookmark-custom-btn-width: 80px !default;
+$de-bookmark-custom-btn-height: 34px !default;
+$de-bookmark-button-div-top-position: 15px !default;
+$de-toc-list-view-margin-left: 36px !default;
+$e-de-toc-table-div-height: 163px !default;
+$de-toc-dlg-showlevel-div-margin-left: 255px !default;
+$de-toc-dlg-show-level-div-margin-left: 255px !default;
+$de-op-input-group-height: 32px !default;
+$de-op-tab-header-padding-left: 1px !default;
+$de-op-tab-header-padding: 24px !default;
+$de-list-dlg-font-margin-left: 16px !default;
+$de-bookmark-list-view-border-radius: 4px !default;
+$de-bookmark-listview-margin-right: 20px !default;
+$de-bookmark-dlgfields-margin-bottom: 0 !default;
+$de-numbering-list-line-color: #ccc !default;
+$de-numbering-list-span-color: #aaa !default;
+$de-numbering-list-border-color: #ebebeb !default;
+$de-numbering-list-background-color: #fff !default;
+$de-table-ppty-dlg-tabs-height: 270px !default;
+$de-toc-dlg-toc-level-margin-left: 36px !default;
+$de-background: $bg-base-0 !default;
+$search-result-highlight-bg-color: transparent !default;
+$search-result-hightlight-bdr-clr-hvr: $selection-bg !default;
+$search-result-item-padding-top: 15px !default;
+$search-result-item-padding-bottom: 15px !default;
+$search-result-hightlight-bdr-clr: $header-font !default;
+$search-icon-bdr-clr: #ddd !default;
+$search-icon-hvr: #ddd !default;
+$spin-down-bdr-clr: #ddd !default;
+$spin-down-hvr: #ddd !default;
+$spin-up-bdr-clr: #ddd !default;
+$spin-up-hvr: #ddd !default;
+$de-dlg-heading-main-header: #fff !default;
+$de-para-dlg-heading-font-size: 16px !default;
+$de-para-dlg-heading-font-weight: 600 !default;
+$de-para-title-bottom-margin: 10px !default;
+$de-para-dlg-height: 430px !default;
+$de-para-dlg-width: 405px !default;
+$de-toc-dlg-right-container-left: 1px !default;
+$de-toc-dlg-heading-font-size: 14px !default;
+$de-toc-dlg-heading-font-weight: 400 !default;
+$de-toc-dlg-main-heading-font-weight: 500 !default;
+$de-toc-title-bottom-margin: 5px !default;
+$de-toc-dlg-height: 464px !default;
+$de-toc-dlg-container-margin: 6px !default;
+$de-toc-dlg-width: 498px !default;
+$de-toc-sub-container-bottom: 10px !default;
+$de-toc-list-view-border-color: #c8c8c8 !default;
+$de-toc-reset-button-margin-top: 10px !default;
+$de-toc-modify-button-margin-top: 10px !default;
+$de-toc-list-view-font-size: 12px !default;
+$de-toc-list-view-height: 193px !default;
+$de-toc-list-view-width: 200px !default;
+$de-toc-dlg-sub-margin: 10px 15px 10px 15px !default;
+$de-para-sub-title-bottom-margin: 8px !default;
+$de-para-sub-title-top-margin: 5px !default;
+$de-para-sub-container-bottom: 15px !default;
+$de-para-dlg-right-contaner-top: 30px !default;
+$de-hyperlink-dlg-margin-bottom: 8px !default;
+$de-hyperlink-dlg-margin-top: 8px !default;
+$de-hyperlink-dlg-input-bottom: 7px !default;
+$de-hyperlink-dlg-input-width: 230px !default;
+$de-hyperlink-dlg-input-height: 32px !default;
+$de-font-dlg-header-margin-bottom: 8px !default;
+$de-font-dlg-main-header-margin-right: 20px !default;
+$e-de-font-dlg-cb-margin-right: 20px !default;
+$de-dropdown-margin-right: 20px !default;
+$de-op-border-clr: #e1e1e1 !default;
+$de-op-padding-left: 16px !default;
+$de-op-padding-top: 20px !default;
+$de-op-title-clr: #fff !default;
+$de-op-header-font-family: 'Segoe UI' !default;
+$de-op-header-font-weight: 100 !default;
+$de-op-header-bottm-margin: 4px !default;
+$de-op-tab-height: 40px !default;
+$de-cell-margin-dlg-margin-top: 5px !default;
+$de-layout-margin-dlg-padding-top: 10px !default;
+$de-op-icon-color: rgba(0, 0, 0, .54) !default;
+$de-op-close-icon-clr: #fff !default;
+$de-op-close-icon-width: 22px !default;
+$de-op-close-button-top: 20px !default;
+$search-result-hightlight-bdr-item: #ddd !default;
+$de-op-search-txt: $header-font !default;
+$de-cell-margin-dia-common-font: 12px !default;
+$de-cell-margin-dia-common-margin-bottom: 8px !default;
+$de-cell-margin-dia-common-margin-top: 8px !default;
+$de-cell-margin-dia-common-width: 150px !default;
+$de-cell-margin-dia-options-font: 14px !default;
+$de-border-dlg-border-label-fontsize: 14px !default;
+$de-border-dlg-border-label-fontweight: normal !default;
+$de-border-dlg-border-preview-div-width: 1px !default;
+$de-border-dlg-border-label-paddingbottom: 20px !default;
+$de-border-dlg-setting-label-fontsize: 14px !default;
+$de-border-dlg-setting-label-paddingbottom: 20px !default;
+$de-border-dlg-settinglabels-fontsize: 12px !default;
+$de-border-dlg-border-preview-div-opacity: rgba(0, 0, 0, .54) !default;
+$de-border-dlg-preview-inside-divs-opacity: .54 !default;
+$de-table-align-border-width: 1px !default;
+$de-table-align-border-color: #ddd !default;
+$de-table-align-height: 60px !default;
+$de-table-align-margin-right: 10px !default;
+$de-table-align-width: 60px !default;
+$de-table-alignment-label-font-size: 12px !default;
+$de-table-alignment-label-margin-top: 8px !default;
+$de-table-alignment-label-margin-left: 10px !default;
+$de-table-separator-line-color: #fff !default;
+$de-table-separator-line-height: 1px !default;
+$de-table-separator-line-left: 1px !default;
+$de-table-separator-line-opacity: .12 !default;
+$de-table-separtor-line-top: 387px !default;
+$de-table-separator-line-width: 100% !default;
+$de-table-options-font-size: 16px !default;
+$de-table-options-font-weight: 400 !default;
+$de-table-options-padding-bottom: 10px !default;
+$de-table-options-padding-top: 10px !default;
+$de-page-setup-dlg-width: 400px !default;
+$de-page-setup-dlg-height: 260px !default;
+$de-page-setup-ppty-tab-border: 0 !default;
+$de-page-setup-sub-container-bottom: 30px !default;
+$de-page-setup-sub-container-port-bottom: 20px !default;
+$de-page-setup-dlg-left-container-top: 17px !default;
+$de-page-setup-dlg-right-container-top: 17px !default;
+$de-page-setup-margin-dia-common-font: 12px !default;
+$de-page-setup-margin-dia-common-margin-bottom: 4px !default;
+$de-page-setup-margin-dia-common-margin-top: 3px !default;
+$de-page-setup-common-margin-top: 12px !default;
+$de-page-setup-sub-container-height-style: 55px !default;
+$de-page-setup-dlg-sub-label-font-size: 13px !default;
+$de-page-setup-dlg-sub-label-font-weight: 500 !default;
+$de-page-setup-dlg-orientation-prop-margin-top: 13px !default;
+$de-page-setup-sub-size-container-height: 70px !default;
+$de-page-setup-sub-size-container-bottom: 20px !default;
+$de-page-setup-layout-sub-container-height: 60px !default;
+$de-page-setup-layout-sub-container-bottom: 20px !default;
+$de-page-setup-layout-sub-container-top: 17px !default;
+$de-page-setup-checkbox-label-font-size: 12px !default;
+$de-page-setup-dlg-layout-container-top: 10px !default;
+$de-list-dlg-header-font-weight: normal !default;
+$de-list-dlg-header-margin-bottom: 15px !default;
+$de-list-dlg-header-margin-top: 15px !default;
+$de-tbl-dlg-footer: 23px !default;
+$de-row-ht-padding-top: 11px !default;
+$de-cell-width-padding-top: 6px !default;
+$de-tbl-opt-btn-left: 410px !default;
+$de-tbl-opt-btn-top: 275px !default;
+$de-list-dlg-subheader-font-weight: normal !default;
+$de-list-dlg-subheader-margin-bottom: 10px !default;
+$de-list-dlg-subheader-margin-top: 10px !default;
+$e-de-list-subdiv-margin-top: 43px !default;
+$e-de-list-div-margin-top: 41px !default;
+$de-ok-insert-button-margin-right: 8px !default;
+$de-options-buttons-left: 310px !default;
+$de-op-btn-icon-hover-clr: $header-font !default;;
+$de-tooltip-bg-clr: #fff !default;
+$de-tooltip-shadow: 0 3px 8px 0 rgba(0, 0, 0, .26) !default;
+$de-op-btn-icon-bg: transparent !default;
+$de-op-btn-icon-border: transparent !default;
+$de-op-btn-icon-active-clr: $header-font !default;
+$de-input-color: #fff !default;
+$de-dlg-btn-height: 32px !default;
+$de-dlg-header-font-size: 16px !default;
+$de-dlg-header-font-weight: 400 !default;
+$de-dlg-header-margin-top: 4px !default;
+$de-dlg-footer-margin-top: 10px !default;
+$de-dlg-footer-padding-top: 10px !default;
+$de-dlg-header-content-padding: 20px 25px 8px 25px !default;
+$de-dlg-content-padding: 28px 25px 20px 25px !default;
+$de-dlg-footer-padding-right: 25px !default;
+$de-dlg-footer-content-padding-top: 1px !default;
+$de-dlg-close-font-size: 16px !default;
+$e-de-dlg-border-radius: 1px !default;
+$de-dlg-close-icon-left: 12px !default;
+$de-dlg-clr-pkr-top: 166px !default;
+$de-op-result-container-margin-top: 12px !default;
+$de-op-bg-color: $bg-base-0 !default;
+$de-op-tab-header-padding: 25px !default;
+$de-op-tab-header-margin-bottom: 28px !default;
+$de-op-tab-header-margin-top: 1px !default;
+$de-font-color-border: 1px #fff !default;
+$de-font-color-border-radius: 1px !default;
+$de-icon-table-row-above-top: 10px !default;
+$de-icon-table-row-below-top: 49px !default;
+$de-icon-table-column-left-top: 89px !default;
+$de-icon-table-column-right-top: 127px !default;
+$de-icon-table-delete-top: 10px !default;
+$de-icon-table-row-delete-top: 49px !default;
+$de-icon-table-column-delete-top: 89px !default;
+$de-bullet-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
+$de-number-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
+$de-multilevel-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
+$de-list-dialog-hover-color: rgba(0 , 0 , 0 , .12) !default;
+$de-cell-options-left: 313px !default;
+$de-cell-options-top: 229px !default;
+$de-font-color-margin-bottom: 1px !default;
+$de-font-color-margin-top: 10px !default;
+$de-font-dlg-effect-margin-left: 20px !default;
+$de-font-dlg-margin-right: 7px !default;
+$de-font-dlg-color-margin-right: 10px !default;
+$de-font-dlg-color-margin-top: 8px !default;
+$de-font-content-checkbox-left: 38px !default;
+$de-font-content-checkbox-right: 46px !default;
+$de-font-content-checkbox-right-bg: 67px !default;
+$de-font-checkbox-left: 60px !default;
+$de-font-dlg-padding-top: 15px !default;
+$de-table-container-margin-top: 15px !default;
+$de-table-header-padding-top: 3px !default;
+$de-table-subheader-padding-top: 20px !default;
+$de-cell-subheader-top: 61px !default;
+$de-cell-margin-header-left: -7px !default;
+$de-cell-margin-header-top: 319px !default;
+$de-tbl-margin-sub-header: 5px !default;
+$de-tbl-btn-separator: 62% !default;
+$de-op-container-messagediv-color: #fff !default;
+$de-save-dlg-format-type-padding: 1px !default;
+$de-op-search-tab-content-margin-top: 1px !default;
+$de-op-search-text-box-container-width: 269px !default;
+$de-font-dlg-height: 253px !default;
+$de-font-dlg-width: 360px !default;
+$de-hyper-link-height: 168px !default;
+$de-hyper-link-width: 230px !default;
+$de-insert-table-height: 130px !default;
+$de-insert-footnote-height: 139px !default;
+$de-insert-footnote-width: 247px !default;
+$de-insert-table-width: 230px !default;
+$de-insert-table-title-bottom-margin: 8px !default;
+$de-insert-table-title-top-margin: 8px !default;
+$de-insert-table-dlg-input-bottom: 14px !default;
+$de-list-dlg-height: 400px !default;
+$de-list-dlg-width: 400px !default;
+$de-save-dlg-height: 135px !default;
+$de-save-dlg-width: 230px !default;
+$de-table-ppty-dlg-height: 324px !default;
+$de-table-ppty-dlg-width: 406px !default;
+$de-table-border-shading-dlg-height: 432px !default;
+$de-table-border-shading-dlg-width: 450px !default;
+$de-table-cell-margin-dlg-height: 210px !default;
+$de-table-cell-margin-dlg-width: 380px !default;
+$de-table-options-dlg-height: 256px !default;
+$de-table-options-dlg-width: 380px !default;
+$de-table-border-none-top: 25px !default;
+$de-table-border-box-top: 95px !default;
+$de-table-border-all-top: 165px !default;
+$de-table-border-custom-top: 235px !default;
+$de-table-shading-preview-top: 385px !default;
+$de-checkbox-wrapper-color: #fff !default;
+$de-checkbox-height: 20px !default;
+$de-checkbox-line-height: 16px !default;
+$de-checkbox-width: 20px !default;
+$de-op-dlg-footer-margin-top: 20px !default;
+$de-op-search-input-width: 175px !default;
+$de-op-replacewith-width: 97% !default;
+$de-table-ppty-tab-border: 0 !default;
+$de-list-info-btn-padding: 3px 0 0 0 !default;
+$bookmark-listview-border-color: #fff !default;
+$de-table-border-dlg-alignments-left: 48% !default;
+$de-table-border-preview-top: 75% !default;
+$de-table-border-dlg-alignments-transform: translate(-50%, -50%) !default;
+$de-style-dialog-height: 350px !default;
+$de-style-dialog-width: 433px !default;
+$de-style-heading-font-size: 14px !default;
+$de-style-heading-font-weight: 400 !default;
+$de-style-dialog-style-ppties-bottom-margin: 15px !default;
+$de-style-dialog-style-formatting-bottom-margin: 15px !default;
+$de-style-dialog-style-name-type-div-bottom-margin: 15px !default;
+$de-style-dialog-style-based-para-div-bottom-margin: 15px !default;
+$de-style-paragraph-width: 182px !default;
+$de-style-name-input-top: 125px !default;
+$de-style-type-div-top: 175px !default;
+$de-style-based-on-div-top: 227px !default;
+$de-style-paragraph-div-top: 278px !default;
+$de-style-font-margin-right: 20px !default;
+$de-style-font-margin-left: 3px !default;
+$de-style-para-margin-right: 15px !default;
+$de-style-para-margin-left: 5px !default;
+$de-style-list-margin-left: 10px !default;
+$de-style-template-top: 443px !default;
+$de-style-dialog-style-left-div-right-margin: 20px !default;
+$de-style-dialog-option-div-bottom-margin: 20px !default;
+$de-style-dialog-label-bottom-margin: 8px !default;
+$de-style-btn-active-bg-border-color: #ffd939 !default;
+$de-style-btn-active-text-color: rgb(0, 0, 0) !default;
+$de-style-toggle-btn-color: #e0e0e0 !default;
+$e-de-style-input-text-height: 32px !default;
+$de-font-checkbox-label-font-size: 12px !default;
+$de-op-icon-font-size: 12px !default;
+$de-op-close-icon-size: 12px !default;
+$de-op-close-icon-margin-left: -4px !default;
+$de-table-align-hover-color: $border-fg-alt !default;
+$de-table-tab-hover-color: $de-table-align-hover-color !default;
+$de-cell-align-hover-color: $de-table-align-hover-color !default;
+$de-table-align-active-color: $border-fg-alt !default;
+$de-table-setting-hover-color: $de-table-align-hover-color !default;
+$de-table-preview-hover-color: $de-table-setting-hover-color !default;
+$de-table-setting-color: $de-table-align-active-color !default;
+$de-table-preview-setting-color: $de-table-setting-color !default;
+$de-table-alignment-font-size: 46px !default;
+$de-table-alignment-top: 145px !default;
+$de-tablecell-alignment-font-size: 51px !default;
+$de-border-dlg-border-setting-inside-border: #fff !default;
+$de-border-dlg-border-setting-divs-color: rgba(0, 0, 0, .26) !default;
+$de-border-dlg-border-preview-divs-color: rgba(0, 0, 0, .26) !default;
+$de-border-none-setting-font-size: 46px !default;
+$de-border-setting-font-size: 42px !default;
+$de-td-table-border-top: -5px !default;
+$de-context-menu-cut-icon: '\e279' !default;
+$de-context-menu-copy-icon: '\e280' !default;
+$de-context-menu-paste-icon: '\e501' !default;
+$de-context-menu-insertlink: '\e290' !default;
+$de-context-menu-open-hyperlink: '\e278' !default;
+$de-context-menu-copy-hyperlink: '\e295' !default;
+$de-context-menu-edit-hyperlink: '\e289' !default;
+$de-context-menu-remove-hyperlink: '\e286' !default;
+$de-context-menu-font-icon: '\e273' !default;
+$de-context-menu-paragraph-icon: '\e75e' !default;
+$de-context-menu-table-properties-icon: '\e294' !default;
+$de-context-menu-insert-above-icon: '\e506' !default;
+$de-context-menu-insert-below-icon: '\e505' !default;
+$de-context-menu-insert-left-icon: '\e285' !default;
+$de-context-menu-insert-right-icon: '\e284' !default;
+$de-context-menu-delete-table-icon: '\e292' !default;
+$de-context-menu-delete-row-icon: '\e283' !default;
+$de-context-menu-delete-column-icon: '\e282' !default;
+$de-context-menu-continue-numbering-icon: '\e503' !default;
+$de-context-menu-restart-at-icon: '\e277' !default;
+$de-hyperlink-bookmark-check-margin-top: 15px !default;
+$de-table-ppty-dlg-measure-div-margin-left: 20px !default;
+$de-table-ppty-dlg-measure-div-margin-top: 13px !default;
+$de-table-ppty-dlg-left-indent-container-margin-right: 108px !default;
+$de-cell-width-top-margin-top: -6px !default;
+$de-cell-width-top-margin-left: 20px !default;
+$de-tbl-dlg-border-btn-margin-right: 124px !default;
+$de-tbl-dlg-border-btn-margin-top: 28px !default;
+$de-table-subheader-div-margin-top: -37px !default;
+$de-table-subheader-div-margin-right: 135px !default;
+$de-table-ppty-dlg-row-height-label-margin-top: -62px !default;
+$de-table-ppty-dlg-row-height-label-margin-right: 181px !default;
+$de-table-ppty-dlg-preferred-width-margin-top: 13px !default;
+$de-table-ppty-dlg-preferred-width-margin-left: 20px !default;
+$de-table-ppty-options-break-margin-bottom: 10px !default;
+$de-table-cell-subheader-div-margin-right: 125px !default;
+$de-table-cell-subheader-div-margin-top: -37px !default;
+$de-table-ppty-dlg-cell-tab-measure-label-margin-right: 192px !default;
+$de-table-ppty-dlg-cell-tab-measure-label-margin-top: -64px !default;
+$de-table-ppty-dlg-table-header-padding: 12.5px !default;
+$styles-listview-border-color: #808080 !default;
+$de-table-ppty-dlg-table-header-padding-left: 1px !default;
+$de-border-dlg-border-label-font-weight: 600 !default;
+$de-toc-dlg-build-table-margin-top: 30px !default;
+$de-toc-styles-table-div-margin-top: 10px !default;
+$de-toc-table-div-width: 209px !default;
+$de-toc-dlg-styles-margin-bottom: 13px !default;
+$de-toc-dlg-styles-margin-left: 38px !default;
+$de-toc-dlg-styles-margin-top: 1px !default;
+$de-toc-list-view-width: 210px !default;
+$de-toc-styles-table-div-border-radius: 1px !default;
+$de-toc-modify-button-margin-left: 145px !default;
+$de-toc-dlg-outline-levels-width: 137px !default;
+$de-bookmark-content-margin-top: 20px !default;
+$de-bookmark-textbox-margin-bottom: 6px !default;
+$de-bookmark-textbox-height: 32px !default;
+$de-bookmark-custom-btn-width: 84px !default;
+$de-bookmark-custom-btn-height: 32px !default;
+$de-bookmark-button-div-top-position: 0 !default;
+$de-bookmark-list-view-border-radius: 0 !default;
+$de-toc-dlg-style-input-margin-bottom: 3px !default;
+$de-toc-dlg-style-input-margin-left: 36px !default;
+$de-toc-dlg-style-input-width: 210px !default;
+$de-toc-list-view-margin-left: 36px !default;
+$e-de-toc-table-div-height: 160px !default;
+$de-toc-dlg-showlevel-div-margin-left: 255px !default;
+$de-toc-dlg-show-level-div-margin-left: 255px !default;
+$de-op-input-group-height: 32px !default;
+$de-op-tab-header-padding-left: 1px !default;
+$de-op-tab-header-padding: 12.5px !default;
+$de-list-dlg-font-margin-left: 1px !default;
+$de-bookmark-listview-margin-right: 20px !default;
+$de-bookmark-dlgfields-margin-bottom: 6px !default;
+$de-numbering-list-line-color: #ccc !default;
+$de-numbering-list-span-color: #aaa !default;
+$de-numbering-list-border-color: #ebebeb !default;
+$de-numbering-list-background-color: #000 !default;
+$de-table-ppty-dlg-tabs-height: 280px !default;
+$de-toc-dlg-toc-level-margin-left: 34px !default;
+$de-cell-options-rtl: 127px !default;
+$de-font-checkbox-ltr: 58px !default;
+$de-font-content-label-width: 65px !default;
+$de-font-label-width: 115px !default;
+$de-font-label-width-bg: 132px !default;
+$de-toc-dlg-right-sub-container-margin-top: 125px !default;
+$e-de-list-div-margin-top-rtl: -139px !default;
+$e-de-list-subdiv-margin-top-rtl: -136px !default;
+$de-toc-modify-button-margin-rtl: 157px !default;
+$de-hght-type-top: -25px !default;
+$de-bigger-style-button-height: 37px !default;
+$de-bigger-style-button-width: 100px !default;
+$de-cmt-selection: $selection-bg !default;
+$de-cmt-selection-rslv: rgba($de-cmt-selection, .5) !default;
+$de-cmt-opt-size: auto !default;
+$de-cmt-pant-content-font: $content-font !default;
+$de-cmt-post-btn-ht: 32px !default;
+$de-cmt-post-btn-wt: $de-cmt-post-btn-ht !default;
+$de-cmt-post-btn-wt-big: 40px !default;
+$de-cmt-post-btn-ht-big: 40px !default;
+$de-cmt-separator: $border-fg !default;
+$de-reply-footer-margin-top: 8px !default;
+$de-tooltip-color: #000 !default;
+$de-avatar-clr:  #fff !default;
+$de-tc-tlbr-padding-btm: 0;
+$de-pane-color-border:   #35363b !default;
+$de-font-dlg-font-size: 12px;
+$de-floating-menu-width: 70px;
+$de-floating-menu-height: 65px;
+$de-floating-menu-padding: 10px;
+$de-cmt-container-padding: 0 8px;
+$de-cmt-sub-container-margin: 8px 0;
+$de-rply-cmt-sub-container-margin: 11.5px 8px 0 8px;
+$de-cmt-view-mrgn-top: 11.5px;
+$de-ui-floating-menu-padding: 10px 4px 5px 10px;
+$de-ui-list-header-presetmenu-min-width: 50px;
+$de-ui-wfloating-menu: 0 5px 5px 0;
+$de-bullet-number-width: 272px;
+$de-rp-content-ln-ht: none;
+$de-rp-font-size: 12px;
+$de-rp-format-font-size: 13px;
+$de-header-font-weight: normal;
+$de-dlg-bkm-fld-fnt-size: 12px;
+$de-ff-dlg-hdg-small-mrgn-btm: 4px;
+$de-ff-seperate-div-mrgn-btm: 15.5px;
+$de-ff-dlg-heading-mrgn-btm: 12px;
+$de-ff-radio-div-mrgn-btm: 26px;
+$de-ff-radio-scnd-div-mrgn-btm: 18px;
+$de-fnt-dlg-header-effects-mrgn-btm: $de-font-dlg-header-margin-bottom;
+$de-para-dlg-cs-check-box-mrgn-btm: 8px;
+$de-bullet-numbered-dlg-width: 272px;
+$de-bullet-numbered-dlg-height: 270px;
+$de-tbl-indent-lb-fnt-size: 11px;
+$de-font-clr-div-mrgn-top: 14px;
+$de-para-dlg-cs-check-box-mrgn-top: 8px;
+$de-insert-footnote-dlg-header-mrg-btm: 25px;
+$de-table-options-dlg-div-mrgn-btm: 14px;
+$de-tbl-indent-lbl-mrgn-btm: 18px;
+$de-tbl-indent-lbl-top: 10px;
+$de-cmt-date-fnt-size: 13px;
+$de-cmt-author-nme-fnt-size: 13px;
+$de-cmt-date-mrgn-top: 12px;
+$de-ff-drpdwn-dlg-scndiv-mrgn-botton: 16px;
+$de-drp-dwn-frst-div-mrgn-btm: 23.5px;
+$de-ff-dlg-lft-hlf-mrgn-rgt: 5%;
+$de-ff-dlg-lft-hlf-wdth: 47.5%;
+$de-para-dlg-spacing-div-mrgn-left: 40px;
+$de-para-dlg-cs-check-box: 8px;
+$de-op-close-button-top: 18px;
+$de-table-row-cell-pdng: 20px;
+$de-table-prop-left-indnt-cntr-pos: 69px;
+$de-track-chngs-sucs-bg-color: #4d841e;
+$de-track-chngs-rejct-bg-color: #d74113;
+$de-avatar-width: 90%;
+$de-op-more-less-mrgn-top: 14px;
+$de-bkmrk-list-margin-left: 20px !default;
+$de-enforce-dlg-title-mrgn-top: 8px;
+$de-enforce-dlg-title-fnt-size: 14px;
+$de-enforce-btn-mrng-btm: 8px;
+$de-unprotect-dlg-title-fnt-size: 14px;
+$de-unprotect-dlg-title-mrgn-btm: 8px;
+$de-user-dlg-textbox-input-mrgn-right: 16px;
+$de-user-dlg-list-mrgn-btm: 15px;
+$de-user-dlg-user-mrgn-btm: 12px;
+$de-trckchanges-inner-mrgn: 8px 0 8px 7.5px !default;
+$de-rp-close-icon-top: -7px;
+$de-rp-width: 268px !default;
+$de-rp-btn-enforce-prtct-margin: 0 46px;
+$de-rp-nav-lbl: 0 28px;
+$de-rp-nav-btn-mrgn: 0 12px;
+$de-rp-btn-enforce-bx-shadow: none;
+
+//New Implementation
+
+$de-par-dlg-hdr-weight: 700 !default;
+$de-para-dlg-hdr-margin-bottom: 15px !default;
+$de-para-dlg-hdr-margin-top: 17px !default;
+$de-dlg-heading-opacity: 87% !default;
+$de-para-dlg-right-contaner-top: 0 !default;
+$de-para-dlg-sub-title-bottom-margin: 8px !default;
+$de-para-dlg-sub-title-top-margin: 0 !default;
+$de-para-dlg-rtl-btn-margin-right: 24px !default;
+$de-para-dlg-rtl-btn-font-size: 12px !default;
+$de-para-dlg-rtl-btn-width: 200px !default;
+$de-de-rtl-btn-div-e-de-rtl-margin-right: 24px !default;
+$de-de-rtl-btn-div-e-de-rtl-margin-left: 12px !default;
+$de-para-dlg-spacing-div-mrgn-left: 40px !default;
+
+// Table properties
+$de-row-height-bottom-margin: 8px;
+
+@include export-module('documenteditor-icons') {
+  .e-documenteditor {
+    .e-close::before {
+      content: '\e825';
+      font-family: 'e-icons';
+      font-size: 14px;
+    }
+
+    .e-de-op-search-icon::before {
+      content: '\e275';
+      font-family: 'e-icons';
+      font-size: $de-op-icon-font-size;
+    }
+
+    .e-arrow-up::before {
+      content: '\e834';
+      font-family: 'e-icons';
+      font-size: $de-op-icon-font-size;
+    }
+
+    .e-arrow-down::before {
+      content: '\e83d';
+      font-family: 'e-icons';
+      font-size: $de-op-icon-font-size;
+    }
+
+    .e-de-op-close-icon {
+      height: $de-op-close-icon-width;
+    }
+
+    .e-de-op-close-icon::before {
+      content: '\e7fc';
+    }
+
+    .e-de-op-search-close-icon::before {
+      content: '\e7fc';
+      font-family: 'e-icons';
+      font-size: 10px;
+    }
+  }
+
+  .e-de-table-properties-alignment:hover {
+    border-color: $de-table-align-hover-color;
+  }
+
+  .e-de-table-properties-alignment {
+    border: 1px solid transparent;
+  }
+
+  .e-de-tablecell-alignment {
+    border: 1px solid transparent;
+  }
+
+  .e-de-tablecell-alignment:hover {
+    border-color: $de-cell-align-hover-color;
+  }
+
+  .e-de-table-left-alignment::before {
+    content: '\e517';
+    font-size: $de-table-alignment-font-size;
+    position: absolute;
+    top: $de-table-alignment-top;
+    }
+
+  .e-de-table-center-alignment::before {
+    content: '\e518';
+    font-size: $de-table-alignment-font-size;
+    position: absolute;
+    top: $de-table-alignment-top;
+  }
+
+  .e-de-table-right-alignment::before {
+    content: '\e515';
+    font-size: $de-table-alignment-font-size;
+    position: absolute;
+    top: $de-table-alignment-top;
+  }
+
+  .e-de-tablecell-top-alignment::before {
+    content: '\e527';
+    font-size: $de-tablecell-alignment-font-size;
+  }
+
+  .e-de-tablecell-center-alignment::before {
+    content: '\e526';
+    font-size: $de-tablecell-alignment-font-size;
+  }
+
+  .e-de-tablecell-bottom-alignment::before {
+    content: '\e525';
+    font-size: $de-tablecell-alignment-font-size;
+  }
+
+  .e-de-table-alignment-active {
+    border: 1px solid $de-table-align-active-color;
+  }
+
+  .e-de-table-border-setting {
+    border: 1px solid $de-border-dlg-border-setting-inside-border;
+    height: 48px;
+    left: 5px;
+    position: relative;
+    top: 5px;
+    width: 48px;
+  }
+
+  .e-de-table-border-setting-genral {
+    border: 1px solid $de-border-dlg-border-setting-divs-color;
+    display: inline-block;
+    height: 60px;
+    width: 60px;
+  }
+
+  .e-de-table-border-preview-genral {
+    border: 1px solid $de-border-dlg-border-preview-divs-color;
+    display: inline-block;
+    height: 25px;
+    width: 25px;
+  }
+
+  .e-de-table-border-inside-setting:hover {
+    border: 1px solid $de-table-setting-hover-color;
+  }
+
+  .e-de-table-border-preview {
+    height: 24px;
+    width: 24px;
+  }
+
+  .e-de-table-border-inside-preview:hover {
+    border: 1px solid $de-table-preview-hover-color;
+  }
+
+  .e-de-table-border-inside-setting-click {
+    border: 1px solid $de-table-setting-color;
+  }
+
+  .e-de-table-border-inside-preview-click {
+    border: 1px solid $de-table-preview-setting-color;
+  }
+
+  .e-de-table-border-none-setting::before {
+    content: '\e507';
+    font-size: $de-border-none-setting-font-size;
+    position: absolute;
+  }
+
+  .e-de-table-border-box-setting::before {
+    content: '\e509';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
+  .e-de-table-border-all-setting::before {
+    content: '\e511';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
+  .e-de-table-border-custom-setting::before {
+    content: '\e516';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
+  .e-de-table-border-toptop-alignment::before {
+    content: '\e281';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-de-table-border-topcenter-alignment::before {
+    content: '\e276';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-de-table-border-topbottom-alignment::before {
+    content: '\e298';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-de-table-border-diagionalup-alignment::before {
+    content: '\e262';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-de-table-border-diagionaldown-alignment::before {
+    content: '\e265';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-de-table-border-bottomleft-alignment::before {
+    content: '\e291';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-de-table-border-bottomcenter-alignment::before {
+    content: '\e287';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-de-table-border-bottomright-alignment::before {
+    content: '\e288';
+    font-size: 16px;
+    left: 4px;
+    position: absolute;
+    top: $de-td-table-border-top;
+  }
+
+  .e-menu-item .e-de-cut::before {
+    content: $de-context-menu-cut-icon;
+  }
+
+  .e-menu-item .e-de-copy::before {
+    content: $de-context-menu-copy-icon;
+  }
+
+  .e-menu-item .e-de-paste::before {
+    content: $de-context-menu-paste-icon;
+  }
+
+  .e-menu-item .e-de-continue-numbering::before {
+    content: $de-context-menu-continue-numbering-icon;
+  }
+
+  .e-menu-item .e-de-restart-at::before {
+    content: $de-context-menu-restart-at-icon;
+  }
+
+  .e-menu-item .e-de-insertlink::before {
+    content: $de-context-menu-insertlink;
+  }
+
+  .e-menu-item .e-de-open-hyperlink::before {
+    content: $de-context-menu-open-hyperlink;
+  }
+
+  .e-menu-item .e-de-copy-hyperlink::before {
+    content: $de-context-menu-copy-hyperlink;
+  }
+
+  .e-menu-item .e-de-edit-hyperlink::before {
+    content: $de-context-menu-edit-hyperlink;
+  }
+
+  .e-menu-item .e-de-remove-hyperlink::before {
+    content: $de-context-menu-remove-hyperlink;
+  }
+
+  .e-menu-item .e-de-fonts::before {
+    content: $de-context-menu-font-icon;
+  }
+
+  .e-menu-item .e-de-paragraph::before {
+    content: $de-context-menu-paragraph-icon;
+  }
+
+  .e-menu-item .e-de-table::before {
+    content: $de-context-menu-table-properties-icon;
+  }
+
+  .e-menu-item .e-de-insertabove::before {
+    content: $de-context-menu-insert-above-icon;
+  }
+
+  .e-menu-item .e-de-insertbelow::before {
+    content: $de-context-menu-insert-below-icon;
+  }
+
+  .e-menu-item .e-de-insertleft::before {
+    content: $de-context-menu-insert-left-icon;
+  }
+
+  .e-menu-item .e-de-insertright::before {
+    content: $de-context-menu-insert-right-icon;
+  }
+
+  .e-menu-item .e-de-delete-table::before {
+    content: $de-context-menu-delete-table-icon;
+  }
+
+  .e-menu-item .e-de-deleterow::before {
+    content: $de-context-menu-delete-row-icon;
+  }
+
+  .e-menu-item .e-de-deletecolumn::before {
+    content: $de-context-menu-delete-column-icon;
+  }
+
+  // .e-de-tablecell-top-alignment {
+  //   padding: 4px;
+  // }
+
+  // .e-de-tablecell-center-alignment {
+  //   padding: 4px;
+  // }
+
+  // .e-de-tablecell-bottom-alignment {
+  //   padding-left: 4px;
+  // }
+
+  .e-de-bold::before {
+    content: '\e339';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-italic::before {
+    content: '\e35a';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-underline::before {
+    content: '\e343';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-indent::before {
+    content: '\e35d';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-outdent::before {
+    content: '\e33f';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-align-left::before {
+    content: '\e33a';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-align-center::before {
+    content: '\e35e';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-align-right::before {
+    content: '\e34d';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-justify::before {
+    content: '\e334';
+    font-family: 'e-icons';
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .e-de-single-spacing::before {
+    content: '\e520';
+    font-family: 'e-icons';
+    font-size: 16px;
+  }
+
+  .e-de-double-spacing::before {
+    content: '\e521';
+    font-family: 'e-icons';
+    font-size: 16px;
+  }
+
+  .e-de-one-point-five-spacing::before {
+    content: '\e522';
+    font-family: 'e-icons';
+    font-size: 16px;
+  }
+
+  .e-de-before-spacing::before {
+    content: '\e523';
+    font-family: 'e-icons';
+    font-size: 16px;
+  }
+
+  .e-de-after-spacing::before {
+    content: '\e274';
+    font-family: 'e-icons';
+    font-size: 16px;
+  }
+
+  .e-de-icon-bullet-list-dot::before {
+    content: '\e270';
+    font-family: 'e-icons';
+    font-size: 42px;
+  }
+
+  .e-de-icon-bullet-list-circle::before {
+    content: '\e254';
+    font-family: 'e-icons';
+    font-size: 42px;
+  }
+
+  .e-de-icon-bullet-list-square::before {
+    content: '\e271';
+    font-family: 'e-icons';
+    font-size: 42px;
+  }
+
+  .e-de-icon-bullet-list-tick::before {
+    content: '\e259';
+    font-family: 'e-icons';
+    font-size: 42px;
+  }
+
+  .e-de-icon-bullet-list-flower::before {
+    content: '\e267';
+    font-family: 'e-icons';
+    font-size: 42px;
+  }
+
+  .e-de-icon-bullet-list-arrow::before {
+    content: '\e253';
+    font-family: 'e-icons';
+    font-size: 42px;
+  }
+
+  .e-de-icon-bullet-list-none::before {
+    content: '\e256';
+    font-family: 'e-icons';
+    font-size: 42px;
+  }
+
+}
+@include export-module('documenteditor-layout') {
+  .e-de-blink-cursor {
+    border-left: 1px solid;
+    pointer-events: none;
+    position: absolute;
+    z-index: 3;
+  }
+
+  .e-de-cursor-animation {
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-name: FadeInFadeOut;
+  }
+
+  @keyframes FadeInFadeOut {
+    from {
+      opacity: 1;
+    }
+
+    13% {
+      opacity: 0;
+    }
+
+    50% {
+      opacity: 0;
+    }
+
+    63% {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .e-documenteditor {
+    .e-checkbox-wrapper .e-frame {
+      height: 14px;
+      line-height: 6px;
+      width: 14px;
+    }
+
+    .e-checkbox-wrapper .e-label {
+      font-size: 12px;
+    }
+
+    .e-de-op-close-button {
+      left: 267px;
+      position: absolute;
+      top: $de-op-close-button-top;
+    }
+  }
+}
+@include export-module('documenteditor-theme') {
+  .e-de-background {
+    background-color: $de-background;
+  }
+
+  .e-de-result-list-block .e-de-search-result-hglt {
+    background: $search-result-highlight-bg-color;
+    border-bottom: 2px solid $search-result-hightlight-bdr-clr-hvr;
+    cursor: default;
+    padding: $search-result-item-padding-top 1px $search-result-item-padding-bottom 5px;
+  }
+
+  .e-de-result-list-block .e-de-op-search-txt .e-de-op-search-word-text {
+    color: $search-result-hightlight-bdr-clr;
+  }
+
+  .e-de-search-result-item {
+    cursor: default;
+    padding: $search-result-item-padding-top 1px $search-result-item-padding-bottom 5px;
+  }
+
+  .e-de-search-result-item:hover {
+    border-bottom: 1px solid $search-result-hightlight-bdr-clr-hvr;
+    cursor: default;
+  }
+
+  .e-de-search-result-item:focus {
+    border-bottom: 2px solid $search-result-hightlight-bdr-clr-hvr;
+    cursor: default;
+    padding: $search-result-item-padding-top 1px $search-result-item-padding-bottom 5px;
+  }
+
+
+  .e-de-search-tab-content .e-input-group .e-de-op-search-icon:focus {
+    border: 1px solid $search-icon-bdr-clr;
+  }
+
+  .e-de-op-search-icon:hover {
+    background: $search-icon-hvr;
+  }
+
+
+  .e-de-search-tab-content .e-input-group .e-de-op-search-close-icon:focus {
+    border: 1px solid $search-icon-bdr-clr;
+    border-right-width: 0;
+  }
+
+  .e-de-op-search-close-icon:hover {
+    background: $search-icon-hvr;
+  }
+
+  .e-spin-down:focus {
+    border: 1px solid $spin-down-bdr-clr;
+    border-right-width: 0;
+  }
+
+  .e-spin-down:hover {
+    background: $spin-down-hvr;
+  }
+
+  .e-spin-up:focus {
+    border: 1px solid $spin-up-bdr-clr;
+    border-right-width: 0;
+  }
+
+  .e-spin-up:hover {
+    background: $spin-up-hvr;
+  }
+
+  .e-de-para-dlg-heading {
+    color: $de-dlg-heading-main-header;
+    display: block;
+    font-size: $de-para-dlg-heading-font-size;
+    font-weight: $de-para-dlg-heading-font-weight;
+    margin-bottom: $de-para-title-bottom-margin;
+  }
+
+  .e-de-para-dlg-container {
+    height: $de-para-dlg-height;
+    width: $de-para-dlg-width;
+  }
+
+  .e-de-toc-dlg-heading {
+    color: $de-dlg-heading-main-header;
+    display: block;
+    font-size: $de-toc-dlg-heading-font-size;
+    font-weight: $de-toc-dlg-heading-font-weight;
+    margin-bottom: $de-toc-title-bottom-margin;
+  }
+
+  .e-de-toc-dlg-main-heading {
+    color: $de-dlg-heading-main-header;
+    display: block;
+    font-size: $de-toc-dlg-heading-font-size;
+    font-weight: $de-toc-dlg-main-heading-font-weight;
+    margin-bottom: $de-toc-title-bottom-margin;
+  }
+
+  .e-de-toc-reset-button {
+    margin-top: $de-toc-reset-button-margin-top;
+  }
+
+  .e-de-toc-modify-button {
+    margin-left: $de-toc-modify-button-margin-left;
+    margin-top: $de-toc-modify-button-margin-top;
+  }
+
+  .e-de-toc-dlg-container {
+    height: $de-toc-dlg-height;
+    width: $de-toc-dlg-width;
+  }
+
+  .e-de-toc-dlg-sub-container {
+    margin-bottom: $de-toc-sub-container-bottom;
+  }
+
+  .e-de-toc-list-view {
+    border: 1px solid $de-toc-list-view-border-color;
+    border-radius: $de-toc-styles-table-div-border-radius;
+    font-size: $de-toc-list-view-font-size;
+    height: $de-toc-list-view-height;
+    margin-left: $de-toc-list-view-margin-left;
+    overflow-y: scroll;
+    width: $de-toc-list-view-width;
+  }
+
+  .e-de-toc-dlg-sub-heading {
+    color: $de-dlg-heading-main-header;
+    display: block;
+    font-size: $de-toc-dlg-heading-font-size;
+    font-weight: $de-toc-dlg-heading-font-weight;
+    margin: $de-toc-dlg-sub-margin;
+  }
+
+  .e-de-toc-dlg-style-label {
+    margin-left: $de-toc-dlg-style-label-left;
+    margin-top: $de-toc-dlg-style-label-top;
+  }
+
+  .e-de-toc-dlg-style-label.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-toc-dlg-style-label-left;
+  }
+
+  .e-de-pagesetup-dlg-container {
+    height: $de-page-setup-dlg-height;
+    width: $de-page-setup-dlg-width;
+  }
+
+  .e-de-page-setup-ppty-tab {
+    border: $de-page-setup-ppty-tab-border;
+  }
+
+  .e-de-page-setup-dlg-sub-container {
+    margin-bottom: $de-page-setup-sub-container-bottom;
+  }
+
+  .e-de-page-setup-dlg-left-sub-container {
+    float: left;
+    position: relative;
+    top: $de-page-setup-dlg-left-container-top;
+  }
+
+  .e-de-page-setup-dlg-right-sub-container {
+    float: right;
+    position: relative;
+    top: $de-page-setup-dlg-right-container-top;
+  }
+
+  .e-de-page-setup-dlg-sub-header  {
+    display: block;
+    font-size: $de-page-setup-margin-dia-common-font;
+    font-weight: normal;
+    margin-bottom: $de-page-setup-margin-dia-common-margin-bottom;
+    margin-top: $de-page-setup-margin-dia-common-margin-top;
+  }
+
+  .e-de-page-setup-dlg-sub-title-header  {
+    display: block;
+    font-size: $de-page-setup-margin-dia-common-font;
+    font-weight: normal;
+    margin-bottom: $de-page-setup-margin-dia-common-margin-bottom;
+    margin-top: $de-page-setup-common-margin-top;
+  }
+
+  .e-de-page-setup-dlg-sub-container-port {
+    height: $de-page-setup-sub-container-height-style;
+    margin-bottom: $de-page-setup-sub-container-port-bottom;
+  }
+
+  .e-de-page-setup-dlg-sub-label {
+    font-size: $de-page-setup-dlg-sub-label-font-size;
+    font-weight: $de-page-setup-dlg-sub-label-font-weight;
+  }
+
+  .e-de-page-setup-dlg-orientation-prop {
+    margin-top: $de-page-setup-dlg-orientation-prop-margin-top;
+  }
+
+  .e-de-page-setup-dlg-sub-size-container {
+    height: $de-page-setup-sub-size-container-height;
+    margin-bottom: $de-page-setup-sub-size-container-bottom;
+  }
+
+  .e-de-page-setup-dlg-layout-sub-container {
+    height: $de-page-setup-layout-sub-container-height;
+    margin-bottom: $de-page-setup-layout-sub-container-bottom;
+    position: relative;
+    top: $de-page-setup-layout-sub-container-top;
+  }
+
+  .e-de-page-setup-dlg-first-page-prop .e-label,
+  .e-de-page-setup-dlg-odd-or-even-prop .e-label {
+    font-size: $de-page-setup-checkbox-label-font-size;
+  }
+
+  .e-de-page-setup-dlg-first-page-prop .e-frame,
+  .e-de-page-setup-dlg-odd-or-even-prop .e-frame {
+    height: $de-checkbox-height;
+    line-height: $de-checkbox-line-height;
+    width: $de-checkbox-width;
+  }
+
+  .e-de-page-setup-dlg-left-layout-container {
+    float: left;
+    position: relative;
+    top: $de-page-setup-dlg-layout-container-top;
+  }
+
+  .e-de-page-setup-dlg-right-layout-container {
+    float: right;
+    position: relative;
+    top: $de-page-setup-dlg-layout-container-top;
+  }
+
+  .e-de-dlg-sub-header {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    margin-bottom: $de-para-sub-title-bottom-margin;
+    margin-top: $de-para-sub-title-top-margin;
+  }
+
+  .e-de-para-dlg-sub-container {
+    margin-bottom: $de-para-sub-container-bottom;
+  }
+
+  .e-de-para-dlg-right-sub-container {
+    top: $de-para-dlg-right-contaner-top;
+  }
+
+  .e-de-dlg-footer .e-btn {
+    margin-left: 10px;
+  }
+
+  .e-de-hyperlink-dlg-title {
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: $de-hyperlink-dlg-margin-bottom;
+    margin-top: $de-hyperlink-dlg-margin-top;
+  }
+
+  .e-de-hyperlink .e-de-hyperlink-dlg-input {
+    height: $de-hyperlink-dlg-input-height;
+    margin-bottom: $de-hyperlink-dlg-input-bottom;
+    width: $de-hyperlink-dlg-input-width;
+  }
+
+  .e-de-font-dlg-header {
+    display: flex;
+    font-size: 12px;
+    font-weight: normal;
+    margin-bottom: $de-font-dlg-header-margin-bottom;
+  }
+
+  .e-de-font-dlg-header-effects,
+  .e-de-font-dlg-header-font-color {
+    display: flex;
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: $de-font-dlg-header-margin-bottom;
+  }
+
+  .e-de-font-dlg-main-header {
+    color: $de-dlg-heading-main-header;
+    font-size: 14px;
+    font-weight: normal;
+    margin-right: $de-font-dlg-main-header-margin-right;
+  }
+
+  .e-de-font-dlg-cb-right {
+    margin-left: $e-de-font-dlg-cb-margin-right;
+  }
+
+  .e-de-font-dlg-cb-right-div {
+    margin-left: 20px;
+  }
+
+  .e-de-dropdown {
+    margin-right: $de-dropdown-margin-right;
+  }
+
+  .e-de-op {
+    border-right: 1px solid $de-op-border-clr;
+    padding-left: $de-op-padding-left;
+    padding-right: $de-op-padding-left;
+    padding-top: $de-op-padding-top;
+    position: relative;
+    width: 300px;
+  }
+
+  .e-de-op-header {
+    color: $de-op-title-clr;
+    font-family: $de-op-header-font-family;
+    font-size: 15px;
+    font-weight: $de-op-header-font-weight;
+    margin-bottom: $de-op-header-bottm-margin;
+  }
+
+  .e-de-op-tab {
+    border: 0;
+    height: $de-op-tab-height;
+  }
+
+  .e-de-op-icon {
+    color: $de-op-icon-color;
+    height: 20px;
+    width: 20px;
+  }
+
+  .e-de-op-close-icon {
+    color: $de-op-close-icon-clr;
+  }
+
+  .e-de-op-nav-btn {
+    height: $de-op-close-icon-width;
+    width: $de-op-close-icon-width;
+  }
+
+  .e-de-op-search-txt {
+    border-bottom: 1px solid $search-result-hightlight-bdr-item;
+    color: $de-dlg-heading-main-header;
+    font-size: 14px;
+  }
+
+  .e-de-op-search-txt .e-de-op-search-word {
+    color: $de-op-search-txt;
+  }
+
+  .e-de-op-more-less {
+    display: block;
+    margin-top: 15px;
+  }
+
+  .e-de-op-replacetabcontentdiv {
+    height: 82px;
+    margin-top: 15px;
+  }
+
+  label[for='container_wholeWord'] {
+    left: 35px;
+  }
+
+  .e-de-cell-dia-label-common {
+    display: inline-block;
+    font-size: $de-cell-margin-dia-common-font;
+    font-weight: 400;
+    margin-bottom: $de-cell-margin-dia-common-margin-bottom;
+    margin-top: $de-cell-margin-dia-common-margin-top;
+    width: $de-cell-margin-dia-common-width;
+  }
+
+  .e-de-cell-dia-options-label {
+    font-size: $de-cell-margin-dia-options-font;
+    font-weight: $de-para-dlg-heading-font-weight;
+  }
+
+  .e-de-table-border-heading {
+    font-size: $de-border-dlg-border-label-fontsize;
+    font-weight: $de-border-dlg-border-label-font-weight;
+    padding-bottom: $de-border-dlg-border-label-paddingbottom;
+  }
+
+  .e-de-table-setting-heading {
+    font-size: $de-border-dlg-setting-label-fontsize;
+    font-weight: $de-border-dlg-border-label-fontweight;
+    padding-bottom: $de-border-dlg-setting-label-paddingbottom;
+  }
+
+  .e-de-layout-setting-heading {
+    font-size: $de-border-dlg-setting-label-fontsize;
+    font-weight: $de-border-dlg-border-label-fontweight;
+    padding-bottom: $de-border-dlg-setting-label-paddingbottom;
+  }
+
+  .e-de-table-setting-labels-heading {
+    font-size: $de-border-dlg-settinglabels-fontsize;
+    font-weight: $de-border-dlg-border-label-fontweight;
+  }
+
+  .e-de-table-element-subheading {
+    font-size: $de-border-dlg-settinglabels-fontsize;
+    font-weight: $de-border-dlg-border-label-fontweight;
+  }
+
+  .e-de-border-dlg-preview-div {
+    border: $de-border-dlg-border-preview-div-width solid $de-border-dlg-border-preview-div-opacity;
+  }
+
+  .e-de-border-dlg-preview-inside-divs {
+    opacity: $de-border-dlg-preview-inside-divs-opacity;
+  }
+
+  .e-de-table-dia-align-div {
+    border: $de-table-align-border-width solid $de-table-align-border-color;
+    display: inline-block;
+    height: $de-table-align-height;
+    margin-right: $de-table-align-margin-right;
+    width: $de-table-align-width;
+  }
+
+  .e-de-table-dia-align-label {
+    display: inline-block;
+    font-size: $de-table-alignment-label-font-size;
+    font-weight: normal;
+    margin-left: $de-table-alignment-label-margin-left;
+    margin-top: $de-table-alignment-label-margin-top;
+  }
+
+  .e-de-table-dialog-separator-line {
+    background-color: $de-table-separator-line-color;
+    height: $de-table-separator-line-height;
+    left: $de-table-separator-line-left;
+    opacity: $de-table-separator-line-opacity;
+    position: absolute;
+    top: $de-table-separtor-line-top;
+    width: $de-table-separator-line-width;
+  }
+
+  .e-de-table-dialog-options-label {
+    font-size: $de-table-options-font-size;
+    font-weight: $de-table-options-font-weight;
+    padding-bottom: $de-table-options-padding-bottom;
+    padding-top: $de-table-options-padding-top;
+  }
+
+  .e-de-list-ddl-header {
+    font-size: 14px;
+    font-weight: $de-list-dlg-header-font-weight;
+    margin-bottom: $de-list-dlg-header-margin-bottom;
+    margin-top: $de-list-dlg-header-margin-top;
+  }
+
+  .e-de-list-ddl-header-list-level {
+    font-size: 14px;
+    font-weight: $de-list-dlg-header-font-weight;
+    margin-bottom: $de-list-dlg-header-margin-bottom;
+  }
+
+  .e-de-tbl-dlg-footer {
+    padding-top: $de-tbl-dlg-footer;
+  }
+
+  .e-de-row-ht-top {
+    display: inline-block;
+    margin-left: 20px;
+  }
+
+  .e-de-cell-width-top {
+    margin-left: $de-cell-width-top-margin-left;
+    margin-top: $de-cell-width-top-margin-top;
+  }
+
+  .e-de-tbl-dlg-border-btn {
+    float: right;
+    margin-right: $de-tbl-dlg-border-btn-margin-right;
+    margin-top: $de-tbl-dlg-border-btn-margin-top;
+  }
+
+  .e-de-tbl-dlg-op-btn {
+    left: $de-tbl-opt-btn-left;
+    position: absolute;
+    top:  $de-tbl-opt-btn-top;
+  }
+
+  .e-de-insert-table-dlg-sub-header {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    margin-bottom: $de-insert-table-title-bottom-margin;
+    margin-top: $de-insert-table-title-top-margin;
+  }
+
+  .e-de-insert-table-dlg-input {
+    margin-bottom: $de-insert-table-dlg-input-bottom;
+  }
+
+  .e-de-insert-footnote-dlg-sub-header {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    margin-bottom: $de-insert-table-title-bottom-margin;
+    margin-top: $de-insert-table-title-top-margin;
+  }
+
+  .e-de-list-ddl-subheader,
+  .e-de-list-ddl-subheaderbottom {
+    font-size: 12px;
+    font-weight: $de-list-dlg-subheader-font-weight;
+    margin-bottom: $de-list-dlg-subheader-margin-bottom;
+    margin-top: $de-list-dlg-subheader-margin-top;
+  }
+
+  .e-de-list-dlg-subdiv {
+    float: right;
+    margin-top: $e-de-list-subdiv-margin-top;
+    position: relative;
+  }
+
+  .e-de-list-dlg-div {
+    float: right;
+    margin-top: $e-de-list-div-margin-top;
+    position: relative;
+  }
+
+  .e-de-ok-button {
+    margin-right: $de-ok-insert-button-margin-right;
+  }
+
+  .e-de-options-setter {
+    left: $de-options-buttons-left;
+  }
+
+  .e-de-op-close-icon:hover {
+    color: $de-op-btn-icon-hover-clr;
+  }
+
+  .e-de-tooltip {
+    background-color: $de-tooltip-bg-clr;
+    box-shadow: $de-tooltip-shadow;
+    color: $de-tooltip-color;
+    cursor: text;
+    max-width: 200px;
+    padding: 5px;
+    width: fit-content;
+    word-wrap: break-word;
+  }
+
+  .e-btn.e-de-op-icon-btn {
+    background-color: $de-op-btn-icon-bg;
+    border-color: $de-op-btn-icon-border;
+  }
+
+  .e-btn.e-de-op-close-button:hover {
+    background-color: $de-op-btn-icon-bg;
+    border-color: $de-op-btn-icon-border;
+    color: $de-op-btn-icon-hover-clr;
+  }
+
+  .e-btn.e-de-op-close-button:focus {
+    background-color: $de-op-btn-icon-bg;
+    border-color: $de-op-btn-icon-border;
+    color: $de-op-btn-icon-hover-clr;
+  }
+
+  .e-btn.e-de-op-close-button:active {
+    background-color: $de-op-btn-icon-bg;
+    border-color: $de-op-btn-icon-border;
+    color: $de-op-btn-icon-active-clr;
+  }
+
+  .e-documenteditor {
+    .e-input {
+      color: $de-input-color;
+      font-size: 14px;
+    }
+  }
+
+  .e-de-dlg-target .e-footer-content {
+    .e-control.e-btn.e-flat:not(.e-icon-btn) {
+      height: $de-dlg-btn-height;
+    }
+  }
+
+  .e-de-tbl-dlg-border-btn .e-control.e-btn.e-flat:not(.e-icon-btn) {
+    height: $de-dlg-btn-height;
+  }
+
+  .e-de-dlg-target {
+    .e-dlg-header,
+    .e-dlg-header * {
+      font-weight: $de-border-dlg-border-label-fontweight;
+    }
+
+    .e-dlg-header {
+      font-size: $de-dlg-header-font-size;
+      font-weight: $de-dlg-header-font-weight;
+      margin-top: $de-dlg-header-margin-top;
+    }
+
+    .e-de-dlg-footer {
+      margin-top: $de-dlg-footer-margin-top;
+      padding-top: $de-dlg-footer-padding-top;
+    }
+
+    .e-dlg-header-content {
+      padding: $de-dlg-header-content-padding;
+    }
+
+    .e-dlg-content {
+      padding: $de-dlg-content-padding;
+    }
+
+    .e-footer-content {
+      padding-right: $de-dlg-footer-padding-right;
+      padding-top: $de-dlg-footer-content-padding-top;
+    }
+
+    .e-btn .e-btn-icon.e-icon-dlg-close {
+      font-size: $de-dlg-close-font-size;
+    }
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: 1px;
+      border-radius: $e-de-dlg-border-radius;
+    }
+
+    .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
+      left: $de-dlg-close-icon-left;
+    }
+
+    .e-dlg-clr-pkr-top {
+      top: $de-dlg-clr-pkr-top;
+    }
+}
+
+  .e-de-op-result-container {
+    margin-top: $de-op-result-container-margin-top;
+  }
+
+  .e-de-op {
+    background-color: $de-op-bg-color;
+  }
+
+  .e-de-op {
+    .e-tab-header .e-toolbar-items {
+      margin-bottom: $de-op-tab-header-margin-bottom;
+      margin-top: $de-op-tab-header-margin-top;
+    }
+}
+
+  .e-de-font-dlg-color {
+    border: $de-font-color-border;
+    border-radius: $de-font-color-border-radius;
+    font-size: 12px;
+    height: 16px;
+    margin-left: 15px;
+    width: 25px;
+  }
+
+  .e-de-icon-table-row-above {
+    top: $de-icon-table-row-above-top;
+  }
+
+  .e-de-icon-table-row-below {
+    top: $de-icon-table-row-below-top;
+  }
+
+  .e-de-icon-table-column-left {
+    top: $de-icon-table-column-left-top;
+  }
+
+  .e-de-icon-table-column-right {
+    top: $de-icon-table-column-right-top;
+  }
+
+  .e-de-icon-table-delete {
+    top: $de-icon-table-delete-top;
+  }
+
+  .e-de-icon-table-row-delete {
+    top: $de-icon-table-row-delete-top;
+  }
+
+  .e-de-icon-table-column-delete {
+    top: $de-icon-table-column-delete-top;
+  }
+
+  .e-de-list-bullet-none {
+    height: 40px;
+    width: 40px;
+  }
+
+  .e-de-list-bullet-dot {
+    height: 40px;
+    width: 40px;
+  }
+
+  .e-de-list-bullet-circle {
+    height: 40px;
+    width: 40px;
+  }
+
+  .e-de-list-bullet-square {
+    height: 40px;
+    width: 40px;
+  }
+
+  .e-de-list-bullet-flower {
+    height: 40px;
+    width: 40px;
+  }
+
+  .e-de-list-bullet-arrow {
+    height: 40px;
+    width: 40px;
+  }
+
+  .e-de-list-bullet-tick {
+    height: 40px;
+    width: 40px;
+  }
+
+  .e-de-bullet:hover {
+    background: $de-bullet-list-hover-color;
+  }
+
+  .e-de-list-numbered-none {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-numbered-number-dot {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-numbered-number-brace {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-numbered-up-roman {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-numbered-up-letter {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-numbered-low-letter-brace {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-numbered-low-letter-dot {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-numbered-low-roman {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-numbered:hover {
+    background: $de-number-list-hover-color;
+  }
+
+  .e-de-list-multilevel-none {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-multilevel-list-normal {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-multilevel-list-multilevel {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-list-multilevel-list-bullets {
+    height: 80px;
+    width: 80px;
+  }
+
+  .e-de-multilevel-list:hover {
+    background: $de-multilevel-list-hover-color;
+  }
+
+  .e-de-list-dialog-open:hover {
+    background: $de-list-dialog-hover-color;
+  }
+
+  .e-de-cell-options {
+    left: $de-cell-options-left;
+    top: $de-cell-options-top;
+  }
+
+  .e-de-font-color-label {
+    margin-bottom: $de-font-color-margin-bottom;
+    margin-top: $de-font-color-margin-top;
+  }
+
+  .e-de-font-content-label {
+    margin-left: $de-font-dlg-effect-margin-left;
+    margin-right: $de-font-dlg-margin-right;
+  }
+
+  .e-de-font-color-margin {
+    margin-right: $de-font-dlg-color-margin-right;
+    margin-top: $de-font-dlg-color-margin-top;
+  }
+
+  .e-de-font-content-checkbox-label {
+    margin-left: $de-font-content-checkbox-left;
+  }
+
+  .e-de-font-checkbox {
+    margin-left: $de-font-checkbox-left;
+  }
+
+  .e-de-font-dlg-padding {
+    margin-top: $de-font-dlg-margin-top;
+  }
+
+  .e-de-table-container-div {
+    margin-top: $de-table-container-margin-top;
+  }
+
+  .e-de-table-header-div {
+    padding-top: $de-table-header-padding-top;
+  }
+
+  .e-de-table-subheader-div {
+    float: right;
+    margin-right: $de-table-subheader-div-margin-right;
+    margin-top: $de-table-subheader-div-margin-top;
+  }
+
+  .e-de-table-cell-header-div {
+    padding-top: $de-table-header-padding-top;
+  }
+
+  .e-de-table-cell-subheader-div {
+    top: $de-cell-subheader-top;
+  }
+
+  .e-de-cell-margin-header {
+    left: $de-cell-margin-header-left;
+    top: $de-cell-margin-header-top;
+  }
+
+  .e-de-font-dlg-display {
+    display: inline-flex;
+  }
+
+  .e-de-tbl-margin-sub-header {
+    margin-top: $de-tbl-margin-sub-header;
+  }
+
+  .e-de-tbl-btn-separator {
+    width: $de-tbl-btn-separator;
+  }
+
+
+  .e-de-op-msg {
+    color: $de-op-container-messagediv-color;
+    top: 79px;
+  }
+
+  .e-de-save-dlg-file-name {
+    height: 25px;
+    margin-bottom: 8px;
+  }
+
+  .e-de-save-dlg-format-type {
+    height: 25px;
+    margin-bottom: 8px;
+    padding-top: $de-save-dlg-format-type-padding;
+  }
+
+  .e-de-search-tab-content {
+    margin-top: $de-op-search-tab-content-margin-top;
+    width: $de-op-search-text-box-container-width;
+  }
+
+  .e-de-font-dlg {
+    height: $de-font-dlg-height;
+    width: $de-font-dlg-width;
+  }
+
+  .e-de-hyperlink {
+    height: $de-hyper-link-height;
+    width: $de-hyper-link-width;
+  }
+
+  .e-de-insert-table {
+    height: $de-insert-table-height;
+    width: $de-insert-table-width;
+  }
+
+  .e-de-insert-table {
+    height: $de-insert-footnote-height;
+    width: $de-insert-footnote-width;
+  }
+
+  .e-de-list-dlg {
+    height: $de-list-dlg-height;
+    width: $de-list-dlg-width;
+  }
+
+  .e-de-save-dlg {
+    height: $de-save-dlg-height;
+    width: $de-save-dlg-width;
+  }
+
+  .e-de-table-properties-dlg {
+    height: $de-table-ppty-dlg-height;
+    width: $de-table-ppty-dlg-width;
+  }
+
+  .e-de-table-border-shading-dlg {
+    height: $de-table-border-shading-dlg-height;
+    width: $de-table-border-shading-dlg-width;
+  }
+
+  .e-de-table-cell-margin-dlg {
+    height: $de-table-cell-margin-dlg-height;
+    width: $de-table-cell-margin-dlg-width;
+  }
+
+  .e-de-table-options-dlg {
+    height: $de-table-options-dlg-height;
+    width: $de-table-options-dlg-width;
+  }
+
+  .e-de-table-border-none {
+    position: absolute;
+    top: $de-table-border-none-top;
+  }
+
+  .e-de-table-border-box {
+    position: absolute;
+    top: $de-table-border-box-top;
+  }
+
+  .e-de-table-border-all {
+    position: absolute;
+    top: $de-table-border-all-top;
+  }
+
+  .e-de-table-border-custom {
+    position: absolute;
+    top: $de-table-border-custom-top;
+  }
+
+  .e-de-table-shading-preview {
+    top: $de-table-shading-preview-top;
+  }
+
+  .e-de-font-content-label span.e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-font-label span.e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-font-content-label:hover .e-label,
+  .e-css.e-de-font-content-label:hover .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-font-label:hover .e-label,
+  .e-css.e-de-font-label:hover .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-documenteditor {
+    .e-checkbox-wrapper .e-label {
+      color: $de-checkbox-wrapper-color;
+      font-size: 14px;
+    }
+
+    .e-checkbox-wrapper .e-frame {
+      height: $de-checkbox-height;
+      line-height: $de-checkbox-line-height;
+      width: $de-checkbox-width;
+    }
+
+    .e-checkbox-wrapper .e-frame + .e-label {
+      margin-right: $de-checkbox-margin-right;
+    }
+  }
+
+  .e-de-op-dlg-footer {
+    margin-top: $de-op-dlg-footer-margin-top;
+  }
+
+  .e-de-op-dlg-footer .e-btn {
+    height: $de-dlg-btn-height;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .e-de-search-tab-content .e-input-group .e-de-search-input {
+    width: $de-op-search-input-width;
+  }
+
+  .e-de-op-replacewith {
+    width: $de-op-replacewith-width;
+  }
+
+  .e-de-table-ppty-tab {
+    border: $de-table-ppty-tab-border;
+  }
+
+  .e-de-table-container-div .e-checkbox-wrapper .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-table-header-div .e-checkbox-wrapper .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-table-ppty-options-break .e-checkbox-wrapper .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-table-cell-header-div .e-checkbox-wrapper .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-tbl-margin-sub-header .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label {
+    color: $de-checkbox-wrapper-color;
+  }
+
+  .e-de-list-format-info {
+    border-radius: 50%;
+    cursor: default;
+    font-size: 12px;
+    height: 15px;
+    line-height: 1px;
+    padding: $de-list-info-btn-padding;
+    text-transform: lowercase;
+    width: 16px;
+  }
+
+  .e-button-custom {
+    height: $de-bookmark-custom-btn-height;
+    padding: 0;
+    width: $de-bookmark-custom-btn-width;
+  }
+
+  .e-styles-listview,
+  .e-bookmark-listview {
+    border: 1px solid $bookmark-listview-border-color;
+    border-radius: $de-bookmark-list-view-border-radius;
+    height: 150px;
+    overflow-y: scroll;
+  }
+
+  .e-bookmark-gotobutton,
+  .e-bookmark-addbutton,
+  .e-styles-addbutton,
+  .e-bookmark-deletebutton {
+    margin-bottom: 8px;
+  }
+
+  .e-bookmark-list {
+    float: left;
+    margin-right: 20px;
+    width: 250px;
+  }
+
+  .e-bookmark-textboxdiv {
+    margin-bottom: $de-bookmark-textbox-margin-bottom;
+  }
+
+  .e-bookmark-listview .e-list-item {
+    font-size: 13px;
+    height: 30px;
+    line-height: 27px;
+  }
+
+
+  .e-bookmark-common {
+    display: flex;
+  }
+
+  .e-bookmark-button {
+    position: relative;
+    top: $de-bookmark-button-div-top-position;
+  }
+
+  .e-font {
+    float: left;
+  }
+
+  .e-de-table-border-toptop-alignment,
+  .e-de-table-border-topcenter-alignment,
+  .e-de-table-border-topbottom-alignment,
+  .e-de-table-border-diagionalup-alignment,
+  .e-de-table-border-diagionaldown-alignment,
+  .e-de-table-border-bottomleft-alignment,
+  .e-de-table-border-bottomcenter-alignment,
+  .e-de-table-border-bottomright-alignment {
+    left: $de-table-border-dlg-alignments-left;
+    position: absolute;
+    top: $de-table-border-preview-top;
+    transform: $de-table-border-dlg-alignments-transform;
+  }
+
+  .e-de-style-properties,
+  .e-de-style-formatting {
+    font-size: $de-style-heading-font-size;
+    font-weight: $de-style-heading-font-weight;
+  }
+
+  .e-de-style-formatting {
+    margin-bottom: $de-style-dialog-style-formatting-bottom-margin;
+  }
+
+  .e-de-style-paragraph-indent-group-button .e-btn,
+  .e-de-style-paragraph-group-button .e-btn,
+  .e-de-style-font-group-button .e-btn {
+    box-shadow: none;
+  }
+
+  .e-de-style-paragraph-indent-group-button .e-btn.e-active,
+  .e-de-style-paragraph-group-button .e-btn.e-active,
+  .e-de-style-font-group-button .e-btn.e-active {
+    background-color: $de-style-btn-active-bg-border-color;
+    border-color: $de-style-btn-active-bg-border-color;
+    box-shadow: none;
+    color: $de-style-btn-active-text-color;
+  }
+
+  .e-de-style-properties {
+    margin-bottom: $de-style-dialog-style-ppties-bottom-margin;
+  }
+
+  .e-de-style-nametype-div {
+    margin-bottom: $de-style-dialog-style-name-type-div-bottom-margin;
+  }
+
+  .e-de-style-based-para-div {
+    margin-bottom: $de-style-dialog-style-based-para-div-bottom-margin;
+  }
+
+  .e-de-style-name,
+  .e-de-style-styletype,
+  .e-de-style-style-based-on,
+  .e-de-style-style-paragraph  {
+    font-size: 13px;
+    font-weight: 400;
+    margin-bottom: $de-style-dialog-label-bottom-margin;
+    width: 180px;
+  }
+
+  .e-de-style-left-div {
+    margin-right: $de-style-dialog-style-left-div-right-margin;
+  }
+
+  .e-de-style-font-color-picker,
+  .e-de-style-icon-button-size,
+  .e-de-style-icon-button-first-size,
+  .e-de-style-icon-button-last-size {
+    height: 30px;
+  }
+
+  .e-de-style-bold-button-size {
+    height: 30px;
+    margin-left: 6px;
+    margin-right: 8px;
+  }
+
+  .e-de-style-font-color-picker,
+  .e-de-style-icon-button-size {
+    margin-right: $de-style-dialog-label-bottom-margin;
+  }
+
+  .e-de-style-icon-button-first-size {
+    margin-left: 6px;
+    margin-right: 3px;
+  }
+
+  .e-de-style-icon-button-last-size {
+    margin-right: 6px;
+  }
+
+  .e-de-style-font-color-picker {
+    margin-left: 8px;
+  }
+
+  .e-style-font-fmaily-right {
+    margin-right: $de-style-dialog-label-bottom-margin;
+  }
+
+  .e-style-font {
+    margin-left: $de-style-font-margin-left;
+    margin-right: $de-style-font-margin-right;
+  }
+
+  .e-de-style-left-div .e-de-style-dlg-name-input {
+    height: $e-de-style-input-text-height;
+  }
+
+  .e-style-list {
+    margin-left: $de-style-list-margin-left;
+  }
+
+  .e-de-style-dialog .e-de-style-only-this-document {
+    margin-top: 25px;
+  }
+
+  .e-de-style-format-dropdwn {
+    width: 135px;
+  }
+
+  .e-de-style-options-div {
+    margin-bottom: $de-style-dialog-option-div-bottom-margin;
+    padding: 5px;
+  }
+
+  .e-de-style-paragraph-group-button {
+    border-right: 2px solid $de-style-toggle-btn-color;
+  }
+
+  .e-de-style-font-group-button {
+    border-left: 2px solid $de-style-toggle-btn-color;
+    border-right: 2px solid $de-style-toggle-btn-color;
+  }
+
+  .e-de-op-replace-messagediv {
+    color: $de-op-container-messagediv-color;
+    position: absolute;
+    top: 144px;
+  }
+
+  .e-de-font-content-label .e-label,
+  .e-de-font-dlg-cb-right .e-label,
+  .e-de-font-checkbox  .e-label {
+    font-size: $de-font-checkbox-label-font-size;
+  }
+
+  .e-de-font-content-label .e-frame,
+  .e-de-font-dlg-cb-right .e-frame,
+  .e-de-font-checkbox  .e-frame {
+    height: $de-checkbox-height;
+    line-height: $de-checkbox-line-height;
+    width: $de-checkbox-width;
+  }
+
+  .e-de-op-input-group,
+  .e-de-op-replacewith {
+    height: $de-op-input-group-height;
+  }
+
+  .e-de-hyperlink-bookmark-check {
+    margin-top: $de-hyperlink-bookmark-check-margin-top;
+  }
+
+  .e-de-table-container-div .e-checkbox-wrapper .e-frame,
+  .e-de-table-header-div .e-checkbox-wrapper .e-frame,
+  .e-de-table-ppty-options-break .e-checkbox-wrapper .e-frame,
+  .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-frame,
+  .e-de-table-cell-header-div .e-checkbox-wrapper .e-frame,
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-frame,
+  .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-frame,
+  .e-de-tbl-margin-sub-header .e-frame {
+    height: $de-checkbox-height;
+    line-height: $de-checkbox-line-height;
+    width: $de-checkbox-width;
+  }
+
+  .e-de-table-container-div .e-checkbox-wrapper .e-label,
+  .e-de-table-header-div .e-checkbox-wrapper .e-label,
+  .e-de-table-ppty-options-break .e-checkbox-wrapper .e-label,
+  .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label ,
+  .e-de-table-cell-header-div .e-checkbox-wrapper .e-label,
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label,
+  .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-label,
+  .e-de-tbl-margin-sub-header .e-label {
+    font-size: 14px;
+  }
+
+  .e-de-table-ppty-dlg-measure-div {
+    float: right;
+    margin-left: $de-table-ppty-dlg-measure-div-margin-left;
+    margin-top: -12px;
+  }
+
+  .e-de-table-ppty-dlg-measure-drop-down-div {
+    float: right;
+    margin-left: $de-table-ppty-dlg-measure-div-margin-left;
+    margin-top: $de-table-ppty-dlg-measure-div-margin-top;
+  }
+
+  .e-de-table-ppty-dlg-left-indent-container {
+    float: right;
+    margin-right: $de-table-ppty-dlg-left-indent-container-margin-right;
+  }
+
+  .e-de-table-ppty-dlg-row-height-label {
+    float: right;
+    margin-right: $de-table-ppty-dlg-row-height-label-margin-right;
+    margin-top: $de-table-ppty-dlg-row-height-label-margin-top;
+  }
+
+  .e-de-table-ppty-dlg-preferred-width-div {
+    float: right;
+    margin-left: $de-table-ppty-dlg-preferred-width-margin-left;
+    margin-top: $de-table-ppty-dlg-preferred-width-margin-top;
+  }
+
+  .e-de-table-ppty-options-break {
+    margin-bottom: $de-table-ppty-options-break-margin-bottom;
+  }
+
+  .e-de-table-cell-subheader-div {
+    margin-right: $de-table-cell-subheader-div-margin-right;
+    margin-top: $de-table-cell-subheader-div-margin-top;
+  }
+
+  .e-de-table-ppty-dlg-cell-tab-measure-label {
+    float: right;
+    margin-right: $de-table-ppty-dlg-cell-tab-measure-label-margin-right;
+    margin-top: $de-table-ppty-dlg-cell-tab-measure-label-margin-top;
+  }
+
+  .e-tab .e-tab-header .e-toolbar-item .e-de-table-ppty-dlg-row-header {
+    padding-left: $de-table-ppty-dlg-table-header-padding;
+    padding-right: $de-table-ppty-dlg-table-header-padding;
+  }
+
+  .e-tab .e-tab-header .e-toolbar-item .e-de-table-ppty-dlg-cell-header {
+    padding-left: $de-table-ppty-dlg-table-header-padding;
+    padding-right: $de-table-ppty-dlg-table-header-padding;
+  }
+
+  .e-tab .e-tab-header .e-toolbar-item .e-de-page-setup-dlg-margin-tab-header {
+    padding-left: $de-table-ppty-dlg-table-header-padding-left;
+    padding-right: $de-table-ppty-dlg-table-header-padding;
+  }
+
+  .e-styles-list {
+    float: left;
+    margin-right: $de-bookmark-listview-margin-right;
+    width: 250px;
+  }
+
+  .e-styles-textboxdiv {
+    padding-bottom: 15px;
+  }
+
+  .e-styles-listview .e-list-item {
+    font-size: 13px;
+    height: 30px;
+    line-height: 27px;
+  }
+
+  .e-styles-common {
+    padding-top: 5px;
+  }
+
+  .e-styles-button {
+    float: right;
+  }
+
+  .e-de-toc-dlg-styles {
+    margin-bottom: $de-toc-dlg-styles-margin-bottom;
+    margin-left: $de-toc-dlg-styles-margin-left;
+    margin-top: $de-toc-dlg-styles-margin-top;
+  }
+
+  .e-de-toc-dlg-build-table {
+    margin-top: $de-toc-dlg-build-table-margin-top;
+  }
+
+  .e-de-toc-table-div .e-de-toc-dlg-toc-level {
+    height: 24px;
+    margin-left: $de-toc-dlg-toc-level-margin-left;
+    width: 44px;
+  }
+
+  .e-de-toc-styles-table-div {
+    border: 1px solid $de-toc-list-view-border-color;
+    border-radius: $de-toc-styles-table-div-border-radius;
+    margin-top: $de-toc-styles-table-div-margin-top;
+    width: 213px;
+  }
+
+  .e-de-toc-dlg-sub-level-heading {
+    font-size: 12px;
+  }
+
+  .e-de-toc-table-div {
+    height: $e-de-toc-table-div-height;
+    overflow-y: scroll;
+    width: $de-toc-table-div-width;
+  }
+
+  .e-de-toc-dlg-style-input {
+    margin-bottom: $de-toc-dlg-style-input-margin-bottom;
+    margin-left: $de-toc-dlg-style-input-margin-left;
+    width: $de-toc-dlg-style-input-width;
+  }
+
+  .e-de-toc-dlg-outline-levels {
+    margin-top: 15px;
+    width: $de-toc-dlg-outline-levels-width;
+  }
+
+  .e-de-styles,
+  .e-de-bookmark {
+    margin-top: $de-bookmark-content-margin-top;
+  }
+
+  .e-bookmark-textboxdiv .e-bookmark-textbox-input {
+    height: $de-bookmark-textbox-height;
+  }
+
+  .e-styles-dlgfields {
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+
+  .e-tab .e-tab-header .e-toolbar-item .e-de-op-find-tab-header {
+    padding-left: $de-op-tab-header-padding-left;
+    padding-right: $de-op-tab-header-padding;
+  }
+
+  .e-tab .e-tab-header .e-toolbar-item .e-de-op-replace-tab-header {
+    padding-left: $de-op-tab-header-padding;
+    padding-right: $de-op-tab-header-padding;
+  }
+
+  .e-de-dlg-target .e-footer-content .e-list-dlg-font {
+    margin-left: $de-list-dlg-font-margin-left;
+  }
+
+  .e-bookmark-dlgfields {
+    font-weight: 400;
+    margin-bottom: $de-bookmark-dlgfields-margin-bottom;
+  }
+
+  .e-de-ui-wfloating-menu.e-de-ui-bullets-menu .e-de-ui-wfloating-menuitem-md {
+    height: 65px;
+    padding: 10px;
+    width: 70px;
+  }
+
+  .e-de-ui-wfloating-menu.e-de-ui-bullets-menu .e-de-ui-wfloating-bullet-menuitem-md {
+    height: 45px;
+    width: 45px;
+  }
+
+  .e-de-bullet-icon-size {
+    height: 45px;
+    width: 45px;
+  }
+
+  .e-de-ui-list-header-presetmenu {
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 14px;
+    min-width: 50px;
+    overflow: hidden;
+    text-align: left;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .e-de-ui-bullet {
+    font-size: 42px;
+  }
+
+  .e-de-ui-list-header-presetmenu .e-de-ui-list-line {
+    border-bottom: 1px solid $de-numbering-list-line-color;
+    margin-left: 5px;
+    width: 100%;
+  }
+
+  .e-de-ui-list-header-presetmenu div span {
+    color: $de-numbering-list-span-color;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .e-de-ui-wfloating-menu .e-de-ui-wfloating-menuitem,
+  .e-de-ui-wfloating-menu .e-de-ui-menuitem-none {
+    border: 0;
+    box-shadow: inset 0 0 0 1px $de-numbering-list-border-color;
+    cursor: pointer;
+    height: 70px;
+    margin: 0 5px 5px 0;
+    padding: 0;
+    width: 70px;
+}
+
+  .e-de-ui-wfloating-menu {
+    padding: 10px 4px 5px 10px;
+  }
+
+  .e-de-list-thumbnail .e-de-list-items {
+    float: left;
+  }
+
+  .e-de-list-thumbnail .e-de-list-items {
+    background: $de-numbering-list-background-color;
+    border: 1px solid transparent;
+    clear: initial;
+    display: inline-block;
+    height: auto;
+    margin: 5px;
+    text-align: center;
+    width: auto;
+  }
+
+  .e-de-list-items {
+    background: $de-numbering-list-background-color;
+    box-sizing: border-box;
+    cursor: pointer;
+    list-style: none;
+    padding: 7px 10px;
+    position: relative;
+  }
+
+  .e-de-list-item-size {
+    font-size: 14px;
+  }
+
+  .e-de-ui-wfloating-menu {
+    padding: 10px 4px 5px 10px;
+  }
+
+  .e-de-table-border-fill {
+    margin-right: 25px;
+    margin-top: 7px;
+  }
+
+  .e-de-table-ppty-dlg-tabs {
+    height: $de-table-ppty-dlg-tabs-height;
+    position: relative;
+    width: 530px;
+  }
+
+  .e-de-ui-bullet-list-header-presetmenu .e-de-list-thumbnail .e-de-list-active,
+  .e-de-style-numbered-list .e-de-list-thumbnail .e-de-list-active {
+    border-color: $de-table-align-active-color;
+  }
+
+  .e-de-bullet-icons {
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-43%, -43%);
+  }
+}

@@ -262,6 +262,29 @@ export class RowDD {
                             this.updateParentRecords.push(draggedRecord.parentItem);
                         }
                     }
+                    if (!this.parent.enableVirtualization) {
+                        let data: IGanttData[] = gObj.flatData;
+                        let startIndex: number;
+                        let endIndex: number;
+                        if (draggedRecord.index < droppedRecord.index) {
+                            startIndex = draggedRecord.index;
+                            endIndex = droppedRecord.index;
+                        } else {
+                            startIndex = droppedRecord.index;
+                            endIndex = draggedRecord.index;
+                        }
+                        for (let i: number = startIndex; i <= endIndex; i++) {
+                            if (!isNullOrUndefined(data[i])) {
+                                data[i].index = i;
+                                if (!isNullOrUndefined(data[i].parentItem)) {
+                                    let updatedParent: ITreeData = data.filter((e: ITreeData) => {
+                                        return e.uniqueID === data[i].parentUniqueID;
+                                    })[0];
+                                    data[i].parentItem.index = updatedParent.index;
+                                }
+                            }
+                        }
+                    }
                     gObj.rowDragAndDropModule.refreshDataSource();
                 }
                 if (this.dropPosition === 'middleSegment') {
@@ -517,7 +540,8 @@ export class RowDD {
                 draggedRecord.level = droppedRecord.level + 1;
             } else {
                 const level: number = 1;
-                draggedRecord.level = droppedRecord.level + 1;
+                draggedRecord.level = droppedRecord.level + 1; 
+                this.parent.setRecordValue('level' , this.draggedRecord.level , this.draggedRecord);
                 this.updateChildRecordLevel(draggedRecord, level);
             }
             droppedRecord.expanded = true;
@@ -601,6 +625,7 @@ export class RowDD {
                 parentData = this.parent.treeGrid[id][record.parentItem.uniqueID];
             }
             currentRecord.level = record.parentItem ? parentData.level + level : record.level + 1;
+            this.parent.setRecordValue('level' , currentRecord.level , currentRecord);
             if (currentRecord.hasChildRecords) {
                 level--;
                 level = this.updateChildRecordLevel(currentRecord, level);

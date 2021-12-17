@@ -144,7 +144,7 @@ export class DataLabel {
         let angle: number;
         let degree: number;
         this.inverted = chart.requireInvertedAxis;
-        this.yAxisInversed = series.yAxis.isInversed;
+        this.yAxisInversed = series.yAxis.isAxisInverse;
         const redraw: boolean = chart.redraw;
         let isDataLabelOverlap: boolean = false;
         let coordinatesAfterRotation: ChartLocation[] = [];
@@ -570,7 +570,8 @@ export class DataLabel {
         const padding: number = 5;
         const margin: MarginModel = this.margin;
         const textLength: number = !this.inverted ? textSize.height : textSize.width;
-        let extraSpace: number = this.borderWidth + textLength / 2 + padding;
+        let extraSpace: number = this.borderWidth + textLength / 2 + (position !== 'Outer' && series.type.indexOf('Column') > -1 &&
+            (Math.abs(rect.height - textSize.height) < padding) ? 0 : padding);
         if (series.type === 'StackingColumn100' || series.type === 'StackingBar100') {
             position = (position === 'Outer') ? 'Top' : position;
         } else if (series.type.indexOf('Range') > -1) {
@@ -804,9 +805,9 @@ export class DataLabel {
             }
         } else if (series.type === 'BoxAndWhisker') {
             if (labelIndex === 1 || labelIndex === 3 || labelIndex > 4) {
-                position = series.yAxis.isInversed ? 'Bottom' : 'Top';
+                position = series.yAxis.isAxisInverse ? 'Bottom' : 'Top';
             } else if (labelIndex === 2 || labelIndex === 4) {
-                position = series.yAxis.isInversed ? 'Top' : 'Bottom';
+                position = series.yAxis.isAxisInverse ? 'Top' : 'Bottom';
             } else {
                 isOverLap = false;
                 position = 'Middle';

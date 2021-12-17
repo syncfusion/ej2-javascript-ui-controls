@@ -344,7 +344,7 @@ export class ListDialog {
         const numberFormatTextBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_numberFormat') as HTMLInputElement;
 
         if (this.listLevel.listLevelPattern === 'Bullet') {
-            this.listLevel.numberFormat = '\uf0b7';
+            this.listLevel.numberFormat = String.fromCharCode(61623);
             numberFormatTextBox.value = this.listLevel.numberFormat;
             this.listLevel.characterFormat.fontFamily = 'Wingdings';
         } else {

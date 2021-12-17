@@ -1,0 +1,27 @@
+@include export-module('vscroll-bootstrap5-icons') {
+  /*! vscroll icons */
+  #{&}.e-vscroll {
+
+    &.e-scroll-device {
+
+      .e-nav-up-arrow::before {
+        content: '\e7dd';
+      }
+
+      .e-nav-down-arrow::before {
+        content: '\e734';
+      }
+    }
+
+    .e-nav-up-arrow::before {
+      content: '\e7dd';
+      line-height: normal;
+    }
+
+    .e-nav-down-arrow::before {
+      content: '\e734';
+      line-height: normal;
+    }
+  }
+}
+  

@@ -290,6 +290,9 @@ export class Toolbar {
             case 'AnnotationEditTool':
                 this.showAnnotationEditTool(isVisible);
                 break;
+            case 'FormDesignerEditTool':
+                this.showFormDesignerEditTool(isVisible);
+                break;
             case 'CommentTool':
                 this.showCommentOption(isVisible);
                 break;
@@ -431,7 +434,7 @@ export class Toolbar {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.applyHideToToolbar(enableSearchOption, 22, 22);
         }else {
-            this.applyHideToToolbar(enableSearchOption, 4, 4);
+            this.applyHideToToolbar(enableSearchOption, 5, 5);
         }
     }
 
@@ -456,7 +459,11 @@ export class Toolbar {
 
     private showAnnotationEditTool(isEnable: boolean): void {
         this.isAnnotationEditBtnVisible = isEnable;
-        this.applyHideToToolbar(isEnable, 23, 23);
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+           this.applyHideToToolbar(isEnable, 23, 23);
+        } else {
+           this.applyHideToToolbar(isEnable, 4, 4);
+        }
     }
 
     private showFormDesignerEditTool(isEnable: boolean): void {
@@ -755,18 +762,40 @@ export class Toolbar {
      * @private
      */
     public destroy(): void {
-        if (!isBlazor()) {
+        if (!isBlazor()) { 
             this.unWireEvent();
+            this.destroyComponent();
             if (this.moreDropDown) {
                 this.moreDropDown.destroy();
             }
             if (this.annotationToolbarModule) {
                 this.annotationToolbarModule.destroy();
             }
+            if (this.formDesignerToolbarModule) {
+                this.formDesignerToolbarModule.destroy();
+            }
             this.toolbar.destroy();
             this.toolbarElement.remove();
         }
     }
+
+    private destroyComponent(): void {
+        // eslint-disable-next-line
+        let componentElement: any = [this.openDocumentItem, this.firstPageItem, this.previousPageItem, this.nextPageItem,
+        this.lastPageItem, this.currentPageBoxElement, this.zoomOutItem, this.zoomInItem, this.zoomDropdownItem, this.textSelectItem,
+        this.panItem, this.submitItem, this.undoItem, this.redoItem, this.commentItem, this.textSearchItem, this.annotationItem,
+        this.formDesignerItem, this.printItem, this.downloadItem ]; 
+        for (let i: number = 0; i < componentElement.length; i++) {
+            this.destroyDependentComponent(componentElement[i]);
+        }
+    }
+
+    private destroyDependentComponent(component: any): void {
+        for (let i: number = component.ej2_instances.length - 1; i >=0; i--) {
+             component.ej2_instances[i].destroy();
+        }
+    }
+
     /**
      * @param pageIndex
      * @private
@@ -838,7 +867,7 @@ export class Toolbar {
             if (this.pdfViewer.enableRtl) {
                 this.toolbar.enableRtl = true;
             }
-            this.applyToolbarSettings();
+            this.applyToolbarSettingsForMobile();
             this.disableUndoRedoButtons();
         }
         return this.toolbarElement;
@@ -851,7 +880,7 @@ export class Toolbar {
         const zoomDropDownTemplateString: string = this.createZoomDropdownElement();
         // eslint-disable-next-line
         let items: any[] = [];
-        const submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn" style="font-size:15px"><span class="e-tbar-btn-text e-pv-submitform-text">'+ this.pdfViewer.localeObj.getConstant('SubmitForm') + '</span></button>';
+        const submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn" style="font-size:15px"><span id="' + this.pdfViewer.element.id + '_submitFormSpan" class="e-tbar-btn-text e-pv-submitform-text">'+ this.pdfViewer.localeObj.getConstant('SubmitForm') + '</span></button>';
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-open-document-icon e-pv-icon', cssClass: 'e-pv-open-document-container', id: this.pdfViewer.element.id + '_open', text: this.pdfViewer.localeObj.getConstant('Open text'), align: 'Left' });
         items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-open-separator-container' });
@@ -1182,7 +1211,13 @@ export class Toolbar {
         }
         if (this.annotationToolbarModule) {
             // eslint-disable-next-line max-len
-            if (!this.pdfViewer.toolbarSettings.showTooltip && this.annotationToolbarModule.toolbarElement.contains(args.target)) {
+            if (!this.pdfViewer.toolbarSettings.showTooltip && (this.annotationToolbarModule.toolbarElement.contains(args.target) || this.annotationToolbarModule.shapeToolbarElement.contains(args.target))) {
+                args.cancel = true;
+            }
+        }
+        if (this.formDesignerToolbarModule) {
+             // eslint-disable-next-line max-len
+            if (!this.pdfViewer.toolbarSettings.showTooltip && this.formDesignerToolbarModule.toolbarElement.contains(args.target)) {
                 args.cancel = true;
             }
         }
@@ -1418,6 +1453,7 @@ export class Toolbar {
             this.addComments(args.originalEvent.target as HTMLElement);
             break;
         case this.pdfViewer.element.id + '_submitForm':
+        case this.pdfViewer.element.id + '_submitFormSpan':
             this.pdfViewerBase.exportFormFields();
             break;
         }
@@ -1466,22 +1502,29 @@ export class Toolbar {
 
     public openZoomDropdown(): void {
         const toolbarData = this;
-        if(document.fullscreen) {
+        if (document.fullscreen) {
             if (isBlazor()) {
-            setTimeout(()=>{
-                let popupElement = document.getElementById(toolbarData.pdfViewer.element.id + "_zoomCombo_popup"); 
-                let targetElement = document.getElementById(toolbarData.toolbarElement.id); 
-                if(popupElement) {
-                targetElement.appendChild(popupElement); 
+                // eslint-disable-next-line
+                let fullscreenElement: any = (document as any).fullscreenElement;
+                if (fullscreenElement && fullscreenElement.tagName !== 'BODY' && fullscreenElement.tagName !== 'HTML') {
+                    setTimeout(() => {
+                        // eslint-disable-next-line
+                        let popupElement: any = document.getElementById(toolbarData.pdfViewer.element.id + "_zoomCombo_popup");
+                        let targetElement: any = document.getElementById(toolbarData.toolbarElement.id);
+                        // eslint-disable-next-line
+                        if (popupElement && targetElement && popupElement.ej2_instances) {
+                            targetElement.appendChild(popupElement);
+                            popupElement.ej2_instances[0].refreshPosition();
+                        }
+                    }, 100);
                 }
-            }, 200);
-           } else {
-            let popupElement = document.getElementById(this.pdfViewer.element.id + "_zoomDropDown_popup"); 
-            let targetElement = document.getElementById(this.toolbarElement.id); 
-            if(popupElement) {
-            targetElement.appendChild(popupElement); 
+            } else {
+                let popupElement = document.getElementById(this.pdfViewer.element.id + "_zoomDropDown_popup");
+                let targetElement = document.getElementById(this.toolbarElement.id);
+                if (popupElement) {
+                    targetElement.appendChild(popupElement);
+                }
             }
-           }
         }
     }
 
@@ -1498,7 +1541,14 @@ export class Toolbar {
                 // eslint-disable-next-line
                 reader.onload = (e: any): void => {
                     const uploadedFileUrl: string = e.currentTarget.result;
-                    this.pdfViewer.load(uploadedFileUrl, null);
+                    
+                    if(isBlazor()) {
+                        this.pdfViewer._dotnetInstance.invokeMethodAsync("LoadDocumentFromClient",uploadedFileUrl);
+                    } else {
+                        this.pdfViewer.load(uploadedFileUrl, null);
+                    }
+                    
+                    
                 };
             }
         }
@@ -1869,6 +1919,32 @@ export class Toolbar {
                 this.showSubmitForm(false);
             }
             this.showSeparator(toolbarSettingsItems);
+        }
+    }
+
+    private applyToolbarSettingsForMobile() {
+        const toolbarSettingsItems: ToolbarItem[] = this.pdfViewer.toolbarSettings.toolbarItems;
+        if (toolbarSettingsItems) {
+            if (toolbarSettingsItems.indexOf('OpenOption') !== -1) {
+                this.showOpenOption(true);
+            } else {
+                this.showOpenOption(false);
+            }
+            if (toolbarSettingsItems.indexOf('UndoRedoTool') !== -1) {
+                this.showUndoRedoTool(true);
+            } else {
+                this.showUndoRedoTool(false);
+            }
+            if (toolbarSettingsItems.indexOf('AnnotationEditTool') !== -1) {
+                this.showAnnotationEditTool(true);
+            } else {
+                this.showAnnotationEditTool(false);
+            }
+            if (toolbarSettingsItems.indexOf('SearchOption') !== -1) {
+                this.showSearchOption(true);
+            } else {
+                this.showSearchOption(false);
+            }
         }
     }
 

@@ -1,11 +1,11 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell } from '../common/index';
-import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
+import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
 import { removeAllChildren } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
-import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel} from '../../workbook/base/index';
-import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth, getSheet, setCell, Workbook  } from '../../workbook/base/index';
+import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol} from '../../workbook/base/index';
+import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell  } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView } from '../../workbook/index';
@@ -48,29 +48,18 @@ export class CellRenderer implements ICellRenderer {
     }
     public render(args: CellRenderArgs): Element {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const cell: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
-        const column: ColumnModel = getColumn(sheet, args.colIdx);
-        let validation: ValidationModel;
-        if (cell && cell.validation) {
-            validation = cell.validation;
-        } else if (column && column.validation) {
-            validation = column.validation;
-        }
         args.td = this.element.cloneNode() as HTMLTableCellElement;
         args.td.className = 'e-cell';
         attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
-        if (this.checkMerged(args)) {
-            return args.td;
-        }
+        if (this.checkMerged(args)) { return args.td; }
         args.isRefresh = false;
         this.update(args);
         if (args.cell && args.td) {
-            if (validation && validation.isHighlighted) {
-                this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
+            if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
+                this.parent.notify(
+                    cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
             }
-            this.parent.notify(
-                cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
-            if (args.td && args.td.children[0] && args.td.children[0].className === 'e-cf-databar') {
+            if (args.td.childElementCount && args.td.children[0].className === 'e-cf-databar') {
                 if (args.cell.style && args.cell.style.fontSize) {
                     (args.td.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = args.cell.style.fontSize;
                 }
@@ -78,38 +67,41 @@ export class CellRenderer implements ICellRenderer {
                 (args.td.children[0].firstElementChild.nextElementSibling as HTMLElement).style.height = '100%';
             }
         }
-        if (!hasTemplate(this.parent as Workbook, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
+        if (!args.td.classList.contains('e-cell-template')) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
         const evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address, rowIndex: args.rowIdx, colIndex:
             args.colIdx, needHeightCheck: false };
         this.parent.trigger('beforeCellRender', evtArgs);
-        this.updateRowHeight({
-            rowIdx: args.rowIdx as number,
-            cell: evtArgs.element as HTMLElement,
-            lastCell: args.lastCell,
-            rowHgt: 20,
-            row: args.row,
-            hRow: args.hRow,
-            colIdx: args.colIdx,
-            sheet: sheet,
-            needHeightCheck: evtArgs.needHeightCheck
-        });
+        if (!sheet.rows[args.rowIdx] || !sheet.rows[args.rowIdx].customHeight) {
+            if ((evtArgs.element && evtArgs.element.children.length) || evtArgs.needHeightCheck) {
+                const clonedCell: HTMLElement = evtArgs.element.cloneNode(true) as HTMLElement;
+                clonedCell.style.width = getColumnWidth(sheet, args.colIdx, true) + 'px';
+                this.tableRow.appendChild(clonedCell);
+            }
+            if ((args.lastCell && this.tableRow.childElementCount) || evtArgs.needHeightCheck) {
+                const tableRow: HTMLElement = args.row || this.parent.getRow(args.rowIdx);
+                const previouseHeight: number = getRowHeight(sheet, args.rowIdx);
+                const rowHeight: number = this.getRowHeightOnInit();
+                if (rowHeight > previouseHeight) {
+                    const dprHgt: number = getDPRValue(rowHeight);
+                    tableRow.style.height = `${dprHgt}px`;
+                    (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height = `${dprHgt}px`;
+                    setRowHeight(sheet, args.rowIdx, rowHeight);
+                }
+                this.tableRow.innerHTML = '';
+            }
+        }
         this.setWrapByValue(sheet, args);
         return evtArgs.element;
     }
 
     private setWrapByValue(sheet: SheetModel, args: CellRenderArgs): void {
-        const isWrap: boolean = args.td.classList.contains('e-wraptext');
-        const cellValue: string = args.td.innerHTML;
-        if (cellValue.indexOf('\n') > -1 && !isWrap) {
-            const splitVal: string[] = cellValue.split('\n');
-            if (splitVal.length > 1) {
-                setCell(args.rowIdx, args.colIdx, sheet, { wrap: true }, true);
-                this.parent.notify(
-                    wrapEvent, { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet: sheet,
-                        td: args.td, row: args.row, hRow: args.hRow });
-            }
+        if (args.cell && args.cell.value && !args.cell.wrap && (args.cell.value + '').split('\n').length > 1) {
+            setCell(args.rowIdx, args.colIdx, sheet, { wrap: true }, true);
+            this.parent.notify(
+                wrapEvent, { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet: sheet,
+                    td: args.td, row: args.row, hRow: args.hRow });
         }
     }
 
@@ -123,6 +115,7 @@ export class CellRenderer implements ICellRenderer {
                 removeAllChildren(args.td);
                 args.td.appendChild(compiledTemplate);
             }
+            args.td.classList.add('e-cell-template');
         }
         if (args.isRefresh) {
             if (args.td.rowSpan) {
@@ -138,7 +131,7 @@ export class CellRenderer implements ICellRenderer {
                 args.td.removeChild(args.td.querySelector('.e-hyperlink'));
             }
         }
-        if (args.cell && args.cell.formula && args.cell.formula.indexOf('UNIQUE') === - 1) {
+        if (args.cell && args.cell.formula) {
             this.calculateFormula(args);
         }
         const formatArgs: { [key: string]: string | boolean | number | CellModel } = {
@@ -147,12 +140,10 @@ export class CellRenderer implements ICellRenderer {
             formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell,
             rowIndex: args.rowIdx, colIndex: args.colIdx, isRowFill: false };
         if (args.cell) { this.parent.notify(getFormattedCellObject, formatArgs); }
-        if (!isNullOrUndefined(args.td)) {
-            this.parent.refreshNode(args.td, { type: formatArgs.type as string, result: formatArgs.formattedText as string,
-                curSymbol: getNumberDependable(this.parent.locale, 'USD'), isRightAlign: formatArgs.isRightAlign as boolean,
-                value: <string>formatArgs.value || '', isRowFill: <boolean>formatArgs.isRowFill
-            });
-        }
+        this.parent.refreshNode(
+            args.td, { type: formatArgs.type as string, result: formatArgs.formattedText as string, curSymbol:
+                getNumberDependable(this.parent.locale, 'USD'), isRightAlign: formatArgs.isRightAlign as boolean,
+            value: <string>formatArgs.value || '', isRowFill: <boolean>formatArgs.isRowFill });
         let style: CellStyleModel = {};
         if (args.cell) {
             if (args.cell.style) {
@@ -196,13 +187,13 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
-        if (this.parent.allowChart && args.lastCell) {
+        if (args.lastCell && this.parent.chartColl && this.parent.chartColl.length) {
             this.parent.notify(refreshChart, {
                 cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex
             });
         }
         this.applyStyle(args, style);
-        if (this.parent.allowConditionalFormat && args.lastCell) {
+        if (args.checkCf || (args.lastCell && sheet.conditionalFormats && sheet.conditionalFormats.length)) {
             this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell, td: args.td });
         }
         if (args.checkNextBorder === 'Row') {
@@ -220,27 +211,33 @@ export class CellRenderer implements ICellRenderer {
                     cell: args.td });
             }
         }
-        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent as Workbook,
-                                                             args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
-            let address: string; if (typeof (args.cell.hyperlink) === 'string') {
-                address = args.cell.hyperlink;
-                if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    args.cell.hyperlink = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
+        if (args.cell) {
+            if (args.cell.hyperlink && !args.td.classList.contains('e-cell-template')) {
+                let address: string; if (typeof (args.cell.hyperlink) === 'string') {
+                    address = args.cell.hyperlink;
+                    if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                        args.cell.hyperlink = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
+                    }
+                } else {
+                    address = args.cell.hyperlink.address;
+                    if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                        args.cell.hyperlink.address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
+                    }
                 }
-            } else {
-                address = args.cell.hyperlink.address;
-                if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    args.cell.hyperlink.address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
-                }
+                this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
             }
-            this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
+            if (args.cell.wrap) {
+                this.parent.notify(wrapEvent, {
+                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet:
+                    sheet, initial: true, td: args.td, row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh &&
+                    getRowHeight(sheet, args.rowIdx) > 20
+                });
+            }
         }
-        if (args.cell && args.cell.wrap) {
-            const prevHgt: number = getRowHeight(sheet, args.rowIdx);
-            this.parent.notify(wrapEvent, {
-                range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet:
-                sheet, initial: true, td: args.td, row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && prevHgt > 20
-            });
+        const validation: ValidationModel = (args.cell && args.cell.validation) || (sheet.columns && sheet.columns[args.colIdx] &&
+            sheet.columns[args.colIdx].validation);
+        if (validation && validation.isHighlighted) {
+            this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
         }
         if (args.cell && args.cell.validation && args.cell.validation.isHighlighted) {
             this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
@@ -251,7 +248,7 @@ export class CellRenderer implements ICellRenderer {
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
                 first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded:
-                args.isHeightCheckNeeded, manualUpdate: args.manualUpdate});
+                args.isHeightCheckNeeded, manualUpdate: args.manualUpdate, onActionUpdate: args.onActionUpdate });
         }
     }
     private calculateFormula(args: CellRenderArgs): void {
@@ -510,28 +507,6 @@ export class CellRenderer implements ICellRenderer {
         }
     }
 
-    private updateRowHeight(
-        args: { row: HTMLElement, rowIdx: number, hRow: HTMLElement, cell: HTMLElement, rowHgt: number, lastCell: boolean, colIdx: number,
-            sheet: SheetModel, needHeightCheck?: boolean, }): void {
-        if ((args.cell && args.cell.children.length) || args.needHeightCheck) {
-            const clonedCell: HTMLElement = args.cell.cloneNode(true) as HTMLElement;
-            clonedCell.style.width = getColumnWidth(args.sheet, args.colIdx, true) + 'px';
-            this.tableRow.appendChild(clonedCell);
-        }
-        if ((args.lastCell && this.tableRow.childElementCount) || args.needHeightCheck) {
-            const tableRow: HTMLElement = args.row || this.parent.getRow(args.rowIdx);
-            const previouseHeight: number = getRowHeight(args.sheet, args.rowIdx);
-            const rowHeight: number = this.getRowHeightOnInit();
-            if (rowHeight > previouseHeight) {
-                const dprHgt: number = getDPRValue(rowHeight);
-                tableRow.style.height = `${dprHgt}px`;
-                (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height = `${dprHgt}px`;
-                setRowHeight(args.sheet, args.rowIdx, rowHeight);
-            }
-            this.tableRow.innerHTML = '';
-        }
-    }
-
     private getRowHeightOnInit(): number {
         const tTable: HTMLElement = this.parent.createElement('table', { className: 'e-table e-test-table' });
         const tBody: HTMLElement = tTable.appendChild(this.parent.createElement('tbody'));
@@ -584,7 +559,7 @@ export class CellRenderer implements ICellRenderer {
      * @param {boolean} checkWrap - Specifies the range.
      * @returns {void}
      */
-    public refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean): void {
+    public refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
@@ -595,7 +570,8 @@ export class CellRenderer implements ICellRenderer {
                     cell = this.parent.getCell(i, j) as HTMLTableCellElement;
                     if (cell) {
                         args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
-                            cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' };
+                            cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '', onActionUpdate:
+                            checkHeight };
                         this.update(args);
                         this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
                         if (checkWrap) { this.setWrapByValue(sheet, args); }
@@ -605,7 +581,7 @@ export class CellRenderer implements ICellRenderer {
         }
     }
 
-    public refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element): void {
+    public refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCf?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) { return; }
         if (element || !this.parent.scrollSettings.enableVirtualization || this.parent.insideViewport(rowIdx, colIdx)) {
@@ -613,7 +589,7 @@ export class CellRenderer implements ICellRenderer {
             if (!cell) { return; }
             this.update(<CellRenderArgs>{ rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(
                 rowIdx, colIdx, sheet), lastCell: lastCell, isRefresh: true, isHeightCheckNeeded: true,
-            manualUpdate: true, first: '' });
+            manualUpdate: true, first: '', checkCf: checkCf });
             this.parent.notify(renderFilterCell, { td: cell, rowIndex: rowIdx, colIndex: colIdx });
         }
     }

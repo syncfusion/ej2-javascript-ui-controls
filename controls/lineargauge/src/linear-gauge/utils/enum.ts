@@ -53,7 +53,11 @@ export type LinearGaugeTheme =
     /** Renders the linear gauge with Tailwind theme. */
     'Tailwind' |
     /** Renders the linear gauge with TailwindDark theme. */
-    'TailwindDark';
+    'TailwindDark'|
+    /** Renders the linear gauge with Bootstrap5 theme. */
+    'Bootstrap5' |
+    /**  Render the linear gauge with Bootstrap5 dark theme. */
+    'Bootstrap5Dark';
 
 /**
  * Defines the type of marker.

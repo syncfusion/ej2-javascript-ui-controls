@@ -91,7 +91,6 @@ export class SfdtReader {
             this.documentHelper.defaultTabWidth = jsonObject.defaultTabWidth;
         }
         if (!isNullOrUndefined(jsonObject.trackChanges)) {
-            this.documentHelper.owner.showRevisions = jsonObject.trackChanges;
             this.documentHelper.owner.enableTrackChanges = jsonObject.trackChanges;
         }
         if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
@@ -105,6 +104,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(jsonObject.compatibilityMode)) {
             this.documentHelper.compatibilityMode = jsonObject.compatibilityMode;
+            if (!isNullOrUndefined(this.documentHelper.owner.documentSettings)) {
+                this.documentHelper.owner.documentSettings.compatibilityMode = jsonObject.compatibilityMode;
+            }
         }
         if (!isNullOrUndefined(jsonObject.abstractLists)) {
             this.parseAbstractList(jsonObject, this.documentHelper.abstractLists);
@@ -544,11 +546,14 @@ export class SfdtReader {
                         this.parseCharacterFormat(block.characterFormat, paragraph.characterFormat);
                         this.parseParagraphFormat(block.paragraphFormat, paragraph.paragraphFormat);
                         let styleObj: Object;
+                        let styleName: string = 'Normal';
                         if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
-                            styleObj = this.documentHelper.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
-                            if (!isNullOrUndefined(styleObj)) {
-                                paragraph.paragraphFormat.applyStyle(styleObj as WStyle);
-                            }
+                            //Default value to link style object.
+                            styleName = block.paragraphFormat.styleName;
+                        }
+                        styleObj = this.documentHelper.styles.findByName(styleName, 'Paragraph');
+                        if (!isNullOrUndefined(styleObj)) {
+                            paragraph.paragraphFormat.applyStyle(styleObj as WStyle);
                         }
                         blocks.push(paragraph);
                     } else if (isSectionBreak && data.length === 1) {
@@ -639,11 +644,11 @@ export class SfdtReader {
                     }
                     let item: any = block.rows[i].cells[j].blocks;
                     for (let k: number = 0; k < item.length; k++) {
-                    if (item[k].hasOwnProperty('rows')) {
-                        table.isContainInsideTable = true;
-                        
+                        if (item[k].hasOwnProperty('rows')) {
+                            table.isContainInsideTable = true;
+
+                        }
                     }
-                }
                     this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
                     if (!isNullOrUndefined(cell.contentControlProperties)) {
@@ -902,12 +907,9 @@ export class SfdtReader {
                 footnoteElement.characterFormat = new WCharacterFormat(footnoteElement);
                 this.parseCharacterFormat(inline.characterFormat, footnoteElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, footnoteElement);
-                this.parseBody(inline.blocks, footnoteElement.blocks, undefined, false);
+                this.parseBody(inline.blocks, footnoteElement.bodyWidget.childWidgets as BlockWidget[], undefined, false);
 
                 lineWidget.children.push(footnoteElement);
-                for (let j: number = 0; j < footnoteElement.blocks.length; j++) {
-                    footnoteElement.blocks[j].footNoteReference = footnoteElement;
-                }
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty('chartType')) {
                 // chartPreservation

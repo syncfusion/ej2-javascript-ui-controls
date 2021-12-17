@@ -97,7 +97,7 @@ export class ContextMenu {
         if (target.classList.contains(CLS.FULLROW)) {
             this.parent.selectedItems.length = 0;
         }
-        this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr') as HTMLElement : target as HTMLElement;
+        this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr.e-row') as HTMLElement : target as HTMLElement;
         const view: string = this.getTargetView(target);
         this.updateActiveModule();
         /* istanbul ignore next */
@@ -125,7 +125,7 @@ export class ContextMenu {
                 // eslint-disable-next-line
                 data = this.parent.visitedData as { [key: string]: Object };
                 selected = true;
-            } else if (!isNOU(closest(target, 'tr'))) {
+            } else if (!isNOU(closest(target, 'tr.e-row'))) {
                 uid = this.targetElement.getAttribute('data-uid');
                 // eslint-disable-next-line
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };

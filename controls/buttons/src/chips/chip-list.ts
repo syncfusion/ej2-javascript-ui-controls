@@ -170,6 +170,23 @@ export interface DeleteEventArgs {
     event: MouseEventArgs | KeyboardEventArgs;
 }
 
+export interface ChipDeletedEventArgs {
+    /**
+     * Specifies the text value of the deleted chip item.
+     */
+    text: string;
+
+    /**
+     * Specifies the index value of the deleted chip item.
+     */
+    index: number;
+
+    /**
+     * Specifies the data of the deleted chip item.
+     */
+    data: string | number | ChipModel;
+}
+
 export interface ChipDataArgs {
     /**
      * It denotes the item text.
@@ -364,6 +381,15 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public delete: EmitType<DeleteEventArgs>;
 
+    /**
+     * Triggers when the chip item is removed.
+     * {% codeBlock src='chips/deleted/index.md' %}{% endcodeBlock %}
+     *
+     * @event
+     */
+    @Event()
+    public deleted: EmitType<ChipDeletedEventArgs>;
+
     constructor(options?: ChipListModel, element?: string | HTMLElement) {
         super(options, element);
     }
@@ -417,7 +443,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private createChip(): void {
-        // eslint-disable-next-line
         this.innerText = (this.element.innerText && this.element.innerText.length !== 0) ? this.element.innerText.trim() : this.element.innerText;
         this.element.innerHTML = '';
         this.chipCreation(this.type === 'chip' ? [this.innerText ? this.innerText : this.text] : this.chips);
@@ -790,7 +815,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                         this.deleteHandler(observedArgs.element, observedArgs.index);
                         this.selectionHandler(chipWrapper);
                         (chipData as ClickEventArgs).selected = observedArgs.element.classList.contains(classNames.active);
-                        const selectedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
+                        let selectedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
                         this.trigger('click', selectedItemArgs);
                     }
                 });
@@ -857,9 +882,12 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private deleteHandler(chipWrapper: HTMLElement, index: number): void {
+        // Used to store the deleted chip item details.
+        const deletedChipData: ChipDataArgs = this.find(chipWrapper);
         this.chips.splice(index, 1);
         this.setProperties({ chips: this.chips }, true);
         detach(chipWrapper);
+        this.trigger('deleted', deletedChipData as ChipDeletedEventArgs);
     }
 
     /**
@@ -912,15 +940,15 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             case 'selection':
             case 'enableDelete':
             case 'enabled':
-                this.refresh();
+                    this.refresh();
                 break;
             case 'cssClass':
-                if (!this.chipType()) {
-                    removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
-                    addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
-                } else {
-                    this.refresh();
-                }
+                    if (!this.chipType()) {
+                        removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
+                        addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
+                    } else {
+                        this.refresh();
+                    }
                 break;
             case 'selectedChips':
                 removeClass(this.element.querySelectorAll('.e-active'), 'e-active');

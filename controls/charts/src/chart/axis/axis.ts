@@ -75,7 +75,7 @@ export class Row extends ChildProperty<Row> {
                 axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
 
-        if (axis.opposedPosition) {
+        if (axis.isAxisOpposedPosition) {
             this.farSizes.push(width);
         } else {
             this.nearSizes.push(width);
@@ -132,7 +132,7 @@ export class Column extends ChildProperty<Column> {
             height += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
                 axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
-        if (axis.opposedPosition) {
+        if (axis.isAxisOpposedPosition) {
             this.farSizes.push(height);
         } else {
             this.nearSizes.push(height);
@@ -953,6 +953,8 @@ export class Axis extends ChildProperty<Axis> {
     /** @private */
     public labels: string[];
     /** @private */
+    public indexLabels: object;
+    /** @private */
     public format: Function;
     /** @private */
     public baseModule: Double | DateTime | Category | DateTimeCategory;
@@ -987,6 +989,10 @@ export class Axis extends ChildProperty<Axis> {
     public titleCollection: string[] = [];
     /** @private */
     public titleSize: Size = new Size(0, 0);
+    /** @private */
+    public isAxisInverse: boolean;
+    /** @private */
+    public isAxisOpposedPosition: boolean;
     /**
      * Task: BLAZ-2044
      * This property used to hide the axis when series hide from legend click
@@ -994,6 +1000,11 @@ export class Axis extends ChildProperty<Axis> {
      * @private
      */
     public internalVisibility: boolean = true;
+    /** 
+     * This property is used to place the vertical axis in opposed position and horizontal axis in inversed
+     * when RTL is enabled in chart
+     * @private */
+    public isRTLEnabled: boolean = false;
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
@@ -1025,7 +1036,7 @@ export class Axis extends ChildProperty<Axis> {
 
     public isInside(range: VisibleRangeModel): boolean {
         return (inside(this.crossAt, range) ||
-            (!this.opposedPosition && this.crossAt >= range.max) || (this.opposedPosition && this.crossAt <= range.min));
+            (!this.isAxisOpposedPosition && this.crossAt >= range.max) || (this.isAxisOpposedPosition && this.crossAt <= range.min));
     }
 
     /**
@@ -1079,7 +1090,7 @@ export class Axis extends ChildProperty<Axis> {
             return null;
         }
         const range: VisibleRangeModel = this.crossInAxis.visibleRange;
-        if (!this.opposedPosition) {
+        if (!this.isAxisOpposedPosition) {
             if (this.crossAt > range.max) {
                 value = range.max;
             }
@@ -1100,10 +1111,10 @@ export class Axis extends ChildProperty<Axis> {
 
     private findDifference(crossAxis: Axis): number {
         let value: number = 0;
-        if (this.opposedPosition) {
-            value = crossAxis.isInversed ? crossAxis.visibleRange.min : crossAxis.visibleRange.max;
+        if (this.isAxisOpposedPosition) {
+            value = crossAxis.isAxisInverse ? crossAxis.visibleRange.min : crossAxis.visibleRange.max;
         } else {
-            value = crossAxis.isInversed ? crossAxis.visibleRange.max : crossAxis.visibleRange.min;
+            value = crossAxis.isAxisInverse ? crossAxis.visibleRange.max : crossAxis.visibleRange.min;
         }
         return Math.abs(this.crossAt - value);
     }
@@ -1119,7 +1130,7 @@ export class Axis extends ChildProperty<Axis> {
             const baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
             let end: number;
-            if (!this.isInversed) {
+            if (!this.isAxisInverse) {
                 start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
                 end = start + this.zoomFactor * this.actualRange.delta;
             } else {
@@ -1294,7 +1305,7 @@ export class Axis extends ChildProperty<Axis> {
                     break;
                 case 'Rotate45':
                 case 'Rotate90':
-                    if (i > 0 && (!this.isInversed ? pointX <= previousEnd : pointX + width1 >= previousEnd)) {
+                    if (i > 0 && (!this.isAxisInverse ? pointX <= previousEnd : pointX + width1 >= previousEnd)) {
                         this.angle = (action === 'Rotate45') ? 45 : 90;
                         isIntersect = true;
                     }
@@ -1328,7 +1339,7 @@ export class Axis extends ChildProperty<Axis> {
                     }
                     break;
                 }
-                previousEnd = this.isInversed ? pointX : pointX + width1;
+                previousEnd = this.isAxisInverse ? pointX : pointX + width1;
             }
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
@@ -1363,7 +1374,7 @@ export class Axis extends ChildProperty<Axis> {
             label = this.visibleLabels[i];
             width2 = isBreakLabels ? label.breakLabelSize.width : label.size.width;
             pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
-            isMultiRows = !this.isInversed ? currentX < (pointX + width2 * 0.5) :
+            isMultiRows = !this.isAxisInverse ? currentX < (pointX + width2 * 0.5) :
                 currentX + currentLabel.size.width > (pointX - width2 * 0.5);
             if (isMultiRows) {
                 store.push(label.index);
@@ -1393,6 +1404,17 @@ export class Axis extends ChildProperty<Axis> {
             this.baseModule = chart[firstToLowerCase(this.valueType) + 'Module'];
         }
     }
+
+   /**
+     * Set the axis `opposedPosition` and `isInversed` properties.
+     *
+     * @returns {void}
+     * @private
+     */
+   public setIsInversedAndOpposedPosition(isPolar : boolean = false): void {
+        this.isAxisOpposedPosition = this.opposedPosition || (!isPolar && this.isRTLEnabled && this.orientation == 'Vertical');
+        this.isAxisInverse = this.isInversed || (this.isRTLEnabled && this.orientation == 'Horizontal');
+   }
 }
 /**
  * Axis visible range

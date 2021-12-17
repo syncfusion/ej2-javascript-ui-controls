@@ -163,7 +163,11 @@ export abstract class Widget implements IWidget {
     public index: number = 0;
     public get indexInOwner(): number {
         if (this instanceof BodyWidget && this.page) {
-            return this.page.bodyWidgets.indexOf(this);
+            if (this.containerWidget instanceof FootNoteWidget) {
+                return this.containerWidget.bodyWidgets.indexOf(this);
+            } else {
+                return this.page.bodyWidgets.indexOf(this);
+            }
         } else if (this.containerWidget && this.containerWidget.childWidgets) {
             return this.containerWidget.childWidgets.indexOf(this);
         } else if (this instanceof FootNoteWidget) {
@@ -213,8 +217,13 @@ export abstract class Widget implements IWidget {
             return undefined;
         }
         if (widget instanceof BodyWidget) {
-            if (index > 0) {
+            if (index > 0 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index - 1];
+            } else if ((widget.containerWidget instanceof FootNoteWidget) && !widget.page.documentHelper.owner.editor.removeEditRange) {
+                if (index <= 0) {
+                    return undefined;
+                }
+                widget = widget.containerWidget.bodyWidgets[index - 1];
             } else {
                 let page: Page = widget.page.previousPage;
                 widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[page.bodyWidgets.length - 1] : undefined;
@@ -259,8 +268,13 @@ export abstract class Widget implements IWidget {
             return undefined;
         }
         if (widget instanceof BodyWidget) {
-            if (index < widget.page.bodyWidgets.length - 1) {
+            if (index < widget.page.bodyWidgets.length - 1 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index + 1];
+            } else if (widget.containerWidget instanceof FootNoteWidget) {
+                if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editor.removeEditRange) {
+                    return undefined;
+                }
+                widget = widget.containerWidget.bodyWidgets[index + 1];
             } else if (widget.page.allowNextPageRendering) {
                 let page: Page = widget.page.nextPage;
                 widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
@@ -448,6 +462,10 @@ export abstract class BlockContainer extends Widget {
     /**
      * @private
      */
+    public footNoteReference: FootnoteElementBox = undefined;
+    /**
+     * @private
+     */
     public sectionFormatIn: WSectionFormat = undefined;
     public get sectionFormat(): WSectionFormat {
         let container: BlockContainer = this;
@@ -515,7 +533,17 @@ export class BodyWidget extends BlockContainer {
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let documentHelper: DocumentHelper = undefined;
         let node: BodyWidget = this;
-        hierarchicalIndex = node.index + ';' + hierarchicalIndex;
+        
+        if (node.containerWidget instanceof FootNoteWidget) {
+            hierarchicalIndex = node.containerWidget.bodyWidgets.indexOf(node) + ';' + hierarchicalIndex;
+            if (node.containerWidget.footNoteType === 'Footnote') {
+                hierarchicalIndex = 'FN' + ';' + hierarchicalIndex;
+            } else {
+                hierarchicalIndex = 'EN' + ';' + hierarchicalIndex;
+            }
+        } else {
+            hierarchicalIndex = node.index + ';' + hierarchicalIndex;
+        }
         if (!isNullOrUndefined(node.page)) {
             documentHelper = this.page.documentHelper;
             let pageIndex: number = documentHelper.pages.indexOf(this.page);
@@ -625,7 +653,32 @@ export class HeaderFooterWidget extends BlockContainer {
         this.headerFooterType = type;
     }
     public getTableCellWidget(point: Point): TableCellWidget {
-        return undefined;
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+        if (this.childWidgets[i] instanceof TableWidget) {
+            const child: TableWidget = this.childWidgets[i] as TableWidget;
+            let tableWidth: number = 0;
+            if (child.wrapTextAround) {
+                tableWidth = child.getTableCellWidth();
+            }
+            if (!(child.wrapTextAround) && child.y <= point.y && (child.y + child.height) >= point.y) {
+                return (child as Widget).getTableCellWidget(point);
+            }
+            if ((child.wrapTextAround &&
+                (child.x <= point.x && (child.x + tableWidth) >= point.x &&
+                    child.y <= point.y && (child.y + child.height) >= point.y))) {
+                return (child as Widget).getTableCellWidget(point);
+            }
+        }
+    }
+    let tableCell: TableCellWidget = undefined;
+    if (this.childWidgets.length > 0) {
+        if ((this.childWidgets[0] as Widget).y <= point.y) {
+            tableCell = (this.childWidgets[this.childWidgets.length - 1] as Widget).getTableCellWidget(point);
+        } else {
+            tableCell = (this.childWidgets[0] as Widget).getTableCellWidget(point);
+        }
+    }
+    return tableCell;
     }
     public equals(widget: Widget): boolean {
         // Todo: Need to work
@@ -688,7 +741,6 @@ export abstract class BlockWidget extends Widget {
      * @private
      */
     public contentControlProperties: ContentControlProperties;
-    public footNoteReference: FootnoteElementBox = undefined;
     public get bodyWidget(): BlockContainer {
         let widget: Widget = this;
         while (widget.containerWidget) {
@@ -823,6 +875,10 @@ export class FootNoteWidget extends BlockContainer {
     /**
      * @private
      */
+    public bodyWidgets: BodyWidget[] = [];
+    /**
+     * @private
+     */
     public block: BlockWidget;
     public getTableCellWidget(point: Point): TableCellWidget {
         return undefined;
@@ -892,7 +948,7 @@ export class ParagraphWidget extends BlockWidget {
             let lineWidget: LineWidget = this.childWidgets[i] as LineWidget;
             for (let j: number = 0; j < lineWidget.children.length; j++) {
                 let inline: ElementBox = lineWidget.children[j] as ElementBox;
-                if (!(inline instanceof ShapeElementBox)) {
+                if (!(inline instanceof ShapeBase) || (inline instanceof ShapeBase && inline.textWrappingStyle === 'Inline')) {
                     return false;
                 } else {
                     containsShape = true;
@@ -1501,6 +1557,7 @@ export class TableWidget extends BlockWidget {
     /* eslint-disable  */
     public calculateGrid(): void {
         let tempGrid: number[] = [];
+        let tempSpanDecimal: number[] = [];
         let spannedCells: TableCellWidget[] = [];
         let containerWidth: number = this.getOwnerWidth(true);
         let tableWidth: number = this.getTableClientWidth(containerWidth);
@@ -1514,6 +1571,7 @@ export class TableWidget extends BlockWidget {
             let currOffset: number = 0;
             if (tempGrid.indexOf(currOffset) < 0) {
                 tempGrid.push(currOffset);
+                tempSpanDecimal.push(currOffset);
             }
             //Converts the row grid before width from point to twips point by 15 factor.
             cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, tableWidth, null);
@@ -1521,6 +1579,7 @@ export class TableWidget extends BlockWidget {
             let startOffset: number = parseFloat(currOffset.toFixed(2));
             if (tempGrid.indexOf(startOffset) < 0) {
                 tempGrid.push(startOffset);
+                tempSpanDecimal.push(currOffset);
             }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
@@ -1581,6 +1640,7 @@ export class TableWidget extends BlockWidget {
                 let offset: number = parseFloat(currOffset.toFixed(2));
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
+                    tempSpanDecimal.push(currOffset);
                 }
 
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfter > 0) {
@@ -1589,6 +1649,7 @@ export class TableWidget extends BlockWidget {
 
                     if (tempGrid.indexOf(parseFloat(currOffset.toFixed(2))) < 0) {
                         tempGrid.push(parseFloat(currOffset.toFixed(2)));
+                        tempSpanDecimal.push(currOffset);
                     }
                     columnSpan += rowFormat.gridAfter;
                 }
@@ -1599,27 +1660,28 @@ export class TableWidget extends BlockWidget {
             }
         }
         tempGrid.sort((a: number, b: number) => { return a - b; });
+        tempSpanDecimal.sort((a: number, b: number) => { return a - b; });
         if (this.tableHolder.columns.length > 0 && tempGrid.length - 1 !== this.tableHolder.columns.length) {
-            this.updateColumnSpans(tempGrid, tableWidth);
+            this.updateColumnSpans(tempGrid, tableWidth, tempSpanDecimal);
         }
         this.tableCellInfo.clear();
         this.tableCellInfo = undefined;
     }
-    private updateColumnSpans(tempGrid: number[], containerWidth: number): void {
+    private updateColumnSpans(tempGrid: number[], containerWidth: number, tempSpan: number[]): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             if (row.rowFormat.gridBeforeWidth >= 0) {
-                row.rowFormat.gridBefore = row.getGridCount(tempGrid, undefined, -1, containerWidth);
+                row.rowFormat.gridBefore = row.getGridCount(tempGrid, undefined, -1, containerWidth, tempSpan);
             }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                let columnSpan: number = row.getGridCount(tempGrid, cell, cell.getIndex(), containerWidth);
+                let columnSpan: number = row.getGridCount(tempGrid, cell, cell.getIndex(), containerWidth, tempSpan);
                 if (columnSpan > 0 && cell.cellFormat.columnSpan !== columnSpan) {
                     cell.cellFormat.columnSpan = columnSpan;
                 }
             }
             if (row.rowFormat.gridAfterWidth >= 0) {
-                row.rowFormat.gridAfter = row.getGridCount(tempGrid, undefined, row.childWidgets.length, containerWidth);
+                row.rowFormat.gridAfter = row.getGridCount(tempGrid, undefined, row.childWidgets.length, containerWidth, tempSpan);
             }
         }
     }
@@ -2291,7 +2353,7 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
-    public getGridCount(tableGrid: number[], cell: TableCellWidget, index: number, containerWidth: number): number {
+    public getGridCount(tableGrid: number[], cell: TableCellWidget, index: number, containerWidth: number, tempSpan: number[]): number {
         let prevOffset: number = 0; let width: number = 0;
         let ownerTable: TableWidget = this.ownerTable;
         let rowFormat: WRowFormat = this.rowFormat;
@@ -2309,8 +2371,17 @@ export class TableRowWidget extends BlockWidget {
                 width = ownerTable.getCellWidth(rowFormat.gridAfterWidth, rowFormat.gridAfterWidthType, containerWidth, null);
             }
         }
+        let tabIndex: number = tableGrid.indexOf(prevOffset);
+        let tabGrid: number = tempSpan[tabIndex];
+        let gridEndIndex: number;
         let gridStartIndex: number = this.getOffsetIndex(tableGrid, prevOffset);
-        let gridEndIndex: number = this.getOffsetIndex(tableGrid, prevOffset + width);
+        let gridWidth: number = parseFloat((width + prevOffset).toFixed(2));
+        let gridDecimalWidth: number = parseFloat((width + tabGrid).toFixed(2))
+        if (gridDecimalWidth !== gridWidth && !isNullOrUndefined(tabGrid)) {
+            gridEndIndex = this.getOffsetIndex(tableGrid, tabGrid + width);
+        } else {
+            gridEndIndex = this.getOffsetIndex(tableGrid, prevOffset + width);
+        }
         return gridEndIndex - gridStartIndex;
     }
     private getOffsetIndex(tableGrid: number[], offset: number): number {
@@ -2965,11 +3036,11 @@ export class TableCellWidget extends BlockWidget {
             let adjacentBorderPriority: number = adjacentBorder.getPrecedence();
             if (borderPriority === adjacentBorderPriority) {
                 //The color with the smaller brightness value shall be displayed.
-                let borderColInRGB: WColor = this.convertHexToRGB(border.color);
+                let borderColInRGB: WColor = HelperMethods.convertHexToRgb(border.color);
                 let R1: number = borderColInRGB.r;
                 let G1: number = borderColInRGB.g;
                 let B1: number = borderColInRGB.b;
-                let adjacentBorderColInRGB: WColor = this.convertHexToRGB(adjacentBorder.color);
+                let adjacentBorderColInRGB: WColor = HelperMethods.convertHexToRgb(adjacentBorder.color);
                 let R2: number = adjacentBorderColInRGB.r;
                 let G2: number = adjacentBorderColInRGB.g;
                 let B2: number = adjacentBorderColInRGB.b;
@@ -3011,31 +3082,27 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getLeftBorderToRenderByHierarchy(leftBorder: WBorder, rowBorders: WBorders, tableBorders: WBorders): WBorder {
-        if (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle !== 'None' || (leftBorder.hasNoneStyle &&
-            //If border defined with default values then border drawn based on hierarchy. 
-            !(leftBorder.lineStyle === 'None' && leftBorder.lineWidth === 0 && leftBorder.color === '#000000')))) {
-
-            return leftBorder;
-            // tslint:disable-next-line:max-line-length
-        } else if (!isNullOrUndefined(leftBorder) && (leftBorder.ownerBase instanceof WBorders) && (TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).columnIndex === 0 || (TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).cellIndex === 0 && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).ownerRow.rowFormat.gridBefore > 0))) {
-            if (TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).columnIndex !== 0 && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).ownerRow.rowFormat.gridBefore < 1
-                && !isNullOrUndefined(rowBorders)
-                && !isNullOrUndefined(rowBorders.vertical) && rowBorders.vertical.lineStyle !== 'None') {
-                return leftBorder = rowBorders.vertical;
+        let ownerCell: TableCellWidget = TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders);
+        if (!isNullOrUndefined(ownerCell)) {
+            let isFirstCell: boolean = false;
+            if (ownerCell.columnIndex === 0 || (ownerCell.cellIndex === 0 && ownerCell.ownerRow.rowFormat.gridBefore > 0)) {
+                isFirstCell = true;
             }
-            if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.left)) {
-                leftBorder = tableBorders.left;
+            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && !leftBorder.isBorderDefined) || isNullOrUndefined(leftBorder)) {
+                if (isFirstCell) {
+                    leftBorder = rowBorders.left;
+                    if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
+                        leftBorder = tableBorders.left;
+                    }
+                } else {
+                    leftBorder = rowBorders.vertical;
+                    if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
+                        leftBorder = tableBorders.vertical;
+                    }
+                }
             }
-            return leftBorder;
-        } else if (!isNullOrUndefined(rowBorders)
-            && !isNullOrUndefined(rowBorders.vertical) && rowBorders.vertical.lineStyle !== 'None') {
-            return leftBorder = rowBorders.vertical;
-        } else if (!isNullOrUndefined(tableBorders)
-            && !isNullOrUndefined(tableBorders.vertical) && tableBorders.vertical.lineStyle !== 'None') {
-            return leftBorder = tableBorders.vertical;
-        } else {
-            return leftBorder;
         }
+        return leftBorder;
     }
     /**
      * @private
@@ -3095,25 +3162,29 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getRightBorderToRenderByHierarchy(rightBorder: WBorder, rowBorders: WBorders, tableBorders: WBorders): WBorder {
-        if (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle !== 'None' || (rightBorder.hasNoneStyle &&
-            //If border defined with default values then border drawn based on hierarchy. 
-            !(rightBorder.lineStyle === 'None' && rightBorder.lineWidth === 0 && rightBorder.color === '#000000')))) {
-            return rightBorder;
-            // tslint:disable-next-line:max-line-length
-        } else if (!isNullOrUndefined(rightBorder) && (rightBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(rightBorder.ownerBase).cellIndex === TableCellWidget.getCellOf(rightBorder.ownerBase).ownerRow.childWidgets.length - 1) {
-            if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.right)) {
-                rightBorder = tableBorders.right;
+        let ownerCell: TableCellWidget = TableCellWidget.getCellOf(rightBorder.ownerBase as WBorders);
+        if (!isNullOrUndefined(ownerCell)) {
+            let isLastCell: boolean = false;
+            //Have to check lastcell logic
+            if ((ownerCell.columnIndex + ownerCell.cellFormat.columnSpan) === ownerCell.ownerTable.tableHolder.columns.length
+                || (ownerCell.cellIndex === ownerCell.ownerRow.childWidgets.length - 1)) {
+                isLastCell = true;
             }
-            return rightBorder;
-        } else if (!isNullOrUndefined(rowBorders)
-            && !isNullOrUndefined(rowBorders.vertical) && rowBorders.vertical.lineStyle !== 'None') {
-            return rightBorder = rowBorders.vertical;
-        } else if (!isNullOrUndefined(tableBorders)
-            && !isNullOrUndefined(tableBorders.vertical) && tableBorders.vertical.lineStyle !== 'None') {
-            return rightBorder = tableBorders.vertical;
-        } else {
-            return rightBorder;
+            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && !rightBorder.isBorderDefined) || isNullOrUndefined(rightBorder)) {
+                if (isLastCell) {
+                    rightBorder = rowBorders.right;
+                    if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
+                        rightBorder = tableBorders.right;
+                    }
+                } else {
+                    rightBorder = rowBorders.vertical;
+                    if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
+                        rightBorder = tableBorders.vertical;
+                    }
+                }
+            }
         }
+        return rightBorder;
     }
     /**
      * @private
@@ -3138,7 +3209,6 @@ export class TableCellWidget extends BlockWidget {
             while (!isNullOrUndefined(prevRow) && prevRow.childWidgets.length > 0) {
                 for (let i: number = 0; i < prevRow.childWidgets.length; i++) {
                     let prevRowCell: TableCellWidget = prevRow.childWidgets[i] as TableCellWidget;
-
                     if (prevRowCell.columnIndex + prevRowCell.cellFormat.columnSpan - 1 >= tableCell.columnIndex) {
                         prevTopCell = prevRow.childWidgets[i] as TableCellWidget;
                         break;
@@ -3187,8 +3257,8 @@ export class TableCellWidget extends BlockWidget {
             return topBorder;
         } else {
             let prevTopCellBottomBorder: WBorder = undefined;
-            if (!isNullOrUndefined(previousTopCell.cellFormat.borders) && !isNullOrUndefined(previousTopCell.cellFormat.borders.bottom) && previousTopCell.cellFormat.borders.bottom.lineStyle !== 'None') {
-                prevTopCellBottomBorder = previousTopCell.cellFormat.borders.bottom;
+            if (!isNullOrUndefined(previousTopCell.cellFormat.borders) && !isNullOrUndefined(previousTopCell.cellFormat.borders.bottom)) {
+                prevTopCellBottomBorder = this.getBottomBorderToRenderByHierarchy(previousTopCell.cellFormat.borders.bottom, previousTopCell.ownerRow.rowFormat.borders, previousTopCell.ownerTable.tableFormat.borders);
             }
             if (!isNullOrUndefined(prevTopCellBottomBorder) && prevTopCellBottomBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(topBorder, prevTopCellBottomBorder);
@@ -3202,24 +3272,24 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getTopBorderToRenderByHierarchy(topBorder: WBorder, rowBorders: WBorders, tableBorders: WBorders): WBorder {
-        if (!isNullOrUndefined(topBorder) && (topBorder.lineStyle !== 'None' || (topBorder.hasNoneStyle &&
-            //If border defined with default values then border drawn based on hierarchy. 
-            !(topBorder.lineStyle === 'None' && topBorder.lineWidth === 0 && topBorder.color === '#000000')))) {
-            return topBorder;
-        } else if (!isNullOrUndefined(topBorder) && (topBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(topBorder.ownerBase as WBorders).ownerRow.rowIndex === 0) {
-            if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.top)) {
-                topBorder = tableBorders.top;
+        let ownerCell: TableCellWidget = TableCellWidget.getCellOf(topBorder.ownerBase as WBorders);
+        if (!isNullOrUndefined(ownerCell)) {
+            let isFirstRow: boolean = isNullOrUndefined(ownerCell.ownerRow.previousWidget);
+            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && !topBorder.isBorderDefined) || isNullOrUndefined(topBorder)) {
+                if (isFirstRow) {
+                    topBorder = rowBorders.top;
+                    if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
+                        topBorder = tableBorders.top;
+                    }
+                } else {
+                    topBorder = rowBorders.horizontal;
+                    if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
+                        topBorder = tableBorders.horizontal;
+                    }
+                }
             }
-            return topBorder;
-        } else if (!isNullOrUndefined(rowBorders)
-            && !isNullOrUndefined(rowBorders.horizontal) && rowBorders.horizontal.lineStyle !== 'None') {
-            return topBorder = rowBorders.horizontal;
-        } else if (!isNullOrUndefined(tableBorders)
-            && !isNullOrUndefined(tableBorders.horizontal) && tableBorders.horizontal.lineStyle !== 'None') {
-            return topBorder = tableBorders.horizontal;
-        } else {
-            return topBorder;
         }
+        return topBorder;
     }
     /**
      * @private
@@ -3279,35 +3349,24 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getBottomBorderToRenderByHierarchy(bottomBorder: WBorder, rowBorders: WBorders, tableBorders: WBorders): WBorder {
-        if (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle !== 'None' || (bottomBorder.hasNoneStyle &&
-            //If border defined with default values then border drawn based on hierarchy. 
-            !(bottomBorder.lineStyle === 'None' && bottomBorder.lineWidth === 0 && bottomBorder.color === '#000000')))) {
-            return bottomBorder;
-        } else if (!isNullOrUndefined(bottomBorder) && (bottomBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders).ownerRow.rowIndex + TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders).cellFormat.rowSpan === TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders).ownerTable.childWidgets.length) {
-            if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.bottom)) {
-                bottomBorder = tableBorders.bottom;
+        let ownerCell: TableCellWidget = TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders);
+        if (!isNullOrUndefined(ownerCell)) {
+            let isLastRow: boolean = isNullOrUndefined(ownerCell.ownerRow.nextWidget);
+            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && !bottomBorder.isBorderDefined) || isNullOrUndefined(bottomBorder)) {
+                if (isLastRow) {
+                    bottomBorder = rowBorders.bottom;
+                    if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {
+                        bottomBorder = tableBorders.bottom;
+                    }
+                } else {
+                    bottomBorder = rowBorders.horizontal;
+                    if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {
+                        bottomBorder = tableBorders.horizontal;
+                    }
+                }
             }
-            return bottomBorder;
-        } else if (!isNullOrUndefined(rowBorders)
-            && !isNullOrUndefined(rowBorders.horizontal) && rowBorders.horizontal.lineStyle !== 'None') {
-            return bottomBorder = rowBorders.horizontal;
-        } else if (!isNullOrUndefined(tableBorders)
-            && !isNullOrUndefined(tableBorders.horizontal) && tableBorders.horizontal.lineStyle !== 'None') {
-            return bottomBorder = tableBorders.horizontal;
-        } else {
-            return bottomBorder;
         }
-    }
-    private convertHexToRGB(colorCode: string): WColor {
-        if (colorCode) {
-            colorCode = colorCode.replace(/[^0-9A-â€Œâ€‹F]/gi, '');   // To remove # from color code string.
-            let colCodeNo: number = parseInt(colorCode, 16);
-            let r: number = (colCodeNo >> 16) & 255;
-            let g: number = (colCodeNo >> 8) & 255;
-            let b: number = colCodeNo & 255;
-            return { 'r': r, 'g': g, 'b': b };
-        }
-        return undefined;
+        return bottomBorder;
     }
     /**
      * @private
@@ -3509,6 +3568,18 @@ export class LineWidget implements IWidget {
         return false;
     }
     /**
+     * @private
+     */
+     get isEndsWithLineBreak(): boolean {
+        if (this.children.length > 0) {
+            let lastElement: ElementBox = this.children[this.children.length - 1];
+            if (lastElement instanceof TextElementBox) {
+                return lastElement.text === '\v';
+            }
+        }
+        return false;
+    }
+    /**
      * Initialize the constructor of LineWidget
      */
     constructor(paragraphWidget: ParagraphWidget) {
@@ -3584,10 +3655,10 @@ export class LineWidget implements IWidget {
                 if (inlineElement instanceof ListTextElementBox) {
                     continue;
                 }
-                if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
-                    || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
-                    || inlineElement instanceof BookmarkElementBox || inlineElement instanceof ContentControl
-                    || (inlineElement instanceof FieldElementBox
+                if (inlineElement instanceof TextElementBox || inlineElement instanceof CommentCharacterElementBox
+                    || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof ImageElementBox
+                    || inlineElement instanceof EditRangeEndElementBox || inlineElement instanceof BookmarkElementBox
+                    || inlineElement instanceof ContentControl || (inlineElement instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter((inlineElement as FieldElementBox)))) {
                     startOffset = count + inlineElement.length;
                 }
@@ -3693,7 +3764,7 @@ export class LineWidget implements IWidget {
                 }
                 count += element.length;
             }
-            if (element.previousElement && (element instanceof TextElementBox && (textHelper.isRTLText(element.text) ||
+            if (element.previousElement && (element instanceof TextElementBox && ((textHelper.isRTLText(element.text) || textHelper.containsCombinationText(element)) ||
                 ((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)) ||
                 (element instanceof TabElementBox && element.text === '\t' || (element instanceof BookmarkElementBox
                     && (element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
@@ -4033,6 +4104,16 @@ export abstract class ElementBox {
             return false;
         }
         return true;
+    }
+    /**
+     * @private
+     */
+    get isCheckBoxElement(): boolean {
+        let element: ElementBox = this;
+        if (element instanceof TextElementBox && !isNullOrUndefined(element.text)) {
+            return element.text === String.fromCharCode(9745) || element.text === String.fromCharCode(9744);
+        }
+        return false;
     }
     /**
      * @private
@@ -4801,7 +4882,7 @@ export class FootnoteElementBox extends TextElementBox {
     /**
      * @private
      */
-    public blocks: BlockWidget[];
+    public bodyWidget: BodyWidget;
     /**
      * @private
      */
@@ -4825,7 +4906,8 @@ export class FootnoteElementBox extends TextElementBox {
     public customMarker: string;
     constructor() {
         super();
-        this.blocks = [];
+        this.bodyWidget = new BodyWidget();
+        this.bodyWidget.footNoteReference = this;
     }
     public clone(): FootnoteElementBox {
         let span: FootnoteElementBox = new FootnoteElementBox();
@@ -4835,7 +4917,8 @@ export class FootnoteElementBox extends TextElementBox {
         span.footnoteType = this.footnoteType;
         span.width = this.width;
         span.symbolCode = this.symbolCode;
-        span.blocks = this.blocks;
+        span.bodyWidget.childWidgets = this.bodyWidget.childWidgets;
+        span.bodyWidget.page = this.bodyWidget.page;
         if (this.margin) {
             span.margin = this.margin.clone();
         }
@@ -4848,6 +4931,7 @@ export class FootnoteElementBox extends TextElementBox {
         this.symbolCode = '';
         this.symbolFontName = '';
         this.customMarker = '';
+        this.bodyWidget = undefined;
     }
 }
 /** 

@@ -571,6 +571,35 @@ describe('Linear gauge control', () => {
             gauge.axes = [{ pointers: [{ value: 50, type: 'Bar', enableDrag: false }] }, { pointers: [{ type: 'Bar', enableDrag: true }] }];
             gauge.refresh();
         });
+
+        it('checking drag and drop - In a middle of Horizontal Bar pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                trigger.mousedownEvent(svg, 501.5, 245, 501.5, 245);
+                trigger.dragAndDropEvent(svg, 501.5, 245, 450, 245, '', gauge);
+                expect(path == svg.getAttribute('d')).toBe(true);
+                done();
+            };
+            gauge.axes = [{ pointers: [{ value: 50, type: 'Bar', enableDrag: false }] }];
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Bar pointer with align attribute', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                document.getElementById('container').setAttribute('align','center');
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                trigger.mousedownEvent(svg, 112.5, 255, 112.5, 255);
+                trigger.dragAndDropEvent(svg, 112.5, 255, 200, 255, '', gauge);
+                expect(path == svg.getAttribute('d')).toBe(true);
+                done();
+                document.getElementById('container').removeAttribute('align');
+            };
+            gauge.orientation = 'Horizontal',
+            gauge.axes = [{ pointers: [{ value: 50, type: 'Bar', enableDrag: true }] }];
+            gauge.refresh();
+        });
     });
     it('memory leak', () => {     
         profile.sample();

@@ -30,6 +30,7 @@ export class StackingAreaSeries extends LineBase {
         const visiblePoints: Points[] = this.enableComplexProperty(series);
         const pointsLength: number = visiblePoints.length;
         const stackedvalue: StackValues = series.stackedValues;
+        let pointIndex: number, nextPointIndex: number;
         const origin: number = polarAreaType ?
             Math.max(series.yAxis.visibleRange.min, stackedvalue.endValues[0]) :
             Math.max(series.yAxis.visibleRange.min, stackedvalue.startValues[0]);
@@ -42,16 +43,17 @@ export class StackingAreaSeries extends LineBase {
         }
         const isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         for (let i: number = 0; i < pointsLength; i++) {
+            pointIndex = visiblePoints[i].index;
             visiblePoints[i].symbolLocations = []; visiblePoints[i].regions = [];
             if (visiblePoints[i].visible && withInRange(visiblePoints[i - 1], visiblePoints[i], visiblePoints[i + 1], series)) {
                 point1 = getCoordinate(
-                    visiblePoints[i].xValue, stackedvalue.endValues[i],
+                    visiblePoints[i].xValue, stackedvalue.endValues[pointIndex],
                     xAxis, yAxis, isInverted, series
                 );
                 lineDirection = lineDirection.concat('L' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
                 visiblePoints[i].symbolLocations.push(
                     getCoordinate(
-                        visiblePoints[i].xValue, stackedvalue.endValues[i], xAxis, yAxis,
+                        visiblePoints[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis,
                         isInverted, series
                     )
                 );
@@ -63,13 +65,15 @@ export class StackingAreaSeries extends LineBase {
             } else {
                 if (!isPolar && series.emptyPointSettings.mode !== 'Drop') {
                     for (let j: number = i - 1; j >= startPoint; j--) {
-                        point2 = getCoordinate(visiblePoints[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, series);
+                        pointIndex = visiblePoints[j].index;
+                        point2 = getCoordinate(visiblePoints[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, series);
                         lineDirection = lineDirection.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
                     }
                     if (visiblePoints[i + 1] && (visiblePoints[i + 1].visible &&
                         (!isPolar || (isPolar && this.withinYRange(visiblePoints[i + 1], yAxis))))) {
+                        nextPointIndex = visiblePoints[i + 1].index;
                         point1 = getCoordinate(
-                            visiblePoints[i + 1].xValue, stackedvalue.startValues[i + 1],
+                            visiblePoints[i + 1].xValue, stackedvalue.startValues[nextPointIndex],
                             xAxis, yAxis, isInverted, series
                         );
                         lineDirection = lineDirection.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
@@ -84,7 +88,7 @@ export class StackingAreaSeries extends LineBase {
             point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             lineDirection += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
-            if (this.chart.visible === 1 && (xAxis.isInversed || yAxis.isInversed)) {
+            if (this.chart.visible === 1 && (xAxis.isAxisInverse || yAxis.isAxisInverse)) {
                 this.chart.enableAnimation = false;
                 lineDirection = (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, lineDirection) :
                     chart.radarSeriesModule.getRadarIsInversedPath(xAxis, lineDirection));
@@ -92,15 +96,16 @@ export class StackingAreaSeries extends LineBase {
         }
         if (!isPolar || (isPolar && series.index !== this.getFirstSeriesIndex(series.chart.visibleSeries))) {
             for (let j: number = pointsLength - 1; j >= startPoint; j--) {
+                pointIndex = visiblePoints[j].index;
                 if (isPolar && !visiblePoints[j].visible) {
                     continue;
                 }
                 const previousSeries: Series = this.getPreviousSeries(series);
                 if (previousSeries.emptyPointSettings.mode !== 'Drop' || !previousSeries.points[j].isEmpty) {
-                    point2 = getCoordinate(visiblePoints[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, series);
-                    if (stackedvalue.startValues[j] === stackedvalue.endValues[j]) {
+                    point2 = getCoordinate(visiblePoints[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, series);
+                    if (stackedvalue.startValues[pointIndex] === stackedvalue.endValues[pointIndex]) {
                         point2.y = Math.floor(point2.y);
-                     }
+                    }
                     lineDirection = lineDirection.concat(((j === (pointsLength - 1) && polarAreaType) ? 'M' : 'L')
                         + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
                 }

@@ -43,3 +43,7 @@ export type TemplateType = 'Both' | 'Cell' | 'Event';
  * An enum that holds the different type of week number options in the scheduler.
  */
 export type WeekRule = 'FirstDay' | 'FirstFourDayWeek' | 'FirstFullWeek';
+/**
+ * An enum that holds the options to render the spanned events in all day row or time slot.
+ */
+export type SpannedEventPlacement = 'AllDayRow' | 'TimeSlot';

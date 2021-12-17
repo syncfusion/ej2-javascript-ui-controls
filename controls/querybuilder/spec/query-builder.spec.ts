@@ -1656,8 +1656,7 @@ describe('QueryBuilder', () => {
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);
             queryBuilder.setRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')");
-            queryBuilder.getRulesFromSql("Category = 'Clothing' and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84");
-            expect(JSON.stringify(queryBuilder.getRulesFromSql("Category = 'Clothing' and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84").rules)).toEqual('[{"label":"Category","field":"Category","operator":"equal","type":"string","value":"Clothing"},{"condition":"or","rules":[{"label":"Description","field":"Description","operator":"endswith","type":"string","value":"s"},{"label":"PaymentMode","field":"PaymentMode","operator":"equal","type":"string","value":"Debit Card"}]},{"label":"Amount","field":"Amount","operator":"greaterthan","type":"number","value":84}]');
+            expect(JSON.stringify(queryBuilder.getRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')").rules)).toEqual('[{"label":"EmployeeID","field":"EmployeeID","operator":"between","type":"number","value":[0,0]},{"label":"Title","field":"Title","operator":"in","type":"string","value":["Sales Manager"]},{"label":"City","field":"City","operator":"startswith","value":"u","type":"string"}]');
         });
         it(' Multiple value in textbox  Checking', () => {
             let valRule: RuleModel = {'condition': 'and',
@@ -2055,7 +2054,7 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('startswith');
             queryBuilder.setRulesFromSql("(Date = null)");
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('equal');
-            queryBuilder.setRulesFromSql("Categroy NOT LIKE ('%ALFKI%') OR Categroy NOT LIKE ('%ALFKI%')");
+            queryBuilder.setRulesFromSql("Category NOT LIKE ('%ALFKI%') OR Category NOT LIKE ('%ALFKI%')");
             expect(queryBuilder.getPredicate(queryBuilder.rule)).toEqual(undefined);
             queryBuilder.setRulesFromSql("Category LIKE ('ALFKI%') OR TaskID = 0");
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('startswith');

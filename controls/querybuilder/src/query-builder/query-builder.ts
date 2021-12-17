@@ -325,6 +325,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isAddSuccess: boolean = false;
     private isNotValueChange: boolean = false;
     private isRoot: boolean;
+    private prevItemData: FieldSettingsModel;
+    private isFieldChange: boolean = false;
+    private isFieldClose: boolean = false;
+    private isDestroy: boolean = false;
     /**
      * Triggers when the component is created.
      *
@@ -973,8 +977,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     ddlField = {
                         dataSource: this.columns as { [key: string]: Object }[], // tslint:disable-line
                         fields: this.fields, placeholder: this.l10n.getConstant('SelectField'),
-                        popupHeight: ((this.columns.length > 5) ? height : 'auto'),
-                        change: this.changeField.bind(this), value: rule ? ddlValue : null, open: this.popupOpen.bind(this)
+                        popupHeight: ((this.columns.length > 5) ? height : 'auto'), close: this.fieldClose.bind(this, ruleElem.id + '_filterkey'),
+                        change: this.changeField.bind(this), value: rule ? ddlValue : null, open: this.popupOpen.bind(this, true)
                     };
                     if (this.fieldModel) {
                         ddlField = {...ddlField, ...this.fieldModel as DropDownListModel};
@@ -993,11 +997,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     const ddlValue: any = this.isImportRules ? (rule.field as string) : rule.field;
                     ddlField = {
                         fields: {dataSource: this.columns as { [key: string]: Object }[],
-                        value: "field", text: "label", child: 'columns', expanded: "expanded"}, 
+                        value: 'field', text: 'label', child: 'columns', expanded: 'expanded'}, 
                         placeholder: this.l10n.getConstant('SelectField'), showClearButton: false,
                         popupHeight: ((this.columns.length > 5) ? height : 'auto'), changeOnBlur: false,
                         change: this.changeField.bind(this), value: this.isImportRules? [ddlValue] : null,
-                        open: this.popupOpen.bind(this)
+                        open: this.popupOpen.bind(this, false)
                     };
                     if (this.fieldModel) {
                         ddlField = {...ddlField, ...this.fieldModel as DropDownTreeModel};
@@ -1022,6 +1026,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
     }
+
     private updateAddedRule(target: Element, rule: RuleModel, newRule: RuleModel, isRuleTemplate?: boolean, pId?: string): void {
         let ruleElem: Element; let index: number = 0;
         let groupElem: Element; let rules: RuleModel;
@@ -1220,7 +1225,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             clsName = 'e-removerule e-rule-delete e-css e-btn e-small e-button-hide';
         }
-        const delBtnElem: HTMLElement = this.createElement('button', { attrs: { class: clsName } });
+        const delBtnElem: HTMLElement = this.createElement('button', { attrs: { type: 'button', class: clsName } });
         tempElem.appendChild(delBtnElem);
         fieldElem.appendChild(tempElem);
         ruleElem.appendChild(fieldElem);
@@ -1272,7 +1277,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             if (isGroup) {
                 const clsName: string = this.showButtons.groupDelete ? 'e-deletegroup' : 'e-deletegroup e-button-hide';
-                dltGroupBtn = this.createElement('button', { attrs: { class: clsName } });
+                dltGroupBtn = this.createElement('button', { attrs: { type: 'button', class: clsName } });
                 const button: Button = new Button({ iconCss: 'e-icons e-delete-icon', cssClass: 'e-small e-round' });
                 button.appendTo(dltGroupBtn);
                 dltGroupBtn.setAttribute('title', this.l10n.getConstant('DeleteGroup'));
@@ -1550,20 +1555,38 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
 
+    private fieldClose(id: string): void {
+        if (this.isFieldChange || this.isDestroy) {
+            return;
+        }
+        this.isFieldClose = true;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ddl: any = getComponent(id, 'dropdownlist') as DropDownList;
+        const item: HTMLLIElement = ddl.popupObj.element.querySelector('.e-active');
+        const itemData: FieldSettingsModel = ddl.getItemData();
+        ddl.value = itemData.value;
+        const customArgs: DropDownChangeEventArgs = {element: ddl.element, value: itemData.value, isInteracted: true,
+            previousItemData: this.prevItemData, previousItem: null, item: item, itemData: itemData, event: null, e: null };
+        this.changeField(customArgs);
+        this.isFieldChange = false;
+    }
+
     private changeField(args: DropDownChangeEventArgs): void {
         if (args.isInteracted) {
+            this.isFieldChange = true;
+            this.prevItemData = args.itemData;
             const fieldElem: Element = closest(args.element, '.e-rule-filter') || closest(args.element, '.e-rule-sub-filter');
             const column: ColumnsModel = this.fieldMode === 'DropdownTree' ? this.getColumn(args.value[0]) : this.getColumn(args.value as string);
             if (this.fieldMode === 'DropdownTree' && fieldElem != null) {
-                const ddtElem: HTMLInputElement = fieldElem.querySelector(".e-control") as HTMLInputElement;
+                const ddtElem: HTMLInputElement = fieldElem.querySelector('.e-control') as HTMLInputElement;
                 const ddt: DropDownTree = getComponent(ddtElem, 'dropdowntree') as DropDownTree;
                 if (column) {
-                    if (column.type == 'object') {
+                    if (column.type === 'object') {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         ddt.value = (args as any).oldValue; ddt.dataBind();
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         if (isNullOrUndefined((args as any).oldValue)) {
-                            ddtElem.value = "";
+                            ddtElem.value = '';
                         } else {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             ddtElem.value = (args as any).oldValue[0];
@@ -1714,7 +1737,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             popupHeight: ((subFieldData.length > 5) ? height : 'auto'),
             change: this.changeField.bind(this),
             index: 0,
-            open: this.popupOpen.bind(this)
+            open: this.popupOpen.bind(this, false)
         });
         dropDownList.appendTo('#' + ruleId + '_subfilterkey' + this.subFilterCounter);
         if (this.isImportRules) {
@@ -1829,7 +1852,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     change: this.changeField.bind(this),
                     index: 0,
                     value: value,
-                    open: this.popupOpen.bind(this)
+                    open: this.popupOpen.bind(this, false)
                 };
                 if (this.operatorModel) {
                     ddlOperator = {...ddlOperator, ...this.operatorModel};
@@ -1851,9 +1874,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
 
-    private popupOpen( args: PopupEventArgs): void {
+    private popupOpen(isField: boolean, args: PopupEventArgs): void {
         if (this.enableRtl) {
             addClass([args.popup.element], 'e-rtl' );
+        }
+        if (isField) {
+            this.isFieldClose = false;
         }
     }
 
@@ -2033,7 +2059,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             change: this.changeValue.bind(this, i),
             close: this.closePopup.bind(this, i),
             actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i),
-            open: this.popupOpen.bind(this)
+            open: this.popupOpen.bind(this, false)
         };
         if (this.valueModel && this.valueModel.multiSelectModel) {
             multiSelectValue = {...multiSelectValue, ...this.valueModel.multiSelectModel};
@@ -2411,6 +2437,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return 0;
     }
     private getPreviousItemData(prevItemData: ColumnsModel, column: ColumnsModel): ColumnsModel {
+        if (this.isFieldClose && prevItemData) {
+            prevItemData = this.getColumn((prevItemData as any).value);
+        }
         if (column.template && prevItemData && Object.keys(prevItemData).length < 4) {
             prevItemData.template = column.template;
         }
@@ -2856,6 +2885,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns {void}
      */
     public destroy(): void {
+        this.isDestroy = true;
         const queryElement: Element = this.element;
         if (!queryElement) { return; }
         let element: NodeListOf<HTMLElement>; let i: number; let len: number; let tooltip: NodeListOf<HTMLElement>;
@@ -2903,6 +2933,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).portals && (this as any).portals.length) { this.clearQBTemplate(); }
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
+        this.isDestroy = false;
     }
     /**
      * Adds single or multiple rules.
@@ -3022,7 +3053,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         });
         const textElem: Element =
         this.createElement('textarea', { attrs: { class: 'e-summary-text', readonly: 'true' }, styles: 'max-height:500px' });
-        const editElem: Element = this.createElement('button', { attrs: { class: 'e-edit-rule e-css e-btn e-small e-flat e-primary' } });
+        const editElem: Element = this.createElement('button', { attrs: { type: 'button', class: 'e-edit-rule e-css e-btn e-small e-flat e-primary' } });
         const divElem: Element = this.createElement('div', { attrs: { class: 'e-summary-btndiv' } });
         contentElem.appendChild(textElem);
         textElem.textContent = this.getSqlFromRules(this.rule);
@@ -3638,6 +3669,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (this.enableNotCondition) {
                     rule.not = notValue;
                 }
+            } else if ((isNullOrUndefined(rule.condition)) && isNullOrUndefined(rule.rules)) {
+                rule = { 'label': '', 'field': '', 'operator': '', 'type': '', 'value': ''};
             } else {
                 if (this.enableNotCondition) {
                     rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not };
@@ -3804,7 +3837,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         pred = pred2;
                     }
                 }
-            } else if (ruleColl[i].operator.length) {
+            } else if (!isNullOrUndefined(ruleColl[i].operator) && !isNullOrUndefined(ruleColl[i].operator.length)) {
                 const oper: string = ruleColl[i].operator.toLowerCase(); let isDateFilter: boolean = false;
                 const dateOperColl: string[] = ['equal', 'notequal', 'greaterthan', 'greaterthanorequal', 'lessthan', 'lessthanorequal'];
                 if (ruleColl[i].type === 'string') {
@@ -4446,6 +4479,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.parser.push(['Literal', matchValue]);
             return matchValue.length + 2;
         }
+        // eslint-disable-next-line
+        if (this.checkNumberLiteral(sqlString)) {
+            matchValue = /^[0-9]+(\.[0-9]+)?/.exec(sqlString)[0];
+            this.parser.push(['Literal', matchValue]);
+            return matchValue.length;
+        }
         //String
         if (/^'((?:[^\\']+?|\\.|'')*)'(?!')/.exec(sqlString)) {
             matchValue = /^'((?:[^\\']+?|\\.|'')*)'(?!')/.exec(sqlString)[0];
@@ -4484,6 +4523,24 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return false;
     }
+    private checkNumberLiteral(sqlString: string): boolean {
+        const lastParser: string[] = this.parser[this.parser.length - 1];
+        if (!lastParser) {
+            return true;
+        } else {
+            if (/^[0-9]+(\.[0-9]+)?/.exec(sqlString)) {
+                const secParser: string[] = this.parser[this.parser.length - 2];
+                const betweenParser: string[] = this.parser[this.parser.length - 3];
+                if (lastParser[0] === 'Left' && (secParser && secParser[0] === 'Conditions')) {
+                    return true;
+                }
+                if (lastParser[0] === 'Conditions' && (betweenParser && betweenParser[1].indexOf('between') < 0)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     private getOperator(value: string, operator: string): string {
         const operators: object = {
             '=': 'equal', '!=': 'notequal', '<': 'lessthan', '>': 'greaterthan', '<=': 'lessthanorequal',
@@ -4509,19 +4566,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private getTypeFromColumn(rules: RuleModel): string {
-        const columnData: ColumnsModel[] = this.columns;
-        for ( let i: number = 0; i < columnData.length; i++ ) {
-            if (columnData[i].field === rules.field) {
-                rules.type = columnData[i].type;
-                break;
-            }
-        }
-        return rules.type;
+        const columnData: ColumnsModel = this.getColumn(rules.field);
+        return columnData.type;
     }
 
     private processParser(parser: string[][], rules: RuleModel, levelColl: number[]): RuleModel {
         let j: number; let jLen: number; let rule: RuleModel; let subRules: RuleModel; let numVal: number[] = []; let strVal: string[] = [];
-        let k: number; let kLen: number; let l: number; let lLen: number; let grpCount: number; let operator: string;
+        let k: number; let kLen: number; let l: number; let lLen: number; let grpCount: number; let operator: string; let isLeftOpened: boolean = false;
         for (let i: number = 0, iLen: number = parser.length; i < iLen; i++) {
             if (parser[i][0] === 'Literal') {
                 rule = { label: parser[i][1], field: parser[i][1] };
@@ -4534,8 +4585,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         rule.operator = this.getOperator(oper, parser[i + 1][1]); }
                     operator = parser[i + 1][1]; i++; j = i + 1; jLen = iLen;
                     for (j = i + 1; j < jLen; j++) {
-                        if (parser[j][0] === 'Right') {
+                        if (operator.indexOf('between') < 0 && parser[j][0] === 'Left') {
+                            isLeftOpened = true;
+                        }
+                        else if (parser[j][0] === 'Right' && isLeftOpened) {
                             i = j;
+                            isLeftOpened = false;
                             break;
                         } else {
                             if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {

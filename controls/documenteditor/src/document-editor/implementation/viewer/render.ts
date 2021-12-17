@@ -7,13 +7,13 @@ import {
     Page, Rect, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase
+    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox
 } from './page';
-import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel } from '../../index';
+import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo } from '../editor/editor-helper';
-import { SearchWidgetInfo } from '../index';
+import { SearchWidgetInfo, WColor } from '../../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
@@ -287,8 +287,7 @@ export class Renderer {
             const widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
                 ((bodyWidget.childWidgets[0] as TableWidget).childWidgets.length > 0) &&
-                (((bodyWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).rowFormat.isHeader ||
-                    page.repeatHeaderRowTableWidget)) {
+                page.repeatHeaderRowTableWidget) {
                 /* eslint-disable-next-line max-len */
                 this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
@@ -420,6 +419,9 @@ export class Renderer {
                 return;
             }
             let row: TableRowWidget = (parentTable.childWidgets[i] as TableRowWidget);
+            if (widget.childWidgets.indexOf(row) !== -1) {
+                continue;
+            }
             let headerWidget: TableRowWidget = row.clone();
             headerWidget.containerWidget = row.containerWidget;
 
@@ -449,26 +451,24 @@ export class Renderer {
             top += widget.height;
         }
     }
-    private renderfootNoteWidget(page: Page, paraWidget: FootNoteWidget): void {
-        for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
-            let widget: BlockWidget = paraWidget.childWidgets[i] as BlockWidget;
-            if (i === 0) {
-                let ctx: CanvasRenderingContext2D = this.pageContext;
-
-                this.renderSolidLine(ctx, this.getScaledValue(widget.x, 1), this.getScaledValue(widget.y + widget.height / 2, 2), 300 * this.documentHelper.zoomFactor, '#000000');
-                continue;
-            }
-
-            if (!isNullOrUndefined(widget.footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox) {
-
-                if (i < 2 || (i > 1 && widget.footNoteReference !== (paraWidget.childWidgets[i - 1] as BlockWidget).footNoteReference)) {
-
-                    ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text = ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text.replace(((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text, widget.footNoteReference.text);
+    private renderfootNoteWidget(page: Page, footnote: FootNoteWidget): void {
+        for (let i: number = 0; i < footnote.bodyWidgets.length; i++) {
+            let bodyWidget: BodyWidget = footnote.bodyWidgets[i];
+            let footNoteReference: FootnoteElementBox = bodyWidget.footNoteReference;
+            for (let j: number = 0; j < bodyWidget.childWidgets.length; j++) {
+                let widget: BlockWidget = bodyWidget.childWidgets[j] as BlockWidget;
+                if (i === 0 && j === 0) {
+                    let ctx: CanvasRenderingContext2D = this.pageContext;
+                    this.renderSolidLine(ctx, this.getScaledValue(96, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
                 }
+                if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editor.isFootNoteInsert) {
+                    //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
+                    ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text = ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text.replace(((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text, footNoteReference.text);
+                    //}
+                }
+                this.renderWidget(page, widget);
             }
-            this.renderWidget(page, widget);
         }
-
     }
     private renderTableWidget(page: Page, tableWidget: TableWidget): void {
         if (this.isFieldCode) {
@@ -532,18 +532,30 @@ export class Renderer {
                 for (let i: number = 0; i < widgetInfo.length; i++) {
                     this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
                     let height: number = lineWidget.height;
+                    let isAltered: boolean = false;
                     let isLastLine: boolean = lineWidget.isLastLine();
                     if (isLastLine) {
                         height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getAfterSpacing(lineWidget.paragraph))
                         if (lineWidget.paragraph.paragraphFormat.lineSpacing > 1) {
                             let formField: FieldElementBox = this.getFormfieldInLine(lineWidget);
-                            const sizeInfo: TextSizeInfo = this.documentHelper.textHelper.getHeight(formField.characterFormat);
-                            let maxHeight: number = sizeInfo.Height;
-                            height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getLineSpacing(lineWidget.paragraph, maxHeight, true))
+                            if (!isNullOrUndefined(formField)) {
+                                const sizeInfo: TextSizeInfo = this.documentHelper.textHelper.getHeight(formField.characterFormat);
+                                let maxHeight: number = sizeInfo.Height;
+                                if (lineWidget.paragraph.paragraphFormat.lineSpacingType === 'Multiple') {
+                                    height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getLineSpacing(lineWidget.paragraph, maxHeight, true))
+                                } else {
+                                    top = top + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.beforeSpacing);
+                                    height = sizeInfo.Height;
+                                    isAltered = true;
+                                }
+                            }
                         }
                     }
-
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(height));
+                    if (isAltered) {
+                       isAltered = false;
+                       top = top - HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.beforeSpacing);
+                    }
                 }
             }
         }
@@ -708,7 +720,7 @@ export class Renderer {
         let bold: string = '';
         let italic: string = '';
         let fontFamily: string = format.hasValue('fontFamily') ? format.fontFamily : breakCharacterFormat.fontFamily;
-        if (this.documentHelper.isIosDevice && (elementBox.text === '\u25CF' || elementBox.text === '\u25CB')) {
+        if (this.documentHelper.isIosDevice && (elementBox.text === String.fromCharCode(9679) || elementBox.text === String.fromCharCode(9675))) {
             fontFamily = '';
         }
         let fontSize: number = format.hasValue('fontSize') ? format.fontSize : breakCharacterFormat.fontSize;
@@ -1401,9 +1413,6 @@ export class Renderer {
             }
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
-            if (tableCell.cellFormat.borders.top.lineStyle === 'Cleared' && tableCell.cellFormat.borders.bottom.lineStyle === 'None' && !isNullOrUndefined(tableCell.nextWidget)) {
-                border = tableCell.cellFormat.borders.bottom;
-            }
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
             // }
@@ -1447,13 +1456,43 @@ export class Renderer {
         if (cellFormat.shading.hasValue('foregroundColor') && cellFormat.shading.textureStyle !== 'TextureNone') {
             this.pageContext.beginPath();
             if (cellFormat.shading.foregroundColor !== 'empty') {
-                this.pageContext.fillStyle = HelperMethods.getColor(cellFormat.shading.foregroundColor);
-                this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
+                this.pageContext.fillStyle = this.drawTextureStyle(cellFormat.shading.textureStyle, HelperMethods.getColor(cellFormat.shading.foregroundColor), HelperMethods.getColor(cellFormat.shading.backgroundColor));
+                //Width is increased twice since left and right line width is reduced in cell rendering which is required for background rendering.
+                this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width + (lineWidth * 2)), this.getScaledValue(height));
                 this.pageContext.closePath();
             }
         }
-
     }
+    private drawTextureStyle(textureStyle: TextureStyle, foreColor: string, backColor: string): string {
+        if (textureStyle.indexOf('Percent') > -1) {
+            let text: string = textureStyle.replace("Texture", "").replace("Percent", "").replace("Pt", ".");
+            let percent: number = parseInt(text);
+            return this.getForeColor(foreColor, backColor, percent);
+        }
+        return '#FFFFFF';
+    }
+    private getForeColor(foreColor: string, backColor: string, percent: number): string {
+        let r: number = 0;
+        let g: number = 0;
+        let b: number = 0;
+        let foreColorRgb: WColor = HelperMethods.convertHexToRgb(foreColor);
+        let backColorRgb: WColor = HelperMethods.convertHexToRgb(backColor);
+        r = this.getColorValue(foreColorRgb.r, backColorRgb.r, percent);
+        g = this.getColorValue(foreColorRgb.g, backColorRgb.g, percent);
+        b = this.getColorValue(foreColorRgb.b, backColorRgb.b, percent);
+        return ('#' + HelperMethods.convertRgbToHex(r) + HelperMethods.convertRgbToHex(g) + HelperMethods.convertRgbToHex(b));
+    }
+    private getColorValue(foreColorValue: number, backColorValue: number, percent: number): number {
+        let colorValue: number = 0;
+        if (percent == 100) {
+            colorValue = foreColorValue;
+        }
+        else {
+            colorValue = backColorValue + Math.round(foreColorValue * (percent / 100)) - Math.round(backColorValue * (percent / 100));
+        }
+        return colorValue;
+    }
+
     private renderSingleBorder(color: string, startX: number, startY: number, endX: number, endY: number, lineWidth: number): void {
         this.pageContext.beginPath();
         this.pageContext.moveTo(this.getScaledValue(startX, 1), this.getScaledValue(startY, 2));

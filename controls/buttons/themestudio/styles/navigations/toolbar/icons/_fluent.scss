@@ -1,0 +1,16 @@
+
+@include export-module('toolbar-fluent-icons') {
+  /*! toolbar icons */
+  #{&}.e-toolbar {
+
+    .e-popup-down-icon::before {
+      content: '\e7ae';
+      line-height: normal;
+    }
+
+    .e-popup-up-icon::before {
+      content: '\e7ae';
+      line-height: normal;
+    }
+  }
+}

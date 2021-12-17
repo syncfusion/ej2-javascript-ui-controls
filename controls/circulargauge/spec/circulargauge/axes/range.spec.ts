@@ -380,6 +380,22 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].ranges[0].end = 50;
             gauge.refresh();
         });
+        it('Checking the axis range rendering with rangGap in anti-clockwise direction', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let range = document.getElementById('container_Axis_0_Range_0');
+                let rangePath = range.getAttribute('d').split(" ");
+                let label = document.getElementById('container_Axis_0_Label_2')
+                expect(parseInt(label.getAttribute('x')) > parseInt(rangePath[1])).toBe(true);
+                done();
+            };
+            gauge.axes[0].direction = 'AntiClockWise'
+            gauge.axes[0].rangeGap = 10;
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 50;
+            gauge.axes[0].ranges[0].start = 0;
+            gauge.axes[0].ranges[0].end = 10;
+            gauge.refresh();
+        });
     });
 
     describe('Checking range radius with multiple scenarios', () => {
@@ -560,6 +576,22 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].direction = 'AntiClockWise';
             gauge.refresh();
         });
+
+        it('Checking range rendering shape with roundedCornerRadius', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[22] == '0').toBe(true);
+                done();
+            };
+            gauge.axes[0].ranges[0].start = 20;
+            gauge.axes[0].ranges[0].end = 23;
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.refresh();
+        });
+
+
     });
 
     describe('Gauge axis Range with tick and labels', () => {

@@ -211,8 +211,8 @@ export class BookmarkView {
             this.childNavigateCount = 0;
             this.pdfViewerBase.navigationPane.goBackToToolbar();
             // eslint-disable-next-line
-            let data: any[] = this.treeObj.getTreeData(args.node);
-            this.navigateToBookmark(bookid, args.node.textContent, data[0].FileName);
+            let selectedItem: any = this.bookmarkList.getSelectedItems();
+            this.navigateToBookmark(bookid, args.text, selectedItem.data.FileName);
         } else {
             this.childNavigateCount++;
         }

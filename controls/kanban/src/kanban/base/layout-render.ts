@@ -428,7 +428,8 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.kanbanData.map((obj: { [key: string]: string }): void => {
                 if (!this.parent.swimlaneSettings.showEmptyRow) {
-                    if (!obj[this.parent.keyField] || (obj[this.parent.keyField] && this.columnKeys.indexOf(obj[this.parent.keyField].toString()) === -1)) {
+                    if ((isNullOrUndefined(obj[this.parent.keyField])) || (obj[this.parent.keyField] === '') ||
+                    (obj[this.parent.keyField] && this.columnKeys.indexOf(obj[this.parent.keyField].toString()) === -1)) {
                         return;
                     }
                 }
@@ -831,7 +832,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.kanbanRows.forEach((row: HeaderArgs) =>
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: Record<string, any>) =>
-                obj[this.parent.keyField] && this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
+                !isNullOrUndefined(obj[this.parent.keyField]) && this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
                     ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
                         '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }
@@ -884,7 +885,7 @@ export class LayoutRender extends MobileLayout {
             swimlaneRows.forEach((swimlane: HTMLElement) => {
                 const swimlaneKey: string = swimlane.getAttribute('data-key');
                 const itemCount: Element = swimlane.querySelector(`.${cls.CARD_ITEM_COUNT_CLASS}`);
-                if (itemCount && this.swimlaneData[swimlaneKey]) {
+                if (itemCount && swimlaneKey) {
                     const cards: HTMLElement[] = [].slice.call(swimlane.nextElementSibling.querySelectorAll('.' + cls.CARD_CLASS));
                     itemCount.innerHTML = '- ' + cards.length + ' ' + this.parent.localeObj.getConstant('items');
                 }

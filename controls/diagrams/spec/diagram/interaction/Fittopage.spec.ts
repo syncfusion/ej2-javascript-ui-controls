@@ -69,13 +69,15 @@ describe('Diagram Control', () => {
             expect(diagram.scroller.currentZoom == 0.425).toBe(true);
             done();
             diagram.fitToPage({ mode: 'Height', region: 'CustomBounds', margin: { top: 50 }, canZoomIn: false, customBounds: bound });
-            expect(diagram.scroller.currentZoom ==0.425).toBe(true);
+            expect(diagram.scroller.currentZoom == 0.425).toBe(true);
             done();
             diagram.bringIntoView(bound);
-            expect(diagram.scroller.currentZoom == 0.425).toBe(true);
+            let roundOff: number = Math.round(diagram.scroller.currentZoom * 100) / 100;
+            expect(roundOff == 0.84).toBe(true);
             done();
             diagram.bringToCenter(bound);
-            expect(diagram.scroller.currentZoom == 0.425).toBe(true);
+            let roundingOff: number = Math.round(diagram.scroller.currentZoom * 100) / 100;
+            expect(roundingOff == 0.84).toBe(true);
             done();
         });
        });

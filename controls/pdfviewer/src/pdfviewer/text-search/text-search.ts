@@ -87,7 +87,11 @@ export class TextSearch {
             toolbarElement = this.pdfViewerBase.getElement('_toolbarContainer');
         }
         if (toolbarElement) {
-            this.searchBox.style.top = toolbarElement.clientHeight + 'px';
+            if (isBlazor()) {
+                this.searchBox.style.top = toolbarElement.style.height;
+            } else {
+               this.searchBox.style.top = toolbarElement.clientHeight + 'px';
+            }
         }
         const searchElementsContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_search_box_elements', className: 'e-pv-search-bar-elements' });
         // eslint-disable-next-line max-len
@@ -246,7 +250,10 @@ export class TextSearch {
     }
 
     private initiateTextSearch(searchElement: HTMLElement): void {
-        const inputString: string = (searchElement as HTMLInputElement).value;
+        let inputString: string = (searchElement as HTMLInputElement).value;
+        if (inputString && inputString.length > 0 && inputString[inputString.length - 1] === ' ') {
+            inputString = inputString.slice(0, inputString.length - 1);
+        }
         this.initiateSearch(inputString);
     }
 
@@ -675,8 +682,22 @@ export class TextSearch {
                 }
             } else {
                 isContinuation = false;
+                // eslint-disable-next-line
+                let storedData: any = this.pdfViewerBase.getStoredData(pageIndex, true);
+                let pageText: string = null;
+                if (storedData) {
+                    pageText = storedData['pageText'];
+                } else if (this.pdfViewer.isExtractText && this.documentTextCollection.length !== 0) {
+                    // eslint-disable-next-line
+                    let documentIndex: any = this.documentTextCollection[pageIndex][pageIndex];
+                    pageText = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
+                }
                 if (characterBounds[count]) {
-                    width = (characterBounds[count].X - left);
+                    if (pageText && (pageText[count] === '' || pageText[count] === ' ' || pageText[count] === '\r' || pageText[count] === '\n') && (characterBounds[count].Width) === 0) {
+                        width = (characterBounds[count - 1].X - left) + characterBounds[count - 1].Width;
+                    } else {
+                        width = (characterBounds[count].X - left);
+                    }
                 } else {
                     if (characterBounds[count - 1]) {
                         width = (characterBounds[count - 1].X - left);
@@ -712,10 +733,9 @@ export class TextSearch {
         }
         if (!this.pdfViewerBase.getElement(idString)) {
             const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString });
-            textDiv.style.height = height * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+            // eslint-disable-next-line
+            let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+            this.calculateBounds(textDiv, height, width, top, left, pageDetails)
             textDiv.classList.add(className);
             if (className === 'e-pv-search-text-highlight') {
                 // eslint-disable-next-line max-len
@@ -730,6 +750,27 @@ export class TextSearch {
             if (textLayer) {
                 textLayer.appendChild(textDiv);
             }
+        }
+    }
+
+    // eslint-disable-next-line
+    private calculateBounds(textDiv: HTMLElement, height: number, width: number, top: number, left: number, pageDetails: any): void {
+        if (pageDetails.rotation === 0 || pageDetails.rotation === 2) {
+            textDiv.style.height = height * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+        } else if (pageDetails.rotation === 1) {
+            textDiv.style.height = width * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.width = height * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.top = left * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.left = (pageDetails.height - top - height) * this.pdfViewerBase.getZoomFactor() + 'px';
+        }
+        else if (pageDetails.rotation === 3) {
+            textDiv.style.height = width * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.width = height * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.left = ((pageDetails.width - pageDetails.height) + top) * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.top = (pageDetails.height - left - width) * this.pdfViewerBase.getZoomFactor() + 'px';
         }
     }
 
@@ -937,7 +978,7 @@ export class TextSearch {
                             }
                         }
                         if (data) {
-                            if (data.pageText && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                            if (!isNullOrUndefined(data.pageText) && data.uniqueId === proxy.pdfViewerBase.documentId) {
                                 proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderPages, data);
                                 const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
                                 if (viewPortWidth >= pageWidth) {
@@ -1217,11 +1258,23 @@ export class TextSearch {
         this.pdfViewerBase.getElement('_search_input').blur();
         this.isMessagePopupOpened = true;
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+            if (isBlazor()) {
+                const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Nomatches');
+                promise.then((value: string) => {
+                    this.pdfViewerBase.textLayer.createNotificationPopup(value);
+                });
+            } else {
+                this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+            }
         } else {
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No Text Found'));
+            if (isBlazor()) {
+                const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_NoTextFound');
+                promise.then((value: string) => {
+                    this.pdfViewerBase.navigationPane.createTooltipMobile(value);
+                });
+            } else {
+                this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No Text Found'));
+            }
         }
     }
 
@@ -1233,6 +1286,9 @@ export class TextSearch {
      * @returns void
      */
     public searchText(searchText: string, isMatchCase: boolean): void {
+        if (searchText && searchText.length > 0 && searchText[searchText.length - 1] === ' ') {
+            searchText = searchText.slice(0, searchText.length - 1);
+        }
         this.searchString = searchText;
         this.isMatchCase = isMatchCase;
         this.searchIndex = 0;

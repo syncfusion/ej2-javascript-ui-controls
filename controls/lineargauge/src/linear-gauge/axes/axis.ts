@@ -20,7 +20,6 @@ export class Line extends ChildProperty<Line> {
      * Sets and gets the height of the axis line.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public height: number;
@@ -42,7 +41,6 @@ export class Line extends ChildProperty<Line> {
     /**
      * Sets and gets the offset to position the axis line in linear gauge.
      *
-     * @blazorDefaultValue 0
      */
     @Property(0)
     public offset: number;
@@ -278,7 +276,6 @@ export class Pointer extends ChildProperty<Pointer> {
     /**
      * Sets and gets the value of the pointer in axis.
      *
-     * @blazorDefaultValue 0
      * @default null
      */
 

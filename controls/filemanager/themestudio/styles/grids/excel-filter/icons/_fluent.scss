@@ -1,0 +1,41 @@
+@include export-module('excel-filter-fluent-icons') {
+  /*! component icons */
+
+  .e-icon-check::before {
+    content: '\e7b9';
+  }
+
+  #{&}.e-excelfilter {
+    .e-icon-filter::before {
+      content: '\e7d8';
+    }
+
+    .e-excl-filter-icon::before {
+      content: '\e7d8';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e7d9';
+    }
+
+    .e-search-icon::before {
+      content: '\e7a8';
+    }
+
+    .e-ccsearch-icon::before {
+      content: '\e7a8';
+    }
+
+    .e-chkcancel-icon::before {
+      content: '\e74f';
+    }
+
+    .e-sortascending::before {
+      content: '\e818';
+    }
+
+    .e-sortdescending::before {
+      content: '\e819';
+    }
+  }
+}

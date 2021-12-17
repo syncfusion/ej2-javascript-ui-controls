@@ -4,7 +4,7 @@ import { TreeGrid } from '../base';
 import * as events from '../base/constant';
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, extendArray } from '../utils';
-import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, BatchChanges } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, BatchChanges, BeforeBatchDeleteArgs } from '@syncfusion/ej2-grids';
 import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
@@ -127,10 +127,11 @@ export class BatchEdit {
         if (frozenCols && args.columnObject.index > frozenCols) {
             actualCellIndex = actualCellIndex + frozenCols;
         }
-        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
+                                 this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (freeze) {
-            let colCount: number = this.parent.getFrozenLeftColumnsCount() + actualCellIndex;
-            if (colCount == this.parent.treeColumnIndex) {
+            const colCount: number = this.parent.getFrozenLeftColumnsCount() + actualCellIndex;
+            if (colCount === this.parent.treeColumnIndex) {
                 this.parent.renderModule.cellRender({ data: args.rowData, cell: args.cell,
                     column: this.parent.grid.getColumnByIndex((<HTMLTableCellElement>args.cell).cellIndex)
                 });
@@ -277,7 +278,7 @@ export class BatchEdit {
             focusModule.getContent().matrix.current = [actualIndex, focusModule.getContent().matrix.current[1]];
         }
     }
-    private beforeBatchDelete(): void {
+    private beforeBatchDelete(args?: BeforeBatchDeleteArgs): void {
         if (!this.batchRecords.length) {
             this.batchRecords  = extendArray(this.parent.grid.getCurrentViewRecords());
             this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
@@ -286,9 +287,19 @@ export class BatchEdit {
         this.matrix = focusModule.getContent().matrix.matrix;
         const row: Element[] = []; let records: ITreeData[] = [];
         const primarykey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
-        const data: ITreeData = this.parent.grid.getSelectedRecords()[this.parent.grid.getSelectedRecords().length - 1];
-        const childs: ITreeData[] = findChildrenRecords(data);
-        const uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
+        let data: ITreeData;
+        let childs: ITreeData[];
+        let uid: string;
+        if (!isNullOrUndefined(args.row) && this.parent.getSelectedRows().indexOf(args.row) === -1) {
+            data = args.rowData;
+            childs = findChildrenRecords(data);
+            uid = args.row.getAttribute('data-uid');
+        }
+        else {
+            data = this.parent.grid.getSelectedRecords()[this.parent.grid.getSelectedRecords().length - 1];
+            childs = findChildrenRecords(data);
+            uid = this.parent.getSelectedRows()[0].getAttribute('data-uid');
+        }
         const parentRowIndex: number = parseInt(this.parent.grid.getRowElementByUID(uid).getAttribute('aria-rowindex'), 10);
         if (childs.length){
             const totalCount: number = parentRowIndex + childs.length; const firstChildIndex: number = parentRowIndex + 1;
@@ -327,7 +338,8 @@ export class BatchEdit {
         for (let i: number = 0 ; i < rows.length; i++) {
             rows[i].setAttribute('aria-rowindex', i.toString());
         }
-        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
+                                 this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns || freeze) {
             const mRows: Element[] = this.parent.grid.getMovableDataRows();
             const freezeRightRows: Element[] = this.parent.grid.getFrozenRightDataRows();
@@ -390,11 +402,6 @@ export class BatchEdit {
         const data: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
             this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
         const primaryKey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
-        if (!isNullOrUndefined(this.parent[targetElement])) {
-            const row: HTMLTableRowElement = this.parent[targetElement].closest('tr');
-            this.parent.collapseRow(row);
-            this.parent[targetElement] = null;
-        }
         if (!isNullOrUndefined(this.batchAddedRecords)) {
             for (let i: number = 0; i < this.batchAddedRecords.length; i++) {
                 index = data.map((e: Object) => { return e[primaryKey]; }).indexOf(this.batchAddedRecords[i][primaryKey]);
@@ -413,6 +420,11 @@ export class BatchEdit {
                     }
                 }
             }
+        }
+        if (!isNullOrUndefined(this.parent[targetElement])) {
+            const row: HTMLTableRowElement = this.parent[targetElement].closest('tr');
+            this.parent.collapseRow(row);
+            this.parent[targetElement] = null;
         }
         if (!isNullOrUndefined(this.batchDeletedRecords)) {
             for (let i: number = 0; i < this.batchDeletedRecords.length; i++) {

@@ -386,7 +386,8 @@ export class DiagramEventHandler {
         this.focus = true;
         //let touches: TouchList;
         const touches: TouchList = (<TouchEvent & PointerEvent>evt).touches;
-        if (this.isMouseOnScrollBar(evt)) {
+        let isSymblDragging: boolean = document.getElementsByClassName('e-dragclone')[0] ? true : false;
+        if (this.isMouseOnScrollBar(evt) && !isSymblDragging) {
             this.isScrolling = true;
             evt.preventDefault();
             return;
@@ -904,7 +905,7 @@ export class DiagramEventHandler {
                 actualShape.orientation !== shape.orientation;
         }
         if (canInsert && (targetNode as Node)) {
-            if (shape.header && (shape as SwimLane).hasHeader && shape.orientation === 'Horizontal') { index = 1; }
+            if (shape && shape.header && (shape as SwimLane).hasHeader && shape.orientation === 'Horizontal') { index = 1; }
             if (shape.phases.length > 0) { index += 1; }
             if (actualShape.isPhase) {
                 if (shape.orientation === 'Horizontal') {
@@ -1523,8 +1524,10 @@ export class DiagramEventHandler {
             width = textBounds.width;
             width = ((minWidth > width) ? minWidth : width) * scale;
             height = ((minHeight > textBounds.height) ? minHeight : textBounds.height) * scale;
-            editTextBoxDiv.style.left = ((((textWrapper.bounds.center.x + transforms.tx) * transforms.scale) - width / 2) - 2.5) + 'px';
-            editTextBoxDiv.style.top = ((((textWrapper.bounds.center.y + transforms.ty) * transforms.scale) - height / 2) - 3) + 'px';
+            if (!(node instanceof Connector && node.type === 'Bezier')) {
+                editTextBoxDiv.style.left = ((((textWrapper.bounds.center.x + transforms.tx) * transforms.scale) - width / 2) - 2.5) + 'px';
+                editTextBoxDiv.style.top = ((((textWrapper.bounds.center.y + transforms.ty) * transforms.scale) - height / 2) - 3) + 'px';
+            }
             editTextBoxDiv.style.width = width + 'px';
             editTextBoxDiv.style.height = height + 'px';
             editTextBox.style.minHeight = minHeight + 'px';

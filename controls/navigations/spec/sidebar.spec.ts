@@ -1317,7 +1317,7 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar.show();
         expect(document.getElementById('sidebar').style.transform).toEqual("");
         expect(document.getElementById('sidebar').style.width).toEqual("300px");
-        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("0px");
+        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("300px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         expect(document.getElementById('sidebar').classList.contains('e-over')).toBe(true);
         expect(document.getElementById('sidebar').classList.contains('e-left')).toBe(true);
@@ -1423,7 +1423,7 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar.show();
         expect(document.getElementById('sidebar').style.transform).toEqual("");
         expect(document.getElementById('sidebar').style.width).toEqual("300px");
-        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("0px");
+        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("200px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         sidebar.hide();
         sidebar.transitionEnd()
@@ -1447,7 +1447,7 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar.show();
         expect(document.getElementById('sidebar').style.transform).toEqual("");
         expect(document.getElementById('sidebar').style.width).toEqual("300px");
-        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("0px");
+        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("200px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         sidebar.hide();
         sidebar.transitionEnd();

@@ -4,7 +4,7 @@ import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, Ag
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol } from '../common/index';
+import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, checkUniqueRange } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete } from '../common/index';
 import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula } from '../common/index';
 
@@ -157,6 +157,9 @@ export class WorkbookFormula {
             if (<boolean>args.isFormula) {
                 args.value = this.autoCorrectFormula(
                     <string>args.value, <number>args.rowIndex, <number>args.colIndex, <number>args.sheetIndex);
+                if (<boolean>args.isClipboard && args.value.toString().toUpperCase().includes('UNIQUE')) {
+                    this.parent.sheets[<number>args.sheetIndex].rows[<number>args.rowIndex].cells[<number>args.colIndex].value = '';
+                }
             }
             this.refreshCalculate(
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value,
@@ -530,9 +533,9 @@ export class WorkbookFormula {
                 cellRef = false;
             }
             if (cellRef) {
-                this.addDefinedName(definedname, true);
+                this.addDefinedName(definedname, true, undefined, true);
             } else {
-                this.removeDefinedName(definedname.name, definedname.scope);
+                this.removeDefinedName(definedname.name, definedname.scope, true);
                 i--;
             }
             i++;
@@ -694,9 +697,9 @@ export class WorkbookFormula {
                     cell = getCell(i, j, sheet, false, true);
                     if (cell.formula && checkIsFormula(cell.formula)) {
                         if (index === sheetIndex) {
-                            this.updateFormula(args, cell);
+                            this.updateFormula(args, cell, i, j);
                         } else if (cell.formula.includes(args.sheet.name)) {
-                            this.updateFormula(args, cell);
+                            this.updateFormula(args, cell, i, j);
                         }
                     }
                 }
@@ -708,8 +711,11 @@ export class WorkbookFormula {
         this.refreshNamedRange(args);
     }
 
-    private updateFormula(args: InsertDeleteEventArgs, cell: CellModel): void {
+    private updateFormula(args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number): void {
         let ref: string; let pVal: string; let index: number[]; let updated: boolean;
+        if (cell.formula && cell.formula.includes('UNIQUE')) {
+            this.clearUniqueRange(row, col, args.sheet);
+        }
         const splitFormula: string[] = this.parseFormula(cell.formula, true);
         for (let i: number = 0; i < splitFormula.length; i++) {
             ref = splitFormula[i].trim().replace(/[$]/g, '');
@@ -730,6 +736,18 @@ export class WorkbookFormula {
         const newFormula: string = '=' + splitFormula.join('');
         if (cell.formula !== newFormula) {
             cell.formula = newFormula; cell.value = null;
+        }
+    }
+
+    private clearUniqueRange(row: number, col: number, sheet: SheetModel): void {
+        const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } =
+        { cellIdx: [row, col, row, col], isUnique: false, uniqueRange: '' };
+        this.parent.notify(checkUniqueRange, uniqueArgs);
+        const range: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+        for (let i: number = range[0]; i <= range[2]; i++) {
+            for (let j: number = range[1]; j <= range[3]; j++) {
+                delete getCell(i, j, sheet, false, true).value;
+            }
         }
     }
 

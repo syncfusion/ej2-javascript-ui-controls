@@ -13,6 +13,7 @@ export * from './renderer/legend';
 export * from './renderer/dataLabel';
 export * from './user-interaction/tooltip';
 export * from './user-interaction/selection';
+export * from './user-interaction/high-light';
 export * from './model/enum';
 export * from './annotation/annotation';
 export * from '../common/utils/enum';

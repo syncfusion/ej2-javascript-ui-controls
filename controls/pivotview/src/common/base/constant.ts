@@ -127,6 +127,12 @@ export const fieldDragStart: string = 'fieldDragStart';
 export const chartPointClick: string = 'chartPointClick';
 /** @hidden */
 export const beforeServiceInvoke: string = 'beforeServiceInvoke';
+/** @hidden */
+export const actionBegin: string = 'actionBegin';
+/** @hidden */
+export const actionComplete: string = 'actionComplete';
+/** @hidden */
+export const actionFailure: string = 'actionFailure';
 
 /**
  * Specifies pivot internal events
@@ -158,3 +164,187 @@ export const initToolbar: string = 'init-toolbar';
 export const initFormatting: string = 'init-formatting';
 /** @hidden */
 export const initGrouping: string = 'init-grouping';
+
+/**
+ * Specifies action names of actionBegin events
+ */
+
+/** @hidden */
+export const sortValue: string = 'Sort value';
+/** @hidden */
+export const drillUp: string = 'Drill up';
+/** @hidden */
+export const drillDown: string = 'Drill down';
+/** @hidden */
+export const addNewReport: string = 'Add new report';
+/** @hidden */
+export const saveCurrentReport: string = 'Save current report';
+/** @hidden */
+export const saveAsCurrentReport: string = 'Save as current report';
+/** @hidden */
+export const renameCurrentReport: string = 'Rename current report';
+/** @hidden */
+export const removeCurrentReport: string = 'Remove current report';
+/** @hidden */
+export const loadReports: string = 'Load report';
+/** @hidden */
+export const openConditionalFormatting: string = 'Open conditional formatting dialog';
+/** @hidden */
+export const openNumberFormatting: string = 'Open number formatting dialog';
+/** @hidden */
+export const MdxQuery: string = 'MdxQuery';
+/** @hidden */
+export const showFieldList: string = 'Open field list';
+/** @hidden */
+export const tableView: string = 'Show table view';
+/** @hidden */
+export const chartView: string = 'Show chart view';
+/** @hidden */
+export const multipleAxis: string = 'Multiple Axis';
+/** @hidden */
+export const showLegend: string = 'Show legend';
+/** @hidden */
+export const pdfExport: string = 'PDF export';
+/** @hidden */
+export const pngExport: string = 'PNG export';
+/** @hidden */
+export const excelExport: string = 'Excel export';
+/** @hidden */
+export const csvExport: string = 'CSV export';
+/** @hidden */
+export const jpegExport: string = 'JPEG export';
+/** @hidden */
+export const svgExport: string = 'SVG export';
+/** @hidden */
+export const hideSubTotals: string = 'Hide sub-totals';
+/** @hidden */
+export const subTotalsRow: string = 'Show row sub-totals';
+/** @hidden */
+export const subTotalsColumn: string = 'Show column sub-totals';
+/** @hidden */
+export const showSubTotals: string = 'Show sub-totals';
+/** @hidden */
+export const hideGrandTotals: string = 'Hide grand totals';
+/** @hidden */
+export const grandTotalsRow: string = 'Show row grand totals';
+/** @hidden */
+export const grandTotalsColumn: string = 'Show column grand totals';
+/** @hidden */
+export const showGrandTotals: string = 'Show grand totals';
+/** @hidden */
+export const numberFormattingMenu: string = 'Number Formatting menu';
+/** @hidden */
+export const conditionalFormattingMenu: string = 'Conditional Formatting menu';
+/** @hidden */
+export const reportChange: string = 'Report change';
+/** @hidden */
+export const sortFieldTree: string = 'Sort field tree';
+/** @hidden */
+export const editCalculatedField: string = 'Edit calculated field';
+/** @hidden */
+export const sortField: string = 'Sort field';
+/** @hidden */
+export const filterField: string = 'Filter field';
+/** @hidden */
+export const removeField: string = 'Remove field';
+/** @hidden */
+export const openCalculatedField: string = 'Open calculated field dialog';
+/** @hidden */
+export const editRecord: string = 'Edit record';
+/** @hidden */
+export const saveEditedRecords: string = 'Save edited records';
+/** @hidden */
+export const addNewRecord: string = 'Add new record';
+/** @hidden */
+export const removeRecord: string = 'Remove record';
+/** @hidden */
+export const aggregateField: string = 'Aggregate field';
+/** @hidden */
+export const contextMenuCalculatedField: string = 'CalculatedField Context menu';
+/** @hidden */
+export const windowResize: string = 'Window resize';
+
+/**
+ * Specifies action names of actionComplete events
+ */
+
+/** @hidden */
+export const calculatedFieldApplied: string = 'Calculated field applied';
+/** @hidden */
+export const editedRecordsSaved: string = 'Edited records saved';
+/** @hidden */
+export const newRecordAdded: string = 'New record added';
+/** @hidden */
+export const recordRemoved: string = 'Record removed';
+/** @hidden */
+export const closeFieldlist: string = 'Field list closed';
+/** @hidden */
+export const fieldTreeSorted: string = 'Field tree sorted';
+/** @hidden */
+export const reportSaved: string = 'Report saved';
+/** @hidden */
+export const newReportAdded: string = 'New report added';
+/** @hidden */
+export const reportReSaved: string = 'Report re-saved';
+/** @hidden */
+export const reportRenamed: string = 'Report renamed';
+/** @hidden */
+export const reportRemoved: string = 'Report removed';
+/** @hidden */
+export const excelExported: string = 'Excel exported';
+/** @hidden */
+export const csvExported: string = 'CSV exported';
+/** @hidden */
+export const pdfExported: string = 'PDF exported';
+/** @hidden */
+export const pngExported: string = 'PNG exported';
+/** @hidden */
+export const jpegExported: string = 'JPEG exported';
+/** @hidden */
+export const svgExported: string = 'SVG exported';
+/** @hidden */
+export const conditionallyFormatted: string = 'Conditional formatting applied';
+/** @hidden */
+export const numberFormatted: string = 'Number formatting applied';
+/** @hidden */
+export const tableViewed: string = 'Table view shown';
+/** @hidden */
+export const chartViewed: string = 'Chart view shown';
+/** @hidden */
+export const subTotalsHidden: string = 'Sub-totals hidden';
+/** @hidden */
+export const subTotalsRowShown: string = 'Row sub-totals shown';
+/** @hidden */
+export const subTotalsColumnShown: string = 'Column sub-totals shown';
+/** @hidden */
+export const subTotalsShown: string = 'Sub-totals shown';
+/** @hidden */
+export const grandTotalsHidden: string = 'Grand totals hidden';
+/** @hidden */
+export const grandTotalsRowShown: string = 'Row grand totals shown';
+/** @hidden */
+export const grandTotalsColumnShown: string = 'Column grand totals shown';
+/** @hidden */
+export const grandTotalsShown: string = 'Grand totals shown';
+/** @hidden */
+export const valueSorted: string = 'Value sorted';
+/** @hidden */
+export const calculatedFieldEdited: string = 'Calculated field edited';
+/** @hidden */
+export const fieldSorted: string = 'Field sorted';
+/** @hidden */
+export const fieldFiltered: string = 'Field filtered';
+/** @hidden */
+export const fieldRemoved: string = 'Field removed';
+/** @hidden */
+export const fieldAggregated: string = 'Field aggregated';
+/** @hidden */
+export const recordEdited: string = 'Record edited';
+/** @hidden */
+export const reportChanged: string = 'Report changed';
+/** @hidden */
+export const windowResized: string = 'Window resized';
+/** @hidden */
+export const recordUpdated: string = 'Records updated';
+/** @hidden */
+export const drillThroughClosed: string = 'Drill-through closed';

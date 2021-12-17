@@ -1,0 +1,183 @@
+@include export-module('pivotview-icons') {
+  .e-pivotview {
+    .e-expand::before {
+      content: '\e7c2';
+    }
+
+    .e-collapse::before {
+      content: '\e7c3';
+    }
+
+    &.e-rtl {
+      .e-expand::before {
+        content: '\e7c1';
+      }
+    }
+
+    .e-sort::before {
+      content: '\e788';
+    }
+
+    .e-pv-filter::before {
+      content: '\e7d8';
+    }
+
+    .e-pv-filtered::before {
+      content: '\e7da';
+    }
+
+    .e-remove::before {
+      content: '\e74f';
+    }
+
+    .e-selected-option-icon::before {
+      content: '\e738';
+    }
+
+    .e-clear-filter-icon::before {
+      content: '\e7d9';
+    }
+
+    .e-dropdown-icon::before {
+      content: '\e7c3';
+    }
+
+    .e-export::before {
+      content: '\e7af';
+    }
+
+    .e-new-report::before {
+      content: '\e7cc';
+    }
+
+    .e-save-report::before {
+      content: '\e7bf';
+    }
+
+    .e-saveas-report::before {
+      content: '\e7c0';
+    }
+
+    .e-rename-report::before {
+      content: '\e759';
+    }
+
+    .e-remove-report::before {
+      content: '\e75b';
+    }
+
+    .e-sub-total::before {
+      content: '\e813';
+    }
+
+    .e-grand-total::before {
+      content: '\e812';
+    }
+
+    .e-toolbar-fieldlist::before {
+      content: '\e7f5';
+    }
+
+    .e-toolbar-grid::before {
+      content: '\e71a';
+    }
+
+    .e-toolbar-chart::before {
+      content: '\e76a';
+    }
+
+    .e-toolbar-formatting::before {
+      content: '\e7d0';
+    }
+
+    .e-pivot-button .e-edit::before {
+      content: '\e822';
+    }
+
+    .e-sort-ascend-icon::before {
+      content: '\e818';
+    }
+
+    .e-sort-descend-icon::before {
+      content: '\e819';
+    }
+  }
+
+  .e-pivotview-pdf-export::before {
+    content: '\e7d1';
+  }
+
+  .e-pivotview-excel-export::before {
+    content: '\e7d2';
+  }
+
+  .e-pivotview-csv-export::before {
+    content: '\e833';
+  }
+
+  .e-pivotview-png-export::before {
+    content: '\e831';
+  }
+
+  .e-pivotview-jpeg-export::before {
+    content: '\e718';
+  }
+
+  .e-pivotview-svg-export::before {
+    content: '\e832';
+  }
+
+  .e-mdx::before {
+    content: '\e861';
+  }
+
+  .e-pivotview-select-icon::before {
+    content: '\e7b9';
+  }
+
+  .e-pivotview-export::before {
+    content: '\e7af';
+  }
+
+  .e-pivotview-grid::before {
+    content: '\e71a';
+  }
+
+  .e-pivotview-expand::before {
+    content: '\e7f6';
+  }
+
+  .e-pivotview-collapse::before {
+    content: '\e7f7';
+  }
+
+  .e-pivot-format-menu::before {
+    content: '\e88e';
+  }
+
+  .e-pivot-number-format-menu::before {
+    content: '\e834';
+  }
+
+  .e-pivot-conditional-format-menu::before {
+    content: '\e7d0';
+  }
+
+  .e-pivot-format-toolbar::before {
+    content: '\e834';
+  }
+
+  .e-pivotview-group::before {
+    content: '\e784';
+  }
+
+  .e-pivotview-ungroup::before {
+    content: '\e785';
+  }
+
+  .e-level-options {
+    .e-selected-level-icon::before {
+      content: '\e7b9';
+    }
+  }
+}

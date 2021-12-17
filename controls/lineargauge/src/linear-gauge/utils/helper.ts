@@ -99,8 +99,9 @@ export function convertPixelToValue(
     const size: Size = new Size(axis.lineBounds.width, axis.lineBounds.height);
     const y: number = (type === 'drag') ? (location.y - axis.lineBounds.y) :
         ((pointerRect.top + height) - elementRect.top - axis.lineBounds.y);
-    const x: number = (type === 'drag') ? (location.x - axis.lineBounds.x) :
-        ((pointerRect.left + width) - elementRect.left - axis.lineBounds.x);
+    const extraWidth: number = getExtraWidth(parentElement);
+    const x: number = (type === 'drag') ? (location.x - axis.lineBounds.x + extraWidth) :
+        ((pointerRect.left + width) - elementRect.left - axis.lineBounds.x + extraWidth);
     const newSize: number = (orientation === 'Vertical') ? size.height : size.width;
     const divideVal: number = (orientation === 'Vertical') ? y : x;
     let value: number = (orientation === 'Vertical') ? (axis.isInversed) ? (divideVal / newSize) :
@@ -485,7 +486,7 @@ export function getPointer(target: HTMLElement, gauge: LinearGauge): IVisiblePoi
 export function getRangeColor(value: number, ranges: Range[]): string {
     let rangeColor: string = null;
     ranges.forEach((range: Range, index: number) => {
-        if (value >= range.start && range.end >= value) {
+        if ((value >= range.start && range.end >= value) && range.start !== range.end) {
             rangeColor = range.interior;
         }
     });
@@ -521,6 +522,22 @@ export function getRangePalette(theme: LinearGaugeTheme): string[] {
         case 'tailwinddark':
             palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
             '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
+            break;
+        case 'bootstrap5':
+            palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+            break;
+        case 'bootstrap5dark':
+            palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+            break;
+        case 'fluentui':
+            palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+                '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+            break;
+        case 'fluentuidark':
+            palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+                '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
             break;
         default:
             palette = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];
@@ -638,7 +655,7 @@ export function getBox(
     location: Rect, boxName: string, orientation: Orientation,
     size: Size, type: string, containerWidth: number, axis: Axis, cornerRadius: number): string {
     let path: string = ' ';
-    const radius: number = cornerRadius;
+    let radius: number = cornerRadius;
     let x1: number; let y1: number; let rectWidth: number; let rectHeight: number;
     let bottomRadius: number; let topRadius: number;
     switch (boxName) {
@@ -647,14 +664,43 @@ export function getBox(
         y1 = location.y;
         rectWidth = location.width;
         rectHeight = location.height;
-        path = 'M' + ' ' + x1 + ' ' + (radius + y1) + ' Q ' + x1 + ' ' + y1 + ' ' + (x1 + radius) + ' ' + y1 + ' ';
-        path += 'L' + ' ' + (x1 + rectWidth - radius) + ' ' + y1 + ' Q ' + (x1 + rectWidth) + ' ' + y1 + ' '
-                + (x1 + rectWidth) + ' ' + (y1 + radius) + ' ';
-        path += 'L ' + (x1 + rectWidth) + ' ' + (y1 + rectHeight - radius) + ' Q ' + (x1 + rectWidth) + ' ' + (y1 + rectHeight)
-                + ' ' + (x1 + rectWidth - radius) + ' ' + (y1 + rectHeight) + ' ';
-        path += ' L ' + (x1 + radius) + ' ' + (y1 + rectHeight) + ' Q ' + x1 + ' ' + (y1 + rectHeight)
-                + ' ' + x1 + ' ' + (y1 + rectHeight - radius) + ' ';
-        path += 'L' + ' ' + x1 + ' ' + (radius + y1) + ' ' + 'z';
+        if(((orientation === 'Vertical' && location.height === 0) || (orientation === 'Horizontal' && location.width === 0)) && radius > 10){
+            radius = 10;
+        }
+        let horizontalCurve = x1 + rectWidth - radius;
+        let verticalCurve = y1 + rectHeight - radius;
+        let verticalRadius = radius + y1;
+        let horizontalRadius = radius + x1;
+            if(type === 'container' || type === 'bar' && ((orientation === 'Vertical' && location.height !== 0) || (orientation === 'Horizontal' && location.width !== 0))){
+                if(horizontalRadius > (x1 + (rectWidth/2))){
+                    horizontalRadius = x1 + (rectWidth/2);
+                    horizontalCurve = horizontalRadius;
+                }
+                if(verticalRadius > (y1 + (rectHeight/2))){
+                    verticalRadius = y1 + (rectHeight/2);
+                    verticalCurve = verticalRadius;
+                }
+            }
+            if (type === 'bar' && ((orientation === 'Vertical' && location.height === 0) || (orientation === 'Horizontal' && location.width === 0))) {
+                if (location.width < radius / 2 && !axis.isInversed) {
+                    horizontalCurve = horizontalCurve + radius + radius / 2;
+                } else if (location.width < radius / 2 && axis.isInversed) {
+                    horizontalRadius = x1 - Math.ceil(radius / 4);
+                }
+                if (location.height < radius / 2 && !axis.isInversed) {
+                    verticalRadius = y1 - Math.ceil(radius / 4);
+                } else if (location.height < radius / 2 && axis.isInversed) {
+                    verticalCurve = verticalCurve + radius + radius / 2;
+                }
+            }
+        path = 'M' + ' ' + x1 + ' ' + verticalRadius + ' Q ' + x1 + ' ' + y1 + ' ' + horizontalRadius + ' ' + y1 + ' ';
+        path += 'L' + ' ' + horizontalCurve + ' ' + y1 + ' Q ' + (x1 + rectWidth) + ' ' + y1 + ' '
+                + (x1 + rectWidth) + ' ' + verticalRadius + ' ';
+        path += 'L ' + (x1 + rectWidth) + ' ' + verticalCurve + ' Q ' + (x1 + rectWidth) + ' ' + (y1 + rectHeight)
+                + ' ' + horizontalCurve + ' ' + (y1 + rectHeight) + ' ';
+        path += ' L ' + horizontalRadius + ' ' + (y1 + rectHeight) + ' Q ' + x1 + ' ' + (y1 + rectHeight)
+                + ' ' + x1 + ' ' + verticalCurve + ' ';
+        path += 'L' + ' ' + x1 + ' ' + verticalRadius + ' ' + 'z';
         break;
     case 'Thermometer':
         // eslint-disable-next-line no-case-declarations
@@ -683,4 +729,11 @@ export function getBox(
         break;
     }
     return path;
+}
+
+/** @private */
+export function getExtraWidth(gaugeElement: HTMLElement): number {
+    const svgElement: HTMLElement = getElement(gaugeElement.id + '_svg');
+    const extraWidth: number = gaugeElement.getBoundingClientRect().left - svgElement.getBoundingClientRect().left;
+    return extraWidth;
 }

@@ -12,6 +12,18 @@ export class LinkAnnotation {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     /**
+     * @private
+     */
+     public linkAnnotation: number[];
+     /**
+      * @private
+      */
+     public linkPage: number[];
+     /**
+      * @private
+      */
+     public annotationY: number[];
+    /**
      * @param pdfViewer
      * @param viewerBase
      * @param pdfViewer
@@ -35,14 +47,14 @@ export class LinkAnnotation {
         if (this.pdfViewer.enableHyperlink) {
             const hyperlinks: string[] = data.hyperlinks;
             const hyperlinksBounds: number[] = data.hyperlinkBounds;
-            const linkAnnotation: number[] = data.linkAnnotation;
-            const linkPage: number[] = data.linkPage;
-            const annotationY: number[] = data.annotationLocation;
+            this.linkAnnotation = data.linkAnnotation;
+            this.linkPage = data.linkPage;
+            this.annotationY = data.annotationLocation;
             if (hyperlinks && hyperlinks.length > 0 && hyperlinksBounds.length > 0) {
                 this.renderWebLink(hyperlinks, hyperlinksBounds, pageIndex);
             }
-            if (linkAnnotation && linkAnnotation.length > 0 && linkPage.length > 0) {
-                this.renderDocumentLink(linkAnnotation, linkPage, annotationY, pageIndex);
+            if (this.linkAnnotation && this.linkAnnotation.length > 0 && this.linkPage.length > 0) {
+                this.renderDocumentLink(this.linkAnnotation, this.linkPage, this.annotationY, pageIndex);
             }
         }
     }
@@ -153,13 +165,16 @@ export class LinkAnnotation {
                 const destPageHeight: number = (this.pdfViewerBase.pageSize[pageIndex].height);
                 let destLocation: number;
                 let scrollValue: number;
-                if (annotationY.length !== 0) {
-                    destLocation = (annotationY[i]);
-                    // eslint-disable-next-line max-len
-                    scrollValue = this.pdfViewerBase.pageSize[linkPage[i]].top * this.pdfViewerBase.getZoomFactor() + ((destPageHeight - destLocation) * this.pdfViewerBase.getZoomFactor());
-                } else {
-                    // eslint-disable-next-line max-len
-                    scrollValue = this.pdfViewerBase.pageSize[linkPage[i]].top * this.pdfViewerBase.getZoomFactor();
+                let pageSize: any = this.pdfViewerBase.pageSize[linkPage[i]];
+                if (pageSize) {
+                    if (annotationY.length !== 0) {
+                        destLocation = (annotationY[i]);
+                        // eslint-disable-next-line max-len
+                        scrollValue = pageSize.top * this.pdfViewerBase.getZoomFactor() + ((destPageHeight - destLocation) * this.pdfViewerBase.getZoomFactor());
+                    } else {
+                        // eslint-disable-next-line max-len
+                        scrollValue = pageSize.top * this.pdfViewerBase.getZoomFactor();
+                    }
                 }
                 if (scrollValue !== undefined) {
                     aTag.name = scrollValue.toString();

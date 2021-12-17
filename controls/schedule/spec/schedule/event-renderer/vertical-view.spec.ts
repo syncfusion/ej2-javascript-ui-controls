@@ -326,6 +326,59 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
+    describe('Vertical view more that 24 hours appointment rendering with and without spannedEventPlacement property', () => {
+        let schObj: Schedule;
+        const appointments: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Event',
+            StartTime: new Date(2017, 10, 1, 10, 0),
+            EndTime: new Date(2017, 10, 1, 12, 0),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'Testing',
+            StartTime: new Date(2017, 10, 1, 10, 0),
+            EndTime: new Date(2017, 10, 2, 12, 30),
+            IsAllDay: false
+        }, {
+            Id: 3,
+            Subject: 'Holiday',
+            StartTime: new Date(2017, 10, 2),
+            EndTime: new Date(2017, 10, 3),
+            IsAllDay: true
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 2), eventSettings:{spannedEventPlacement: 'TimeSlot'} };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking more that 24 hours appointment element with spannedEventPlacement property', () => {
+            const allDayWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-all-day-appointment-wrapper'));
+            expect(allDayWrapper[3].childElementCount).toEqual(0);
+            const spannedEVent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            let eventDetails = schObj.getEventDetails(spannedEVent);
+            expect(eventDetails.IsAllDay).toEqual(false);
+            expect(spannedEVent.classList.contains("e-all-day-appointment")).toEqual(false);
+            expect(spannedEVent.offsetTop).toEqual(720);
+            expect(spannedEVent.offsetHeight).toEqual(1008);
+        });
+        it('Checking more that 24 hours appointment element without spannedEventPlacement property', () => {
+            schObj.dataBound = null;
+            schObj.eventSettings.spannedEventPlacement = 'AllDayRow';
+            schObj.dataBind();
+            const allDayWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-all-day-appointment-wrapper'));
+            expect(allDayWrapper[3].childElementCount).toBeGreaterThan(0);
+            const spannedEVent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            let eventDetails = schObj.getEventDetails(spannedEVent);
+            expect(eventDetails.IsAllDay).toEqual(false);
+            expect(spannedEVent.classList.contains("e-all-day-appointment")).toEqual(true);
+            expect(spannedEVent.offsetTop).toEqual(62);
+            expect(spannedEVent.offsetHeight).toEqual(22);
+        });
+    });
+
     describe('Vertical view all-day row appointment rendering in RTL Mode', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -1057,6 +1110,52 @@ describe('Vertical View Event Render Module', () => {
             expect(eventBlockedElementList.length).toEqual(1);
             const eventNormalElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventNormalElementList.length).toEqual(5);
+        });
+    });
+
+    describe('minimumEventDuration property', () => {
+        let schObj: Schedule;
+        const appointments: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2017, 10, 1, 10, 0),
+            EndTime: new Date(2017, 10, 1, 10, 3),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'Meeting',
+            StartTime: new Date(2017, 10, 1, 10, 0),
+            EndTime: new Date(2017, 10, 1, 10, 45),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 1),
+                eventSettings: { minimumEventDuration: 30 }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointment height by setting minimumEventDuration property to 30 minutes', () => {
+            const appointmentWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(appointmentWrapper[3].childElementCount).toEqual(2);
+            const firstEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]');
+            expect(firstEvent.style.height).toEqual('36px');
+            const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            expect(secondEvent.style.height).toEqual('54px');
+        });
+        it('Checking appointment height by setting minimumEventDuration property to 1 minute (default)', () => {
+            schObj.dataBound = null;
+            schObj.eventSettings.minimumEventDuration = 1;
+            schObj.dataBind();
+            const appointmentWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(appointmentWrapper[3].childElementCount).toEqual(2);
+            const firstEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]');
+            expect(firstEvent.style.height).toEqual('3.6px');
+            const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            expect(secondEvent.style.height).toEqual('54px');
         });
     });
 

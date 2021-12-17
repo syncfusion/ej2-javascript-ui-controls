@@ -2,7 +2,73 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I347324` - The issue with "pressing enter key creates a new line when read only mode is enabled dynamically" has been resolved.
+
+- `#I355194` - The issue with "console error occurs when undo icon in the toolbar is clicked after inserting the content using the `tribute js`" has been resolved.
+
+## 19.3.53 (2021-11-12)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I346580` - The issue with "align top in the table vertical align quick toolbar is always disabled" has been resolved.
+
+- `#I346331` - The issue with "font family is not working when changed dynamically when the Rich Text Editor is in inline mode" has been resolved.
+
+- `#I346832` - The issue with "upload icon overlaps with the percentage icon in the insert image dialog when uploading" has been resolved.
+
+## 19.3.47 (2021-10-26)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I342950` - The issue with "font-Family styles are not applied when changing dynamically" has been resolved.
+
+- `#I345842` - The issue with "Table cells with classes added initially are removed, when focusing on the table cells" has been resolved.
+
+## 19.3.46 (2021-10-19)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I342605` - The `removeUrl` API configured controller action, now receives the image file data instead of the `src` attribute value, When removing an image from the editor.
+
+- `#I343769` - The issue with the link quick toolbar opened when placing the cursor at the first letter of the hyperlink word in the Rich Text Editor content has been resolved.
+
+## 19.3.45 (2021-10-12)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I338000` - The issue with `actionComplete` event triggered twice, when replacing the inserted image using QuickToolbar has been resolved.
+
+- `#I343188` - The issue with "Focusing a table cell that was recently inserted in the Rich Text Editor, the page scrolls to the end and the table loses its focus" has been resolved.
+
+- `#F168838` - The issue with "Image is not inserted in the editor, when using the `Turkish` language" has been resolved.
+
+- `#I344588`, `#I344586` - The issue with "page scrolls automatically when the enter key is pressed in the Rich Text Editor" has been resolved.
+
+- `#I344588` - The issue with "content goes outside of the Rich Text Editor when the enter key is pressed twice" has been resolved.
+
+- `#I342895` - The issue with "when copy and paste content in the empty Rich Text Editor focus is lost" has been resolved.
+
+- `#F168901` - The issue with `&#8203;` character code not removed when typing in the Rich Text Editor has been resolved.
+
+- `#I340970` - The issue with "Replacing the `&nbsp;` to empty space's with the `XTHML` validation" has been resolved.
+
+- `#I342383` - The issue with "Numbered List order in the Rich Text Editor goes incorrect, when copy and pasting a list from MS word" has been resolved.
+
+## 19.3.43 (2021-09-30)
 
 ### RichTextEditor
 

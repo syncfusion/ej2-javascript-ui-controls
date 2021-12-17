@@ -287,4 +287,45 @@ console.log('Resize Table column with right column selection ');
         expect(((editor.selection.tableFormat.table.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBeGreaterThan(234);
     });
 });
+describe(' Table Row Resizing validation in header', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', {
+            id: 'container',
+            styles: 'width:1000px;height:500px'
+        });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it(' Table Row Resizing validation in header', () => {
+console.log(' Table Row Resizing validation header');
+        documentHelper = editor.documentHelper;
+       documentHelper.owner.selection.goToHeader();
+        editor.editor.insertTable(2, 2);
+        editor.editorModule.tableResize.currentResizingTable = documentHelper.pages[0].headerWidget.childWidgets[0] as TableWidget;
+        let height: number = documentHelper.pages[0].headerWidget.height;
+        editor.editorModule.tableResize.resizeNode = 1;
+        documentHelper.isRowOrCellResizing = true;
+        editor.editorModule.tableResize.resizerPosition = 0;
+        editor.editorModule.tableResize.startingPoint = new Point(227.5, 114);
+        editor.editorModule.tableResize.resizeTableRow(2);
+        expect(documentHelper.pages[0].headerWidget.height).toBeGreaterThan(height);
+    });
+});
 

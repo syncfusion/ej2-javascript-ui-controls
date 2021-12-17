@@ -1532,6 +1532,109 @@ describe('DropDown Tree control hierarchical datasource', () => {
             },1000 );
         });
     });
+
+    describe('Performance testing with 2700 nodes', () => {
+        let ddtreeObj1: DropDownTree;
+        let mouseEventArgs: any;
+        let originalTimeout: any;
+        let tapEvent: any;
+        beforeEach((): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => {},
+                stopImmediatePropagation: (): void => {},
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent:{ target: null}
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdowntree' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+        afterEach((): void => {
+            if (ddtreeObj1)
+                ddtreeObj1.destroy();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            document.body.innerHTML = '';
+        });
+        it('While selecting and removing nodes', (done) => {
+            var hierarchicalData = [];
+            var parent = 300, child = 2, child1 = 1, child2 = 2;
+            var data = [];
+            for (var m = 1; m <= parent; m++) {
+                var childArray1 = [];
+                for (var n = 1; n <= child; n++) {
+                    var childArray2 = [];
+                    for (var o = 1; o <= child1; o++) {
+                        var childArray3 = [];
+                        for (var p = 1; p <= child2; p++) {
+                            childArray3.push({
+                                id: 'd' + m + n + o + p,
+                                name: 'Node' + m + n + o + p,
+                            });
+                        }
+                        childArray2.push({
+                            id: 'c' + m + n + o,
+                            name: 'Node' + m + n + o,
+                            child: childArray3,
+                        });
+                    }
+                    childArray1.push({
+                        id: 'b' + m + n,
+                        name: 'Node' + m + n,
+                        child: childArray2,
+                    });
+                }
+                data.push({
+                    id: 'a' + m,
+                    name: 'Node' + m,
+                    child: childArray1,
+                });
+            }
+            hierarchicalData.push({
+                id: 'a' + 99999,
+                name: 'Node Main',
+                child: data,
+            });
+            let startDate:number;
+            let timeTaken:number;
+            // Render the Dropdown Tree by mapping its fields property with data source properties
+            ddtreeObj1 = new DropDownTree({
+                fields: { dataSource: hierarchicalData, value: "id", text: "name", child: "child", },
+                showCheckBox: true,
+                treeSettings: { loadOnDemand: true, autoCheck: false },
+                changeOnBlur: false,
+                mode: "Delimiter",
+                popupHeight: "220px",
+                placeholder: "Select a folder or file",
+                change: function () {
+                    timeTaken = new Date().getTime() - startDate;
+                }
+            });
+            ddtreeObj1.appendTo('#dropdowntree');
+            ddtreeObj1.showPopup();
+            setTimeout(() => {
+                let li: Element[] = (ddtreeObj1.element as any).ej2_instances[0].tree.querySelectorAll('li');
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                startDate = new Date().getTime();
+                (ddtreeObj1 as any).treeObj.touchClickObj.tap(tapEvent);
+                setTimeout(() => {
+                    expect(timeTaken).toBeLessThan(200);
+                    var icon: HTMLElement = (ddtreeObj1 as any).element.nextElementSibling;
+                    var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    icon.dispatchEvent(e);
+                    expect(timeTaken).toBeLessThan(100);
+                    done();
+                },1000 );
+            },1000 );
+        });
+    });
     describe('noRecordTemplate testing', () => {
         let ddtreeObj: DropDownTree;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdowntree' });

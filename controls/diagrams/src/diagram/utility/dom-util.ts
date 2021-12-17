@@ -34,7 +34,7 @@ import { UserHandleModel } from '../interaction/selector-model';
  */
 export function removeElementsByClass(className: string, id?: string): void {
     let elements: HTMLCollectionOf<Element> | NodeListOf<Element>;
-    if (id) {
+    if (id && document.getElementById(id).classList.contains(className)) {
         elements = document.getElementById(id).getElementsByClassName(className);
     } else {
         elements = document.getElementsByClassName(className);
@@ -967,7 +967,8 @@ export function getContent(
             div.innerHTML = ((node.shape as any).content) as string;
             /* tslint:disable */
             svgContent = (div.getElementsByTagName('svg').length > 0)
-                ? div.getElementsByTagName('svg')[0].outerHTML : div.getElementsByTagName('g')[0].outerHTML;
+                ? div.getElementsByTagName('svg')[0].outerHTML : 
+                div.getElementsByTagName('g').length > 0 ? div.getElementsByTagName('g')[0].outerHTML : "" ;
             /* tslint:disable */
             (node.shape as any).content = svgContent;
             /* tslint:disable */

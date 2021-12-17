@@ -161,11 +161,31 @@ export class Data {
      * @returns {void}
      * @private
      */
-    private dataManagerSuccess(e: ReturnType, type?: string): void {
+    private dataManagerSuccess(e: ReturnType, type?: string, offlineArgs?: ActionEventArgs, index?: number): void {
         if (this.parent.isDestroyed) { return; }
         if (type) {
             const resultData: Record<string, any>[] = extend([], e.result, null, true) as Record<string, any>[];
             this.parent.kanbanData = resultData;
+            if (offlineArgs.requestType === 'cardCreated') {
+                if (!Array.isArray(e)) {
+                    offlineArgs.addedRecords[0] = extend(offlineArgs.addedRecords[0], e);
+                } else {
+                    this.modifyArrayData(offlineArgs.addedRecords, e);
+                }
+            } else if (offlineArgs.requestType === 'cardChanged') {
+                if (!Array.isArray(e)) {
+                    offlineArgs.changedRecords[0] = extend(offlineArgs.changedRecords[0], e);
+                } else {
+                    this.modifyArrayData(offlineArgs.changedRecords, e);
+                }
+            } else if (offlineArgs.requestType === 'cardRemoved') {
+                if (!Array.isArray(e)) {
+                    offlineArgs.deletedRecords[0] = extend(offlineArgs.deletedRecords[0], e);
+                } else {
+                    this.modifyArrayData(offlineArgs.deletedRecords, e);
+                }
+            }
+            this.refreshUI(offlineArgs, index);
         } else {
             this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
                 const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
@@ -230,30 +250,10 @@ export class Data {
                         this.refreshUI(offlineArgs, index);
                     }
                 } else {
-                    promise.then((e: ReturnType) => {
+                    promise.then(() => {
                         if (this.parent.isDestroyed) { return; }
                         const dataManager: Promise<any> = this.getData(this.getQuery());
-                        dataManager.then((e: ReturnType) => this.dataManagerSuccess(e, 'DataSourceChange')).catch((e: ReturnType) => this.dataManagerFailure(e));
-                        if (offlineArgs.requestType === "cardCreated") {
-                            if (!Array.isArray(e)) {
-                                offlineArgs.addedRecords[0] = extend(offlineArgs.addedRecords[0], e);
-                            } else {
-                                this.modifyArrayData(offlineArgs.addedRecords, e);
-                            }
-                        } else if (offlineArgs.requestType === "cardChanged") {
-                            if (!Array.isArray(e)) {
-                                offlineArgs.changedRecords[0] = extend(offlineArgs.changedRecords[0], e);
-                            } else {
-                                this.modifyArrayData(offlineArgs.changedRecords, e);
-                            }
-                        } else if (offlineArgs.requestType === "cardRemoved") {
-                            if (!Array.isArray(e)) {
-                                offlineArgs.deletedRecords[0] = extend(offlineArgs.deletedRecords[0], e);
-                            } else {
-                                this.modifyArrayData(offlineArgs.deletedRecords, e);
-                            }
-                        }
-                        this.refreshUI(offlineArgs, index);
+                        dataManager.then((e: ReturnType) => this.dataManagerSuccess(e, 'DataSourceChange', offlineArgs, index)).catch((e: ReturnType) => this.dataManagerFailure(e));
                     }).catch((e: ReturnType) => {
                         this.dataManagerFailure(e);
                     });

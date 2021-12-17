@@ -51,7 +51,7 @@ export class MsWordPaste {
     }
 
     private wordCleanup(e: NotifyArgs): void {
-        const wordPasteStyleConfig: string[] = e.allowedStylePropertiesArray;
+        const wordPasteStyleConfig: string[] = !isNOU(e.allowedStylePropertiesArray) ? e.allowedStylePropertiesArray : [];
         let listNodes: Element[] = [];
         let tempHTMLContent: string = (e.args as ClipboardEvent).clipboardData.getData('text/HTML');
         const rtfData: string = (e.args as ClipboardEvent).clipboardData.getData('text/rtf');
@@ -95,7 +95,7 @@ export class MsWordPaste {
                 allNodes[index].classList.add('msolistparagraph');
             }
         }
-    } 
+    }
 
     private addTableBorderClass(elm: HTMLElement): void {
         const allTableElm: NodeListOf<HTMLElement> = elm.querySelectorAll('table');
@@ -120,6 +120,7 @@ export class MsWordPaste {
         const imgSrc: string[] = [];
         const base64Src: string[] = [];
         const imgName: string[] = [];
+        // eslint-disable-next-line
         const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (imgElem.length > 0) {
             for (let i: number = 0; i < imgElem.length; i++) {

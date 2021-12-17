@@ -1,0 +1,17 @@
+
+@include export-module('accordion-fluent-icons') {
+  /*! accordion icons */
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: '\e7c3';
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+  }
+  }
+}

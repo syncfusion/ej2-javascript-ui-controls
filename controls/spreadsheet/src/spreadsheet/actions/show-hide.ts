@@ -280,9 +280,10 @@ export class ShowHide {
             if (isFinite && this.parent.viewport.bottomIndex >= sheet.rowCount) {
                 this.parent.viewport.bottomIndex = skipHiddenIdx(sheet, sheet.rowCount - 1, false);
             }
-            args.insertIdx = idx; args.row = frag.querySelector('.e-row'); args.mergeCollection = mergeCollection;
+            args.insertIdx = eventArgs.insertIdx = idx; args.row = eventArgs.row = frag.querySelector('.e-row');
+            args.mergeCollection = eventArgs.mergeCollection = mergeCollection;
             if (sheet.showHeaders) {
-                args.hdrRow = hFrag.querySelector('.e-row');
+                eventArgs.hdrRow = args.hdrRow = hFrag.querySelector('.e-row');
                 if (idx !== 0 && !isHiddenRow(sheet, endRow - 1) && rTBody.children[idx - 1]) {
                     rTBody.children[idx - 1].classList.remove('e-hide-start');
                 }

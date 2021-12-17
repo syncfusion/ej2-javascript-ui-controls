@@ -77,6 +77,8 @@ export class Legend extends BaseLegend {
         let seriesType: ChartDrawType | ChartSeriesType;
         let fill: string;
         const colors: string[] = [];
+        this.isRtlEnable = chart.enableRtl;
+        this.isReverse = !this.isRtlEnable && chart.legendSettings.reverse;
         if (visibleSeriesCollection.length > 1) {
             this.legend.mode = 'Series';
         }
@@ -144,6 +146,9 @@ export class Legend extends BaseLegend {
                 }
             }
         }
+        if (this.isReverse && chart.legendSettings.mode !== 'Gradient') {
+            this.legendCollections.reverse();
+        }
     }
     /** @private */
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
@@ -165,8 +170,8 @@ export class Legend extends BaseLegend {
         }
         legendBounds.height += (extraHeight);
         legendBounds.width += extraWidth;
-        const shapeWidth: number = legend.shapeWidth;
-        const shapePadding: number = legend.shapePadding;
+        let shapeWidth: number = legend.shapeWidth;
+        let shapePadding: number = legend.shapePadding;
         let maximumWidth: number = 0;
         let rowWidth: number = 0;
         let legendWidth: number = 0;
@@ -194,7 +199,9 @@ export class Legend extends BaseLegend {
             legendOption.shape = legendEventArgs.shape;
             legendOption.markerShape = legendEventArgs.markerShape;
             legendOption.textSize = measureText(legendOption.text, legend.textStyle);
-            if (legendOption.render) {
+            shapeWidth = legendOption.text ? legend.shapeWidth : 0;
+            shapePadding = legendOption.text ? legend.shapePadding : 0;
+            if (legendOption.render && legendOption.text) {
                 render = true;
                 legendWidth = shapeWidth + shapePadding + legendOption.textSize.width + padding;
                 rowWidth = rowWidth + legendWidth;
@@ -238,9 +245,9 @@ export class Legend extends BaseLegend {
         legendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
         rect: Rect, count: number, firstLegend: number): void {
         const padding: number = this.legend.padding;
-        const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
-        if ((previousBound + (legendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
-            this.isVertical) {
+        const textWidth: number =  textPadding + prevLegend.textSize.width;
+        const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
+        if (this.isWithinBounds(previousBound, legendOption.textSize.width + textPadding, rect) || this.isVertical) {
             legendOption.location.x = start.x;
             legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
                 prevLegend.location.y + this.maxItemHeight + padding;
@@ -248,16 +255,28 @@ export class Legend extends BaseLegend {
             legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             legendOption.location.y = prevLegend.location.y;
         }
-        const availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
-            textPadding - this.legend.shapeWidth / 2);
+        const availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
+            textPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
         legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
+    }
+    private isWithinBounds(previousBound : number, textWidth : number, rect: Rect) : boolean
+    {
+        if(!this.isRtlEnable)
+        {
+            return (previousBound + textWidth) > (rect.x + rect.width + (this.legend.shapeWidth / 2));
+        }
+        else
+        {
+            return (previousBound - textWidth) < (rect.x - (this.legend.shapeWidth / 2));
+        }
     }
     /** @private */
     public LegendClick(index: number, event: Event | PointerEvent): void {
         const chart: Chart = <Chart>this.chart;
         const seriesIndex: number = chart.legendSettings.mode === 'Series' ? index : 0;
+        const legendIndex: number = !this.isReverse ?  index : (this.legendCollections.length - 1) - index;
         const series: Series = chart.visibleSeries[seriesIndex];
-        const legend: LegendOptions = this.legendCollections[index];
+        const legend: LegendOptions = this.legendCollections[legendIndex];
         const changeDetection: string = 'isProtectedOnChange';
         if (chart.legendSettings.mode === 'Series') {
             const legendClickArgs: ILegendClickEventArgs = {
@@ -389,7 +408,7 @@ export class Legend extends BaseLegend {
                     'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(series);
             }
-            
+
             series.position = undefined;
         }
     }
@@ -446,30 +465,48 @@ export class Legend extends BaseLegend {
         canvasRect.width = canvasRect.width + borderWidth;
         canvasRect.height = canvasRect.height + borderWidth;
         if (withInBounds(pageX, pageY, this.pagingRegions[0])) {
-            // pagedown calculations are performing here
-            if (--this.currentPageNumber > 0) {
-                this.legendRegions = [];
-                cRender.clearRect(canvasRect);
-                cRender.canvasClip(new RectOption('legendClipPath', 'transparent', { width: 0, color: '' }, null, canvasRect));
-                this.renderLegend(this.chart, this.legend, bounds);
-                cRender.canvasRestore();
-            } else {
-                ++this.currentPageNumber;
-            }
+           // pageDown calculations are performing here
+           if(!this.isRtlEnable) {
+              this.canvasPageDown(cRender, canvasRect, bounds);
+           }
+           else {
+             this.canvasPageUp(cRender, canvasRect, bounds)
+           }
             return null;
         }
         if (withInBounds(pageX, pageY, this.pagingRegions[1])) {
             // pageUp calculations are performing here
-            if (++this.currentPageNumber > 0 && this.currentPageNumber <= this.totalNoOfPages) {
-                this.legendRegions = [];
-                cRender.clearRect(canvasRect);
-                cRender.canvasClip(new RectOption('legendClipPath', 'transpaent', { width: 0, color: '' }, null, canvasRect));
-                this.renderLegend(this.chart, this.legend, bounds);
-                cRender.canvasRestore();
-            } else {
-                --this.currentPageNumber;
-            }
+            if(!this.isRtlEnable) {
+                this.canvasPageUp(cRender, canvasRect, bounds);
+             }
+             else {
+                this.canvasPageDown(cRender, canvasRect, bounds);
+             }
             return null;
+        }
+    }
+
+    private canvasPageDown(cRender : CanvasRenderer, canvasRect : Rect, bounds : Rect) : void {
+        if (--this.currentPageNumber > 0) {
+            this.legendRegions = [];
+            cRender.clearRect(canvasRect);
+            cRender.canvasClip(new RectOption('legendClipPath', 'transparent', { width: 0, color: '' }, null, canvasRect));
+            this.renderLegend(this.chart, this.legend, bounds);
+            cRender.canvasRestore();
+        } else {
+            ++this.currentPageNumber;
+        }
+    }
+
+    private canvasPageUp(cRender : CanvasRenderer, canvasRect : Rect, bounds : Rect) : void {
+        if (++this.currentPageNumber > 0 && this.currentPageNumber <= this.totalNoOfPages) {
+            this.legendRegions = [];
+            cRender.clearRect(canvasRect);
+            cRender.canvasClip(new RectOption('legendClipPath', 'transpaent', { width: 0, color: '' }, null, canvasRect));
+            this.renderLegend(this.chart, this.legend, bounds);
+            cRender.canvasRestore();
+        } else {
+            --this.currentPageNumber;
         }
     }
 

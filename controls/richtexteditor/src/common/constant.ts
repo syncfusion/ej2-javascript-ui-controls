@@ -78,16 +78,16 @@ export const MS_WORD_CLEANUP_PLUGIN: string = 'ms_word_cleanup_plugin';
  */
 export const MS_WORD_CLEANUP: string = 'ms_word_cleanup';
 
- /**
+/**
  * ActionBegin event callback
- * 
+ *
  * @hidden
  */
-  export const ON_BEGIN: string = 'onBegin';
+export const ON_BEGIN: string = 'onBegin';
 
- /**
+/**
  * Callback for spacelist action
- * 
+ *
  * @hidden
  */
-  export const SPACE_ACTION: string = 'actionBegin';
+export const SPACE_ACTION: string = 'actionBegin';

@@ -241,35 +241,35 @@ export interface AccordionModel extends ComponentModel{
     /**
      * The event will be fired while clicking anywhere within the Accordion.
      *
-     * @event
+     * @event clicked
      */
     clicked?: EmitType<AccordionClickArgs>;
 
     /**
      * The event will be fired before the item gets collapsed/expanded.
      *
-     * @event
+     * @event expanding
      */
     expanding?: EmitType<ExpandEventArgs>;
 
     /**
      * The event will be fired after the item gets collapsed/expanded.
      *
-     * @event
+     * @event expanded
      */
     expanded?: EmitType<ExpandedEventArgs>;
 
     /**
      * The event will be fired once the control rendering is completed.
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Event>;
 
     /**
      * The event will be fired when the control gets destroyed.
      *
-     * @event
+     * @event destroyed
      */
     destroyed?: EmitType<Event>;
 

@@ -349,7 +349,7 @@ export class HtmlExport {
         tagAttributes = [];
         if (!isNullOrUndefined(cell.cellFormat)) {
             //if (cell.cellFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
-            if (!isNullOrUndefined(cell.cellFormat.shading.backgroundColor)) {
+            if (!isNullOrUndefined(cell.cellFormat.shading.backgroundColor) && cell.cellFormat.shading.backgroundColor !== 'empty') {
                 tagAttributes.push('bgcolor="' + HelperMethods.getColor(cell.cellFormat.shading.backgroundColor) + '"');
             }
             // }
@@ -776,7 +776,7 @@ export class HtmlExport {
         tagAttributes.push('border="' + '1"');
         if (!isNullOrUndefined(table.tableFormat)) {
             //if (table.tableFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
-            if (!isNullOrUndefined(table.tableFormat.shading) && !isNullOrUndefined(table.tableFormat.shading.backgroundColor)) {
+            if (!isNullOrUndefined(table.tableFormat.shading) && !isNullOrUndefined(table.tableFormat.shading.backgroundColor) && table.tableFormat.shading.backgroundColor !== 'empty' ) {
                 tagAttributes.push('bgcolor="' + HelperMethods.getColor(table.tableFormat.shading.backgroundColor) + '"');
             }
             //}

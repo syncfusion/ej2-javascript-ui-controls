@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { isNullOrUndefined, Internationalization, IntlBase, cldrData } from '@syncfusion/ej2-base';
+import { CellModel } from '../base';
 
 /**
  * @hidden
@@ -93,9 +94,11 @@ export function isNumber(val: string | number): boolean {
  * @param {Internationalization} intl - Specifies the Internationalization.
  * @param {string} locale - Specifies the locale.
  * @param {string} format - Specifies the string.
+ * @param {CellModel} cell - Specify the cell.
  * @returns {ToDateArgs} - Returns Date format.
  */
-export function toDate(text: Date | string | number, intl: Internationalization, locale: string, format?: string): ToDateArgs {
+export function toDate(text: Date | string | number, intl: Internationalization, locale: string, format?: string,
+                       cell?: CellModel): ToDateArgs {
     const defaultDateFormats: Object = IntlBase.getDependables(cldrData, locale, null).dateObject;
     const availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
     const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
@@ -110,17 +113,34 @@ export function toDate(text: Date | string | number, intl: Internationalization,
         }
     }
     if (isNullOrUndefined(dObj.dateObj)) {
-        for (const key of Object.keys((defaultDateFormats as any).dateFormats)) {
-            dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).dateFormats[key], skeleton: key });
-            if (dObj.dateObj) {
-                dObj.type = 'date';
-                dObj.isCustom = false;
-                break;
+        text = text.toString();
+        if (text && text.indexOf('/') > -1 || text.indexOf('-') > 0) {
+            let cFormat: string = cell ? cell.format : '';
+            if (((cFormat === 'dd-MM-yyyy' || cFormat === 'dd/MM/yyyy'))) {
+                cFormat = cFormat === 'dd-MM-yyyy' ? 'd-M-yyyy' : 'd/M/yyyy';
+                dObj.dateObj = intl.parseDate(text as string, { format: cFormat });
+                if (dObj.dateObj) {
+                    dObj.type = 'date';
+                    return dObj;
+                }
+            }
+        }
+        if (text.indexOf(':') < 0) {
+            for (const key of Object.keys((defaultDateFormats as any).dateFormats)) {
+                dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).dateFormats[key], skeleton: key });
+                if (dObj.dateObj) {
+                    dObj.type = 'date';
+                    dObj.isCustom = false;
+                    break;
+                }
             }
         }
         if (isNullOrUndefined(dObj.dateObj)) {
             for (const key of Object.keys(availabelDateTimeFormat)) {
                 dObj.dateObj = intl.parseDate(text as string, { format: availabelDateTimeFormat[key], skeleton: key });
+                if (!dObj.dateObj && text.indexOf(':') > -1 && availabelDateTimeFormat[key].indexOf(':') > -1) { // parsing time format without am or pm
+                    dObj.dateObj = intl.parseDate(text, { format: availabelDateTimeFormat[key].split(' ')[0] });
+                }
                 if (dObj.dateObj) {
                     dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
                     if (dObj.type === 'time') {

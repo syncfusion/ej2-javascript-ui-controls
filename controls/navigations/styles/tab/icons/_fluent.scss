@@ -1,0 +1,140 @@
+@include export-module('tab-fluent-icons') {
+  /*! tab icons */
+  #{&}.e-tab {
+
+    .e-tab-header {
+
+      .e-toolbar-items.e-hscroll.e-rtl {
+
+        .e-nav-left-arrow::before {
+          content: '\e7c2';
+        }
+
+        .e-nav-right-arrow::before {
+          content: '\e7c1';
+        }
+      }
+
+      .e-scroll-nav {
+
+        .e-nav-left-arrow::before {
+          content: '\e7c1';
+        }
+
+        .e-nav-right-arrow::before {
+          content: '\e7c2';
+        }
+      }
+
+      .e-close-icon::before {
+        content: '\e74f';
+        position: relative;
+      }
+
+      .e-popup-up-icon::before {
+        content: '\e7c4';
+
+        @media screen and (max-width: 480px) {
+          content: '\e7ad';
+        }
+      }
+
+      .e-popup-down-icon::before {
+        content: '\e7c3';
+
+        @media screen and (max-width: 480px) {
+          content: '\e7ad';
+        }
+      }
+    }
+
+    &.e-vertical-icon .e-tab-header {
+
+      @media screen and (max-width: 480px) {
+
+        .e-popup-up-icon::before {
+          content: '\e810';
+        }
+
+        .e-popup-down-icon::before {
+          content: '\e811';
+        }
+      }
+    }
+
+    &.e-vertical-tab {
+
+      .e-tab-header {
+
+        .e-scroll-nav {
+
+          .e-nav-up-arrow::before {
+            content: '\e7c4';
+          }
+
+          .e-nav-down-arrow::before {
+            content: '\e7c3';
+          }
+        }
+
+        .e-popup-up-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\e7c4';
+          }
+        }
+
+        .e-popup-down-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\e7c3';
+          }
+        }
+      }
+
+      &.e-icon-tab {
+
+        .e-tab-header {
+
+          .e-popup-up-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\e7c4';
+            }
+          }
+
+          .e-popup-down-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\e7c3';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-tab-clone-element {
+
+    .e-close-icon::before {
+      content: '\e74f';
+      position: relative;
+    }
+  }
+}

@@ -154,6 +154,28 @@ describe('Agenda View', () => {
         });
     });
 
+    describe('EJ2-54150 Checking with getCurrentViewEvents for the Agenda view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 9, 30),
+                views: [{ option: 'Day' }, { option: 'Agenda' }]
+            };
+            schObj = createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('current view events checking', () => {
+            const totalEvent: Record<string, any>[] = schObj.eventsData;
+            expect(totalEvent.length).toEqual(43);
+            const currentViewEvent: Record<string, any>[] = schObj.getCurrentViewEvents();
+            expect(currentViewEvent.length).toEqual(20);
+        });
+    });
+
     describe('Checking with datasource', () => {
         let schObj: Schedule;
         let keyModule: any;

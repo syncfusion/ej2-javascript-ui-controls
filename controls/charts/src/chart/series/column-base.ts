@@ -49,7 +49,16 @@ export class ColumnBase {
         const location: number = (position) / rectCount - 0.5;
         let doubleRange: DoubleRange = new DoubleRange(location, location + (1 / rectCount));
         if (!(isNaN(doubleRange.start) || isNaN(doubleRange.end))) {
-            doubleRange = new DoubleRange(doubleRange.start * width, doubleRange.end * width);
+            if (series.groupName && series.type.indexOf('Stacking') === -1) {
+                let mainColumnWidth: number = 0.7;
+                series.chart.series.filter(function(series) { if(series.columnWidth > mainColumnWidth) {mainColumnWidth = series.columnWidth} });
+                let mainWidth: number = minimumPointDelta * mainColumnWidth;
+                let mainDoubleRange: DoubleRange = new DoubleRange(doubleRange.start * mainWidth, doubleRange.end * mainWidth);
+                let difference: number = ((mainDoubleRange.delta) - (doubleRange.end * width - doubleRange.start * width)) / 2;
+                doubleRange = new DoubleRange(mainDoubleRange.start + difference, mainDoubleRange.end - difference);
+            } else {
+                doubleRange = new DoubleRange(doubleRange.start * width, doubleRange.end * width);
+            }
             radius = seriesSpacing * doubleRange.delta;
             doubleRange = new DoubleRange(doubleRange.start + radius / 2, doubleRange.end - radius / 2);
         }
@@ -85,17 +94,18 @@ export class ColumnBase {
         }
     }
     private findRectPosition(seriesCollection: Series[]): void {
-        const stackingGroup: string[] = [];
+        const groupingValues: string[] = [];
         const vSeries: RectPosition = { rectCount: 0, position: null };
         for (let i: number = 0; i < seriesCollection.length; i++) {
             const value: Series = seriesCollection[i];
-            if (value.type.indexOf('Stacking') !== -1) {
-                if (value.stackingGroup) {
-                    if (stackingGroup[value.stackingGroup] === undefined) {
+            if (value.type.indexOf('Stacking') !== -1 || value.groupName !== '') {
+                const groupName = value.type.indexOf('Stacking') !== -1 ? value.stackingGroup : value.type + value.groupName;
+                if (groupName) {
+                    if (groupingValues[groupName] === undefined) {
                         value.position = vSeries.rectCount;
-                        stackingGroup[value.stackingGroup] = vSeries.rectCount++;
+                        groupingValues[groupName] = vSeries.rectCount++;
                     } else {
-                        value.position = stackingGroup[value.stackingGroup];
+                        value.position = groupingValues[groupName];
                     }
                 } else {
                     if (vSeries.position === null) {
@@ -143,7 +153,7 @@ export class ColumnBase {
         point.symbolLocations.push({
             x: rect.x + (rect.width) / 2,
             y: (series.seriesType === 'BoxPlot' || series.seriesType.indexOf('HighLow') !== -1 ||
-                (point.yValue >= 0 === !series.yAxis.isInversed)) ? rect.y : (rect.y + rect.height)
+                (point.yValue >= 0 === !series.yAxis.isAxisInverse)) ? rect.y : (rect.y + rect.height)
         });
         this.getRegion(point, rect, series);
         if (series.type === 'RangeColumn') {
@@ -162,7 +172,7 @@ export class ColumnBase {
     protected updateYRegion(point: Points, rect: Rect, series: Series): void {
         point.symbolLocations.push({
             x: (series.seriesType === 'BoxPlot' || series.seriesType.indexOf('HighLow') !== -1 ||
-                (point.yValue >= 0 === !series.yAxis.isInversed)) ? rect.x + rect.width : rect.x,
+                (point.yValue >= 0 === !series.yAxis.isAxisInverse)) ? rect.x + rect.width : rect.x,
             y: rect.y + rect.height / 2
         });
         this.getRegion(point, rect, series);
@@ -311,7 +321,7 @@ export class ColumnBase {
             } else {
                 y = +point.regions[0].y;
                 centerY = (series.seriesType.indexOf('HighLow') !== -1 || series.type.indexOf('Waterfall') !== -1) ? y + elementHeight / 2 :
-                    (isPlot !== series.yAxis.isInversed) ? y : y + elementHeight;
+                    (isPlot !== series.yAxis.isAxisInverse) ? y : y + elementHeight;
                 centerX = isPlot ? x : x + elementWidth;
             }
         } else {
@@ -324,7 +334,7 @@ export class ColumnBase {
                 x = +point.regions[0].x;
                 centerY = isPlot ? y : y + elementHeight;
                 centerX = (series.seriesType.indexOf('HighLow') !== -1 || series.type.indexOf('Waterfall') !== -1) ? x + elementWidth / 2 :
-                    (isPlot !== series.yAxis.isInversed) ? x + elementWidth : x;
+                    (isPlot !== series.yAxis.isAxisInverse) ? x + elementWidth : x;
             }
         }
 

@@ -121,7 +121,25 @@ console.log('insert Image with specific string and  width  greater than page wid
     editor.open(JSON.stringify(jsonStr));
     editor.editor.insertImage(imageString, 2000, 100);
     expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).toBe(true);
+    expect(((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ImageElementBox).width).toBe(2000);
+    expect(((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ImageElementBox).height).toBe(100);
   });
+  it('insert Image with specific string and width less than page width-fitImageToPage-true', () => {
+    console.log('insert Image with specific string and width less than page width-fitImageToPage-true');
+        editor.open(JSON.stringify(jsonStr));
+        editor.editor.insertImageInternal(imageString, true, 2000, 100);
+        expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).toBe(true);
+        expect(((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ImageElementBox).width).toBe(468);
+        expect(((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ImageElementBox).height).toBe(23.4);
+      });
+      it('insert Image with specific string and width greater than page width-fitImageToPage-true', () => {
+        console.log('insert Image with specific string and width greater than page width-fitImageToPage-true');
+            editor.open(JSON.stringify(jsonStr));
+            editor.editor.insertImageInternal(imageString, true, 400, 100);
+            expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] instanceof ImageElementBox).toBe(true);
+            expect(((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ImageElementBox).width).toBe(400);
+            expect(((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ImageElementBox).height).toBe(100);
+          });
 });
 describe('Insert Picture Validation', () => {
   let editor: DocumentEditor = undefined;

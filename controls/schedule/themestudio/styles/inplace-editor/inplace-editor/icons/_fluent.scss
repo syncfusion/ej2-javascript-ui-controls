@@ -1,0 +1,19 @@
+@include export-module('inplaceeditor-fluent-icons') {
+
+  /*! inplaceeditor icons */
+  .e-inplaceeditor,
+  .e-inplaceeditor-tip {
+
+    .e-save-icon::before {
+      content: '\e7b9';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e74f';
+    }
+
+    .e-editable-overlay-icon::before {
+      content: '\e822';
+    }
+  }
+}

@@ -579,6 +579,101 @@ describe('RTE base module', () => {
         });
     });
 
+    describe("Default RTE fontFamily and fontSize testing -", () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let EnterkeyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Testing</p>',
+                toolbarSettings: {
+                    items: [ 'FontName', 'FontSize', 'FontColor', 'BackgroundColor']
+                },
+                fontFamily: {
+                    default: 'Verdana',
+                    width: '65px',
+                    items: [
+                        { text: 'Segoe UI', value: 'Segoe UI' },
+                        { text: 'Arial', value: 'Arial,Helvetica,sans-serif' },
+                        { text: 'Courier New', value: 'Courier New,Courier,monospace' },
+                        { text: 'Georgia', value: 'Georgia,serif' },
+                        { text: 'Impact', value: 'Impact,Charcoal,sans-serif' },
+                        { text: 'Lucida Console', value: 'Lucida Console,Monaco,monospace' },
+                        { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif' },
+                        { text: 'Times New Roman', value: 'Times New Roman,Times,serif' },
+                        { text: 'Trebuchet MS', value: 'Trebuchet MS,Helvetica,sans-serif' },
+                        { text: 'Verdana', value: 'Verdana,Geneva,sans-serif' }
+                    ]
+                },
+                fontSize: {
+                    default: "8pt",
+                    width: "35px",
+                    items: [
+                        { text: "8", value: "8pt" },
+                        { text: "10", value: "10pt" },
+                        { text: "12", value: "12pt" },
+                        { text: "14", value: "14pt" },
+                        { text: "18", value: "18pt" },
+                        { text: "24", value: "24pt" },
+                        { text: "36", value: "36pt" }
+                    ]
+                }
+            });
+            elem = rteObj.element;
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Default mode RTE testing fontfamily', (done: Function) => {
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>Testing</p>';
+            let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0].firstChild;
+            let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+            (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+            ((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((document.querySelector('.e-font-name-tbar-btn ul') as HTMLElement).childNodes[0] as HTMLElement).click();
+            expect((((<any>rteObj).contentModule.getEditPanel().childNodes[1] as HTMLElement).firstElementChild as HTMLElement).style.fontFamily === '"Segoe UI"').toBe(true);
+            nodetext = ((<any>rteObj).contentModule.getEditPanel().childNodes[1] as HTMLElement).firstElementChild.firstChild;
+            setCursorPoint(document, nodetext, nodetext.textContent.length);
+            (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+            ((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((document.querySelector('.e-font-name-tbar-btn ul') as HTMLElement).childNodes[3] as HTMLElement).click();
+            expect((((rteObj.contentModule.getEditPanel() as HTMLElement).childNodes[2] as HTMLElement).firstElementChild as HTMLElement).style.fontFamily === 'Georgia, serif').toBe(true);
+            done();
+        });
+        it('Default mode RTE testing fontSize', (done: Function) => {
+            rteObj.value = "<p>Testing</p>";
+            rteObj.contentModule.getEditPanel().innerHTML = "<p>Testing</p>";
+            rteObj.dataBind();
+            let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0].firstChild;
+            let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+            (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+            ((elem.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((document.querySelector('.e-font-size-tbar-btn ul') as HTMLElement).childNodes[2] as HTMLElement).click();
+            expect((((<any>rteObj).contentModule.getEditPanel().childNodes[1] as HTMLElement).firstElementChild as HTMLElement).style.fontSize === '12pt').toBe(true);
+            nodetext = ((<any>rteObj).contentModule.getEditPanel().childNodes[1] as HTMLElement).firstElementChild.firstChild;
+            setCursorPoint(document, nodetext, nodetext.textContent.length);
+            (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+            ((elem.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((document.querySelector('.e-font-size-tbar-btn ul') as HTMLElement).childNodes[5] as HTMLElement).click();
+            expect((((rteObj.contentModule.getEditPanel() as HTMLElement).childNodes[2] as HTMLElement).firstElementChild as HTMLElement).style.fontSize === '24pt').toBe(true);
+            done();
+        });
+    });
+
     describe("DIV - RTE content focus and blur event handler testing", () => {
         let rteObj: RichTextEditor;
         let focusIn: boolean = false;
@@ -5177,7 +5272,7 @@ describe('BLAZ-5899: getText public method with new line test', () => {
         destroy(rteObj);
     });
 });
-describe('EJ2-46060: 8203 character not removed after start typing', () => {
+describe('EJ2-46060: EJ2CORE-606: 8203 character not removed after start typing', () => {
     let rteObj: RichTextEditor;
     beforeEach(() => { });
     it(' DIV', () => {
@@ -5188,10 +5283,11 @@ describe('EJ2-46060: 8203 character not removed after start typing', () => {
         keyboardEventArgs.key = 'a';
         keyboardEventArgs.which = 65;
         keyboardEventArgs.keyCode = 65;
+        (<any>rteObj).keyDown(keyboardEventArgs);
         (<any>rteObj).keyUp(keyboardEventArgs);
-        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText.search(/\u200B/g) === 0).toBe(true);
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText.search(/\u200B/g) === -1).toBe(true);
         expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText === 'a').toBe(false);
-        //expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML).toBe('<p><strong></strong><br></p>');    
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML).toBe('<p><strong></strong></p>');
     });
     afterEach(() => {
         destroy(rteObj);

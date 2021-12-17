@@ -1968,4 +1968,102 @@ describe('Diagram Control', () => {
         });
         
     });
+
+    describe('Checking Bezier Curve', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram577' });
+            document.body.appendChild(ele);
+            let connector1: ConnectorModel = {
+                id: 'connector1',
+                type: 'Bezier',
+                cornerRadius: 10,
+                annotations: [{ content: 'connector1 Annotation' }],
+                sourcePoint: { x: 100, y: 400 },
+                targetPoint: { x: 200, y: 500 },
+            };
+            let connector2: ConnectorModel = {
+                id: 'connector2',
+                type: 'Bezier',
+                sourcePoint: { x: 100, y: 200 },
+                targetPoint: { x: 250, y: 200 },
+                annotations: [{ content: 'connector2' }]
+            };
+            let connector3: ConnectorModel = {
+                id: 'connector3',
+                type: 'Bezier',
+                sourcePoint: { x: 700, y: 100 },
+                targetPoint: { x: 800, y: 200 },
+                segments: [{
+                    type: 'Bezier',
+                    vector1: { angle: 90, distance: 75 },
+                    vector2: { angle: 90, distance: 75 }
+                }],
+                annotations: [{ content: 'connector3' }]
+            };
+            diagram = new Diagram({
+                width: 1000, height: 1000,
+                connectors: [connector1, connector2, connector3],
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagram577');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        
+        it('Midpoint for Annotation', (done: Function) => {
+            expect(diagram.connectors[0].wrapper.children[3].offsetX === 150 && diagram.connectors[0].wrapper.children[3].offsetY === 450).toBe(true);
+            done();
+        });
+
+        it('Save and Load for Annotation', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 702, 104);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 701, 175, 720, 160);
+            let x1: number = diagram.connectors[0].wrapper.children[3].offsetX;
+            let y1: number = diagram.connectors[0].wrapper.children[3].offsetY;
+            let x2: number = diagram.connectors[1].wrapper.children[3].offsetX;
+            let y2: number = diagram.connectors[1].wrapper.children[3].offsetY;
+            let x3: number = diagram.connectors[2].wrapper.children[3].offsetX;
+            let y3: number = diagram.connectors[2].wrapper.children[3].offsetY;
+            let savedData: string = diagram.saveDiagram();
+            diagram.loadDiagram(savedData);
+            expect(diagram.connectors[1].wrapper.children[3].offsetX == x2).toBe(true);
+            expect(diagram.connectors[1].wrapper.children[3].offsetY == y2).toBe(true);
+            expect(diagram.connectors[0].wrapper.children[3].offsetX == x1).toBe(true);
+            expect(diagram.connectors[0].wrapper.children[3].offsetY == y1).toBe(true);
+            expect(diagram.connectors[2].wrapper.children[3].offsetX == Math.round(x3)).toBe(true);
+            expect(diagram.connectors[2].wrapper.children[3].offsetY == Math.round(y3)).toBe(true);
+            done();
+        });
+
+        it('Dragging and Checking for Annotation Position', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 702, 104);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 701, 175, 720, 160);
+            expect(diagram.connectors[2].wrapper.children[3].offsetX == 750).toBe(true);
+            expect(diagram.connectors[2].wrapper.children[3].offsetY == 150).toBe(true);
+            done();
+        });
+
+        it('Lable After Changing the Content', (done: Function) => {
+            let x1: number = diagram.connectors[0].wrapper.children[3].offsetX;
+            let y1: number = diagram.connectors[0].wrapper.children[3].offsetY;
+            diagram.connectors[0].annotations[0].content = 'Chnaged';
+            diagram.dataBind();
+            expect(diagram.connectors[0].wrapper.children[3].offsetX == x1).toBe(true);
+            expect(diagram.connectors[0].wrapper.children[3].offsetY == y1).toBe(true);
+            done();
+        });
+    });
 });

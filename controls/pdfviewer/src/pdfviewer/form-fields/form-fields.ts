@@ -76,13 +76,14 @@ export class FormFields {
             if (this.formFieldsData !== null && canvasElement !== null && textLayer !== null) {
                 for (let i: number = 0; i < this.formFieldsData.length; i++) {
                     // eslint-disable-next-line
-                    let currentData: any = this.formFieldsData[i];
+                    let currentData: any = this.formFieldsData[i]; 
                     if (currentData.IsInitialField) {
                         currentData.Name = 'InitialField';
                     }
                     // eslint-disable-next-line
                     let font: any = currentData['Font'];
                     if (this.pdfViewer.formDesigner) {
+                      if (parseFloat(currentData['PageIndex']) == pageIndex) {
                         let fontFamily: string;
                         let fontStyle: string;
                         let fontSize: number;
@@ -149,10 +150,9 @@ export class FormFields {
                                 this.isSignatureRendered = true;
                             }
                         }
-                        if (i === this.formFieldsData.length - 1) {
-                            this.pdfViewerBase.isLoadedFormFieldAdded = true;
-                            window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
-                        }
+                        
+                            this.pdfViewerBase.isLoadedFormFieldAdded = true; 
+                      }
                     } else {
                         // eslint-disable-next-line
                         if (parseFloat(currentData['PageIndex']) == pageIndex) {
@@ -326,7 +326,7 @@ export class FormFields {
         let currentField: any;
         if (this.currentTarget) {
             for (let i: number = 0; i < signatureFields.length; i++) {
-                currentField = signatureFields[i];
+                currentField = this.pdfViewer.formDesignerModule? signatureFields[i].FormField: signatureFields[i];
                 if (this.currentTarget.id === currentField.uniqueID) {
                     this.currentTarget = document.getElementById(currentField.uniqueID);
                     this.getSignatureIndex(i, signatureFields.length, isNextSignField);
@@ -335,7 +335,7 @@ export class FormFields {
             }
         } else {
             if (nextSign) {
-                currentField = signatureFields[0];
+                currentField = this.pdfViewer.formDesignerModule? signatureFields[0].FormField: signatureFields[0];
                 if (currentField.uniqueID) {
                     this.currentTarget = document.getElementById(currentField.uniqueID);
                     this.getSignatureIndex(0, signatureFields.length, isNextSignField, true);
@@ -378,26 +378,34 @@ export class FormFields {
         let currentField: any;
         if (curSignIndex < signatureFields.length) {
             for (let i: number = 0; i < signatureFields.length; i++) {
-                if (signatureFields[curSignIndex].uniqueID === signatureFields[i].uniqueID) {
-                    const isRender: boolean = this.pdfViewer.annotationModule.findRenderPageList(signatureFields[i].PageIndex);
+                let curSignIndexId: string = this.pdfViewer.formDesignerModule? signatureFields[curSignIndex].FormField.uniqueID: signatureFields[curSignIndex].uniqueID
+                let signatureFieldData: any = this.pdfViewer.formDesignerModule? signatureFields[i].FormField: signatureFields[i];
+                if (curSignIndexId === signatureFieldData.uniqueID) {
+                    let pageIndex: number = signatureFieldData.PageIndex >= 0? signatureFieldData.PageIndex: signatureFieldData.pageNumber;
+                    const isRender: boolean = this.pdfViewer.annotationModule.findRenderPageList(pageIndex);
                     if (!isRender) {
-                        this.pdfViewer.navigation.goToPage(signatureFields[i].PageIndex);
+                        this.pdfViewer.navigation.goToPage(pageIndex);
                     }
-                    this.currentTarget = document.getElementById(signatureFields[i].uniqueID);
-                    currentField = signatureFields[i];
+                    this.currentTarget = document.getElementById(signatureFieldData.uniqueID);
+                    currentField = signatureFieldData;
                     break;
                 }
             }
             if (this.currentTarget === null) {
-                this.pdfViewer.navigation.goToPage(currentField.PageIndex);
+                let pageIndex: number = currentField.PageIndex >= 0? currentField.PageIndex: currentField.pageNumber;
+                this.pdfViewer.navigation.goToPage(pageIndex);
                 this.currentTarget = document.getElementById(currentField.uniqueID);
             }
             if (this.currentTarget) {
                 if (this.currentTarget.className === 'e-pdfviewer-signatureformfields-signature') {
                     document.getElementById(this.currentTarget.id).focus();
                     this.pdfViewer.select([this.currentTarget.id], null);
-                } else if (this.currentTarget.className === 'e-pdfviewer-signatureformfields') {
-                    document.getElementById(this.currentTarget.id).focus();
+                } else if (this.currentTarget.className === 'e-pdfviewer-signatureformfields') { 
+                    if(this.pdfViewer.formDesignerModule) {
+                        document.getElementById(this.currentTarget.id).parentElement.focus(); 
+                    } else {
+                        document.getElementById(this.currentTarget.id).focus();
+                    }
                 }
             }
         }
@@ -429,7 +437,8 @@ export class FormFields {
                 signatureFields = this.getSignField();
             }
             for (let i: number = 0; i < this.signatureFieldCollection.length; i++) {
-                let signatureElement: HTMLElement = document.getElementById(this.signatureFieldCollection[i].uniqueID);
+                let signatureFieldId: string = this.pdfViewer.formDesignerModule?this.signatureFieldCollection[i].FormField.uniqueID: this.signatureFieldCollection[i].uniqueID;
+                let signatureElement: HTMLElement = document.getElementById(signatureFieldId);
                 if (signatureElement) {
                     signatureElement.classList.remove('e-pv-signature-focus');
                 }
@@ -439,6 +448,16 @@ export class FormFields {
 
     // eslint-disable-next-line
     private getSignField(): any[] {
+        if (this.pdfViewer.formDesignerModule) {
+            this.signatureFieldCollection =
+            this.pdfViewer.formDesignerModule.getFormDesignerSignField(this.signatureFieldCollection);
+        } else {
+            this.signatureFieldCollection = this.getFormFieldSignField();
+        } 
+        return this.signatureFieldCollection;
+    }
+
+    private getFormFieldSignField(): any[] {
         // eslint-disable-next-line
         let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         // eslint-disable-next-line
@@ -838,8 +857,35 @@ export class FormFields {
         } else if (signatureType === 'Image') {
             // eslint-disable-next-line
             bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
+            let image: HTMLImageElement = new Image();
+            image.src = currentValue;
             if (this.pdfViewer.signatureFitMode === 'Default') {
-                bounds = this.getDefaultBoundsforSign(bounds);
+                // To check whether the image shape is square or rectangle
+                let difference: number = 20;
+                let hightDifference: number = 4;
+                let heightRatio: number = 2;
+                if (Math.abs(image.height - image.width) < difference) {
+                    if (bounds.width > bounds.height) {
+                        bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / heightRatio);
+                        bounds.width = bounds.height;
+                    }
+                    else {
+                        bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
+                        bounds.height = bounds.width;
+                    }
+                }
+                else {
+                    if (bounds.width > bounds.height) {
+                        bounds.y = bounds.y + (bounds.height / hightDifference);
+                        bounds.x = bounds.x + (bounds.height / hightDifference);
+                        let height: number = bounds.height / heightRatio;
+                        bounds = { x: bounds.x, y: bounds.y, width: bounds.width - height, height: bounds.height - height };
+                    }
+                    else {
+                        bounds.y = bounds.y + (bounds.height / hightDifference);
+                        bounds.height = bounds.height / heightRatio;
+                    }
+                }
             }
             annot = {
                 // eslint-disable-next-line max-len
@@ -1231,7 +1277,7 @@ export class FormFields {
      */
     // eslint-disable-next-line
     public updateDataInSession(target: any, signaturePath?: any, signatureBounds?: any, signatureFontFamily?: string, signatureFontSize?: Number): void {
-        this.pdfViewer.isDocumentEdited = true;
+        this.pdfViewerBase.updateDocumentEditedProperty(true);
         // eslint-disable-next-line
         let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         if(data){

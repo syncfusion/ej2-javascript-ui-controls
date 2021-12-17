@@ -313,7 +313,7 @@ export class Series {
         const yLabels: string[] = yAxis.tooltipLabels.slice().reverse();
         const yLabelValue: (string | number | Date)[] = yAxis.labelValue.slice().reverse();
         const argData: ICellEventArgs = {
-            heatmap: (this.heatMap.isBlazor ? null : this.heatMap),
+            heatmap: this.heatMap,
             cancel: false,
             name: 'cellRender',
             value: rectPosition.value,

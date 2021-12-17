@@ -422,6 +422,6 @@ export class BreadCrumbBar {
     }
 
     private onSearchTextChange(args: ReadArgs): void {
-        this.searchObj.element.placeholder = getLocaleText(this.parent, 'Search') + ' ' + args.cwd.name;
+        this.searchObj.element.placeholder = (this.parent.searchSettings.placeholder != null) ? this.parent.searchSettings.placeholder : getLocaleText(this.parent, 'Search') + ' ' + args.cwd.name;
     }
 }

@@ -92,7 +92,7 @@ export class Formatter {
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
                 && args.name === 'colorPickerChanged'))) {
-            extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value }, true);
+            extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
             self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                 if (!actionBeginArgs.cancel) {
                     if (this.getUndoRedoStack().length === 0 && actionBeginArgs.item.command !== 'Links'
@@ -114,8 +114,8 @@ export class Formatter {
                             actionBeginArgs.item.subCommand,
                             event, this.onSuccess.bind(this, self),
                             (actionBeginArgs.item as IDropDownItemModel).value,
-                            actionBeginArgs.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
-                                { name: args.name } : value,
+                            actionBeginArgs.item.subCommand === 'Pre' && actionBeginArgs.selectType === 'dropDownSelect' ?
+                                { name:actionBeginArgs.selectType } : value,
                             ('#' + self.getID() + ' iframe'),
                             self.enterKey
                         );

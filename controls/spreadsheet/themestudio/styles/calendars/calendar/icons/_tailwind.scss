@@ -1,0 +1,13 @@
+@include export-module('calendar-tailwind-dark-icons') {
+  /*! component icons */
+  .e-calendar .e-header {
+    #{if(&, '&', '*')} .e-date-icon-prev::before {
+      content: '\e706';
+      }
+
+    #{if(&, '&', '*')} .e-date-icon-next::before {
+      content: '\e752';
+      }
+    }
+  }
+  

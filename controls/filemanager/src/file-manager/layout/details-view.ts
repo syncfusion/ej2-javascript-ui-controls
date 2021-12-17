@@ -918,7 +918,7 @@ export class DetailsView {
         // eslint-disable-next-line
         this.parent.dragData = <{ [key: string]: Object; }[]>this.gridObj.getSelectedRecords();
         let dragRow: { [key: string]: Object; };
-        if (this.parent.dragData.length == 0 && dragLi) {
+        if (this.parent.dragData.length === 0 && dragLi) {
             dragRow = this.gridObj.getRowInfo(dragLi) as { [key: string]: Object; };
         }
         if (dragRow)

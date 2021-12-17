@@ -67,6 +67,13 @@ export interface IAccAnimationCompleteEventArgs extends IChartEventArgs {
     chart: AccumulationChart;
 }
 /**
+ * Accumulation Chart SelectionComplete event arguments.
+ */
+export interface IAccSelectionCompleteEventArgs extends IChartEventArgs {
+    /** Defines current selected Data X, Y values */
+    selectedDataValues: { x ?: string | number | Date, y ?: number, seriesIndex ?: number, pointIndex ?: number }[];
+}
+/**
  * Accumulation Chart Before Resize event arguments.
  */
 export interface IAccBeforeResizeEventArgs {

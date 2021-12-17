@@ -124,7 +124,7 @@ export class SparklineTooltip {
             (spark.availableSize.height - spark.padding.bottom);
         if (isNullOrUndefined(pathEle)) {
             const pathOption: PathOption = new PathOption(
-                spark.element.id + '_sparkline_tracker', 'transparent', tracker.width, color, 1);
+                spark.element.id + '_sparkline_tracker', color, tracker.width, color, 1);
             pathOption.d = d;
             drawPath(spark, pathOption, group);
         } else {

@@ -3,7 +3,7 @@ import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer }
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base'
+import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
@@ -81,6 +81,7 @@ export class HtmlEditor {
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
         this.parent.on(events.htmlToolbarClick, this.onToolbarClick, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
+        this.parent.on(events.keyUp, this.onKeyUp, this);
         this.parent.on(events.renderColorPicker, this.renderColorPicker, this);
         this.parent.on(events.initialEnd, this.render, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
@@ -116,9 +117,36 @@ export class HtmlEditor {
         }
     }
 
+    private onKeyUp(e: NotifyArgs): void {
+        let args: KeyboardEvent = e.args as KeyboardEvent;
+        const restrictKeys: number[] = [8, 9, 13, 16, 17, 18, 20, 27, 37, 38, 39, 40, 44, 45, 46, 91,
+            112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
+        const range: Range = this.parent.getRange();
+        const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        let pointer: number;
+        if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey) {
+            if(range.startContainer.textContent.charCodeAt(0) === 8203) {
+                pointer = range.startOffset - 1;
+                range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
+                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
+            }
+            if (!isNOU(range.startContainer.previousSibling) && !isNOU(range.startContainer.previousSibling.parentElement) &&
+            range.startContainer.parentElement === range.startContainer.previousSibling.parentElement && range.startContainer.previousSibling.textContent.charCodeAt(0) === 8203) {
+                range.startContainer.previousSibling.textContent = range.startContainer.previousSibling.textContent.replace(regEx, '');
+            }
+            if (range.endContainer.textContent.charCodeAt(range.endOffset) === 8203) {
+                pointer = range.startOffset;
+                range.endContainer.textContent = range.endContainer.textContent.replace(regEx, '');
+                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
+            }
+        }
+    }
+
     private onKeyDown(e: NotifyArgs): void {
         let currentRange: Range;
-        let args: KeyboardEvent = e.args as KeyboardEvent;
+        const args: KeyboardEvent = e.args as KeyboardEvent;
         if (Browser.info.name === 'chrome') {
             currentRange = this.parent.getRange();
             this.backSpaceCleanup(e, currentRange);
@@ -149,7 +177,7 @@ export class HtmlEditor {
             ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter' ||
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
             this.spaceLink(e.args as KeyboardEvent);
-            if (this.parent.editorMode === 'HTML' && !((this.parent.shiftEnterKey === 'BR' && ((e as NotifyArgs).args as KeyboardEventArgs).shiftKey))) {
+            if (this.parent.editorMode === 'HTML' && !this.parent.readonly) {
                 this.parent.notify(events.enterHandler, { args: (e.args as KeyboardEvent) });
             }
         }
@@ -309,7 +337,8 @@ export class HtmlEditor {
                     return;
                 }
                 else {
-                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                        this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
                     if (this.deleteRangeElement.querySelector('BR')) {
                         detach(this.deleteRangeElement.querySelector('BR'));
                     }
@@ -318,7 +347,11 @@ export class HtmlEditor {
                         while (this.deleteOldRangeElement.firstChild) {
                             this.deleteRangeElement.appendChild(this.deleteOldRangeElement.childNodes[0]);
                         }
-                        !isLiElement ? detach(this.deleteOldRangeElement) : detach(this.deleteOldRangeElement.parentElement);
+                        if (!isLiElement) {
+                            detach(this.deleteOldRangeElement);
+                        } else {
+                            detach(this.deleteOldRangeElement.parentElement);
+                        }
                         this.deleteRangeElement.normalize();
                     } else {
                         this.deleteRangeElement = null;
@@ -343,7 +376,7 @@ export class HtmlEditor {
     private getRangeElement(element: Element): Element {
         const rangeElement: Element = element.lastElementChild ? element.lastElementChild.tagName === 'BR' ?
             element.lastElementChild.previousElementSibling ? element.lastElementChild.previousElementSibling
-            : element : element.lastElementChild : element;
+                : element : element.lastElementChild : element;
         return rangeElement;
     }
     private getRootBlockNode(rangeBlockNode: Node): Node {
@@ -409,7 +442,7 @@ export class HtmlEditor {
             const divElement: HTMLElement = this.parent.createElement('div');
             divElement.setAttribute('class', 'pasteContent');
             divElement.style.display = 'inline';
-            divElement.innerHTML = contentInnerElem;
+            divElement.innerHTML = contentInnerElem.replace('&para', '&amp;para');
             const paraElem: NodeListOf<HTMLParagraphElement> = divElement.querySelectorAll('span, p');
             for (let i: number = 0; i < paraElem.length ; i++) {
                 const splitTextContent: string[] = paraElem[i].innerHTML.split(' ');

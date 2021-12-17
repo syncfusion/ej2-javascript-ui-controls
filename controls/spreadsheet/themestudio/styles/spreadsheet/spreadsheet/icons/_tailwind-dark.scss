@@ -1,0 +1,996 @@
+@include export-module('spreadsheet-tailwind-icons') {
+  .e-spreadsheet {
+    & .e-findtool-dlg {
+
+      & .e-prev-icon {
+        &::before {
+          content: '\e752';
+        }
+      }
+
+      & .e-next-icon {
+        &::before {
+          content: '\e706';
+        }
+      }
+
+      & .e-option-icon {
+        &::before {
+          content: '\e75b';
+        }
+      }
+
+      & .e-close {
+        &::before {
+          content: '\e771';
+        }
+      }
+    }
+
+    & .e-ribbon {
+      & .e-bold-icon {
+        &::before {
+          content: '\e79d';
+        }
+      }
+
+      & .e-italic-icon {
+        &::before {
+          content: '\e722';
+        }
+      }
+
+      & .e-underline-icon {
+        &::before {
+          content: '\e7d4';
+        }
+      }
+
+      & .e-line-through-icon {
+        &::before {
+          content: '\e760';
+        }
+      }
+
+      & .e-font-color {
+        &::before {
+          content: '\e775';
+        }
+      }
+
+      & .e-fill-color {
+        &::before {
+          content: '\e782';
+        }
+      }
+
+      .e-wrap-icon::before {
+        content: '\e830';
+      }
+
+      & .e-hide-headers {
+        &::before {
+          content: '\e83a';
+        }
+      }
+
+      & .e-hide-gridlines {
+        &::before {
+          content: '\e813';
+        }
+      }
+
+      & .e-freeze-pane::before {
+        content: '\e815';
+      }
+
+      & .e-freeze-row::before {
+        content: '\e78e';
+      }
+
+      & .e-freeze-column::before {
+        content: '\e7dc';
+      }
+
+      & .e-insert-function {
+        &::before {
+          content: '\e84e';
+        }
+      }
+
+      & .e-hyperlink-icon {
+        &::before {
+          content: '\e74a';
+        }
+      }
+
+      & .e-image-icon {
+        &::before {
+          content: '\e7da';
+        }
+      }
+
+      & .e-merge-icon {
+        &::before {
+          content: '\e73f';
+        }
+      }
+    }
+
+    & .e-insert-function .e-btn-icon {
+      &::before {
+        content: '\e84e';
+      }
+    }
+
+    & .e-add-icon {
+      &::before {
+        content: '\e78a';
+      }
+    }
+
+    & .e-sheets-list .e-btn-icon {
+      &::before {
+        content: '\e75c';
+      }
+    }
+
+    & .e-formula-bar-panel .e-drop-icon {
+      &::before {
+        content: '\e706';
+      }
+    }
+
+    & .e-file-menu-icon {
+      &::before {
+        content: '\e75b';
+      }
+    }
+
+    & .e-tick-icon {
+      &::before {
+        content: '\e75d';
+      }
+    }
+  }
+
+  .e-spreadsheet-find-ddb {
+    & .e-search-icon {
+      &::before {
+        content: '\e737';
+      }
+    }
+}
+
+  .e-spreadsheet-contextmenu.e-contextmenu-wrapper {
+    & .e-delete {
+      &::before {
+        content: '\e78d';
+      }
+    }
+  }
+
+  .e-popup {
+    &.e-dropdown-popup .e-selected-icon,
+    &.e-numformat-ddb.e-dropdown-popup .e-active-item,
+    &.e-menu-popup .e-selected-icon {
+      &::before {
+        content: '\e75d';
+      }
+    }
+  }
+
+  .e-borders-ddb {
+    & .e-top-borders {
+      &::before {
+        content: '\e7a7';
+      }
+    }
+
+    & .e-left-borders {
+      &::before {
+        content: '\e784';
+      }
+    }
+
+    & .e-right-borders {
+      &::before {
+        content: '\e72e';
+      }
+    }
+
+    & .e-bottom-borders {
+      &::before {
+        content: '\e791';
+      }
+    }
+
+    & .e-all-borders {
+      &::before {
+        content: '\e79f';
+      }
+    }
+
+    & .e-horizontal-borders {
+      &::before {
+        content: '\e73b';
+      }
+    }
+
+    & .e-vertical-borders {
+      &::before {
+        content: '\e702';
+      }
+    }
+
+    & .e-outside-borders {
+      &::before {
+        content: '\e7c4';
+      }
+    }
+
+    & .e-inside-borders {
+      &::before {
+        content: '\e79c';
+      }
+    }
+
+    & .e-no-borders {
+      &::before {
+        content: '\e84b';
+      }
+    }
+  }
+
+  .e-align-ddb {
+    & .e-left-icon {
+      &::before {
+        content: '\e7ae';
+      }
+    }
+
+    & .e-center-icon {
+      &::before {
+        content: '\e74f';
+      }
+    }
+
+    & .e-right-icon {
+      &::before {
+        content: '\e772';
+      }
+    }
+
+    & .e-bottom-icon {
+      &::before {
+        content: '\e73e';
+      }
+    }
+
+    & .e-middle-icon {
+      &::before {
+        content: '\e7cc';
+      }
+    }
+
+    & .e-top-icon {
+      &::before {
+        content: '\e709';
+      }
+    }
+  }
+
+  .e-datavalidation-ddb {
+    & .e-datavalidation-icon {
+      &::before {
+        content: '\e81c';
+      }
+    }
+  }
+
+  .e-clear-ddb {
+    & .e-clear-icon {
+      &::before {
+        content: '\e792';
+      }
+    }
+  }
+
+  .e-dragfill-ddb {
+    & .e-dragfill-icon {
+      &::before {
+        content: '\e926';
+      }
+    }
+  }
+
+  .e-chart-ddb,
+  .e-chart-type-ddb {
+    & .e-chart-icon,
+    & .e-chart-type-icon {
+      &::before {
+        content: '\e86c';
+      }
+    }
+  }
+
+  .e-chart-menu .e-ul .e-menu-item,
+  .e-chart-type-menu .e-ul .e-menu-item {
+    padding: 0 16px 0 10px;
+
+    .e-menu-icon {
+      font-size: 30px;
+      margin-right: 10px;
+    }
+
+    .e-bar {
+      font-size: 42px;
+      left: -6px;
+      margin-right: -2px;
+      position: relative;
+    }
+  }
+
+  .e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
+    font-size: 32px;
+  }
+
+  .e-chart-menu,
+  .e-chart-type-menu {
+
+    & .e-column {
+      &::before {
+        content: '\e86c';
+      }
+    }
+
+    & .e-bar {
+      &::before {
+        content: '\e8e3';
+      }
+    }
+
+    & .e-area {
+      &::before {
+        content: '\e87b';
+      }
+    }
+
+    & .e-pie-doughnut {
+      &::before {
+        content: '\e87e';
+      }
+    }
+
+    & .e-line {
+      &::before {
+        content: '\e875';
+      }
+    }
+
+    & .e-scatter {
+      &::before {
+        content: '\e86f';
+      }
+    }
+
+    & .e-column-main {
+      & .e-clusteredcolumn {
+        &::before {
+          content: '\e8c1';
+        }
+     }
+
+      & .e-stackedcolumn {
+        &::before {
+          content: '\e8ee';
+        }
+      }
+
+      & .e-stackedcolumn100 {
+        &::before {
+          content: '\e8d9';
+        }
+      }
+    }
+
+    & .e-bar-main {
+      & .e-clusteredbar {
+        &::before {
+          content: '\e8cb';
+        }
+      }
+
+      & .e-stackedbar {
+        &::before {
+          content: '\e8ab';
+        }
+      }
+
+      & .e-stackedbar100 {
+        &::before {
+          content: '\e8d4';
+        }
+      }
+    }
+
+    & .e-pie-main {
+      & .e-pie {
+        &::before {
+          content: '\e8bf';
+        }
+      }
+
+      & .e-doughnut {
+        &::before {
+          content: '\e8bc';
+        }
+      }
+    }
+
+    & .e-area-main {
+      & .e-area {
+        &::before {
+          content: '\e8e9';
+        }
+      }
+
+      & .e-stackedarea {
+        &::before {
+          content: '\e8e1';
+        }
+      }
+
+      & .e-stackedarea100 {
+        &::before {
+          content: '\e8c2';
+        }
+      }
+    }
+
+    & .e-line-main {
+      & .e-line {
+        &::before {
+          content: '\e8d8';
+        }
+      }
+
+      & .e-stackedline {
+        &::before {
+          content: '\e8bb';
+        }
+      }
+
+      & .e-stackedline100 {
+        &::before {
+          content: '\e8dc';
+        }
+      }
+    }
+
+    & .e-scatter-main {
+      & .e-scatter {
+        &::before {
+          content: '\e8ed';
+        }
+      }
+    }
+}
+
+  .e-addchart-ddb {
+    & .e-addchart-icon {
+      &::before {
+        content: '\e872';
+      }
+    }
+
+    & .e-addchart-menu {
+      & .e-axes {
+        &::before {
+          content: '\e879';
+        }
+      }
+
+      & .e-axis-title {
+        &::before {
+          content: '\e87c';
+        }
+      }
+
+      & .e-chart-title {
+        &::before {
+          content: '\e87d';
+        }
+      }
+
+      & .e-data-labels {
+        &::before {
+          content: '\e881';
+        }
+      }
+
+      & .e-gridlines {
+        &::before {
+          content: '\e873';
+        }
+      }
+
+      & .e-legends {
+        &::before {
+          content: '\e86e';
+        }
+      }
+    }
+  }
+
+  .e-addchart-menu {
+    & .e-ph-axes {
+      &::before {
+        content: '\e894';
+      }
+    }
+
+    & .e-pv-axes {
+      &::before {
+        content: '\e889';
+      }
+    }
+
+    & .e-ph-axistitle {
+      &::before {
+        content: '\e883';
+      }
+    }
+
+    & .e-pv-axistitle {
+      &::before {
+        content: '\e8a0';
+      }
+    }
+
+    & .e-ct-none {
+      &::before {
+        content: '\e8a7';
+      }
+    }
+
+    & .e-ct-abovechart {
+      &::before {
+        content: '\e8a8';
+      }
+    }
+
+    & .e-dl-none {
+      &::before {
+        content: '\e88c';
+      }
+    }
+
+    & .e-dl-center {
+      &::before {
+        content: '\e88a';
+      }
+    }
+
+    & .e-dl-insideend {
+      &::before {
+        content: '\e8a6';
+      }
+    }
+
+    & .e-dl-insidebase {
+      &::before {
+        content: '\e8a2';
+      }
+    }
+
+    & .e-dl-outsideend {
+      &::before {
+        content: '\e89f';
+      }
+    }
+
+    & .e-gl-major-horizontal {
+      &::before {
+        content: '\e89c';
+      }
+    }
+
+    & .e-gl-major-vertical {
+      &::before {
+        content: '\e88d';
+      }
+    }
+
+    & .e-gl-minor-horizontal {
+      &::before {
+        content: '\e897';
+      }
+    }
+
+    & .e-gl-minor-vertical {
+      &::before {
+        content: '\e888';
+      }
+    }
+
+    & .e-legends-none {
+      &::before {
+        content: '\e885';
+      }
+    }
+
+    & .e-legends-right {
+      &::before {
+        content: '\e886';
+      }
+    }
+
+    & .e-legends-left {
+      &::before {
+        content: '\e8a1';
+      }
+    }
+
+    & .e-legends-bottom {
+      &::before {
+        content: '\e89d';
+      }
+    }
+
+    & .e-legends-top {
+      &::before {
+        content: '\e896';
+      }
+    }
+}
+
+  .e-switch-row-column-icon {
+    &::before {
+      content: '\e876';
+    }
+  }
+
+  .e-cf-ddb {
+    & .e-conditionalformatting-icon {
+      &::before {
+        content: '\e90b';
+      }
+    }
+  }
+
+  .e-cf-menu .e-ul .e-menu-item .e-menu-icon {
+    font-size: 16px;
+    }
+
+  .e-cf-menu {
+    & .e-hlcellrules {
+      &::before {
+        content: '\e913';
+      }
+    }
+
+    & .e-topbottomrules {
+      &::before {
+        content: '\e91b';
+      }
+    }
+
+    & .e-databars {
+      &::before {
+        content: '\e924';
+      }
+    }
+
+    & .e-colorscales {
+      &::before {
+        content: '\e925';
+      }
+    }
+
+    & .e-iconsets {
+      &::before {
+        content: '\e91f';
+      }
+    }
+
+    & .e-clearrules {
+      &::before {
+        content: '\e907';
+      }
+    }
+
+    & .e-greaterthan {
+      &::before {
+        content: '\e911';
+      }
+    }
+
+    & .e-lessthan {
+      &::before {
+        content: '\e919';
+       }
+    }
+
+    & .e-between {
+      &::before {
+        content: '\e912';
+       }
+    }
+
+    & .e-equalto {
+      &::before {
+        content: '\e904';
+      }
+    }
+
+    & .e-textcontains {
+      &::before {
+        content: '\e90e';
+      }
+    }
+
+    & .e-adateoccuring {
+      &::before {
+        content: '\e90d';
+      }
+    }
+
+    & .e-top10items {
+      &::before {
+        content: '\e91b';
+      }
+    }
+
+    & .e-top10 {
+      &::before {
+        content: '\e923';
+      }
+    }
+
+    & .e-bottom10items {
+      &::before {
+        content: '\e91a';
+      }
+    }
+
+    & .e-bottom10 {
+      &::before {
+        content: '\e922';
+      }
+    }
+
+    & .e-aboveaverage {
+      &::before {
+        content: '\e91e';
+     }
+    }
+
+    & .e-belowaverage {
+      &::before {
+        content: '\e921';
+      }
+    }
+
+    & .e-duplicate {
+      &::before {
+        content: '\e91d';
+      }
+    }
+  }
+
+  .e-menu-wrapper.e-file-menu {
+    & .e-new {
+      &::before {
+        content: '\e7d9';
+      }
+    }
+
+    & .e-open {
+      &::before {
+        content: '\e749';
+      }
+    }
+
+    & .e-save {
+      &::before {
+        content: '\e746';
+      }
+    }
+
+    & .e-xls {
+      &::before {
+        content: '\e820';
+      }
+    }
+
+    & .e-xlsx {
+      &::before {
+        content: '\e780';
+      }
+    }
+
+    & .e-csv {
+      &::before {
+        content: '\e73d';
+      }
+    }
+
+    & .e-pdf {
+      &::before {
+        content: '\e741';
+      }
+    }
+  }
+
+  .e-spreadsheet,
+  .e-spreadsheet-contextmenu {
+    & .e-cut-icon {
+      &::before {
+        content: '\e763';
+      }
+    }
+
+    & .e-copy-icon {
+      &::before {
+        content: '\e7ce';
+      }
+    }
+
+    & .e-paste-icon {
+      &::before {
+        content: '\e75e';
+      }
+    }
+  }
+
+  .e-undo-icon {
+    &::before {
+      content: '\e7bd';
+    }
+  }
+
+  .e-redo-icon {
+    &::before {
+      content: '\e7b9';
+    }
+  }
+
+  .e-sort-filter-ddb,
+  .e-spreadsheet-contextmenu {
+    & .e-sort-icon {
+      &::before {
+        content: '\e837';
+      }
+    }
+
+    & .e-sort-asc {
+      &::before {
+        content: '\e837';
+      }
+    }
+
+    & .e-sort-desc {
+      &::before {
+        content: '\e84c';
+      }
+    }
+
+    & .e-sort-custom {
+      &::before {
+        content: '\e73c';
+      }
+    }
+  }
+
+  .e-spreadsheet-contextmenu {
+    & .e-hyperlink-icon {
+      &::before {
+        content: '\e74a';
+      }
+    }
+
+    & .e-edithyperlink-icon {
+      &::before {
+        content: '\e7ad';
+      }
+    }
+
+    & .e-openhyperlink-icon {
+      &::before {
+        content: '\e77a';
+      }
+    }
+
+    & .e-removehyperlink-icon {
+      &::before {
+        content: '\e714';
+      }
+    }
+  }
+
+  .e-spreadsheet {
+
+    & .e-sort-delete {
+      &::before {
+        content: '\e78d';
+      }
+    }
+  }
+
+  .e-spreadsheet,
+  .e-sort-filter-ddb,
+  .e-spreadsheet-contextmenu {
+    & .e-filter-icon {
+      &::before {
+        content: '\e918';
+      }
+    }
+
+    & .e-filter-icon.e-filtered {
+      &::before {
+        content: '\e910';
+      }
+    }
+
+    & .e-filter-icon.e-sortasc-filter {
+      &::before {
+        content: '\e906';
+      }
+    }
+
+    & .e-filter-icon.e-sortdesc-filter {
+      &::before {
+        content: '\e905';
+      }
+    }
+
+    & .e-filter-icon.e-filtered.e-sortasc-filter {
+      &::before {
+        content: '\e909';
+      }
+    }
+
+    & .e-filter-icon.e-filtered.e-sortdesc-filter {
+      &::before {
+        content: '\e908';
+      }
+    }
+
+    & .e-filter-apply {
+      &::before {
+        content: '\e71b';
+      }
+    }
+
+    & .e-filter-clear {
+      &::before {
+        content: '\e774';
+      }
+    }
+
+    & .e-filter-reapply {
+      &::before {
+        content: '\e914';
+      }
+    }
+
+    & .e-protect-icon {
+      &::before {
+        content: '\e916';
+      }
+    }
+
+    & .e-sort-filter-icon {
+      &::before {
+        content: '\e915';
+      }
+    }
+
+    & .e-password-protect-icon {
+      &::before {
+        content: '\e8f5';
+        }
+    }
+  }
+}

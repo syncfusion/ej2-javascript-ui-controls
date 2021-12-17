@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
@@ -29,6 +29,8 @@ export class BaseTooltip extends ChartData {
     public inverted: boolean;
     public formattedText: string[];
     public header: string;
+    /** @private */
+    public template: string;
 
     /** @private */
     public valueX: number;
@@ -50,6 +52,7 @@ export class BaseTooltip extends ChartData {
         this.element = this.chart.element;
         this.textStyle = chart.tooltip.textStyle;
         this.control = chart;
+        this.template = chart.tooltip.template;
     }
 
 
@@ -82,7 +85,9 @@ export class BaseTooltip extends ChartData {
     public createElement(): HTMLDivElement {
         const tooltipDiv: HTMLDivElement = document.createElement('div');
         tooltipDiv.id = this.element.id + '_tooltip'; tooltipDiv.className = 'ejSVGTooltip';
-        tooltipDiv.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
+        tooltipDiv.style.pointerEvents = 'none'; 
+        tooltipDiv.style.position = 'absolute';
+        tooltipDiv.style.zIndex = '1';
         return tooltipDiv;
     }
 
@@ -133,7 +138,12 @@ export class BaseTooltip extends ChartData {
         if (element) {
             if ((!isSelectedElement || isSelectedElement && element.getAttribute('class')
                 && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
-                element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
+                if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
+                    element.setAttribute('fill', (highlight ? this.chart.highlightColor : series.pointColorMapping !== '' ? ((series as Series).points[0]).color : (series as Series).interior));
+                }
+                else {
+                    element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
+                }
             } else {
                 element.setAttribute('opacity', series.opacity.toString());
             }
@@ -156,7 +166,7 @@ export class BaseTooltip extends ChartData {
     ): void {
         const series: Series = <Series>this.currentPoints[0].series;
         const module: AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
-        if (!module) { // For the tooltip enable is false.
+        if (!module || location === null) { // For the tooltip enable is false.
             return;
         }
         let isNegative: boolean = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
@@ -164,11 +174,13 @@ export class BaseTooltip extends ChartData {
         let position: TooltipPlacement = null;
         if (this.text.length <= 1) {
             let contentSize: Size; let headerSize: Size;
-            let tooltipTemplate: string = !customTemplate ? chart.tooltip.template : customTemplate;
+            let tooltipTemplate: string = !customTemplate ? this.template : customTemplate;
             if (tooltipTemplate && chart.getModuleName() === 'chart' && tooltipTemplate[0] !== '#' && typeof tooltipTemplate === 'string') {
                 const templateDiv: HTMLDivElement = document.createElement('div');
                 templateDiv.id = 'testing_template'; templateDiv.className = 'ejSVGTooltip';
-                templateDiv.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
+                templateDiv.style.pointerEvents = 'none';
+                templateDiv.style.position ='absolute';
+                templateDiv.style.zIndex = '1';
                 document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(templateDiv);
                 const template: string =
                     ((tooltipTemplate as any).replaceAll('${x}', point.x as string) as any).replaceAll('${y}', point.y as string);
@@ -214,7 +226,7 @@ export class BaseTooltip extends ChartData {
                     clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                     areaBounds: bounds,
                     palette: this.findPalette(),
-                    template: customTemplate || chart.tooltip.template,
+                    template: customTemplate ||this.template,
                     data: templatePoint,
                     theme: chart.theme,
                     offset: offset,
@@ -229,6 +241,7 @@ export class BaseTooltip extends ChartData {
                     blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                     controlInstance: this.chart,
                     tooltipPlacement: position,
+                    enableRTL: chart.enableRtl,
                     tooltipRender: () => {
                         module.removeHighlight();
                         module.highlightPoints();
@@ -250,7 +263,7 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.palette = this.findPalette();
                 this.svgTooltip.shapes = shapes;
                 this.svgTooltip.data = templatePoint;
-                this.svgTooltip.template = chart.tooltip.template;
+                this.svgTooltip.template = this.template;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
                 this.svgTooltip.isNegative = isNegative;
                 this.svgTooltip.inverted = inverted;

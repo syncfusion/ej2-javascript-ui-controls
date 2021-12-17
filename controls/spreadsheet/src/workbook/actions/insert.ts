@@ -186,14 +186,14 @@ export class WorkbookInsert {
             this.parent.notify(
                 refreshClipboard,
                 { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });
-            if (args.model !== this.parent.getActiveSheet()) { return; }
+            if (args.model.name !== this.parent.getActiveSheet().name) { return; }
             this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
                 getSheetIndex(this.parent, args.model.name), sheetCount: args.modelType === 'Row' ? args.model.rows.length :
                 args.model.columns.length, insertType: args.insertType, freezePane: freezePane, isUndoRedo: args.isUndoRedo });
         } else {
-            this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction,
-                activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType,
-                freezePane: freezePane, isUndoRedo: args.isUndoRedo });
+            this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
+                args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType, freezePane: freezePane,
+            isUndoRedo: args.isUndoRedo });
         }
     }
     private updateRangeModel(ranges: RangeModel[]): void {

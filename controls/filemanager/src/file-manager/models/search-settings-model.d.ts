@@ -31,4 +31,12 @@ export interface SearchSettingsModel {
      */
     ignoreCase?: boolean;
 
+    /**
+     * Specifies the placeholder value to the search input of the File Manager component.
+     * It accepts string.
+     *
+     * @default null
+     */
+    placeholder?: string;
+
 }

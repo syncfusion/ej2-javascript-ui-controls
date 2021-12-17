@@ -6,7 +6,7 @@ import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, ge
 import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, setRow } from '../../workbook/index';
 import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact, updateTranslate } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
-import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs } from '../common/index';
+import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet
@@ -50,7 +50,8 @@ export class Render {
         }
         this.setSheetPanelSize();
         this.renderSheet(sheetPanel);
-        this.checkTopLeftCell(true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.checkTopLeftCell(!(this.parent as any).refreshing);
     }
 
     private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean, scrollTop?: number, scrollLeft?: number): void {
@@ -224,11 +225,12 @@ export class Render {
         if (args.refresh === 'All') {
             this.parent.trigger(beforeDataBound, {});
         }
-        const isOpen: boolean = this.parent.isOpen;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const isOpen: boolean = this.parent.isOpen || (this.parent as any).refreshing;
         setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: true });
         const sheetsLen: number = this.parent.sheets.length;
         getData(this.parent as Workbook, `${sheetName}!${address}`, null, null, args.frozenIndexes).then((values: Map<string, CellModel>): void => {
-            if (sheetsLen < this.parent.sheets.length) { return; }
+            if (!this.parent || sheetsLen < this.parent.sheets.length) { return; }
             const sheetIdx: number = this.parent.sheets.indexOf(sheet);
             if (sheetIdx === -1 || sheetIdx !== this.parent.activeSheetIndex) {
                 if (sheetIdx > -1) { this.checkTopLeftCell(); }
@@ -240,7 +242,8 @@ export class Render {
             switch (args.refresh) {
             case 'All':
                 sheetModule.renderTable(
-                    { cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad, isRefreshing: isRefreshing, isOpen: isOpen});
+                    { cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad, isRefreshing:
+                        isRefreshing, isOpen: isOpen });
                 break;
             case 'Row':
                 sheetModule.refreshRowContent(
@@ -255,7 +258,7 @@ export class Render {
             case 'Column':
                 sheetModule.refreshColumnContent({
                     cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst,
-                    prevRowColCnt: prevRowColCnt
+                    prevRowColCnt: prevRowColCnt, insertDelete: args.insertDelete
                 });
                 break;
             case 'RowPart':
@@ -285,9 +288,10 @@ export class Render {
      *
      * @param {boolean} isOpen - Specifies the isOpen.
      * @param {boolean} resize - Set `true` to refresh the sheet with exiting scroll top and left.
+     * @param {boolean} focusEle - Specify the focusEle.
      * @returns {void}
      */
-    public refreshSheet(isOpen?: boolean, resize?: boolean): void {
+    public refreshSheet(isOpen?: boolean, resize?: boolean, focusEle?: boolean): void {
         let scrollTop: number = 0; let scrollLeft: number = 0;
         if (resize) {
             const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
@@ -299,6 +303,7 @@ export class Render {
         this.renderSheet();
         this.parent.notify(deInitProperties, {});
         this.checkTopLeftCell(false, isOpen, scrollTop, scrollLeft);
+        if (focusEle) { focus(this.parent.element); }
     }
 
     /**

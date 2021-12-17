@@ -36,13 +36,13 @@ export class BaseSelection {
         let opacity: number;
         const selectionPattern: SelectionPattern = (<Chart>this.control).selectionPattern;
         const highlightPattern: SelectionPattern = (<Chart>this.control).highlightPattern;
-        if (isNullOrUndefined(style) || selectionPattern !== 'None' || highlightPattern !== 'None') {
+        if ((this.styleId.indexOf('highlight') > 0 && (<Chart>this.control).highlightColor !== '') || isNullOrUndefined(style) || selectionPattern !== 'None' || highlightPattern !== 'None') {
             style = document.createElement('style');
             style.setAttribute('id', this.styleId);
             for (const series of this.control.visibleSeries) {
                 const visibleSeries: Series | AccumulationSeries  = this.control.visibleSeries[series.index] as Series ||
                 this.control.visibleSeries[series.index] as AccumulationSeries;
-                if ((!isNullOrUndefined(selectionPattern) || !isNullOrUndefined(highlightPattern)) &&
+                if ((this.styleId.indexOf('highlight') > 0 && (<Chart>this.control).highlightColor !== '') || (!isNullOrUndefined(selectionPattern) || !isNullOrUndefined(highlightPattern)) &&
                     (selectionPattern !== 'None' || highlightPattern !== 'None')) {
                     const patternName: SelectionPattern = this.styleId.indexOf('highlight') > 0 ? highlightPattern : selectionPattern;
                     if (visibleSeries.type as AccumulationType === 'Pie' || visibleSeries.type as AccumulationType === 'Funnel' ||
@@ -54,7 +54,9 @@ export class BaseSelection {
                         }
                     } else if (visibleSeries.type as ChartSeriesType) {
                         opacity = visibleSeries.opacity;
-                        fill = this.pattern(this.control, (visibleSeries as Series).interior, series.index, patternName, opacity);
+                        fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as Chart).highlightColor !== '') ? (this.control as Chart).highlightColor :
+                            (visibleSeries.pointColorMapping !== '' || ((this.control as Chart).rangeColorSettings && (this.control as Chart).rangeColorSettings.length > 1)) ? ((visibleSeries as Series).points[0]).color
+                                : (visibleSeries as Series).interior, series.index, patternName, opacity);
                         pattern = '{ fill:' + fill + '}';
 
                     }
@@ -64,7 +66,11 @@ export class BaseSelection {
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
                 style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
             }
-            style.innerHTML += '.' + this.unselected + ' { opacity:' + (0.3) + ';} ';
+            let unSelectOpacity: number = 0.3;
+            if (isNullOrUndefined((this.control as Chart).selectionModule) && (this.control as Chart).selectionMode === 'None' && (this.control as Chart).highlightColor !== '') {
+                unSelectOpacity = 1;
+            }
+            style.innerHTML += '.' + this.unselected + ' { opacity:' + (unSelectOpacity) + ';} ';
             document.body.appendChild(style);
         }
     }

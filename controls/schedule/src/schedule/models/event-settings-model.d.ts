@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Query, DataManager } from '@syncfusion/ej2-data';import { SortComparerFunction } from '../base/interface';import { Field } from './fields';import { FieldModel } from './fields-model';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Query, DataManager } from '@syncfusion/ej2-data';import { SortComparerFunction } from '../base/interface';import { SpannedEventPlacement } from '../base/type';import { Field } from './fields';import { FieldModel } from './fields-model';
 
 /**
  * Interface for a class EventSettings
@@ -47,6 +47,25 @@ export interface EventSettingsModel {
      * @default false
      */
     enableTooltip?: boolean;
+
+    /**
+     * Defines the option to render the spanned events (more than 24 hours) in either `AllDayRow` or `TimeSlot`. By default it renders in `AllDayRow`.
+     * This property is applicable for `Day`, `Week` and `WorkWeek` views only. The possible values for this property as follows
+     * * AllDayRow
+     * * TimeSlot
+     * {% codeBlock src='schedule/spannedEventPlacement/index.md' %}{% endcodeBlock %}
+     *
+     * @default 'AllDayRow'
+     */
+    spannedEventPlacement?: SpannedEventPlacement;
+
+    /**
+     * Sets a minimum duration for an event where the events are rendered for this minimum duration when the duration of the event is lesser than this value.
+     *  It accepts duration value in minutes. This property is only applicable when the event duration is lesser than this property duration.
+     *
+     * @default 1
+     */
+    minimumEventDuration?: number;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto tooltip.

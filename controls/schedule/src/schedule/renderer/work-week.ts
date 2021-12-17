@@ -1,6 +1,5 @@
 import { Schedule } from '../base/schedule';
 import { VerticalView } from './vertical-view';
-import * as util from '../base/util';
 
 /**
  * work week view

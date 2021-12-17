@@ -1,6 +1,7 @@
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentHelper } from '../viewer';
+import { DialogUtility } from '@syncfusion/ej2-popups';
 /**
  * The Table dialog is used to insert table at selection.
  */
@@ -14,6 +15,7 @@ export class TableDialog {
     public documentHelper: DocumentHelper;
     private columnValueTexBox: NumericTextBox;
     private rowValueTextBox: NumericTextBox;
+    private localeValue: L10n;
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper
      * @private
@@ -68,6 +70,7 @@ export class TableDialog {
             value: 2,
             min: 1,
             max: 32767,
+            strictMode: false,
             enablePersistence: false
         });
         this.rowValueTextBox.appendTo(this.rowsCountBox);
@@ -76,6 +79,7 @@ export class TableDialog {
             value: 2,
             min: 1,
             max: 63,
+            strictMode: false,
             enablePersistence: false
         });
         this.columnValueTexBox.appendTo(this.columnsCountBox);
@@ -87,6 +91,7 @@ export class TableDialog {
     public show(): void {
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
+        this.localeValue = localValue;
         if (!this.target) {
             this.initTableDialog(localValue);
         }
@@ -138,12 +143,22 @@ export class TableDialog {
      * @returns {void}
      */
     public onInsertTableClick = (): void => {
-        const rowCount: number = this.rowValueTextBox.value;
-        const columnCount: number = this.columnValueTexBox.value;
-        if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
-            this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
+        if (this.columnValueTexBox.value < 1 || this.columnValueTexBox.value > 63) {
+            DialogUtility.alert(this.localeValue.getConstant('Number of columns must be between 1 and 63.'));
+            return;
         }
-        this.documentHelper.hideDialog();
+        if (this.rowValueTextBox.value < 1 || this.rowValueTextBox.value > 32767) {
+            DialogUtility.alert(this.localeValue.getConstant('Number of rows must be between 1 and 32767.'));
+            return;
+        }
+        if (this.rowValueTextBox.value <= 32767 && this.columnValueTexBox.value <= 63) {
+            const rowCount: number = this.rowValueTextBox.value;
+            const columnCount: number = this.columnValueTexBox.value;
+            if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
+                this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
+            }
+            this.documentHelper.hideDialog();
+        }
     };
     /**
      * @private

@@ -1,0 +1,23 @@
+@include export-module('toast-bootstrap-icons') {
+  .e-toast {
+    .e-toast-close-icon::before {
+      content: $toast-close-icon;
+    }
+
+    .e-toast-success-icon::before {
+      content: $toast-success-icon;
+    }
+
+    .e-toast-error-icon::before {
+      content: $toast-error-icon;
+    }
+
+    .e-toast-info-icon::before {
+      content: $toast-info-icon;
+    }
+
+    .e-toast-warning-icon::before {
+      content: $toast-info-icon;
+    }
+  }
+}

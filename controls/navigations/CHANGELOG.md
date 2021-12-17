@@ -2,7 +2,81 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### Tab
+
+#### New Features
+
+- `#I302394` - Provided support to maintain the active item in either tab header area or inside the popup.
+- `#F166169` - Provided support to identify the tab select event raised by user interaction or programmatic way.
+
+### TreeView
+
+#### New Features
+
+- `#FB27518` - Provided support to wrap the TreeView node text when its text content exceeds the TreeView node width.
+
+### Breadcrumb
+
+#### New Features
+
+- Provided new types of overflow mode and as follows:
+
+  1. **Menu**: Shows the number of breadcrumb items that can be accommodated within the container space, and creates a sub menu with the remaining items.
+  2. **Wrap**: Wraps the items on multiple lines when the Breadcrumb’s width exceeds the container space.
+  3. **Scroll**: Shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
+  4. **None**: Shows all the items on a single line.
+
+- Provided `cancel` support in `beforeItemRender` event.
+
+#### Breaking Changes
+
+- Provided `disabled` property in Breadcrumb and Breadcrumb's Item instead of using CSS class `e-disabled`.
+- Removed `width` property from Breadcrumb component, you can set `width` in the style attribute of CSS to breadcrumb's element or its parent element.
+
+## 19.3.57 (2021-12-07)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I347551` - The issue with "The sidebar main content margin value changes when using Sidebar type as Over and dock support" has been fixed.
+
+## 19.3.56 (2021-12-02)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I342745` - The performance issue that occurred when selecting a node that was rendered with a huge data source has been resolved.
+
+## 19.3.54 (2021-11-17)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I347014` - An issue with dynamic tab item navigation if scheduler is present on a page has been fixed.
+- `#I296232` - The issue with "Script error occurs while updating the tab header text" has been resolved.
+
+## 19.3.46 (2021-10-19)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I344626` - An issue with the tab header and content items are not updated on state change has been fixed.
+
+## 19.3.45 (2021-10-12)
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- Disabled item get tab focus when item's URL is specified issue has been resolved.
+
+## 19.3.43 (2021-09-30)
 
 ### Tab
 

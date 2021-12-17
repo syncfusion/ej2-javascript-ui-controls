@@ -197,6 +197,14 @@ export interface ChartAreaModel {
 
     backgroundImage?: string;
 
+    /**
+     * Defines the width for the chart area element. Takes value in percentage and in pixel.
+     *
+     * @default null
+     */
+
+    width?: string;
+
 }
 
 /**

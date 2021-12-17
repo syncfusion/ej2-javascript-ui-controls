@@ -58,6 +58,7 @@ export interface DraggableModel {
 
     /**
      * Specifies the callback function for drag event.
+
      * @event
      */
     drag?: Function;

@@ -1,0 +1,15 @@
+@include export-module('ribbon-tailwind-icons') {
+  .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e706';
+      }
+    }
+
+    & .e-menu-wrapper.e-file-menu ul .e-menu-item .e-caret {
+      &::before {
+        content: '\e706';
+      }
+    }
+  }
+}

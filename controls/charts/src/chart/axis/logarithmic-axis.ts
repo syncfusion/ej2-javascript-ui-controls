@@ -65,6 +65,7 @@ export class Logarithmic extends Double {
             this.min = (this.min <= 0) ? (+this.min - 1) : this.min;
         }
         this.max = Math.ceil(logEnd / 1);
+        this.max = this.max === this.min ? <number>this.max + 1 : this.max;
         axis.actualRange.interval = axis.interval || this.calculateLogNiceInterval(<number>this.max - <number>this.min, size, axis);
         axis.actualRange.min = <number>this.min;
         axis.actualRange.max = <number>this.max;

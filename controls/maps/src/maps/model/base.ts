@@ -1157,7 +1157,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Sets and gets the options for customizing the style of the title for the legend in maps.
      */
-    @Complex<FontModel>({}, Font)
+    @Complex<FontModel>(Theme.legendTitleFont, Font)
     public titleStyle: FontModel;
 
     /**
@@ -1345,7 +1345,7 @@ export class ShapeSettings extends ChildProperty<ShapeSettings> {
     /**
      * Sets and gets the options for customizing the color and width of the border for the shapes in maps.
      */
-    @Complex<BorderModel>({ width: 0, color: '#000000' }, Border)
+    @Complex<BorderModel>({ width: null, color: '#000000' }, Border)
     public border: BorderModel;
 
     /**

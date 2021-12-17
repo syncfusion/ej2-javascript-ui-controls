@@ -272,10 +272,10 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
             let startDateDiff: number = DAYINDEX.indexOf(DAYINDEX[tempDate.getDay()]) - wkstIndex;
             startDateDiff = startDateDiff === -1 ? 6 : startDateDiff;
             const weekstartDate: Date = addDays(tempDate, -startDateDiff);
-            const weekendDate: Date = addDays(weekstartDate, 6);
+            let weekendDate: Date = addDays(weekstartDate, 6);
             let compareTempDate: Date = new Date(tempDate.getTime());
-            resetTime(weekendDate);
-            resetTime(compareTempDate);
+            weekendDate = resetTime(weekendDate);
+            compareTempDate = resetTime(compareTempDate);
             while (weekendDate >= compareTempDate) {
                 if (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1) {
                     weekCollection.push([tempDate.getTime()]);
@@ -285,7 +285,7 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
                 }
                 tempDate.setDate(tempDate.getDate() + 1);
                 compareTempDate = new Date(tempDate.getTime());
-                resetTime(compareTempDate);
+                compareTempDate = resetTime(compareTempDate);
             }
             tempDate.setDate(tempDate.getDate() - 1);
             if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {

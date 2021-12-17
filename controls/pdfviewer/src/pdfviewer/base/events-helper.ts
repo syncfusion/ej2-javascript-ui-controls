@@ -156,6 +156,10 @@ export interface AjaxRequestSuccessEventArgs extends BaseEventArgs {
      */
     // eslint-disable-next-line
     data: any
+    /**
+     * If TRUE, the exportAnnotation methods returns base64 string. False by default.
+     */
+     cancel: boolean
 }
 
 /**
@@ -525,6 +529,37 @@ export interface AnnotationMoveEventArgs extends BaseEventArgs {
     annotationType: AnnotationType
     /**
      * Defines the settings of the annotation moved in the PDF document.
+     */
+    // eslint-disable-next-line
+    annotationSettings: any;
+    /**
+     * Previous position of annotations in the page text content.
+     */
+    previousPosition: object
+    /**
+     * Current position of annotations in the page text content.
+     */
+    currentPosition: object
+}
+
+/**
+ * Describes the event arguments of AnnotationMovingEventArgs.
+ */
+ export interface AnnotationMovingEventArgs extends BaseEventArgs {
+    /**
+     * Defines the annotation id moving in the PDF page.
+     */
+    annotationId: string
+    /**
+     * Defines the page number in which the annotation is moving.
+     */
+    pageIndex: number
+    /**
+     * Defines the annotation type moving in the PDF page.
+     */
+    annotationType: AnnotationType
+    /**
+     * Defines the annotation setting moving in the PDF page.
      */
     // eslint-disable-next-line
     annotationSettings: any;

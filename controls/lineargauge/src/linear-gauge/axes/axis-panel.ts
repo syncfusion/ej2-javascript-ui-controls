@@ -52,16 +52,17 @@ export class AxisLayoutPanel {
                 this.calculateRangesBounds(axis, i);
             }
             bounds = axis.labelBounds;
+            const offset: number = this.gauge.axes[i].labelStyle.offset;
             if (this.gauge.orientation === 'Vertical') {
-                x = (!axis.opposedPosition) ? bounds.x - axisPadding : axis.lineBounds.x;
+                x = (!axis.opposedPosition) ? bounds.x - offset - axisPadding : axis.lineBounds.x;
                 y = axis.lineBounds.y;
                 height = axis.lineBounds.height;
-                width = Math.abs((!axis.opposedPosition) ? (axis.lineBounds.x - x) : ((bounds.x + bounds.width + axisPadding) - x));
+                width = Math.abs((!axis.opposedPosition) ? (axis.lineBounds.x - x) : ((bounds.x + bounds.width + axisPadding) - x - offset));
             } else {
-                y = (!axis.opposedPosition) ? bounds.y - bounds.height - axisPadding : axis.lineBounds.y;
+                y = (!axis.opposedPosition) ? bounds.y - bounds.height - offset - axisPadding : axis.lineBounds.y;
                 x = axis.lineBounds.x;
                 width = axis.lineBounds.width;
-                height = Math.abs((!axis.opposedPosition) ? Math.abs(axis.lineBounds.y - y) : (bounds.y + axisPadding) - y);
+                height = Math.abs((!axis.opposedPosition) ? Math.abs(axis.lineBounds.y - y) : (bounds.y + axisPadding) - y - offset);
             }
             axis.bounds = new Rect(x, y, width, height);
         }
@@ -314,8 +315,8 @@ export class AxisLayoutPanel {
             if (pointer.position === 'Auto') {
                 x = (!axis.opposedPosition) ? (placement === 'Near') ? label.x : (placement === 'Center') ? tick.x : line.x :
                     placement === 'Far' ? label.x + label.width : (placement === 'Center' ? tick.x + tick.width : line.x);
-                x = !axis.opposedPosition ? ((pointer.placement === 'Far' ? x + border : x - border) + (offset)) :
-                    ((pointer.placement === 'Near' ? x - border : x + border) + (offset));
+                x = !axis.opposedPosition ? ((pointer.placement === 'Far' ? ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? x - border : x + border) : ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? x + border : x - border)) + (offset)) :
+                    ((pointer.placement === 'Near' ? ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? x + border : x - border) : ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? x - border : x + border)) + (offset));
             } else {
                 x = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
                     ((pointer.position === 'Inside' && !axis.opposedPosition) ||
@@ -328,8 +329,8 @@ export class AxisLayoutPanel {
             if (pointer.position === 'Auto') {
                 y = (!axis.opposedPosition) ? (placement === 'Near') ? label.y - label.height : (placement === 'Center') ? tick.y :
                     line.y : (placement === 'Far') ? label.y : (placement === 'Center') ? tick.y + tick.height : line.y;
-                y = !axis.opposedPosition ? ((pointer.placement === 'Far' ? y + border : y - border) + (offset)) :
-                    ((pointer.placement === 'Near' ? y - border : y + border) + (offset));
+                y = !axis.opposedPosition ? ((pointer.placement === 'Far' ? ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? y - border : y + border) : ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? y + border : y - border)) + (offset)) :
+                    ((pointer.placement === 'Near' ? ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? y + border : y - border) : ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? y - border : y + border)) + (offset));
             } else {
                 y = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
                     ((pointer.position === 'Inside' && !axis.opposedPosition) ||
@@ -438,8 +439,8 @@ export class AxisLayoutPanel {
             start = Math.max(range.start, visibleRange.min);
             end = Math.min(range.end, visibleRange.max);
             if (withInRange(null, start, end, visibleRange.max, visibleRange.min, 'range')) {
-                start = Math.min(start, range.end);
                 end = Math.max(start, end);
+                start = Math.min(start, range.end);
                 position = range.position;
                 startWidth = range.startWidth;
                 endWidth = range.endWidth;
@@ -506,7 +507,6 @@ export class AxisLayoutPanel {
             const max: number = axis.visibleRange.max;
             const interval: number = axis.visibleRange.interval;
             let argsData: IAxisLabelRenderEventArgs;
-            let blazorArgsData: IAxisLabelRenderEventArgs;
             const style: Label = <Label>axis.labelStyle;
             let text: string; let labelSize: Size;
             const customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
@@ -517,34 +517,12 @@ export class AxisLayoutPanel {
                         formatValue(i, this.gauge).toString(),
                     value: i
                 };
-                blazorArgsData = {
-                    cancel: false, name: axisLabelRender, axis: null,
-                    text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
-                        formatValue(i, this.gauge).toString(),
-                    value: i
-                };
-                if (this.gauge.isBlazor) {
-                    const { cancel, name, text, value, axis }: IAxisLabelRenderEventArgs = blazorArgsData;
-                    blazorArgsData = { cancel, name, text, value, axis };
-                    argsData = blazorArgsData;
-                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
                     if (!argsData.cancel) {
                         axis.visibleLabels.push(new VisibleLabels(
                             argsData.text, i, labelSize
                         ));
-                        if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
-                            const currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
-                                : null;
-                            if (currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
-                                this.getMaxLabelWidth(this.gauge, axis);
-                                this.axisRenderer.drawAxisLabels(
-                                    axis,
-                                    (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
-                                );
-                            }
-                        }
                     }
                 };
                 axisLabelRenderSuccess.bind(this);
@@ -560,17 +538,6 @@ export class AxisLayoutPanel {
                         formatValue(maxVal, this.gauge).toString(),
                     value: maxVal
                 };
-                blazorArgsData = {
-                    cancel: false, name: axisLabelRender, axis: null,
-                    text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge) :
-                        formatValue(maxVal, this.gauge).toString(),
-                    value: maxVal
-                };
-                if (this.gauge.isBlazor) {
-                    const { cancel, name, text, value, axis }: IAxisLabelRenderEventArgs = blazorArgsData;
-                    blazorArgsData = { cancel, name, text, value, axis };
-                    argsData = blazorArgsData;
-                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
                     labelSize = measureText(argsData.text, axis.labelStyle.font);
@@ -578,14 +545,6 @@ export class AxisLayoutPanel {
                         axis.visibleLabels.push(new VisibleLabels(
                             argsData.text, maxVal, labelSize
                         ));
-                        if (this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
-                            this.getMaxLabelWidth(this.gauge, axis);
-                            this.axisRenderer.drawAxisLabels(
-                                axis,
-                                (
-                                    document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
-                            );
-                        }
                     }
                 };
                 axisLabelRenderSuccess.bind(this);

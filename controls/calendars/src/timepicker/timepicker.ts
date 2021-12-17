@@ -1411,7 +1411,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 if (!this.isPopupOpen() && this.enableMask && !this.readonly)
                 {
                     if((this.inputElement.selectionStart == 0 && this.inputElement.selectionEnd == this.inputElement.value.length) || 
-                    (this.inputElement.selectionEnd !== length && event.action == 'tab') || 
+                    (this.inputElement.selectionEnd !== this.inputElement.value.length && event.action == 'tab') || 
                     (this.inputElement.selectionStart !== 0 && event.action == 'shiftTab') || (event.action == 'left' || event.action == 'right'))
                     {
                     event.preventDefault();
@@ -1526,7 +1526,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
     }
     private setSelection(li: HTMLElement, event: MouseEvent): void {
-        if (this.isValidLI(li) && !li.classList.contains(SELECTED)) {
+        if (this.isValidLI(li)) {
             this.checkValue(li.getAttribute('data-value'));
             if(this.enableMask)
             {
@@ -1898,7 +1898,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     {
                         this.updateInputValue(this.maskedDateValue);
                     }
-                    this.createMask();
+                    if(isNullOrUndefined(val) && value != this.maskedDateValue) {
+                        this.createMask();
+                    }
+                    if(isNullOrUndefined(val) && value == this.maskedDateValue) {
+                        this.updateInputValue(this.maskedDateValue);
+                    }
                 }
             }
         }
@@ -1973,7 +1978,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 {
                     this.updateInputValue(this.maskedDateValue);  
                 }
-                this.createMask();
+                if(isNullOrUndefined(time) && value != this.maskedDateValue){
+                    this.createMask();
+                }
+                if(isNullOrUndefined(time) && value == this.maskedDateValue){
+                    this.updateInputValue(this.maskedDateValue); 
+                }
             }
         }
         return time;

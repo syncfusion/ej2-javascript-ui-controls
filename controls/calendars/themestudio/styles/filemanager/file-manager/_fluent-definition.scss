@@ -1,0 +1,245 @@
+/*! FileManager's tailwind theme wise override definitions and variables */
+//layout variables
+$fm-skin-name: $skin-name !default;
+$fe-bc-font-size: $text-xs !default;
+$fe-bc-icon-font-size: 8px !default;
+$fe-dg-td-font-size: $text-sm !default;
+$fe-lg-text-font-size: $text-sm !default;
+$fe-ddl-icon-font-size: $text-sm !default;
+$fe-bc-li-item-height: 22px !default;
+$fe-lg-icon-empty-inner-content-opacity: .5 !default;
+$fe-grid-row-ie-box-shadow: inset 0 1px 0 0 #66afe9, inset 0 -1px 0 0 #66afe9 !default;
+$fe-grid-row-fc-ie-box-shadow: inset 1px 1px 0 0 #66afe9, inset 1px -1px 0 0 #66afe9 !default;
+$fe-grid-row-lc-ie-box-shadow: inset -1px 1px 0 0 #66afe9, inset -1px -1px 0 0 #66afe9 !default;
+$fe-img-box-shadow: 0 1px 3px 1px rgba(0, 0, 0, .05) !default;
+
+
+$fe-big-bc-font-size: $text-sm !default;
+$fe-big-bc-icon-font-size: 10px !default;
+$fe-big-lg-text-font-size: $text-sm !default;
+$fe-big-dg-header-font-size: 21px !default;
+$fe-big-dg-td-font-size: 15px !default;
+
+$fe-clone-box-shadow: $shadow-sm !default;
+$fe-clone-border: none !default;
+$fe-tb-ddb-icon-padding: 0 !default;
+$fe-tb-ddb-height: calc(100% - 18px) !default;
+$fe-tb-ddb-btn-hvr-padding: 0 !default;
+$fe-tb-ddb-btn-padding: 0 !default;
+$fe-tb-ddb-border: 0 !default;
+$fe-tb-ddb-caret-size: 8px !default;
+$fe-upload-overlay-border: 2px !default;
+$fe-search-padding: 4px 8px 5px 0 !default;
+$fe-search-height: 32px !default;
+$fe-search-icon-margin: 5px !default;
+$fe-search-clear-icon-margin: 10px !default;
+$fe-search-clear-icon-padding: 0 !default;
+$fe-search-input-margin: 0 0 0 38px !default;
+$fe-bc-margin: 0 !default;
+$fe-bc-padding: 9px 8px 9px 8px !default;
+$fe-rtl-bc-padding: 8px 18px 8px 12px !default;
+$fe-bc-text-padding: 0 !default;
+$fe-bc-text-size: 22px !default;
+$fe-bc-icon-margin: 16px 14px !default;
+$fe-bc-search-border-bottom: 1px !default;
+$fe-bc-submenu-height: 26px !default;
+$fe-bc-li-text-decoration: none;
+$fe-grid-icon-size: 20px !default;
+$fe-grid-icon-margin: 0 !default;
+$fe-dg-td-padding: 4px 24px 4px 0 !default;
+$fe-dg-rtl-td-padding: 8px 0 8px 24px !default;
+$fe-grid-header-height: 36px !default;
+$fe-grid-header-font-size: 14px !default;
+$fe-grid-header-cb-padding-left: 12px !default;
+$fe-grid-content-font-size: 14px !default;
+$fe-grid-content-name-font-size: 14px !default;
+$fe-grid-icon-sort-margin: 0 !default;
+$fe-lg-margin: 0 !default;
+$fe-lg-padding: 0 12px !default;
+$fe-lg-item-height: 94px !default;
+$fe-lg-item-width: 94px !default;
+$fe-lg-item-margin: 12px 8px !default;
+$fe-lg-item-padding: 2px !default;
+$fe-lg-item-inner-height: 74px !default;
+$fe-lg-item-inner-width: 90px !default;
+$fe-lg-icon-height: 40px !default;
+$fe-lg-icon-width: 40px !default;
+$fe-lg-icon-margin: 18px 25px 8px !default;
+$fe-lg-img-height: 40px !default;
+$fe-lg-text-padding: 2px 0 0 0 !default;
+$fe-cm-separator-margin: 0 0 !default;
+$fe-cb-line-height: 12px !default;
+$fe-dd-popup-blank-icon-padding-left: 40px !default;
+$fe-tv-fullrow-height: 38px !default;
+$fe-address-height: 40px !default;
+$fe-tv-node-height: 36px !default;
+
+$fe-big-tv-fullrow-height: 40px !default;
+$fe-big-address-height: 40px !default;
+$fe-big-tv-node-height: 38px !default;
+$fe-big-tb-ddb-btn-hvr-padding: 0 6px !default;
+$fe-big-tb-ddb-btn-padding: 0 6px !default;
+$fe-big-search-padding: 4px 10px 0 16px !default;
+$fe-big-search-height: 30px !default;
+$fe-big-bc-padding: 6px 12px !default;
+$fe-big-bc-text-size: 28px !default;
+$fe-big-bc-text-padding: 5px 4px !default;
+$fe-big-bc-li-item-height: 28px !default;
+$fe-big-bc-submenu-height: 27px !default;
+$fe-big-grid-icon-margin: 0 12px 0 0 !default;
+$fe-big-grid-header-height: 36px !default;
+$fe-big-dg-td-padding: 8px 30px 8px 0 !default;
+$fe-big-lg-padding: 0 6px !default;
+$fe-big-lg-item-height: 106px !default;
+$fe-big-lg-item-width: 100px !default;
+$fe-big-lg-item-margin: 12px 6px !default;
+$fe-big-lg-item-inner-height: 100px !default;
+$fe-big-lg-item-inner-width: 94px !default;
+$fe-big-lg-icon-height: 52px !default;
+$fe-big-lg-icon-width: 52px !default;
+$fe-big-lg-icon-margin: 11px auto !default;
+$fe-big-lg-img-height: 79px !default;
+$fe-big-lg-text-padding: 4px 2px 2px !default;
+$fe-big-grid-header-font-size: 14px !default;
+$fe-big-grid-content-font-size: 14px !default;
+$fe-big-grid-content-name-font-size: 16px !default;
+$fe-big-cb-line-height: 14px !default;
+
+$fe-rtl-grid-icon-margin: 0 0 0 8px !default;
+
+$fe-mobile-lg-item-height: 94px !default;
+$fe-mobile-lg-item-width: 94px !default;
+$fe-mobile-lg-item-margin: 12px 8px !default;
+$fe-mobile-lg-item-inner-width: 110px !default;
+$fe-mobile-lg-icon-height: 40px !default;
+$fe-mobile-lg-icon-width: 40px !default;
+$fe-mobile-lg-icon-margin: 0 auto !default;
+$fe-mobile-lg-img-height: 40px !default;
+$fe-mobile-grid-icon-size: 35px !default;
+$fe-mobile-icon-font-size: 20px !default;
+$fe-mobile-newfolder-padding-top: 0 !default;
+$fe-mobile-upload-padding-left: 0 !default;
+$fe-mobile-sort-padding-top: 3px !default;
+$fe-mobile-refresh-padding-top: 3px !default;
+$fe-mobile-select-padding-top: 2px !default;
+$fe-mobile-large-padding: 4px 0 0 2px !default;
+$fe-mobile-grid-padding: 4px 2px 0 2px !default;
+$fe-mobile-details-padding-top: 3px !default;
+$fe-mobile-delete-padding-left: 4px !default;
+$fe-mobile-rename-padding-left: 2px !default;
+$fe-mobile-rename-padding-top: 3px !default;
+$fe-mobile-download-padding-left: 4px !default;
+$fe-mobile-cut-padding-left: 2px !default;
+$fe-mobile-cut-padding-top: 1px !default;
+$fe-mobile-copy-padding-left: 4px !default;
+$fe-mobile-search-height: 40px !default;
+$fe-mobile-lg-item-minwidth: 140px !default;
+$fe-mobile-lg-item-width-two: calc(50% - 17px) !default;
+$fe-mobile-lg-item-width-three: calc(33.33% - 17px) !default;
+
+$fe-big-lg-icon-empty-min-width: 300px !default;
+
+$fe-big-lg-icon-empty-content-font-size: 22px !default;
+$fe-big-lg-icon-empty-content-margin: 0 auto !default;
+$fe-big-lg-icon-empty-content-padding: 12px !default;
+$fe-big-lg-icon-empty-content-text-align: center !default;
+
+$fe-big-lg-icon-empty-icon-height: 92px !default;
+$fe-big-lg-icon-empty-icon-margin: 0 auto !default;
+$fe-big-lg-icon-empty-icon-width: 92px !default;
+
+$fe-big-lg-icon-empty-inner-content-font-size: 14px !default;
+$fe-big-lg-icon-empty-inner-content-margin: 0 auto !default;
+$fe-big-lg-icon-empty-inner-content-opacity: .5 !default;
+$fe-big-lg-icon-empty-inner-content-padding: 4px !default;
+$fe-big-lg-icon-empty-inner-content-text-align: center !default;
+
+$fe-big-grid-empty-min-width: 300px !default;
+
+$fe-big-grid-empty-content-font-size: 22px !default;
+$fe-big-grid-empty-content-margin: 0 auto !default;
+$fe-big-grid-empty-content-padding: 12px !default;
+$fe-big-grid-empty-content-text-align: center !default;
+
+$fe-big-grid-empty-icon-height: 92px !default;
+$fe-big-grid-empty-icon-margin: 0 auto !default;
+$fe-big-grid-empty-icon-width: 92px !default;
+
+$fe-big-grid-empty-inner-content-font-size: 14px !default;
+$fe-big-grid-empty-inner-content-margin: 0 auto !default;
+$fe-big-grid-empty-inner-content-opacity: .5 !default;
+$fe-big-grid-empty-inner-content-padding: 6px !default;
+$fe-big-grid-empty-inner-content-text-align: center !default;
+
+$fe-grid-empty-min-width: 200px !default;
+
+$fe-grid-empty-content-font-size: $text-sm !default;
+$fe-grid-empty-content-margin: 0 auto !default;
+$fe-grid-empty-content-padding: 8px 0 8px 0  !default;
+$fe-grid-empty-content-text-align: center !default;
+
+$fe-grid-empty-icon-height: 52px !default;
+$fe-grid-empty-icon-margin: 0 auto !default;
+$fe-grid-empty-icon-width: 52px !default;
+
+$fe-grid-empty-inner-content-font-size: $text-sm !default;
+$fe-grid-empty-inner-content-margin: 0 auto !default;
+$fe-grid-empty-inner-content-opacity: .5 !default;
+$fe-grid-empty-inner-content-padding: 0 !default;
+$fe-grid-empty-inner-content-text-align: center !default;
+
+$fe-lg-icon-empty-min-width: 200px !default;
+
+$fe-lg-icon-empty-content-font-size: $text-sm !default;
+$fe-lg-icon-empty-content-margin: 0 auto !default;
+$fe-lg-icon-empty-content-padding: 8px 0 8px 0 !default;
+$fe-lg-icon-empty-content-text-align: center !default;
+
+$fe-lg-icon-empty-icon-height: 52px !default;
+$fe-lg-icon-empty-icon-margin: 0 auto !default;
+$fe-lg-icon-empty-icon-width: 52px !default;
+
+$fe-lg-icon-empty-inner-content-font-size: $text-sm !default;
+$fe-lg-icon-empty-inner-content-margin: 0 auto !default;
+$fe-lg-icon-empty-inner-content-padding: 0 !default;
+$fe-lg-icon-empty-inner-content-text-align: center !default;
+
+$fe-bc-icon-padding: 5px !default;
+
+// color variables
+$fe-border-color: $border-light !default;
+$fe-background: transparent;
+$fe-icon-color: $icon-color !default;
+$fe-label-color: $content-text-color-alt2 !default;
+$fe-text-color: $content-text-color !default;
+$fe-active-border-color: $content-bg-color-selected !default;
+$fe-tb-active-color: $secondary-text-color !default;
+$fe-active-bg-color: $content-bg-color-selected !default;
+$fe-active-font-color: $secondary-text-color !default;
+$fe-hover-border-color: $content-bg-color-hover !default;
+$fe-hover-bg-color: $content-bg-color-hover !default;
+$fe-ah-border-color: $content-bg-color-selected !default;
+$fe-ah-bg-color: $content-bg-color-selected !default;
+$fe-focus-border-color: $border-light !default;
+$fe-bc-color: $content-text-color-alt1 !default;
+$fe-bc-link-color: $content-text-color-alt2 !default;
+$fe-bc-hover-bg-color: $content-bg-color-alt2 !default;
+$fe-bc-hover-font-color: $content-text-color !default;
+$fe-grid-header-bg-color: $content-bg-color-alt1 !default;
+$fe-ddl-icon-color: $icon-color !default;
+$fe-error-color: $danger !default;
+$fe-img-border-color: $border-light !default;
+$fe-search-bg-color: $content-bg-color !default;
+$fe-tb-hover-border-color: $secondary-border-color-hover !default;
+$fe-tb-focus-border-color: $fe-tb-hover-border-color !default;
+$fe-tb-focus-bg: $secondary-bg-color-hover !default;
+$fe-checkbox-color: $primary !default;
+$fe-checkbox-bg-color: $primary-text-color !default;
+$fe-drop-border-color: $primary !default;
+$fe-up-list-border-color: $border-light !default;
+$fe-clone-bg-color: $content-bg-color-alt2 !default;
+$fe-clone-border-color: none !default ;
+$fe-clone-count-border-color: $primary-text-color !default;
+$fe-clone-count-font-color: $primary-text-color !default;
+$fe-clone-count-bg-color: $primary !default;
+$fe-drop-folder-bg-color: $primary !default;

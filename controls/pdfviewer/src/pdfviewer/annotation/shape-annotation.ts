@@ -527,7 +527,7 @@ export class ShapeAnnotation {
             this.pdfViewer.annotationModule.isFormFieldShape = true;
         else
             this.pdfViewer.annotationModule.isFormFieldShape = false;
-        this.pdfViewer.isDocumentEdited = true;
+        this.pdfViewerBase.updateDocumentEditedProperty(true);
         let currentAnnotObject: IShapeAnnotation = null;
         if (annotationBase) {
             if (property === 'bounds') {

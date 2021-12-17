@@ -1,7 +1,6 @@
 import { NodeSelection } from './../../selection/index';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IHtmlFormatterCallBack, IAdvanceListItem } from '../../common/interface';
-import { EnterKeyAction } from '../../rich-text-editor/actions/enter-key';
 /**
  * Specifies  Command models interfaces.
  *

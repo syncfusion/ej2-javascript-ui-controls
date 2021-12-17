@@ -7,7 +7,7 @@ import { MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-nav
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
-import { IFieldOptions, IDataOptions } from '../../base/engine';
+import { IFieldOptions, IDataOptions, FieldItemInfo } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -52,28 +52,38 @@ export class AggregateMenu {
     }
     private openContextMenu(args: MouseEventArgs): void {
         let fieldName: string = (args.target as HTMLElement).parentElement.id;
+        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
         this.buttonElement = (args.target as HTMLElement).parentElement;
         let isStringField: number = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
         this.summaryTypes = [...this.getMenuItem(isStringField)];
+        this.parent.actionObj.actionName = events.aggregateField;
+        this.parent.actionObj.fieldInfo = fieldInfo.fieldItem;
+        if (this.parent.actionBeginMethod()) {
+            return;
+        }
         let eventArgs: AggregateMenuOpenEventArgs = {
             cancel: false, fieldName: fieldName, aggregateTypes: this.summaryTypes, displayMenuCount: 7
         };
         let control: PivotView | PivotFieldList =
             this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).isPopupView ?
                 (this.parent as PivotFieldList).pivotGridModule : this.parent;
-        control.trigger(events.aggregateMenuOpen, eventArgs, (observedArgs: AggregateMenuOpenEventArgs) => {
-            if (!observedArgs.cancel) {
-                this.summaryTypes = observedArgs.aggregateTypes;
-                this.createContextMenu(isStringField, observedArgs.displayMenuCount);
-                this.currentMenu = args.target as Element;
-                let pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
-                if (this.parent.enableRtl) {
-                    this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left - 105);
-                } else {
-                    this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left);
+        try {
+            control.trigger(events.aggregateMenuOpen, eventArgs, (observedArgs: AggregateMenuOpenEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.summaryTypes = observedArgs.aggregateTypes;
+                    this.createContextMenu(isStringField, observedArgs.displayMenuCount);
+                    this.currentMenu = args.target as Element;
+                    let pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
+                    if (this.parent.enableRtl) {
+                        this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left - 105);
+                    } else {
+                        this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left);
+                    }
                 }
-            }
-        });
+            });
+        } catch (execption) {
+            this.parent.actionFailureMethod(execption);
+        }
     }
 
     private createContextMenu(isStringField: number, displayMenuCount?: number): void {
@@ -349,30 +359,40 @@ export class AggregateMenu {
     private selectOptionInContextMenu(menu: MenuEventArgs): void {
         if (menu.item.text !== null) {
             let buttonElement: HTMLElement = this.currentMenu.parentElement as HTMLElement;
+            let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo((buttonElement ? buttonElement.id : ''), this.parent);
+            this.parent.actionObj.actionName = events.aggregateField;
+            this.parent.actionObj.fieldInfo = fieldInfo.fieldItem;
+            if (this.parent.actionBeginMethod()) {
+                return;
+            }
             let type: string = menu.item.id.split('_').pop();
-            if (type === 'MoreOption' || type === 'PercentageOfDifferenceFrom'
-                || type === 'PercentageOfParentTotal' || type === 'DifferenceFrom') {
-                this.createValueSettingsDialog(buttonElement, this.parentElement, type);
-            } else {
-                let field: string = buttonElement.getAttribute('data-uid');
-                let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
-                let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
-                let captionName: string = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
-                    this.parent.engineModule.fieldList[field].caption;
-                contentElement.innerHTML = captionName;
-                contentElement.setAttribute('title', captionName);
-                buttonElement.setAttribute('data-type', type as string);
-                for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
-                    if (this.parent.dataSourceSettings.values[vCnt].name === field) {
-                        let dataSourceItem: IFieldOptions = extend({}, (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
-                            (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt], null, true);
-                        dataSourceItem.type = type as SummaryTypes;
-                        this.parent.engineModule.fieldList[field].aggregateType = type;
-                        valuefields.splice(vCnt, 1, dataSourceItem);
-                        this.parent.lastAggregationInfo = dataSourceItem;
+            try {
+                if (type === 'MoreOption' || type === 'PercentageOfDifferenceFrom'
+                    || type === 'PercentageOfParentTotal' || type === 'DifferenceFrom') {
+                    this.createValueSettingsDialog(buttonElement, this.parentElement, type);
+                } else {
+                    let field: string = buttonElement.getAttribute('data-uid');
+                    let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
+                    let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
+                    let captionName: string = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
+                        this.parent.engineModule.fieldList[field].caption;
+                    contentElement.innerHTML = captionName;
+                    contentElement.setAttribute('title', captionName);
+                    buttonElement.setAttribute('data-type', type as string);
+                    for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
+                        if (this.parent.dataSourceSettings.values[vCnt].name === field) {
+                            let dataSourceItem: IFieldOptions = extend({}, (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
+                                (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt], null, true);
+                            dataSourceItem.type = type as SummaryTypes;
+                            this.parent.engineModule.fieldList[field].aggregateType = type;
+                            valuefields.splice(vCnt, 1, dataSourceItem);
+                            this.parent.lastAggregationInfo = dataSourceItem;
+                        }
                     }
+                    this.updateDataSource();
                 }
-                this.updateDataSource();
+            } catch (execption) {
+                this.parent.actionFailureMethod(execption);
             }
         }
     }

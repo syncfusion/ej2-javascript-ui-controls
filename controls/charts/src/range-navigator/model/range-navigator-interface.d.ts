@@ -26,6 +26,15 @@ export interface IRangeLoadedEventArgs {
     /** theme */
     theme?: ChartTheme;
 }
+/**
+ * Range Navigator Before Resize event arguments.
+ */
+export interface IRangeBeforeResizeEventArgs {
+    /** Defines the name of the Event */
+    name: string;
+    /** It is  used to cancel the resized event */
+    cancelResizedEvent: boolean;
+}
 export interface IRangeTooltipRenderEventArgs extends IRangeEventArgs {
     /** Defines tooltip text collections */
     text?: string[];

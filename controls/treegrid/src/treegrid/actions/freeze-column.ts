@@ -43,7 +43,8 @@ export class Freeze {
         const frozenrows: HTMLTableRowElement[] = this.parent.getRows();
         let rows: HTMLTableRowElement[];
         let frozenRightRows: HTMLTableRowElement[];
-        let freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 || this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
+                                 this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (freeze) {
             frozenRightRows = <HTMLTableRowElement[]>this.parent.getFrozenRightRows().filter(
                 (e: HTMLTableRowElement) =>

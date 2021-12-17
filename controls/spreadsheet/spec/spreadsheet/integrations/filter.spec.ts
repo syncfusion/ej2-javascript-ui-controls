@@ -15,8 +15,8 @@ describe('Filter ->', () => {
         });
         it('Apply Filter', (done: Function) => {
             helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
-            expect(helper.invoke('getCell', [0, 0]).children[0].classList).toContain('e-filter-btn');
             setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).children[0].classList).toContain('e-filter-btn');
                 expect(helper.invoke('getCell', [0, 4]).children[0].children[0].classList).toContain('e-filtered');
                 done();
             });

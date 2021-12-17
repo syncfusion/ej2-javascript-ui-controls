@@ -6,6 +6,7 @@ import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
 import { isRemoteData, isOffline, getExpandStatus, isFilterChildHierarchy } from '../utils';
 import { Column } from '../models';
+import { Column as gridColumn } from '@syncfusion/ej2-grids';
 
 /**
  * TreeGrid render module
@@ -95,7 +96,13 @@ export class Render {
         if (!isNullOrUndefined(data.parentItem)) {
             index = data.parentItem.index;
         } else { index = data.index; }
-        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex  && (args.requestType === 'add' || args.requestType
+        let columnIndex: number; const getVirtualColIndexByUid: string = 'getVirtualColIndexByUid';
+        if (this.parent.enableColumnVirtualization && !this.parent.initialRender) {
+            columnIndex = this.parent[getVirtualColIndexByUid](args.column.uid);
+        } else {
+            columnIndex = grid.getColumnIndexByUid(args.column.uid);
+        }
+        if (columnIndex === this.parent.treeColumnIndex  && (args.requestType === 'add' || args.requestType
             === 'rowDragAndDrop' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
             const container: Element = createElement('div', { className: 'e-treecolumn-container' });
             const emptyExpandIcon: HTMLElement = createElement('span', {
@@ -148,7 +155,7 @@ export class Render {
         } else if (this.templateResult) {
             this.templateResult = null;
         }
-        let freeze: boolean = (grid.getFrozenLeftColumnsCount() > 0 || grid.getFrozenRightColumnsCount() > 0 ) ? true : false;
+        const freeze: boolean = (grid.getFrozenLeftColumnsCount() > 0 || grid.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (!freeze) {
             if (frozenColumns > this.parent.treeColumnIndex && frozenColumns > 0 &&
                 grid.getColumnIndexByUid(args.column.uid) === frozenColumns) {
@@ -162,9 +169,9 @@ export class Render {
                 addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
             }
         } else {
-            let freezerightColumns = grid.getFrozenRightColumns();
-            let freezeLeftColumns = grid.getFrozenLeftColumns();
-            let movableColumns = grid.getMovableColumns(); 
+            const freezerightColumns: gridColumn[] = grid.getFrozenRightColumns();
+            const freezeLeftColumns: gridColumn[] = grid.getFrozenLeftColumns();
+            const movableColumns: gridColumn[] = grid.getMovableColumns();
             if ((freezerightColumns.length > 0) && freezerightColumns[0].field === args.column.field) {
                 addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
             } else if ((freezeLeftColumns.length > 0) && freezeLeftColumns[0].field === args.column.field) {

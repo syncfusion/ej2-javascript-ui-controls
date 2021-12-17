@@ -3058,3 +3058,43 @@ describe('EJ2-48935 - Adding record with addRecord method at last to second row 
     gridObj.addRecord(arr[0], 3, "Below");
   });
 });
+
+describe('EJ2-54664 - delete the parent and child record using deleteRecord method', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+            enableVirtualization:true,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            height: 400,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Row',
+
+            },
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 90
+                },
+                { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
+                { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
+                  format: 'yMd' },
+                {
+                    field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
+                }
+            ],
+      },
+      done
+    );
+  });
+  it('Delete -  Parent and Child record', (done: Function) => {
+    gridObj.deleteRecord('taskID', {taskID:1});
+    expect(gridObj.flatData.length === 31).toBe(true);
+    done();
+  });
+});

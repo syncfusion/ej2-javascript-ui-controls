@@ -461,4 +461,20 @@
     content: '\e78d';
     font-family: 'e-icons';
   }
+
+  .e-pv-eye-icon::before {
+    content: '\e7d0';
+    cursor: $pv-eye-icon-hover-cursor;
+    font-family: 'e-icons';
+    font-size: $pv-eye-icon-font-size;
+    padding: $pv-eye-icon-padding;
+  }
+
+  .e-pv-eye-slash-icon::before {
+    content: '\e836';
+    cursor: $pv-eye-icon-hover-cursor;
+    font-family: 'e-icons';
+    font-size: $pv-eye-icon-font-size;
+    padding: $pv-eye-icon-padding;
+  }
 }

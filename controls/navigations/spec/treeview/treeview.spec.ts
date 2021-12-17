@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple  } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3} from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10} from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -1159,6 +1159,41 @@ describe('TreeView control', () => {
                     expect(treeObj.element.classList.contains('e-fullrow-wrap')).toBe(true);
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                     expect(li[0].childElementCount).toBe(2);
+                    done();
+                }, 100);
+            });
+            it('allowTextWrap property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData9, id: "nodeId", text: "nodeText", child: "nodeChild", iconCss: 'nodeIcon', imageUrl: 'nodeImage',
+                 },
+                 allowTextWrap: true
+                },'#tree1');
+                setTimeout(function() {
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(true);
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    let fullrow: HTMLElement = li[0].querySelector('.e-fullrow');
+                    expect(fullrow.style.height).toBe((fullrow.nextElementSibling as HTMLElement).offsetHeight + 'px')
+                    treeObj.allowTextWrap = false;
+                    treeObj.dataBind();
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(false);
+                    expect(fullrow.style.height).toBe('');
+                    done();
+                }, 100);
+            });
+            it('allowTextWrap dynamic property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData9, id: "nodeId", text: "nodeText", child: "nodeChild", iconCss: 'nodeIcon', imageUrl: 'nodeImage',
+                 },
+                },'#tree1');
+                setTimeout(function() {
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(false);
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    let fullrow: HTMLElement = li[0].querySelector('.e-fullrow');
+                    expect(fullrow.style.height).toBe('');
+                    treeObj.allowTextWrap = true;
+                    treeObj.dataBind();
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(true);
+                    expect(fullrow.style.height).toBe((fullrow.nextElementSibling as HTMLElement).offsetHeight + 'px')
                     done();
                 }, 100);
             });
@@ -5222,6 +5257,100 @@ describe('TreeView control', () => {
                 }, 100);
             });
         });
+
+        describe('NodeChecking Performance testing', () => {
+            let treeObj: TreeView;
+            let mouseEventArgs: any;
+            let originalTimeout: any;
+            let tapEvent: any;
+            beforeEach((): void => {
+                mouseEventArgs = {
+                    preventDefault: (): void => { },
+                    stopImmediatePropagation: (): void => { },
+                    target: null,
+                    type: null,
+                    shiftKey: false,
+                    ctrlKey: false,
+                    originalEvent: { target: null }
+                };
+                tapEvent = {
+                    originalEvent: mouseEventArgs,
+                    tapCount: 1
+                };
+                let ele: HTMLElement = createElement('div', { id: 'tree' });
+                document.body.appendChild(ele);
+                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            });
+            afterEach((): void => {
+                if (treeObj)
+                    treeObj.destroy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+                document.body.innerHTML = '';
+            });
+            it('with 2700 nodes', (done) => {
+                var hierarchicalData = [];
+                var parent = 300, child = 2, child1 = 1, child2 = 2;
+                var data = [];
+                for (var m = 1; m <= parent; m++) {
+                    var childArray1 = [];
+                    for (var n = 1; n <= child; n++) {
+                        var childArray2 = [];
+                        for (var o = 1; o <= child1; o++) {
+                            var childArray3 = [];
+                            for (var p = 1; p <= child2; p++) {
+                                childArray3.push({
+                                    id: 'd' + m + n + o + p,
+                                    name: 'Node' + m + n + o + p,
+                                });
+                            }
+                            childArray2.push({
+                                id: 'c' + m + n + o,
+                                name: 'Node' + m + n + o,
+                                child: childArray3,
+                            });
+                        }
+                        childArray1.push({
+                            id: 'b' + m + n,
+                            name: 'Node' + m + n,
+                            child: childArray2,
+                        });
+                    }
+                    data.push({
+                        id: 'a' + m,
+                        name: 'Node' + m,
+                        child: childArray1,
+                    });
+                }
+                hierarchicalData.push({
+                    id: 'a' + 99999,
+                    name: 'Node Main',
+                    child: data,
+                });
+                let startDate: number;
+                let timeTaken: number;
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData, id: "id", text: "name", child: "child", },
+                    showCheckBox: true,
+                    nodeChecked: function () {
+                        timeTaken = new Date().getTime() - startDate;
+                    },
+                    nodeChecking: function () {
+                        startDate = new Date().getTime();
+                    }
+                });
+                treeObj.appendTo('#tree');
+                setTimeout(() => {
+                    mouseEventArgs.target = (treeObj.element as any).querySelector("[data-uid='a99999'] .e-ripple-container");
+                    (<any>treeObj).touchClickObj.tap(tapEvent);
+                    setTimeout(() => {
+                        expect(timeTaken).toBeLessThan(200);
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
+
     });
     describe('Local data binding testing', () => {
         describe('Default functionality testing', () => {
@@ -6055,6 +6184,40 @@ describe('TreeView control', () => {
                     expect(treeObj.selectedNodes).not.toContain('02');
                     expect(treeObj.selectedNodes).not.toContain('03');
                     expect(treeObj.selectedNodes).toContain('04');
+                    done();
+                }, 100);
+            });
+            it('allowTextWrap property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData10, id: "nodeId", text: "nodeText", hasChildren: "hasChild",  parentID: 'nodePid'
+                 },
+                 allowTextWrap: true
+                },'#tree1');
+                setTimeout(function() {
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(true);
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    let fullrow: HTMLElement = li[0].querySelector('.e-fullrow');
+                    expect(fullrow.style.height).toBe((fullrow.nextElementSibling as HTMLElement).offsetHeight + 'px')
+                    treeObj.allowTextWrap = false;
+                    treeObj.dataBind();
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(false);
+                    expect(fullrow.style.height).toBe('');
+                    done();
+                }, 100);
+            });
+            it('allowTextWrap dynamic property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData10, id: "nodeId", text: "nodeText", hasChildren: "hasChild",  parentID: 'pid'
+                 },
+                },'#tree1');
+                setTimeout(function() {
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(false);
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    let fullrow: HTMLElement = li[0].querySelector('.e-fullrow');
+                    treeObj.allowTextWrap = true;
+                    treeObj.dataBind();
+                    expect(treeObj.element.classList.contains('e-text-wrap')).toBe(true);
+                    expect(fullrow.style.height).toBe((fullrow.nextElementSibling as HTMLElement).offsetHeight + 'px')
                     done();
                 }, 100);
             });
@@ -14070,6 +14233,28 @@ describe('Drag and drop with different TreeView functionality testing with empty
             expect(treeObj.getTreeData()[24]["isChecked"]).toBe(true);
             done();
             }, 100);
+        });
+        it('autoCheck false and showCheckBox enable', () => {
+            treeObj = new TreeView({
+                fields: { dataSource: localData8, id: 'id', text: 'name', parentID: 'pid', hasChildren: 'hasChild' },
+                showCheckBox: true, autoCheck: false
+            }, '#tree1');
+            mouseEventArgs.target = (treeObj.element as any).querySelector("[data-uid='1'] .e-ripple-container");
+            (<any>treeObj).touchClickObj.tap(tapEvent);
+            mouseEventArgs.target = (treeObj.element as any).querySelector("[data-uid='2'] .e-ripple-container");
+            (<any>treeObj).touchClickObj.tap(tapEvent);
+            mouseEventArgs.target = (treeObj.element as any).querySelector("[data-uid='3'] .e-ripple-container");
+            (<any>treeObj).touchClickObj.tap(tapEvent);
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(checkEle[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            expect(checkEle[1].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            expect(checkEle[2].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            treeObj.checkedNodes = [];
+            treeObj.dataBind();
+            let ncheckEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(ncheckEle[0].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            expect(ncheckEle[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            expect(ncheckEle[2].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
         });
     });
     describe('isChecked attribute testing with sorting property', () => {

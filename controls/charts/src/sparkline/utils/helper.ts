@@ -127,6 +127,36 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             labelFontFamily: 'Helvetica Neue'
         };
         break;
+    // case 'fluent':
+    //     themeColors = {
+    //         axisLineColor: '#D2D0CE;',
+    //         dataLabelColor: '#323130',
+    //         rangeBandColor: '#A19F9D',
+    //         background: 'rgba(255, 255, 255, 0.0001)',
+    //         tooltipFill: '#FFFFFF',
+    //         tooltipFontColor: '#323130',
+    //         trackerLineColor: '#A19F9D',
+    //         fontFamily: 'Helvetica Neue',
+    //         tooltipFillOpacity: 1,
+    //         tooltipTextOpacity: 1,
+    //         labelFontFamily: 'Helvetica Neue'
+    //     };
+    //     break;
+    // case 'fluentdark':
+    //     themeColors = {
+    //         axisLineColor: '#3B3A39;',
+    //         dataLabelColor: '#C8C6C4',
+    //         rangeBandColor: '#797775',
+    //         background: 'transparent',
+    //         tooltipFill: '#252423',
+    //         tooltipFontColor: '#C8C6C4',
+    //         trackerLineColor: '#797775',
+    //         fontFamily: 'Helvetica Neue',
+    //         tooltipFillOpacity: 1,
+    //         tooltipTextOpacity: 1,
+    //         labelFontFamily: 'Helvetica Neue'
+    //     };
+    //     break;
     default: {
         themeColors = {
             axisLineColor: '#000000',

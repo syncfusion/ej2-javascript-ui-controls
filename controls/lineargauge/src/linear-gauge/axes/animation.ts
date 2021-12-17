@@ -68,7 +68,7 @@ export class Animations {
                 markerElement.setAttribute('d', currentPath);
                 pointer.startValue = pointer.currentValue;
                 pointer.animationComplete = true;
-                this.gauge.trigger(animationComplete, { axis: !this.gauge.isBlazor ? axis : null, pointer: pointer });
+                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
             }
         });
     }
@@ -104,7 +104,7 @@ export class Animations {
         const rectY: number = (this.gauge.orientation === 'Vertical') ? !axis.isInversed ? pointerValue : startPointerVal :
             axis.isInversed ? pointerValue : startPointerVal;
         const rectHeight: number = Math.abs(startPointerVal - pointerValue);
-        if (this.gauge.container.type === 'Thermometer' && start === 0) {
+        if (this.gauge.container.type === 'Thermometer' && start === 0  && this.gauge.container.width > 0) {
             clipElement = <HTMLElement>pointerElement.parentElement.childNodes[1].childNodes[0].childNodes[0];
             if (this.gauge.orientation === 'Vertical') {
                 clipY = clipElement.getAttribute('y');
@@ -177,7 +177,7 @@ export class Animations {
                     }
                 }
                 pointer.startValue = pointer.currentValue;
-                this.gauge.trigger(animationComplete, { axis: !this.gauge.isBlazor ? axis : null, pointer: pointer });
+                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
             }
         });
     }

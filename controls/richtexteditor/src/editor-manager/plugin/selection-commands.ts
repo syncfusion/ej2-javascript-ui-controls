@@ -17,13 +17,16 @@ export class SelectionCommands {
      * @param {Document} docElement - specifies the document
      * @param {string} format - specifies the string value
      * @param {Node} endNode - specifies the end node
+     * @param {string} enterAction - specifies the enter key action
      * @param {string} value - specifies the string value
      * @param {string} selector - specifies the string
      * @returns {void}
      * @hidden
      * @deprecated
      */
-    public static applyFormat(docElement: Document, format: string, endNode: Node, enterAction: string, value?: string, selector?: string): void {
+    public static applyFormat(
+        docElement: Document, format: string, endNode: Node, enterAction: string,
+        value?: string, selector?: string): void {
         this.enterAction = enterAction;
         const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
@@ -31,7 +34,6 @@ export class SelectionCommands {
             if (format === 'backgroundcolor' && value === '') {
                 value = 'transparent';
             }
-            let preventRestore: boolean = false;
             let domSelection: NodeSelection = new NodeSelection();
             const domNode: DOMNode = new DOMNode((endNode as HTMLElement), docElement);
             const nodeCutter: NodeCutter = new NodeCutter();
@@ -43,6 +45,7 @@ export class SelectionCommands {
             let isCollapsed: boolean = false;
             let isFormat: boolean = false;
             let isCursor: boolean = false;
+            let preventRestore: boolean = false;
             const isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
             if (range.collapsed) {
                 if (nodes.length > 0) {
@@ -63,6 +66,9 @@ export class SelectionCommands {
                         preventRestore = true;
                     } else {
                         domSelection.endOffset = domSelection.startOffset = 1;
+                    }
+                    if (cursorNode.nodeName === 'BR' && cursorNode.parentNode.textContent.length === 0) {
+                        preventRestore = true;
                     }
                 }
             }
@@ -140,7 +146,47 @@ export class SelectionCommands {
         let cursorNode: Node = null;
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
-            InsertMethods.unwrap(cursorFormat);
+            if (cursorFormat.firstChild.textContent.charCodeAt(0) === 8203) {
+                let isCursorEqual: boolean = false;
+                const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+                let emptySpaceNode: Node;
+                if (cursorFormat.firstChild === cursorNode) {
+                    cursorNode.textContent = cursorNode.textContent.replace(regEx, '');
+                    emptySpaceNode = cursorNode;
+                    isCursorEqual = true;
+                } else {
+                    cursorFormat.firstChild.textContent = cursorFormat.firstChild.textContent.replace(regEx, '');
+                    emptySpaceNode = cursorFormat.firstChild;
+                }
+                let pointer: number;
+                if (emptySpaceNode.textContent.length === 0) {
+                    if (!isNOU(emptySpaceNode.previousSibling)) {
+                        cursorNode = emptySpaceNode.previousSibling;
+                        pointer = emptySpaceNode.textContent.length - 1;
+                        domSelection.setCursorPoint(docElement, emptySpaceNode as Element, pointer);
+                    } else if (!isNOU(emptySpaceNode.parentElement) && emptySpaceNode.parentElement.textContent.length === 0) {
+                        let brElem: HTMLElement = document.createElement('BR');
+                        emptySpaceNode.parentElement.appendChild(brElem);
+                        detach(emptySpaceNode);
+                        cursorNode = brElem;
+                        domSelection.setCursorPoint(docElement, cursorNode.parentElement, 0);
+                    }
+                }
+            }
+            if ((['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1)) {
+                if (format === 'fontcolor') {
+                    (cursorFormat as HTMLElement).style.color = value;
+                } else if (format === 'fontname') {
+                    (cursorFormat as HTMLElement).style.fontFamily = value;
+                } else if (format === 'fontsize') {
+                    (cursorFormat as HTMLElement).style.fontSize = value;
+                } else {
+                    (cursorFormat as HTMLElement).style.backgroundColor = value;
+                }
+                cursorNode = cursorFormat;
+            } else {
+                InsertMethods.unwrap(cursorFormat);
+            }
         } else {
             if (cursorNodes.length > 1 && range.startOffset > 0 && ((cursorNodes[0] as HTMLElement).firstElementChild &&
                 (cursorNodes[0] as HTMLElement).firstElementChild.tagName.toLowerCase() === 'br')) {
@@ -385,8 +431,8 @@ export class SelectionCommands {
     private static applyStyles(nodes: Node[], index: number, element: HTMLElement): Node {
         if (!(nodes[index].nodeName === 'BR' && this.enterAction === 'BR')) {
             nodes[index] = (index === (nodes.length - 1)) || nodes[index].nodeName === 'BR' ?
-            InsertMethods.Wrap(nodes[index] as HTMLElement, element)
-            : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
+                InsertMethods.Wrap(nodes[index] as HTMLElement, element)
+                : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
             nodes[index] = this.getChildNode(nodes[index], element);
         }
         return nodes[index];

@@ -1,7 +1,7 @@
 import { Dialog, OffsetPosition, BeforeOpenEventArgs, Tooltip, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Droppable, createElement, extend, remove, addClass, closest, getInstance, select } from '@syncfusion/ej2-base';
 import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IDataOptions, IFieldOptions, ICalculatedFields, IFormatSettings, PivotEngine } from '../../base/engine';
+import { IDataOptions, IFieldOptions, ICalculatedFields, IFormatSettings, PivotEngine, FieldItemInfo } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button, RadioButton, CheckBox, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
@@ -11,7 +11,7 @@ import {
     NodeClickEventArgs, MenuEventArgs, DrawNodeEventArgs, ExpandEventArgs, NodeSelectEventArgs, NodeKeyPressEventArgs
 } from '@syncfusion/ej2-navigations';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
-import { IAction, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
+import { IAction, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs, PivotActionInfo } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { Tab, Accordion, AccordionItemModel, AccordionClickArgs } from '@syncfusion/ej2-navigations';
@@ -268,102 +268,110 @@ export class CalculatedField implements IAction {
     private displayMenu(node: HTMLElement, treeNode?: HTMLElement, target?: HTMLElement): void {
         let edit: boolean = target ? target.classList.contains(cls.CALC_EDIT) : true;
         let edited: boolean = target ? target.classList.contains(cls.CALC_EDITED) : true;
-        if (this.parent.dataType === 'pivot' && node.querySelector('.e-list-icon.e-format') &&
-            node.querySelector('.e-list-icon.e-format').classList.contains(cls.ICON) &&
-            !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) &&
-            !node.querySelector('.e-list-icon').classList.contains(cls.GRID_REMOVE) &&
-            !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) && node.tagName === 'LI') {
-            if (this.menuObj && !this.menuObj.isDestroyed) {
-                this.menuObj.destroy();
-            }
-            this.curMenu = (node.querySelector('.' + cls.LIST_TEXT_CLASS) as HTMLElement);
-            this.openContextMenu(node);
-        } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.CALC_EDIT) &&
-            node.querySelector('.' + cls.CALC_EDIT).classList.contains('e-list-icon') && edit ||
-            (this.parent.dataType === 'olap' && node.getAttribute('data-type') === CALC && node.classList.contains('e-active') && ((target && !target.classList.contains(cls.GRID_REMOVE)) || !target)))) {
-            this.isEdit = true;
-            let fieldName: string = node.getAttribute('data-field');
-            let caption: string = node.getAttribute('data-caption');
-            this.currentFieldName = fieldName;
-            this.inputObj.value = caption;
-            this.inputObj.dataBind();
-            let formatString: string = node.getAttribute('data-formatString');
-            let dialogElement: HTMLElement = this.dialog.element;
-            let customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
-            if (this.parent.dataType === 'olap') {
-                let memberType: string = node.getAttribute('data-membertype');
-                let parentHierarchy: string = node.getAttribute('data-hierarchy');
-                let expression: string = node.getAttribute('data-formula');
-                let customString: string = node.getAttribute('data-customString');
-                let fieldTitle: HTMLElement = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
-                let memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                let hierarchyDrop: DropDownList = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                /* eslint-enable max-len */
-                fieldTitle.innerHTML = this.parent.localeObj.getConstant('caption');
-                (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = expression;
-                memberTypeDrop.readonly = true;
-                memberTypeDrop.value = memberType;
-                memberTypeDrop.dataBind();
-                if (memberType === 'Dimension') {
-                    hierarchyDrop.value = parentHierarchy;
+        try {
+            if (this.parent.dataType === 'pivot' && node.querySelector('.e-list-icon.e-format') &&
+                node.querySelector('.e-list-icon.e-format').classList.contains(cls.ICON) &&
+                !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) &&
+                !node.querySelector('.e-list-icon').classList.contains(cls.GRID_REMOVE) &&
+                !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) && node.tagName === 'LI') {
+                if (this.menuObj && !this.menuObj.isDestroyed) {
+                    this.menuObj.destroy();
                 }
-                if (formatString !== '') {
-                    formatDrop.value = formatString;
+                this.curMenu = (node.querySelector('.' + cls.LIST_TEXT_CLASS) as HTMLElement);
+                this.openContextMenu(node);
+            } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.CALC_EDIT) &&
+                node.querySelector('.' + cls.CALC_EDIT).classList.contains('e-list-icon') && edit ||
+                (this.parent.dataType === 'olap' && node.getAttribute('data-type') === CALC && node.classList.contains('e-active') && ((target && !target.classList.contains(cls.GRID_REMOVE)) || !target)))) {
+                this.isEdit = true;
+                let fieldName: string = node.getAttribute('data-field');
+                let caption: string = node.getAttribute('data-caption');
+                this.currentFieldName = fieldName;
+                this.inputObj.value = caption;
+                this.inputObj.dataBind();
+                let formatString: string = node.getAttribute('data-formatString');
+                let dialogElement: HTMLElement = this.dialog.element;
+                let customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                if (this.parent.dataType === 'olap') {
+                    let memberType: string = node.getAttribute('data-membertype');
+                    let parentHierarchy: string = node.getAttribute('data-hierarchy');
+                    let expression: string = node.getAttribute('data-formula');
+                    let customString: string = node.getAttribute('data-customString');
+                    let fieldTitle: HTMLElement = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
+                    let memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
+                    let hierarchyDrop: DropDownList = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
+                    let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
+                    /* eslint-enable max-len */
+                    fieldTitle.innerHTML = this.parent.localeObj.getConstant('caption');
+                    (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = expression;
+                    memberTypeDrop.readonly = true;
+                    memberTypeDrop.value = memberType;
+                    memberTypeDrop.dataBind();
+                    if (memberType === 'Dimension') {
+                        hierarchyDrop.value = parentHierarchy;
+                    }
+                    if (formatString !== '') {
+                        formatDrop.value = formatString;
+                        formatDrop.dataBind();
+                    }
+                    customFormat.value = customString;
+                } else {
+                    customFormat.value = formatString;
+                    addClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDIT);
+                    removeClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDITED);
+                    addClass([node.querySelector('.e-list-icon')], cls.CALC_EDITED);
+                    removeClass([node.querySelector('.e-list-icon')], cls.CALC_EDIT);
+                    node.querySelector('.' + cls.CALC_EDITED).setAttribute('title', this.parent.localeObj.getConstant('clearCalculatedField'));
+                    (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = node.getAttribute('data-uid');
+                }
+                customFormat.dataBind();
+            } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.CALC_EDITED) &&
+                node.querySelector('.' + cls.CALC_EDITED).classList.contains('e-list-icon') && edited ||
+                (this.parent.dataType === 'olap' && !node.classList.contains('e-active')))) {
+                this.isEdit = false;
+                this.inputObj.value = '';
+                this.inputObj.dataBind();
+                let dialogElement: HTMLElement = this.dialog.element;
+                let customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                customFormat.value = '';
+                customFormat.dataBind();
+                if (this.parent.dataType === 'olap') {
+                    let hierarchyDrop: DropDownList = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
+                    let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
+                    let memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
+                    let fieldTitle: HTMLElement = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
+                    /* eslint-enable max-len */
+                    fieldTitle.innerHTML = this.parent.localeObj.getConstant('fieldTitle');
+                    hierarchyDrop.index = 0;
+                    hierarchyDrop.dataBind();
+                    formatDrop.index = 0;
                     formatDrop.dataBind();
+                    memberTypeDrop.index = 0;
+                    memberTypeDrop.readonly = false;
+                    memberTypeDrop.dataBind();
+                } else {
+                    addClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDIT);
+                    removeClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDITED);
+                    node.querySelector('.' + cls.CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
                 }
-                customFormat.value = customString;
-            } else {
-                customFormat.value = formatString;
-                addClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDIT);
-                removeClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDITED);
-                addClass([node.querySelector('.e-list-icon')], cls.CALC_EDITED);
-                removeClass([node.querySelector('.e-list-icon')], cls.CALC_EDIT);
-                node.querySelector('.' + cls.CALC_EDITED).setAttribute('title', this.parent.localeObj.getConstant('clearCalculatedField'));
-                (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = node.getAttribute('data-uid');
+                (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = '';
+            } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.GRID_REMOVE) &&
+                node.querySelector('.' + cls.GRID_REMOVE).classList.contains('e-list-icon')) && !edit && !edited) {
+                this.parent.actionObj.actionName = events.removeField;
+                if (this.parent.actionBeginMethod()) {
+                    return;
+                }
+                let dropField: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement;
+                let field: ICalculatedFields = {
+                    name: this.isEdit ? this.currentFieldName : this.inputObj.value,
+                    caption: this.inputObj.value,
+                    formula: dropField.value
+                };
+                this.createConfirmDialog(
+                    this.parent.localeObj.getConstant('alert'),
+                    this.parent.localeObj.getConstant('removeCalculatedField'), field, true, treeNode);
             }
-            customFormat.dataBind();
-        } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.CALC_EDITED) &&
-            node.querySelector('.' + cls.CALC_EDITED).classList.contains('e-list-icon') && edited ||
-            (this.parent.dataType === 'olap' && !node.classList.contains('e-active')))) {
-            this.isEdit = false;
-            this.inputObj.value = '';
-            this.inputObj.dataBind();
-            let dialogElement: HTMLElement = this.dialog.element;
-            let customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
-            customFormat.value = '';
-            customFormat.dataBind();
-            if (this.parent.dataType === 'olap') {
-                let hierarchyDrop: DropDownList = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                let memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                let fieldTitle: HTMLElement = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
-                /* eslint-enable max-len */
-                fieldTitle.innerHTML = this.parent.localeObj.getConstant('fieldTitle');
-                hierarchyDrop.index = 0;
-                hierarchyDrop.dataBind();
-                formatDrop.index = 0;
-                formatDrop.dataBind();
-                memberTypeDrop.index = 0;
-                memberTypeDrop.readonly = false;
-                memberTypeDrop.dataBind();
-            } else {
-                addClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDIT);
-                removeClass(this.treeObj.element.querySelectorAll('.' + cls.CALC_EDITED), cls.CALC_EDITED);
-                node.querySelector('.' + cls.CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
-            }
-            (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = '';
-        } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.GRID_REMOVE) &&
-            node.querySelector('.' + cls.GRID_REMOVE).classList.contains('e-list-icon')) && !edit && !edited) {
-            let dropField: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement;
-            let field: ICalculatedFields = {
-                name: this.isEdit ? this.currentFieldName : this.inputObj.value,
-                caption: this.inputObj.value,
-                formula: dropField.value
-            };
-            this.createConfirmDialog(
-                this.parent.localeObj.getConstant('alert'),
-                this.parent.localeObj.getConstant('removeCalculatedField'), field, true, treeNode);
+        } catch (execption) {
+            this.parent.actionFailureMethod(execption);
         }
     }
 
@@ -775,6 +783,12 @@ export class CalculatedField implements IAction {
             (this.parent as PivotFieldList).isRequiredUpdate = false;
         }
         try {
+            let actionInfo: PivotActionInfo = {
+                calculatedFieldInfo: this.parent.lastCalcFieldInfo
+            }
+            this.parent.actionObj.actionInfo = actionInfo;
+            let actionName: string = (this.parent.actionObj.actionName == events.editCalculatedField) ? events.calculatedFieldEdited : events.calculatedFieldApplied;
+            this.parent.actionObj.actionName = actionName;
             this.parent.updateDataSource(false);
             let pivot: PivotView = (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule) ?
                 (this.parent as PivotFieldList).pivotGridModule : (this.parent as PivotView);

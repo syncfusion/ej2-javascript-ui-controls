@@ -129,3 +129,42 @@ console.log('Properties pane enable validation');
 //                 expect(container.showPropertiesPane).toBe(false);
 //             });
 // });
+
+
+describe('Document Editor container initialization without element id', () => {
+    let container: DocumentEditorContainer;
+    let container2: DocumentEditorContainer;
+    let element: HTMLElement;
+    let element2: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        element2 = createElement('div');
+        document.body.appendChild(element);
+        document.body.appendChild(element2);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ showPropertiesPane: false });
+        container.appendTo(element);
+        container2 = new DocumentEditorContainer({ showPropertiesPane: false });
+        container2.appendTo(element2);
+    });
+    afterAll(() => {
+        container.destroy();
+        container2.destroy();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        document.body.removeChild(element2);
+        expect(() => { container.destroy(); }).not.toThrowError();
+        document.body.innerHTML = '';
+        element = undefined;
+        container = undefined;
+    });
+    it('Open context menu with mutiple document editor in same page', () => {
+        let event: MouseEvent = new MouseEvent('contextmenu', { clientX: 122, clientY: 156 });
+
+        container.documentEditor.documentHelper.viewerContainer.dispatchEvent(event);
+        var elements = document.getElementsByClassName('e-contextmenu-wrapper');
+        for (let j: number = 0; j < elements.length; j++) {
+            expect(elements[j].getElementsByClassName('e-de-copy').length).toBe(1);
+        }
+    });
+});

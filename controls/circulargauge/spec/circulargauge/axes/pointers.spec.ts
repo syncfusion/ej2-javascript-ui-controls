@@ -662,6 +662,54 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].direction = 'AntiClockWise';
             gauge.refresh();
         });
+
+        it('Checking range bar rendering shape with end Angle', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[22] == '0').toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                minimum: 0,
+                maximum: 150,
+                startAngle: 0,
+                endAngle: 50,
+                pointers: [
+                    {
+                        value: 20,
+                        type: 'RangeBar',
+                        roundedCornerRadius: 10,
+                        pointerWidth: 10,
+                    }
+                ]
+            }];
+            gauge.refresh();
+        });
+
+        it('Checking range bar rendering shape with start Angle', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[22] == '0').toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                minimum: 0,
+                maximum: 150,
+                startAngle: 50,
+                endAngle: 0,
+                pointers: [
+                    {
+                        value: 20,
+                        type: 'RangeBar',
+                        roundedCornerRadius: 10,
+                        pointerWidth: 10,
+                    }
+                ]
+            }];
+            gauge.refresh();
+        });
     });
 
     describe('Gauge axis pointer behavior - Range Bar Pointer with Rounded Corner', () => {

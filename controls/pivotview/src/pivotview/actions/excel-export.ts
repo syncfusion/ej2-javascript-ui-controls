@@ -6,7 +6,7 @@ import { IAxisSet, IPivotValues, PivotEngine } from '../../base/engine';
 import { IPageSettings } from '../../base/engine';
 import { OlapEngine } from '../../base/olap/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PivotUtil } from '../../base/util';
+import { PivotExportUtil } from '../../base/export-util';
 import { ExcelExportProperties, ExcelFooter, ExcelHeader } from '@syncfusion/ej2-grids';
 
 /**
@@ -82,7 +82,7 @@ export class ExcelExport {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         /** Event trigerring */
         let clonedValues: IPivotValues;
-        let currentPivotValues: IPivotValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
+        let currentPivotValues: IPivotValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
         let customFileName: string = isFileNameSet ? exportProperties.fileName : 'default.xlsx';
         if (isHeaderSet) {
             this.addHeaderAndFooter(exportProperties.header, '', 'header', exportProperties.header.headerRows);
@@ -91,7 +91,7 @@ export class ExcelExport {
             let pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings, true);
             this.parent.applyFormatting(this.engine.pivotValues);
-            clonedValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
+            clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
             this.engine.pivotValues = currentPivotValues;
             this.engine.pageSettings = pageSettings;
         } else {
@@ -127,12 +127,15 @@ export class ExcelExport {
                             let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
                             if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                 let cellValue: string | number = pivotCell.axis === 'value' ? pivotCell.value : pivotCell.formattedText;
-                                if (pivotCell.type === 'grand sum') {
-                                    cellValue = this.parent.localeObj.getConstant('grandTotal');
+                                let isgetValuesHeader: boolean = ((this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row')
+                                    || (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column'));
+                                if (pivotCell.type === 'grand sum' && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.valueAxis === 'row' && pivotCell.axis === 'column')) {
+                                    cellValue = isgetValuesHeader ? this.parent.getValuesHeader(pivotCell, 'grandTotal') : this.parent.localeObj.getConstant('grandTotal');
                                 } else if (pivotCell.type === 'sum') {
                                     cellValue = cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total'));
                                 } else {
-                                    cellValue = cellValue;
+                                    cellValue = (!isNullOrUndefined(pivotCell.valueSort) && (this.parent.localeObj.getConstant('grandTotal') + this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + pivotCell.formattedText
+                                        === pivotCell.valueSort.levelName) && isgetValuesHeader) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
                                 }
                                 if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                     cells.push({
@@ -169,7 +172,7 @@ export class ExcelExport {
                                             } else {
                                                 let levelName: string = pivotCell.valueSort ? pivotCell.valueSort.levelName.toString() : '';
                                                 let memberPos: number = pivotCell.actualText ?
-                                                pivotCell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length : 0;
+                                                    pivotCell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length : 0;
                                                 let levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
                                                     (memberPos ? memberPos - 1 : memberPos);
                                                 let level: number = levelPosition ? (levelPosition - 1) : 0;

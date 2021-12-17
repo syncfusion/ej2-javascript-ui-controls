@@ -6,6 +6,7 @@ import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 
 export const WEEK_LENGTH: number = 7;
+export const DEFAULT_WEEKS: number = 6;
 export const MS_PER_DAY: number = 86400000;
 export const MS_PER_MINUTE: number = 60000;
 

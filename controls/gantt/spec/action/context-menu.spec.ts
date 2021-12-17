@@ -1,9 +1,12 @@
-import { ContextMenuClickEventArgs, IGanttData, ITaskData } from './../../src/gantt/base/interface';
+import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData} from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
+interface EJ2Instance extends HTMLElement {
+     ej2_instances: Object[];
+ }
 describe('Context-', () => {
     Gantt.Inject(Edit, Selection, ContextMenu, RowDD, Sort, Resize);
     let ganttObj: Gantt;
@@ -255,7 +258,7 @@ describe('Context-', () => {
              ganttObj.dataBind();
              let taskInfo: HTMLElement = document.getElementById(ganttObj.element.id + '_contextMenu_TaskInformation');
              triggerMouseEvent(taskInfo, 'click');
-             let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+             let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
              triggerMouseEvent(cancelRecord, 'click');
          });
     });
@@ -313,7 +316,6 @@ describe('Context-', () => {
               expect(ganttObj.currentViewData[7].ganttProperties.duration).toBe(1);
           });
           it('Delete Depedency', (done: Function) => {
-              debugger;
               let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(2)') as HTMLElement;
               triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
               let e = {
@@ -536,7 +538,6 @@ describe('Context-', () => {
         });
         it('Custom context menu', () => {
             ganttObj.contextMenuClick = function (args: ContextMenuClickEventArgs) {
-                debugger
                 var record = args.rowData;
                 let data: any = {
                     Duration: record.taskData['Duration'],
@@ -553,7 +554,6 @@ describe('Context-', () => {
                 expect(ganttObj.currentViewData[16].ganttProperties.segments).toBe(null);
             }
             ganttObj.dataBind();
-            debugger
             ganttObj.contextMenuModule['rowData'] = ganttObj.currentViewData[1];
             let taskInfo: HTMLElement = document.getElementById('deleterow');
             triggerMouseEvent(taskInfo, 'click');
@@ -817,8 +817,11 @@ describe('Context-', () => {
         });
         it('Changing Custom taskmode of a task to manual', (done: Function) => {
             expect(ganttObj.currentViewData[2].ganttProperties.isAutoSchedule).toBe(true);
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
             let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
             triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
             setTimeout(done, 500);
             let e: ContextMenuClickEventArgs = {
                 item: { id: ganttObj.element.id + '_contextMenu_Manual' },
@@ -927,5 +930,190 @@ describe('Context-', () => {
             setTimeout(done, 2000);
         });
     });
-
+    describe('Context_Menu - Unscheduled_Task', () => {
+        let ganttObj: Gantt;
+        let contextMenuItems: (string | ItemModel)[] = [
+            'AutoFitAll','AutoFit','TaskInformation','DeleteTask','Save','Cancel','SortAscending','SortDescending','Add',
+            'DeleteDependency','Convert','Indent','Outdent',
+            {
+              text: 'Collapse the Row',target: '.e-content',id: 'collapserow'
+            } as ItemModel,
+            { text: 'Expand the Row', target: '.e-content', id: 'expandrow' } as ItemModel
+          ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: selfData,
+                height: '450px',
+                taskFields: {
+                    id: 'taskID',
+                    name: 'taskName',
+                    duration: 'duration',
+                    progress: 'progress',
+                    dependency: 'predecessor',
+                    parentID: 'parentID'
+                },
+                allowUnscheduledTasks: true,
+                columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' }
+            ],
+            allowSorting: true,
+            allowRowDragAndDrop: true,
+            editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              allowTaskbarEditing: true,
+              showDeleteConfirmDialog: true
+            },
+            enableContextMenu: true,
+            labelSettings: {
+              leftLabel: 'taskName'
+            },
+            projectStartDate: new Date('01/28/2019'),
+            projectEndDate: new Date('03/10/2019')
+         }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('unscheduled task', () => {
+            expect(ganttObj.element.getElementsByClassName('e-taskbar-main-container')[3].children[1].classList.contains('e-gantt-unscheduled-taskbar')).toBe(true);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextmenu_ToMilestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData[2].ganttProperties.isMilestone).toBeTruthy;
+        });
+        it('disable prevTimespan when adding child for unscheduledTasks', function () {
+            expect(ganttObj.element.getElementsByClassName('e-timeline-top-header-cell')[0].getAttribute('aria-label').indexOf('Timeline cell 1/28/2019') > -1).toBeTruthy();
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextmenu_Child' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.element.getElementsByClassName('e-timeline-top-header-cell')[0].getAttribute('aria-label').indexOf('Timeline cell 1/28/2019') > -1).toBeTruthy();
+        });
+    });
+    describe('Context Menu - selection false', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: editingData,
+                taskFields: {
+                  id: 'TaskID',
+                  name: 'TaskName',
+                  startDate: 'StartDate',
+                  endDate: 'EndDate',
+                  duration: 'Duration',
+                  progress: 'Progress',
+                  dependency: 'Predecessor'
+                },
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true
+                },
+                splitterSettings: {
+                  columnIndex: 2
+                },
+                allowResizing: true,
+                allowSorting: true,
+                enableContextMenu: true,
+                contextMenuItems: menuItem,
+                toolbar: ['Add','Edit','Update','Delete','Cancel','ExpandAll','CollapseAll'],
+                allowSelection: false
+            },done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Hide indent and outdent when selection is set to false', () => {
+            expect(ganttObj.selectionModule).toBe(undefined);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        });
+    });
+    describe('Hide Context Menu Items', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: editingData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources',
+                },
+                editSettings : {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                contextMenuItems: [{ id: 'testMenuItem' }  as ItemModel, 'DeleteDependency'] as ContextMenuItem[],
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                projectStartDate : new Date('03/25/2019'),
+                projectEndDate : new Date('07/28/2019'),
+                contextMenuClick(args?: ContextMenuClickEventArgs): void {},
+                contextMenuOpen(args?: ContextMenuOpenEventArgs): void {
+                let record: IGanttData = args.rowData;
+                if (args.type !== 'Header') {
+                  let testItem = args.items.find(
+                    (menuItem) => menuItem.id === 'testMenuItem'
+                  );
+                  testItem.text = 'Test';
+                  testItem.items = [{}];
+                  let menuObj : any = (<EJ2Instance>document.getElementById(ganttObj.element.id +'_contextmenu')).ej2_instances[0] as ContextMenu; 
+                  menuObj.dataBind();
+                  menuObj.enableItems([testItem.text], false, false);
+                }
+              }
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('disable Items', () => {
+            let selectRow: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+            triggerMouseEvent(selectRow, 'contextmenu', 0, 0, false, false, 2);
+            let menu: HTMLElement = document.getElementById('testMenuItem') as HTMLElement;
+            expect(menu.classList.contains('e-disabled')).toBe(true);
+        });
+    });
 });

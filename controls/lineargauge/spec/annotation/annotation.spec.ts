@@ -168,6 +168,55 @@ describe('Linear gauge control', () => {
             gauge.annotations[0].axisValue = 50;
             gauge.setAnnotationValue(0, content);
         });
+
+        it('checking annotation at axisvalue zero with setAnnotationValue method ', (): void => {
+            let content: string = '<div id="annotation2">Gauge</div>';
+            gauge.orientation = 'Horizontal';
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 50;
+            gauge.annotations[0].axisValue = 50;
+            gauge.setAnnotationValue(0, content, 0);
+            expect(gauge.annotations[0].axisValue == 0).toBe(true);
+        });
+
+        it('checking annotation at axisvalue greater than maximum value with setAnnotationValue method ', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                expect(document.getElementById('container_Annotation_0') == null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.annotations[0].axisValue = 50;
+            gauge.setAnnotationValue(0,'Gauge', 60);
+            gauge.refresh();
+        });
+
+        it('Checking annotation position for multiple axis ', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Annotation_0');
+                let width = svg.getBoundingClientRect().width;
+                element = document.getElementById('container_AxisLine_0');
+                expect(svg.getBoundingClientRect().left + (width/2) == element.getBoundingClientRect().left).toBe(true);
+            };
+            gauge.orientation = 'Vertical'
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 50
+                },
+                {
+                    minimum: 0,
+                    maximum: 50
+                }
+            ]
+            gauge.annotations = [
+                {
+                    content: '1',
+                    axisIndex: 0,
+                    axisValue: 40,
+                    zIndex: '1',
+                }
+            ]
+            gauge.refresh();
+        });
     });
     it('memory leak', () => {     
         profile.sample();

@@ -5,7 +5,7 @@
 import { Component, Property, NotifyPropertyChanges, Internationalization, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from '@syncfusion/ej2-base';
 // eslint-disable-next-line
-import { INotifyPropertyChanged, setCulture, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
 import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility } from './utils/helper';
 import { DrawSvgCanvas, TextOption, titlePositionX, getTitle, showTooltip, getElement, SelectedCellDetails } from './utils/helper';
@@ -75,7 +75,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * {% codeBlock src='heatmap/tooltipRender/index.md' %}{% endcodeBlock %}
      *
      * @event 'object'
-     * @blazorProperty 'TooltipRendering'
      */
     @Event()
     public tooltipRender: EmitType<ITooltipEventArgs>;
@@ -84,7 +83,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers after resizing of Heatmap.
      *
      * @event 'object'
-     * @blazorProperty 'Resized'
      */
     @Event()
     public resized: EmitType<IResizeEventArgs>;
@@ -93,7 +91,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers after heatmap is loaded.
      *
      * @event 'object'
-     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -104,7 +101,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @deprecated
      * @event 'object'
-     * @blazorProperty 'CellRendering'
      */
     @Event()
     public cellRender: EmitType<ICellEventArgs>;
@@ -113,7 +109,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when multiple cells gets selected.
      *
      * @event 'object'
-     * @blazorProperty 'CellSelected'
      */
     @Event()
     public cellSelected: EmitType<ISelectedEventArgs>;
@@ -229,7 +224,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers after heat map rendered.
      *
      * @event 'object'
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -239,7 +233,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * {% codeBlock src='heatmap/load/index.md' %}{% endcodeBlock %}
      *
      * @event 'object'
-     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -248,7 +241,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when click the heat map cell.
      *
      * @event 'object'
-     * @blazorProperty 'CellClicked'
      */
     @Event()
     public cellClick: EmitType<ICellClickEventArgs>;
@@ -259,7 +251,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @deprecated
      * @event 'object'
-     * @blazorProperty 'LegendRendering'
      */
     @Event()
     public legendRender: EmitType<ILegendRenderEventArgs>;
@@ -428,8 +419,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public mouseY: number;
-    /** @private */
-    public isBlazor: boolean = false;
+
     /**
      * The `legendModule` is used to display the legend.
      *
@@ -482,7 +472,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.tempRectHoverClass = '';
         this.tempTooltipRectId = '';
         this.setCulture();
-        this.isBlazor = isBlazor();
     }
 
     /**
@@ -495,14 +484,22 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     protected render(): void {
         this.horizontalGradient = this.legendSettings.position === 'Bottom' || this.legendSettings.position === 'Top';
         this.updateBubbleHelperProperty();
-        this.trigger('load', { heatmap: (this.isBlazor ? null : this) });
+        this.trigger('load', { heatmap: this });
         if (this.theme === 'TailwindDark' || this.theme === 'Tailwind') {
-            let textSettings =  { title : { textStyle : { size : "12px", fontFamily : "Inter", fontWeight : "500" }}, textStyle : { size : "12px", fontFamily : "Inter" }};
-            this.setProperties({ titleSettings : { textStyle : { size : "14px", fontFamily : "Inter" }}}, true);
+            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '12px', fontFamily : 'Inter', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'Inter' }};
+            this.setProperties({ titleSettings : { textStyle : { size : '14px', fontFamily : 'Inter' }}}, true);
             this.setProperties({ legendSettings : textSettings }, true);
             this.setProperties({ xAxis : textSettings }, true);
             this.setProperties({ yAxis : textSettings }, true);
-            this.setProperties({ cellSettings : { textStyle : { fontFamily : "Inter" }}}, true);    
+            this.setProperties({ cellSettings : { textStyle : { fontFamily : 'Inter' }}}, true);
+        }
+        if (this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') {
+            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }};
+            this.setProperties({ titleSettings : { textStyle : { size : '16px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}}, true);
+            this.setProperties({ legendSettings : textSettings }, true);
+            this.setProperties({ xAxis : textSettings }, true);
+            this.setProperties({ yAxis : textSettings }, true);
+            this.setProperties({ cellSettings : { textStyle : { fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}}, true);
         }
         this.initAxis();
         this.processInitData();
@@ -1116,7 +1113,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 heatmap.currentRect.allowCollection = false;
                 heatmap.setCellOpacity();
                 const argData: ISelectedEventArgs = {
-                    heatmap: (this.isBlazor ? null : heatmap),
+                    heatmap: heatmap,
                     cancel: false,
                     name: 'cellSelected',
                     data: heatmap.multiCellCollection
@@ -1192,7 +1189,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public heatMapResize(e: Event): boolean {
         this.resizing = true;
         const argData: IResizeEventArgs = {
-            heatmap: (this.isBlazor ? null : this),
+            heatmap: this,
             cancel: false,
             name: 'resized',
             currentSize: new Size(0, 0),
@@ -1218,7 +1215,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.allowSelection) {
                     this.updateCellSelection();
                 }
-                this.trigger('loaded', (this.isBlazor ? null : { heatmap: this }));
+                this.trigger('loaded', ({ heatmap: this }));
                 this.resizing = false;
             },
             500);
@@ -1369,7 +1366,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (isheatmapRect) {
             const currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
             this.trigger('cellClick', {
-                heatmap: (this.isBlazor ? null : this),
+                heatmap: this,
                 value: currentRect.value,
                 x: currentRect.x,
                 y: currentRect.y,
@@ -1919,7 +1916,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         this.currentRect.allowCollection = false;
                         this.setCellOpacity();
                         const argData: ISelectedEventArgs = {
-                            heatmap: (this.isBlazor ? null : this),
+                            heatmap: this,
                             cancel: false,
                             name: 'cellSelected',
                             data: this.multiCellCollection

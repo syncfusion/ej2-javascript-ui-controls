@@ -262,6 +262,68 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
+        it('Checking the dragging of the range with align attribute', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void =>{
+                document.getElementById('container').setAttribute('align','center');
+                ele = document.getElementById("container_Axis_0_Range_0");
+                trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
+                trigger.mousemoveEvent(ele,812,197,813,265);
+                let path = document.getElementById("container_Axis_0_Range_0").getAttribute('d');
+                expect(path != null).toBe(true);
+                done();
+                document.getElementById('container').removeAttribute('align');
+            };
+            gauge.axes = [{
+                ranges:[
+                    {start: 0, end: 5}
+                ]
+            }] 
+            gauge.refresh();
+        });
+
+        it('Checking the dragging of the range with range start greater than range end', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void =>{
+                ele = document.getElementById("container_Axis_0_Range_0");
+                trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
+                trigger.mousemoveEvent(ele,812,197,813,265);
+                let path = document.getElementById("container_Axis_0_Range_0").getAttribute('d');
+                expect(path != null).toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                ranges:[
+                    {start: 0, end: 5}
+                ]
+            }] 
+            gauge.refresh();
+        });
+
+        it('Checking the dragging of the range with enablePointerDrag set as false', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void =>{
+                let pointer: HTMLElement = document.getElementById('container_Axis_0_Pointer_Needle_0');
+                trigger.mouseupEvent(ele,382,238,382,238);
+                ele = document.getElementById("container_Axis_0_Range_0");
+                trigger.mousedownEvent(ele,311,427,'touchstart',gauge);
+                trigger.mousemoveEvent(ele,311,427,451,450);
+                let path = document.getElementById("container_Axis_0_Range_0").getAttribute('d');
+                expect(path != null).toBe(true);
+                done();
+            };
+            gauge.enablePointerDrag = false;
+            gauge.enableRangeDrag = true;
+            gauge.axes = [{
+                pointers:[
+                   {
+                       type: 'Needle',
+                       value: 20
+                   } 
+                ],
+                ranges:[
+                    {start: 0, end: 5}
+                ]
+            }] 
+            gauge.refresh();
+        });
     }),
 
     describe('Gauge axis Range properties checking when mouseupEvent occurs', () => {

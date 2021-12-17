@@ -172,12 +172,13 @@ export class ScrollBar {
     public scrollMouseDown(e: PointerEvent): void {
         const id: string = (<Element>e.target).id;
         const elem: ScrollElements = this.scrollElements;
+        const isInverse: boolean = this.axis.isAxisInverse;
         this.getMouseXY(e);
         this.isResizeLeft = this.isExist(id, '_leftCircle_') || this.isExist(id, '_leftArrow_');
         this.isResizeRight = this.isExist(id, '_rightCircle_') || this.isExist(id, '_rightArrow_');
         //  this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
-        this.previousXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
-        this.mouseY : this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
+        this.previousXY = (this.isVertical && isInverse) ? this.mouseY : this.isVertical ? this.width -
+        this.mouseY : isInverse ? this.width - this.mouseX : this.mouseX;
         this.previousWidth = elem.thumbRectWidth;
         this.previousRectX = elem.thumbRectX;
         this.startZoomPosition = this.axis.zoomPosition;
@@ -285,6 +286,7 @@ export class ScrollBar {
     public scrollMouseMove(e: PointerEvent): void {
         const target: Element = <Element>e.target;
         const elem: ScrollElements = this.scrollElements;
+        const isInverse: boolean = this.axis.isAxisInverse;
         if (!getElement(this.svgObject.id)) {
             return null;
         }
@@ -292,7 +294,7 @@ export class ScrollBar {
         this.setCursor(target);
         this.setTheme(target);
         //let mouseXY: number = this.isVertical ? this.mouseY : this.mouseX;
-        let mouseXY: number = (this.isVertical && this.axis.isInversed) ? this.width - this.mouseY : this.isVertical ?
+        let mouseXY: number = (this.isVertical && isInverse) ? this.width - this.mouseY : this.isVertical ?
             this.mouseY : this.mouseX ;
         const range: VisibleRangeModel = this.axis.visibleRange;
         const zoomPosition: number = this.zoomPosition;
@@ -306,7 +308,7 @@ export class ScrollBar {
         const currentRange: ScrollbarSettingsRangeModel = args ? args.currentRange : null;
         if (this.isThumbDrag) {
             this.component.isScrolling = this.isThumbDrag;
-            mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
+            mouseXY = (this.isVertical || isInverse) ? this.width - mouseXY : mouseXY;
             const currentX: number = elem.thumbRectX + (mouseXY - this.previousXY);
             if ( mouseXY >= currentX + elem.thumbRectWidth) {
                 this.setCursor(target);
@@ -654,9 +656,10 @@ export class ScrollBar {
         const gripWidth: number = 14;
         const minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
         const thumbX: number = this.previousRectX;
+        const isInverse: boolean = this.axis.isAxisInverse;
         // let mouseXY: number = this.isVertical ? this.mouseY : this.mouseX;
-        const mouseXY: number = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
-            this.mouseY : this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
+        const mouseXY: number = (this.isVertical && isInverse) ? this.mouseY : this.isVertical ? this.width -
+            this.mouseY : isInverse ? this.width - this.mouseX : this.mouseX;
         const diff: number = Math.abs(this.previousXY - mouseXY);
         if (this.isResizeLeft && mouseXY >= 0) {
             let currentX: number = thumbX + (mouseXY > this.previousXY ? diff : -diff);

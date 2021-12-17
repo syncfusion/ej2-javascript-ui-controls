@@ -184,6 +184,10 @@ export type Orientation = 'Horizontal' | 'Vertical';
 @NotifyPropertyChanges
 export class Splitter extends Component<HTMLElement> {
     private onReportWindowSize: EventListenerOrEventListenerObject;
+    private onMouseMoveHandler: EventListenerOrEventListenerObject;
+    private onMouseUpHandler: EventListenerOrEventListenerObject;
+    private onTouchMoveHandler: EventListenerOrEventListenerObject;
+    private onTouchEndHandler: EventListenerOrEventListenerObject;
     private allPanes: HTMLElement[] = [];
     private paneOrder: number[] = [];
     private separatorOrder: number[] = [];
@@ -542,6 +546,10 @@ export class Splitter extends Component<HTMLElement> {
 
     protected preRender(): void {
         this.onReportWindowSize = this.reportWindowSize.bind(this);
+        this.onMouseMoveHandler = this.onMouseMove.bind(this);
+        this.onMouseUpHandler = this.onMouseUp.bind(this);
+        this.onTouchMoveHandler = this.onMouseMove.bind(this);
+        this.onTouchEndHandler = this.onMouseUp.bind(this);
         this.wrapper = this.element.cloneNode(true) as HTMLElement;
         this.wrapperParent = this.element.parentElement;
         removeClass([this.wrapper], ['e-control', 'e-lib', ROOT]);
@@ -1389,22 +1397,22 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private wireResizeEvents(): void {
-        EventHandler.add(document, 'mousemove', this.onMouseMove, this);
-        EventHandler.add(document, 'mouseup', this.onMouseUp, this);
+        document.addEventListener('mousemove', this.onMouseMoveHandler, true);
+        document.addEventListener('mouseup', this.onMouseUpHandler, true);
         const touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         const touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
-        EventHandler.add(document, touchMoveEvent, this.onMouseMove, this);
-        EventHandler.add(document, touchEndEvent, this.onMouseUp, this);
+        document.addEventListener(touchMoveEvent, this.onTouchMoveHandler, true);
+        document.addEventListener(touchEndEvent, this.onTouchEndHandler, true);
     }
 
     private unwireResizeEvents(): void {
         this.element.ownerDocument.defaultView.removeEventListener('resize', this.onReportWindowSize);
         const touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         const touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
-        EventHandler.remove(document, 'mousemove', this.onMouseMove);
-        EventHandler.remove(document, 'mouseup', this.onMouseUp);
-        EventHandler.remove(document, touchMoveEvent, this.onMouseMove);
-        EventHandler.remove(document, touchEndEvent, this.onMouseUp);
+        document.removeEventListener('mousemove', this.onMouseMoveHandler, true);
+        document.removeEventListener('mouseup', this.onMouseUpHandler, true);
+        document.removeEventListener(touchMoveEvent, this.onTouchMoveHandler, true);
+        document.removeEventListener(touchEndEvent, this.onTouchEndHandler, true);
     }
 
     private wireClickEvents(): void {

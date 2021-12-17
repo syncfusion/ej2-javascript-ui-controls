@@ -101,10 +101,350 @@ describe('Tab stop with delete position', () => {
     });
 
     it('Get tab stop from paragraph', () => {
-console.log('Get tab stop from paragraph');
+        console.log('Get tab stop from paragraph');
         editor.open(JSON.stringify(tabStop));
         // Excluding delete position.
         expect(editor.selection.start.paragraph.paragraphFormat.getUpdatedTabs().length).toBe(14);
+    });
+    it('Get tab stop from list format', () => {
+        console.log('Get tab stop from list format');
+        let sfdt: any = {
+            "sections": [
+                {
+                    "sectionFormat": {
+                    },
+                    "blocks": [
+                        {
+                            "paragraphFormat": {
+                                "leftIndent": 18,
+                                "firstLineIndent": 0,
+                                "styleName": "DPSTNR10",
+                                "listFormat": {
+                                    "listId": 9,
+                                    "listLevelNumber": 0
+                                },
+                                "tabs": [
+                                    {
+                                        "position": 135,
+                                        "deletePosition": 0,
+                                        "tabJustification": "Left",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "characterFormat": {},
+                            "inlines": [
+                                {
+                                    "characterFormat": {},
+                                    "text": "Our medical and or wage investigation is continuing."
+                                }
+                            ]
+                        }
+                    ],
+                    "headersFooters": {}
+                }
+            ],
+            "characterFormat": {
+            },
+            "paragraphFormat": {
+            },
+            "defaultTabWidth": 35.400001525878906,
+            "trackChanges": false,
+            "enforcement": false,
+            "hashValue": "",
+            "saltValue": "",
+            "formatting": false,
+            "protectionType": "NoProtection",
+            "dontUseHTMLParagraphAutoSpacing": false,
+            "formFieldShading": true,
+            "compatibilityMode": "Word2007",
+            "styles": [
+                {
+                    "name": "Normal",
+                    "type": "Paragraph",
+                    "paragraphFormat": {
+                        "listFormat": {}
+                    },
+                    "characterFormat": {
+                        "fontSize": 10,
+                        "fontFamily": "Times New Roman",
+                        "fontColor": "#000000FF",
+                        "fontSizeBidi": 10,
+                        "fontFamilyBidi": "Times New Roman"
+                    },
+                    "next": "Normal"
+                },
+                {
+                    "name": "DPSTNR10",
+                    "type": "Paragraph",
+                    "paragraphFormat": {
+                        "listFormat": {}
+                    },
+                    "characterFormat": {
+                        "fontSize": 10,
+                        "fontFamily": "Times New Roman",
+                        "fontColor": "#000000FF",
+                        "fontSizeBidi": 10,
+                        "fontFamilyBidi": "Times New Roman"
+                    },
+                    "link": "DPSTNR10Car",
+                    "next": "DPSTNR10"
+                },
+                {
+                    "name": "DPSTNR10Car",
+                    "type": "Character",
+                    "characterFormat": {
+                        "fontSize": 10,
+                        "fontFamily": "Times New Roman",
+                        "fontColor": "#000000FF",
+                        "fontSizeBidi": 10,
+                        "fontFamilyBidi": "Times New Roman"
+                    },
+                    "basedOn": "Default Paragraph Font"
+                },
+                {
+                    "name": "Default Paragraph Font",
+                    "type": "Character",
+                    "characterFormat": {}
+                }
+            ],
+            "lists": [
+                {
+                    "abstractListId": 9,
+                    "levelOverrides": [],
+                    "listId": 9
+                }
+            ],
+            "abstractLists": [
+                {
+                    "abstractListId": 9,
+                    "levels": [
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Symbol",
+                                "fontFamilyBidi": "Symbol"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 36,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 36,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Courier New",
+                                "fontFamilyBidi": "Courier New"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 72,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 72,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "o",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Wingdings",
+                                "fontFamilyBidi": "Wingdings"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 108,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 108,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Symbol",
+                                "fontFamilyBidi": "Symbol"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 144,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 144,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Courier New",
+                                "fontFamilyBidi": "Courier New"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 180,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 180,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "o",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Wingdings",
+                                "fontFamilyBidi": "Wingdings"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 216,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 216,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Symbol",
+                                "fontFamilyBidi": "Symbol"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 252,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 252,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Courier New",
+                                "fontFamilyBidi": "Courier New"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 288,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 288,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "o",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        },
+                        {
+                            "characterFormat": {
+                                "fontFamily": "Wingdings",
+                                "fontFamilyBidi": "Wingdings"
+                            },
+                            "paragraphFormat": {
+                                "leftIndent": 324,
+                                "firstLineIndent": -18,
+                                "listFormat": {},
+                                "tabs": [
+                                    {
+                                        "position": 324,
+                                        "deletePosition": 0,
+                                        "tabJustification": "List",
+                                        "tabLeader": "None"
+                                    }
+                                ]
+                            },
+                            "followCharacter": "Tab",
+                            "listLevelPattern": "Bullet",
+                            "numberFormat": "",
+                            "restartLevel": 0,
+                            "startAt": 0
+                        }
+                    ]
+                }
+            ],
+            "comments": [],
+            "revisions": [],
+            "customXml": []
+        }
+        editor.open(JSON.stringify(sfdt));
+        // Excluding delete position.
+        expect(editor.selection.start.paragraph.paragraphFormat.getUpdatedTabs().length).toBe(2);
     });
 });
 
@@ -188,7 +528,7 @@ describe('Default Paragraph Format API Validation', () => {
     });
 
     it('Check Text Alignment is center', () => {
-console.log('Check Text Alignment is center');
+        console.log('Check Text Alignment is center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
 });

@@ -524,6 +524,173 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].markerType = 'Rectangle';
             gauge.refresh();
         });
+
+        it('Horizontal - Rounded Retangle container with roundedcorner radius', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                path = path.trim();
+                let value = path.split(" ");
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.container.width = 13;
+            gauge.axes[0].pointers[0].type = 'Bar';
+            gauge.container.roundedCornerRadius = 50;
+            gauge.refresh();
+        });
+
+        it('Horizontal - Rounded Retangle container with roundedcorner radius with axis inversed', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                path = path.trim();
+                let value = path.split(" ");
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.axes[0].isInversed = true;
+            gauge.container.width = 13;
+            gauge.container.roundedCornerRadius = 50;
+            gauge.refresh();
+        });
+
+        it('Vertical - Rounded Retangle container with roundedcorner radius', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                path = path.trim();
+                let value = path.split(" ");
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.axes[0].isInversed = false;
+            gauge.container.width = 13;
+            gauge.container.roundedCornerRadius = 50;
+            gauge.refresh();
+        });
+
+        it('Vertical - Rounded Retangle container with roundedcorner radius', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                path = path.trim();
+                let value = path.split(" ");
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.axes[0].isInversed = true;
+            gauge.container.width = 13;
+            gauge.container.roundedCornerRadius = 50;
+            gauge.refresh();
+        });
+
+        it('horizontal - marker pointer position checking with placement as Far', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let split = svg.getAttribute('d').split(" ");
+                element = <HTMLElement>document.getElementById('container_AxisLine_0');
+                let split1 = element.getAttribute('d').split(" ");
+                expect(split[2] == split1[1]).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.container.type = 'Normal';
+            gauge.axes[0].isInversed = false;
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].pointers[0].type = 'Marker'
+            gauge.axes[0].pointers[0].value = 10;
+            gauge.axes[0].pointers[0].width = 13;
+            gauge.axes[0].pointers[0].placement = 'Far';
+            gauge.refresh();
+        });
+
+        it('vertical - marker pointer position checking with placement as Far', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let split = svg.getAttribute('d').split(" ");
+                element = <HTMLElement>document.getElementById('container_AxisLine_0')
+                let split1 = element.getAttribute('d').split(" ");
+                expect(split[1] == split1[3]).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'Normal';
+            gauge.axes[0].isInversed = false;
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].pointers[0].type = 'Marker'
+            gauge.axes[0].pointers[0].value = 10;
+            gauge.axes[0].pointers[0].width = 13;
+            gauge.axes[0].pointers[0].placement = 'Far';
+            gauge.refresh();
+        });
+
+        it('Vertical - Rounded Retangle container checking with bar pointer shape', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                expect(path == null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.axes[0].isInversed = false;
+            gauge.container.width = 0;
+            gauge.container.roundedCornerRadius = 0;
+            gauge.axes[0].pointers[0].type = 'Bar'
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.refresh();
+        });
+
+        it('Horizontal - Rounded Retangle container checking with bar pointer shape', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                expect(path == null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.axes[0].isInversed = false;
+            gauge.container.width = 0;
+            gauge.container.roundedCornerRadius = 0;
+            gauge.axes[0].pointers[0].type = 'Bar'
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.refresh();
+        });
+
+        it('Vertical - Thermometer container checking with bar pointer shape', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                expect(path == null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'Thermometer';
+            gauge.axes[0].isInversed = false;
+            gauge.container.width = 0;
+            gauge.container.roundedCornerRadius = 0;
+            gauge.axes[0].pointers[0].type = 'Bar'
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.refresh();
+        });
+
+        it('Horizontal - Thermometer container checking with bar pointer shape', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                let path = svg.getAttribute('d');
+                expect(path == null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.container.type = 'Thermometer';
+            gauge.axes[0].isInversed = false;
+            gauge.container.width = 0;
+            gauge.container.roundedCornerRadius = 0;
+            gauge.axes[0].pointers[0].type = 'Bar'
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.refresh();
+        });
+
     });
  describe('Axis pointer position based on position property', () => {
         let gauge: LinearGauge;

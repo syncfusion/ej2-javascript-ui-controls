@@ -20,6 +20,8 @@ describe('Linear gauge control', () => {
         let gauge: LinearGauge;
         let element: HTMLElement;
         let svg: HTMLElement;
+        let containerPosition: string;
+        let newContainerPosition: string;
         let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             element = createElement('div', { id: 'container' });
@@ -471,6 +473,190 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
 
+        it('checking with allow margin property', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                let path = svg.getAttribute('d');
+                let split = path.split(" ");
+                element = document.getElementById('container_LinearGaugeTitle');
+                let y = element.getAttribute('y');
+                expect(Number(y) == Number(split[1]) - 25).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.allowMargin = false;
+            gauge.title = 'LinearGauge';
+            gauge.titleStyle.size = '30px';
+            gauge.container.type = 'Normal';
+            gauge.axes = [{}];
+            gauge.refresh();
+        });
+
+        it('checking with allow margin property - axis inversed', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                let path = svg.getAttribute('d');
+                let split = path.split(" ");
+                element = document.getElementById('container_LinearGaugeTitle');
+                let y = element.getAttribute('y');
+                expect(Number(y) == Number(split[1]) - 25).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.allowMargin = false;
+            gauge.title = 'LinearGauge';
+            gauge.axes[0].isInversed = true;
+            gauge.titleStyle.size = '30px';
+            gauge.container.type = 'Normal';
+            gauge.axes = [{}];
+            gauge.refresh();
+        });
+
+        it('checking with allow margin property - thermometer type container', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Thermometer_Layout');
+                let path = svg.getAttribute('d');
+                let split = path.split(" ");
+                element = document.getElementById('container_LinearGaugeTitle');
+                let y = element.getAttribute('y');
+                expect(Number(y) + 10 <= Number(split[split.length -3])).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'Thermometer';
+            gauge.allowMargin = false;
+            gauge.title = 'LinearGauge';
+            gauge.titleStyle.size = '30px';
+            gauge.width = '10';
+            gauge.axes = [{}];
+            gauge.refresh();
+        });
+
+        it('checking with allow margin property - thermometer type container width is zero', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Thermometer_Layout');
+                let path = svg.getAttribute('d');
+                let split = path.split(" ");
+                element = document.getElementById('container_LinearGaugeTitle');
+                let y = element.getAttribute('y');
+                expect(Number(y) + 10 <= Number(split[split.length -3])).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'Thermometer';
+            gauge.allowMargin = false;
+            gauge.title = 'LinearGauge';
+            gauge.titleStyle.size = '30px';
+            gauge.width = '0';
+            gauge.axes = [{}];
+            gauge.refresh();
+        });
+
+        it('checking label offset - Vertical', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                if(gauge.axes[0].labelStyle.offset === 0){
+                    containerPosition = svg.getAttribute('transform');
+                } else{
+                    newContainerPosition = svg.getAttribute('transform');
+                    expect(containerPosition == newContainerPosition).toBe(true);
+                }
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+            gauge.axes[0].labelStyle.offset = 50;
+            gauge.refresh();
+        });
+
+        it('checking label offset - Vertical with opposed position', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                let svg1 = document.getElementById('container_Axis_Collections');
+                if(gauge.axes[0].labelStyle.offset === 0){
+                    containerPosition = svg.getAttribute('transform');
+                } else{
+                    newContainerPosition = svg.getAttribute('transform');
+                    expect(containerPosition == newContainerPosition).toBe(true);
+                }  
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes = [
+                {
+                    opposedPosition: true,
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+            gauge.axes[0].labelStyle.offset = 50;
+            gauge.refresh();
+        });
+
+        it('checking label offset - Horizontal', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                let svg1 = document.getElementById('container_Axis_Collections');
+                if(gauge.axes[0].labelStyle.offset === 0){
+                    containerPosition = svg.getAttribute('transform');
+                } else{
+                    newContainerPosition = svg.getAttribute('transform');
+                    expect(containerPosition == newContainerPosition).toBe(true);
+                }
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+            gauge.axes[0].labelStyle.offset = 50;
+            gauge.refresh();
+        });
+
+        it('checking label offset - Horizontal with opposed position', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                let svg1 = document.getElementById('container_Axis_Collections');
+                if(gauge.axes[0].labelStyle.offset === 0){
+                    containerPosition = svg.getAttribute('transform');
+                } else{
+                    newContainerPosition = svg.getAttribute('transform');
+                    expect(containerPosition == newContainerPosition).toBe(true);
+                }
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes = [
+                {
+                    opposedPosition: true,
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+            gauge.axes[0].labelStyle.offset = 50;
+            gauge.refresh();
+        });
+
         it('checking with axes same minimum and maximum - horizontal', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svg1: HTMLElement = <HTMLElement>document.getElementById('container_AxisLine_0');
@@ -558,6 +744,125 @@ describe('Linear gauge control', () => {
                     maximum: 50
                 }
             ];
+            gauge.refresh();
+        });
+
+        it('checking container rendering - RoundedRectangle type in Horizontal', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                expect(svg == null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.container.height = 0;
+            gauge.container.width = 0;
+            gauge.axes = [
+                {
+                    opposedPosition: true,
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+        });
+
+        it('checking container rendering - RoundedRectangle type in Vertical', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                expect(svg == null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'RoundedRectangle';
+            gauge.container.height = 0;
+            gauge.container.width = 0;
+            gauge.axes = [
+                {
+                    opposedPosition: true,
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+        });
+
+        it('checking container rendering - Thermometer type in Horizontal', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                expect(svg == null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.container.type = 'Thermometer';
+            gauge.container.height = 0;
+            gauge.container.width = 0;
+            gauge.axes = [
+                {
+                    opposedPosition: true,
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+        });
+
+        it('checking container rendering - Thermometer type in Vertical', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Container_Group');
+                expect(svg == null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.container.type = 'Thermometer';
+            gauge.container.height = 0;
+            gauge.container.width = 0;
+            gauge.axes = [
+                {
+                    opposedPosition: true,
+                    minimum: 0,
+                    maximum: 100
+                },
+                {
+                    minimum: 20,
+                    maximum: 50
+                },
+            ];
+            gauge.refresh();
+        });
+
+        it('checking label color with repsect to range color', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLabel_2');
+                let firstColor = svg.getAttribute('style').split(":");
+                expect(firstColor[1].split(';')[0] != 'red').toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes = [
+                {
+                    minimum: 0,
+                    maximum: 50,
+                    ranges:[
+                        {
+                            start: 20,
+                            end: 20,
+                            color: 'red'
+                        }
+                    ],
+                    labelStyle: {
+                        useRangeColor: true
+                    }
+                }
+            ]
+            gauge.axes[0].majorTicks.interval = 10;
             gauge.refresh();
         });
     });

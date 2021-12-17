@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, Property, Collection, append, extend, Event, EmitType, BaseEventArgs, EventHandler, closest, addClass, removeClass } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, Property, Collection, append, extend, Event, EmitType, BaseEventArgs, EventHandler, closest, addClass, removeClass, detach, remove } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';import { Popup } from '@syncfusion/ej2-popups';
 import {BreadcrumbOverflowMode,BreadcrumbBeforeItemRenderEventArgs,BreadcrumbClickEventArgs} from "./breadcrumb";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -27,6 +27,13 @@ export interface BreadcrumbItemModel {
      * @default null
      */
     iconCss?: string;
+
+    /**
+     * Enable or disable the breadcrumb item, when set to true, the breadcrumb item will be disabled.
+     *
+     * @default false
+     */
+    disabled?: boolean;
 
 }
 
@@ -59,7 +66,8 @@ export interface BreadcrumbModel extends ComponentModel{
     /**
      * Specifies an integer to enable overflow behavior when the Breadcrumb items count exceeds and it is based on the overflowMode property.
      *
-     * @default 0
+     * @default -1
+     * @aspType int
      */
     maxItems?: number;
 
@@ -67,8 +75,12 @@ export interface BreadcrumbModel extends ComponentModel{
      * Specifies the overflow mode of the Breadcrumb item when it exceeds maxItems count. The possible values are,
      * - Default: Specified maxItems count will be visible and the remaining items will be hidden. While clicking on the previous item, the hidden item will become visible.
      * - Collapsed: Only the first and last items will be visible, and the remaining items will be hidden in the collapsed icon. When the collapsed icon is clicked, all items become visible.
-     *
-     * @default 'Default'
+     * - Menu: Shows the number of breadcrumb items that can be accommodated within the container space, and creates a sub menu with the remaining items.
+     * - Wrap: Wraps the items on multiple lines when the Breadcrumb’s width exceeds the container space.
+     * - Scroll: Shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
+     * - None: Shows all the items on a single line.
+     * 
+     * @default 'Menu'
      */
     overflowMode?: BreadcrumbOverflowMode;
 
@@ -78,13 +90,6 @@ export interface BreadcrumbModel extends ComponentModel{
      * @default ''
      */
     cssClass?: string;
-
-    /**
-     * Specifies the width for the Breadcrumb component container element. If the Breadcrumb items overflow, the browsers horizontal scroll will be activated based on the device.
-     *
-     * @default ''
-     */
-    width?: string;
 
     /**
      * Specifies the template for Breadcrumb item.
@@ -113,6 +118,13 @@ export interface BreadcrumbModel extends ComponentModel{
      * @default false
      */
     enableActiveItemNavigation?: boolean;
+
+    /**
+     * Enable or disable the breadcrumb, when set to true, the breadcrumb will be disabled.
+     *
+     * @default false
+     */
+    disabled?: boolean;
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.

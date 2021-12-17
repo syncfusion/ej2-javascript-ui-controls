@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.4.38 (2021-12-17)
+
+### Common
+
+#### Bug Fixes
+
+- `I324684` - Resolved the `Treeview` check box issues in safari browser.
+
 ## 17.4.51 (2020-02-25)
 
 ### Common

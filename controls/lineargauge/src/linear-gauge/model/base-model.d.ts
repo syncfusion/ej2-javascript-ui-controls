@@ -33,7 +33,6 @@ export interface FontModel {
     /**
      * Sets and gets the opacity of the text.
      *
-     * @blazorDefaultValue 1
      */
     opacity?: number;
 
@@ -151,7 +150,6 @@ export interface AnnotationModel {
      * Sets and gets the value of axis in linear gauge.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
      */
     axisValue?: number;
 
@@ -203,7 +201,6 @@ export interface ContainerModel {
     /**
      * Sets and gets the value to place the container in the linear gauge component.
      *
-     * @blazorDefaultValue 0
      */
     offset?: number;
 

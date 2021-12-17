@@ -141,10 +141,11 @@ export class Month extends ViewBase implements IRenderer {
     public getDateSlots(renderDates: Date[], workDays: number[]): TdData[] {
         const count: number = this.parent.activeViewOptions.showWeekend ? util.WEEK_LENGTH : workDays.length;
         const dateSlots: TdData[] = [];
+        const isCurrentMonth: boolean = this.isCurrentMonth(this.parent.selectedDate);
         for (let col: number = 0; col < count; col++) {
             const classList: string[] = [cls.HEADER_CELLS_CLASS];
             const currentDateIndex: number[] = renderDates.slice(0, count).map((date: Date) => date.getDay());
-            if (this.isCurrentMonth(this.parent.selectedDate) && currentDateIndex.indexOf(this.parent.getCurrentTime().getDay()) === col) {
+            if (isCurrentMonth && currentDateIndex.indexOf(this.parent.getCurrentTime().getDay()) === col) {
                 classList.push(cls.CURRENT_DAY_CLASS);
             }
             dateSlots.push({ date: renderDates[col], type: 'monthDay', className: classList, colSpan: 1, workDays: workDays });
@@ -185,6 +186,9 @@ export class Month extends ViewBase implements IRenderer {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(event.contentReady, {});
+        if (this.parent.uiStateValues.isCustomMonth) {
+            this.parent.uiStateValues.isCustomMonth = false;
+        }
     }
     public refreshHeader(): void {
         remove(this.element.querySelector('tbody tr'));
@@ -377,7 +381,7 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public updateClassList(data: TdData): void {
-        if (this.isOtherMonth(data.date)) {
+        if (!this.isCustomMonth() && this.isOtherMonth(data.date)) {
             data.className.push(cls.OTHERMONTH_CLASS);
         }
         if (!this.parent.isMinMaxDate(data.date)) {
@@ -493,18 +497,37 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public getMonthStart(currentDate: Date): Date {
-        const monthStart: Date =
-            util.getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.activeViewOptions.firstDayOfWeek);
-        const start: Date = new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
-        return start;
+        const useDisplayDate: boolean = this.parent.currentView === 'Month' && !isNullOrUndefined(
+            this.parent.activeViewOptions.displayDate) && (this.parent.uiStateValues.isCustomMonth || this.isCustomRange());
+        const date: Date = useDisplayDate ? this.parent.activeViewOptions.displayDate : !(this.parent.uiStateValues.isCustomMonth ||
+            this.isCustomRange()) && this.isCustomMonth() ? currentDate : this.parent.calendarUtil.firstDateOfMonth(currentDate);
+        const monthStart: Date = util.getWeekFirstDate(date, this.parent.activeViewOptions.firstDayOfWeek);
+        return new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
     }
 
     public getMonthEnd(currentDate: Date): Date {
-        const endDate: Date = util.addMonths(currentDate, this.parent.activeViewOptions.interval - 1);
-        const lastWeekOfMonth: Date =
-            util.getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.activeViewOptions.firstDayOfWeek);
-        const monthEnd: Date = util.addDays(lastWeekOfMonth, util.WEEK_LENGTH - 1);
-        return monthEnd;
+        if (this.isCustomMonth()) {
+            const start: Date = this.getMonthStart(currentDate);
+            const numberOfDays: number = util.WEEK_LENGTH * (this.parent.activeViewOptions.numberOfWeeks > 0 ?
+                this.parent.activeViewOptions.numberOfWeeks : util.DEFAULT_WEEKS);
+            return util.addDays(start, (numberOfDays - 1));
+        } else {
+            const endDate: Date = util.addMonths(currentDate, this.parent.activeViewOptions.interval - 1);
+            const lastWeekOfMonth: Date =
+                util.getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.activeViewOptions.firstDayOfWeek);
+            return util.addDays(lastWeekOfMonth, util.WEEK_LENGTH - 1);
+        }
+    }
+
+    private isCustomRange(): boolean {
+        const dates: Date[] = this.parent.getCurrentViewDates();
+        if (dates && dates.length > 0) {
+            const selectedTime: number = util.resetTime(this.parent.selectedDate).getTime();
+            const weekFirstDate: Date = util.getWeekFirstDate(dates[dates.length - 1], this.parent.activeViewOptions.firstDayOfWeek);
+            return !(selectedTime >= util.getWeekFirstDate(dates[0], this.parent.activeViewOptions.firstDayOfWeek).getTime() &&
+                selectedTime <= util.addDays(weekFirstDate, 6).getTime());
+        }
+        return false;
     }
 
     public getRenderDates(workDays?: number[]): Date[] {
@@ -535,11 +558,23 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public getNextPreviousDate(type: string): Date {
-        if (type === 'next') {
-            return util.addMonths(this.parent.selectedDate, this.parent.activeViewOptions.interval);
+        if (this.isCustomMonth()) {
+            const dates: Date[] = this.parent.getCurrentViewDates();
+            const date: Date = util.getWeekFirstDate(type === 'next' ? dates[dates.length - 1]
+                : dates[0], this.parent.activeViewOptions.firstDayOfWeek);
+            return util.addDays(date, type === 'next' ? util.WEEK_LENGTH : -(this.parent.activeViewOptions.numberOfWeeks > 0 ?
+                this.parent.activeViewOptions.numberOfWeeks : util.DEFAULT_WEEKS) * util.WEEK_LENGTH);
         } else {
-            return util.addMonths(this.parent.selectedDate, -(this.parent.activeViewOptions.interval));
+            return util.addMonths(this.parent.selectedDate, ((type === 'next' ? 1 : -1) * this.parent.activeViewOptions.interval));
         }
+    }
+
+    public getStartDate(): Date {
+        return this.getMonthStart(this.parent.selectedDate);
+    }
+
+    public getEndDate(): Date {
+        return this.getMonthEnd(this.parent.selectedDate);
     }
 
     public getEndDateFromStartDate(start: Date): Date {
@@ -548,27 +583,40 @@ export class Month extends ViewBase implements IRenderer {
 
     public getDateRangeText(): string {
         if (this.parent.isAdaptive || isNullOrUndefined(this.parent.activeViewOptions.dateFormat)) {
-            if (this.parent.activeViewOptions.interval > 1) {
-                const endDate: Date =
-                    util.addMonths(util.lastDateOfMonth(this.parent.selectedDate), this.parent.activeViewOptions.interval - 1);
-                if (this.parent.selectedDate.getFullYear() === endDate.getFullYear()) {
+            let startDate: Date = this.parent.selectedDate;
+            let endDate: Date;
+            let updateCustomRange: boolean = false;
+
+            if (this.isCustomMonth()) {
+                const dates: Date[] = this.parent.getCurrentViewDates();
+                updateCustomRange = dates[0].getMonth() !== dates[dates.length - 1].getMonth() ||
+                    dates[0].getFullYear() !== dates[dates.length - 1].getFullYear();
+                if (updateCustomRange) {
+                    startDate = dates[0];
+                    endDate = dates[dates.length - 1];
+                }
+            }
+
+            const isUpdateDateRange: boolean = (this.parent.currentView !== 'Month' || !this.isCustomMonth());
+            if (this.parent.activeViewOptions.interval > 1 && isUpdateDateRange || updateCustomRange) {
+                endDate = endDate ? endDate : util.addMonths(util.lastDateOfMonth(startDate), this.parent.activeViewOptions.interval - 1);
+                if (startDate.getFullYear() === endDate.getFullYear()) {
                     const monthNames: string = (this.parent.globalize.formatDate(
-                        this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' - ' +
+                        startDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' - ' +
                         (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
                         this.parent.globalize.formatDate(endDate, { skeleton: 'y', calendar: this.parent.getCalendarMode() });
                     return util.capitalizeFirstWord(monthNames, 'single');
                 }
                 const text: string = (this.parent.globalize.formatDate(
-                    this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' ' +
-                    this.parent.selectedDate.getFullYear() + ' - ' +
+                    startDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' ' +
+                    startDate.getFullYear() + ' - ' +
                     this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() }) +
                     this.parent.globalize.formatDate(endDate, { skeleton: 'y', calendar: this.parent.getCalendarMode() });
                 return util.capitalizeFirstWord(text, 'single');
             }
             const format: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
             return util.capitalizeFirstWord(
-                this.parent.globalize.formatDate(this.parent.selectedDate, { format: format, calendar: this.parent.getCalendarMode() }),
-                'single');
+                this.parent.globalize.formatDate(startDate, { format: format, calendar: this.parent.getCalendarMode() }), 'single');
         }
         return this.formatDateRange(this.parent.selectedDate);
     }
@@ -597,6 +645,11 @@ export class Month extends ViewBase implements IRenderer {
         if (contentScrollableEle) {
             EventHandler.remove(contentScrollableEle, 'scroll', this.onContentScroll);
         }
+    }
+
+    private isCustomMonth(): boolean {
+        return this.parent.currentView === 'Month' &&
+            (!isNullOrUndefined(this.parent.activeViewOptions.displayDate) || this.parent.activeViewOptions.numberOfWeeks > 0);
     }
 
     protected getModuleName(): string {

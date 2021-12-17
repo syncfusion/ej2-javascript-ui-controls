@@ -1210,6 +1210,46 @@ describe('Batch Edit module', () => {
     });
   });
 
+  describe('EJ2-53727 - delete the row using deleteRow method', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: projectData,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          selectionSettings: { mode: 'Cell',
+          cellSelectionMode: 'Box', },
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition: 'Below' },
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right'},
+              { field: 'TaskName', headerText: 'Task Name', width: 180 },
+              {
+               field: 'StartDate', headerText: 'Start Date', width: 90, editType: 'datepickeredit', textAlign: 'Right', type: 'date',format: 'yMd'
+              },
+              { field: 'Duration', headerText: 'Duration', width: 80, textAlign: 'Right' }
+          ],
+        },
+        done
+      );
+    });
+    it('Delete - Batch Editing', (done: Function) => {
+      let deletedRecords: string = 'deletedRecords';
+      const row: Element = gridObj.getRowByIndex(1);
+      gridObj.deleteRow(row as HTMLTableRowElement);
+      expect(gridObj.getBatchChanges()[deletedRecords].length === 1).toBe(true);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+      done();
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

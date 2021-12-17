@@ -199,7 +199,6 @@ function createFabricSpinner(container: HTMLElement, radius: number, makeElement
     fb_calculate_attributes(radius, container, CLS_FABRICSPIN);
 }
 
-
 function createTailwindSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
     globalTimeOut[uniqueID] = { timeOut: 0, type: 'Tailwind', radius: radius };

@@ -140,7 +140,6 @@ export class FilterDialog {
                 if (this.allowExcelLikeFilter) {
                     (this.dialogPopUp.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement).focus();
                 }
-                this.parent.control.pivotButtonModule.memberTreeView = this.parent.filterDialog.memberTreeView;
                 this.memberTreeView.nodeChecked =
                     this.parent.control.pivotButtonModule.nodeStateModified.bind(this.parent.control.pivotButtonModule);
                 this.allMemberSelect.nodeChecked =
@@ -449,8 +448,8 @@ export class FilterDialog {
         let treeData: { [key: string]: Object; }[] = [];
         members = order === 'Ascending' ? (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
             ((b.actualText > a.actualText) ? -1 : 0))) : order === 'Descending' ?
-                (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
-                    ((b.actualText < a.actualText) ? -1 : 0))) : members;
+            (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
+                ((b.actualText < a.actualText) ? -1 : 0))) : members;
         /* eslint-enable  */
         let modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (let i: number = 0, lnt: number = members.length; i < lnt; i++) {
@@ -1115,6 +1114,15 @@ export class FilterDialog {
         if (this.dropMenu && !this.dropMenu.isDestroyed) {
             this.dropMenu.destroy();
         }
+        if (this.memberTreeView && !this.memberTreeView.isDestroyed) {
+            this.memberTreeView.destroy();
+        }
+        if (this.allMemberSelect && !this.allMemberSelect.isDestroyed) {
+            this.allMemberSelect.destroy();
+        }
+        if (this.editorSearch && !this.editorSearch.isDestroyed) {
+            this.editorSearch.destroy();
+        }
         if (document.getElementById(this.parent.parentID + '_LevelDiv-popup')) {
             remove(document.getElementById(this.parent.parentID + '_LevelDiv-popup'));
         }
@@ -1123,9 +1131,21 @@ export class FilterDialog {
     private removeFilterDialog(): void {
         if (this.dialogPopUp && !this.dialogPopUp.isDestroyed) {
             this.dialogPopUp.destroy();
+            setTimeout(this.setFocus.bind(this));
         }
         if (document.getElementById(this.parent.parentID + '_EditorTreeView')) {
             remove(document.getElementById(this.parent.parentID + '_EditorTreeView'));
+        }
+    }
+    private setFocus() {
+        if (this.parent.control.pivotButtonModule.parentElement) {
+            let pivotButtons: HTMLElement[] = [].slice.call(this.parent.control.pivotButtonModule.parentElement.querySelectorAll('.e-pivot-button'));
+            for (let item of pivotButtons) {
+                if (item.getAttribute('data-uid') === this.parent.control.pivotButtonModule.fieldName) {
+                    item.focus();
+                    break;
+                }
+            }
         }
     }
 }

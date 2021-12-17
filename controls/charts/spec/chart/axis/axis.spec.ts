@@ -16,6 +16,7 @@ import { DateTime, Zoom, ScrollBar } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs, IAxisLabelClickEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { categoryData } from '../base/data.spec';
 Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic, Zoom, ScrollBar, AreaSeries);
 
 
@@ -1786,6 +1787,51 @@ describe('Chart Control', () =>{
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
+
+    describe('Check the RTL behaviour for axis', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        let posX: string;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal' },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [{ dataSource: categoryData, xName: 'x', yName: 'y', fill: 'red', animation: { enable: false } }],
+                    height: '400px', width: '900px',
+                });
+            
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('Checking the Labels', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container0_AxisLabel_0');
+                expect(element.getAttribute('text-anchor') == 'end').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableRtl = true;
+            chart.appendTo('#container');
+        });
+        it('Checking the vertical axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container1_AxisLabel_0');
+                posX = element.getAttribute('x');
+                expect(posX == '860' || posX == '856.5').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableRtl = true;
+            chart.appendTo('#container');
+        });
+    });
 
 });

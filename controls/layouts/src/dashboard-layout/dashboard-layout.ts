@@ -977,9 +977,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             } else if (panelModel.maxSizeX && this.elementWidth + dX > this.getMaxWidth(panelModel)) {
                 currentX = this.getMaxWidth(panelModel) - this.elementWidth;
                 this.mOffX = dX - currentX;
-            } else if (this.elementX + this.elementWidth + dX > this.maxLeft) {
-                currentX = this.maxLeft - this.elementX - this.elementWidth;
-                this.mOffX = dX - currentX;
             }
             this.elementWidth += currentX;
         }
@@ -1228,7 +1225,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     const row: number = parseInt(ele.getAttribute('data-row'), 10);
                     const col: number = parseInt(ele.getAttribute('data-col'), 10);
                     this.panelPropertyChange(cellInstance, { row: row, col: col });
-                    this.updatePanelLayout(ele, cellInstance);
                     this.setHeightAndWidth(ele, this.getCellInstance(ele.id));
                     this.setPanelPosition(ele, row, col);
                     this.updateRowHeight();

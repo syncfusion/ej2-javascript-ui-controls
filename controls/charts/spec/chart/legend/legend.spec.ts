@@ -26,6 +26,7 @@ import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
+import { categoryData, categoryData1 } from '../base/data.spec';
 Chart.Inject(LineSeries, SplineSeries, Legend, StepLineSeries, AreaSeries, StackingAreaSeries, StackingColumnSeries, ColumnSeries,
     ScatterSeries, BarSeries, Selection, Highlight, DateTime, Tooltip);
 let i: number; let currentPoint: Points; let value: number = 0; let data: Points[] = []; let seriesCollection: SeriesModel[] = [];
@@ -1885,5 +1886,135 @@ describe('Chart Legend', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
+
+    describe('Check the RTL behaviour for legend', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        let posX: string;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal' },
+                    series: [
+                        { dataSource: categoryData, xName: 'x', yName: 'y', name:'Series 1', animation: { enable: false } },
+                        { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 2', animation: { enable: false }}],
+                    height: '400px', width: '900px',
+                });
+            
+        });
+        afterAll((): void => {
+            chart.loaded = null;
+            chart.destroy();
+            ele.remove();
+        });
+        it('Checking the legend group default position', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_text_0');
+                posX = element.getAttribute('x');
+                expect(posX == '404' || posX == '402').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#container');
+        });
+        it('Checking the legend group default position with Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_text_0');
+                posX = element.getAttribute('x');
+                expect(posX == '840' || posX == '838').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.position = 'Right';
+            chart.appendTo('#container');
+        });
+        it('Checking the legend group with RTL', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_text_0');
+                posX = element.getAttribute('x');
+                expect(posX).toBe('454');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.position = 'Bottom';
+            chart.enableRtl = true;
+            chart.appendTo('#container');
+        });
+        it('Checking the legend group RTL with Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_text_0');
+                posX = element.getAttribute('x');
+                expect(posX == '825' || posX == '823').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.position = 'Right';
+            chart.appendTo('#container');
+        });
+        it('Checking the legend title default text anchor', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_title');
+                expect(element.getAttribute('text-anchor') == '').toBe(true);
+                element = document.getElementById('container_chart_legend_text_0');
+                posX = element.getAttribute('x');
+                expect(posX == '444.5' || posX == '445.5').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.position = 'Bottom';
+            chart.legendSettings.title = 'Legend Groups';
+            chart.legendSettings.titlePosition = 'Left';
+            chart.enableRtl = false;
+            chart.appendTo('#container');
+        });
+        it('Checking the legend title RTL text anchor', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_title');
+                expect(element.getAttribute('text-anchor') == 'end').toBe(true);
+                element = document.getElementById('container_chart_legend_text_0');
+                posX = element.getAttribute('x');
+                expect(posX == '499.5' || posX == '502.5').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableRtl = true;
+            chart.appendTo('#container');
+        });
+        it('Checking the legend reverse behaviour', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_text_0');
+                posX = element.getAttribute('x');
+                expect(posX == '509.5' || posX == '512.5').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableRtl = false;
+            chart.legendSettings.reverse = true;
+            chart.appendTo('#container');
+        });
+        it('Checking the legend paging with rtl', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_navigation');
+                posX = element.getAttribute('transform');
+                expect(posX).toBe("translate(5, 0)");
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableRtl = true;
+            chart.series = [
+                { dataSource: categoryData, xName: 'x', yName: 'y', name:'Series 0', animation: { enable: false } },
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 1', animation: { enable: false }},
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 2', animation: { enable: false }},
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 3', animation: { enable: false }},
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 4', animation: { enable: false }}],
+            chart.legendSettings.width = "100px";
+            chart.legendSettings.title = "";
+            chart.appendTo('#container');
+        });
+    });
 });

@@ -289,6 +289,9 @@ export class SheetRender implements IRenderer {
             if (!this.parent) { return; }
             const content: HTMLElement = this.parent.getMainContent();
             const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+            if (sheetContent.childElementCount > 2 && sheetContent.querySelector('.e-header-panel') !== this.headerPanel) {
+                removeAllChildren(sheetContent);
+            }
             sheetContent.appendChild(frag);
             sheetContent.style.backgroundColor = '';
             if (args.top) {
@@ -324,6 +327,8 @@ export class SheetRender implements IRenderer {
                     } else {
                         this.triggerCreatedEvent();
                     }
+                } else if (!this.parent.isOpen) {
+                    this.parent.hideSpinner();
                 }
             }
         });
@@ -401,7 +406,7 @@ export class SheetRender implements IRenderer {
             this.checkColMerge(indexes, args.indexes, cell, value);
             if (frozenRow && indexes[0] === frozenRow - 1) { count = 0; }
         });
-        getUpdateUsingRaf((): void => {
+        const appendColumns: Function = (): void => {
             table = this.getColHeaderTable(); removeAllChildren(table);
             table.appendChild(hFrag);
             table = this.getContentTable(); removeAllChildren(table);
@@ -417,7 +422,12 @@ export class SheetRender implements IRenderer {
                 this.parent.hideSpinner();
             }
             setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: false });
-        });
+        };
+        if (args.insertDelete) {
+            appendColumns();
+        } else {
+            getUpdateUsingRaf(() => appendColumns());
+        }
     }
 
     public refreshRowContent(args: SheetRenderArgs): void {
@@ -465,11 +475,6 @@ export class SheetRender implements IRenderer {
         if (this.contentPanel.querySelector('.e-sheet-content tbody')) {
             detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
             this.getContentTable().appendChild(frag);
-            const indexes: number[] = getCellIndexes(sheet.activeCell);
-            const cellElem: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
-            if (cellElem) {
-                cellElem.focus();
-            }
         }
         this.parent.notify(virtualContentLoaded, { refresh: 'Row', prevRowColCnt: args.prevRowColCnt });
         if (this.parent.allowChart) {

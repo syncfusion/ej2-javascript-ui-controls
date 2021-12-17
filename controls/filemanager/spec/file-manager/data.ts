@@ -4,7 +4,7 @@ export let toolbarItems: string[] = ['NewFolder', 'Upload', '|', 'Delete', 'Rena
 export let toolbarItems1: string[] = ['NewFolder1', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Download', 'Upload', '|', 'Search'];
 
 export let toolbarItems2: string[] = ['NewFolder', '|', 'Upload', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Custom tool', '|', 'Download',
-    '|', 'SortBy', '|', 'Search', 'Refresh', 'Grid', 'LargeIcons', 'Details', 'Options'];
+'|', 'SortBy', '|', 'Search', 'Refresh', 'Grid', 'LargeIcons', 'Details', 'Options'];
 
 export let toolbarItems3: string[] = ['NewFolder', 'Upload', '|', 'Delete', 'Rename', 'Download', 'Cut', 'Copy', 'Paste',
     'SortBy', 'Refresh', 'Selection', 'View', 'Details', 'Search', 'Options'];

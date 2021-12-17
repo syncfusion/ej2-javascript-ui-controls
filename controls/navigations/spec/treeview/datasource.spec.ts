@@ -529,6 +529,29 @@ export let hierarchicalData8: { [key: string]: Object; }[] = [
     }
   ];
 
+  export let hierarchicalData9: { [key: string]: Object }[] = [
+    {
+        nodeId: '11', nodeText: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Voluptatem, expedita, ea consequatur nesciunt error cum laudantium, doloribus quae consectetur architecto quibusdam fugit recusandae beatae deserunt distinctio molestias quam nostrum sapiente.', iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Music node', selected: true, expanded: true,
+        nodeChild: [
+            { 
+                nodeId: '11-01', nodeText: 'Wind.jpg', navigateUrl: 'http://npmci.syncfusion.com/',
+            }
+        ],
+    },
+    {
+        nodeId: '12', nodeText: 'Downloads', htmlAttributes: nodeAttr, nodeChild: [
+            { nodeId: '12-01', nodeText: 'Home.jpg' },
+        ]
+    },
+];
+
+export let localData10: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Voluptatem, expedita, ea consequatur nesciunt error cum laudantium, doloribus quae consectetur architecto quibusdam fugit recusandae beatae deserunt distinctio molestias quam nostrum sapi',
+    hasChild: true,},
+    { nodeId: '01-01', nodePid: '01', nodeText: 'Wind.jpg'},
+    { nodeId: '02', nodeText: 'Downloads'},
+];
+
 export var localData: { [key: string]: Object }[] = [
     { id: 1, text: "Artwork", iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Artwork node', hasChildren: true, selected: 'true', navigateUrl: 'http://npmci.syncfusion.com/', },
     { id: 2, parentID: 1, text: "Abstract", hasChildren: true },

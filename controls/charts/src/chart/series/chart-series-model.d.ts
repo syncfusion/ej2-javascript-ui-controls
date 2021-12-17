@@ -887,6 +887,15 @@ export interface SeriesModel extends SeriesBaseModel{
     zOrder?: number;
 
     /**
+     * Defines the name that specifies the chart series are mutually exclusive and can be overlaid.
+     * The axis in the same group shares the same baseline and location on the corresponding axis.
+     *
+     * @default ''
+     */
+
+    groupName?: string;
+
+    /**
      * The type of the series are
      * * Line
      * * Column

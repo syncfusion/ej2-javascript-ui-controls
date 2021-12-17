@@ -736,10 +736,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 label = document.getElementById('container1_AxisLabel_0');
                 anchor = label.getAttribute('text-anchor');
-                expect(anchor === 'start').toBe(true);
+                expect(anchor === 'middle').toBe(true);
                 label = document.getElementById('container1_AxisLabel_4');
                 anchor = label.getAttribute('text-anchor');
-                expect(anchor === 'start').toBe(true);
+                expect(anchor === 'middle').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -764,10 +764,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 label = document.getElementById('container1_AxisLabel_0');
                 anchor = label.getAttribute('text-anchor');
-                expect(anchor === 'end').toBe(true);
+                expect(anchor === 'middle').toBe(true);
                 label = document.getElementById('container1_AxisLabel_4');
                 anchor = label.getAttribute('text-anchor');
-                expect(anchor === 'end').toBe(true);
+                expect(anchor === 'middle').toBe(true);
                 done();
             };
             chart.primaryYAxis.lineBreakAlignment = 'Right';

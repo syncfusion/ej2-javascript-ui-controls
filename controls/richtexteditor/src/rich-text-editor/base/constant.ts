@@ -586,10 +586,10 @@ export const closeLinkDialog: string = 'closeLinkDialog';
  * @deprecated
  */
 export const showImageDialog: string = 'showImageDialog';
- /**
-  * @hidden
-  * @deprecated
-  */
+/**
+ * @hidden
+ * @deprecated
+ */
 export const closeImageDialog: string = 'closeImageDialog';
 /**
  * @hidden

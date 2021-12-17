@@ -1,0 +1,133 @@
+@include export-module('menu-fluent-icons') {
+  /*! menu layout */
+  .e-menu-wrapper,
+  .e-menu-container {
+    @at-root {
+      & ul {
+        &.e-vertical .e-menu-item {
+          & .e-caret {
+            &::before {
+              content: '\e7c2';
+            }
+          }
+        }
+
+        & .e-menu-item  {
+          & .e-caret {
+            &::before {
+              content: '\e7c3';
+            }
+          }
+        }
+      }
+
+      & .e-ul .e-menu-item {
+        & .e-caret {
+          &::before {
+            content: '\e7c2';
+          }
+        }
+      }
+    }
+
+    &.e-hamburger {
+
+      & .e-menu-header {
+
+        & .e-menu-icon::before {
+          content: '\e728';
+        }
+      }
+
+      &.e-close-icon {
+        & .e-menu-header {
+
+          & .e-menu-icon::before {
+            content: '\e74f';
+          }
+        }
+      }
+
+      & .e-vertical .e-menu-item .e-caret,
+      & .e-menu-item .e-caret {
+        &::before {
+          content: '\e7c3';
+        }
+      }
+    }
+
+    &.e-rtl.e-hamburger ul {
+      &.e-ul {
+        & .e-caret {
+          &::before {
+            content: '\e7c3';
+          }
+        }
+      }
+    }
+
+    & .e-menu-hscroll.e-hscroll .e-nav-left-arrow::before,
+    & .e-menu-hscroll.e-hscroll .e-nav-right-arrow::before {
+      content: '\e7c2';
+    }
+
+    & .e-menu-vscroll.e-vscroll .e-nav-up-arrow::before,
+    & .e-menu-vscroll.e-vscroll .e-nav-down-arrow::before {
+      content: '\e7c3';
+    }
+  }
+
+  .e-rtl.e-menu-wrapper ul,
+  .e-rtl.e-menu-container ul {
+    &.e-vertical {
+      & .e-caret {
+        &::before {
+          content: '\e7c1';
+        }
+      }
+    }
+
+    &.e-ul {
+      & .e-caret {
+        &::before {
+          content: '\e7c1';
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-rtl.e-menu-wrapper ul,
+  .e-bigger.e-rtl.e-menu-wrapper ul,
+  .e-bigger .e-rtl.e-menu-container ul,
+  .e-bigger.e-rtl.e-menu-container ul {
+    &.e-vertical {
+      & .e-caret {
+        &::before {
+          content: '\e7c1';
+        }
+      }
+    }
+
+    &.e-ul {
+      & .e-caret {
+        &::before {
+          content: '\e7c1';
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-rtl.e-menu-wrapper.e-hamburger ul,
+  .e-bigger.e-rtl.e-menu-wrapper.e-hamburger ul,
+  .e-bigger .e-rtl.e-menu-container.e-hamburger ul,
+  .e-bigger.e-rtl.e-menu-container.e-hamburger ul {
+
+    &.e-ul {
+      & .e-caret {
+        &::before {
+          content: '\e7c3';
+        }
+      }
+    }
+  }
+}

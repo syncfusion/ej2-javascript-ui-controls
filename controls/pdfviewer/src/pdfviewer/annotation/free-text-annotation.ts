@@ -183,6 +183,9 @@ export class FreeTextAnnotation {
     public textAlign: string;
     private defaultText: string;
     private isReadonly: boolean = false;
+    private isMaximumWidthReached: boolean = false;
+    private padding: string;
+    private wordBreak: string;
     /**
      * @private
      */
@@ -206,13 +209,15 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.background = this.fillColor;
         this.inputBoxElement.style.borderStyle = this.borderStyle;
         this.inputBoxElement.style.borderWidth = this.borderWidth + 'px';
-        this.inputBoxElement.style.padding = '2px';
+        this.inputBoxElement.style.padding = this.padding;
+        this.inputBoxElement.style.paddingLeft = '3px';
         this.inputBoxElement.style.borderRadius = '2px';
+        this.inputBoxElement.style.verticalAlign = 'middle';
         this.inputBoxElement.style.fontFamily = this.fontFamily;
         this.inputBoxElement.style.color = this.pdfViewer.freeTextSettings.fontColor ?
             this.pdfViewer.freeTextSettings.fontColor : '#000';
         this.inputBoxElement.style.overflow = 'hidden';
-        this.inputBoxElement.style.wordBreak = 'break-all';
+        this.inputBoxElement.style.wordBreak = this.wordBreak;
         this.inputBoxElement.readOnly = this.isReadonly;
         this.inputBoxElement.addEventListener('focusout', this.onFocusOutInputBox.bind(this));
         this.inputBoxElement.addEventListener('keydown', this.onKeyDownInputBox.bind(this));
@@ -239,6 +244,13 @@ export class FreeTextAnnotation {
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
         this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
         this.isReadonly = false;
+        if (this.pdfViewer.freeTextSettings.enableAutoFit) {
+            this.wordBreak = 'break-all';
+            this.padding = '2px';
+        } else {
+            this.padding = '0px'
+            this.wordBreak = 'break-word';
+        }
         // eslint-disable-next-line max-len
         if (this.pdfViewer.freeTextSettings.isLock || this.pdfViewer.annotationSettings.isLock || this.pdfViewer.freeTextSettings.isReadonly) {
             this.isReadonly = true;
@@ -319,11 +331,16 @@ export class FreeTextAnnotation {
                         let annotationBoundsY: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
                         let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
                         let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
+                        if (Math.sign(annotation.Rotate) === 1) {
+                            annotation.Rotate = -annotation.Rotate;
+                        }
                         if (rotateAngle === 90 || rotateAngle === 270) {
-                            annotation.Bounds.Width = height;
-                            annotation.Bounds.Height = width;
-                            annotationBoundsX = (annotationBoundsX + height) - height / 2;
-                            annotationBoundsY = (annotationBoundsX + width) - height / 2;
+                            let rotationHeight: number = height;
+                            let rotationWidth: number = width;
+                            height = rotationWidth;
+                            width = rotationHeight;
+                            annotationBoundsX = (annotationBoundsX - (width / 2));
+                            annotationBoundsY = (annotationBoundsY) + (width / 2 - height / 2);
                         }
                         let isPrint: boolean = true;
                         if (annotation.annotationAddMode === 'Imported Annotation') {
@@ -441,7 +458,7 @@ export class FreeTextAnnotation {
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any, isNewAdded?: boolean): IFreeTextAnnotation {
         if (!isNewAdded) {
-            this.pdfViewer.isDocumentEdited = true;
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
         let currentAnnotObject: IFreeTextAnnotation = null;
         const pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
@@ -526,6 +543,8 @@ export class FreeTextAnnotation {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
                         // eslint-disable-next-line max-len
+                        pageAnnotationObject.annotations[z].bounds = this.getBoundsBasedOnRotation(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.annotations[z].rotateAngle);
+                        // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         const strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
@@ -548,6 +567,16 @@ export class FreeTextAnnotation {
         return JSON.stringify(annotations);
     }
 
+    private getBoundsBasedOnRotation(bounds: any, rotateAngle: number) {
+        if (rotateAngle === 90 || rotateAngle === -90 || rotateAngle === 270 || rotateAngle === -270) {
+            let x: number = bounds.x + (bounds.width / 2);
+            let y: number = bounds.y - (bounds.width / 2 - bounds.height / 2);
+            return { x: x, y: y, left: x, top: y, width: bounds.height, height: bounds.width };
+        } else {
+            return bounds;
+        }
+    }
+    
     private manageAnnotations(pageAnnotations: IFreeTextAnnotation[], pageNumber: number): void {
         // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
@@ -627,6 +656,17 @@ export class FreeTextAnnotation {
             // eslint-disable-next-line
             let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
+            let width: number = parseFloat(this.inputBoxElement.style.width);
+            let padding: number = parseFloat(this.inputBoxElement.style.paddingLeft);
+            if (this.pdfViewer.freeTextSettings.enableAutoFit && !this.isMaximumWidthReached && !this.isNewFreeTextAnnot) {
+                let fontsize: number = parseFloat(this.inputBoxElement.style.fontSize);
+                this.inputBoxElement.style.width = ((width + padding) - fontsize)  + 'px';
+            }
+            if (this.pdfViewer.freeTextSettings.enableAutoFit && !this.isMaximumWidthReached && this.isNewFreeTextAnnot) {
+                width = parseFloat(this.inputBoxElement.style.width);
+                let characterLength: number = 8;
+                this.inputBoxElement.style.width = (width - characterLength) + 'px';
+            }
             let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
             let inputEleLeft: number = parseFloat(this.inputBoxElement.style.left);
@@ -668,7 +708,7 @@ export class FreeTextAnnotation {
                     rotateAngle: 0, dynamicText: inputValue, strokeColor: this.borderColor, thickness: this.borderWidth, fillColor: this.fillColor,
                     bounds: {
                         left: inputEleLeft / zoomFactor, top: inputEleTop / zoomFactor, x: inputEleLeft / zoomFactor,
-                        y: inputEleTop / zoomFactor, width: inputEleWidth, height: inputEleHeight
+                        y: inputEleTop / zoomFactor, width: inputEleWidth / zoomFactor, height: inputEleHeight / zoomFactor
                     }, annotName: annotationName,
                     shapeAnnotationType: 'FreeText', pageIndex: pageIndex, fontColor: this.fontColor, fontSize: this.fontSize,
                     fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: this.textAlign,
@@ -698,19 +738,28 @@ export class FreeTextAnnotation {
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);
                 this.pdfViewer.clearSelection(annot.pageIndex);
-                this.pdfViewer.isDocumentEdited = true;
+                this.pdfViewerBase.updateDocumentEditedProperty(true);
                 this.selectedAnnotation = annotation;
             }
             this.isInuptBoxInFocus = false;
             // eslint-disable-next-line
             if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations) {
-                inputEleWidth = ((inputEleWidth - 1) / zoomFactor);
-                inputEleHeight = ((inputEleHeight - 1) / zoomFactor);
+                inputEleWidth = (inputEleWidth / zoomFactor);
+                inputEleHeight = (inputEleHeight / zoomFactor);
                 const heightDiff: number = (inputEleHeight - this.selectedAnnotation.bounds.height);
                 let y: number = undefined;
                 if (heightDiff > 0) {
                     y = this.selectedAnnotation.wrapper.offsetY + (heightDiff / 2);
                     y = y > 0 ? y : undefined;
+                }
+                let widthDiff: number = (inputEleWidth - this.selectedAnnotation.bounds.width);
+                let x: number = undefined;
+                if (widthDiff > 0) {
+                    x = this.selectedAnnotation.wrapper.offsetX + (widthDiff / 2);
+                    x = x > 0 ? x : undefined;
+                } else {
+                    widthDiff = Math.abs(widthDiff);
+                    x = this.selectedAnnotation.wrapper.offsetX - (widthDiff / 2);
                 }
                 this.selectedAnnotation.bounds.width = inputEleWidth;
                 this.selectedAnnotation.bounds.height = inputEleHeight;
@@ -718,7 +767,7 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 // eslint-disable-next-line
-                this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y } });
+                this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y, x:x } });
                 // eslint-disable-next-line
                 let commentsDiv: any = document.getElementById(this.selectedAnnotation.annotName);
                 if (commentsDiv && commentsDiv.childNodes) {
@@ -730,7 +779,6 @@ export class FreeTextAnnotation {
                 }
                 this.pdfViewer.renderSelector(this.selectedAnnotation.pageIndex, this.selectedAnnotation.annotationSelectorSettings);
             }
-            this.isNewFreeTextAnnot = false;
             if (this.inputBoxElement.parentElement) {
                 if (pageDiv && (pageDiv.id === this.inputBoxElement.parentElement.id)) {
                     pageDiv.removeChild(this.inputBoxElement);
@@ -760,12 +808,12 @@ export class FreeTextAnnotation {
      * @private
      */
     public onKeyDownInputBox(event: KeyboardEvent): void {
-        this.selectedAnnotation = this.pdfViewer.selectedItems.annotations ? this.pdfViewer.selectedItems.annotations[0]
-            : this.selectedAnnotation;
         const inuptEleObj: FreeTextAnnotation = this;
-        if (event.which === 9) {
+        if (event.which === 9 || (isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) && !this.isNewFreeTextAnnot)) {
             event.preventDefault();
         }
+        this.selectedAnnotation = this.pdfViewer.selectedItems.annotations && this.isNewFreeTextAnnot ? this.pdfViewer.selectedItems.annotations[0]
+        : this.selectedAnnotation;
         setTimeout(() => {
             if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight
                 // eslint-disable-next-line radix
@@ -780,15 +828,24 @@ export class FreeTextAnnotation {
 
     private updateFreeTextAnnotationSize(isSize : boolean): void {
         const inuptEleObj: FreeTextAnnotation = this;
-        const previousHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
-        if (!isSize && !inuptEleObj.inputBoxElement.readOnly) {
-            inuptEleObj.inputBoxElement.style.height = 'auto';
+        let enableAutoFit: Boolean = inuptEleObj.pdfViewer.freeTextSettings.enableAutoFit;
+        if (enableAutoFit) {
+            this.autoFitFreeText();
+        } else {
+            this.isMaximumWidthReached = true;
         }
-        const currentHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
-        const difference: number = currentHeight - previousHeight;
-        // eslint-disable-next-line max-len
-        inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
-        inuptEleObj.inputBoxElement.style.height = (difference < 0 && !inuptEleObj.inputBoxElement.readOnly) ? (previousHeight + 'px') : inuptEleObj.inputBoxElement.style.height;
+        if (this.isMaximumWidthReached) {
+            // eslint-disable-next-line max-len
+            const previousHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
+            if (!isSize && !inuptEleObj.inputBoxElement.readOnly) {
+                inuptEleObj.inputBoxElement.style.height = 'auto';
+            }
+            const currentHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
+            const difference: number = currentHeight - previousHeight;
+            // eslint-disable-next-line max-len
+            inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
+            inuptEleObj.inputBoxElement.style.height = (difference < 0 && !inuptEleObj.inputBoxElement.readOnly) ? (previousHeight + 'px') : inuptEleObj.inputBoxElement.style.height;
+        }
         let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
         let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
         inputEleHeight = ((inputEleHeight - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
@@ -802,11 +859,97 @@ export class FreeTextAnnotation {
                 heightDiff = Math.abs(heightDiff);
                 y = inuptEleObj.selectedAnnotation.wrapper.offsetY - (heightDiff / 2);
             }
+            if (enableAutoFit) {
+                var widthDiff = (inputEleWidth - inuptEleObj.selectedAnnotation.bounds.width);
+                var x = 0;
+                if (widthDiff > 0) {
+                    x = inuptEleObj.selectedAnnotation.wrapper.offsetX + (widthDiff / 2);
+                } else {
+                    widthDiff = Math.abs(widthDiff);
+                    x = inuptEleObj.selectedAnnotation.wrapper.offsetX - (widthDiff / 2);
+                }
+            }
             inuptEleObj.selectedAnnotation.bounds.width = inputEleWidth;
             inuptEleObj.selectedAnnotation.bounds.height = inputEleHeight;
-            // eslint-disable-next-line
-            inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y } });
+            if (enableAutoFit) {
+                // eslint-disable-next-line
+                inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y, x: x } });
+            } else {
+                // eslint-disable-next-line
+                inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y } });
+            }
             inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex,  this.selectedAnnotation.annotationSelectorSettings);
+        }
+    }
+
+    /**
+     * @param event
+     * @private
+     */
+    public autoFitFreeText(xPosition?: number): void {
+        let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+        const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
+        // eslint-disable-next-line
+        const canvas: any = this.pdfViewerBase.getElement('_annotationCanvas_' + pageIndex);
+        // eslint-disable-next-line
+        let context: any = canvas.getContext("2d");
+        // eslint-disable-next-line
+        let fontSize: any = this.inputBoxElement.style.fontSize;
+        if (this.pdfViewer.freeTextSettings.fontStyle === FontStyle.Bold || this.inputBoxElement.style.fontWeight === 'bold') {
+            context.font = 'bold' + ' ' + fontSize + ' ' + this.inputBoxElement.style.fontFamily;
+        } else {
+            context.font = fontSize + ' ' + this.inputBoxElement.style.fontFamily;
+        }
+        let highestTextNode: string = "";
+        // eslint-disable-next-line
+        let textNodes: any[] = [];
+        let textboxValue: string = this.inputBoxElement.value;
+        if ( textboxValue.indexOf('\n') > -1) {
+            textNodes =  textboxValue.split('\n');
+            for (var j = 0; j < textNodes.length; j++) {
+                // eslint-disable-next-line
+                let textNodeData: any = context.measureText(textNodes[j]);
+                // eslint-disable-next-line
+                let highestTextNodeData: any = context.measureText(highestTextNode);
+                if (textNodeData.width > highestTextNodeData.width) {
+                    highestTextNode = textNodes[j];
+                }
+            }
+            this.isMaximumWidthReached = true;
+        } else {
+            highestTextNode =  textboxValue;
+            this.isMaximumWidthReached = false;
+        }
+        // eslint-disable-next-line
+        let textwidth: any = context.measureText(highestTextNode);
+        fontSize = parseFloat(this.inputBoxElement.style.fontSize);
+        let inputEleWidth: number;
+        let characterLength: number = 8;
+        if (this.isNewFreeTextAnnot) {
+            inputEleWidth = Math.ceil(textwidth.width + ((characterLength + 1) * 2));
+            this.inputBoxElement.style.height = (fontSize + (fontSize/2)) + 'px';
+        } else {
+            inputEleWidth = Math.ceil(textwidth.width) + fontSize + Math.ceil(characterLength/2);
+        }
+        if (!xPosition) {
+            this.inputBoxElement.style.height = (fontSize + (fontSize / 2)) + 'px';
+        }
+        this.inputBoxElement.style.width = inputEleWidth + 'px';
+        let maxWidth: number = this.pdfViewerBase.getPageWidth(pageIndex) - parseFloat(this.inputBoxElement.style.left);
+        if (parseFloat(this.inputBoxElement.style.width) > maxWidth) {
+            this.isMaximumWidthReached = true;
+            if (this.isNewAddedAnnot && xPosition) {
+                inputEleWidth = inputEleWidth - characterLength;
+                this.inputBoxElement.style.width = inputEleWidth + 'px';
+                let width: number = xPosition + (inputEleWidth * this.pdfViewerBase.getZoomFactor());
+                let x = parseFloat(this.inputBoxElement.style.left);
+                if (width >= this.pdfViewerBase.getPageWidth(pageIndex)) {
+                    x = this.pdfViewerBase.getPageWidth(pageIndex) - inputEleWidth;
+                }
+                this.inputBoxElement.style.left = x + 'px';
+            } else {
+                this.inputBoxElement.style.width = maxWidth + 'px';
+            }
         }
     }
 
@@ -851,7 +994,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : this.defaultText;
         this.inputBoxElement.style.boxSizing = 'border-box';
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
-        this.inputBoxElement.style.top = ((currentPosition.y)) + 'px';
+        this.inputBoxElement.style.top = ((currentPosition.y)) - ((this.defaultHeight * zoomFactor)/2) + 'px';
         if (annotation) {
             this.applyFreetextStyles(zoomFactor, annotation.isReadonly);
         } else {
@@ -891,16 +1034,17 @@ export class FreeTextAnnotation {
             this.pdfViewer.clearSelection(pageIndex);
         }
         if (annotation && annotation.wrapper && annotation.wrapper.bounds) {
-            if (annotation.wrapper.bounds.left) {
-                this.inputBoxElement.style.left = ((annotation.wrapper.bounds.left) * zoomFactor) + 'px';
+            let annotationBounds : any = annotation.wrapper.bounds;
+            if (annotationBounds.left) {
+                this.inputBoxElement.style.left = ((annotationBounds.left) * zoomFactor) + 'px';
             }
-            if (annotation.wrapper.bounds.top) {
-                this.inputBoxElement.style.top = ((annotation.wrapper.bounds.top) * zoomFactor) + 'px';
+            if (annotationBounds.top) {
+                this.inputBoxElement.style.top = ((annotationBounds.top) * zoomFactor) + 'px';
             }
             // eslint-disable-next-line max-len
-            this.inputBoxElement.style.height = annotation.wrapper.bounds.height ? (annotation.wrapper.bounds.height * zoomFactor) + 1 + 'px' : (this.defaultHeight * zoomFactor) + 'px';
+            this.inputBoxElement.style.height = annotationBounds.height ? (annotationBounds.height * zoomFactor) + 'px' : (this.defaultHeight * zoomFactor) + 'px';
             // eslint-disable-next-line max-len
-            this.inputBoxElement.style.width = annotation.wrapper.bounds.width ? (annotation.wrapper.bounds.width * zoomFactor) + 1 + 'px' : (this.defautWidth * zoomFactor) + 'px';
+            this.inputBoxElement.style.width = annotationBounds.width ? (annotationBounds.width * zoomFactor)  + 'px' : (this.defautWidth * zoomFactor) + 'px';
             this.selectedAnnotation = annotation;
             this.previousText = this.selectedAnnotation.dynamicText;
             this.selectedAnnotation.dynamicText = '';
@@ -933,15 +1077,20 @@ export class FreeTextAnnotation {
             this.inputBoxElement.style.left = (currentPosition.x) + canvass.offsetLeft + 'px';
         }
         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
+        if (this.pdfViewer.freeTextSettings.enableAutoFit) {
+            this.autoFitFreeText(currentPosition.x);
+        }
         pageDiv.appendChild(this.inputBoxElement);
         // eslint-disable-next-line
-        if (this.defaultHeight < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
-            this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 5 + 'px';
+        if ((this.defaultHeight * zoomFactor) < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
+            this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 'px';
+            this.inputBoxElement.style.top = ((currentPosition.y)) - (parseFloat(this.inputBoxElement.style.height) / 2) + 'px';
         }
         this.isInuptBoxInFocus = true;
         this.inputBoxElement.focus();
         if (this.isNewFreeTextAnnot === true || this.inputBoxElement.value === this.defaultText) {
             this.inputBoxElement.select();
+            this.pdfViewerBase.isFreeTextSelected = true;
         }
     }
     private applyFreetextStyles(zoomFactor: number, isReadonly?: boolean): void {

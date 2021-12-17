@@ -2,8 +2,8 @@ import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRa
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete, workbookFormulaOperation, checkUniqueRange } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
-import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { setCell, checkConditionalFormat } from './../index';
+import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { setCell, checkConditionalFormat, ExtendedRowModel } from './../index';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -18,13 +18,15 @@ import { setCell, checkConditionalFormat } from './../index';
  * @param {number} idx - Specifies the idx.
  * @param {boolean} skipHiddenRows - Specifies the skipHiddenRows.
  * @param {string} commonAddr - Specifies the common address for the address parameter specified with list of range separated by ','.
+ * @param {number} dateValueForSpecificColIdx - Specify the dateValueForSpecificColIdx.
  * @returns {Promise<Map<string, CellModel> | Object[]>} - To get the data
  * @hidden
  */
 export function getData(
     context: Workbook, address: string, columnWiseData?: boolean,
     valueOnly?: boolean, frozenIndexes?: number[],
-    filterDialog?: boolean, formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string):
+    filterDialog?: boolean, formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string,
+    dateValueForSpecificColIdx?: number):
     Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
@@ -59,7 +61,7 @@ export function getData(
                         indexes = getRangeIndexes(addr);
                         index = 0; sRow = indexes[0];
                         while (sRow <= indexes[2]) {
-                            const cells: { [key: string]: CellModel | string | Date } = data[index.toString()] || {};
+                            const cells: { [key: string]: CellModel | string | Date | number } = data[index.toString()] || {};
                             row = getRow(sheet, sRow); i = indexes[1];
                             while (i <= indexes[3]) {
                                 if (skipHiddenRows && isHiddenRow(sheet, sRow) && !filterDialog) { sRow++; continue; }
@@ -67,10 +69,22 @@ export function getData(
                                 const rowKey: string = '__rowIndex';
                                 if (valueOnly) {
                                     cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
+                                    if (typeof cells[key] === 'string' && !!Number(cells[key])) {
+                                        cells[key] = Number(cells[key]);
+                                    }
                                 } else {
                                     const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
-                                        cells[key] = cell;
+                                        if (i === dateValueForSpecificColIdx) {
+                                            cells[key] = extend(
+                                                {}, cell, { value: getValueFromFormat(context, sRow, i, sheetIdx, sheet, true) });
+                                            if (typeof (cells[key] as CellModel).value === 'string' && !!Number((cells[key] as CellModel).value)) {
+                                                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                                                (cells[key] as any).value = Number((cells[key] as CellModel).value);
+                                            }
+                                        } else {
+                                            cells[key] = cell;
+                                        }
                                     }
                                 }
                                 if (indexes[3] < i + 1 && Object.keys(cells).length) { cells[rowKey] = (sRow + 1).toString(); }
@@ -93,7 +107,7 @@ export function getData(
                             const eventArgs: CellInfoEventArgs = { cell: getCell(sRow, i, sheet), address: getCellAddress(sRow, i),
                                 rowIndex: sRow, colIndex: i };
                             context.trigger(queryCellInfo, eventArgs);
-                            const cellObj: CellModel = {}; Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
+                            const cellObj: CellModel = getCell(sRow, i, sheet, false, true);
                             if (cellObj.colSpan > 1 && cellObj.rowSpan > 1) {
                                 let cell: CellModel;
                                 for (let j: number = sRow, len: number = sRow + cellObj.rowSpan; j < len; j++) {
@@ -151,9 +165,11 @@ export function getData(
  * @param {number} colIndex - Specifies the colIndex.
  * @param {number} sheetIdx - Specifies the sheetIdx.
  * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {boolean} getIntValueFromDate - Specify the getIntValueFromDate.
  * @returns {string | Date} - To get the value format.
  */
-function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number, sheet: SheetModel): string | Date {
+function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number,
+                            sheet: SheetModel, getIntValueFromDate?: boolean): string | Date {
     const cell: CellModel = getCell(rowIndex, colIndex, sheet);
     if (cell) {
         if (cell.format) {
@@ -163,6 +179,9 @@ function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: numbe
             };
             context.notify(checkDateFormat, args);
             if (args.isDate) {
+                if (getIntValueFromDate) {
+                    return <string>args.updatedVal;
+                }
                 return args.dateObj as Date;
             } else { return cell.value; }
         } else { return cell.value; }
@@ -265,47 +284,39 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
 /**
  * @hidden
  * @param {Workbook} context - Specifies the context.
- * @param {string} address - Specifies the address.
+ * @param {number[]} range - Specifies the address range.
  * @param {number} sheetIdx - Specifies the sheetIdx.
  * @param {boolean} valueOnly - Specifies the bool value.
  * @returns {void} - To clear the range.
  */
-export function clearRange(context: Workbook, address: string, sheetIdx: number, valueOnly: boolean): void {
+export function clearRange(context: Workbook, range: number[], sheetIdx: number, valueOnly: boolean): void {
     const sheet: SheetModel = getSheet(context, sheetIdx);
-    const range: number[] = getIndexesFromAddress(address);
-    let sRIdx: number = range[0];
-    const eRIdx: number = range[2];
-    let sCIdx: number;
-    let eCIdx: number; let cellValue: string;
-    for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
-        sCIdx = range[1];
-        eCIdx = range[3];
-        for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-            const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [sRIdx, sCIdx], isUnique: false , uniqueRange: ''};
-            context.notify(checkUniqueRange, args); let skip: boolean = false;
+    let cellValue: string; let skip: boolean;
+    for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
+        if (((getRow(sheet, sRIdx) || {}) as ExtendedRowModel).isFiltered) { continue; }
+        for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
+            cellValue = '';
+            const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [sRIdx, sCIdx], isUnique: false ,
+                uniqueRange: '' };
+            context.notify(checkUniqueRange, args); skip = false;
             if (args.uniqueRange !== '') {
                 const rangeIndex: number[] = getIndexesFromAddress(args.uniqueRange);
                 skip = getCell(rangeIndex[0], rangeIndex[1], sheet).value === '#SPILL!';
             }
             if (!args.isUnique || skip) {
                 const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
-                cellValue = cell && cell.value;
                 context.notify(cFDelete, { rowIdx: sRIdx, colIdx: sCIdx });
-                if (!isNullOrUndefined(cell) && valueOnly) {
-                    delete cell.value;
-                    if (!isNullOrUndefined(cell.formula)) {
-                        delete cell.formula;
-                    }
-                    if (!isNullOrUndefined(cell.hyperlink)) {
-                        delete cell.hyperlink;
-                    }
+                if (cell) {
+                    cellValue = cell.value || (<unknown>cell.value === 0 ? '0' : '');
+                    delete cell.value; delete cell.formula; delete cell.hyperlink;
                 }
-                if (!isNullOrUndefined(cellValue) && cellValue !== '') {
+                if (cellValue) {
                     context.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRIdx, colIndex: sCIdx });
+                    context.trigger(
+                        'cellSave', { value: '', oldValue: cellValue, address: `${sheet.name}!${getCellAddress(sRIdx, sCIdx)}`, formula:
+                        (cell && cell.formula) || '', displayText: '' });
                 }
-                if (valueOnly) {
-                    context.notify(checkConditionalFormat, { rowIdx: sRIdx, colIdx: sCIdx, cell: cell, isAction: true });
-                }
+                context.notify(checkConditionalFormat, { rowIdx: sRIdx, colIdx: sCIdx, cell: cell, isAction: true });
             }
         }
     }

@@ -226,10 +226,13 @@ export class TextPosition {
                 widget = page.footerWidget;
             }
         } else if (value === 'FN' || value === 'EN') {
+            let index1: number = position.index.indexOf(';');
+            let value1: string = position.index.substring(0, index1);
+            position.index = position.index.substring(index1).replace(';', '');
             if (value === 'FN') {
-                widget = page.footnoteWidget;
+                widget = page.footnoteWidget.bodyWidgets[value1];
             } else {
-                widget = page.endnoteWidget;
+                widget = page.endnoteWidget.bodyWidgets[value1];
             }
         } else if (!isNullOrUndefined(page)) {
             widget = page.bodyWidgets[0];
@@ -419,8 +422,8 @@ export class TextPosition {
         let lineLength: number = this.selection.getLineLength(lineWidget);
         const lineIndex: number = lineWidget.paragraph.childWidgets.indexOf(lineWidget);
         if (lineWidget.isLastLine()) {
-            if (!isNullOrUndefined(lineWidget.paragraph.footNoteReference)) {
-                lineLength = lineLength + lineWidget.paragraph.footNoteReference.text.length;
+            if (!isNullOrUndefined(lineWidget.paragraph.bodyWidget.footNoteReference)) {
+                lineLength = lineLength + lineWidget.paragraph.bodyWidget.footNoteReference.text.length;
             } else {
                 lineLength = lineLength + 1;
             }
@@ -842,6 +845,10 @@ export class TextPosition {
         end = end.replace(/H;/g, '');
         start = start.replace(/F;/g, '');
         end = end.replace(/F;/g, '');
+        start = start.replace(/FN;/g, '');
+        end = end.replace(/FN;/g, '');
+        start = start.replace(/EN;/g, '');
+        end = end.replace(/EN;/g, '');
         const selectionStart: string[] = start.split(';');
         const selectionEnd: string[] = end.split(';');
         let length: number = selectionStart.length;

@@ -6,7 +6,6 @@ import { isNullOrUndefined as isNOU, detach, createElement, closest } from '@syn
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { markerClassName } from './dom-node';
 import { NodeCutter } from './nodecutter';
-import { EnterKeyAction } from '../../rich-text-editor/actions/enter-key';
 /**
  * Formats internal component
  *
@@ -260,7 +259,6 @@ export class Formats {
                     } else {
                         tempElem = previousNode as HTMLElement;
                     }
-                   
                     let preNode: Node = tempElem.previousSibling;
                     while (!isNOU(preNode) && preNode.nodeName !== 'BR' &&
                     !this.parent.domNode.isBlockNode(preNode as Element)) {

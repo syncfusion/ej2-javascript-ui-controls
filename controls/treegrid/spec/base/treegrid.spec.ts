@@ -1635,10 +1635,138 @@ describe('TreeGrid base module', () => {
       gridObj.expandAtLevel(0);
       expect(gridObj.getRows()[0].querySelectorAll('.e-treegridexpand').length).toBe(1);
     });
+
     afterAll(() => {
       destroy(gridObj);
     });
   });
+
+  describe('EJ2-54516-expandByKey method testing', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource:sampleData,
+          childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right' },
+                { field: 'taskName', headerText: 'Task Name', width: 180 },
+                {
+                  field: 'startDate',
+                  headerText: 'Start Date',
+                  width: 90,
+                  textAlign: 'Right',
+                  type: 'date',
+                  format: 'yMd'
+                },
+                {
+                  field: 'endDate',
+                  headerText: 'End Date',
+                  width: 90,
+                  textAlign: 'Right',
+                  type: 'date',
+                  format: 'yMd'
+                },
+                {
+                  field: 'duration',
+                  headerText: 'Duration',
+                  width: 80,
+                  textAlign: 'Right'
+                },
+                {
+                  field: 'progress',
+                  headerText: 'Progress',
+                  width: 80,
+                  textAlign: 'Right'
+                },
+                { field: 'priority', headerText: 'Priority', width: 90 }
+            ]
+        },
+        done
+      );
+    });
+
+    it('Expand/Collapse By Key', () => {
+      gridObj.collapseByKey(6);
+      expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      gridObj.expandByKey(6);
+      expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-54516-expand/collapse level method test with params', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource:sampleData,
+          childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            enableCollapseAll: true,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right' },
+                { field: 'taskName', headerText: 'Task Name', width: 180 },
+                {
+                  field: 'startDate',
+                  headerText: 'Start Date',
+                  width: 90,
+                  textAlign: 'Right',
+                  type: 'date',
+                  format: 'yMd'
+                },
+                {
+                  field: 'endDate',
+                  headerText: 'End Date',
+                  width: 90,
+                  textAlign: 'Right',
+                  type: 'date',
+                  format: 'yMd'
+                },
+                {
+                  field: 'duration',
+                  headerText: 'Duration',
+                  width: 80,
+                  textAlign: 'Right'
+                },
+                {
+                  field: 'progress',
+                  headerText: 'Progress',
+                  width: 80,
+                  textAlign: 'Right'
+                },
+                { field: 'priority', headerText: 'Priority', width: 90 }
+            ],
+            expanding: function(args: RowExpandingEventArgs) {
+              args.expandAll = true;
+            },
+            collapsing: function(args: RowCollapsingEventArgs) {
+              args.collapseAll = true;
+            }
+        },
+        done
+      );
+    });
+
+    it('ExpandAtLevel with params', () => {
+      gridObj.expandAtLevel(1);
+      expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(2);
+      gridObj.collapseAtLevel(1);
+      expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(8);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
 
   it('memory leak', () => {
     profile.sample();

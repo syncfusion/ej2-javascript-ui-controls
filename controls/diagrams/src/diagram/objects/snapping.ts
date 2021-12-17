@@ -702,7 +702,9 @@ export class Snapping {
         this.sortByDistance(objectsAtTop, 'distance', true);
         this.sortByDistance(objectsAtBottom, 'distance', true);
         const equallySpaced: Objects[] = [];
-        const bounds: Rect = getBounds(shape.wrapper);
+        let wrapper: Container;
+        wrapper = this.getWrapperObject(shape, diagram.nameTable);
+        const bounds: Rect = getBounds(wrapper);
         let nearesttop: Rect; let nearestbottom: Rect;
         let targetBounds: Rect;
         let equaldistance: number;

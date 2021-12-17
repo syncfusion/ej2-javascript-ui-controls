@@ -1,6 +1,6 @@
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PivotView } from '../../pivotview/base/pivotview';
-import { DrillThroughEventArgs, EditCompletedEventArgs } from '../base/interface';
+import { PivotActionInfo, DrillThroughEventArgs, EditCompletedEventArgs } from '../base/interface';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, closest } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar, ExcelExport, PdfExport } from '@syncfusion/ej2-grids';
@@ -63,134 +63,150 @@ export class DrillThroughDialog {
             this.clonedData.push(this.frameHeaderWithKeys(eventArgs.rawData[i]));
         }
         let actualText: string = eventArgs.currentCell.actualText.toString();
-        if (this.parent.currentView === 'Table' && this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
-            this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
-            this.engine.fieldList[actualText].aggregateType !== 'DistinctCount' && typeof (eventArgs.rawData[0][actualText]) !== 'string') {
-            this.editCell(eventArgs);
-        } else {
-            this.removeDrillThroughDialog();
-            let drillThroughDialog: HTMLElement = createElement('div', {
-                id: this.parent.element.id + '_drillthrough',
-                className: cls.DRILLTHROUGH_DIALOG
-            });
-            this.parent.element.appendChild(drillThroughDialog);
-            this.dialogPopUp = new Dialog({
-                animationSettings: { effect: 'Fade' },
-                allowDragging: false,
-                header: this.parent.localeObj.getConstant('details'),
-                content: this.createDrillThroughGrid(eventArgs),
-                beforeOpen: () => {
-                    this.drillThroughGrid.setProperties({
-                        dataSource: this.parent.editSettings.allowEditing ?
-                            this.dataWithPrimarykey(eventArgs) : this.gridData,
-                        height: !this.parent.editSettings.allowEditing ? 300 : 220
-                    }, false);
-                },
-                beforeClose: () => {
-                    if (this.parent.editSettings.allowEditing && this.isUpdated) {
-                        if (this.parent.dataSourceSettings.type === 'CSV') {
-                            this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
-                        }
-                        let gridIndexObjectsValue: string[] = Object.keys(this.gridIndexObjects);
-                        let previousPosition: number[] = [];
-                        for (let value of gridIndexObjectsValue) {
-                            previousPosition.push(this.gridIndexObjects[value]);
-                        }
-                        let count: number = Object.keys(this.gridIndexObjects).length;
-                        let addItems: IDataSet[] = [];
-                        let prevItems: IDataSet[] = [];
-                        let index: number = 0;
-                        /* eslint-disable @typescript-eslint/dot-notation */
-                        for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
-                            if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
-                                for (let field of this.engine.fields) {
-                                    if (isNullOrUndefined(item[field])) {
-                                        delete item[field];
+        try {
+            if (this.parent.currentView === 'Table' && this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
+                this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
+                this.engine.fieldList[actualText].aggregateType !== 'DistinctCount' && typeof (eventArgs.rawData[0][actualText]) !== 'string') {
+                this.parent.actionObj.actionName = events.editRecord;
+                if (this.parent.actionBeginMethod()) {
+                    return;
+                }
+                this.editCell(eventArgs);
+            } else {
+                this.removeDrillThroughDialog();
+                let drillThroughDialog: HTMLElement = createElement('div', {
+                    id: this.parent.element.id + '_drillthrough',
+                    className: cls.DRILLTHROUGH_DIALOG
+                });
+                this.parent.element.appendChild(drillThroughDialog);
+                this.dialogPopUp = new Dialog({
+                    animationSettings: { effect: 'Fade' },
+                    allowDragging: false,
+                    header: this.parent.localeObj.getConstant('details'),
+                    content: this.createDrillThroughGrid(eventArgs),
+                    beforeOpen: () => {
+                        this.drillThroughGrid.setProperties({
+                            dataSource: this.parent.editSettings.allowEditing ?
+                                this.dataWithPrimarykey(eventArgs) : this.gridData,
+                            height: !this.parent.editSettings.allowEditing ? 300 : 220
+                        }, false);
+                    },
+                    beforeClose: () => {
+                        if (this.parent.editSettings.allowEditing && this.isUpdated) {
+                            if (this.parent.dataSourceSettings.type === 'CSV') {
+                                this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
+                            }
+                            let gridIndexObjectsValue: string[] = Object.keys(this.gridIndexObjects);
+                            let previousPosition: number[] = [];
+                            for (let value of gridIndexObjectsValue) {
+                                previousPosition.push(this.gridIndexObjects[value]);
+                            }
+                            let count: number = Object.keys(this.gridIndexObjects).length;
+                            let addItems: IDataSet[] = [];
+                            let prevItems: IDataSet[] = [];
+                            let index: number = 0;
+                            /* eslint-disable @typescript-eslint/dot-notation */
+                            for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
+                                if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
+                                    for (let field of this.engine.fields) {
+                                        if (isNullOrUndefined(item[field])) {
+                                            delete item[field];
+                                        }
+                                    }
+                                    delete item['__index'];
+                                    addItems.push(item);
+                                } else if (count > 0) {
+                                    delete this.gridIndexObjects[item['__index'].toString()];
+                                    prevItems.push(item);
+                                    count--;
+                                }
+                                if (this.parent.dataSourceSettings.mode === 'Server') {
+                                    if (item['__index']) {
+                                        delete item['__index'];
+                                    }
+                                    if (this.gridData[index]['__index']) {
+                                        delete this.gridData[index]['__index'];
                                     }
                                 }
-                                delete item['__index'];
-                                addItems.push(item);
-                            } else if (count > 0) {
-                                delete this.gridIndexObjects[item['__index'].toString()];
-                                prevItems.push(item);
-                                count--;
+                                index++;
                             }
+                            count = 0;
                             if (this.parent.dataSourceSettings.mode === 'Server') {
-                                if (item['__index']) {
+                                let gridIndex: object[] = [];   /* eslint-disable-line */
+                                let keys: string[] = Object.keys(this.gridIndexObjects);
+                                for (let len: number = 0; len < keys.length; len++) {
+                                    delete this.parent.drillThroughValue.indexObject[this.gridIndexObjects[keys[len]]];
+                                    gridIndex.push({ Key: keys[len], Value: this.gridIndexObjects[keys[len]] });    /* eslint-disable-line */
+                                }
+                                let indexObject: object[] = []; /* eslint-disable-line */
+                                keys = Object.keys(this.parent.drillThroughValue.indexObject);
+                                for (let len: number = 0; len < keys.length; len++) {
+                                    indexObject.push({ Key: keys[len], Value: this.parent.drillThroughValue.indexObject[keys[len]] });  /* eslint-disable-line */
+                                }
+                                this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { 'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems, indexObject: indexObject });
+                            } else {
+                                let items: IDataSet[] = [];
+                                let data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+                                    this.parent.engineModule.actualData : this.parent.engineModule.data;
+                                for (let item of data as IDataSet[]) {
                                     delete item['__index'];
+                                    if (this.gridIndexObjects[count.toString()] === undefined) {
+                                        items.push(item);
+                                    }
+                                    count++;
                                 }
-                                if (this.gridData[index]['__index']) {
-                                    delete this.gridData[index]['__index'];
+                                /* eslint-enable @typescript-eslint/dot-notation */
+                                items = items.concat(addItems);
+                                let eventArgs: EditCompletedEventArgs = {
+                                    currentData: this.drillThroughGrid.dataSource as IDataSet[],
+                                    previousData: this.clonedData,
+                                    previousPosition: previousPosition,
+                                    cancel: false
+                                };
+                                this.parent.trigger(events.editCompleted, eventArgs);
+                                if (!eventArgs.cancel) {
+                                    this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                                    (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                                    this.parent.pivotValues = this.engine.pivotValues;
                                 }
                             }
-                            index++;
+                            this.parent.actionObj.actionName = events.recordUpdated;
+                            let actionInfo: PivotActionInfo = {
+                                editInfo: {
+                                    type: this.drillThroughGrid.editSettings.mode, action: 'Update', currentData: this.drillThroughGrid.dataSource as IDataSet[],
+                                    previousData: this.clonedData, previousPosition: previousPosition
+                                }
+                            }
+                            this.parent.actionObj.actionInfo = actionInfo;
                         }
-                        count = 0;
-                        if (this.parent.dataSourceSettings.mode === 'Server') {
-                            let gridIndex: object[] = [];   /* eslint-disable-line */
-                            let keys: string[] = Object.keys(this.gridIndexObjects);
-                            for (let len: number = 0; len < keys.length; len++) {
-                                delete this.parent.drillThroughValue.indexObject[this.gridIndexObjects[keys[len]]];
-                                gridIndex.push({ Key: keys[len], Value: this.gridIndexObjects[keys[len]] });    /* eslint-disable-line */
-                            }
-                            let indexObject: object[] = []; /* eslint-disable-line */
-                            keys = Object.keys(this.parent.drillThroughValue.indexObject);
-                            for (let len: number = 0; len < keys.length; len++) {
-                                indexObject.push({ Key: keys[len], Value: this.parent.drillThroughValue.indexObject[keys[len]] });  /* eslint-disable-line */
-                            }
-                            this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { 'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems, indexObject: indexObject });
-                        } else {
-                            let items: IDataSet[] = [];
-                            let data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
-                                this.parent.engineModule.actualData : this.parent.engineModule.data;
-                            for (let item of data as IDataSet[]) {
-                                delete item['__index'];
-                                if (this.gridIndexObjects[count.toString()] === undefined) {
-                                    items.push(item);
-                                }
-                                count++;
-                            }
-                            /* eslint-enable @typescript-eslint/dot-notation */
-                            items = items.concat(addItems);
-                            let eventArgs: EditCompletedEventArgs = {
-                                currentData: this.drillThroughGrid.dataSource as IDataSet[],
-                                previousData: this.clonedData,
-                                previousPosition: previousPosition,
-                                cancel: false
-                            };
-                            this.parent.trigger(events.editCompleted, eventArgs);
-                            if (!eventArgs.cancel) {
-                                this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                                (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                                this.parent.pivotValues = this.engine.pivotValues;
-                            }
-                        }
-                    }
-                    this.isUpdated = false;
-                    this.gridIndexObjects = {};
-                },
-                isModal: true,
-                visible: true,
-                showCloseIcon: true,
-                locale: this.parent.locale,
-                enableRtl: this.parent.enableRtl,
-                width: this.parent.isAdaptive ? '100%' : '60%',
-                position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
-                closeOnEscape: !this.parent.editSettings.allowEditing,
-                target: document.body,
-                close: this.removeDrillThroughDialog.bind(this)
-            });
-            this.dialogPopUp.isStringTemplate = true;
-            this.dialogPopUp.appendTo(drillThroughDialog);
-            // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
-            setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
-            if (this.parent.editSettings.allowEditing) {
-                this.drillthroughKeyboardModule = new KeyboardEvents(this.dialogPopUp.element, {
-                    keyAction: this.drillthroughKeyActionHandler.bind(this),
-                    keyConfigs: this.drillKeyConfigs,
-                    eventName: 'keydown'
+                        this.isUpdated = false;
+                        this.gridIndexObjects = {};
+                    },
+                    isModal: true,
+                    visible: true,
+                    showCloseIcon: true,
+                    locale: this.parent.locale,
+                    enableRtl: this.parent.enableRtl,
+                    width: this.parent.isAdaptive ? '100%' : '60%',
+                    position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
+                    closeOnEscape: !this.parent.editSettings.allowEditing,
+                    target: document.body,
+                    close: this.removeDrillThroughDialog.bind(this)
                 });
+                this.dialogPopUp.isStringTemplate = true;
+                this.dialogPopUp.appendTo(drillThroughDialog);
+                // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
+                setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+                if (this.parent.editSettings.allowEditing) {
+                    this.drillthroughKeyboardModule = new KeyboardEvents(this.dialogPopUp.element, {
+                        keyAction: this.drillthroughKeyActionHandler.bind(this),
+                        keyConfigs: this.drillKeyConfigs,
+                        eventName: 'keydown'
+                    });
+                }
             }
+        } catch (execption) {
+            this.parent.actionFailureMethod(execption);
         }
     }
 
@@ -207,6 +223,10 @@ export class DrillThroughDialog {
         if (eventArgs.currentCell.actualText in previousData) {
             currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
         }
+        let actionInfo: PivotActionInfo = {
+            editInfo: { type: 'Inline editing', action: 'update', data: this.gridData }
+        }
+        this.parent.actionObj.actionInfo = actionInfo;
         this.numericTextBox = new NumericTextBox({
             value: cellValue,
             enableRtl: this.parent.enableRtl,
@@ -272,6 +292,10 @@ export class DrillThroughDialog {
 
     private removeDrillThroughDialog(): void {
         if (this.dialogPopUp && !this.dialogPopUp.isDestroyed) {
+            this.parent.actionObj.actionName = events.drillThroughClosed;
+            if (this.parent.actionObj.actionName) {
+                this.parent.actionCompleteMethod();
+            }
             this.dialogPopUp.destroy();
         }
         let dialogElement: HTMLElement = document.getElementById(this.parent.element.id + '_drillthrough');
@@ -362,28 +386,49 @@ export class DrillThroughDialog {
         }
         if (this.parent.editSettings.allowEditing) {
             Grid.Inject(Edit, Page);
-            this.drillThroughGrid.editSettings = this.parent.editSettings;
-            if (this.parent.editSettings.allowCommandColumns) {
-                this.drillThroughGrid.editSettings.mode = 'Normal';
-                this.drillThroughGrid.editSettings.allowEditOnDblClick = false;
-                Grid.Inject(CommandColumn);
+            try {
+                this.drillThroughGrid.editSettings = this.parent.editSettings;
+                this.drillThroughGrid.actionBegin = (args: any) => {
+                    let actionName: string = (args.requestType == 'save') ? events.saveEditedRecords : (args.requestType == 'add') ? events.addNewRecord : (args.requestType == 'delete') ? events.removeRecord : '';
+                    this.parent.actionObj.actionName = actionName;
+                    if (this.parent.actionObj.actionName) {
+                        if (this.parent.actionBeginMethod()) {
+                            return;
+                        }
+                    }
+                }
+                if (this.parent.editSettings.allowCommandColumns) {
+                    this.drillThroughGrid.editSettings.mode = 'Normal';
+                    this.drillThroughGrid.editSettings.allowEditOnDblClick = false;
+                    Grid.Inject(CommandColumn);
+                    (this.drillThroughGrid.columns as ColumnModel[]).push({
+                        headerText: this.parent.localeObj.getConstant('manageRecords'), width: 160, showInColumnChooser: false,
+                        commands: [
+                            { type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                            { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                            { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                            { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    });
+                } else {
+                    this.drillThroughGrid.editSettings.allowEditOnDblClick = this.parent.editSettings.allowEditOnDblClick;
+                }
                 (this.drillThroughGrid.columns as ColumnModel[]).push({
-                    headerText: this.parent.localeObj.getConstant('manageRecords'), width: 160, showInColumnChooser: false,
-                    commands: [
-                        { type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
-                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
-                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
-                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false
                 });
-            } else {
-                this.drillThroughGrid.editSettings.allowEditOnDblClick = this.parent.editSettings.allowEditOnDblClick;
+            } catch (execption) {
+                this.parent.actionFailureMethod(execption);
             }
-            (this.drillThroughGrid.columns as ColumnModel[]).push({
-                field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false
-            });
             this.drillThroughGrid.actionComplete = (args: any) => {
                 if (args.requestType === 'batchsave' || args.requestType === 'save' || args.requestType === 'delete') {
                     dialogModule.isUpdated = true;
+                }
+                this.parent.actionObj.actionName = this.parent.getActionCompleteName();
+                let actionInfo: PivotActionInfo = {
+                    editInfo: { type: this.drillThroughGrid.editSettings.mode, action: args.requestType, data: this.gridData }
+                }
+                this.parent.actionObj.actionInfo = actionInfo;
+                if (this.parent.actionObj.actionName) {
+                    this.parent.actionCompleteMethod();
                 }
                 if ((dialogModule.drillThroughGrid.editSettings.mode === 'Normal' && args.requestType === 'save' &&
                     dialogModule.drillThroughGrid.element.querySelectorAll('.e-tbar-btn:hover').length > 0 &&

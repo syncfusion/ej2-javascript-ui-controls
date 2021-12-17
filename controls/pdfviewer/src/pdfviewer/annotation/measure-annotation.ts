@@ -1019,7 +1019,7 @@ export class MeasureAnnotation {
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any, isNewlyAdded?: boolean): IMeasureShapeAnnotation {
         if (!isNewlyAdded) {
-            this.pdfViewer.isDocumentEdited = true;
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
         let currentAnnotObject: IMeasureShapeAnnotation = null;
         const pageAnnotations: IMeasureShapeAnnotation[] = this.getAnnotations(pageNumber, null);

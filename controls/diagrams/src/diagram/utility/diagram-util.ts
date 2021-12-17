@@ -582,7 +582,7 @@ export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, no
                 if (isBlazor()) {
                     // Iterate the node data and get the assistant.
                     for (const dataValue of Object.keys(node.data)) {
-                        assistantKey = node.data[dataValue];
+                        assistantKey = dataValue;
                         if(node.data[assistantKey] === defaultValue[key]['root']) {
                             break;
                         }

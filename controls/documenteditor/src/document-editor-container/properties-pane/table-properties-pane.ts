@@ -643,10 +643,10 @@ export class TableProperties {
             return;
         }
         this.parentElement.style.display = isShow ? 'block' : 'none';
-        if(isShow){
-            let tabHeaderHeight: HTMLElement = (this.parentElement.getElementsByClassName('e-tab-header')[0] as HTMLElement);
+        if (isShow){
+            const tabHeaderHeight: HTMLElement = (this.parentElement.getElementsByClassName('e-tab-header')[0] as HTMLElement);
             if (tabHeaderHeight) {
-                let paneHeight: number = this.parentElement.offsetHeight - tabHeaderHeight.offsetHeight;
+                const paneHeight: number = this.parentElement.offsetHeight - tabHeaderHeight.offsetHeight;
                 this.tableProperties.style.height = paneHeight + 'px';
                 this.tableTextProperties.element.style.height = paneHeight + 'px';
             }

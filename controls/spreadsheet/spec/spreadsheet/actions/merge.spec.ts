@@ -84,41 +84,43 @@ describe('Merge ->', () => {
                 checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['0px', '0px', '40px', '192px']);
                 helper.invoke('selectRange', ['K2']);
                 helper.invoke('paste', ['K2']);
-                helper.invoke('getData', ['Sheet1!K2']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('K2').value).toEqual('Item Name');
-                    expect(values.get('K2').colSpan).toBe(3);
-                    expect(values.get('K2').rowSpan).toBe(2);
-                    expect(helper.getInstance().sheets[0].rows[2].cells[12].colSpan).toBe(-2);
-                    expect(helper.getInstance().sheets[0].rows[2].cells[10].rowSpan).toBe(-1);
-                    const td: HTMLTableCellElement = helper.invoke('getCell', [1, 10]);
-                    expect(td.rowSpan).toBe(2);
-                    expect(td.colSpan).toBe(3);
-                    expect(helper.invoke('getCell', [1, 11]).style.display).toBe('none');
-                    // expect(helper.invoke('getCell', [2, 12]).style.display).toBe('none');
+                setTimeout(() => {
+                    helper.invoke('getData', ['Sheet1!K2']).then((values: Map<string, CellModel>) => {
+                        expect(values.get('K2').value).toEqual('Item Name');
+                        expect(values.get('K2').colSpan).toBe(3);
+                        expect(values.get('K2').rowSpan).toBe(2);
+                        expect(helper.getInstance().sheets[0].rows[2].cells[12].colSpan).toBe(-2);
+                        expect(helper.getInstance().sheets[0].rows[2].cells[10].rowSpan).toBe(-1);
+                        const td: HTMLTableCellElement = helper.invoke('getCell', [1, 10]);
+                        expect(td.rowSpan).toBe(2);
+                        expect(td.colSpan).toBe(3);
+                        expect(helper.invoke('getCell', [1, 11]).style.display).toBe('none');
+                        // expect(helper.invoke('getCell', [2, 12]).style.display).toBe('none');
 
-                    // Cut paste for merged range
-                    helper.invoke('selectRange', ['B5:C5']);
-                    setTimeout(() => {
-                        helper.invoke('cut').then(() => {
-                            checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['79px', '63px', '61px', '65px']);
-                            checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['79px', '63px', '61px', '129px']);
-                            helper.invoke('selectRange', ['E10']);
-                            helper.invoke('paste', ['E10']);
-                            helper.invoke('getData', ['Sheet1!E10:F12']).then((values: any) => {
-                                expect(values.get('E10').value).toBe(41964);
-                                expect(values.get('E10').colSpan).toBeUndefined();
-                                expect(values.get('E10').rowSpan).toBe(3);
-                                expect(values.get('E11').rowSpan).toBe(-1);
-                                expect(values.get('F10').value).toBe(0.2665972222222222);
-                                expect(values.get('F10').colSpan).toBeUndefined();
-                                expect(values.get('F10').rowSpan).toBe(3);
-                                expect(values.get('F12').rowSpan).toBe(-2);
-                                const td: HTMLTableCellElement = helper.invoke('getCell', [9, 5]);
-                                expect(td.colSpan).toBe(1);
-                                expect(td.rowSpan).toBe(3);
-                                expect(helper.invoke('getCell', [10, 5]).style.display).toBe('none');
-                                expect(helper.invoke('getCell', [11, 5]).style.display).toBe('none');
-                                done();
+                        // Cut paste for merged range
+                        helper.invoke('selectRange', ['B5:C5']);
+                        setTimeout(() => {
+                            helper.invoke('cut').then(() => {
+                                checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['79px', '63px', '61px', '65px']);
+                                checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['79px', '63px', '61px', '129px']);
+                                helper.invoke('selectRange', ['E10']);
+                                helper.invoke('paste', ['E10']);
+                                helper.invoke('getData', ['Sheet1!E10:F12']).then((values: any) => {
+                                    expect(values.get('E10').value).toBe(41964);
+                                    expect(values.get('E10').colSpan).toBeUndefined();
+                                    expect(values.get('E10').rowSpan).toBe(3);
+                                    expect(values.get('E11').rowSpan).toBe(-1);
+                                    expect(values.get('F10').value).toBe(0.2665972222222222);
+                                    expect(values.get('F10').colSpan).toBeUndefined();
+                                    expect(values.get('F10').rowSpan).toBe(3);
+                                    expect(values.get('F12').rowSpan).toBe(-2);
+                                    const td: HTMLTableCellElement = helper.invoke('getCell', [9, 5]);
+                                    expect(td.colSpan).toBe(1);
+                                    expect(td.rowSpan).toBe(3);
+                                    expect(helper.invoke('getCell', [10, 5]).style.display).toBe('none');
+                                    expect(helper.invoke('getCell', [11, 5]).style.display).toBe('none');
+                                    done();
+                                });
                             });
                         });
                     });

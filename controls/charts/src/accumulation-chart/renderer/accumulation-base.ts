@@ -129,7 +129,7 @@ export class AccumulationBase {
         const series: AccumulationSeries = this.accumulation.visibleSeries[0];
         const duration: number = this.accumulation.enableAnimation ? 300 : 0;
         for (const point of series.points) {
-            if (point.isExplode) {
+            if (point.isExplode && point.y !== 0) {
                 this.pointExplode(point.index, point, duration);
             }
         }
@@ -178,7 +178,7 @@ export class AccumulationBase {
         if (series.type === 'Pie' && (clubPointsExploded || point.isClubbed)) {
             explodePoints = this.clubPointExplode(index, point, series, points, chart, duration, clubPointsExploded);
         }
-        if (explodePoints) {
+        if (explodePoints && point.y !== 0) {
             this.pointExplode(index, point, duration, explode);
         }
     }

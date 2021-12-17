@@ -47,7 +47,6 @@ export class EventWindow {
     private duration: number;
     private isCrudAction: boolean;
     private eventWindowTime: Record<string, Date>;
-    private timezoneData: Record<string, any>[];
     private isEnterKey: boolean;
     private dialogEvent: Event;
 
@@ -55,7 +54,6 @@ export class EventWindow {
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
-        this.timezoneData = this.parent.tzModule.timezoneData;
         this.eventWindowTime = { startTime: new Date(), endTime: new Date() };
         this.renderEventWindow();
     }
@@ -503,14 +501,15 @@ export class EventWindow {
             allowFiltering: true,
             change: this.onTimezoneChange.bind(this),
             cssClass: this.parent.cssClass || '',
-            dataSource: this.timezoneData,
+            dataSource: this.parent.timezoneDataSource as any[],
             enableRtl: this.parent.enableRtl,
             fields: { text: 'Text', value: 'Value' },
-            filterBarPlaceholder: 'Search Timezone',
+            filterBarPlaceholder: this.parent.localeObj.getConstant('searchTimezone'),
+            noRecordsTemplate: this.parent.localeObj.getConstant('noRecords'),
             filtering: (e: FilteringEventArgs) => {
                 let query: Query = new Query();
                 query = (e.text !== '') ? query.where('Text', 'contains', e.text, true) : query;
-                e.updateData(this.timezoneData, query);
+                e.updateData(this.parent.timezoneDataSource as any[], query);
             },
             htmlAttributes: { 'title': this.getFieldLabel(value), 'name': fieldName },
             floatLabelType: 'Always',
@@ -1806,7 +1805,6 @@ export class EventWindow {
             this.fields = null;
             this.buttonObj = null;
             this.repeatStatus = null;
-            this.timezoneData = null;
             this.eventWindowTime = null;
         }
     }

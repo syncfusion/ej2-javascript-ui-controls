@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, setCulture, Browser, resetBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';import { AxisModel } from './axes/axis-model';import { Axis, Pointer } from './axes/axis';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMouseUp, resized, valueChange } from './model/constant';import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange } from './utils/helper';import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';import { dragEnd, dragMove, dragStart } from './model/constant';import { AxisLayoutPanel } from './axes/axis-panel';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { AxisRenderer } from './axes/axis-renderer';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { getThemeStyle } from './model/theme';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../linear-gauge/utils/enum';import { Print } from './model/print';import { PdfExport } from './model/pdf-export';import { ImageExport } from './model/image-export';import { Gradient } from './axes/gradient';
+import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';import { AxisModel } from './axes/axis-model';import { Axis, Pointer } from './axes/axis';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMouseUp, resized, valueChange } from './model/constant';import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange, getExtraWidth } from './utils/helper';import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';import { dragEnd, dragMove, dragStart } from './model/constant';import { AxisLayoutPanel } from './axes/axis-panel';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { AxisRenderer } from './axes/axis-renderer';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { getThemeStyle } from './model/theme';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../linear-gauge/utils/enum';import { Print } from './model/print';import { PdfExport } from './model/pdf-export';import { ImageExport } from './model/image-export';import { Gradient } from './axes/gradient';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -166,7 +166,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers after the gauge gets rendered.
      *
      * @event
-     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
@@ -174,7 +173,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers before the gauge gets rendered.
      *
      * @event
-     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadEventArgs>;
 
@@ -182,7 +180,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers after completing the animation for pointer.
      *
      * @event
-     * @blazorProperty 'AnimationCompleted'
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
@@ -190,7 +187,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers before each axis label gets rendered.
      *
      * @event
-     * @blazorProperty 'AxisLabelRendering'
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
@@ -198,7 +194,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers before the pointer is dragged.
      *
      * @event
-     * @blazorProperty 'OnDragStart'
      */
 
     dragStart?: EmitType<IPointerDragEventArgs>;
@@ -207,7 +202,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers while dragging the pointers.
      *
      * @event
-     * @blazorProperty 'OnDragMove'
      */
 
     dragMove?: EmitType<IPointerDragEventArgs>;
@@ -216,7 +210,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers after the pointer is dragged.
      *
      * @event
-     * @blazorProperty 'OnDragEnd'
      */
     dragEnd?: EmitType<IPointerDragEventArgs>;
 
@@ -224,7 +217,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers before each annotation gets rendered.
      *
      * @event
-     * @blazorProperty 'AnnotationRendering'
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
@@ -233,7 +225,6 @@ export interface LinearGaugeModel extends ComponentModel{
      *
      * @event
      * @deprecated
-     * @blazorProperty 'TooltipRendering'
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -242,7 +233,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers when performing the mouse move operation on gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseMove'
      */
 
     gaugeMouseMove?: EmitType<IMouseEventArgs>;
@@ -251,7 +241,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers when performing the mouse leave operation from the gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseLeave'
      */
 
     gaugeMouseLeave?: EmitType<IMouseEventArgs>;
@@ -260,7 +249,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers when performing the mouse down operation on gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseDown'
      */
 
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
@@ -269,7 +257,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers when performing mouse up operation on gauge area.
      *
      * @event
-     * @blazorProperty 'OnGaugeMouseUp'
      */
 
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
@@ -278,7 +265,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers while changing the value of the pointer by UI interaction.
      *
      * @event
-     * @blazorProperty 'ValueChange'
      */
 
     valueChange?: EmitType<IValueChangeEventArgs>;
@@ -287,7 +273,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers after window resize.
      *
      * @event
-     * @blazorProperty 'Resizing'
      */
 
     resized?: EmitType<IResizeEventArgs>;
@@ -296,7 +281,6 @@ export interface LinearGaugeModel extends ComponentModel{
      * Triggers before the prints gets started.
      *
      * @event
-     * @blazorProperty 'OnPrint'
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;

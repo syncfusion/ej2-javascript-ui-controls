@@ -44,12 +44,12 @@ import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } 
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape } from './objects/node';
-import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, selectionHasConnector  } from './utility/diagram-util';
+import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, selectionHasConnector } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
-import { Connector } from './objects/connector';
+import { Connector,BezierSegment } from './objects/connector';
 import { ConnectorModel, BpmnFlowModel, OrthogonalSegmentModel } from './objects/connector-model';
 import { SnapSettings } from './diagram/grid-lines';
 import { RulerSettings } from './diagram/ruler-settings';
@@ -2254,7 +2254,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (let i: number = 0; i < this.nodes.length; i++) {
             node = this.nodes[i];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
-                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this, false);
+                // CR-F170298 Template is not updated properly while render multiple diagram in same page
+                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this, true);
                 break;
             }
         }
@@ -2262,20 +2263,23 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             node = this.nodes[i];
             annotation = node.annotations[0];
             if (annotation && annotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
+                // CR-F170298 Template is not updated properly while render multiple diagram in same page
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, true);
                 break;
             }
         }
         for (let i: number = 0; i < this.connectors.length; i++) {
             pathAnnotation = this.connectors[i].annotations[0];
             if (pathAnnotation && pathAnnotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
+                // CR-F170298 Template is not updated properly while render multiple diagram in same page
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, true);
                 break;
             }
         }
         for (let i: number = 0; i < this.selectedItems.userHandles.length; i++) {
             if (this.selectedItems.userHandles[i].template) {
-                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                // CR-F170298 Template is not updated properly while render multiple diagram in same page
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, true);
                 break;
             }
         }
@@ -5168,6 +5172,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         x = ((((textWrapper.bounds.center.x + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
                         y = ((((textWrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
                     }
+                    if(node instanceof Connector && node.type === 'Bezier'){
+                        let getCenterPoint = this.getMidPoint(node);
+                        x = (getCenterPoint as any).cx;
+                        y = (getCenterPoint as any).cy;
+                    }
                     attributes = {
                         'id': this.element.id + '_editTextBoxDiv', 'style': 'position: absolute' + ';left:' + x + 'px;top:' +
                             y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
@@ -5220,14 +5229,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const connector: Connector = this.nameTable[node.outEdges[i]];
             const target: Node = this.nameTable[connector.targetID];
             connector.visible = visibility;
-            if (!visibility) {
-                this.updateElementVisibility(connector.wrapper, connector, false);
-                target.isExpanded = visibility;
-            }
-            this.updateNodeExpand(target, target.isExpanded);
-            target.visible = visibility;
-            if (!visibility) {
-                this.updateElementVisibility(target.wrapper, target, false);
+            if (target) {
+                if (!visibility) {
+                    this.updateElementVisibility(connector.wrapper, connector, false);
+                    target.isExpanded = visibility;
+                }
+                this.updateNodeExpand(target, target.isExpanded);
+                target.visible = visibility;
+                if (!visibility) {
+                    this.updateElementVisibility(target.wrapper, target, false);
+                }
             }
 
         }
@@ -7435,15 +7446,50 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         if (this.diagramActions & DiagramAction.Interactions) {
                             this.updateCanupdateStyle(obj.wrapper.children, true);
                         }
+                        let centerPoint = this.getMidPoint(obj);
                         this.diagramRenderer.updateNode(
                             obj.wrapper as DiagramElement, diagramElementsLayer,
-                            htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id));
+                            htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id),centerPoint);
                         this.updateCanupdateStyle(obj.wrapper.children, true);
                     }
                 }
             }
         }
     }
+
+    //Method used to get mid point of Bezier Curve
+    private getMidPoint(obj: (NodeModel | ConnectorModel)) {
+        let centerPoint: number | PointModel;
+        centerPoint = obj.annotations[0] ? obj.annotations[0].offset : 0.5;
+        let finalPoint: object;
+        if (obj instanceof Connector && obj.type === 'Bezier') {
+            let points = [
+                [obj.sourcePoint.x, obj.sourcePoint.y],
+                [(obj.segments[0] as BezierSegment).bezierPoint2.x, (obj.segments[0] as BezierSegment).bezierPoint2.y],
+                [(obj.segments[0] as BezierSegment).bezierPoint1.x, (obj.segments[0] as BezierSegment).bezierPoint1.y],
+                [obj.targetPoint.x, obj.targetPoint.y]
+            ];
+            let helperPoints: object[] = [];
+            for (let i = 1; i < 4; i++) {
+                let p = this.findPointOnCurve(points[i - 1], points[i], centerPoint);
+                helperPoints.push(p);
+            }
+            helperPoints.push(this.findPointOnCurve(helperPoints[0], helperPoints[1], centerPoint));
+            helperPoints.push(this.findPointOnCurve(helperPoints[1], helperPoints[2], centerPoint));
+            helperPoints.push(this.findPointOnCurve(helperPoints[3], helperPoints[4], centerPoint));
+            finalPoint = { cx: helperPoints[5][0] - 2, cy: helperPoints[5][1] - 2 }
+        }
+        return finalPoint;
+    }
+
+    private findPointOnCurve(pointOne: object, pointTwo: object, t: number | any) {
+        let pointOnCurve = [
+            (pointTwo[0] - pointOne[0]) * t + pointOne[0],
+            (pointTwo[1] - pointOne[1]) * t + pointOne[1]
+        ];
+        return pointOnCurve;
+    }
+
     /**
      *updateGridContainer method \
      *
@@ -7754,6 +7800,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         pageBounds.height *= this.scroller.currentZoom;
         const difX: number = -this.scroller.horizontalOffset - pageBounds.x;
         const difY: number = -this.scroller.verticalOffset - pageBounds.y;
+        let getCenterPoint: object;
         for (const layerId of Object.keys(this.layerZIndexTable)) {
             const layer: LayerModel = this.commandHandler.getLayer(this.layerZIndexTable[layerId]);
             let left: string;
@@ -7814,10 +7861,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             renderNode.wrapper.arrange(renderNode.wrapper.desiredSize);
                         }
                     }
+                    if (renderNode instanceof Connector && renderNode.type === 'Bezier') {
+                        getCenterPoint = this.getMidPoint(renderNode);
+                    }
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
                         (!renderer.isSvgMode && transform) ? transformValue : undefined,
-                        undefined, undefined, status && (!this.diagramActions || isOverView));
+                        undefined, undefined, status && (!this.diagramActions || isOverView), undefined, undefined, getCenterPoint);
                 }
             }
         }
@@ -10716,6 +10766,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private selectDragedNode(newObj: (NodeModel | Connector), args: any, selectedSymbol: HTMLElement) {
+        this.currentSymbol = newObj as Node | Connector;
+        if (this.mode !== 'SVG') {
+            this.refreshDiagramLayer();
+        }
+        this.commandHandler.oldSelectedObjects = cloneSelectedObjects(this);
+        this.commandHandler.select(newObj);
+        this.commandHandler.updateBlazorSelector();
+        this.eventHandler.mouseDown(args.event);
+        this.eventHandler.mouseMove(args.event, args);
+        this.preventDiagramUpdate = false; this.updatePage(); selectedSymbol.style.opacity = '0';
+    }
+
     //property changes - end region
     /* tslint:disable */
     private initDroppables(): void {
@@ -10724,6 +10787,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let entryTable: {} = {};
         let header: NodeModel;
         let lane: NodeModel;
+        const selectedSymbols: string = 'selectedSymbols';
         this.droppable = new Droppable(this.element);
         // this.droppable.accept = '.e-dragclone';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10745,12 +10809,54 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const paletteId: string = selectedSymbol.getAttribute('paletteId');
                     let nodeDragSize: SymbolSizeModel; let nodePreviewSize: SymbolSizeModel; let paletteDragSize: SymbolSizeModel;
                     let preview: Size;
+                    if (!paletteId && args.dragData) {
+                        let arg: IDragEnterEventArgs | IBlazorDragEnterEventArgs = {
+                            source: null, element: newObj as Node, cancel: false,
+                            diagram: this,
+                            dragData: args.dragData.draggedElement.ej2_instances[0].dragData,
+                            dragItem: newObj
+                        };
+                        this.triggerEvent(DiagramEvent.dragEnter, arg);
+                        let newNode: Node;
+                        let newConnector: Connector;
+                        if (arg.dragItem && (arg.dragItem as Connector).sourcePoint && (arg.dragItem as Connector).targetPoint) {
+                            newConnector = new Connector(this, 'connectors', arg.dragItem, true);
+                        }
+                        else if (arg.dragItem) {
+                            newNode = new Node(this, 'nodes', arg.dragItem, true);
+                        }
+                        newObj = newNode ? newNode : (newConnector as any);
+                        this.initObject(newObj as IElement, undefined, undefined, true);
+                        this['enterObject'] = newObj;
+                        this['enterTable'] = entryTable;
+                        if (newObj instanceof Node) {
+                            newNode.offsetX = position.x + 5 + (newNode.width) * newNode.pivot.x;
+                            newNode.offsetY = position.y + (newNode.height) * newNode.pivot.y;
+                        }
+                        else if (newObj instanceof Connector) {
+                            const newObjBounds: Rect = Rect.toBounds([newObj.sourcePoint, newObj.targetPoint]);
+                            const diffx: number = position.x - newObjBounds.left;
+                            const diffy: number = position.y - newObjBounds.top;
+                            newObj.sourcePoint.x += diffx; newObj.sourcePoint.y += diffy;
+                            newObj.targetPoint.x += diffx; newObj.targetPoint.y += diffy;
+                        }
+                        this.preventDiagramUpdate = true;
+                        if (newObj.zIndex !== -1) {
+                            newObj.zIndex = -1;
+                        }
+                        this.currentSymbol = newObj as Node | Connector;
+                        if (this.mode !== 'SVG') {
+                            this.refreshDiagramLayer();
+                        }
+                        this.selectDragedNode(newObj, args, selectedSymbol);
+                        delete this['enterObject'];
+                        delete this['enterTable'];
+                    }
                     if (paletteId) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const sourceElement: Object = (document.getElementById(paletteId) as any).ej2_instances[0];
                         const source: string = 'sourceElement';
                         this.droppable[source] = sourceElement;
-                        const selectedSymbols: string = 'selectedSymbols';
                         const childtable: string = 'childTable';
                         if (sourceElement) {
                             const obj: IElement = sourceElement[selectedSymbols];
@@ -10874,7 +10980,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             }
                             let arg: IDragEnterEventArgs | IBlazorDragEnterEventArgs = {
                                 source: sourceElement, element: newObj as Node, cancel: false,
-                                diagram: this
+                                diagram: this, dragData: null, dragItem: newObj as Node
                             };
                             if (isBlazor()) {
                                 arg = this.getBlazorDragEventArgs(arg);
@@ -10932,16 +11038,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     newObj.zIndex = -1;
                                 }
                                 this.initObject(newObj as IElement, undefined, undefined, true);
-                                this.currentSymbol = newObj as Node | Connector;
-                                if (this.mode !== 'SVG') {
-                                    this.refreshDiagramLayer();
-                                }
-                                this.commandHandler.oldSelectedObjects = cloneSelectedObjects(this);
-                                this.commandHandler.select(newObj);
-                                this.commandHandler.updateBlazorSelector();
-                                this.eventHandler.mouseDown(args.event);
-                                this.eventHandler.mouseMove(args.event, args);
-                                this.preventDiagramUpdate = false; this.updatePage(); selectedSymbol.style.opacity = '0';
+                                this.selectDragedNode(newObj, args, selectedSymbol);
                             }
                             delete this['enterObject'];
                             delete this['enterTable'];

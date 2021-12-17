@@ -607,6 +607,8 @@ export interface ActionBeginEventArgs {
     originalEvent?: MouseEvent | KeyboardEvent
     /** Defines the event name. */
     name?: string
+    /** Defines the selection type is dropdown. */
+    selectType?: string
     /**
      * Defines the url action details.
      *

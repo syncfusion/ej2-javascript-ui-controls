@@ -31,15 +31,15 @@ export namespace Theme {
         fontWeight: 'Regular',
         color: null,
         fontStyle: 'Regular',
-        fontFamily: 'Roboto'
+        fontFamily: null
     };
     /** @private */
     export const legendTitleFont: IFontMapping = {
-        size: '14px',
-        fontWeight: 'Regular',
+        size: '12px',
+        fontWeight: 'Medium',
         color: null,
-        fontStyle: 'Regular',
-        fontFamily: 'Roboto, Noto, Sans-serif'
+        fontStyle: 'Medium',
+        fontFamily: null
     };
     /** @private */
     export const legendLabelFont: IFontMapping = {
@@ -187,6 +187,14 @@ export function getShapeColor(theme: MapsTheme): string[] {
         themePalette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
             '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
         break;
+    case 'fluentui':
+        themePalette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+            '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+        break;
+    case 'fluentuidark':
+        themePalette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+            '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+        break;
     default:
         themePalette = ['#B5E485', '#7BC1E8', '#DF819C', '#EC9B79', '#78D0D3',
             '#D6D572', '#9178E3', '#A1E5B4', '#87A4B4', '#E4C16C'];
@@ -332,6 +340,7 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             tooltipFillColor: '#363F4C',
             zoomFillColor: '#FFFFFF',
             labelFontFamily: 'Roboto, Noto, Sans-serif',
+            fontFamily: 'Roboto, Noto, Sans-serif',
             titleFontWeight: 'Medium',
             zoomSelectionColor: '#e61576',
             shapeFill: '#A6A6A6'
@@ -349,6 +358,7 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             tooltipFontColor: '#000000',
             tooltipFillColor: '#ffffff',
             zoomFillColor: '#FFFFFF',
+            fontFamily: 'Roboto, Noto, Sans-serif',
             labelFontFamily: 'Roboto, Noto, Sans-serif',
             titleFontWeight: 'Medium',
             zoomSelectionColor: '#e61576',
@@ -470,6 +480,52 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             shapeFill: '#495057'
         };
         break;
+    case 'fluentui':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            areaBackgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#201F1E',
+            subTitleFontColor: '#201F1E',
+            legendTitleFontColor: '#201F1E',
+            legendTextColor: '#201F1E',
+            dataLabelFontColor: '#201F1E',
+            tooltipFontColor: '#323130',
+            tooltipFillColor: '#FFFFFF',
+            zoomFillColor: '#A19F9D',
+            fontFamily: 'Segoe UI',
+            titleFontSize: '14px',
+            legendFontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            titleFontWeight: '600',
+            zoomSelectionColor: '#323130',
+            shapeFill: '#F3F2F1'
+        };
+        break;
+    case 'fluentuidark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            areaBackgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#F3F2F1',
+            subTitleFontColor: '#F3F2F1',
+            legendTitleFontColor: '#F3F2F1',
+            legendTextColor: '#F3F2F1',
+            dataLabelFontColor: '#F3F2F1',
+            tooltipFontColor: '#F3F2F1',
+            tooltipFillColor: '#252423',
+            zoomFillColor: '#484644',
+            fontFamily: 'Segoe UI',
+            titleFontSize: '14px',
+            legendFontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            titleFontWeight: '600',
+            zoomSelectionColor: '#F3F2F1',
+            shapeFill: '#252423'
+        };
+        break;
     default:
         style = {
             backgroundColor: '#FFFFFF',
@@ -483,6 +539,7 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             tooltipFillColor: '#000000',
             zoomFillColor: '#737373',
             labelFontFamily: 'Roboto, Noto, Sans-serif',
+            fontFamily: 'Roboto, Noto, Sans-serif',
             titleFontWeight: 'Medium',
             zoomSelectionColor: '#e61576',
             shapeFill: '#A6A6A6'

@@ -2,7 +2,7 @@ import { PivotView } from '../../pivotview/base/pivotview';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { createElement, remove, extend, select } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
-import { IAction, NumberFormattingEventArgs } from '../base/interface';
+import { IAction, NumberFormattingEventArgs, PivotActionInfo } from '../base/interface';
 import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { FormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
@@ -408,6 +408,10 @@ export class NumberFormatting implements IAction {
         this.parent.trigger(events.numberFormatting, eventArgs, (observedArgs: NumberFormattingEventArgs) => {
             if (!observedArgs.cancel) {
                 this.parent.setProperties({ dataSourceSettings: { formatSettings: observedArgs.formatSettings } }, true);
+                let actionInfo: PivotActionInfo = {
+                    numberFormattingInfo: this.parent.dataSourceSettings.formatSettings as IFormatSettings[]
+                }
+                this.parent.actionObj.actionInfo = actionInfo;
                 try {
                     this.parent.updateDataSource(false);
                     this.dialog.close();

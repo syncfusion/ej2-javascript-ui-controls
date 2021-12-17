@@ -143,8 +143,10 @@ export class Open {
             return;
         }
         if (openError[5] !== response.data) {
-            this.parent.trigger('openComplete', { response: response });
-            this.parent.notify(completeAction, { response: response, action: 'import' });
+            if (!response.isOpenFromJson) {
+                this.parent.trigger('openComplete', { response: response });
+                this.parent.notify(completeAction, { response: response, action: 'import' });
+            }
             this.parent.renderModule.refreshSheet(response.isOpenFromJson);
             this.parent.notify(refreshSheetTabs, this);
             this.isImportedFile = true;

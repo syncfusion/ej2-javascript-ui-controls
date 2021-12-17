@@ -653,6 +653,13 @@ export class TaskProcessor extends DateProcessor {
                     const id: string = data[taskSettings.id];
                     const index: number = this.taskIds.indexOf(id.toString());
                     const tempData: object = (index > -1) ? this.dataArray[index] : {};
+                    if (!isNullOrUndefined(this.parent.taskFields.segmentId)) {
+                        const segmentDataCollection: Object[] = this.segmentCollection.
+                            filter((x: Group) => x.key === tempData[this.parent.taskFields.id]);
+                        if (segmentDataCollection.length > 0) {
+                            tempData[this.parent.taskFields.segments] = (segmentDataCollection as Group)[0].items;
+                        }
+                    }
                     this.parent.setRecordValue('taskData', tempData, ganttData);
                 } else {
                     this.parent.setRecordValue('taskData', data, ganttData);
@@ -715,8 +722,15 @@ export class TaskProcessor extends DateProcessor {
         const ganttProperties: ITaskData = ganttData.ganttProperties;
         let duration: string = data[taskSettings.duration];
         duration = isNullOrUndefined(duration) || duration === '' ? null : duration;
-        const startDate: Date = this.getDateFromFormat(data[taskSettings.startDate], true);
-        const endDate: Date = this.getDateFromFormat(data[taskSettings.endDate], true);
+        let startDate: Date;
+        let endDate: Date;
+        if (ganttProperties.startDate && ganttProperties.endDate) {
+            startDate = this.getDateFromFormat(ganttProperties.startDate, true);
+            endDate = this.getDateFromFormat(ganttProperties.endDate, true);
+        } else {
+            startDate = this.getDateFromFormat(data[taskSettings.startDate], true);
+            endDate = this.getDateFromFormat(data[taskSettings.endDate], true);
+        }
         const segments: ITaskSegment[] = taskSettings.segments ? (data[taskSettings.segments] ||
             ganttData.taskData[taskSettings.segments]) : null;
         const isMileStone: boolean = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
@@ -843,6 +857,7 @@ export class TaskProcessor extends DateProcessor {
             if (!isNullOrUndefined(ganttProperties.duration)) {
                 this.parent.setRecordValue('duration', updatedDuration, ganttProperties, true);
             }
+            this.parent.dataOperation.updateMappingData(ganttData, 'duration');
         }
     }
     /**
@@ -1296,7 +1311,10 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(value)) {
             value = new Date(tempDate.getTime());
         }
-        this.parent.setRecordValue('taskData.' + mapping, value, task);
+        if (!this.parent.isLoad && !this.parent.isDynamicData) {
+            this.parent.setRecordValue('taskData.' + mapping, value, task);
+        }
+        this.parent.isDynamicData = false;
     }
 
     private getDurationInDay(duration: number, durationUnit: string): number {
@@ -2102,8 +2120,16 @@ export class TaskProcessor extends DateProcessor {
                     }
                     continue;
                 }
-                const startDate: Date = this.getValidStartDate(childData.ganttProperties);
-                const endDate: Date = this.getValidEndDate(childData.ganttProperties);
+                let startDate: Date = this.getValidStartDate(childData.ganttProperties);
+                if(parentData.hasChildRecords && !ganttProp.isAutoSchedule &&  !isNullOrUndefined( childData.ganttProperties.autoStartDate))
+                {
+                   startDate = childData.ganttProperties.autoStartDate;
+                }
+                let endDate: Date = this.getValidEndDate(childData.ganttProperties);
+                if(parentData.hasChildRecords && !ganttProp.isAutoSchedule &&  !isNullOrUndefined( childData.ganttProperties.autoEndDate))
+                {
+                   endDate = childData.ganttProperties.autoEndDate;
+                }
 
                 if (isNullOrUndefined(minStartDate)) {
                     minStartDate = this.getDateFromFormat(startDate);

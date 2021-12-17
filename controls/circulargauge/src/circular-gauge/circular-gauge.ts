@@ -458,7 +458,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /** @private */
     public centerYpoint: string;
     /** @private */
-    public isComponentRender: boolean;
+    public allowComponentRender: boolean;
     /**
      * Render axis panel for gauge.
      *
@@ -616,6 +616,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                         this.svgObject.setAttribute('cursor', 'auto');
                     }
                 }
+                const svgElement: HTMLElement = <HTMLElement>getElement(this.element.id + '_svg');
+                const extraWidth: number = this.element.getBoundingClientRect().left - svgElement.getBoundingClientRect().left;
                 if (this.enablePointerDrag && this.activePointer) {
                     this.isDrag = true;
                     const dragPointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
@@ -630,7 +632,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                         axisIndex: dragAxisInd,
                         pointerIndex: dragPointInd
                     };
-                    this.pointerDrag(new GaugeLocation(args.x, args.y), dragAxisInd, dragPointInd);
+                    this.pointerDrag(new GaugeLocation(args.x + extraWidth, args.y), dragAxisInd, dragPointInd);
                     dragArgs.currentValue = this.activePointer.currentValue;
                     this.trigger(dragMove, dragArgs);
                     this.activeRange = null;
@@ -647,7 +649,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                         axisIndex: dragAxisInd,
                         rangeIndex: dragRangeInd
                     };
-                    this.rangeDrag(new GaugeLocation(args.x, args.y), dragAxisInd, dragRangeInd);
+                    this.rangeDrag(new GaugeLocation(args.x + extraWidth, args.y), dragAxisInd, dragRangeInd);
                     this.trigger(dragMove, dragArgs);
                 }
             }
@@ -743,8 +745,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 const add : number = (this.activeRange.end - this.activeRange.start);
                 const div : number = add / 2;
                 const avg: number = parseFloat(this.activeRange.start.toString()) + div;
-                this.startValue = (value < avg) ? value : ((previousValue1 < avg) ? previousValue1 : this.activeRange.start);
-                this.endValue  = (value < avg) ? ((previousValue1 > avg) ? previousValue1 : this.activeRange.end) : value;
+                this.startValue = (value < avg) ? value : ((previousValue1 < avg) ? previousValue1 : ((this.activeRange.start < this.activeRange.end) ? this.activeRange.start : this.activeRange.end));
+                this.endValue  = (value < avg) ? ((previousValue1 > avg) ? previousValue1 : ((this.activeRange.start < this.activeRange.end) ? this.activeRange.end : this.activeRange.start)) : value;
                 this.axes[axisIndex].ranges[rangeIndex].start = this.startValue;
                 this.axes[axisIndex].ranges[rangeIndex].end = this.endValue;
             }
@@ -839,16 +841,16 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             this.svgObject.setAttribute('cursor', 'auto');
             const pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
             const axisInd: number = parseInt(this.activePointer.pathElement[0].id.split('_Axis_')[1], 10);
-            this.trigger(dragEnd, 
-			{
-                name: dragEnd,
-                type: pointerEnd,
-                axis: this.activeAxis,
-                pointer: this.activePointer,
-                currentValue: this.activePointer.currentValue,
-                axisIndex: axisInd,
-                pointerIndex: pointerInd
-            } as IPointerDragEventArgs);
+            this.trigger(dragEnd,
+                {
+                    name: dragEnd,
+                    type: pointerEnd,
+                    axis: this.activeAxis,
+                    pointer: this.activePointer,
+                    currentValue: this.activePointer.currentValue,
+                    axisIndex: axisInd,
+                    pointerIndex: pointerInd
+                } as IPointerDragEventArgs);
             this.activeAxis = null;
             this.activePointer = null;
             this.isDrag = false;
@@ -857,18 +859,21 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             this.svgObject.setAttribute('cursor', 'auto');
             const rangeInd: number = parseInt(this.activeRange.pathElement[0].id.slice(-1), 10);
             const axisInd: number = parseInt(this.activeRange.pathElement[0].id.split('_Axis_')[1], 10);
-            this.trigger(dragEnd, 
-			{
-                name: dragEnd,
-                type: rangeEnd,
-                axis: this.activeAxis,
-                range: this.activeRange,
-                axisIndex: axisInd,
-                rangeIndex: rangeInd
-            } as IPointerDragEventArgs);
+            this.trigger(dragEnd,
+                {
+                    name: dragEnd,
+                    type: rangeEnd,
+                    axis: this.activeAxis,
+                    range: this.activeRange,
+                    axisIndex: axisInd,
+                    rangeIndex: rangeInd
+                } as IPointerDragEventArgs);
             this.activeAxis = null;
             this.activeRange = null;
             this.isDrag = false;
+        }
+        if (!isNullOrUndefined(this.activePointer)) {
+            this.activePointer = null;
         }
         this.svgObject.setAttribute('cursor', 'auto');
         this.notify(Browser.touchEndEvent, e);

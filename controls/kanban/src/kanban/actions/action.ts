@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    closest, classList, createElement, remove, addClass, removeClass, isNullOrUndefined, Base, formatUnit, createInstance
+    closest, classList, createElement, remove, addClass, removeClass, isNullOrUndefined, Base, formatUnit, createInstance, detach
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardClickEventArgs, ActionEventArgs } from '../base/interface';
@@ -340,7 +340,8 @@ export class Action {
         }
         this.parent.columns.splice(index, 1);
         if (this.parent.columns.length === 0) {
-            this.parent.destroy();
+            detach(this.parent.element.querySelector('.' + cls.HEADER_CLASS));
+            detach(this.parent.element.querySelector('.' + cls.CONTENT_CLASS));
         } else {
             this.parent.notify(events.dataReady, { processedData: this.parent.kanbanData });
         }

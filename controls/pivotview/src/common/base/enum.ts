@@ -1014,3 +1014,15 @@ export type MultipleAxisMode =
     'Stacked' |
     /** Allows the chart series to be displayed in a single chart area for different value fields. */
     'Single';
+
+/**
+* Allows the grand totals to be displayed in either the top or bottom position in the pivot table's row and column axes.
+* The options available are:
+* * Top: Allows the grand totals to be displayed in top position in the pivot table's row and column axes.
+* * Bottom: Allows the grand totals to be displayed in bottom position in the pivot table's row and column axes.
+*/
+export type GrandTotalsPosition =
+    /** Allows the grand totals to be displayed in top position in the pivot table's row and column axes. */
+    'Top' |
+    /** Allows the grand totals to be displayed in bottom position in the pivot table's row and column axes. */
+    'Bottom';

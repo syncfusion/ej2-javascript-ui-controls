@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { isVisible, closest, attributes, detach, select, addClass, append } from '@syncfusion/ej2-base';
@@ -263,9 +264,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private isDestroy: boolean;
     private templateEle: string[];
     private isAngular: boolean;
-    /* eslint-disable */
     private headerTemplateFn: Function;
-    /* eslint-disable */
     private itemTemplateFn: Function;
     private removeRippleEffect: () => void;
     /**
@@ -365,35 +364,35 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     /**
      * The event will be fired while clicking anywhere within the Accordion.
      *
-     * @event
+     * @event clicked
      */
     @Event()
     public clicked: EmitType<AccordionClickArgs>;
     /**
      * The event will be fired before the item gets collapsed/expanded.
      *
-     * @event
+     * @event expanding
      */
     @Event()
     public expanding: EmitType<ExpandEventArgs>;
     /**
      * The event will be fired after the item gets collapsed/expanded.
      *
-     * @event
+     * @event expanded
      */
     @Event()
     public expanded: EmitType<ExpandedEventArgs>;
     /**
      * The event will be fired once the control rendering is completed.
      *
-     * @event
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired when the control gets destroyed.
      *
-     * @event
+     * @event destroyed
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -552,11 +551,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.itemTemplateFn = this.templateParser(this.itemTemplate);
         }
     }
-    /* eslint-disable */
     private getHeaderTemplate(): Function {
         return this.headerTemplateFn;
     }
-    /* eslint-disable */
     private getItemTemplate(): Function {
         return this.itemTemplateFn;
     }
@@ -576,7 +573,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             innerEles = this.element.children as HTMLCollection;
         }
         const items: AccordionItemModel[] = [];
-        /* eslint-disable */
         [].slice.call(innerEles).forEach((el: HTEle) => {
             items.push({
                 header: (el.childElementCount > 0 && el.children[0]) ? (el.children[0]) as any : '',
@@ -584,7 +580,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             });
             el.parentNode.removeChild(el);
         });
-        /* eslint-enable */
         if (rootEle) {
             this.element.removeChild(rootEle);
         }
@@ -608,7 +603,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 this.expandItem(true, this.initExpand[i]);
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
@@ -642,7 +636,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 });
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
@@ -686,7 +679,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
@@ -796,7 +788,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         const header: HTEle = this.createElement('div', { className: CLS_HEADER, id: getUniqueID('acrdn_header') });
         const items: Object[] = this.getItems();
         const ariaAttr: { [key: string]: Str } = {
-            'tabindex': '0', 'role': 'heading', 'aria-selected': 'false', 'aria-label':'collapsed',
+            'tabindex': '0', 'role': 'heading', 'aria-selected': 'false', 'aria-label': 'collapsed',
             'aria-disabled': 'false', 'aria-level': items.length.toString()
         };
         attributes(header, ariaAttr);
@@ -889,7 +881,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private fetchElement(ele: HTEle, value: Str, index: number, isHeader: boolean): HTEle {
-        /* eslint-disable */
         let templateFn: Function;
         let temString: Str;
         try {
@@ -902,18 +893,15 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         } catch (e) {
             if (typeof (value) === 'string') {
                 ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
-                /* eslint-disable */
             } else if (!isNOU(this.trgtEle) && ((value as any) instanceof (HTMLElement))) {
                 ele.appendChild(value as any);
                 (<HTMLElement>ele.firstElementChild).style.display = '';
-                /* eslint-enable */
             } else {
                 templateFn = templateCompiler(value);
             }
         }
         let tempArray: HTEle[];
         if (!isNOU(templateFn)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 this.renderReactTemplates();
             }
@@ -957,7 +945,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         attributes(itemcnt, { 'aria-hidden': 'true' });
         const ctn: HTEle = this.createElement('div', { className: CLS_CTENT });
         if (this.dataSource.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 this.renderReactTemplates();
             }
@@ -1046,7 +1033,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.add(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'false');
             attributes(trgtItemEle, { 'aria-expanded': 'true' });
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'true', 'aria-label':'expanded' });
+            attributes(trgt.previousElementSibling, { 'aria-selected': 'true', 'aria-label': 'expanded' });
             icon.classList.remove(CLS_TOGANIMATE);
             this.trigger('expanded', eventArgs);
         }
@@ -1101,7 +1088,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.trigger('expanding', eventArgs, (expandArgs: ExpandEventArgs) => {
             if (!expandArgs.cancel) {
                 this.expandedItemsPop(trgtItemEle);
-                trgtItemEle.classList.add(CLS_EXPANDSTATE);
+                trgtItemEle.classList.remove(CLS_EXPANDSTATE);
                 icon.classList.add(CLS_TOGANIMATE);
                 if ((animation.name === <Effect>'None')) {
                     this.collapseProgress('begin', icon, trgt, trgtItemEle, expandArgs);
@@ -1159,7 +1146,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.remove(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'true');
             attributes(trgtItemEle, { 'aria-expanded': 'false' });
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'false', 'aria-label':'collapsed'  });
+            attributes(trgt.previousElementSibling, { 'aria-selected': 'false', 'aria-label': 'collapsed' });
             this.trigger('expanded', eventArgs);
         }
     }
@@ -1225,7 +1212,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 }
             });
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
@@ -1246,7 +1232,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}.
      */
     public removeItem(index: number): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.clearTemplate(['headerTemplate', 'itemTemplate'], index);
         }
@@ -1386,14 +1371,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 this.collapse(ctn);
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
     }
     private destroyItems(): void {
         this.restoreContent(null);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.clearTemplate();
         }
@@ -1427,12 +1410,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private setTemplate(template: string | HTMLElement, toElement: HTMLElement, index: number): void {
         toElement.innerHTML = '';
         this.templateCompile(toElement, template, index);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
     }
-    // eslint-disable-next-line
     private templateCompile(ele: HTMLElement, cnt: any, index: number): void {
         const tempEle: HTMLElement = this.createElement('div');
         this.fetchElement(tempEle, cnt, index, false);

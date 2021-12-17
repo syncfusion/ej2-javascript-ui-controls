@@ -196,7 +196,7 @@ export class ExportHelper {
         const taskFields: TaskFieldsModel = this.parent.taskFields;
         const ganttProps: ITaskData = data.ganttProperties;
         if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
-            cell.value = this.parent.getFormatedDate(data[column.field], this.parent.getDateFormat());
+            cell.value = data[column.field];
         } else if (column.field === taskFields.duration) {
             cell.value = this.parent.getDurationString(ganttProps.duration, ganttProps.durationUnit);
         } else if (column.field === taskFields.resourceInfo) {
@@ -214,7 +214,6 @@ export class ExportHelper {
         } else {
             cell.style.format.paragraphIndent = cell.row.level * 10;
         }
-        if (this.parent.pdfQueryCellInfo != null) {
             const args: PdfQueryCellInfoEventArgs = {
                 data: data,
                 value: cell.value,
@@ -227,7 +226,6 @@ export class ExportHelper {
                 this.parent.trigger('pdfQueryCellInfo', args);
             }
             cell.value = args.value;
-        }
     }
     /**
      * Method for create the taskbar collection for rendering

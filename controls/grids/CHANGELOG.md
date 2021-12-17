@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 19.4.38 (2021-12-17)
+
+### Grid
+
+#### Bug Fixes
+
+- `#F170844` - Borderline issue in stacked column has been fixed.
+- `#I355438` - Event argument type issue in `actionComplete` event while filtering is fixed.
+- `#F170531` - wrong row information while clicking the custom sub context menu items id fixed.
+
+## 19.3.57 (2021-12-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I356474` - `captionTemplate` property type issue has been fixed.
+- `#F170289` - Header misalignment when printing the Grid with grouped column, issue has been fixed.
+- `#I348807` - Row selected automatically when `persistSelection` enabled is fixed.
+- `#F170712`, `#I357715` - Script error throws when edit `childGrid` rows with command column buttons is fixed.
+- `#F170524` - Export aggregations misalignment while using Grid with grouped column, issue has been fixed.
+
 ## 19.3.56 (2021-12-02)
 
 ### Grid

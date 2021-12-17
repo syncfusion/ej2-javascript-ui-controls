@@ -2,7 +2,91 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#346141` - Issue with Gantt manipulates and change task data date values from original data has been fixed.
+- `#F170644` - Issue in manual start date while mapping multiple parent levels has been fixed.
+- `#F170274` - DateTimePicker is not rendering in dialog segment tab start date and end date columns has been fixed.
+
+#### Breaking Changes
+
+- Original user datasource is maintained in `taskData` and `dataSource` properties in Gantt during load time. It will update only after CRUD operation.
+
+## 19.3.56 (2021-12-02)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#347613` - Connector line issue after updating the datasource dynamically has been fixed.
+- `#346909` - Issue in disable custom context menu has been fixed.
+
+## 19.3.55 (2021-11-23)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#347753` - Issue in `defaultedit` edit type has been fixed.
+
+## 19.3.53 (2021-11-12)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#342557` - In fixed work type duration update issue has been fixed.
+
+## 19.3.48 (2021-11-02)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#343417` - Issue in updating row index after row drag and drop has been fixed.
+- `#346516` - Issue in context menu after cell editing has been fixed.
+- `#346736` - Issue in rendering connector points when progress field is not mapped has been fixed.
+
+## 19.3.47 (2021-10-26)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#343991` - Additional parameters are not passed to `BatchUpdate` method when deleting the row issue has been fixed.
+- `#344100` - Issue in cancelling the drawing of predecessor line in `actionBegin` event has been fixed.
+- `#345841` - Issue on taskbar editing when timezone property set as `UTC` has been fixed.
+- `#341691` - Bring back browser default context menu in dialog editing has been fixed.
+
+#### Breaking Changes
+
+- Add and Edit dialog is now rendered as direct child to *body* element.
+
+## 19.3.46 (2021-10-19)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#343417` - Issue in CRUD operations when using datamanager data has been fixed.
+- `#340739` - Vertical grid line issue while changing height dynamically has been fixed.
+- `#F168970` - Issue in updating Segments data issue has been fixed.
+
+## 19.3.45 (2021-10-12)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#342557` - In fixed work type duration update issue has been fixed.
+- `#340406` - Misalignment while using line height property issue has been fixed.
+- `#310346` - Pdf export issue while changing date format has been fixed.
+
+## 19.3.44 (2021-10-05)
 
 ### Gantt
 

@@ -2599,7 +2599,7 @@ export class Selection implements IAction {
                 if (pKey === null) { return; }
                 let checkState: boolean;
                 const chkBox: HTMLInputElement = (rows[j].querySelector('.e-checkselect') as HTMLInputElement);
-                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' &&
+                if (this.selectedRowState[pKey] || (this.parent.checkAllRows === 'Check' && this.selectedRowState[pKey] &&
                     this.totalRecordsCount === Object.keys(this.selectedRowState).length && this.chkAllCollec.indexOf(pKey) < 0)
                     || (this.parent.checkAllRows === 'Uncheck' && this.chkAllCollec.indexOf(pKey) > 0)
                     || (this.parent.checkAllRows === 'Intermediate' && !isNullOrUndefined(this.chkField) && rowObj.data[this.chkField])
@@ -2842,13 +2842,28 @@ export class Selection implements IAction {
         }
     }
 
+    private isAllSelected(): boolean {
+        const data: object[] = this.getData();
+        for (let i: number = 0; i < data.length; i++) {
+            const pKey: string = data[i][this.primaryKey];
+            if (!this.selectedRowState[pKey]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private setCheckAllState(index?: number, isInteraction?: boolean): void {
         if (this.parent.isCheckBoxSelection || this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick') {
-            let checkToSelectAll: boolean;
+            let checkToSelectAll: boolean = true;
             let checkedLen: number = Object.keys(this.selectedRowState).length;
             if (!this.parent.isPersistSelection) {
                 checkedLen = this.selectedRowIndexes.length;
                 this.totalRecordsCount = this.getCurrentBatchRecordChanges().length;
+            }
+            if (this.parent.isPersistSelection && !this.parent.getDataModule().isRemote() && (this.parent.searchSettings.key.length
+                || this.parent.filterSettings.columns.length)) {
+                checkToSelectAll = this.isAllSelected();
             }
             const input: HTMLInputElement = this.getCheckAllBox();
             if (input) {
@@ -2856,7 +2871,7 @@ export class Selection implements IAction {
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
                 setChecked(input, false);
                 input.indeterminate = false;
-                if (checkToSelectAll || checkedLen === this.totalRecordsCount && this.totalRecordsCount
+                if (checkToSelectAll && checkedLen === this.totalRecordsCount && this.totalRecordsCount
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                         && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()
                         && (this.getData().length && checkedLen === this.getData().length))) {

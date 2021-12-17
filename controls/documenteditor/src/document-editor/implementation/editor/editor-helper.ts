@@ -2,9 +2,10 @@ import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateForma
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode } from '../../base/types';
-import { Widget, FieldElementBox } from '../viewer/page';
+import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
 import { WBorder } from '../format';
+
 /**
  * @private
  */
@@ -78,6 +79,25 @@ export class HelperMethods {
             }
         }
         return -1;
+    }
+
+    public static convertRgbToHex(val: number): string {
+        let hex: string = Number(val).toString(16);
+        if (hex.length < 2) {
+            hex = '0' + hex;
+        }
+        return hex;
+    }
+    public static convertHexToRgb(colorCode: string): any  {
+        if (colorCode) {
+            colorCode = colorCode.replace(/[^0-9A-â€Œâ€‹F]/gi, '');   // To remove # from color code string.
+            const colCodeNo: number = parseInt(colorCode, 16);
+            const r: number = (colCodeNo >> 16) & 255;
+            const g: number = (colCodeNo >> 8) & 255;
+            const b: number = colCodeNo & 255;
+            return { 'r': r, 'g': g, 'b': b };
+        }
+        return undefined;
     }
 
     public static addCssStyle(css: string): void {
@@ -436,7 +456,23 @@ export class HelperMethods {
         }
         return compatValue;
     }
-
+    /**
+     * @private
+     * @returns {string} - Returns the unique id for document editor.
+     */
+    public static getUniqueElementId(): string {
+        const documentEditorElementId: string = 'de_element';
+        let index: number = 1;
+        /* eslint-disable-next-line no-constant-condition */
+        while (true) {
+            const ele: HTMLElement = document.getElementById(documentEditorElementId + index);
+            if (isNullOrUndefined(ele)) {
+                break;
+            }
+            index++;
+        }
+        return documentEditorElementId + index;
+    }
 }
 /**
  * @private
@@ -674,6 +710,7 @@ export interface CollaborativeEditingEventArgs {
 export interface SubWidthInfo {
     subWidth: number
     spaceCount: number
+    totalSpaceCount: number
 }
 /**
  * @private
@@ -1022,9 +1059,17 @@ export interface BorderInfo {
  * @private
  */
 export interface FootNoteWidgetsInfo {
-    footNoteWidgets: BlockWidget[];
+    footNoteWidgets: BodyWidget[];
     toBodyWidget: BodyWidget;
     fromBodyWidget: BodyWidget;
+}
+
+/**
+ * @private
+ */
+export interface SelectedCommentInfo {
+    commentStartInfo: CommentCharacterElementBox[]
+    commentEndInfo: CommentCharacterElementBox[]
 }
 
 /**

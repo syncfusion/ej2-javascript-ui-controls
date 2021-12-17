@@ -27,7 +27,8 @@ import { IResizeRangeNavigatorEventArgs } from '../range-navigator/model/range-n
 import { DateTime } from '../chart/axis/date-time-axis';
 import { Logarithmic } from '../chart/axis/logarithmic-axis';
 import { ILabelRenderEventsArgs, IRangeTooltipRenderEventArgs } from './model/range-navigator-interface';
-import { IRangeLoadedEventArgs, IRangeStyle, IChangedEventArgs } from './model/range-navigator-interface';
+import { IRangeLoadedEventArgs, IRangeStyle, IChangedEventArgs, IRangeBeforeResizeEventArgs } from './model/range-navigator-interface';
+import { beforeResize } from '../common/model/constants';
 import { getRangeThemeColor } from './utils/theme';
 import { RangeValueType, LabelAlignment, RangeLabelIntersectAction } from './utils/enum';
 import { Font } from '../common/model/base';
@@ -431,6 +432,14 @@ export class RangeNavigator extends Component<HTMLElement> {
     public resized: EmitType<IResizeRangeNavigatorEventArgs>;
 
     /**
+     * Triggers before window resize.
+     * @event
+     * @blazorProperty 'BeforeResize'
+     */
+    @Event()
+    public beforeResize: EmitType<IRangeBeforeResizeEventArgs>;
+
+    /**
      * Triggers before the label rendering
      *
      * @event labelRender
@@ -801,6 +810,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         }
         this.animateSeries = false;
         this.removeAllTooltip();
+        let beforeResizeArgs: IRangeBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -813,6 +823,8 @@ export class RangeNavigator extends Component<HTMLElement> {
                 this.availableSize.height
             )
         };
+        this.trigger(beforeResize, beforeResizeArgs);
+        if (!beforeResizeArgs.cancelResizedEvent) {
         this.resizeTo = +setTimeout(
             (): void => {
                 if (this.isDestroyed) {
@@ -829,6 +841,7 @@ export class RangeNavigator extends Component<HTMLElement> {
                 this.renderChart();
             },
             500);
+        }
         return false;
     }
 

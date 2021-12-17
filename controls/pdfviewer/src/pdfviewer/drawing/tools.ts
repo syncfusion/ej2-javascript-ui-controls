@@ -448,12 +448,15 @@ export class SelectTool extends ToolBase {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                     }
                     if (object) {
-                        this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
+                        if (!this.pdfViewerBase.isFreeTextSelected) {
+                            this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
+                        }
+                        this.pdfViewerBase.isFreeTextSelected = false;
                         this.commandHandler.viewerBase.isAnnotationMouseDown = true;
                         this.commandHandler.viewerBase.isFormFieldMouseDown = true;
                     }
                     if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp' && !annotation.formFieldAnnotationType) {
-                        if (Browser.isDevice && !this.commandHandler.enableDesktopMode) {
+                        if (this.commandHandler.enableToolbar && Browser.isDevice && !this.commandHandler.enableDesktopMode) {
                             this.commandHandler.toolbarModule.showToolbar(true);
                         }
                         this.commandHandler.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
@@ -703,8 +706,8 @@ export class MoveTool extends ToolBase {
             const requiredY: number = this.offset.y + y;
             let diffX: number = this.calculateMouseActionXDiff(args);
             let diffY: number = this.calculateMouseActionYDiff(args);
+            const selectedItem: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
             if (!this.helper) {
-                const selectedItem: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
                 // eslint-disable-next-line
                 let cobject: any = this.commandHandler.selectedItems.annotations.length > 0 ? cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel: cloneObject(this.commandHandler.selectedItems.formFields[0]) as PdfFormFieldBaseModel;
                 if (cobject.wrapper) {
@@ -762,6 +765,9 @@ export class MoveTool extends ToolBase {
                 this.prevPosition = this.currentPosition;
             } else {
                 this.currentPosition = this.prevPosition;
+            }
+            if (selectedItem && selectedItem.annotName) {
+                this.commandHandler.annotation.triggerAnnotationMove(selectedItem, true);
             }
         }
         return true;

@@ -58,7 +58,7 @@ export class SplineRangeAreaSeries extends SplineBase {
             let lowPoint: number = Math.min(<number>point.low, <number>point.high);
             let highPoint: number = Math.max(<number>point.low, <number>point.high);
             
-            if (yAxis.isInversed) {
+            if (yAxis.isAxisInverse) {
                 const temp: number = lowPoint;
                 lowPoint = highPoint;
                 highPoint = temp;
@@ -92,7 +92,7 @@ export class SplineRangeAreaSeries extends SplineBase {
                         direction = direction.concat('C ' + betweenPt1.x + ' '
                             + betweenPt1.y + ' ' + betweenPt2.x + ' ' + betweenPt2.y + ' ' + pt.x + ' ' + pt.y + ' ');
                     } else {
-                        if (yAxis.isInversed) {
+                        if (yAxis.isAxisInverse) {
                             direction = direction.concat('M ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ' + 'L ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ');
                         } else {
                             direction = direction.concat('M ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ' + 'L ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ');
@@ -147,7 +147,7 @@ export class SplineRangeAreaSeries extends SplineBase {
                 let low: number = Math.min(<number>point.low, <number>point.high);
                 let high: number = Math.max(<number>point.low, <number>point.high);
                 
-                if (yAxis.isInversed) {
+                if (yAxis.isAxisInverse) {
                 const temp: number = low;
                 low = high;
                 high = temp;
@@ -165,7 +165,7 @@ export class SplineRangeAreaSeries extends SplineBase {
                             + betweenPt2.y + ' ' + betweenPt1.x + ' ' + betweenPt1.y + ' ' + pt.x + ' ' + pt.y + ' ');
                 }
                 else {
-                    if (yAxis.isInversed){
+                    if (yAxis.isAxisInverse){
                         direction = direction.concat('L ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ' );
                     } else {
                         direction = direction.concat('L ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ' );

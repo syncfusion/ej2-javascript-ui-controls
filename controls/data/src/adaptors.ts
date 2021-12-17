@@ -1654,7 +1654,21 @@ export class ODataV4Adaptor extends ODataAdaptor {
             if (!(splits[0] in selected)) {
                 selected[splits[0]] = [];
             }
-            selected[splits[0]].push(splits[1]);
+            if(splits.length == 2){
+                if (selected[splits[0]].length && Object.keys(selected).indexOf(splits[0]) !== -1) {
+                    selected[splits[0]][0] = selected[splits[0]][0] + ',' + splits[1];
+                } else {
+                    selected[splits[0]].push('$select=' + splits[1]);
+                }
+            } else{
+                let sel: string = '$select=' + splits[splits.length - 1];
+                let exp: string = ''; let close: string = '';
+                for (let i: number = 1; i < splits.length - 1; i++) {
+                    exp = exp + '$expand=' + splits[i] + '(';
+                    close = close + ')';
+                }
+                selected[splits[0]].push(exp + sel + close);
+            }
         });
         //Auto expand from select query
         Object.keys(selected).forEach((expand: string) => {
@@ -1663,7 +1677,7 @@ export class ODataV4Adaptor extends ODataAdaptor {
             }
         });
         expands.forEach((expand: string) => {
-            expanded[expand] = expand in selected ? `${expand}(${this.options.select}=${selected[expand].join(',')})` : expand;
+            expanded[expand] = expand in selected ? `${expand}(${selected[expand].join(';')})` : expand;
         });
         Object.keys(expanded).forEach((ex: string) => exArr.push(expanded[ex]));
         return exArr.join(',');

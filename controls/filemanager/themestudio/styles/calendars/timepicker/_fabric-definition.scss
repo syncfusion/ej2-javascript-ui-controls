@@ -1,0 +1,44 @@
+$timepicker-default-text-indent: 10px !default;
+$timepicker-list-bigger-line-height: 48px !default;
+$timepicker-list-normal-line-height: 36px !default;
+$timepicker-list-normal-font-size: 14px !default;
+$timepicker-list-bigger-font-size: 14px !default;
+$timepicker-list-normal-text-indent: $timepicker-default-text-indent !default;
+$timepicker-list-bigger-text-indent: 12px !default;
+$timepicker-list-font-weight: 400 !default;
+$timepicker-popup-border-radius: 0 !default;
+$timepicker-popup-shadow: 0 0 5px 0 rgba($neutral-black, .4) !default;
+$timepicker-list-default-font-color: $theme-light-font !default;
+$timepicker-list-default-border-style: none !default;
+$timepicker-list-border-color: 1px solid $neutral-light !default;
+$timepicker-list-hover-border-color: none !default;
+$timepicker-list-bg-color: $content-bg-color !default;
+$timepicker-list-active-bg-color: $theme-primary !default;
+$timepicker-list-active-font-color: $theme-primary-font !default;
+$timepicker-list-active-icon-color: $neutral-light-font !default;
+$timepicker-list-hover-bg-color:  $neutral-light !default;
+$timepicker-list-hover-font-color: $neutral-light-font !default;
+$timepicker-list-popup-icon-active-color: $theme-primary-font !default;
+$timepicker-list-active-hover-bg-color: $theme-primary !default;
+$timepicker-list-active-hover-font-color: $theme-primary-font !default;
+$timepicker-list-normal-padding: 0 !default;
+$timepicker-list-bigger-padding: 0 !default;
+$timepicker-font-icon: '\e97f' !default;
+$timepicker-icon-normal-font-size: 16px !default;
+$timepicker-icon-bigger-font-size: 20px !default;
+$timepicker-disable-text: $neutral-tertiary-alt !default;
+$timepicker-disable-opacity: 1 !default;
+$timepicker-default-overlay: rgba($neutral-black, .6) !default;
+// mouse small
+$timepicker-list-small-font-size: 13px !default;
+$timepicker-list-small-line-height: 26px !default;
+$timepicker-list-small-text-indent: 10px !default;
+$timepicker-list-small-font-color: $theme-light-font !default;
+// icon small
+$timepicker-icon-small-font-size: 14px !default;
+// Touch small
+$timepicker-list-bigger-small-font-size: 14px !default;
+$timepicker-list-bigger-small-line-height: 40px !default;
+$timepicker-list-bigger-small-text-indent: 16px !default;
+// Touch small icon
+$timepicker-icon-bigger-small-font-size: 18px !default;

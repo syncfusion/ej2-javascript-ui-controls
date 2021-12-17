@@ -145,10 +145,10 @@ export class DataBind {
                                         args.sheet.rows[rowIdx].cells[sColIdx + j] =
                                             flds[j].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j]]);
                                     }
-                                    this.checkDataForFormat({
-                                        args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k, range: range,
-                                        sRanges: sRanges, value: item[flds[j]], sheetIndex: curSheetIdx
-                                    });
+                                    // this.checkDataForFormat({
+                                    //     args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k, range: range,
+                                    //     sRanges: sRanges, value: item[flds[j]], sheetIndex: curSheetIdx
+                                    // });
                                 }
                             });
                         } else {
@@ -401,11 +401,11 @@ export class DataBind {
             };
             this.updateSheetFromDataSourceHandler(eventArgs);
             eventArgs.promise.then(() => {
-                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true });
                 this.parent.trigger(
                     'dataSourceChanged',
                     { data: args.changedData, action: 'dataSourceChanged', rangeIndex: Number(args.rangeIdx), sheetIndex:
                     Number(args.sheetIdx) });
+                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true });
             });
         }
     }
@@ -449,8 +449,8 @@ export class DataBind {
      */
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number, modelType: string,
-        deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, pastedRange: string,
-        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean, isMethod?: boolean
+        deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, isMethod?: boolean, fillRange?: string
+        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean, pastedRange: string
     }): void {
         const changedData: Object[] = [{}];
         let action: string;
@@ -531,7 +531,7 @@ export class DataBind {
                 } else {
                     cellIndices = getRangeIndexes(
                         args.requestType && args.requestType.toLowerCase().includes('paste') ? args.pastedRange.split('!')[1] :
-                            args.sheetIdx > -1 ? args.address : (args.address || args.range).split('!')[1]);
+                            args.sheetIdx > -1 ? args.address : (args.address || args.range || args.fillRange).split('!')[1]);
                     const dataRangeIndices: number[] =
                         [...[range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]], ...dataRange.slice(1, 4)];
                     if (range.showFieldAsHeader && cellIndices[0] === startCell[0]) {
@@ -627,7 +627,7 @@ export class DataBind {
             startIndex: number, endIndex: number, model: object[], deletedModel: object[], insertType: string, requestType: string
         }
     }): void {
-        const dataChangingActions: string[] = ['insert', 'delete', 'edit', 'cellDelete', 'cellSave', 'clipboard', 'clear'];
+        const dataChangingActions: string[] = ['insert', 'delete', 'edit', 'cellDelete', 'cellSave', 'autofill', 'clipboard', 'clear'];
         let triggerDataChange: boolean = true;
         if ((args.action === 'delete' || args.action === 'insert') && ['Sheet'].indexOf(args.eventArgs.modelType) > -1) {
             triggerDataChange = false;

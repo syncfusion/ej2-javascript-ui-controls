@@ -495,3 +495,34 @@ describe('Context menu notes options', () => {
         menu.handleContextMenuItem('container_contextmenu_note_options');
     });
 });
+describe('Rtl context menu validation', () => {
+    let editor: DocumentEditor;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection, SfdtExport);
+        editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableRtl: true });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.contextMenuModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Rtl context menu validation', () => {
+        editor.editor.insertText('سشةحمث');
+        editor.selection.selectAll();
+        editor.contextMenu.handleContextMenuItem('container_contextmenu_copy');
+        expect(editor.selection.isEmpty).toBe(false);
+    });
+});

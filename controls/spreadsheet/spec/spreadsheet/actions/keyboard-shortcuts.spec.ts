@@ -45,7 +45,7 @@ describe('Spreadsheet formula bar module ->', () => {
                 setTimeout(() => {
                     expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
                     helper.invoke('selectRange', ['J2']);
-                    helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, eventArg);
+                    helper.triggerKeyNativeEvent(86, true);
                     helper.invoke('getData', ['Sheet1!J2:J6']).then((values: Map<string, CellModel>) => {
                         expect(values.get('J2').value).toEqual('Casual Shoes');
                         expect(values.get('J3').value).toEqual('Sports Shoes');

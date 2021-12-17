@@ -55,6 +55,9 @@ export class MaskedDateTime {
     private isYearZero: boolean = false;
     private dayTypeCount: number = 0;
     private monthTypeCount: number = 0;
+    private hourTypeCount: number = 0;
+    private minuteTypeCount: number = 0;
+    private secondTypeCount: number = 0;
     public constructor(parent? : IMaskedDateTime) {
         this.parent = parent;
         this.dateformat = this.getCulturedFormat();
@@ -352,6 +355,7 @@ export class MaskedDateTime {
                 newDateValue.setHours(Math.floor(newDateValue.getHours() / 12) * 12 + (this.hour % 12));
                 this.isNavigate = this.hour.toString().length === 2;
                 this.isHourPart = true;
+                this.hourTypeCount = this.hourTypeCount + 1;
                 break;
             case 'H':
                 this.hour = (this.isHourPart && newDateValue.getHours().toString().length < 2 ? newDateValue.getHours() * 10 : 0) + parseInt(newVal[start - 1], 10);
@@ -364,6 +368,7 @@ export class MaskedDateTime {
                 newDateValue.setHours(this.hour);
                 this.isNavigate = this.hour.toString().length === 2;
                 this.isHourPart = true;
+                this.hourTypeCount = this.hourTypeCount + 1;
                 break;
             case 'm':
                 let minutes: number = (this.isMinutePart && newDateValue.getMinutes().toString().length < 2 ? newDateValue.getMinutes() * 10 : 0) + parseInt(newVal[start - 1], 10);
@@ -376,6 +381,7 @@ export class MaskedDateTime {
                 newDateValue.setMinutes(minutes);
                 this.isNavigate = minutes.toString().length === 2;
                 this.isMinutePart = true;
+                this.minuteTypeCount = this.minuteTypeCount + 1;
                 break;
             case 's':
                 let seconds: number = (this.isSecondsPart && newDateValue.getSeconds().toString().length < 2 ? newDateValue.getSeconds() * 10 : 0) + parseInt(newVal[start - 1], 10);
@@ -388,6 +394,7 @@ export class MaskedDateTime {
                 newDateValue.setSeconds(seconds);
                 this.isNavigate = seconds.toString().length === 2;
                 this.isSecondsPart = true;
+                this.secondTypeCount = this.secondTypeCount + 1;
                 break;
             case 'a':
                     this.periodCharacter += newVal[start - 1].toLowerCase();
@@ -480,18 +487,38 @@ export class MaskedDateTime {
                 case 'h': result = proxy.isHourPart ? (proxy.maskDateValue.getHours() % 12 || 12).toString() :  proxy.defaultConstant['hour'].toString();
                     break;
                 case 'hh': result = proxy.isHourPart ? proxy.roundOff(proxy.maskDateValue.getHours() % 12 || 12, 2) :  proxy.defaultConstant['hour'].toString();
+                    if ( proxy.hourTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.hourTypeCount = 0;
+                    }
                     break;
                 case 'H': result = proxy.isHourPart ? proxy.maskDateValue.getHours().toString() :  proxy.defaultConstant['hour'].toString();
                     break;
                 case 'HH': result = proxy.isHourPart ? proxy.roundOff(proxy.maskDateValue.getHours(), 2) :  proxy.defaultConstant['hour'].toString() ;
+                    if ( proxy.hourTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.hourTypeCount = 0;
+                    }
                     break;
                 case 'm': result = proxy.isMinutePart ? proxy.maskDateValue.getMinutes().toString() :  proxy.defaultConstant['minute'].toString() ;
                     break;
                 case 'mm': result = proxy.isMinutePart ? proxy.roundOff(proxy.maskDateValue.getMinutes(), 2) :  proxy.defaultConstant['minute'].toString() ;
+                    if ( proxy.minuteTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.minuteTypeCount = 0;
+                    }
                     break;
                 case 's': result = proxy.isSecondsPart ? proxy.maskDateValue.getSeconds().toString() :  proxy.defaultConstant['second'].toString() ;
                     break;
                 case 'ss': result = proxy.isSecondsPart ? proxy.roundOff(proxy.maskDateValue.getSeconds(), 2) :  proxy.defaultConstant['second'].toString();
+                    if ( proxy.secondTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.secondTypeCount = 0;
+                    }
                     break;
                 case 'f': result = Math.floor(proxy.maskDateValue.getMilliseconds() / 100).toString();
                     break;

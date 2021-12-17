@@ -558,7 +558,10 @@ export class Edit {
             if (ganttProp.work > 0 || column === 'work') {
                 switch (taskType) {
                 case 'FixedUnit':
-                    if (isAutoSchedule && ganttProp.resourceInfo.length &&
+                    if (ganttProp.resourceInfo.length === 0) {
+                        return;
+                    }
+                    else if (isAutoSchedule && ganttProp.resourceInfo.length &&
                             (column === 'work' || (column === 'resource'))) {
                         this.parent.dataOperation.updateDurationWithWork(currentData);
                     } else if (!isAutoSchedule && column === 'work') {
@@ -1144,6 +1147,7 @@ export class Edit {
         let eventArgs: IActionBeginEventArgs = {};
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
+        eventArgs.cancel = false;
         eventArgs.modifiedRecords = this.parent.editedRecords;
         if (!isNullOrUndefined(args.target)) {
             eventArgs.target = args.target;
@@ -1965,12 +1969,12 @@ export class Edit {
                         changedRecords: eventArg.modifiedTaskData
                     };
                     const adaptor: AdaptorOptions = data.adaptor;
+                    const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                     if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
-                        const crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
+                        const crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                         crud.then(() => this.deleteSuccess(args))
                             .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                     } else {
-                        const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const deletedRecords: string = 'deletedRecords';
                         let deleteCrud: Promise<Object> = null;
                         for (let i: number = 0; i < updatedData[deletedRecords].length; i++) {
@@ -2473,8 +2477,11 @@ export class Edit {
      */
     public updateRealDataSource(addedRecord: IGanttData, rowPosition: RowPosition): void {
         const taskFields: TaskFieldsModel = this.parent.taskFields;
-        const dataSource: Object[] = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
+        let dataSource: Object[] = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
             this.parent.dataSource as Object[];
+        if (this.parent.dataSource instanceof DataManager) {
+            dataSource = this.parent.dataSource.dataSource.json;
+        }
         for (let i: number = 0; i < (addedRecord as IGanttData[]).length; i++) {
             if (isNullOrUndefined(rowPosition) || isNullOrUndefined(this.addRowSelectedItem)) {
                 rowPosition = 'Top';
@@ -2543,6 +2550,7 @@ export class Edit {
      */
     public addRecord(data?: Object[] | Object, rowPosition?: RowPosition, rowIndex?: number): void {
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
+            this.parent.isDynamicData = true;
             const cAddedRecord: IGanttData[] = [];
             if (isNullOrUndefined(data)) {
                 this.validateTaskPosition(data, rowPosition, rowIndex, cAddedRecord);

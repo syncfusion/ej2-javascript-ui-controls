@@ -471,6 +471,7 @@ export class VirtualScroll {
             this.content.style.width = width + 'px';
             if (!this.parent.scrollSettings.isFinite || args.isUpdate) {
                 const scroll: HTMLElement = this.parent.element.querySelector('.e-scroller .e-virtualtrack') as HTMLElement;
+                if (!scroll) { return; }
                 const scrollWidth: number = parseInt(scroll.style.width, 10);
                 const newWidth: number = width + this.translateX + this.parent.viewport.beforeFreezeWidth;
                 if (newWidth > scrollWidth) {

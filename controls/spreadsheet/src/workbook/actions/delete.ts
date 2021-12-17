@@ -189,8 +189,8 @@ export class WorkbookDelete {
                 }
             }
         } else {
-            if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
-            if (args.end - args.start === this.parent.sheets.length - 1) { return; }
+            if ((args.end - args.start === this.parent.sheets.length - 1) || (args.checkCount !== undefined && args.checkCount ===
+                this.parent.sheets.length)) { return; }
         }
         const deletedModel: RowModel[] = [];
         for (let i: number = args.start; i <= args.end; i++) {
@@ -210,12 +210,12 @@ export class WorkbookDelete {
         this.parent.notify(beforeDelete, args);
         if (args.modelType !== 'Sheet') {
             this.parent.notify(refreshClipboard, args);
-            if (args.model !== this.parent.getActiveSheet()) { return; }
+            if (args.model.name !== this.parent.getActiveSheet().name) { return; }
             this.parent.notify(
-                deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames:
-                    insertArgs.definedNames, isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
-                sheetCount: args.modelType === 'Row' ? args.model.usedRange.rowIndex : args.model.usedRange.colIndex, activeSheetIndex:
-                    getSheetIndex(this.parent, args.model.name), freezePane: freezePane, isUndoRedo: args.isUndoRedo });
+                deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType, refreshSheet: args.refreshSheet,
+                    definedNames: insertArgs.definedNames, isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel:
+                    deletedCells, sheetCount: args.modelType === 'Row' ? args.model.usedRange.rowIndex : args.model.usedRange.colIndex,
+                    activeSheetIndex: getSheetIndex(this.parent, args.model.name), freezePane: freezePane, isUndoRedo: args.isUndoRedo });
         } else {
             this.parent.notify(deleteAction, {
                 startIndex: args.start, endIndex: args.end, modelType: args.modelType, definedNames: insertArgs.definedNames,

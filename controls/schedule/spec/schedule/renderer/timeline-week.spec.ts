@@ -195,7 +195,7 @@ describe('Schedule Timeline Week view', () => {
             expect(eventPopup.classList).toContain('e-popup-open');
             (<HTMLInputElement>eventPopup.querySelector('.' + cls.SUBJECT_CLASS)).innerText = 'Spanned Event - Same week';
             (<HTMLInputElement>eventPopup.querySelector('.e-date-time-details')).innerText =
-                'April 30, 2018 (10:00 AM) - May 3, 2018 (1:00 PM)';
+                'April 30, 2018 (10:00 AM) - May 3, 2018 (1:00 PM)';
             const edit: HTMLElement = eventPopup.querySelector('.e-edit');
             expect(edit.children[0].classList).toContain('e-edit-icon');
             const deleteIcon: HTMLElement = eventPopup.querySelector('.e-delete');
@@ -4162,6 +4162,54 @@ describe('Schedule Timeline Week view', () => {
             expect(schObj.element.querySelector('.e-header-cells').innerHTML).toEqual('<div class="template-wrap">Testing</div>');
             expect(schObj.element.querySelector('.e-header-cells').firstElementChild.classList.contains('template-wrap'))
                 .toBeTruthy();
+        });
+    });
+
+    describe('minimumEventDuration property', () => {
+        let schObj: Schedule;
+        const appointments: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2017, 10, 1, 10, 0),
+            EndTime: new Date(2017, 10, 1, 10, 3),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'Meeting',
+            StartTime: new Date(2017, 10, 1, 10, 0),
+            EndTime: new Date(2017, 10, 1, 10, 45),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 1),
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                currentView: 'TimelineWeek',
+                eventSettings: { minimumEventDuration: 30 }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointment width by setting minimumEventDuration property to 30 minutes', () => {
+            const appointmentWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(appointmentWrapper.length).toEqual(1);
+            const firstEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]');
+            expect(firstEvent.style.width).toEqual('50px');
+            const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            expect(secondEvent.style.width).toEqual('75px');
+        });
+        it('Checking appointment width by setting minimumEventDuration property to 1 minute (default)', () => {
+            schObj.dataBound = null;
+            schObj.eventSettings.minimumEventDuration = 1;
+            schObj.dataBind();
+            const appointmentWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(appointmentWrapper.length).toEqual(1);
+            const firstEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]');
+            expect(firstEvent.style.width).toEqual('5px');
+            const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            expect(secondEvent.style.width).toEqual('75px');
         });
     });
 

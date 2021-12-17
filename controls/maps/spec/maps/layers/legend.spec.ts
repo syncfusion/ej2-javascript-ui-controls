@@ -1761,6 +1761,19 @@ describe('Map marker properties tesing', () => {
                 }
                 map.refresh();
             })
+            it('Checking the legends with datasource set as null', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                    trigger.clickEvent(spec);
+                }
+                map.layers[0].shapeDataPath = 'name';
+                map.layers[0].shapePropertyPath = 'name';
+                map.layers[0].highlightSettings.enable = true;
+                map.layers[0].highlightSettings.fill = '#4c515b';
+                map.layers[0].dataSource = [{color: '#2e9bff', name: '', value: 32460264}]
+                map.layers[0].shapeSettings = { colorValuePath: 'color'};
+                map.refresh();
+            })
         });
         describe('Toggle legend settings for Layers', () => {
             let id: string = 'container';

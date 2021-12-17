@@ -1,4 +1,5 @@
-﻿import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { addClass, removeClass, isVisible, closest, attributes, detach, classList, KeyboardEvents } from '@syncfusion/ej2-base';
 import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';
@@ -105,9 +106,8 @@ export interface BeforeCreateArgs extends BaseEventArgs {
     scrollStep: number
 }
 /** @hidden */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface EJ2Instance extends HTMLElement {
-    /* eslint-disable */
+    // eslint-disable-next-line camelcase
     ej2_instances: Object[]
 }
 
@@ -268,7 +268,7 @@ export class Item extends ChildProperty<Item>  {
     /**
      * Event triggers when `click` the toolbar item.
      *
-     * @event
+     * @event click
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -389,30 +389,30 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     public allowKeyboard: boolean;
 
     /**
-     * The event will be fired on clicking the Toolbar elements.
+     * The event will be fired on clicking the Toolbar elements.
      *
-     * @event
+     * @event clicked
      */
     @Event()
     public clicked: EmitType<ClickEventArgs>;
     /**
      * The event will be fired when the control is rendered.
      *
-     * @event
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired when the control gets destroyed.
      *
-     * @event
+     * @event destroyed
      */
     @Event()
     public destroyed: EmitType<Event>;
     /**
      * The event will be fired before the control is rendered on a page.
      *
-     * @event
+     * @event beforeCreate
      */
     @Event()
     public beforeCreate: EmitType<BeforeCreateArgs>;
@@ -1235,9 +1235,14 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private tbarPopupHandler(isOpen: boolean): void {
         if (this.overflowMode === 'Extended') {
-            isOpen ? this.add(this.element, CLS_EXTENDEDPOPOPEN) : this.remove(this.element, CLS_EXTENDEDPOPOPEN);
+            if (isOpen) {
+                this.add(this.element, CLS_EXTENDEDPOPOPEN);
+            } else {
+                this.remove(this.element, CLS_EXTENDEDPOPOPEN);
+            }
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private popupOpen(e: Event): void {
         const popObj: Popup = this.popObj;
         if (!this.isVertical) {
@@ -1275,14 +1280,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (popObj) {
             const popupOffset: ClientRect = popupEle.getBoundingClientRect();
-            if ( popupOffset.right > document.documentElement.clientWidth && popupOffset.width > toolEle.getBoundingClientRect().width) {
-                popObj.collision = { Y: 'none'};
+            if (popupOffset.right > document.documentElement.clientWidth && popupOffset.width > toolEle.getBoundingClientRect().width) {
+                popObj.collision = { Y: 'none' };
                 popObj.dataBind();
             }
             popObj.refreshPosition();
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private popupClose(e: Event): void {
         const element: HTEle = this.element;
         const popupNav: HTEle = <HTEle>element.querySelector('.' + CLS_TBARNAV);
@@ -1619,9 +1625,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             const popWid: string = (this.isVertical ? popupNav.offsetHeight : popupNav.offsetWidth) + 'px';
             innerItem[2].removeAttribute('style');
             if (this.isVertical) {
-                this.enableRtl ? innerItem[2].style.top = popWid : innerItem[2].style.bottom = popWid;
+                if (this.enableRtl) {
+                    innerItem[2].style.top = popWid;
+                } else {
+                    innerItem[2].style.bottom = popWid;
+                }
             } else {
-                this.enableRtl ? innerItem[2].style.left = popWid : innerItem[2].style.right = popWid;
+                if (this.enableRtl) {
+                    innerItem[2].style.left = popWid;
+                } else {
+                    innerItem[2].style.right = popWid;
+                }
             }
         }
         if (tbarWid <= margin) {
@@ -1631,9 +1645,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         innerItem[1].removeAttribute('style');
         const mrgn: Str = ((!this.isVertical ? innerItem[0].offsetWidth : innerItem[0].offsetHeight) + value) + 'px';
         if (this.isVertical) {
-            this.enableRtl ? innerItem[1].style.marginBottom = mrgn : innerItem[1].style.marginTop = mrgn;
+            if (this.enableRtl) {
+                innerItem[1].style.marginBottom = mrgn;
+            } else {
+                innerItem[1].style.marginTop = mrgn;
+            }
         } else {
-            this.enableRtl ? innerItem[1].style.marginRight = mrgn : innerItem[1].style.marginLeft = mrgn;
+            if (this.enableRtl) {
+                innerItem[1].style.marginRight = mrgn;
+            } else {
+                innerItem[1].style.marginLeft = mrgn;
+            }
         }
     }
     private tbarItemAlign(item: ItemModel, itemEle: HTEle, pos: number): void {
@@ -1699,7 +1721,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let keyVal: Str;
         for (let i: number = 0; i < key.length; i++) {
             keyVal = key[i] as Str;
-            keyVal === 'class' ? this.add(element, attr[keyVal]) : element.setAttribute(keyVal, attr[keyVal]);
+            if (keyVal === 'class') {
+                this.add(element, attr[keyVal]);
+            } else {
+                element.setAttribute(keyVal, attr[keyVal]);
+            }
         }
     }
     /**
@@ -1741,7 +1767,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 enable(isEnable, ele);
             }
-            isEnable ? removeClass(elements, CLS_DISABLE) : addClass(elements, CLS_DISABLE);
+            if (isEnable) {
+                removeClass(elements, CLS_DISABLE);
+            } else {
+                addClass(elements, CLS_DISABLE);
+            }
         } else {
             if (typeof (elements) === 'number') {
                 ele = this.getElementByIndex(elements);
@@ -1918,7 +1948,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else if (itemType === 'Input') {
             const ele: HTEle = this.createElement('input');
-            item.id ? (ele.id = item.id) : (ele.id = getUniqueID('tbr-ipt'));
+            if (item.id) {
+                ele.id = item.id;
+            } else {
+                ele.id = getUniqueID('tbr-ipt');
+            }
             innerEle.appendChild(ele);
             eleObj.appendTo(ele);
         }
@@ -1931,7 +1965,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const textStr: Str = item.text;
         let iconCss: Str;
         let iconPos: Str;
-        item.id ? (dom.id = item.id) : dom.id = getUniqueID('e-tbr-btn');
+        if (item.id) {
+            dom.id = item.id;
+        } else {
+            dom.id = getUniqueID('e-tbr-btn');
+        }
         const btnTxt: HTEle = this.createElement('span', { className: 'e-tbar-btn-text' });
         if (textStr) {
             btnTxt.innerHTML = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textStr) : textStr;
@@ -2194,12 +2232,24 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 this.refreshOverflow();
                 break;
             case 'enableRtl':
-                newProp.enableRtl ? this.add(tEle, CLS_RTL) : this.remove(tEle, CLS_RTL);
+                if (newProp.enableRtl) {
+                    this.add(tEle, CLS_RTL);
+                } else {
+                    this.remove(tEle, CLS_RTL);
+                }
                 if (!isNOU(this.scrollModule)) {
-                    newProp.enableRtl ? this.add(this.scrollModule.element, CLS_RTL) : this.remove(this.scrollModule.element, CLS_RTL);
+                    if (newProp.enableRtl) {
+                        this.add(this.scrollModule.element, CLS_RTL);
+                    } else {
+                        this.remove(this.scrollModule.element, CLS_RTL);
+                    }
                 }
                 if (!isNOU(this.popObj)) {
-                    newProp.enableRtl ? this.add(this.popObj.element, CLS_RTL) : this.remove(this.popObj.element, CLS_RTL);
+                    if (newProp.enableRtl) {
+                        this.add(this.popObj.element, CLS_RTL);
+                    } else {
+                        this.remove(this.popObj.element, CLS_RTL);
+                    }
                 }
                 if (this.tbarAlign) {
                     this.itemPositioning();
@@ -2252,7 +2302,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             ele = innerItems[eleIndex];
         }
         if (ele) {
-            value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
+            if (value) {
+                ele.classList.add(CLS_HIDDEN);
+            } else {
+                ele.classList.remove(CLS_HIDDEN);
+            }
             if (value && isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
                 if (isNOU(ele.firstElementChild.getAttribute('tabindex'))) {
                     ele.firstElementChild.setAttribute('tabindex', '-1');

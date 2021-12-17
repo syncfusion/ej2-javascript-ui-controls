@@ -68,7 +68,7 @@ export class AreaSeries extends MultiColoredSeries {
             let endPoint: string = '';
             const chart: Chart = this.chart;
             endPoint += this.getAreaPathDirection(0, origin, series, isInverted, getCoordinate, null, 'L');
-            if (xAxis.isInversed || yAxis.isInversed) {
+            if (xAxis.isAxisInverse || yAxis.isAxisInverse) {
                 direction += (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, endPoint) :
                     chart.radarSeriesModule.getRadarIsInversedPath(xAxis, endPoint));
             }

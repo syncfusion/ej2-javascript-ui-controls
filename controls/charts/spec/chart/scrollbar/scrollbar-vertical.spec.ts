@@ -195,8 +195,8 @@ describe('Scrollbar Chart', () => {
             let yAxisTitle: Element = document.getElementById('container_AxisTitle_1');
             expect(chartAreaHt === '344.25' || chartAreaHt === '351.25').toBe(true);
             expect(majorTick === '73 340.50174999999996 L 52 340.50174999999996' || majorTick === '69 349.59375 L 48 349.59375').toBe(true);
-            expect(yAxisLabel.getAttribute('x') === '47' || yAxisLabel.getAttribute('x') === '43').toBe(true);
-            expect(yAxisLabel.getAttribute('y') === '344' || yAxisLabel.getAttribute('y') === '352.75').toBe(true);
+            expect(yAxisLabel.getAttribute('x') === '37').toBe(true);
+            expect(yAxisLabel.getAttribute('y') === '349').toBe(true);
             expect(yAxisLabel.innerHTML === '10').toBe(true);
             expect(yAxisTitle.getAttribute('x') === '29.5' || yAxisTitle.getAttribute('x') === '26.5').toBe(true);
             expect(yAxisTitle.getAttribute('y') === '212.375' || yAxisTitle.getAttribute('y') === '212.875').toBe(true);
@@ -258,8 +258,8 @@ describe('Scrollbar Chart', () => {
             let yAxisTitle: Element = document.getElementById('container_AxisTitle_1');
             expect(chartAreaHt === '375.25' || chartAreaHt === '381.25').toBe(true);
             expect(majorTick === '73.5 421 L 73.5 415' || majorTick === '69.5 424 L 69.5 418').toBe(true);
-            expect(yAxisLabel.getAttribute('x') === '47' || yAxisLabel.getAttribute('x') === '43').toBe(true);
-            expect(yAxisLabel.getAttribute('y') === '420' || yAxisLabel.getAttribute('y') === '390.75').toBe(true);
+            expect(yAxisLabel.getAttribute('x') === '40').toBe(true);
+            expect(yAxisLabel.getAttribute('y') === '387').toBe(true);
             expect(yAxisLabel.innerHTML === '4' || yAxisLabel.innerHTML === '6').toBe(true);
             expect(yAxisTitle.getAttribute('x') === '29.5' || yAxisTitle.getAttribute('x') === '26.5').toBe(true);
             expect(yAxisTitle.getAttribute('y') === '227.875').toBe(true);
@@ -354,8 +354,8 @@ describe('Scrollbar Chart', () => {
             let yAxisTitle: Element = document.getElementById('container_AxisTitle_1');
             expect(chartAreaHt === '344.25' || chartAreaHt === '351.25').toBe(true);
             expect(majorTick === '125.1875 389.5 L 120.1875 389.5' || majorTick === '125.1875 314.76145833333334 L 120.1875 314.76145833333334').toBe(true);
-            expect(yAxisLabel.getAttribute('x') === '115.1875').toBe(true);
-            expect(yAxisLabel.getAttribute('y') === '393' || yAxisLabel.getAttribute('y') === '317.75').toBe(true);
+            expect(yAxisLabel.getAttribute('x') === '112.1875').toBe(true);
+            expect(yAxisLabel.getAttribute('y') === '314').toBe(true);
             expect(yAxisLabel.innerHTML === '0' || yAxisLabel.innerHTML === '5').toBe(true);
             expect(yAxisTitle.getAttribute('x') === '81.6875' || yAxisTitle.getAttribute('x') === '82.6875').toBe(true);
             expect(yAxisTitle.getAttribute('y') === '212.375' || yAxisTitle.getAttribute('y') === '212.875').toBe(true);

@@ -10,10 +10,12 @@ import { AccumulationDataLabel} from '../../../src/accumulation-chart/renderer/d
 import { AccPoints, AccumulationSeries} from '../../../src/accumulation-chart/model/acc-base';
 import { getElement, removeElement} from '../../../src/common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
-import { IAccLoadedEventArgs} from '../../../src/accumulation-chart/model/pie-interface';
+import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
+import { IMouseEventArgs } from '../../../src/chart/model/chart-interface';
 import { data, datetimeData1, remoteData} from '../../chart/base/data.spec';
 import { MouseEvents} from '../../chart/base/events.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { piedata } from '../../chart/base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 AccumulationChart.Inject(AccumulationTooltip, AccumulationDataLabel);
@@ -344,6 +346,18 @@ describe('accumulation and Doughnut Control Checking', () => {
         accumulation.backgroundImage = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
         accumulation.refresh();
     });
+    it('checking accumulation chart double click event', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            element = document.getElementById(args.chart.element.id);
+            trigger.doubleClickEvent(element);
+        };
+        accumulation.chartDoubleClick = (args: IMouseEventArgs) =>{
+            expect(args.name).toEqual('chartDoubleClick');
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.refresh();
+    });
    /* it('center aligned div checking tooltip', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
             accumulation.loaded = null;
@@ -454,5 +468,83 @@ it('memory leak', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-})
+});
+
+describe('Checking RTL Behaviour for Title', () => {
+    let ele: HTMLElement;
+    let id: string = 'ej2-container';
+    let textEle: Element;
+    let titleId: string = id + '_title';
+    let subTitleId: string = id +'_subTitle';
+    let accumulation: AccumulationChart;
+    let anchor: string;
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        accumulation = new AccumulationChart({
+            border: { width: 1, color: 'blue' },
+            series: [
+                {
+                    type: 'Pie',
+                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y'
+                }
+            ], 
+            width: '600', 
+            height: '400', 
+            legendSettings: { visible: false },
+            title: 'Syncfusion مخططات',
+            subTitle: 'Since 2012',
+            titleStyle: {
+                textAlignment: 'Near'
+            },
+            subTitleStyle: {
+                textAlignment: 'Far'
+            }
+        });
+        accumulation.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        accumulation.loaded = null;
+        accumulation.destroy();
+        removeElement(id);
+    });
+    it('Default title anchor', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(titleId);
+            anchor = textEle.getAttribute('text-anchor');
+            expect(anchor === 'start').toBe(true);
+            done();
+        };
+        accumulation.refresh();
+    });
+    it('Default subtitle anchor', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(subTitleId);
+            anchor = textEle.getAttribute('text-anchor');
+            expect(anchor === 'end').toBe(true);
+            done();
+        };
+        accumulation.refresh();
+    });
+    it('Title anchor with RTL', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(titleId);
+            anchor = textEle.getAttribute('text-anchor');
+            expect(anchor === 'end').toBe(true);
+            done();
+        };
+        accumulation.enableRtl = true;
+        accumulation.refresh();
+    });
+    it('Subtitle anchor with RTL', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(subTitleId);
+            anchor = textEle.getAttribute('text-anchor');
+            expect(anchor === 'start').toBe(true);
+            done();
+        };
+        accumulation.refresh();
+    });
+  });
 });

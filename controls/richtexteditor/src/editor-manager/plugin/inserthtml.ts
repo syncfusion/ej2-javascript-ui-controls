@@ -43,6 +43,11 @@ export class InsertHtml {
         const nodeSelection: NodeSelection = new NodeSelection();
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
+        if (range.startContainer === editNode && range.startContainer === range.endContainer && range.startOffset === 0 &&
+            range.startOffset === range.endOffset && editNode.textContent.length === 0 && editNode.children[0].tagName === 'P') {
+            nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).children[0], (range.startContainer as HTMLElement).children[0], 0, 0);
+            range = nodeSelection.getRange(docElement);
+        }
         const isCursor: boolean = range.startOffset === range.endOffset && range.startOffset === 0 &&
         range.startContainer === range.endContainer;
         const isCollapsed: boolean = range.collapsed;
@@ -320,21 +325,33 @@ export class InsertHtml {
                 blockNode = range.endContainer;
                 range.setEnd(blockNode, range.endContainer.textContent.length);
             }
-            if (!isNOU(blockNode) && editNode === blockNode &&
-                range.startContainer === editNode && range.endContainer === editNode) {
-                blockNode = editNode.firstElementChild;
-                range.setStart(editNode.firstElementChild, editNode.firstElementChild.textContent.length);
-                range.setEnd(editNode.firstElementChild, editNode.firstElementChild.textContent.length);
-            }
             if (blockNode.nodeName === 'BODY' && range.startContainer === range.endContainer && range.startContainer.nodeType === 1) {
                 blockNode = range.startContainer;
+            }
+            if ((blockNode as HTMLElement).closest('LI') && node && (node as HTMLElement).firstElementChild &&
+            (((node as HTMLElement)).firstElementChild.tagName === 'OL' || (node as HTMLElement).firstElementChild.tagName === 'UL')) {
+                let liNode: HTMLElement;
+                while((node as HTMLElement).firstElementChild.lastElementChild && (node as HTMLElement).firstElementChild.lastElementChild.tagName === 'LI') {
+                    liNode = ((node as HTMLElement).firstElementChild.lastElementChild as HTMLElement);
+                    liNode.style.removeProperty('margin-left');
+                    liNode.style.removeProperty('margin-top');
+                    liNode.style.removeProperty('margin-bottom');
+                    (node as HTMLElement).firstElementChild.insertAdjacentElement('afterend', liNode);
+                }
             }
             if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
                 range.insertNode(tempSpan);
                 tempSpan.parentNode.replaceChild(node, tempSpan);
             } else {
-                const splitedElm: Node = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);
+                let currentNode: Node = nodes[nodes.length-1];
+                let splitedElm: Node;
+                if ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR') && !isNOU(currentNode.parentElement) &&
+                currentNode.parentElement.textContent.trim().length === 0 && !(node as HTMLElement).classList.contains('pasteContent')) {
+                    splitedElm = currentNode;
+                } else {
+                    splitedElm = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);
+                }
                 splitedElm.parentNode.replaceChild(node, splitedElm);
             }
         }

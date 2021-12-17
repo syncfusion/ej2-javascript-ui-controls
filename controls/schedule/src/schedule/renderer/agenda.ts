@@ -59,7 +59,8 @@ export class Agenda extends AgendaBase implements IRenderer {
         for (const event of this.parent.eventsData) {
             delete (<Record<string, any>>event).generatedDates;
         }
-        let eventCollection: Record<string, any>[] = args.processedData;
+        let eventCollection: Record<string, any>[] = this.parent.activeViewOptions.allowVirtualScrolling ?
+            args.processedData : this.parent.eventsProcessed;
         if (this.parent.uiStateValues.isGroupAdaptive) {
             const resource: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
             this.dataSource = this.parent.eventBase.filterEventsByResource(resource, this.dataSource);
@@ -162,6 +163,7 @@ export class Agenda extends AgendaBase implements IRenderer {
                     const filterData: Record<string, any>[] = this.appointmentFiltering(agendaDate);
                     const nTr: Element = this.createTableRowElement(agendaDate, 'data');
                     if (this.element.querySelector('tr[aria-rowindex="' + parseInt(nTr.getAttribute('aria-rowindex'), 10) + '"]')) {
+                        agendaDate = util.addDays(agendaDate, 1);
                         continue;
                     }
                     const dTd: Element = nTr.children[0];

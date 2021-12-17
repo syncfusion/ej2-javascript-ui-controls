@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration, getInstance } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs } from '../../common/base/interface';import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';import { Mode, AggregateTypes } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceSettingsModel, FieldOptionsModel } from '../../pivotview/model/datasourcesettings-model';import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';
+import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration, getInstance } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs } from '../../common/base/interface';import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';import { Mode, AggregateTypes } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceSettingsModel, FieldOptionsModel } from '../../pivotview/model/datasourcesettings-model';import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -171,6 +171,15 @@ export interface PivotFieldListModel extends ComponentModel{
     aggregateTypes?: AggregateTypes[];
 
     /**
+     * Allows values with a specific country currency format to be displayed in the pivot table. 
+     * Standard currency codes referred to as ISO 4217 can be used for the formatting of currency values. 
+     * For example, to display "US Dollar($)" currency values, set the `currencyCode` to **USD**. 
+     * > It is applicable ony for Relational data.
+     * @private
+     */
+    currencyCode?: string;
+
+    /**
      * It allows any customization of Pivot Field List properties on initial rendering.
      * Based on the changes, the pivot field list will be redered.
      * @event
@@ -267,5 +276,44 @@ export interface PivotFieldListModel extends ComponentModel{
      * @event
      */
     beforeServiceInvoke?: EmitType<BeforeServiceInvokeEventArgs>;
+
+    /**
+     * It triggers when UI action begins in the Pivot FieldList. The UI actions used to trigger this event such as
+     * sorting fields through icon click in the field list tree,
+     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * Button actions such as 
+     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list/#sorting-members),
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * @event
+     */
+    actionBegin?: EmitType<PivotActionBeginEventArgs>;
+
+    /**
+     * It triggers when UI action in the Pivot FieldList completed. The UI actions used to trigger this event such as
+     * sorting fields through icon click in the field list tree,
+     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * Button actions such as 
+     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list/#sorting-members),
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * @event
+     */
+    actionComplete?: EmitType<PivotActionCompleteEventArgs>;
+
+    /**
+     * It triggers when UI action failed to achieve the desired results in the Pivot FieldList. The UI actions used to trigger this event such as
+     * sorting fields through icon click in the field list tree,
+     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * Button actions such as 
+     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list/#sorting-members),
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * @event
+     */
+    actionFailure?: EmitType<PivotActionFailureEventArgs>;
 
 }

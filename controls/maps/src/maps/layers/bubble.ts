@@ -29,6 +29,8 @@ export class Bubble {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To render bubble
+     *
+     * @private
      */
     public renderBubble(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,7 +72,7 @@ export class Bubble {
             isNaN(shapeData[layer.shapeDataPath]) ? shapeData[layer.shapeDataPath].toLowerCase() : shapeData[layer.shapeDataPath];
             const shapePathValue : string =  !isNullOrUndefined(shape[shapePath]) && isNaN(shape[shapePath])
                 ? shape[shapePath].toLowerCase() : shape[shapePath];
-            if (shapeDataLayerPathValue === shapePathValue) {
+            if (shapeDataLayerPathValue === shapePathValue && layerData[i].type !== 'LineString') {
                 if (layerData[i]['type'] === 'Point') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     shapePoints.push(this.getPoints(<any[]>layerData[i], []));
@@ -204,6 +206,8 @@ export class Bubble {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger bubble click event
+     *
+     * @private
      */
     public bubbleClick(e: PointerEvent): void {
         const target: string = (e.target as Element).id;
@@ -215,7 +219,7 @@ export class Bubble {
         if (isNullOrUndefined(data)) {
             return;
         }
-        let eventArgs: IBubbleClickEventArgs = {
+        const eventArgs: IBubbleClickEventArgs = {
             cancel: false, name: bubbleClick, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
@@ -247,6 +251,8 @@ export class Bubble {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger bubble move event
+     *
+     * @private
      */
     public bubbleMove(e: PointerEvent): void {
         const target: string = (e.target as Element).id;
@@ -258,7 +264,7 @@ export class Bubble {
         if (isNullOrUndefined(data)) {
             return;
         }
-        let eventArgs: IBubbleMoveEventArgs = {
+        const eventArgs: IBubbleMoveEventArgs = {
             cancel: false, name: bubbleMouseMove, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };

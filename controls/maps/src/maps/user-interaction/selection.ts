@@ -128,18 +128,19 @@ export class Selection {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private selectMap(targetElement: Element, shapeData: any, data: any): void {
+        const layerIndex: number = parseInt(targetElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
         let parentElement: Element;
         let children: HTMLCollection;
         let selectionClass: Element;
         const selectionsettings: SelectionSettingsModel = this.selectionsettings;
         const border: BorderModel = {
-            color: this.selectionsettings.border.color,
-            width: this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale),
+            color: (targetElement.parentElement.id.indexOf('LineString') === -1) ? this.selectionsettings.border.color : (this.selectionsettings.border.color || this.selectionsettings.fill),
+            width: (targetElement.parentElement.id.indexOf('LineString') === -1) ? (this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)) : (this.selectionsettings.border.width / this.maps.scale),
             opacity: this.selectionsettings.border.opacity
         };
-        let eventArgs: ISelectionEventArgs = {
+        const eventArgs: ISelectionEventArgs = {
             opacity: this.selectionsettings.opacity,
-            fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
+            fill: (targetElement.parentElement.id.indexOf('LineString') === -1) ? (this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none') : 'transparent',
             border: border,
             name: itemSelection,
             target: targetElement.id,

@@ -352,12 +352,68 @@ describe('Circular-Gauge Control', () => {
                 }
                 let tooltip = document.getElementById("container_CircularGauge_Tooltip");
                 let split = tooltip.getAttribute('style').split(" ");
-                expect(split[5].indexOf('-') == -1).toBe(true);
+                expect(split[5].indexOf('-') == -1 && tooltip.getBoundingClientRect().left > 0).toBe(true);
                 gauge.mouseLeave(<PointerEvent>eventObj);
             };
             gauge.width = '100';
             gauge.tooltip.rangeSettings.showAtMousePosition = false;
             gauge.tooltip.rangeSettings.template = '<div>Sum of Freight</div>';
+            gauge.refresh();
+        });
+
+        it('Checking pointer with range tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('container_Axis_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'mousemove',
+                        pageX: ele.getBoundingClientRect().left,
+                        pageY: ele.getBoundingClientRect().top
+                    }
+                    gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+                }
+                ele = document.getElementById('container_Axis_0_Pointer_0');
+                eventObj = {
+                    target: ele,
+                    type: 'mousemove',
+                    pageX: ele.getBoundingClientRect().left,
+                    pageY: ele.getBoundingClientRect().top
+                }
+                gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+            };
+            gauge.axes[0].pointers = [{value: 20}];
+            gauge.tooltip.enable = true;
+            gauge.tooltip.type = ['Range'];
+            gauge.tooltip.rangeSettings.showAtMousePosition = true;
+            gauge.refresh();
+        });
+
+        it('Checking range with pointer tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('container_Axis_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'mousemove',
+                        pageX: ele.getBoundingClientRect().left,
+                        pageY: ele.getBoundingClientRect().top
+                    }
+                    gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+                }
+                ele = document.getElementById('container_Axis_0_Pointer_0');
+                eventObj = {
+                    target: ele,
+                    type: 'mousemove',
+                    pageX: ele.getBoundingClientRect().left,
+                    pageY: ele.getBoundingClientRect().top
+                }
+                gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+            };
+            gauge.axes[0].pointers = [{value: 20}];
+            gauge.tooltip.enable = true;
+            gauge.tooltip.type = ['Pointer'];
+            gauge.tooltip.rangeSettings.showAtMousePosition = true;
             gauge.refresh();
         });
 

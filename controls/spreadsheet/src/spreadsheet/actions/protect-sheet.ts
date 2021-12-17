@@ -266,7 +266,7 @@ export class ProtectSheet {
             id + '_clear', id + '_conditionalformatting'];
         const enableFrmlaBtnId: string[] = [id + '_insert_function'];
         const enableInsertBtnId: string[] = [id + '_hyperlink', id + '_', id + '_chart'];
-        const imageBtnId: string[] = [id + '_image'];
+        const imageBtnId: string[] = [id + '_'];
         const findBtnId: string[] = [id + '_find'];
         const dataValidationBtnId: string[] = [id + '_datavalidation'];
         const chartBtnId: string[] = [id + '_chart'];

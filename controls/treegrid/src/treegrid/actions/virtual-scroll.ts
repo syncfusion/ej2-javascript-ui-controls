@@ -7,6 +7,7 @@ import { ITreeData, RowCollapsedEventArgs } from '../base';
 import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
 import { getExpandStatus } from '../utils';
 import { VirtualTreeContentRenderer } from '../renderer/virtual-tree-content-render';
+import { VirtualHeaderRenderer } from '@syncfusion/ej2-grids';
 
 /**
  * TreeGrid Virtual Scroll module will handle Virtualization
@@ -48,8 +49,10 @@ export class VirtualScroll {
      * @returns {void}
      */
     public addEventListener(): void {
+        if (this.parent.isDestroyed) { return; }
         this.parent.on(events.localPagedExpandCollapse, this.collapseExpandVirtualchilds, this);
         this.parent.on(events.pagingActions, this.virtualPageAction, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
     /**
      * @hidden
@@ -59,6 +62,7 @@ export class VirtualScroll {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.localPagedExpandCollapse, this.collapseExpandVirtualchilds);
         this.parent.off(events.pagingActions, this.virtualPageAction);
+        this.parent.off(events.destroy, this.destroy);
     }
     private collapseExpandVirtualchilds(row: { action: string, row: HTMLTableRowElement,
         record: ITreeData, args: RowCollapsedEventArgs }): void {
@@ -109,11 +113,16 @@ export class VirtualScroll {
             }
             //if ((this.prevendIndex !== -1 && this.prevstartIndex !== -1) &&
             //this.prevendIndex === endIndex && this.prevstartIndex === startIndex) {
+            if (!isNullOrUndefined(this.expandCollapseRec) && (pageingDetails.actionArgs.requestType === 'virtualscroll' ||
+            (pageingDetails.actionArgs.requestType === 'refresh' && startIndex !== this.prevstartIndex)) &&
+            (startIndex < this.parent.getRows().length && endIndex <= startIndex + this.parent.getRows().length)) {
+                startIndex = 0;
+            }
             if (!isNullOrUndefined(this.expandCollapseRec)) {
                 const resourceCount: HTMLTableRowElement[] = this.parent.getRows();
                 let sIndex: number = visualData.indexOf(this.expandCollapseRec);
                 const tempdata: ITreeData[] = visualData.slice(sIndex, sIndex + resourceCount.length);
-                if (tempdata.length < resourceCount.length && sIndex >= 0) {
+                if (tempdata.length < resourceCount.length && sIndex >= 0 && startIndex !== 0) {
                     sIndex = visualData.length - resourceCount.length;
                     sIndex = sIndex > 0 ? sIndex : 0;
                     startIndex = sIndex;
@@ -123,16 +132,16 @@ export class VirtualScroll {
                     endIndex = this.parent.grid.pageSettings.pageSize - 1;
                     this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
                 }
-                this.expandCollapseRec = null;
             }
             //}
-            if (!isNullOrUndefined(this.expandCollapseRec) && this.parent.enableCollapseAll) {
+            if ((this.parent.enableCollapseAll || this.parent.expandStateMapping) && !isNullOrUndefined(this.expandCollapseRec)) {
                 if (pageingDetails.count < this.parent.getRows()[0].getBoundingClientRect().height) {
-                    startIndex = visualData[0].index;
+                    startIndex = 0;
                 } else {
                     startIndex = this.prevstartIndex === -1 ? 0 : this.prevstartIndex;
                 }
             }
+            this.expandCollapseRec = null;
             pageingDetails.result = visualData.slice(startIndex, endIndex);
             this.prevstartIndex = startIndex;
             this.prevendIndex = endIndex;
@@ -160,8 +169,13 @@ export class TreeVirtual extends GridVirtualScroll {
         return 'treeVirtualScroll';
     }
     protected instantiateRenderers(): void {
+        const parentGrid: IGrid = getValue('parent', this);
         getValue('parent', this).log(['limitation', 'virtual_height'], 'virtualization');
         const renderer: Object = getValue('locator', this).getService('rendererFactory');
+        if (parentGrid.enableColumnVirtualization) {
+            getValue('addRenderer', renderer)
+                .apply(renderer, [RenderType.Header, new VirtualHeaderRenderer(getValue('parent', this), getValue('locator', this))]);
+        }
         getValue('addRenderer', renderer)
             .apply(renderer, [RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this))]);
         //renderer.addRenderer(RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this)));

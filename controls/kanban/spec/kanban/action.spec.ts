@@ -755,6 +755,125 @@ describe('Action module', () => {
 
     });
 
+    describe('EJ2-54073- When dynamically adding new column after deleting all the columns from Kanban throws console error ', () => {
+        let kanbanObj: Kanban;
+        let deleteBtn: HTMLButtonElement;
+        let addBtn: HTMLButtonElement;
+        beforeAll((done: DoneFn) => {
+            deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = "DeleteBtn";
+            addBtn = document.createElement('button');
+            addBtn.innerHTML = "AddBtn";
+            document.body.append(deleteBtn);
+            document.body.append(addBtn);
+            const kanbanDatas: Record<string, any>[] = [
+                {
+                    'Id': 1,
+                    'Status': 'CheckList',
+                    'Summary': 'Analyze the new requirements gathered from the customer.',
+                    'Type': 'Story',
+                    'Priority': 'Low',
+                    'Tags': 'Analyze,Customer',
+                    'Estimate': 3.5,
+                    'Assignee': 'Nancy Davloio',
+                    'RankId': 1
+                },
+                {
+                    'Id': 2,
+                    'Status': 'InProgress',
+                    'Summary': 'Improve application performance',
+                    'Type': 'Improvement',
+                    'Priority': 'Normal',
+                    'Tags': 'Improvement',
+                    'Estimate': 6,
+                    'Assignee': 'Andrew Fuller',
+                    'RankId': 1
+                },
+                {
+                    'Id': 3,
+                    'Status': 'CheckList',
+                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Critical',
+                    'Tags': 'Meeting',
+                    'Estimate': 5.5,
+                    'Assignee': 'Janet Leverling',
+                    'RankId': 2
+                },
+                {
+                    'Id': 4,
+                    'Status': 'InProgress',
+                    'Summary': 'Fix the issues reported in the IE browser.',
+                    'Type': 'Bug',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'IE',
+                    'Estimate': 2.5,
+                    'Assignee': 'Janet Leverling',
+                    'RankId': 2
+                },
+                {
+                    'Id': 5,
+                    'Status': 'Testing',
+                    'Summary': 'Fix the issues reported by the customer.',
+                    'Type': 'Bug',
+                    'Priority': 'Low',
+                    'Tags': 'Customer',
+                    'Estimate': '3.5',
+                    'Assignee': 'Steven walker',
+                    'RankId': 1
+                },
+                {
+                    'Id': 6,
+                    'Status': 'CheckList',
+                    'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Low',
+                    'Tags': 'Meeting',
+                    'Estimate': 2,
+                    'Assignee': 'Michael Suyama',
+                    'RankId': 1
+                }
+            ];
+            const model: KanbanModel = {
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open' },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Review', keyField: 'Review' }
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanDatas, done);
+
+            deleteBtn.addEventListener('click', function() {
+                let len: number = kanbanObj.columns.length;
+                for (let i: number = len; i >= 0; i--) {
+                    kanbanObj.deleteColumn(i);
+                }
+            });
+            addBtn.addEventListener('click', function() {
+                let column = { headerText: "Pre Check-List", keyField: "CheckList" };
+                kanbanObj.addColumn(column, 0);
+            });
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Delete and Add columns in the kanban ', () => {
+            expect(kanbanObj.columns.length).toEqual(4);
+            deleteBtn.click();
+            expect(kanbanObj.columns.length).toEqual(0);
+            addBtn.click();
+            expect(kanbanObj.columns.length).toEqual(1);
+        });
+
+    });
+
     describe('Testing delete column ', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
@@ -825,6 +944,46 @@ describe('Action module', () => {
             expect(kanbanObj.element.querySelectorAll('.e-header-cells').length).toEqual(4);
             kanbanObj.showColumn('Close');
             expect(kanbanObj.element.querySelectorAll('.e-header-cells').length).toEqual(4);
+        });
+    });
+
+    describe('Swimlane item count', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dataSource: kanbanData,
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open' },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Review', keyField: 'Review' },
+                    { headerText: 'Testing', keyField: 'Testing' },
+                    { headerText: 'Done', keyField: 'Close' }
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                },
+                swimlaneSettings: {
+                    allowDragAndDrop: true,
+                    keyField: 'Assignee'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('- EJ2-53597 - Item count when there is no data ', () => {
+            const curData: Record<string, any> = {
+                Id: 111, Status: 'Open', Priority: 'Low', Assignee: 'NewName', Estimate: 0, Tags: 'review', Summary: 'Newly added card'
+            };
+            kanbanObj.addCard(curData);
+            expect(kanbanObj.element.querySelector('.e-swimlane-row[data-key="NewName"]').querySelector('.e-item-count').textContent === '- 1 items').toBe(true);
+            kanbanObj.deleteCard(curData);
+            expect(kanbanObj.element.querySelector('.e-swimlane-row[data-key="NewName"]').querySelector('.e-item-count').textContent === '- 0 items').toBe(true);
         });
     });
 

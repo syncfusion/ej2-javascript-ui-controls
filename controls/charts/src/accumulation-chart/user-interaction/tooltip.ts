@@ -27,6 +27,7 @@ export class AccumulationTooltip extends BaseTooltip {
         super(accumulation);
         this.accumulation = accumulation;
         this.addEventListener();
+        this.template = this.accumulation.tooltip.template;
     }
     /**
      * @hidden
@@ -110,7 +111,7 @@ export class AccumulationTooltip extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.createTooltip(this.chart, isFirst, point.point.symbolLocation,
                                    point.series.clipRect, point.point, ['Circle'], 0, this.chart.initialClipRect,
-                                   null, point.point, this.accumulation.tooltip.template ? argsData.template : '');
+                                   null, point.point, this.template ? argsData.template : '');
             } else {
                 this.removeHighlight();
                 remove(this.getElement(this.element.id + '_tooltip'));

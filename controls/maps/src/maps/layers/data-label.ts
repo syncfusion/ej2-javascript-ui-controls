@@ -216,7 +216,7 @@ export class DataLabel {
                     }
                 }
             }
-            let eventargs: ILabelRenderingEventArgs = {
+            const eventargs: ILabelRenderingEventArgs = {
                 name: dataLabelRendering, maps: this.maps, cancel: false, border: { color: dataLabel.border.color,
                     width: dataLabel.border.width, opacity: dataLabel.border.opacity }, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
@@ -276,7 +276,8 @@ export class DataLabel {
                     labelTemplateElement.appendChild(labelElement);
                 } else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
-                        let textType: any = typeof text === 'number' ? (text as any).toString() : text;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const textType: any = typeof text === 'number' ? (text as any).toString() : text;
                         trimmedLable = textTrim(width, textType, style);
                         elementSize = measureText(trimmedLable, style);
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');

@@ -697,7 +697,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private resetInputHandler(event?: MouseEvent): void {
         event.preventDefault();
-        if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
+        if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR)) || this.textboxWrapper.container.classList.contains('e-static-clear')) {
             Input.setValue('', this.respectiveElement, this.floatLabelType, this.showClearButton);
             if (this.isHiddenInput) {
                 this.element.value = this.respectiveElement.value;

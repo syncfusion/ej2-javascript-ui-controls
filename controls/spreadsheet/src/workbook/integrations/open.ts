@@ -4,7 +4,7 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
-import { sheetCreated, protectSheetWorkBook, getRangeAddress, updateFilter } from '../common/index';
+import { sheetCreated, protectSheetWorkBook, getRangeAddress } from '../common/index';
 import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel } from '../base/index';
 import { beginAction } from '../../spreadsheet/common/event';
 

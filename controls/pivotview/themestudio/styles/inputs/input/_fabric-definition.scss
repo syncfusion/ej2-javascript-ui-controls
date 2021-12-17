@@ -1,0 +1,296 @@
+$input-skin-name: 'fabric' !default;
+$zero-value: 0 !default;
+$one-value: 1px !default;
+$input-child-padding-bottom: $zero-value !default;
+$input-child-small-bigger-padding-bottom: $zero-value !default;
+$input-child-small-padding-bottom: $zero-value !default;
+$input-child-bigger-padding-bottom: $zero-value !default;
+$input-group-full-border: $border-size $border-type !default;
+$input-child-small-bigger-padding-top: $zero-value !default;
+$input-child-small-padding-top: $zero-value !default;
+$input-child-padding-top: $zero-value !default;
+$input-child-bigger-padding-top: $zero-value !default;
+$input-text-indent: 10px !default;
+$input-small-text-indent: 10px !default;
+$input-bigger-text-indent: 12px !default;
+$input-small-bigger-text-indent: 12px !default;
+$input-bg-color: $content-bg-color !default;
+$input-success-color: $success-font !default;
+$input-warning-color: $alert-font !default;
+$input-error-color: $error-font !default;
+$input-disable-bg-color: $neutral-lighter !default;
+$input-disable-font-color: $neutral-tertiary !default;
+$input-font-size: 14px !default;
+$input-bigger-font-size: 15px !default;
+$input-small-font-size: 13px !default;
+$input-bigger-small-font-size: 14px !default;
+$input-box-border-radius: $zero-value !default;
+$input-group-child-border-width: $zero-value !default;
+$input-padding: $zero-value !default;
+$textarea-padding: 4px 10px $zero-value 10px !default;
+$textarea-bigger-padding: 6px 12px $zero-value 12px !default;
+$textarea-small-padding: 4px 10px $zero-value 10px !default;
+$textarea-bigger-small-padding: 4px 12px $zero-value 12px !default;
+$textarea-min-height: 30px !default;
+$textarea-bigger-min-height: 36px !default;
+$textarea-bigger-small-min-height: 32px !default;
+$textarea-small-min-height: 26px !default;
+$float-input-padding: $zero-value !default;
+$float-label-padding: 10px !default;
+$float-input-wrap-padding-top: $zero-value !default;
+$input-padding-bottom: $zero-value !default;
+$input-focus-padding-bottom: $zero-value !default;
+$input-clear-icon: 12px !default;
+$input-bigger-clear-icon: 12px !default;
+$input-small-clear-icon: 10px !default;
+$input-bigger-small-clear-icon: 12px !default;
+$input-clear-icon-padding: $zero-value !default;
+$input-clear-icon-position: center !default;
+$input-bigger-padding: $zero-value !default;
+$float-input-bigger-padding: $zero-value !default;
+$float-input-bigger-wrap-padding-top: $zero-value !default;
+$input-bigger-padding-bottom: $zero-value !default;
+$input-focus-bigger-padding-bottom: $zero-value !default;
+$input-child-padding: $zero-value !default;
+$input-child-min-height: 30px !default;
+$input-child-min-width: 30px !default;
+$input-bigger-child-padding: $zero-value !default;
+$input-bigger-child-min-height: 38px !default;
+$input-bigger-child-min-width: 38px !default;
+$input-margin-bottom: $zero-value !default;
+$input-bigger-margin-bottom: $zero-value !default;
+$input-small-margin-bottom: $zero-value !default;
+$input-small-bigger-margin-bottom: $zero-value !default;
+$input-margin-top: 28px !default;
+$input-bigger-margin-top: 28px !default;
+$input-small-margin-top: 25px !default;
+$input-small-bigger-margin-top: 26px !default;
+$input-small-padding: $zero-value !default;
+$float-input-small-padding: $zero-value !default;
+$float-input-small-wrap-padding-top: $zero-value !default;
+$input-small-padding-bottom: $zero-value !default;
+$input-focus-small-padding-bottom: $zero-value !default;
+$input-bigger-small-padding: $zero-value !default;
+$float-input-bigger-small-padding: $zero-value !default;
+$float-input-bigger-small-wrap-padding-top: $zero-value !default;
+$input-bigger-small-padding-bottom: $zero-value !default;
+$input-focus-bigger-small-padding-bottom: $zero-value !default;
+$input-bigger-small-child-padding: $zero-value !default;
+$input-bigger-small-child-min-height: 34px !default;
+$input-bigger-small-child-min-width: 34px !default;
+$input-small-child-padding: $zero-value !default;
+$input-small-child-min-height: 24px !default;
+$input-small-child-min-width: 24px !default;
+$input-font-family: $font-family !default;
+$input-font-style: normal !default;
+$input-font-normal: normal !default;
+$input-border: $zero-value $border-type !default;
+$float-input-border: $zero-value $border-type !default;
+$input-box-border-width: 1px !default;
+$float-input-border-width: 1px !default;
+$input-focus-border-width: 1px !default;
+$input-box-border-color: $neutral-tertiary-alt !default;
+$input-font-color: $neutral-light-font !default;
+$input-icon-font-color: $neutral-light-font !default;
+$input-clear-icon-color: $neutral-light-font !default;
+$input-clear-icon-hover-color: $neutral-light-font !default;
+$input-error-color: $error-font !default;
+$input-accent: $theme-primary !default;
+$input-placeholder: $neutral-tertiary !default;
+$input-active-border-color: $theme-primary !default;
+$input-group-active-border-color: transparent !default;
+$input-disable-border-type: solid !default;
+$input-disable-border-color: $neutral-lighter !default;
+$input-disabled-group-bg-color: $neutral-lighter !default;
+$input-border-left-width: $zero-value !default;
+$input-group-active-border: transparent !default;
+$input-group-border: 1px $border-type !default;
+$input-group-border-width: $zero-value !default;
+$input-group-border-radius: $zero-value !default;
+$input-group-pressed-bg: $theme-primary !default;
+$input-hover-bg-color:  $neutral-lighter !default;
+$input-active-accent-color: $theme-primary !default;
+$input-valid-group-border-width: 2px !default;
+$input-header-font-color: $neutral-tertiary !default;
+$input-child-margin-bottom: $zero-value !default;
+$input-child-margin-top: $zero-value !default;
+$float-input-child-margin-top: $zero-value !default;
+$input-child-margin-right: $zero-value !default;
+$input-child-small-bigger-margin-bottom: $zero-value !default;
+$input-child-small-bigger-margin-top: $zero-value !default;
+$float-input-child-small-bigger-margin-top: $zero-value !default;
+$input-child-small-bigger-margin-right: $zero-value !default;
+$input-child-small-margin-bottom: $zero-value !default;
+$input-child-small-margin-top: $zero-value !default;
+$float-input-child-small-margin-top: $zero-value !default;
+$input-child-small-margin-right: $zero-value !default;
+$input-child-bigger-margin-bottom: $zero-value !default;
+$input-child-bigger-margin-top: $zero-value !default;
+$float-input-child-bigger-margin-top: $zero-value !default;
+$input-child-bigger-margin-right:  $zero-value !default;
+$input-disable-group-border-width: $one-value !default;
+$input-opacity: 1 !default;
+$input-opacity-filter: 100 !default;
+$input-group-border-width-focus: $one-value !default;
+$input-group-border-type-focus: $border-type !default;
+$input-group-border-color-focus: $theme-primary !default;
+$input-group-border-color-hover: $neutral-secondary-alt !default;
+$input-group-border-width-hover: 1px !default;
+$input-group-border-right-focus: transparent !default;
+$input-group-border-left-focus: transparent !default;
+$input-group-full-border-color: $input-box-border-color !default;
+$input-group-full-border-width: $one-value !default;
+$input-group-success-color: $input-success-color !default;
+$input-group-warning-color: $input-warning-color !default;
+$input-group-error-color: $input-error-color !default;
+$input-valid-border-bottom-width: 2px !default;
+$input-group-pressed-color: $theme-primary-font !default;
+$input-select-font-color: $active-font-color !default;
+$input-right-border-width: $zero-value !default;
+$float-label-font-color: $input-font-color !default;
+$float-label-disbale-font-color: $input-disable-font-color !default;
+$float-label-font-size: 12px !default;
+$float-label-bigger-font-size: 13px !default;
+$float-label-small-font-size: 11px !default;
+$float-label-bigger-small-font-size: 12px !default;
+$float-placeholder-font-size: 14px !default;
+$float-placeholder-bigger-font-size: 15px !default;
+$float-placeholder-small-font-size: 13px !default;
+$float-placeholder-bigger-small-font-size: 14px !default;
+$input-border-size: 2px !default;
+$input-normal-height: 32px - $input-border-size !default;
+$input-bigger-height: 40px - $input-border-size !default;
+$input-small-height: 26px - $input-border-size !default;
+$input-bigger-small-height: 36px - $input-border-size !default;
+$float-input-normal-height: 32px !default;
+$float-input-bigger-height: 40px !default;
+$float-input-small-height: 26px !default;
+$float-input-bigger-small-height: 36px !default;
+$input-full-height: 100% !default;
+$textarea-normal-height: auto !default;
+$textarea-bigger-height: auto !default;
+$textarea-small-height: auto !default;
+$textarea-bigger-small-height: auto !default;
+$textarea-full-height: 100% !default;
+$input-group-disabled-color: $neutral-tertiary !default;
+$input-group-hovered-color: $neutral-light-fontalt !default;
+$input-icon-font-size: 12px !default;
+$input-bigger-icon-font-size: 12px !default;
+$input-small-icon-font-size: 10px !default;
+$input-bigger-small-icon-font-size: 12px !default;
+$input-inner-wrap-margin-left: $zero-value !default;
+$input-clear-icon-padding-bottom: $zero-value !default;
+$input-clear-icon-padding-right: $zero-value !default;
+$input-clear-icon-padding-left: $input-clear-icon-padding-right !default;
+$input-clear-icon-padding-top: $zero-value !default;
+$float-input-clear-icon-padding-top: $zero-value !default;
+$input-clear-icon-small-bigger-padding-bottom: $zero-value !default;
+$input-clear-icon-small-bigger-padding-right: $zero-value !default;
+$input-clear-icon-small-bigger-padding-top: $zero-value !default;
+$float-input-clear-icon-small-bigger-padding-top: $zero-value !default;
+$input-clear-icon-small-padding-bottom: $zero-value !default;
+$input-clear-icon-small-padding-right: $zero-value !default;
+$input-clear-icon-small-padding-top: $zero-value !default;
+$float-input-clear-icon-small-padding-top: $zero-value !default;
+$input-clear-icon-bigger-padding-bottom: $zero-value !default;
+$input-clear-icon-bigger-padding-right: $zero-value !default;
+$input-clear-icon-bigger-padding-top: $zero-value !default;
+$float-input-clear-icon-bigger-padding-top: $zero-value !default;
+$input-clear-icon-min-height: $zero-value !default;
+$input-clear-icon-min-width: 30px !default;
+$input-bigger-clear-icon-min-height: $zero-value !default;
+$input-bigger-clear-icon-min-width: 38px !default;
+$input-bigger-small-clear-icon-min-height: $zero-value !default;
+$input-bigger-small-clear-icon-min-width: 34px !default;
+$input-small-clear-icon-min-height: $zero-value !default;
+$input-small-clear-icon-min-width: 24px !default;
+$input-left-icon-font-size: $zero-value !default;
+$input-bigger-left-icon-font-size: $zero-value !default;
+$input-small-left-icon-font-size: $zero-value !default;
+$input-bigger-small-left-icon-font-size: $zero-value !default;
+$input-left-child-min-height: $zero-value !default;
+$input-left-child-min-width: $zero-value !default;
+$input-bigger-left-child-min-height: $zero-value !default;
+$input-bigger-left-child-min-width: $zero-value !default;
+$input-small-left-child-min-height: $zero-value !default;
+$input-small-left-child-min-width: $zero-value !default;
+$input-bigger-small-left-child-min-height: $zero-value !default;
+$input-bigger-small-left-child-min-width: $zero-value !default;
+$input-icon-inner-width: $zero-value !default;
+$input-icon-inner-height: $zero-value !default;
+$input-readonly-bg-color: none !default;;
+
+@mixin input-sizing {
+  box-sizing: border-box;
+}
+@mixin input-height ($height) {
+  height: $height;
+}
+@mixin input-state-color ($color) {
+  border-color: $color;
+}
+@mixin input-selection {
+  background: $theme-primary;
+  color: $theme-primary-font;
+}
+// sass-lint:disable no-vendor-prefixes  
+@mixin float-label-alignment {
+  -moz-transform: translate(-0%, -50%);
+  -ms-transform: translate(-0%, -50%);
+  -o-transform: translate(-0%, -50%);
+  -webkit-transform: translate(-0%, -50%);
+  box-sizing: border-box;
+  left: 0%;
+  top: 50%;
+  transform: translate(-0%, -50%);
+  width: 100%;
+}
+
+@mixin textarea-float-label-alignment {
+  -moz-transform: translate(-0%, -50%);
+  -ms-transform: translate(-0%, -50%);
+  -o-transform: translate(-0%, -50%);
+  -webkit-transform: translate(-0%, -50%);
+  box-sizing: border-box;
+  left: 0%;
+  top: 15px;
+  transform: translate(-0%, -50%);
+  width: 100%;
+}
+
+@mixin input-group-animation {
+  content: '';
+}
+@mixin input-group-animation-left {
+  content: '';
+}
+@mixin input-group-animation-width {
+  content: '';
+}
+@mixin input-group-animation-right {
+  content: '';
+}
+@mixin input-group-animation-bg {
+  content: '';
+}
+@mixin input-group-hover-bg {
+  content: '';
+}
+@mixin input-group-success-animation-bg {
+  content: '';
+}
+@mixin input-group-warning-animation-bg {
+  content: '';
+}
+@mixin input-group-error-animation-bg {
+  content: '';
+}
+@mixin input-ripple-parent {
+  content: '';
+}
+@mixin input-ripple-style {
+  content: '';
+}
+@mixin input-ripple-animation {
+  content: '';
+}

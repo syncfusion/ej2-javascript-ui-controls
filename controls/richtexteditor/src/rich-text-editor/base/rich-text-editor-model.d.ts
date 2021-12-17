@@ -333,11 +333,11 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Specifies tag to be inserted when enter key is pressed.
-     * 
+     *
      * - `P` - When the enter key is pressed a `p` tag will be inserted and the default value of the Rich Text Editor will be &lt;p&gt;&lt;br&gt;&lt;/p&gt;.
-     * 
+     *
      * - `DIV` - When the enter key is pressed a `div` tag will be inserted instead of the default `P` tag and the default value of the Rich Text Editor will be &lt;div&gt;&lt;br&gt;&lt;/div&gt;.
-     * 
+     *
      * - `BR` - When the enter key is pressed a `br` tag will be inserted instead of the default `P` tag and the default value of the Rich Text Editor will be &lt;br&gt;.
      *
      * @default 'P'
@@ -346,11 +346,11 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Specifies tags to be inserted when shift+enter key is pressed.
-     * 
+     *
      * - `BR` - When the shift + enter key is pressed a `br` tag will be inserted which is the default behavior.
-     * 
+     *
      * - `P` - When the shift + enter key is pressed a `p` tag will be inserted instead of the default `br` tag.
-     * 
+     *
      * - `DIV` - When the shift + enter key is pressed a `div` tag will be inserted instead of the default `br` tag.
      *
      * @default 'BR'

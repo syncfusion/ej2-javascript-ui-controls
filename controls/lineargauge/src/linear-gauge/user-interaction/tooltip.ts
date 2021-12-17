@@ -141,11 +141,13 @@ export class GaugeTooltip {
             const themes: string = this.gauge.theme.toLowerCase();
             if (!args.cancel) {
                 args['tooltip']['properties']['textStyle']['color'] = (target.id.indexOf('Range') > -1) ?
-                    this.tooltip.rangeSettings.textStyle.color : this.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                    this.tooltip.rangeSettings.textStyle.color || this.gauge.themeStyle.tooltipFontColor : this.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
                 const fillColor: string = (target.id.indexOf('Range') > -1) ? this.tooltip.rangeSettings.fill : this.tooltip.fill;
                 this.svgTooltip = this.svgCreate(this.svgTooltip, args, this.gauge, areaRect, fillColor, template, tooltipPos,
                                                  location, target);
                 this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.textStyle.fontFamily = (target.id.indexOf('Range') > -1) ?
+                this.tooltip.rangeSettings.textStyle.fontFamily || this.gauge.themeStyle.fontFamily : this.tooltip.textStyle.fontFamily || this.gauge.themeStyle.fontFamily;
                 this.svgTooltip.appendTo(tooltipEle);
             }
         });
@@ -188,8 +190,7 @@ export class GaugeTooltip {
             ),
             textStyle: args.tooltip.textStyle,
             border: tooltipBorder,
-            theme: args.gauge.theme as TooltipTheme,
-            blazorTemplate: { name: 'TooltipTemplate', parent: gauge.tooltip }
+            theme: args.gauge.theme as TooltipTheme
         });
         return svgTooltip;
     }

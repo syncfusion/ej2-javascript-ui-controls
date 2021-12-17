@@ -40,12 +40,12 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
             if (isReactCompiler) {
                 const tempID: string = gObj.element.id + 'captionTemplate';
-                templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
+                templateCompiler(gObj.groupSettings.captionTemplate as string)(data, this.parent, 'captionTemplate', tempID, null, null, node);
                 this.parent.renderTemplates();
             } else if (this.parent.isVue) {
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent);
+                result = templateCompiler(gObj.groupSettings.captionTemplate as string)(data, this.parent);
             } else {
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+                result = templateCompiler(gObj.groupSettings.captionTemplate as string)(data);
             }
             if (!isReactCompiler) {
                 appendChildren(node, result);

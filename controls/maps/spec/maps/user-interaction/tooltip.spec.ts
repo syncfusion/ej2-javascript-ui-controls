@@ -363,7 +363,7 @@ describe('Map layer testing', () => {
                 spec = getElement(bubbleId + 0);
                 trigger.mousemoveEvent(spec, 0, 0, 345, 310);
                 tooltipElement = document.getElementById('mapst_mapsTooltip_text');
-                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#000000');
                 done();
             };
             tooltip.layers[0].tooltipSettings.template = null;

@@ -125,19 +125,14 @@ export class DataValidation {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getCellIndexes(sheet.activeCell);
             const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
-            const column: ColumnModel = getColumn(sheet, indexes[1]);
             const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
             if (!tdEle) { return; }
             if (document.getElementsByClassName('e-validation-list')[0]) {
                 remove(document.getElementsByClassName('e-validation-list')[0]);
                 this.data = [];
             }
-            let validation: ValidationModel;
-            if (cell && cell.validation) {
-                validation = cell.validation;
-            } else if (column && column.validation) {
-                validation = column.validation;
-            }
+            const validation: ValidationModel = (cell && cell.validation) || (sheet.columns && sheet.columns[indexes[1]] &&
+                sheet.columns[indexes[1]].validation);
             if (validation && validation.type === 'List') {
                 validation.ignoreBlank = !isNullOrUndefined(validation.ignoreBlank) ? validation.ignoreBlank : true;
                 validation.inCellDropDown = !isNullOrUndefined(validation.inCellDropDown) ?
@@ -149,7 +144,8 @@ export class DataValidation {
                     if (!validation.inCellDropDown) {
                         ddlCont.style.display = 'none';
                     }
-                    tdEle.insertBefore(ddlCont, tdEle.firstChild);
+                    const parent: Element = tdEle.getElementsByClassName('e-wrap-content')[0] || tdEle;
+                    parent.insertBefore(ddlCont, parent.firstChild);
                     const dataSource: { [key: string]: Object }[] = this.updateDataSource(cell, validation);
                     this.listObj = new DropDownList({
                         index: this.setDropDownListIndex(dataSource, cell),
@@ -302,7 +298,7 @@ export class DataValidation {
         return range;
     }
 
-    private initiateDataValidationHandler(): void {
+    private initiateDataValidationHandler(okClick?: boolean, noClick?: boolean): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let type: string;
         let operator: string;
@@ -316,68 +312,91 @@ export class DataValidation {
         let range: string = sheet.selectedRange;
         const indexes: number[] = getRangeIndexes(range);
         range = this.getRange(range);
-        for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
-            if (sheet.rows[rowIdx]) {
-                for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                    if (sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[colIdx]) {
-                        cell = sheet.rows[rowIdx].cells[colIdx];
-                        if (cell.validation) {
-                            isNew = false;
-                            type = cell.validation.type;
-                            operator = cell.validation.operator;
-                            value1 = cell.validation.value1;
-                            value2 = cell.validation.value2;
-                            ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ?
-                                cell.validation.ignoreBlank : ignoreBlank;
-                            inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
-                                cell.validation.inCellDropDown : inCellDropDown;
+        const validationArgs : { moreValidation: boolean, extendValidation: boolean} = this.validateRange(indexes, sheet);
+        if (!validationArgs.extendValidation && !validationArgs.moreValidation || okClick) {
+            for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+                if (sheet.rows[rowIdx]) {
+                    for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                        if (sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[colIdx]) {
+                            cell = sheet.rows[rowIdx].cells[colIdx];
+                            if (cell.validation) {
+                                isNew = false;
+                                type = cell.validation.type;
+                                operator = cell.validation.operator;
+                                value1 = cell.validation.value1;
+                                value2 = cell.validation.value2;
+                                ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ?
+                                    cell.validation.ignoreBlank : ignoreBlank;
+                                inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
+                                    cell.validation.inCellDropDown : inCellDropDown;
+                            }
                         }
                     }
                 }
             }
-        }
-        if (!this.parent.element.querySelector('.e-datavalidation-dlg')) {
-            const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-            dialogInst.show({
-                width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
-                header: l10n.getConstant('DataValidation'),
-                target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
-                beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    const dlgArgs: DialogBeforeOpenEventArgs = {
-                        dialogName: 'ValidationDialog', element: args.element,
-                        target: args.target, cancel: args.cancel
-                    };
-                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
-                    if (dlgArgs.cancel) {
-                        args.cancel = true;
+            if (isNew) {
+                for (let i: number = indexes[1]; i <= indexes[3]; i++) {
+                    const column: ColumnModel = getColumn(sheet, i);
+                    if (column && column.validation) {
+                        isNew = false;
+                        type = column.validation.type;
+                        operator = column.validation.operator;
+                        value1 = column.validation.value1;
+                        value2 = column.validation.value2;
+                        ignoreBlank = !isNullOrUndefined(column.validation.ignoreBlank) ?
+                            column.validation.ignoreBlank : ignoreBlank;
+                        inCellDropDown = !isNullOrUndefined(column.validation.inCellDropDown) ?
+                            column.validation.inCellDropDown : inCellDropDown;
                     }
-                    dialogInst.dialogInstance.content =
-                        this.dataValidationContent(isNew, type, operator, value1, value2, ignoreBlank, inCellDropDown, range);
-                    dialogInst.dialogInstance.dataBind();
-                    focus(this.parent.element);
-                },
-                buttons: [{
-                    buttonModel: {
-                        content: l10n.getConstant('CLEARALL'),
-                        cssClass: 'e-btn e-clearall-btn e-flat'
-                    },
-                    click: (): void => {
+                }
+            }
+            if (!this.parent.element.querySelector('.e-datavalidation-dlg')) {
+                const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+                dialogInst.show({
+                    width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
+                    header: l10n.getConstant('DataValidation'),
+                    target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
+                    beforeOpen: (args: BeforeOpenEventArgs): void => {
+                        const dlgArgs: DialogBeforeOpenEventArgs = {
+                            dialogName: 'ValidationDialog', element: args.element,
+                            target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                        if (noClick) { isNew = true; }
                         dialogInst.dialogInstance.content =
-                            this.dataValidationContent(true, type, operator, value1, value2, ignoreBlank, inCellDropDown, range);
+                            this.dataValidationContent(isNew, type, operator, value1, value2, ignoreBlank, inCellDropDown, range);
                         dialogInst.dialogInstance.dataBind();
                         focus(this.parent.element);
-                    }
-                },
-                {
-                    buttonModel: {
-                        content: l10n.getConstant('APPLY'), isPrimary: true
                     },
-                    click: (): void => {
-                        this.dlgClickHandler(dialogInst);
-                    }
-                }]
-            });
-            dialogInst.dialogInstance.refresh();
+                    buttons: [{
+                        buttonModel: {
+                            content: l10n.getConstant('CLEARALL'),
+                            cssClass: 'e-btn e-clearall-btn e-flat'
+                        },
+                        click: (): void => {
+                            dialogInst.dialogInstance.content =
+                                this.dataValidationContent(true, type, operator, value1, value2, ignoreBlank, inCellDropDown, range);
+                            dialogInst.dialogInstance.dataBind();
+                            focus(this.parent.element);
+                        }
+                    },
+                    {
+                        buttonModel: {
+                            content: l10n.getConstant('APPLY'), isPrimary: true
+                        },
+                        click: (): void => {
+                            this.dlgClickHandler(dialogInst);
+                        }
+                    }]
+                });
+                dialogInst.dialogInstance.refresh();
+            }
+        } else {
+            if (validationArgs.moreValidation) { this.moreValidationDlg(); }
+            if (validationArgs.extendValidation) { this.extendValidationDlg(); }
         }
     }
 
@@ -502,7 +521,7 @@ export class DataValidation {
                 value: 0
             });
             numericMax.appendTo('#maxvalue');
-        } else if (!isNew || type === ' List') {
+        } else if (!isNew && type === ' List') {
             const valueText: HTMLElement = this.parent.createElement('span', {
                 className: 'e-header', innerHTML: l10n.getConstant('Sources')
             });
@@ -523,6 +542,189 @@ export class DataValidation {
         const ignoreBlankObj: CheckBox = new CheckBox({ label: l10n.getConstant('IgnoreBlank'), checked: isChecked });
         ignoreBlankObj.appendTo(ignoreBlankEle);
         return dlgContent;
+    }
+
+    private validateRange(indexes: number[], sheet: SheetModel): { moreValidation: boolean, extendValidation: boolean } {
+        let moreValidation: boolean = false; let extendValidation: boolean = false;
+        const type: string[] = []; const operator: string[] = []; const value1: string[] = []; const value2: string[] = [];
+        for (let rowIndex: number = indexes[0]; rowIndex <= indexes[2]; rowIndex++) {
+            if (sheet.rows[rowIndex]) {
+                for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                    if (sheet.rows[rowIndex].cells && sheet.rows[rowIndex].cells[colIdx]) {
+                        const cell: CellModel = sheet.rows[rowIndex].cells[colIdx];
+                        if (cell.validation) {
+                            type.push(cell.validation.type);
+                            operator.push(cell.validation.operator);
+                            value1.push(cell.validation.value1);
+                            value2.push(cell.validation.value2);
+                        }
+                    }
+                }
+            }
+        }
+        for (let i: number = indexes[1]; i <= indexes[3]; i++) {
+            const column: ColumnModel = getColumn(sheet, i);
+            if (column && column.validation) {
+                type.push(column.validation.type);
+                operator.push(column.validation.operator);
+                value1.push(column.validation.value1);
+                value2.push(column.validation.value2);
+            }
+        }
+        let tmp: string[] = [];
+        for (let i: number = 0; i < type.length; i++) {
+            if (tmp.indexOf(type[i]) === -1) {
+                tmp.push(type[i]);
+            }
+        }
+        if (tmp.length > 1) { moreValidation = true; }
+        if (!moreValidation) {
+            tmp = [];
+            for (let j: number = 0; j < operator.length; j++) {
+                if (tmp.indexOf(operator[j]) === -1) {
+                    tmp.push(operator[j]);
+                }
+            }
+            if (tmp.length > 1) {
+                moreValidation = true;
+            }
+        }
+        if (!moreValidation) {
+            tmp = [];
+            for (let j: number = 0; j < value1.length; j++) {
+                if (tmp.indexOf(value1[j]) === -1) {
+                    tmp.push(value1[j]);
+                }
+            }
+            if (tmp.length > 1) { moreValidation = true; }
+        }
+        if (!moreValidation) {
+            tmp = [];
+            for (let j: number = 0; j < value2.length; j++) {
+                if (tmp.indexOf(value2[j]) === -1) {
+                    tmp.push(value2[j]);
+                }
+            }
+            if (tmp.length > 1) {
+                moreValidation = true;
+            }
+        }
+        if (!moreValidation) {
+            let count: number = 0; let cellCount: number = 0;
+            for (let startRow: number = indexes[0]; startRow <= indexes[2]; startRow++) {
+                if (sheet.rows[startRow]) {
+                    for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                        if (sheet.rows[startRow].cells && sheet.rows[startRow].cells[colIdx]) {
+                            const cell: CellModel = sheet.rows[startRow].cells[colIdx];
+                            cellCount++;
+                            if (cell.validation) {
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+            if (count === 0) {
+                for (let i: number = indexes[1]; i <= indexes[3]; i++) {
+                    const column: ColumnModel = getColumn(sheet, i);
+                    if (column && column.validation) {
+                        count++;
+                    }
+                }
+            }
+            if (count > 0 && cellCount > 1 && count !== cellCount) {
+                extendValidation = true;
+            }
+        }
+        return { moreValidation: moreValidation, extendValidation: extendValidation};
+    }
+
+    private moreValidationDlg(): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        let skip: boolean = false;
+        const dlg: DialogModel = {
+            width: 350, isModal: true, showCloseIcon: true, cssClass: 'e-goto-dlg',
+            header: l10n.getConstant('Spreadsheet'),
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'MoreValidation',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                dialogInst.dialogInstance.content = l10n.getConstant('MoreValidation'); dialogInst.dialogInstance.dataBind();
+                focus(this.parent.element);
+            },
+            buttons: [{
+                buttonModel: {
+                    content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+                },
+                click: (): void => {
+                    dialogInst.hide();
+                    skip = true;
+                }
+            }], close: (): void => {
+                if (skip) {
+                    this.initiateDataValidationHandler(true);
+                    skip = false;
+                } else {
+                    dialogInst.hide();
+                }
+            }
+        };
+        dialogInst.show(dlg);
+    }
+
+    private extendValidationDlg(): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        let skip: boolean = false; let noClick: boolean = false;
+        const dlg: DialogModel = {
+            width: 550, isModal: true, showCloseIcon: true, cssClass: 'e-goto-dlg',
+            header: l10n.getConstant('Spreadsheet'),
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'ExtendValidation',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                dialogInst.dialogInstance.content = l10n.getConstant('ExtendValidation'); dialogInst.dialogInstance.dataBind();
+                focus(this.parent.element);
+            },
+            buttons: [{
+                buttonModel: {
+                    content: l10n.getConstant('Yes'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+                },
+                click: (): void => {
+                    dialogInst.hide();
+                    skip = true;
+                }
+            },
+            {
+                buttonModel: {
+                    content: l10n.getConstant('No'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+                },
+                click: (): void => {
+                    dialogInst.hide();
+                    skip = true;
+                    noClick = true;
+                }
+            }], close: (): void => {
+                if (skip) {
+                    this.initiateDataValidationHandler(true, noClick);
+                    skip = false;
+                } else {
+                    dialogInst.hide();
+                }
+            }
+        };
+        dialogInst.show(dlg);
     }
 
     private userInput(listObj: DropDownList, listObj1: DropDownList): void {
@@ -663,9 +865,8 @@ export class DataValidation {
             isValidList = validDlg.isValidate;
             if (isValidList) {
                 const indexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
-                if (sheet && sheet.rows[indexes[0]] && sheet.rows[indexes[0]].cells[indexes[1]] &&
-                    sheet.rows[indexes[0]].cells[indexes[1]].validation &&
-                    sheet.rows[indexes[0]].cells[indexes[1]].validation.type === 'List') {
+                const cell: CellModel = getCell(indexes[0], indexes[1], sheet, false, true);
+                if (cell.validation && cell.validation.type === 'List') {
                     const tdEle: HTMLElement = this.parent.getMainContent().
                         getElementsByTagName('tr')[indexes[0]].getElementsByClassName('e-cell')[indexes[1]] as HTMLElement;
                     if (tdEle && tdEle.getElementsByClassName('e-validation-list')[0]) {
@@ -779,7 +980,6 @@ export class DataValidation {
             validation = column.validation;
         }
         if (validation) {
-            let value: string | number = args.value;
             let value1: string | number = validation.value1;
             let value2: string | number = validation.value2;
             if (checkIsFormula(value1) && validation.type !== 'List') {
@@ -788,6 +988,10 @@ export class DataValidation {
             if (checkIsFormula(value2) && validation.type !== 'List') {
                 value2 = this.parent.computeExpression(value2).toString();
             }
+            if (checkIsFormula(args.value) && validation.type !== 'List') {
+                args.value = this.parent.computeExpression(args.value).toString();
+            }
+            let value: string | number = args.value;
             const opt: string = validation.operator || 'Between';
             const type: string = validation.type || 'WholeNumber';
             const ignoreBlank: boolean = isNullOrUndefined(validation.ignoreBlank) ? true : validation.ignoreBlank;

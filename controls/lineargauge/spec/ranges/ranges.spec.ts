@@ -204,6 +204,48 @@ describe('Linear gauge control', () => {
             gauge.orientation = 'Vertical';
             gauge.refresh();
         });
+        it('checking with ranges start value greater than end value in vertical', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].ranges[0].start = 30;
+            gauge.axes[0].ranges[0].end = 10;
+            gauge.refresh();
+        });
+        it('checking with ranges start value greater than end value in horizontal', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes[0].ranges[0].start = 30;
+            gauge.axes[0].ranges[0].end = 10;
+            gauge.refresh();
+        });
+        it('checking stroke-width for same range start and end values', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes[0].ranges[0].start = 30;
+            gauge.axes[0].ranges[0].end = 30;
+            gauge.axes[0].ranges[0].border.width = 5;
+            gauge.refresh();
+        });
+        it('checking stroke-width for different range start and end values', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg.getAttribute('stroke-width') == '5').toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes[0].ranges[0].start = 30;
+            gauge.axes[0].ranges[0].end = 40;
+            gauge.axes[0].ranges[0].border.width = 5;
+            gauge.refresh();
+        });
     });
 
     describe('Checking the properties with pointers and gradients', () => {

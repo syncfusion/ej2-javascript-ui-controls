@@ -4,6 +4,23 @@
 
 ## [Unreleased]
 
+## 19.3.53 (2021-11-12)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I346747` - When the range tooltip is enabled and the pointer is hovered over, the tooltip now works properly.
+
+## 19.3.46 (2021-10-19)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `I345167`, `I345348` - The range bar pointer with rounded corner radius will now render properly when the pointer value is set below 7.
+- `I340597` - When the overflow elements are around the Circular Gauge control, the tooltip will now render properly within the control.
+
 ## 19.2.62 (2021-09-14)
 
 ### CircularGauge

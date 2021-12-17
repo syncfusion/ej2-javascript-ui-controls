@@ -11,12 +11,13 @@ import { isOverlap, getElement, removeElement, withInBounds, ChartLocation } fro
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { piedata, getDistance} from '../../chart/base/data.spec';
 import { SliceOption, getPosition} from '../base/util.spec';
+import { PyramidSeries } from '../../../src/accumulation-chart/renderer/pyramid-series';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { IAccTextRenderEventArgs } from '../../../src/index';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel);
+AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel, PyramidSeries);
 
 
 describe('Accumulation Chart Control', () => {
@@ -568,7 +569,106 @@ describe('Data Label checking for the pie doughnut series', () => {
         accumulation.series[0].dataLabel.template = '#template2';
         accumulation.refresh();
     });
+});
 
+describe('Data label with dynamic changing legend', () =>{
+    let ele: HTMLElement;
+    let id: string = 'ej2-container';
+    let accumulation: AccumulationChart;
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        accumulation = new AccumulationChart({
+            series: [
+                {
+                    type: 'Pie',
+                    dataLabel: {
+                        visible: true,
+                        font: { color: '#636363', size: '12px' },
+                        name: "text",
+                        position: "Outside"
+                    },
+                    dataSource: [
+                        {x: "Industrial", y: 554.1, text: "554  defect(s)"},
+                        {x: "Engineering & Non-Residential", y: 539.1, text: "539  defect(s)"},
+                        {x: "Commercial", y: 465.9, text: "466  defect(s)"},
+                        {x: "Residential (New & Renovations)", y: 348.3, text: "348  defect(s)"},
+                        {x: "Institutional", y: 241.2, text: "241  defect(s)"},
+                        {x: "Highway", y: 207, text: "207  defect(s)"},
+                        {x: "Industrial", y: 554.1, text: "554  defect(s)"},
+                        {x: "Engineering & Non-Residential", y: 539.1, text: "539  defect(s)"},
+                        {x: "Commercial", y: 465.9, text: "466  defect(s)"},
+                        {x: "Residential (New & Renovations)", y: 348.3, text: "348  defect(s)"},
+                        {x: "Institutional", y: 241.2, text: "241  defect(s)"},
+                        {x: "Highway", y: 207, text: "207  defect(s)"},
+                        {x: "Industrial", y: 554.1, text: "554  defect(s)"},
+                        {x: "Engineering & Non-Residential", y: 539.1, text: "539  defect(s)"},
+                        {x: "Commercial", y: 465.9, text: "466  defect(s)"},
+                        {x: "Residential (New & Renovations)", y: 348.3, text: "348  defect(s)"},
+                        {x: "Institutional", y: 241.2, text: "241  defect(s)"},
+                        {x: "Highway", y: 207, text: "207  defect(s)"}], 
+                        animation: { enable: false }, 
+                        xName: 'x', yName: 'y',
+                        
+                }
+            ],
+            center: { x: '50%', y: '50%' }, 
+            width: '400', height: '400', legendSettings: {
+                title: 'Conditional Range Mode',
+                visible: false,
+                toggleVisibility: true,
+                position: 'Left',
+                enablePages: false,
+                alignment: 'Center',
+                mode: 'Series', padding: 10, shapePadding: 8, shapeHeight: 12, shapeWidth: 12
+            }
+        });
+        accumulation.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        accumulation.accumulationLegendModule.destroy();
+        accumulation.destroy();
+        accumulation.loaded = null;
+        removeElement(id);
+    });
+    it('Checking datalabel text without legend', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_13');
+            expect(element != null).toBe(true);
+            done();
+        };
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after enable legend', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_13');
+            expect(element == null).toBe(true);
+            done();
+        };
+        accumulation.legendSettings.visible = true;
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after disble legend', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_13');
+            expect(element != null).toBe(true);
+            done();
+        };
+        accumulation.legendSettings.visible = false;
+        accumulation.refresh();
+    });
+    it('Checking datalabel text and legend position left and pyrmaid series', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_0');
+            expect(element.textContent == "55...").toBe(true);
+            done();
+        };
+        accumulation.legendSettings.visible = true;
+        accumulation.legendSettings.position = 'Left';
+        accumulation.series[0].type = 'Pyramid';
+        accumulation.refresh();
+    });
 });
 it('memory leak', () => {
     profile.sample();
@@ -578,5 +678,59 @@ it('memory leak', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-})
+});
+describe('Checking RTL Behaviour for datalabel', () => {
+    let ele: HTMLElement;
+    let id: string = 'ej2-container';
+    let textEle: Element;
+    let dataLableId: string = id + '_datalabel_Series_0_text_0';
+    let accumulation: AccumulationChart;
+    let anchor: string;
+    let loaded: EmitType<IAccLoadedEventArgs>;
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        accumulation = new AccumulationChart({
+            border: { width: 1, color: 'blue' },
+            series: [
+                {
+                    type: 'Pie',
+                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y',
+                    dataLabel: { visible: true, position:'Outside' }
+                }
+            ], 
+            width: '600', 
+            height: '400', 
+            legendSettings: { visible: false },
+        });
+        accumulation.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        accumulation.loaded = null;
+        accumulation.destroy();
+        removeElement(id);
+    });
+    it('Default dataLabel anchor', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(dataLableId);
+            anchor = textEle.getAttribute('text-anchor');
+            expect(anchor === 'start').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.refresh();
+    });
+    it('DataLabel anchor With RTL', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(dataLableId);
+            anchor = textEle.getAttribute('text-anchor');
+            expect(anchor === 'end').toBe(true);
+            done();
+        };
+        accumulation.loaded = loaded;
+        accumulation.enableRtl = true;
+        accumulation.refresh();
+    });
+  });
 });

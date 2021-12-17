@@ -2,7 +2,7 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Mod
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
-import { DocumentEditor, DocumentEditorSettings } from '../document-editor/document-editor';
+import { DocumentEditor, DocumentEditorSettings, DocumentSettings } from '../document-editor/document-editor';
 import { TextProperties } from './properties-pane/text-properties-pane';
 import { HeaderFooterProperties } from './properties-pane/header-footer-pane';
 import { ImageProperties } from './properties-pane/image-properties-pane';
@@ -11,12 +11,13 @@ import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
-import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
+import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend } from '../document-editor/base/constants';
+import { HelperMethods } from '../index';
 
 /**
  * Document Editor container component.
@@ -335,6 +336,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
     public documentEditorSettings: DocumentEditorSettingsModel;
     /**
+    * Gets the settings and properties of the document that is opened in Document editor component.
+    *
+    * @default {}
+    */
+    @Complex<DocumentSettingsModel>({}, DocumentSettings)
+    public documentSettings: DocumentSettingsModel;
+    /**
      * Defines the settings of the DocumentEditorContainer service.
      */
     @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
@@ -586,7 +594,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 case 'enableTrackChanges':
                     if (this.documentEditor) {
                         this.documentEditor.enableTrackChanges = newModel.enableTrackChanges;
-                        this.documentEditor.showRevisions = newModel.enableTrackChanges;
                         if (this.toolbarModule) {
                             this.toolbarModule.toggleTrackChanges(newModel.enableTrackChanges);
                         }
@@ -636,6 +643,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 case 'enableSpellCheck':
                     if (this.documentEditor) {
                         this.documentEditor.enableSpellCheck = newModel.enableSpellCheck;
+                    }
+                    break;
+                case 'documentSettings':
+                    if (this.documentEditor) {
+                        this.documentEditor.documentSettings.compatibilityMode = this.documentSettings.compatibilityMode;
                     }
                     break;
                 case 'documentEditorSettings':
@@ -700,8 +712,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     protected preRender(): void {
         this.localObj = new L10n('documenteditorcontainer', this.defaultLocale, this.locale);
+        if (!isNullOrUndefined(this.element) && this.element.id === '') {
+            //Set unique id, if id is empty
+            this.element.id = HelperMethods.getUniqueElementId();
+        }
         this.initContainerElement();
-        //Prototype
     }
 
     /**
@@ -897,7 +912,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             height: '100%',
             width: '100%',
             enableTrackChanges: this.enableTrackChanges,
-            showRevisions: this.enableTrackChanges,
+            showRevisions: true,
             enableLockAndEdit: this.enableLockAndEdit
         });
         this.wireEvents();
@@ -1021,7 +1036,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public onDocumentChange(): void {
         this.enableTrackChanges = this.documentEditor.enableTrackChanges;
-
+        if (!isNullOrUndefined(this.documentSettings) && !isNullOrUndefined(this.documentEditor)
+            && !isNullOrUndefined(this.documentEditor.documentSettings)) {
+            this.documentSettings.compatibilityMode = this.documentEditor.documentSettings.compatibilityMode;
+        }
         if (this.toolbarModule) {
             this.toolbarModule.isCommentEditing = false;
             this.toolbarModule.enableDisableInsertComment(true);
@@ -1145,7 +1163,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.previousContext = this.documentEditor.selection.contextType;
         if (this.toolbarModule && this.toolbarModule.toolbar) {
-            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode);
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode && !this.documentEditor.selection.isinFootnote && !this.documentEditor.selection.isinEndnote);
         }
     }
     /**

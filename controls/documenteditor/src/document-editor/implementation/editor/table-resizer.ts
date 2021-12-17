@@ -257,6 +257,18 @@ export class TableResizer {
                 if (!isNullOrUndefined(widget)) {
                     break;
                 }
+                if (this.documentHelper.owner.layoutType === 'Pages') {
+                const body: BodyWidget = currentPage.headerWidget;
+                widget = this.getTableWidgetFromWidget(cursorPoint, body);
+                if (!isNullOrUndefined(widget)) {
+                    break;
+                }
+                const bodywid: BodyWidget = currentPage.footerWidget;
+                widget = this.getTableWidgetFromWidget(cursorPoint, bodywid);
+                if (!isNullOrUndefined(widget)) {
+                    break;
+                }
+            }
             }
         }
         return widget;
@@ -291,6 +303,18 @@ export class TableResizer {
                 if (!isNullOrUndefined(widget)) {
                     break;
                 }
+                if (this.documentHelper.owner.layoutType === 'Pages') {
+                const body: BodyWidget = currentPage.headerWidget;
+                widget = body.getTableCellWidget(cursorPoint);
+                if (!isNullOrUndefined(widget)) {
+                    break;
+                }
+                const bodywid: BodyWidget = currentPage.footerWidget;
+                widget = bodywid.getTableCellWidget(cursorPoint);
+                if (!isNullOrUndefined(widget)) {
+                    break;
+                }
+            }
             }
         }
         return widget;

@@ -93,6 +93,13 @@ export interface ColorPickerModel extends ComponentModel{
     enableOpacity?: boolean;
 
     /**
+    * Specifies the popup element creation on open.
+    *
+    * @default false
+    */
+    createPopupOnClick?: boolean;
+
+    /**
      * Triggers while selecting the color in picker / palette, when showButtons property is enabled.
      *
      * @event select

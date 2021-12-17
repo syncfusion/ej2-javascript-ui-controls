@@ -1,4 +1,4 @@
-import { select, isNullOrUndefined, Browser, addClass, removeClass, EventHandler, closest } from '@syncfusion/ej2-base';
+import { select, isNullOrUndefined, Browser, addClass, removeClass, EventHandler, closest, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { OverflowMode } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import * as events from '../base/constant';
@@ -106,6 +106,13 @@ export class QuickToolbar {
         this.parent.isRTE = true;
     }
 
+    private keyUpQT(e: KeyboardEvent): void {
+        if(e.which == 27) {
+            this.hideQuickToolbars();
+        }
+        
+    }
+
     private renderQuickToolbars(): void {
         if (this.linkQTBar || this.imageQTBar || this.textQTBar || this.tableQTBar) {
             return;
@@ -120,15 +127,19 @@ export class QuickToolbar {
         this.renderFactory.addRenderer(RenderType.TableToolbar, this.tableQTBar);
         if (this.linkQTBar) {
             EventHandler.add(this.linkQTBar.element, 'mousedown', this.onMouseDown, this);
+            EventHandler.add(this.linkQTBar.element, 'keyup', this.keyUpQT, this);
         }
         if (this.imageQTBar) {
             EventHandler.add(this.imageQTBar.element, 'mousedown', this.onMouseDown, this);
+            EventHandler.add(this.imageQTBar.element, 'keyup', this.keyUpQT, this);
         }
         if (this.textQTBar) {
             EventHandler.add(this.textQTBar.element, 'mousedown', this.onMouseDown, this);
+            EventHandler.add(this.textQTBar.element, 'keyup', this.keyUpQT, this);
         }
         if (this.tableQTBar) {
             EventHandler.add(this.tableQTBar.element, 'mousedown', this.onMouseDown, this);
+            EventHandler.add(this.tableQTBar.element, 'keyup', this.keyUpQT, this);
         }
     }
 
@@ -138,6 +149,7 @@ export class QuickToolbar {
             this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
             this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
             EventHandler.add(this.inlineQTBar.element, 'mousedown', this.onMouseDown, this);
+            EventHandler.add(this.inlineQTBar.element, 'keyup', this.keyUpQT, this);
         }
     }
 
@@ -152,7 +164,7 @@ export class QuickToolbar {
      * @deprecated
      */
     public showInlineQTBar(x: number, y: number, target: HTMLElement): void {
-        if (this.parent.readonly) {
+        if (this.parent.readonly || target.tagName.toLowerCase() === "img") {
             return;
         }
         this.inlineQTBar.showPopup(x, y, target);
@@ -223,7 +235,10 @@ export class QuickToolbar {
                 } else {
                     const closestAnchor: HTMLElement = closest(target, 'a') as HTMLElement;
                     target = closestAnchor ? closestAnchor : target;
-                    if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
+                    const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
+                    const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
+                    if ((isNOU(closest(startNode, 'A')) || isNOU(closest(endNode, 'A'))) && (!closest(target, 'td,th') || !range.collapsed) &&
+                    (target.tagName !== 'IMG' || this.parent.getRange().startOffset !== this.parent.getRange().endOffset)) {
                         if (this.parent.inlineMode.onSelection && range.collapsed) {
                             return;
                         }
@@ -298,22 +313,27 @@ export class QuickToolbar {
     public destroy(): void {
         if (this.linkQTBar) {
             EventHandler.remove(this.linkQTBar.element, 'mousedown', this.onMouseDown);
+            EventHandler.remove(this.linkQTBar.element, 'keyup', this.keyUpQT);
             this.linkQTBar.destroy();
         }
         if (this.textQTBar) {
             EventHandler.remove(this.textQTBar.element, 'mousedown', this.onMouseDown);
+            EventHandler.remove(this.textQTBar.element, 'keyup', this.keyUpQT);
             this.textQTBar.destroy();
         }
         if (this.imageQTBar) {
             EventHandler.remove(this.imageQTBar.element, 'mousedown', this.onMouseDown);
+            EventHandler.remove(this.imageQTBar.element, 'keyup', this.keyUpQT);
             this.imageQTBar.destroy();
         }
         if (this.tableQTBar) {
             EventHandler.remove(this.tableQTBar.element, 'mousedown', this.onMouseDown);
+            EventHandler.remove(this.tableQTBar.element, 'keyup', this.keyUpQT);
             this.tableQTBar.destroy();
         }
         if (this.inlineQTBar) {
             EventHandler.remove(this.inlineQTBar.element, 'mousedown', this.onMouseDown);
+            EventHandler.remove(this.inlineQTBar.element, 'keyup', this.keyUpQT);
             if (isIDevice()) {
                 EventHandler.remove(document, 'selectionchange', this.selectionChangeHandler);
             }

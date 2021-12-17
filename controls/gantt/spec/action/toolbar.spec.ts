@@ -61,12 +61,12 @@ describe('Gantt toolbar support', () => {
         it('Add handler function', () => {
             let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
             triggerMouseEvent(add, 'click');
-            let startDate: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#' + ganttObj.element.id + 'StartDate'));
+            let startDate: HTMLInputElement = (<HTMLInputElement>document.querySelector('#' + ganttObj.element.id + 'StartDate'));
             if (startDate) {
                 let StartDateInput: any = (document.getElementById(ganttObj.element.id + 'StartDate') as any).ej2_instances[0];
                 StartDateInput.value = new Date('02/06/2017');
             }
-            let save: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+            let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
             triggerMouseEvent(save, 'click');
             expect(ganttObj.flatData.length).toBe(42);
         });
@@ -113,7 +113,7 @@ describe('Gantt toolbar support', () => {
             if (progress) {
                 let progressInput: any = (document.getElementById(ganttObj.element.id + 'Progress') as any).ej2_instances[0];
                 progressInput.value = 80;
-                let save: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+                let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
                 triggerMouseEvent(save, 'click');
                 // expect(getValue('Progress', ganttObj.flatData[2])).toBe(80);
             }
@@ -304,7 +304,6 @@ describe('Gantt toolbar support', () => {
         it('CR-EJ2-46731: Maintaining additional fields in segments on zooming action', (done: Function) => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'AfterZoomIn') {
-                    debugger;
                     expect(getValue('Segments[0].Custom', ganttObj.flatData[0].taskData)).toBe("Test");
                 }
             };

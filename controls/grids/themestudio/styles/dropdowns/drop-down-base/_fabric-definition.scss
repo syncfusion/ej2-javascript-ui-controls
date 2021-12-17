@@ -1,0 +1,76 @@
+$ddl-header-font-weight: 600 !default;
+$ddl-last-child-bottom-border: 0 !default;
+$ddl-default-font-family: inherit !default;
+$ddl-line-height: 48px !default;
+$ddl-list-border-size: 1px !default;
+$ddl-default-header-font-color: $default-font-color !default;
+$ddl-list-bottom-border: $ddl-list-border-size !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
+$ddl-list-border-color: rgba($neutral-light, .25) !default;
+$ddl-list-font-family: inherit !default;
+$ddl-list-gradient-color: transparent !default;
+$ddl-list-bg-color: $neutral-white !default;
+$ddl-list-header-bg-color: $neutral-white !default;
+$ddl-list-header-border-color: 1px $neutral-light !default;
+$ddl-list-default-font-color: rgba($neutral-light-font, .87) !default;
+$ddl-list-active-border-color: $neutral-white !default;
+$ddl-list-active-font-color: $neutral-light-font !default;
+$ddl-list-active-bg-color: $theme-lighter !default;
+$ddl-list-hover-bg-color: $neutral-lighter !default;
+$ddl-list-hover-border-color: $neutral-white !default;
+$ddl-list-hover-font-color: $neutral-light-font !default;
+$ddl-nodata-font-color: $neutral-light-font !default;
+$ddl-group-list-padding-left: 20px !default;
+$ddl-group-list-small-padding-left: $ddl-group-list-padding-left !default;
+$ddl-group-list-bigger-padding-left: $ddl-group-list-padding-left !default;
+$ddl-group-list-bigger-small-padding-left: $ddl-group-list-padding-left !default;
+$ddl-list-header-padding-left: 10px !default;
+$ddl-list-header-small-padding-left: $ddl-list-header-padding-left !default;
+$ddl-list-header-bigger-small-padding-left: $ddl-list-header-padding-left !default;
+$ddl-list-header-bigger-padding-left: $ddl-list-header-padding-left !default;
+$ddl-list-font-size: 14px !default;
+$ddl-group-list-font-size: 14px !default;
+$ddl-list-header-font-color: $theme-primary !default;
+$ddl-list-text-indent: 10px !default;
+$ddl-bigger-text-indent: $ddl-list-text-indent !default;
+$ddl-list-rtl-padding-right: 0 !default;
+$ddl-list-line-height: 36px !default;
+$ddl-bigger-list-header-font-size: $ddl-list-font-size !default;
+$ddl-multi-column-border-width: 0 0 1px 0 !default;
+$ddl-multi-column-border-color: $neutral-light !default;
+$ddl-list-header-font-size: $ddl-group-list-font-size !default;
+$ddl-small-list-header-font-size: $ddl-group-list-font-size !default;
+
+// Small Size
+
+$ddl-small-icon-font-size: 14px !default;
+$ddl-small-line-height: 26px !default;
+$ddl-small-list-font-color: $neutral-light-font !default;
+$ddl-small-list-text-indent: 10px !default;
+
+// touch size
+
+// Touch Small
+
+$ddl-bigger-small-icon-font-size: 18px !default;
+$ddl-bigger-small-line-height: 40px !default;
+$ddl-bigger-small-list-font-color: $neutral-light-font !default;
+$ddl-bigger-small-list-text-indent: 16px !default;
+$ddl-bigger-small-list-header-font-size: 14px !default;
+
+@include export-module('dropdownbase-fabric') {
+  .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 10px 0 0;
+  }
+
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 12px 0 0;
+  }
+
+
+  .e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 8px 0 0;
+  }
+}

@@ -10,7 +10,7 @@ import { IAxisSet, IPivotValues, IPageSettings, IDataOptions, PivotEngine } from
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfBorderStyle } from '../../common/base/enum';
 import { OlapEngine } from '../../base/olap/engine';
-import { PivotUtil } from '../../base/util';
+import { PivotExportUtil } from '../../base/export-util';
 import { PdfExportProperties } from '@syncfusion/ej2-grids';
 
 /**
@@ -241,8 +241,9 @@ export class PDFExport {
                                 let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
                                 if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                     let cellValue: string | number = pivotCell.formattedText;
-                                    cellValue = pivotCell.type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
-                                        (pivotCell.type === 'sum' ?
+                                    cellValue = (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
+                                    cellValue = pivotCell.type === 'grand sum' ? (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'grandTotal') :
+                                        this.parent.localeObj.getConstant('grandTotal') : (pivotCell.type === 'sum' ?
                                             cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
@@ -439,13 +440,13 @@ export class PDFExport {
     private applyEvent(): { document: PdfDocument, args: BeforeExportEventArgs } {
         /** Event trigerring */
         let clonedValues: IPivotValues;
-        let currentPivotValues: IPivotValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
+        let currentPivotValues: IPivotValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
         if (this.parent.exportAllPages && this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
             let pageSettings: IPageSettings = this.engine.pageSettings;
             this.engine.pageSettings = null;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true);
             this.parent.applyFormatting(this.engine.pivotValues);
-            clonedValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
+            clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
             this.engine.pivotValues = currentPivotValues;
             this.engine.pageSettings = pageSettings;
         } else {

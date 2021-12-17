@@ -1,0 +1,26 @@
+@include export-module('treegrid-tailwind-icons') {
+  .e-treegrid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: '\e707';
+    }
+
+    .e-toolbar-item {
+      .e-expand::before {
+        content: '\e762';
+      }
+
+      .e-collapse::before {
+        content:  '\e750';
+      }
+
+      .e-indent::before {
+        content: '\e7ac';
+      }
+
+      .e-outdent::before {
+        content: '\e735';
+      }
+    }
+  }
+}

@@ -115,7 +115,7 @@ export class DataEditing {
             y = chart.isTransposed ? chart.mouseX - axis.x : (axis.y + axis.height) - chart.mouseY;
             ySize = chart.isTransposed ? axis.width : axis.height;
         }
-        yValue = yAxis.isInversed ? (1 - (y / ySize)) : (y / ySize);
+        yValue = yAxis.isAxisInverse ? (1 - (y / ySize)) : (y / ySize);
         yValue = (yValue * yAxis.visibleRange.delta) + yAxis.visibleRange.min;
         const minRange: number = yAxis.minimum !== null ? yAxis.visibleRange.min + extra : (isNullOrUndefined(pointDrag.minY) ?
             (yValue) : pointDrag.minY);

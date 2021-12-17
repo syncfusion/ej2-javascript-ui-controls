@@ -448,7 +448,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     private setTimeOut(): void {
         const sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
         const elementWidth: number = this.element.getBoundingClientRect().width;
-        if (this.element.classList.contains(OPEN) && sibling) {
+        if (this.element.classList.contains(OPEN) && sibling && !(this.type === 'Over' && this.enableDock)) {
             if (this.position === 'Left') {
                 sibling.style.marginLeft = this.setDimension(this.width === 'auto' ? elementWidth : this.width);
             } else {
@@ -742,7 +742,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         const sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
         if (sibling) {
             sibling.style.transform = 'translateX(' + 0 + 'px)';
-            if (!Browser.isDevice && this.type !== 'Auto') {
+            if (!Browser.isDevice && this.type !== 'Auto' && !(this.type === 'Over' && this.enableDock)) {
                 sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = '0px';
             }
         }
@@ -762,9 +762,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             } break;
         case 'Over':
             addClass([this.element], [OVER]);
-            if (this.enableDock && this.element.classList.contains(CLOSE)) {
+            if (this.enableDock && (this.element.classList.contains(CLOSE) || this.isOpen)) {
                 if (sibling) {
-                    sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = margin;
+                    sibling.style[this.position === 'Left' ? 'marginLeft' : 'marginRight'] = this.setDimension(this.dockSize);
                 }
             }
             break;

@@ -158,7 +158,7 @@ export class Toolbar {
             const locale: L10n = this.container.localObj;
             const id: string = this.container.element.id + TOOLBAR_ID;
             if (this.toolbarItems.indexOf('Image') >= 0) {
-                 this.imgDropDwn = new DropDownButton({
+                this.imgDropDwn = new DropDownButton({
                     items: [
                         {
                             text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
@@ -302,20 +302,20 @@ export class Toolbar {
      * @returns {void}
      */
     public reInitToolbarItems(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
-        for (let i: number = 0; i< items.length; i++) {
+        for (let i: number = 0; i < items.length; i++) {
             switch (items[i]) {
-                case 'RestrictEditing':
-                    this.restrictDropDwn.destroy();
-                    break;
-                case 'Break':
-                    this.breakDropDwn.destroy();
-                    break;
-                case 'Image':
-                    this.imgDropDwn.destroy();
-                    break;
-                case 'FormFields':
-                    this.formFieldDropDown.destroy();
-                    break;   
+            case 'RestrictEditing':
+                this.restrictDropDwn.destroy();
+                break;
+            case 'Break':
+                this.breakDropDwn.destroy();
+                break;
+            case 'Image':
+                this.imgDropDwn.destroy();
+                break;
+            case 'FormFields':
+                this.formFieldDropDown.destroy();
+                break;
             }
         }
         this.toolbarItems = items;
@@ -714,7 +714,7 @@ export class Toolbar {
         const image: HTMLImageElement = document.createElement('img');
         const container: DocumentEditorContainer = this.container;
         image.addEventListener('load', function (): void {
-            container.documentEditor.editor.insertImage(data, this.width, this.height);
+            container.documentEditor.editor.insertImageInternal(data, true, this.width, this.height);
         });
         image.src = data;
     }
@@ -800,7 +800,7 @@ export class Toolbar {
         if (!isNullOrUndefined(this.documentEditor)) {
             this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
         }
-        if (this.documentEditor.selection.isinFootnote || this.documentEditor.selection.isinEndnote) {
+        if (this.documentEditor.selection.isinFootnote || this.documentEditor.selection.isinEndnote || this.documentEditor.enableHeaderAndFooter) {
             if (this.containsItem(id + ENDNOTE_ID)) {
                 this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, false);
             }

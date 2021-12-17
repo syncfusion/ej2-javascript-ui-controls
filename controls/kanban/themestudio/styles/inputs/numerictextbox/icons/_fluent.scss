@@ -1,0 +1,12 @@
+@include export-module('numerictextbox-fluent-icons') {
+  .e-input-group-icon.e-spin-up::before {
+    content: '\e7c4';
+    font-family: 'e-icons';
+  }
+
+  .e-input-group-icon.e-spin-down::before {
+    content: '\e7c3';
+    font-family: 'e-icons';
+  }
+}
+  

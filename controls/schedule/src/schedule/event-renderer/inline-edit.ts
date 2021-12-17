@@ -25,11 +25,11 @@ export class InlineEdit {
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide();
         }
-        const moreWrapper: Element = this.parent.element.querySelector('.e-more-popup-wrapper ');
-        if (moreWrapper && moreWrapper.classList.contains(cls.POPUP_OPEN)) {
-            this.parent.quickPopup.morePopup.hide();
-        }
         if (args.type === 'Cell') {
+            const moreWrapper: Element = this.parent.element.querySelector('.' + cls.MORE_POPUP_WRAPPER_CLASS);
+            if (moreWrapper && moreWrapper.classList.contains(cls.POPUP_OPEN)) {
+                this.parent.quickPopup.morePopup.hide();
+            }
             this.removeInlineAppointmentElement();
             this.cellEdit(args);
         } else {
@@ -88,8 +88,8 @@ export class InlineEdit {
                     '.e-inner-wrap' : '.e-appointment-details';
                 args.element.querySelector(elementSelector).insertBefore(inlineSubject, timeEle);
             }
+            inlineSubject.focus();
         }
-        inlineSubject.focus();
         inlineSubject.setSelectionRange(subject.length, subject.length);
     }
 
@@ -187,6 +187,9 @@ export class InlineEdit {
         const target: HTMLInputElement = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS) as HTMLInputElement;
         if (target && target.value !== '') {
             this.inlineCrudActions(target as HTMLTableCellElement & HTMLInputElement);
+        }
+        else {
+            this.removeInlineAppointmentElement();
         }
     }
 

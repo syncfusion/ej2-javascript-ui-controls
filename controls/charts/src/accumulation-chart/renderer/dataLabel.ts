@@ -724,14 +724,14 @@ export class AccumulationDataLabel extends AccumulationBase {
                             this.accumulation.renderer,
                             new TextOption(
                                 id + 'text_' + point.index, location.x, location.y,
-                                'start', point.label, rotate, 'auto', degree
+                                this.accumulation.enableRtl ? 'end' : 'start', point.label, rotate, 'auto', degree
                             ),
                             point.argsData.font, point.argsData.font.color || this.getSaturatedColor(point, point.argsData.color),
                             datalabelGroup, false, redraw, true, false, this.accumulation.duration
                         );
                         element = null;
                     }
-                    if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside'
+                    if (this.accumulation.accumulationLegendModule && this.accumulation.legendSettings.visible && (dataLabel.position === 'Outside'
                         || this.accumulation.enableSmartLabels)) {
                         this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
                     }
@@ -770,8 +770,12 @@ export class AccumulationDataLabel extends AccumulationBase {
             }
         }
 
-        if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {
+        if (this.accumulation.accumulationLegendModule && this.accumulation.legendSettings.visible && point.labelVisible && point.labelRegion) {
             const rect: Rect = this.accumulation.accumulationLegendModule.legendBounds;
+            if (this.accumulation.visibleSeries[0].type != "Pie" && this.accumulation.legendSettings.position == 'Left'
+                && dataLabel.position === 'Outside') {
+                point.labelRegion.x = point.labelRegion.x + rect.width;
+            }
             const padding: number = this.accumulation.legendSettings.border.width / 2;
             this.textTrimming(
                 point, new Rect(rect.x - padding, rect.y - padding, rect.width + (2 * padding), rect.height + (2 * padding)),
@@ -883,7 +887,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      */
     private getLabelBackground(point: AccPoints): string {
         return point.labelPosition === 'Outside' ?
-            this.accumulation.background || this.accumulation.themeStyle.background : point.color;
+            this.accumulation.background || this.accumulation.themeStyle.background : !point.y ? this.accumulation.theme.indexOf('dark') ? 'white' : 'black' : point.color;
     }
     /**
      * To correct the padding between datalabel regions.

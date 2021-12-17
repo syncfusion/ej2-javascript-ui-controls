@@ -35,5 +35,14 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      */
     @Property(true)
     public ignoreCase: boolean;
+
+    /**
+     * Specifies the placeholder value to the search input of the File Manager component.
+     * It accepts string.
+     *
+     * @default null
+     */
+    @Property(null)
+    public placeholder: string;
 }
 

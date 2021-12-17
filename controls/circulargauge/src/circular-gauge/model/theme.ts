@@ -44,6 +44,14 @@ export function getRangePalette(theme: string): string[] {
             palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
                 '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
             break;
+        case 'fluentui':
+            palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+                '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+            break;
+        case 'fluentuidark':
+            palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+                '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+            break;
     }
     return palette;
 }
@@ -127,7 +135,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             lineColor: '#E5E7EB',
             majorTickColor: '#9CA3AF',
             minorTickColor: '#9CA3AF',
-            pointerColor: '#6C757D',
+            pointerColor: '#1F2937',
             capColor: '#1F2937',
             needleColor: '#1F2937',
             needleTailColor: '#1F2937',
@@ -203,6 +211,50 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
             titleFontWeight: '500'
+        };
+        break;
+    case 'fluentui':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#201F1E',
+            tooltipFillColor: '#FFFFFF',
+            tooltipFontColor: '#323130',
+            labelColor: '#3B3A39',
+            lineColor: '#EDEBE9',
+            majorTickColor: '#C8C6C4',
+            minorTickColor: '#C8C6C4',
+            pointerColor: '#A19F9D',
+            capColor: '#A19F9D',
+            needleColor: '#A19F9D',
+            needleTailColor: '#A19F9D',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            titleFontWeight: '600'
+        };
+        break;
+    case 'fluentuidark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#F3F2F1',
+            tooltipFillColor: '#252423',
+            tooltipFontColor: '#F3F2F1',
+            labelColor: '#C8C6C4',
+            lineColor: '#292827',
+            majorTickColor: '#484644',
+            minorTickColor: '#484644',
+            pointerColor: '#797775',
+            capColor: '#797775',
+            needleColor: '#797775',
+            needleTailColor: '#797775',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            titleFontWeight: '600'
         };
         break;
     default:

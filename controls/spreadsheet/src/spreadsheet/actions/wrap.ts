@@ -13,6 +13,7 @@ import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index'
  */
 export class WrapText {
     private parent: Spreadsheet;
+    private wrapCell: HTMLElement;
 
     /**
      * Constructor for the Spreadsheet Wrap Text module.
@@ -22,6 +23,7 @@ export class WrapText {
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
+        this.wrapCell = this.parent.createElement('span', { className: 'e-wrap-content' });
         this.addEventListener();
     }
 
@@ -46,7 +48,7 @@ export class WrapText {
             range: number[], wrap: boolean, sheet: SheetModel, initial: boolean, td: Element, row: HTMLElement,
             hRow: HTMLElement, isCustomHgt?: boolean
         }): void {
-        if (inView(this.parent, args.range, true)) {
+        if (args.initial || inView(this.parent, args.range, true)) {
             let ele: Element;
             let cell: CellModel;
             let colwidth: number;
@@ -67,20 +69,7 @@ export class WrapText {
                         } else {
                             ele.classList.remove(WRAPTEXT);
                         }
-                        if (isCustomHgt || isMerge) {
-                            if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
-                                let styleText: string = (ele as HTMLElement).style.cssText;
-                                if (styleText) {
-                                    styleText = styleText.split(';').filter((text: string) => !text.includes('border')).join(';');
-                                }
-                                ele.innerHTML
-                                    = this.parent.createElement('span', {
-                                        className: 'e-wrap-content',
-                                        innerHTML: ele.innerHTML,
-                                        styles: styleText
-                                    }).outerHTML;
-                            }
-                        }
+                        if (isCustomHgt || isMerge) { this.updateWrapCell(i, j, args.sheet, ele); }
                     }
                     if (Browser.isIE) {
                         ele.classList.add('e-ie-wrap');
@@ -179,7 +168,7 @@ export class WrapText {
             const sheet: SheetModel = this.parent.getActiveSheet();
             for (let i: number = this.parent.viewport.leftIndex, len: number = this.parent.viewport.rightIndex; i <= len; i++) {
                 if (getCell(args.rowIdx, i, sheet, false, true).wrap) {
-                    this.updateWrapCell(this.parent.getCell(args.rowIdx, i));
+                    this.updateWrapCell(args.rowIdx, i, sheet, this.parent.getCell(args.rowIdx, i));
                 }
             }
         }
@@ -189,15 +178,28 @@ export class WrapText {
             const sheet: SheetModel = this.parent.getActiveSheet();
             for (let i: number = this.parent.viewport.topIndex, len: number = this.parent.viewport.bottomIndex; i <= len; i++) {
                 if (getCell(i, args.colIdx, sheet, false, true).wrap) {
-                    this.updateWrapCell(this.parent.getCell(i, args.colIdx));
+                    this.updateWrapCell(i, args.colIdx, sheet, this.parent.getCell(i, args.colIdx));
                 }
             }
         }
     }
-    private updateWrapCell(ele: Element): void {
-        if (ele && (ele.children.length === 0 || !ele.querySelector('.e-wrap-content'))) {
-            ele.innerHTML = this.parent.createElement(
-                'span', { className: 'e-wrap-content', innerHTML: ele.innerHTML, styles: (ele as HTMLElement).style.cssText }).outerHTML;
+    private updateWrapCell(rowIdx: number, colIdx: number, sheet: SheetModel, ele: Element): void {
+        if (ele && !ele.querySelector('.e-wrap-content')) {
+            const wrapSpan: HTMLElement = this.wrapCell.cloneNode() as HTMLElement;
+            while (ele.childElementCount) {
+                wrapSpan.appendChild(ele.firstElementChild);
+            }
+            if (!getCell(rowIdx, colIdx, sheet, false, true).hyperlink) {
+                const node: Node = ele.lastChild;
+                if (node && node.nodeType === 3) {
+                    wrapSpan.appendChild(document.createTextNode(node.textContent));
+                    node.textContent = '';
+                } else {
+                    wrapSpan.appendChild(document.createTextNode(ele.textContent));
+                    ele.textContent = '';
+                }
+            }
+            ele.appendChild(wrapSpan);
         }
     }
     /**

@@ -192,6 +192,9 @@ export class KeyboardInteraction {
         }
         const queryStr: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' + cls.HEADER_CELLS_CLASS;
         const target: HTMLTableCellElement = closest((e.target as Element), queryStr) as HTMLTableCellElement;
+        if (this.parent.currentView === 'TimelineYear' && target.classList.contains(cls.OTHERMONTH_CLASS)) {
+            return;
+        }
         this.parent.activeCellsData = this.getSelectedElements(target);
         const cellData: Record<string, any> = {};
         if (this.parent.eventWindow) {
@@ -214,6 +217,9 @@ export class KeyboardInteraction {
     private processEnter(e: Event): void {
         if ((this.parent.activeViewOptions.readonly && !(e.target as Element).classList.contains(cls.APPOINTMENT_CLASS))
             || this.isPreventAction(e)) {
+            return;
+        }
+        if (this.parent.currentView === 'TimelineYear' && (e.target as Element).classList.contains(cls.OTHERMONTH_CLASS)) {
             return;
         }
         const target: HTMLTableCellElement = e.target as HTMLTableCellElement;
@@ -248,11 +254,15 @@ export class KeyboardInteraction {
                 };
                 this.parent.notify(event.inlineClick, inlineArgs);
             } else {
-                this.parent.notify(event.cellClick, args);
+                if (this.parent.currentView === 'Year') {
+                    target.click();
+                } else {
+                    this.parent.notify(event.cellClick, args);
+                }
             }
             return;
         }
-        if (target.classList.contains(cls.INLINE_SUBJECT_CLASS)) {
+        if (target.classList.contains(cls.INLINE_SUBJECT_CLASS) && this.parent.inlineModule) {
             this.parent.inlineModule.inlineCrudActions(target);
             return;
         }
@@ -283,7 +293,9 @@ export class KeyboardInteraction {
     }
     private getCells(isInverseTable: boolean, start: HTMLTableCellElement, end: HTMLTableCellElement): HTMLTableCellElement[] {
         const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
-        let cells: HTMLTableCellElement[] = [].slice.call(tableEle.querySelectorAll('td'));
+        const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
+        const query: string = isTimelineYear && !isInverseTable ? '.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')' : 'td';
+        let cells: HTMLTableCellElement[] = [].slice.call(tableEle.querySelectorAll(query));
         let maxRow: number = tableEle.rows.length;
         let maxColumn: number = tableEle.rows[0].cells.length;
         if (start && start.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
@@ -298,7 +310,11 @@ export class KeyboardInteraction {
         if (isInverseTable) {
             for (let i: number = 0; i < maxColumn; i++) {
                 for (let j: number = 0; j < maxRow; j++) {
-                    inverseCells.push(cells[maxColumn * j + i]);
+                    const cell: HTMLTableCellElement = cells[maxColumn * j + i];
+                    if (isTimelineYear && cell.classList.contains(cls.OTHERMONTH_CLASS)) {
+                        continue;
+                    }
+                    inverseCells.push(cell);
                 }
             }
             startIndex = inverseCells.indexOf(start);
@@ -320,10 +336,15 @@ export class KeyboardInteraction {
             return;
         }
         this.parent.eventBase.removeSelectedAppointmentClass();
-        if (this.parent.activeView.isTimelineView()) {
+        if (this.parent.activeView.isTimelineView() && this.parent.currentView !== 'TimelineYear') {
             const cell: Element = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS +
                 ' tr:not(.' + cls.HIDDEN_CLASS + ') .' + cls.WORK_CELLS_CLASS + ':not(.' + cls.RESOURCE_GROUP_CELLS_CLASS + ')');
             this.selectCells(false, cell as HTMLTableCellElement);
+        } else if (this.parent.currentView.indexOf('Year') > -1) {
+            let query: string = '.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')' + ':not(.' + cls.RESOURCE_GROUP_CELLS_CLASS + ')';
+            const isVerticalYear: boolean = this.parent.currentView === 'TimelineYear' && this.parent.activeViewOptions.orientation === 'Vertical';
+            query += isVerticalYear ? '[data-date="' + this.parent.activeView.startDate().getTime() + '"]' : '';
+            this.selectCells(false, this.parent.element.querySelector(query));
         } else {
             this.selectCells(false, this.parent.getWorkCellElements()[0] as HTMLTableCellElement);
         }
@@ -344,13 +365,20 @@ export class KeyboardInteraction {
         let target: HTMLTableCellElement = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId: string;
-            const views: string[] = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+            const views: string[] = ['Day', 'Week', 'WorkWeek', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'TimelineYear'];
             const args: SelectEventArgs = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.inlineModule.removeInlineAppointmentElement();
             this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
                 const allowMultipleRow: boolean = (!selectArgs.allowMultipleRow) || (!this.parent.allowMultiRowSelection);
-                if (allowMultipleRow && (views.indexOf(this.parent.currentView) > -1)) {
-                    target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
+                if (allowMultipleRow) {
+                    const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
+                    if (isTimelineYear && this.parent.activeViewOptions.orientation === 'Horizontal' || this.parent.currentView === 'Month') {
+                        const isGroupYear: boolean = isTimelineYear && this.parent.activeViewOptions.group.resources.length > 0;
+                        target = isGroupYear ? this.initialTarget :
+                            this.initialTarget.parentElement.children[target.cellIndex] as HTMLTableCellElement;
+                    } else if (views.indexOf(this.parent.currentView) > -1) {
+                        target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
+                    }
                 }
                 let selectedCells: HTMLTableCellElement[] = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -480,8 +508,20 @@ export class KeyboardInteraction {
             }
         }
     }
+    private cancelUpDownAction(isTimelineYear: boolean): boolean {
+        const isVerticalYear: boolean = isTimelineYear && this.parent.activeViewOptions.orientation === 'Vertical';
+        const isGroup: boolean = this.parent.activeViewOptions.group.resources.length > 0;
+        if (isVerticalYear && isGroup || isTimelineYear && this.initialTarget.classList.contains(cls.OTHERMONTH_CLASS)) {
+            return true;
+        }
+        if (this.parent.activeView.isTimelineView() && !isTimelineYear || this.parent.currentView === 'MonthAgenda') {
+            return true;
+        }
+        return false;
+    }
     private processUp(e: KeyboardEventArgs, isMultiple: boolean): void {
-        if ((isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda'))) {
+        const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
+        if (isMultiple && this.cancelUpDownAction(isTimelineYear)) {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
@@ -502,15 +542,29 @@ export class KeyboardInteraction {
         if (target.classList.contains(cls.WORK_CELLS_CLASS) && !this.parent.element.querySelector('.' + cls.POPUP_OPEN)) {
             const tableRows: HTMLTableRowElement[] = this.parent.getTableRows() as HTMLTableRowElement[];
             const curRowIndex: number = tableRows.indexOf(target.parentElement as HTMLTableRowElement);
-            if (curRowIndex > 0 && curRowIndex < tableRows.length) {
-                this.selectCells(isMultiple, (tableRows[curRowIndex - 1]).cells[target.cellIndex]);
+            let targetCell: HTMLTableCellElement;
+            if (isTimelineYear && isMultiple  && this.parent.activeViewOptions.group.resources.length === 0) {
+                targetCell = this.isInverseTableSelect() ? this.getVerticalUpDownCell(tableRows, target, curRowIndex, true) :
+                    this.getHorizontalUpDownCell(tableRows, target, curRowIndex, true);
+            }
+            if ((curRowIndex > 0 || targetCell) && curRowIndex < tableRows.length) {
+                targetCell = targetCell ? targetCell : (tableRows[curRowIndex - 1]).cells[target.cellIndex];
+                if (this.parent.currentView === 'Year' && targetCell.classList.contains(cls.OTHERMONTH_CLASS)) {
+                    if (this.parent.activeView.getStartDate().getTime() < +targetCell.getAttribute('data-date')) {
+                        targetCell = this.getYearUpDownCell(tableRows, curRowIndex - 1, target.cellIndex, true);
+                    } else {
+                        return;
+                    }
+                }
+                this.selectCells(isMultiple, targetCell);
             }
         } else if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
             this.selectAppointment(true, target);
         }
     }
     private processDown(e: KeyboardEventArgs, isMultiple: boolean): void {
-        if (isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda')) {
+        const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
+        if (isMultiple && this.cancelUpDownAction(isTimelineYear)) {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
@@ -531,15 +585,60 @@ export class KeyboardInteraction {
         if (!target) { return; }
         if (target.classList.contains(cls.WORK_CELLS_CLASS) && !this.parent.element.querySelector('.' + cls.POPUP_OPEN)) {
             const curRowIndex: number = tableRows.indexOf(target.parentElement as HTMLTableRowElement);
-            if (curRowIndex >= 0 && curRowIndex < tableRows.length - 1) {
-                this.selectCells(isMultiple, (tableRows[curRowIndex + 1]).cells[target.cellIndex]);
+            let targetCell: HTMLTableCellElement;
+            if (isTimelineYear && isMultiple && this.parent.activeViewOptions.group.resources.length === 0) {
+                targetCell = this.isInverseTableSelect() ? this.getVerticalUpDownCell(tableRows, target, curRowIndex, false)
+                    : this.getHorizontalUpDownCell(tableRows, target, curRowIndex, false);
+            }
+            if (curRowIndex >= 0 && ((curRowIndex < tableRows.length - 1) || targetCell)) {
+                targetCell = targetCell ? targetCell : (tableRows[curRowIndex + 1]).cells[target.cellIndex];
+                if (this.parent.currentView === 'Year' && targetCell.classList.contains(cls.OTHERMONTH_CLASS)) {
+                    if (this.parent.activeView.getEndDate().getTime() > +targetCell.getAttribute('data-date')) {
+                        targetCell = this.getYearUpDownCell(tableRows, curRowIndex + 1, target.cellIndex, false);
+                    } else {
+                        return;
+                    }
+                }
+                this.selectCells(isMultiple, targetCell);
             }
         } else if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
             this.selectAppointment(false, target);
         }
     }
+    private getYearUpDownCell(tableRows: HTMLTableRowElement[], rowIndex: number, cellIndex: number, isUp: boolean): HTMLTableCellElement {
+        while (tableRows[rowIndex] && tableRows[rowIndex].cells[cellIndex].classList.contains(cls.OTHERMONTH_CLASS)) {
+            rowIndex = rowIndex + (isUp ? -1 : 1);
+        }
+        return tableRows[rowIndex].cells[cellIndex];
+    }
+    // eslint-disable-next-line max-len
+    private getHorizontalUpDownCell(tableRows: HTMLTableRowElement[], target: HTMLTableCellElement, curRowIndex: number, isUp: boolean): HTMLTableCellElement {
+        const row: HTMLTableRowElement = tableRows[curRowIndex + (isUp ? -1 : 1)];
+        let cell: HTMLTableCellElement = row ? row.cells[target.cellIndex] : target;
+        if (cell.classList.contains(cls.OTHERMONTH_CLASS)) {
+            const workCell: HTMLTableCellElement = row.querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')');
+            const date: Date = new Date(+workCell.getAttribute('data-date'));
+            const query: string = '[data-date="' + new Date(date.getFullYear(), date.getMonth() + 1, 0).getTime() + '"]';
+            cell = cell.cellIndex < workCell.cellIndex ? workCell : row.querySelector(query);
+        }
+        return cell;
+    }
+    // eslint-disable-next-line max-len
+    private getVerticalUpDownCell(tableRows: HTMLTableRowElement[], target: HTMLTableCellElement, curRowIndex: number, isUp: boolean): HTMLTableCellElement {
+        const hasRow: boolean = isUp && curRowIndex > 0 || !isUp && curRowIndex < tableRows.length - 1;
+        let targetCell: HTMLTableCellElement = hasRow ? tableRows[curRowIndex + (isUp ? -1 : 1)].cells[target.cellIndex] : undefined;
+        if (!targetCell || targetCell.classList.contains(cls.OTHERMONTH_CLASS)) {
+            const column: HTMLTableCellElement = tableRows[curRowIndex].cells[target.cellIndex - (isUp ? 1 : -1)];
+            if (column) {
+                const dateAttr: number = +target.getAttribute('data-date') - (isUp ? util.MS_PER_DAY : -util.MS_PER_DAY);
+                return this.parent.getContentTable().querySelector('.' + cls.WORK_CELLS_CLASS + '[data-date="' + dateAttr + '"]');
+            }
+            targetCell = target;
+        }
+        return targetCell;
+    }
     private processLeftRight(target: HTMLTableCellElement): KeyEventArgs {
-        const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
+        const tableEle: HTMLTableElement = (this.parent.currentView === 'Year' ? target.closest('tbody') : this.parent.getContentTable()) as HTMLTableElement;
         const curRowIndex: number = (target.parentNode as HTMLTableRowElement).sectionRowIndex;
         const key: KeyEventArgs = {
             element: tableEle,
@@ -552,8 +651,9 @@ export class KeyboardInteraction {
     private getQuickPopupElement(): HTMLElement {
         return (this.parent.isAdaptive ? document.body : this.parent.element).querySelector('.' + cls.POPUP_WRAPPER_CLASS) as HTMLElement;
     }
-    private isCancelLeftRightAction(e: KeyboardEventArgs, isMultiple: boolean): boolean {
-        if (this.parent.currentView === 'Agenda' || (isMultiple && this.parent.currentView === 'MonthAgenda')) {
+    private isCancelLeftRightAction(e: KeyboardEventArgs, isMultiple: boolean, isTimelineYear: boolean): boolean {
+        const prevent: boolean = this.parent.currentView === 'MonthAgenda' || isTimelineYear && this.initialTarget.classList.contains(cls.OTHERMONTH_CLASS);
+        if (this.parent.currentView === 'Agenda' || (isMultiple && prevent)) {
             return true;
         }
         if (this.isPreventAction(e) && isMultiple) {
@@ -567,7 +667,8 @@ export class KeyboardInteraction {
         return false;
     }
     private processRight(e: KeyboardEventArgs, isMultiple: boolean): void {
-        if (this.isCancelLeftRightAction(e, isMultiple)) {
+        const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
+        if (this.isCancelLeftRightAction(e, isMultiple, isTimelineYear)) {
             return;
         }
         const selectedCells: Element[] = this.parent.getSelectedElements();
@@ -586,22 +687,35 @@ export class KeyboardInteraction {
         if (target.classList.contains(cls.WORK_CELLS_CLASS) &&
             ((e.target) as HTMLTableCellElement).classList.contains(cls.WORK_CELLS_CLASS)) {
             const key: KeyEventArgs = this.processLeftRight(target);
-            if (key.columnIndex >= 0 && key.columnIndex < key.maxIndex - 1) {
+            const targetDate: Date = new Date(+target.getAttribute('data-date'));
+            const isMonthEnd: boolean = this.parent.currentView === 'Year' && targetDate.getTime() === util.lastDateOfMonth(targetDate).getTime();
+            if (key.columnIndex >= 0 && key.columnIndex < key.maxIndex - 1 && !isMonthEnd) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex + 1], 'right');
+                if (isTimelineYear && isMultiple && targetCell.classList.contains(cls.OTHERMONTH_CLASS)) {
+                    targetCell = this.getTimelineYearTargetCell(key, target, true);
+                }
                 if (!isNullOrUndefined(targetCell)) {
                     this.selectCells(isMultiple, targetCell);
                 }
-            } else if (key.columnIndex === key.maxIndex - 1) {
-                if (!this.isInverseTableSelect() && key.rowIndex < key.element.rows.length - 1) {
+            } else if (key.columnIndex === key.maxIndex - 1 || isMonthEnd) {
+                if (!this.isInverseTableSelect() && key.rowIndex < key.element.rows.length - 1 && !isMonthEnd) {
                     targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex + 1].cells[0], 'right');
+                    const changeTargetCell: boolean = isTimelineYear && isMultiple && targetCell.classList.contains(cls.OTHERMONTH_CLASS);
+                    targetCell = changeTargetCell ? this.getHorizontalLeftRightCell(key, target, true) : targetCell;
                     if (!isNullOrUndefined(targetCell)) {
                         this.selectCells(isMultiple, targetCell);
                     }
                 } else if (!isMultiple) {
+                    if (isMonthEnd && targetDate.getTime() !== this.parent.activeView.getEndDate().getTime()) {
+                        this.selectCells(isMultiple, this.parent.element.querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + (targetDate.getTime() + util.MS_PER_DAY) + '"]'));
+                        return;
+                    }
+
                     const rowIndex: number = this.isInverseTableSelect() ? key.rowIndex : 0;
                     this.parent.changeDate(this.parent.activeView.getNextPreviousDate('next'), e);
                     const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
-                    this.selectCells(false, tableEle.rows[rowIndex].cells[0]);
+                    const cell: HTMLTableCellElement = isMonthEnd ? tableEle.rows[rowIndex].querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')') : tableEle.rows[rowIndex].cells[0];
+                    this.selectCells(false, cell);
                 }
             }
         } else if (target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
@@ -618,7 +732,8 @@ export class KeyboardInteraction {
         }
     }
     private processLeft(e: KeyboardEventArgs, isMultiple: boolean): void {
-        if (this.isCancelLeftRightAction(e, isMultiple)) {
+        const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
+        if (this.isCancelLeftRightAction(e, isMultiple, isTimelineYear)) {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
@@ -637,22 +752,39 @@ export class KeyboardInteraction {
         if (((e.target) as HTMLTableCellElement).classList.contains(cls.WORK_CELLS_CLASS) &&
             target.classList.contains(cls.WORK_CELLS_CLASS)) {
             const key: KeyEventArgs = this.processLeftRight(target);
-            if (key.columnIndex > 0 && key.columnIndex < key.maxIndex) {
+            const targetDate: Date = new Date(+target.getAttribute('data-date'));
+            const isMonthStart: boolean = this.parent.currentView === 'Year' && targetDate.getTime() === util.firstDateOfMonth(targetDate).getTime();
+            if (key.columnIndex > 0 && key.columnIndex < key.maxIndex && !isMonthStart) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex - 1], 'left');
+                if (isTimelineYear && isMultiple && targetCell.classList.contains(cls.OTHERMONTH_CLASS)) {
+                    targetCell = this.getTimelineYearTargetCell(key, target, false);
+                }
                 if (!isNullOrUndefined(targetCell)) {
                     this.selectCells(isMultiple, targetCell);
                 }
-            } else if (key.columnIndex === 0) {
+            } else if (key.columnIndex === 0 || isMonthStart) {
                 if (!this.isInverseTableSelect() && key.rowIndex > 0) {
                     targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex - 1].cells[key.maxIndex - 1], 'left');
+                    const otherMonthCell: boolean = isTimelineYear && isMultiple && targetCell.classList.contains(cls.OTHERMONTH_CLASS);
+                    targetCell = otherMonthCell ? this.getHorizontalLeftRightCell(key, target, false) : targetCell;
                     if (!isNullOrUndefined(targetCell)) {
                         this.selectCells(isMultiple, targetCell);
                     }
                 } else if (!isMultiple) {
+                    if (isMonthStart && targetDate.getTime() !== this.parent.activeView.getStartDate().getTime()) {
+                        this.selectCells(isMultiple, this.parent.element.querySelector('[data-date="' + (targetDate.getTime() - util.MS_PER_DAY) + '"]'));
+                        return;
+                    }
+
                     this.parent.changeDate(this.parent.activeView.getNextPreviousDate('previous'), e);
                     const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
                     const rowIndex: number = this.isInverseTableSelect() ? key.rowIndex : tableEle.rows.length - 1;
-                    this.selectCells(false, tableEle.rows[rowIndex].cells[key.maxIndex - 1]);
+                    let cell: HTMLTableCellElement = tableEle.rows[rowIndex].cells[key.maxIndex - 1];
+                    if (isMonthStart) {
+                        const tbody: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
+                        cell = tbody.item(tbody.length - 1).querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + this.parent.activeView.getEndDate().getTime() + '"]');
+                    }
+                    this.selectCells(false, cell);
                 }
             }
         } else if (target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
@@ -667,6 +799,29 @@ export class KeyboardInteraction {
                 this.selectCells(false, allDayRow.cells[maxColIndex - 1]);
             }
         }
+    }
+    private getTimelineYearTargetCell(key: KeyEventArgs, target: HTMLTableCellElement, isRight: boolean): HTMLTableCellElement {
+        return this.isInverseTableSelect() ? this.getVerticalLeftRightCell(target, isRight) :
+            this.getHorizontalLeftRightCell(key, target, isRight);
+    }
+    private getHorizontalLeftRightCell(key: KeyEventArgs, target: HTMLTableCellElement, isRight: boolean): HTMLTableCellElement {
+        const row: HTMLTableRowElement = key.element.rows[(<HTMLTableRowElement>target.parentNode).sectionRowIndex + (isRight ? 1 : -1)];
+        if (row) {
+            const query: string = isRight ? '.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')'
+                : '[data-date="' + ((+target.getAttribute('data-date')) - util.MS_PER_DAY) + '"]';
+            return row.querySelector(query);
+        }
+        return target;
+    }
+    private getVerticalLeftRightCell(target: HTMLTableCellElement, isRight: boolean): HTMLTableCellElement {
+        const date: Date = new Date(+target.getAttribute('data-date'));
+        const start: Date = new Date(date.getFullYear(), date.getMonth() + (isRight ? 1 : -1), 1);
+        const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
+        const targetCell: HTMLTableCellElement = tableEle.querySelector('[data-date="' + start.getTime() + '"]');
+        if ((targetCell.parentNode as HTMLTableRowElement).sectionRowIndex > (target.parentNode as HTMLTableRowElement).sectionRowIndex) {
+            return targetCell;
+        }
+        return tableEle.querySelector('[data-date="' + new Date(start.getFullYear(), start.getMonth() + 1, 0).getTime() + '"]');
     }
     private calculateNextPrevDate(currentCell: HTMLTableCellElement, target: HTMLTableCellElement, type: string): HTMLTableCellElement {
         const initialId: string = this.initialTarget.getAttribute('data-group-index');
@@ -713,6 +868,16 @@ export class KeyboardInteraction {
 
     private processTab(e: KeyboardEventArgs, isReverse: boolean): void {
         let target: Element = e.target as Element;
+        if (target.classList.contains(cls.INLINE_SUBJECT_CLASS) && this.parent.inlineModule) {
+            target = target.closest('.e-appointment');
+            this.parent.inlineModule.inlineCrudActions(e.target as HTMLTableCellElement);
+        }
+        if (this.parent.currentView === 'TimelineYear' && target.classList.contains(cls.OTHERMONTH_CLASS)) {
+            if (target.classList.contains(cls.SELECTED_CELL_CLASS)) {
+                this.parent.removeSelectedClass();
+            }
+            return;
+        }
         const popupWrapper: Element = closest(target, '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.MORE_POPUP_WRAPPER_CLASS);
         if (popupWrapper && popupWrapper.classList.contains(cls.POPUP_OPEN)) {
             if (popupWrapper.classList.contains(cls.MORE_POPUP_WRAPPER_CLASS)) {
@@ -751,7 +916,9 @@ export class KeyboardInteraction {
         }
         if (target.classList.contains(cls.APPOINTMENT_CLASS)) {
             let appElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
-            if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0) {
+            const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
+            const isTimeline: boolean = this.parent.activeView.isTimelineView() && !isTimelineYear;
+            if ((isTimeline || isTimelineYear && this.parent.activeViewOptions.orientation === 'Vertical') && this.parent.activeViewOptions.group.resources.length > 0) {
                 const index: number = parseInt(target.getAttribute('data-group-index'), 10);
                 appElements = [].slice.call(this.parent.element.querySelectorAll(`.${cls.APPOINTMENT_CLASS}[data-group-index="${index}"]`));
                 const resCellSelector: string = `.${cls.RESOURCE_CELLS_CLASS}[data-group-index="${isReverse ? index : index + 1}"]`;
@@ -799,7 +966,6 @@ export class KeyboardInteraction {
             this.processTabOnResourceCells(target, isReverse);
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private processDelete(e: KeyboardEventArgs): void {
         let activeEle: Element = document.activeElement;
         if (this.parent.currentView === 'MonthAgenda') {

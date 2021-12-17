@@ -1,0 +1,43 @@
+
+@include export-module('treeview-tailwind-icons') {
+  /*! TreeView icons */
+  .e-treeview {
+
+    .e-list-item {
+
+      div.e-icons::before {
+        content: '\e707';
+      }
+    }
+
+    .e-sibling::before {
+      content: '';
+    }
+
+    .e-popup {
+
+      .e-icons::before {
+        content: '\e76a';
+      }
+    }
+
+    &.e-drag-item {
+
+      .e-icons.e-drop-in::before {
+        content: '\e783';
+      }
+
+      .e-icons.e-drop-out::before {
+        content: '\e77e';
+      }
+
+      .e-icons.e-drop-next::before {
+        content: '\e7a9';
+      }
+
+      .e-icons.e-no-drop::before {
+        content: '\e77e';
+      }
+    }
+  }
+}

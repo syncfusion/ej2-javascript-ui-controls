@@ -1,0 +1,490 @@
+@include export-module('document-editor-container-tailwind-dark-icons') {
+  .e-de-ctnr-close::before {
+    color: $icon-color;
+    content: '\e771';
+    font-size: 16px;
+  }
+
+  .e-de-ctnr-linespacing::before {
+    color: $icon-color;
+    content: '\e7de';
+  }
+
+  .e-de-ctnr-undo::before {
+    color: $icon-color;
+    content: '\e7bd';
+  }
+
+  .e-de-ctnr-find::before {
+    color: $icon-color;
+    content: '\e737';
+  }
+
+  .e-de-ctnr-lock::before {
+    color: $icon-color;
+    content: '\e753';
+  }
+
+  .e-de-ctnr-italic::before {
+    color: $icon-color;
+    content: '\e722';
+  }
+
+  .e-de-selected-spellcheck-item::before {
+    color: $icon-color;
+    content: '\e75d';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
+  .e-de-selected-underline-item::before {
+    color: $icon-color;
+    content: '\e75d';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
+  .e-de-ctnr-link::before {
+    color: $icon-color;
+    content: '\e74a';
+  }
+
+  .e-de-ctnr-table::before {
+    color: $icon-color;
+    content: '\e79f';
+  }
+
+  .e-de-ctnr-download::before {
+    color: $icon-color;
+    content: '\e794';
+  }
+
+  .e-de-ctnr-justify::before {
+    color: $icon-color;
+    content: '\e723';
+  }
+
+  .e-de-ctnr-tableofcontent::before {
+    color: $icon-color;
+    content: '\e733';
+  }
+
+  .e-de-ctnr-pagenumber::before {
+    color: $icon-color;
+    content: '\e7cf';
+  }
+
+  .e-de-ctnr-highlight::before {
+    color: $icon-color;
+    content: '\e7c1';
+  }
+
+  .e-de-ctnr-new::before {
+    color: $icon-color;
+    content: '\e78a';
+  }
+
+  .e-de-ctnr-paste::before {
+    color: $icon-color;
+    content: '\e75e';
+  }
+
+  .e-de-ctnr-bold::before {
+    color: $icon-color;
+    content: '\e79d';
+  }
+
+  .e-de-ctnr-subscript::before {
+    color: $icon-color;
+    content: '\e7b4';
+  }
+
+  .e-de-ctnr-aligncenter::before {
+    color: $icon-color;
+    content: '\e74f';
+  }
+
+  .e-de-ctnr-fontcolor::before {
+    color: $icon-color;
+    content: '\e775';
+  }
+
+  .e-de-ctnr-change-case::before {
+    color: $icon-color;
+    content: '\e86a';
+  }
+
+  .e-de-ctnr-pagesetup::before {
+    color: $icon-color;
+    content: '\e79a';
+  }
+
+  .e-de-ctnr-strokestyle::before {
+    color: $icon-color;
+    content: '\eb62';
+  }
+
+  .e-de-ctnr-strikethrough::before {
+    color: $icon-color;
+    content: '\e760';
+  }
+
+  .e-de-ctnr-image::before {
+    color: $icon-color;
+    content: '\e7da';
+  }
+
+  .e-de-ctnr-redo::before {
+    color: $icon-color;
+    content: '\e7b9';
+  }
+
+  .e-de-ctnr-bookmark::before {
+    color: $icon-color;
+    content: '\e793';
+  }
+
+  .e-de-ctnr-increaseindent::before {
+    color: $icon-color;
+    content: '\e7ac';
+  }
+
+  .e-de-ctnr-header::before {
+    color: $icon-color;
+    content: '\e739';
+  }
+
+  .e-de-ctnr-backgroundcolor::before {
+    color: $icon-color;
+    content: '\eb6b';
+  }
+
+  .e-de-ctnr-open::before {
+    color: $icon-color;
+    content: '\e749';
+  }
+
+  .e-de-ctnr-underline::before {
+    color: $icon-color;
+    content: '\e7d4';
+  }
+
+  .e-de-ctnr-superscript::before {
+    color: $icon-color;
+    content: '\e7cb';
+  }
+
+  .e-de-ctnr-alignleft::before {
+    color: $icon-color;
+    content: '\e7ae';
+  }
+
+  .e-de-ctnr-numbering::before {
+    color: $icon-color;
+    content: '\e71f';
+  }
+
+  .e-de-ctnr-bullets::before {
+    color: $icon-color;
+    content: '\e743';
+  }
+
+  .e-de-ctnr-decreaseindent::before {
+    color: $icon-color;
+    content: '\e735';
+  }
+
+  .e-de-ctnr-showhide::before {
+    content: '\e75f';
+    font-size: 16px;
+  }
+
+  .e-de-ctnr-print::before {
+    color: $icon-color;
+    content: '\e76c';
+  }
+
+  .e-de-ctnr-alignright::before {
+    color: $icon-color;
+    content: '\e772';
+  }
+
+  .e-de-ctnr-footer::before {
+    color: $icon-color;
+    content: '\e78c';
+  }
+
+  .e-de-ctnr-clearall::before {
+    color: $icon-color;
+    content: '\e792';
+  }
+
+  .e-de-ctnr-outsideborder::before {
+    color: $icon-color;
+    content: '\e7c4';
+  }
+
+  .e-de-ctnr-allborders::before {
+    color: $icon-color;
+    content: '\e79f';
+  }
+
+  .e-de-ctnr-insideborders::before {
+    color: $icon-color;
+    content: '\e79c';
+  }
+
+  .e-de-ctnr-leftborders::before {
+    color: $icon-color;
+    content: '\e784';
+  }
+
+  .e-de-ctnr-insideverticalborder::before {
+    color: $icon-color;
+    content: '\e702';
+  }
+
+  .e-de-ctnr-rightborder::before {
+    color: $icon-color;
+    content: '\e72e';
+  }
+
+  .e-de-ctnr-topborder::before {
+    color: $icon-color;
+    content: '\e7a7';
+  }
+
+  .e-de-ctnr-insidehorizondalborder::before {
+    color: $icon-color;
+    content: '\e73b';
+  }
+
+  .e-de-ctnr-bottomborder::before {
+    color: $icon-color;
+    content: '\e791';
+  }
+
+  .e-de-ctnr-strokesize::before {
+    color: $icon-color;
+    content: '\e754';
+  }
+
+  .e-de-ctnr-highlightcolor::before {
+    color: $icon-color;
+    content: '\e7c1';
+  }
+
+  .e-de-ctnr-mergecell::before {
+    color: $icon-color;
+    content: '\e73f';
+  }
+
+  .e-de-ctnr-insertleft::before {
+    color: $icon-color;
+    content: '\e7db';
+  }
+
+  .e-de-ctnr-insertright::before {
+    color: $icon-color;
+    content: '\e710';
+  }
+
+  .e-de-ctnr-insertabove::before {
+    color: $icon-color;
+    content: '\e7dd';
+  }
+
+  .e-de-ctnr-insertbelow::before {
+    color: $icon-color;
+    content: '\e757';
+  }
+
+  .e-de-ctnr-deleterows::before {
+    color: $icon-color;
+    content: '\e75a';
+  }
+
+  .e-de-ctnr-deletecolumns::before {
+    color: $icon-color;
+    content: '\e721';
+  }
+
+  .e-de-ctnr-aligntop::before {
+    color: $icon-color;
+    content: '\e709';
+  }
+
+  .e-de-ctnr-alignbottom::before {
+    color: $icon-color;
+    content: '\e73e';
+  }
+
+  .e-de-ctnr-aligncenter-table::before {
+    color: $icon-color;
+    content: '\e7cc';
+  }
+
+  .e-de-ctnr-cellbg-clr-picker::before {
+    color: $icon-color;
+    content: '\e782';
+  }
+
+  .e-de-ctnr-bullet-none::before {
+    color: $icon-color;
+    content: '\e7e1';
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-dot::before {
+    color: $icon-color;
+    content: '\e7e8';
+    font-size: 8px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-circle::before {
+    color: $icon-color;
+    content: '\e803';
+    font-size: 8px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-square::before {
+    color: $icon-color;
+    content: '\e804';
+    font-size: 8px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-flower::before {
+    color: $icon-color;
+    content: '\e7e4';
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-arrow::before {
+    color: $icon-color;
+    content: '\e7e9';
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-tick::before {
+    color: $icon-color;
+    content: '\e7ec';
+    line-height: 28px;
+  }
+
+  .e-de-selected-item::before {
+    color: $icon-color;
+    content: '\e75d';
+  }
+
+  .e-de-ctnr-break::before {
+    color: $icon-color;
+    content: '\e777';
+  }
+
+  .e-de-ctnr-page-break::before {
+    color: $icon-color;
+    content: '\e708';
+  }
+
+  .e-de-ctnr-section-break::before {
+    color: $icon-color;
+    content: '\e74c';
+  }
+
+  .e-de-ctnr-upload::before {
+    color: $icon-color;
+    content: '\e7b5';
+  }
+
+  .e-de-flip {
+    transform: scaleX(-1);
+  }
+
+  .e-de-cnt-cmt-add::before {
+    color: $icon-color;
+    content: '\e82a';
+  }
+
+  .e-de-cnt-track::before {
+    color: $icon-color;
+    content: '\e81f';
+  }
+
+  .e-de-printlayout::before {
+    color: $icon-color;
+    content: '\e822';
+  }
+
+  .e-de-weblayout::before {
+    color: $icon-color;
+    content: '\e82e';
+  }
+
+  .e-de-textform::before {
+    color: $icon-color;
+    content: '\e860';
+    font-family: 'e-icons';
+  }
+
+  .e-de-formproperties::before {
+    color: $icon-color;
+    content: '\e8f1';
+    font-family: 'e-icons';
+  }
+
+  .e-de-clearform::before {
+    color: $icon-color;
+    content: '\e8f2';
+    font-family: 'e-icons';
+  }
+
+  .e-de-dropdownform::before {
+    color: $icon-color;
+    content: '\e865';
+    font-family: 'e-icons';
+  }
+
+  .e-de-formfield::before {
+    color: $icon-color;
+    content: '\e867';
+    font-family: 'e-icons';
+  }
+
+  .e-de-checkbox-form::before {
+    color: $icon-color;
+    content: '\e85f';
+    font-family: 'e-icons';
+  }
+
+  .e-de-arrow-up::before {
+    content: '\e768';
+    font-family: 'e-icons';
+  }
+
+  .e-de-arrow-down::before {
+    content: '\e732';
+    font-family: 'e-icons';
+  }
+
+  .e-de-update-field::before {
+    color: $icon-color;
+    content: '\e838';
+    font-family: 'e-icons';
+  }
+
+  .e-de-footnote::before {
+    color: $icon-color;
+    content: '\e868';
+    font-family: 'e-icons';
+  }
+
+  .e-de-endnote::before {
+    color: $icon-color;
+    content: '\e868';
+    font-family: 'e-icons';
+  }
+}

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import * as cls from '../base/css-constant';
 
@@ -52,6 +52,9 @@ export class FieldValidator {
         const elem: Element = this.element.querySelector('#' + id + '_Error');
         if (!elem && !this.ignoreError) {
             this.createTooltip(inputElement, error, id, '');
+        }
+        if (!isNullOrUndefined(elem)) {
+            elem.querySelector('.e-error').innerHTML = error.innerHTML;
         }
     }
 

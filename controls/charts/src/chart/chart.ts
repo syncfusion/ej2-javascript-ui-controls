@@ -9,7 +9,7 @@ import { remove, extend } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
 import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';
-import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement } from '../common/utils/helper';
+import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement, getTextAnchor } from '../common/utils/helper';
 import { appendClipElement, ChartLocation } from '../common/utils/helper';
 import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel } from './chart-model';
 import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';
@@ -93,7 +93,7 @@ import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAft
 import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs, IAxisLabelClickEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs, IBeforeResizeEventArgs } from '../chart/model/chart-interface';
-import { chartMouseClick, pointClick, pointDoubleClick, axisLabelClick, beforeResize  } from '../common/model/constants';
+import { chartMouseClick, chartDoubleClick, pointClick, pointDoubleClick, axisLabelClick, beforeResize  } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
@@ -783,6 +783,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public zoomSettings: ZoomSettingsModel;
 
     /**
+     * Define the color for the data point on highlight.
+     *
+     * @default ''
+     */
+
+    @Property('')
+    public highlightColor: string;
+
+    /**
      * Specifies whether series or data point has to be selected. They are,
      * * none: Disables the selection.
      * * series: selects a series.
@@ -1202,6 +1211,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public chartMouseClick: EmitType<IMouseEventArgs>;
 
     /**
+     * Triggers on double clicking the chart.
+     *
+     * @event chartDoubleClick
+     * @blazorProperty 'OnChartDoubleClick'
+     */
+
+    @Event()
+    public chartDoubleClick: EmitType<IMouseEventArgs>;
+
+    /**
      * Triggers on point click.
      *
      * @event pointClick
@@ -1617,6 +1636,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             this.animateSeries = false;
         }
+
+        this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
     }
 
     private initPrivateVariable(): void {
@@ -1748,6 +1769,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         removeElement('chartmeasuretext');
         this.removeSelection();
+        
+        if (this.markerRender && !this.stockChart) {
+            this.markerRender.mergeXvalues(this.visibleSeries);
+        }
     }
     /**
      * To calcualte the stack values
@@ -1908,7 +1933,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             const tooltipDiv: Element = redrawElement(this.redraw, elementId + '_Secondary_Element') ||
                 this.createElement('div');
             tooltipDiv.id = elementId + '_Secondary_Element';
-            tooltipDiv.setAttribute('style', 'position: relative');
+            tooltipDiv['style'] = 'position: relative';
             appendChildElement(false, this.element, tooltipDiv, this.redraw);
         }
         // For canvas
@@ -1921,7 +1946,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 width: this.availableSize.width,
                 height: this.availableSize.height
             });
-            svg.setAttribute('style', 'position: absolute; pointer-events: none');
+            svg['style'] = 'position: absolute; pointer-events: none';
             tooltipdiv.appendChild(svg);
         }
         // For userInteraction
@@ -2010,7 +2035,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             svgElement = !svgElement ? this.svgRenderer.createSvg({ id: this.element.id + '_series_svg',
                 width: this.availableSize.width, height: this.availableSize.height }) : svgElement;
             divElement = !divElement ? this.createElement('div', { id: this.element.id + '_series' }) : divElement;
-            divElement.setAttribute('style', 'position: absolute');
+            divElement['style'] = 'position: absolute';
             const mainElement: HTMLElement = document.getElementById(this.element.id + '_Secondary_Element');
             divElement.appendChild(svgElement);
             mainElement.appendChild(divElement);
@@ -2261,7 +2286,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
             axis = <Axis>axes[i]; axis.series = [];
-            axis.labels = [];
+            axis.labels = []; axis.indexLabels = {};
             for (const series of this.visibleSeries) {
                 this.initAxis(series, axis, true);
             }
@@ -2378,8 +2403,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let rect: Rect;
         const margin: MarginModel = this.margin;
         if (this.title) {
-            const alignment: Alignment = this.titleStyle.textAlignment;
-            const getAnchor: string = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
+            const getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
             const elementSize: Size = measureText(this.title, this.titleStyle);
             rect = new Rect(
                 margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
@@ -2408,9 +2432,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let maxWidth: number = 0;
         let titleWidth: number = 0;
         const padding: number = 10;
-        const anchor: Function = (alignment: Alignment): string => {
-            return alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
-        };
         const alignment: Alignment = this.titleStyle.textAlignment;
         for (const titleText of this.titleCollection) {
             titleWidth = measureText(titleText, this.titleStyle).width;
@@ -2427,7 +2448,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 rect, this.subTitleStyle
             ),
             options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding,
-            anchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto'
+            getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, '', 'auto'
         );
         const element: Element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
             textElement(
@@ -2671,6 +2692,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
         EventHandler.remove(this.element, stopEvent, this.mouseEnd);
         EventHandler.remove(this.element, 'click', this.chartOnMouseClick);
+        EventHandler.remove(this.element, 'dblclick', this.chartOnDoubleClick);
         EventHandler.remove(this.element, 'contextmenu', this.chartRightClick);
         EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
 
@@ -2706,6 +2728,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEnd, this);
         EventHandler.add(this.element, 'click', this.chartOnMouseClick, this);
+        EventHandler.add(this.element, 'dblclick', this.chartOnDoubleClick, this);
         EventHandler.add(this.element, 'contextmenu', this.chartRightClick, this);
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
 
@@ -2899,6 +2922,17 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         removeElement(this.element.id + '_EJ2_AxisLabel_Tooltip');
         this.isChartDrag = this.isPointMouseDown = false;
         this.notify(cancelEvent, e);
+        return false;
+    }
+    /**
+     * Handles the mouse double click on chart.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+    public chartOnDoubleClick(e: PointerEvent | TouchEvent): boolean {
+        const element: Element = <Element>e.target;
+        this.trigger(chartDoubleClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         return false;
     }
     /**
@@ -3617,33 +3651,46 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         this.animateSeries = false;
+        let axis: Axis;
         if (!this.delayRedraw) {
             for (let prop of Object.keys(newProp)) {
                 switch (prop) {
                     case 'primaryXAxis':
-                        refreshBounds = this.axisChange(<Axis>newProp.primaryXAxis);
+                        axis = <Axis>newProp.primaryXAxis;
+                        refreshBounds = this.axisChange(axis);
                         if (newProp.primaryXAxis.edgeLabelPlacement) {
                             renderer = true;
                         }
                         if (!newProp.primaryXAxis.crosshairTooltip) {
                             refreshBounds = true;
                         }
+                        if(!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
+                           (this.primaryXAxis as Axis).setIsInversedAndOpposedPosition();
+                        }
                         break;
                     case 'primaryYAxis':
-                        refreshBounds = this.axisChange(<Axis>newProp.primaryYAxis);
+                        axis = <Axis>newProp.primaryYAxis;
+                        refreshBounds = this.axisChange(axis);
                         if (newProp.primaryYAxis.edgeLabelPlacement) {
                             renderer = true;
                         }
                         if (!newProp.primaryYAxis.crosshairTooltip) {
                             refreshBounds = true;
                         }
+                        if(!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
+                            (this.primaryYAxis as Axis).setIsInversedAndOpposedPosition();
+                         }
                         break;
                     case 'axes':
                         for (let index of Object.keys(newProp.axes)) {
-                            refreshBounds = refreshBounds || this.axisChange(newProp.axes[index] as Axis);
-                            if (!newProp.axes[index].crosshairTooltip) {
+                            axis = newProp.axes[index] as Axis;
+                            refreshBounds = refreshBounds || this.axisChange(axis);
+                            if (!axis.crosshairTooltip) {
                                 refreshBounds = true;
                             }
+                            if(!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
+                                (this.axes[index] as Axis).setIsInversedAndOpposedPosition()
+                             }
                         }
                         break;
                     case 'height':
@@ -3778,6 +3825,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     case 'tooltip':
                         if (this.tooltipModule) { // To check the tooltip enable is true.
                             this.tooltipModule.previousPoints = [];
+                            if (this.tooltip.template) {
+                                this.tooltipModule.template = this.tooltip.template;
+                            }
                         }
                         break;
                 }

@@ -36,13 +36,23 @@ export type ConnectorType =
     'Curve';
 /**
  * Defines the SelectionMode, They are.
- * * none - Disable the selection.
- * * point - To select a point.
+ * * None - Disable the selection.
+ * * Point - To select a point.
  */
 export type AccumulationSelectionMode =
     /** Disable the selection. */
     'None' |
     /** To select a point. */
+    'Point';
+/**
+  * Defines the HighlightMode, They are.
+  * * None - Disable the Highlight.  
+  * * Point - To highlight a point.  
+  */
+export type AccumulationHighlightMode =
+    /** Disable the highlight. */
+    'None' |
+    /** To highlight a point. */
     'Point';
 /**
  * Defines Theme of the accumulation chart. They are

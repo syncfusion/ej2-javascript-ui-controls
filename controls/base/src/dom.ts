@@ -288,7 +288,8 @@ export function selectAll(selector: string, context: Document | Element = docume
  * @private
  */
 function querySelectId(selector: string): string {
-    if (selector.match(/#[0-9]/g)) {
+    const charRegex: RegExp = /(!|"|\$|%|&|'|\(|\)|\*|\/|:|;|<|=|\?|@|\]|\^|`|{|}|\||\+|~)/g;
+    if (selector.match(/#[0-9]/g) || selector.match(charRegex)) {
         const idList: string[] = selector.split(',');
         for (let i: number = 0; i < idList.length; i++) {
             const list: string[] = idList[i].split(' ');
@@ -296,7 +297,7 @@ function querySelectId(selector: string): string {
                 if (list[j].indexOf('#') > -1) {
                     if (!list[j].match(/\[.*\]/)) {
                         const splitId: string[] = list[j].split('#');
-                        if (splitId[1].match(/^\d/)) {
+                        if (splitId[1].match(/^\d/) || splitId[1].match(charRegex)) {
                             const setId: string[] = list[j].split('.');
                             setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
                             list[j] = setId.join('.');

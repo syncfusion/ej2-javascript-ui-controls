@@ -44,7 +44,11 @@ export class GaugeTooltip {
         this.gauge = gauge;
         this.tooltipId = this.gauge.element.id + '_CircularGauge_Tooltip';
         this.tooltip = <TooltipSettings>gauge.tooltip;
-        this.textStyle = this.tooltip.textStyle;
+        this.textStyle = {
+            color: this.tooltip.textStyle.color, opacity: this.tooltip.textStyle.opacity,
+            fontFamily: this.tooltip.textStyle.fontFamily, fontStyle: this.tooltip.textStyle.fontStyle,
+            fontWeight: this.tooltip.textStyle.fontWeight, size: this.tooltip.textStyle.size
+        };
         this.borderStyle = this.tooltip.border;
         this.addEventListener();
     }
@@ -129,12 +133,12 @@ export class GaugeTooltip {
                     this.tooltipRect = rect;
                 }
                 if (!tooltipArgs.cancel && !samePointerEle) {
-                    tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
-                    tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
-                    tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
+                    this.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                    this.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                    this.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
                                                             tooltipArgs.tooltip.textStyle.opacity;
                     this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, tooltipArgs, template, this.arrowInverted, this.tooltipRect,
-                                                            this.gauge, tooltipArgs.tooltip.fill, tooltipArgs.tooltip.textStyle,
+                                                            this.gauge, tooltipArgs.tooltip.fill, this.textStyle,
                                                             tooltipArgs.tooltip.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
@@ -190,6 +194,10 @@ export class GaugeTooltip {
                 name: tooltipRender, cancel: false, content: rangeContent, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, range: this.currentRange, event: e, gauge: this.gauge, appendInBodyTag: false, type: 'Range'
             };
+            const rangeTooltipTextStyle: FontModel = { color: this.gauge.tooltip.rangeSettings.textStyle.color, opacity: this.gauge.tooltip.rangeSettings.textStyle.opacity,
+                fontFamily: this.gauge.tooltip.rangeSettings.textStyle.fontFamily, fontStyle: this.gauge.tooltip.rangeSettings.textStyle.fontStyle,
+                fontWeight: this.gauge.tooltip.rangeSettings.textStyle.fontWeight, size: this.gauge.tooltip.rangeSettings.textStyle.size
+            };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const rangeTooltip: any = (rangeTooltipArgs: ITooltipRenderEventArgs) => {
                 let rangeTemplate: string = rangeTooltipArgs.tooltip.rangeSettings.template;
@@ -213,16 +221,15 @@ export class GaugeTooltip {
                     this.tooltipRect = rect;
                 }
                 if (!rangeTooltipArgs.cancel) {
-                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.color = rangeTooltipArgs.tooltip.rangeSettings.textStyle.color ||
+                    rangeTooltipTextStyle.color = rangeTooltipArgs.tooltip.rangeSettings.textStyle.color ||
                     this.gauge.themeStyle.tooltipFontColor;
-                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
+                    rangeTooltipTextStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
                     rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily;
-                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
+                    rangeTooltipTextStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
                     rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity;
                     this.svgTooltip = this.svgTooltipCreate (this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted,
                                                              this.tooltipRect, this.gauge, rangeTooltipArgs.tooltip.rangeSettings.fill,
-                                                             rangeTooltipArgs.tooltip.rangeSettings.textStyle,
-                                                             rangeTooltipArgs.tooltip.rangeSettings.border);
+                                                             rangeTooltipTextStyle, rangeTooltipArgs.tooltip.rangeSettings.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
                     if (rangeTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
@@ -302,8 +309,15 @@ export class GaugeTooltip {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).clearTemplate();
         }
-        if (isTooltipRender && (this.tooltipEle.style.left).indexOf('-') > -1) {
-            this.tooltipEle.style.left = 0 + 'px';
+        const gaugeElement: HTMLElement = document.getElementById(this.gaugeId);
+        const gaugeRect: ClientRect = gaugeElement.getBoundingClientRect();
+        const tooltipRect: ClientRect = isTooltipRender ? this.tooltipEle.getBoundingClientRect() : null;
+        if (isTooltipRender && this.tooltipEle.offsetLeft < 0 && (tooltipRect.left - gaugeRect.left) < 0){
+            const tooltipLeft: string = this.tooltipEle.style.left.split("px")[0];
+            this.tooltipEle.style.left = parseInt(tooltipLeft) + (gaugeRect.left - tooltipRect.left) + 'px';
+        }
+        if(isTooltipRender && tooltipRect.top < 0) {
+            this.tooltipEle.style.top = 0 + 'px';
         }
     }
 

@@ -1,8 +1,8 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
-import { applySort, completeAction, beginAction, focus } from '../index';
+import { applySort, completeAction, beginAction, focus, FilterInfoArgs, getUpdateUsingRaf } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel } from '../../workbook/index';
-import { getColumnHeaderText, CellModel, getRangeAddress } from '../../workbook/index';
+import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort } from '../../workbook/index';
 import { SortEventArgs, BeforeSortEventArgs, SortOptions } from '../../workbook/common/interface';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -146,6 +146,7 @@ export class Sort {
             return;
         }
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        let sortOptions: SortOptions;
         dialogInst.show({
             height: 400, width: 560, isModal: true, showCloseIcon: true, cssClass: 'e-customsort-dlg',
             header: l10n.getConstant('CustomSort'),
@@ -162,29 +163,26 @@ export class Sort {
                 focus(this.parent.element);
             },
             buttons: [{
-                buttonModel: {
-                    content: l10n.getConstant('Ok'), isPrimary: true
-                },
+                buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true },
                 click: (): void => {
                     const element: HTMLElement = dialogInst.dialogInstance.content as HTMLElement;
-                    const list: HTMLElement = element.getElementsByClassName('e-list-sort e-listview e-lib')[0] as HTMLElement;
-                    const listview: ListView = getComponent(list, 'listview') as ListView;
+                    const listview: ListView = getComponent(
+                        element.getElementsByClassName('e-list-sort e-listview e-lib')[0] as HTMLElement, 'listview') as ListView;
                     const data: { [key: string]: string }[] = listview.dataSource as { [key: string]: string }[];
                     this.clearError();
                     const errorElem: HTMLElement = element.getElementsByClassName('e-sort-error')[0] as HTMLElement;
                     errorElem.style.display = 'block';
                     if (!this.validateError(data, element, errorElem)) {
+                        sortOptions = { sortDescriptors: data, containsHeader:
+                            (element.getElementsByClassName('e-sort-checkheader')[0] as HTMLInputElement).checked,
+                        caseSensitive: (element.getElementsByClassName('e-sort-checkcase')[0] as HTMLInputElement).checked };
                         dialogInst.hide();
-                        const headercheck: HTMLElement = element.getElementsByClassName('e-sort-checkheader')[0] as HTMLElement;
-                        const headerCheckbox: CheckBox = getComponent(headercheck, 'checkbox') as CheckBox;
-                        const caseCheckbox: CheckBox = getComponent(
-                            element.getElementsByClassName('e-sort-checkcase')[0] as HTMLElement, 'checkbox') as CheckBox;
-                        const hasHeader: boolean = headerCheckbox.checked;
-                        this.applySortHandler(
-                            { sortOptions: { sortDescriptors: data, containsHeader: hasHeader, caseSensitive: caseCheckbox.checked } });
                     }
                 }
-            }]
+            }],
+            close: (): void => {
+                if (sortOptions) { getUpdateUsingRaf((): void => this.applySortHandler({ sortOptions: sortOptions })); }
+            }
         });
     }
 
@@ -525,24 +523,35 @@ export class Sort {
      */
     private applySortHandler(args: { sortOptions?: SortOptions, range?: string }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const address: string = args && args.range || sheet.selectedRange;
+        let address: string = args && args.range || sheet.selectedRange;
         const sortOptions: SortOptions = args && args.sortOptions || { sortDescriptors: {} };
+        const range: number[] = getSwapRange(getIndexesFromAddress(address));
+        let isSingleCell: boolean;
+        if (range[0] === range[2]) { //check for filter range
+            const eventArgs: FilterInfoArgs = { filterRange: [], hasFilter: false, sheetIdx: this.parent.activeSheetIndex };
+            this.parent.notify(getFilterRange, eventArgs);
+            if (eventArgs.hasFilter && inRange(<number[]>eventArgs.filterRange, range[0], range[1])) {
+                range[0] = eventArgs.filterRange[0]; range[1] = 0;
+                range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
+                sortOptions.containsHeader = true;
+            } else {
+                isSingleCell = true;
+            }
+        }
+        address = getRangeAddress(range);
         const beforeArgs: BeforeSortEventArgs = { range: address, sortOptions: sortOptions, cancel: false };
         this.parent.trigger(beforeSort, beforeArgs);
         if (beforeArgs.cancel) { return; }
         this.parent.notify(beginAction, { eventArgs: beforeArgs, action: 'beforeSort' });
         this.parent.showSpinner();
-        const range: number[] = getSwapRange(getIndexesFromAddress(beforeArgs.range));
-        const eventArgs: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
-        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //check for filter range
-            this.parent.notify(getFilterRange, eventArgs);
-            if (eventArgs.hasFilter && inRange(<number[]>eventArgs.filterRange, range[0], range[1])) {
-                range[0] = eventArgs.filterRange[0]; range[1] = 0;
-                range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
-                beforeArgs.sortOptions.containsHeader = true;
-            }
-        }
-        this.parent.sort(beforeArgs.sortOptions, getRangeAddress(range)).then((sortArgs: SortEventArgs) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        const sortArgs: { promise: Promise<SortEventArgs>, args: { range: string, checkForHeader?: boolean, sortOptions: SortOptions } } = {
+            args: { range: beforeArgs.range, sortOptions: beforeArgs.sortOptions, checkForHeader: isSingleCell && address !==
+                beforeArgs.range }, promise: promise };
+        this.parent.notify(initiateSort, sortArgs);
+        sortArgs.promise.then((sortArgs: SortEventArgs) => {
+            this.sortCompleteHandler(sortArgs);
             this.parent.trigger(sortComplete, sortArgs);
             this.parent.notify(completeAction, { eventArgs: sortArgs, action: 'sorting' });
             return Promise.resolve(sortArgs);

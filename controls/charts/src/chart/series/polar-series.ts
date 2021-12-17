@@ -59,18 +59,19 @@ export class PolarSeries extends PolarRadarPanel {
         let isLogAxis: boolean = yAxis.valueType === 'Logarithmic'; let isStacking: boolean = series.drawType === 'StackingColumn';
         let direction: string = ''; let sumofYValues: number = 0; let arcValue: string ;
         let interval: number = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
+        const isInverse: boolean = xAxis.isAxisInverse;
         //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis
         let ticks: number = (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') ? 0 :
-            xAxis.isInversed ? -interval / 2 : interval / 2;
+            isInverse ? -interval / 2 : interval / 2;
         let rangeInterval: number = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1; this.getSeriesPosition(series);
-        let position: number = xAxis.isInversed ? (series.rectCount - 1 - series.position) : series.position;
+        let position: number = isInverse ? (series.rectCount - 1 - series.position) : series.position;
         do {
             sumofYValues += rangeInterval; min += rangeInterval;
         } while (min <= xAxis.actualRange.max - (xAxis.valueType === 'Category' ? 0 : 1));
         for (let point of series.points) {
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
-                inversedValue = xAxis.isInversed ? (xAxis.visibleRange.max - point.xValue) : point.xValue - xAxis.visibleRange.min;
+                inversedValue = isInverse ? (xAxis.visibleRange.max - point.xValue) : point.xValue - xAxis.visibleRange.min;
                 itemCurrentXPos = (inversedValue) +
                     ((interval / series.rectCount) * position - ticks) + (sumofYValues / 360 * xAxis.startAngle);
                 itemCurrentXPos = (((itemCurrentXPos) / (sumofYValues)));
@@ -260,7 +261,7 @@ export class PolarSeries extends PolarRadarPanel {
         let chart: Chart = this.chart;
         let radius: number = chart.radius;
         let direction: string = endPoint;
-        let circleRotate: string = xAxis.isInversed ? '1 1 ' : '1 0 ';
+        let circleRotate: string = xAxis.isAxisInverse ? '1 1 ' : '1 0 ';
         vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
         x1 = this.centerX + radius * vector.x;
         y1 = this.centerY + radius * vector.y;

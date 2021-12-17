@@ -1871,7 +1871,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param e - Specifies the arguments of window resize event.
      */
     public mapsOnResize(e: Event): boolean {
-        this.isResize = true;
+        this.isResize = this.isReset = true;
         const args: IResizeEventArgs = {
             name: resize,
             previousSize: this.availableSize,
@@ -2311,7 +2311,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 render = true;
                 break;
             case 'zoomSettings':
-                if(!isNullOrUndefined(oldProp.zoomSettings)) {
+                if (!isNullOrUndefined(oldProp.zoomSettings)) {
                     if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor) {
                         render = false;
                     }
@@ -2338,7 +2338,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 if (this.isTileMap) {
                     this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
                 }
-				else {
+                else {
                     this.render();
                 }
             } else if (newProp.layers && isStaticMapType) {

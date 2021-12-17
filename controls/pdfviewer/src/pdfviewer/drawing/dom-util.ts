@@ -18,15 +18,22 @@ export function renderAdornerLayer(
         'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle
     });
     if (!getDiagramElement(divElement.id)) {
-
-        const svgAdornerSvg: SVGElement = createSvg(pdfViewer.element.id + index + '_diagramAdorner_svg', bounds.width, bounds.height);
+        const nextElement: HTMLElement = pdfViewer.viewerBase.getElement('_pageDiv_' + index);
+        let pageBound = nextElement.getBoundingClientRect();
+        const svgAdornerSvg: SVGElement = createSvg(pdfViewer.element.id + index + '_diagramAdorner_svg', pageBound.width, pageBound.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer' + index);
         svgAdornerSvg.setAttribute('style', 'pointer-events:none;');
         pdfViewer.adornerSvgLayer = createSvgElement('g', { 'id': pdfViewer.element.id + '_diagramAdorner' }) as SVGSVGElement;
         pdfViewer.adornerSvgLayer.setAttribute('style', ' pointer-events: all; ');
         svgAdornerSvg.appendChild(pdfViewer.adornerSvgLayer);
         divElement.appendChild(svgAdornerSvg);
-        cavas.parentElement.appendChild(divElement);
+        divElement.style.width = pageBound.width + 'px';
+        divElement.style.height = pageBound.height + 'px';
+        if (nextElement) {
+            nextElement.insertBefore(divElement, nextElement.childNodes[0]);
+        } else {
+            cavas.parentElement.appendChild(divElement);
+        }
         const svgSelector: SVGElement = createSvgElement('g', { 'id': pdfViewer.element.id + '_SelectorElement' });
         pdfViewer.adornerSvgLayer.appendChild(svgSelector);
         setAttributeSvg(svgAdornerSvg, { style: 'pointer-events:none;' });

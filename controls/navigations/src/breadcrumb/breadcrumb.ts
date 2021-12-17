@@ -1,15 +1,25 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, Property, Collection, append, extend, Event, EmitType, BaseEventArgs, EventHandler, closest, addClass, removeClass } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, Property, Collection, append, extend, Event, EmitType, BaseEventArgs, EventHandler, closest, addClass, removeClass, detach, remove } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
+import { Popup } from '@syncfusion/ej2-popups';
 import { BreadcrumbModel, BreadcrumbItemModel } from './breadcrumb-model';
 
 type obj = { [key: string]: Object };
 const ICONRIGHT: string = 'e-icon-right';
 const ITEMTEXTCLASS: string = 'e-breadcrumb-text';
 const ICONCLASS: string = 'e-breadcrumb-icon';
+const MENUCLASS: string = 'e-breadcrumb-menu';
+const ITEMCLASS: string = 'e-breadcrumb-item';
+const POPUPCLASS: string = 'e-breadcrumb-popup';
+const WRAPMODECLASS: string = 'e-breadcrumb-wrap-mode';
+const SCROLLMODECLASS: string = 'e-breadcrumb-scroll-mode';
+const TABINDEX: string = 'tabindex';
+const DISABLEDCLASS: string = 'e-disabled';
+const ARIADISABLED: string = 'aria-disabled'
+const DOT: string = '.';
 /**
  * Defines the Breadcrumb overflow modes.
  */
-export type BreadcrumbOverflowMode = 'Default' | 'Collapsed';
+export type BreadcrumbOverflowMode = 'Hidden' | 'Collapsed' | 'Menu' | 'Wrap' | 'Scroll' | 'None';
 
 export class BreadcrumbItem extends ChildProperty<BreadcrumbItem> {
     /**
@@ -35,6 +45,14 @@ export class BreadcrumbItem extends ChildProperty<BreadcrumbItem> {
      */
     @Property(null)
     public iconCss: string;
+
+    /**
+     * Enable or disable the breadcrumb item, when set to true, the breadcrumb item will be disabled.
+     *
+     * @default false
+     */
+    @Property(false)
+    public disabled: boolean;
 }
 
 /**
@@ -67,6 +85,10 @@ export interface BreadcrumbBeforeItemRenderEventArgs extends BaseEventArgs {
      * Specifies the Breadcrumb item.
      */
     item: BreadcrumbItemModel;
+    /**
+     * Cancels the Breadcrumb item rendering.
+     */
+    cancel: boolean;
 }
 
 /**
@@ -88,6 +110,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     private startIndex: number;
     private endIndex: number;
     private _maxItems: number;
+    private popupObj: Popup;
+    private popupUl: HTMLElement;
+    private delegateClickHanlder: Function;
     /**
      * Defines the Url based on which the Breadcrumb items are generated.
      *
@@ -115,19 +140,24 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     /**
      * Specifies an integer to enable overflow behavior when the Breadcrumb items count exceeds and it is based on the overflowMode property.
      *
-     * @default 0
+     * @default -1
+     * @aspType int
      */
-    @Property(0)
+    @Property(-1)
     public maxItems: number;
 
     /**
      * Specifies the overflow mode of the Breadcrumb item when it exceeds maxItems count. The possible values are,
      * - Default: Specified maxItems count will be visible and the remaining items will be hidden. While clicking on the previous item, the hidden item will become visible.
      * - Collapsed: Only the first and last items will be visible, and the remaining items will be hidden in the collapsed icon. When the collapsed icon is clicked, all items become visible.
-     *
-     * @default 'Default'
+     * - Menu: Shows the number of breadcrumb items that can be accommodated within the container space, and creates a sub menu with the remaining items.
+     * - Wrap: Wraps the items on multiple lines when the Breadcrumb’s width exceeds the container space.
+     * - Scroll: Shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
+     * - None: Shows all the items on a single line.
+     * 
+     * @default 'Menu'
      */
-    @Property('Default')
+    @Property('Menu')
     public overflowMode: BreadcrumbOverflowMode;
 
     /**
@@ -137,14 +167,6 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      */
     @Property('')
     public cssClass: string;
-
-    /**
-     * Specifies the width for the Breadcrumb component container element. If the Breadcrumb items overflow, the browsers horizontal scroll will be activated based on the device.
-     *
-     * @default ''
-     */
-    @Property('')
-    public width: string;
 
     /**
      * Specifies the template for Breadcrumb item.
@@ -177,6 +199,14 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      */
     @Property(false)
     public enableActiveItemNavigation: boolean;
+
+    /**
+     * Enable or disable the breadcrumb, when set to true, the breadcrumb will be disabled.
+     *
+     * @default false
+     */
+    @Property(false)
+    public disabled: boolean;
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
@@ -249,22 +279,50 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
         if (this.cssClass) {
             addClass([this.element], this.cssClass.split(' '));
         }
-        this.setWidth();
+        if (this.enableRtl) {
+            this.element.classList.add('e-rtl');
+        }
+        if (this.disabled) {
+            this.element.classList.add(DISABLEDCLASS);
+            this.element.setAttribute(ARIADISABLED, 'true');
+        }
+        if (this.overflowMode === 'Wrap') {
+            this.element.classList.add(WRAPMODECLASS);
+        } else if (this.overflowMode === 'Scroll') {
+            this.element.classList.add(SCROLLMODECLASS);
+        }
         this.initItems();
         this.initPvtProps();
     }
 
     private initPvtProps(): void {
-        if (this.overflowMode === 'Default' && this._maxItems > 0) {
-            this.startIndex = this.items.length - (this._maxItems - 1);
-            this.endIndex = this.items.length - 1;
+        if (this.overflowMode === 'Hidden' && this._maxItems > 0) {
+            this.endIndex = this.getEndIndex();
+            this.startIndex = this.endIndex + 1 - (this._maxItems - 1);
+        }
+        if (this.overflowMode === 'Menu') {
+            if (this._maxItems >= 0) {
+                this.startIndex = this._maxItems > 1 ? 1 : 0;
+                this.endIndex = this.getEndIndex();
+                this.popupUl = this.createElement('ul', { attrs: { TABINDEX: '0', 'role': 'menu' } });
+            } else {
+                this.startIndex = this.endIndex = null;
+            }
         }
     }
 
-    private setWidth(): void {
-        if (this.width) {
-            this.element.style.width = this.width;
+    private getEndIndex(): number {
+        let endIndex: number;
+        if (this.activeItem) {
+            this.items.forEach((item: BreadcrumbItemModel, idx: number) => {
+                if (item.url === this.activeItem || item.text === this.activeItem) {
+                    endIndex = idx;
+                }
+            });
+        } else {
+            endIndex = this.items.length - 1;
         }
+        return endIndex;
     }
 
     private initItems(): void {
@@ -273,7 +331,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             let uri: string[];
             const items: BreadcrumbItemModel[] = [];
             if (this.url) {
-                const url: URL = new URL(this.url);
+                const url: URL = new URL(this.url, window.location.origin);
                 baseUri = url.origin + '/';
                 uri = url.href.split(baseUri)[1].split('/');
             } else {
@@ -282,8 +340,10 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             }
             items.push({ iconCss: 'e-icons e-home', url: baseUri });
             for (let i: number = 0; i < uri.length; i++) {
-                items.push({ text: uri[i], url: baseUri + uri[i] });
-                baseUri += uri[i] + '/';
+                if (uri[i]) {
+                    items.push({ text: uri[i], url: baseUri + uri[i] });
+                    baseUri += uri[i] + '/';
+                }
             }
             this.setProperties({ items: items }, true);
         }
@@ -296,29 +356,30 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
         if (itemsLength) {
             let isActiveItem: boolean;
             let isLastItem: boolean;
+            let isLastItemInPopup: boolean;
             let j: number = 0;
+            let wrapDiv: HTMLElement;
             const len: number = (itemsLength * 2) - 1;
-            const ol: HTMLElement = this.createElement('ol');
+            let isItemCancelled: boolean = false;
+            const ol: HTMLElement = this.createElement('ol', { className: this.overflowMode === 'Wrap' ? 'e-breadcrumb-wrapped-ol' : '' });
+            const firstOl: HTMLElement = this.createElement('ol', { className: this.overflowMode === 'Wrap' ? 'e-breadcrumb-first-ol' : '' });
             const showIcon: boolean = this.hasField(items, 'iconCss');
-            const isDisabled: boolean = this.element.classList.contains('e-disabled');
-            const isCollasped: boolean = (this.overflowMode === 'Collapsed' && this._maxItems > 0 && itemsLength > this.maxItems && !this.isExpanded);
-            const isDefaultOverflowMode: boolean = (this.overflowMode === 'Default' && this._maxItems > 0);
+            const isCollasped: boolean = (this.overflowMode === 'Collapsed' && this._maxItems > 0 && itemsLength > this._maxItems && !this.isExpanded);
+            const isDefaultOverflowMode: boolean = (this.overflowMode === 'Hidden' && this._maxItems > 0);
+            if (this.overflowMode === 'Menu' && this.popupUl) {
+                this.popupUl.innerHTML = '';
+            }
             const listBaseOptions: ListBaseOptions = {
                 moduleName: this.getModuleName(),
                 showIcon: showIcon,
                 itemNavigable: true,
                 itemCreated: (args: { curData: BreadcrumbItemModel, item: HTMLElement, fields: obj }): void => {
                     const isLastItem: boolean = (args.curData as { isLastItem: boolean }).isLastItem;
-                    if ((args.curData as { isEmptyUrl: boolean }).isEmptyUrl) {
-                        args.item.children[0].removeAttribute('href');
-                        if (!isLastItem || (isLastItem && this.enableActiveItemNavigation)) {
-                            args.item.children[0].setAttribute('tabindex', '0');
-                            EventHandler.add(args.item.children[0], 'keydown', this.keyDownHandler, this);
-                        }
-                    }
                     if (isLastItem && args.item.children.length && !this.itemTemplate) {
                         delete (args.curData as { isLastItem: boolean }).isLastItem;
-                        args.item.innerHTML = this.createElement('span', { className: ITEMTEXTCLASS, innerHTML: args.item.children[0].innerHTML }).outerHTML;
+                        if (!isLastItemInPopup && !this.enableActiveItemNavigation) {
+                            args.item.innerHTML = this.createElement('span', { className: ITEMTEXTCLASS, innerHTML: args.item.children[0].innerHTML }).outerHTML;
+                        }
                     }
                     if (args.curData.iconCss && !args.curData.text && !this.itemTemplate) {
                         args.item.classList.add('e-icon-item');
@@ -326,25 +387,32 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     if (isDefaultOverflowMode) {
                         args.item.setAttribute('item-index', j.toString());
                     }
-                    if (args.item.querySelector('.' + ITEMTEXTCLASS)) {
-                        EventHandler.add(args.item.querySelector('.' + ITEMTEXTCLASS), 'focus', () => {
-                            args.item.classList.add('e-focus');
-                        }, this);
-                        EventHandler.add(args.item.querySelector('.' + ITEMTEXTCLASS), 'focusout', () => {
-                            args.item.classList.remove('e-focus');
-                        }, this);
-                    }
                     const eventArgs: BreadcrumbBeforeItemRenderEventArgs = {
                         item: extend({}, (args.curData as { properties: object }).properties ?
-                            (args.curData as { properties: object }).properties : args.curData), element: args.item
+                            (args.curData as { properties: object }).properties : args.curData), element: args.item, cancel: false
                     };
                     this.trigger('beforeItemRender', eventArgs);
+                    isItemCancelled = eventArgs.cancel;
                     const containsRightIcon: boolean = (isIconRight || eventArgs.element.classList.contains(ICONRIGHT));
                     if (containsRightIcon && args.curData.iconCss && !this.itemTemplate) {
-                        args.item.querySelector('.e-anchor-wrap').append(args.item.querySelector('.' + ICONCLASS));
+                        args.item.querySelector('.e-anchor-wrap').appendChild(args.item.querySelector(DOT + ICONCLASS));
                     }
-                    if (isDisabled || eventArgs.element.classList.contains('e-disabled')) {
-                        args.item.setAttribute('aria-disabled', 'true');
+                    if (eventArgs.item.disabled) {
+                        args.item.setAttribute(ARIADISABLED, 'true');
+                        args.item.classList.add(DISABLEDCLASS);
+                    }
+                    if ((eventArgs.item.disabled || this.disabled) && args.item.children.length && !this.itemTemplate) {
+                        args.item.children[0].setAttribute(TABINDEX, '-1');
+                    }
+                    if ((args.curData as { isEmptyUrl: boolean }).isEmptyUrl) {
+                        args.item.children[0].removeAttribute('href');
+                        if ((!isLastItem || (isLastItem && this.enableActiveItemNavigation)) && !(eventArgs.item.disabled || this.disabled)) {
+                            args.item.children[0].setAttribute(TABINDEX, '0');
+                            EventHandler.add(args.item.children[0], 'keydown', this.keyDownHandler, this);
+                        }
+                    }
+                    if (isLastItem) {
+                        args.item.setAttribute('data-active-item', '');
                     }
                     if (!this.itemTemplate) {
                         this.beforeItemRenderChanges(args.curData, eventArgs.item, args.item, containsRightIcon);
@@ -352,7 +420,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 }
             };
             for (let i: number = 0; i < len; (i % 2 && j++), i++) {
-                isActiveItem = (this.activeItem && this.activeItem === items[j].url);
+                isActiveItem = (this.activeItem && (this.activeItem === items[j].url || this.activeItem === items[j].text));
                 if (isCollasped && i > 1 && i < len - 2) {
                     continue;
                 } else if (isDefaultOverflowMode && ((j < this.startIndex || j > this.endIndex)
@@ -361,10 +429,11 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 }
                 if (i % 2) {
                     // separator item
+                    wrapDiv = this.createElement('div', { className: 'e-breadcrumb-item-wrapper' });
                     listBaseOptions.template = this.separatorTemplate ? this.separatorTemplate : '/';
                     listBaseOptions.itemClass = 'e-breadcrumb-separator';
                     isSingleLevel = false;
-                    item = [{ previousItem: (item as []).pop(), nextItem: items[j] }];
+                    item = [{ previousItem: items[j], nextItem: items[j + 1] }];
                 } else {
                     // list item
                     listBaseOptions.itemClass = '';
@@ -379,44 +448,119 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     if (!(item as BreadcrumbItemModel[])[0].url && !this.itemTemplate) {
                         item = [extend({}, (item as BreadcrumbItemModel[])[0], { isEmptyUrl: true, url: '#' })];
                     }
-                    isLastItem = isDefaultOverflowMode && (j === this.endIndex);
-                    if ((((i === len - 1 || isLastItem) && !this.itemTemplate) || isActiveItem) && !this.enableActiveItemNavigation) {
+                    isLastItem = (isDefaultOverflowMode || this.overflowMode === 'Menu') && (j === this.endIndex);
+                    if (((i === len - 1 || isLastItem) && !this.itemTemplate) || isActiveItem) {
                         (item[0] as { isLastItem: boolean }).isLastItem = true;
                     }
                 }
-                append(ListBase.createList(this.createElement, item as { [key: string]: Object; }[], listBaseOptions, isSingleLevel, this)
-                    .childNodes, ol);
+                let parent: HTMLElement = ol;
+                const lastPopupItemIdx: number = this.startIndex + this.endIndex - this._maxItems;
+                if (this.overflowMode === 'Menu' && ((j >= this.startIndex && (j <= lastPopupItemIdx && (i % 2 ? !(j === lastPopupItemIdx) : true)) && this.endIndex >= this._maxItems && this._maxItems > 0) || this._maxItems === 0)) {
+                    if (i % 2) {
+                        continue;
+                    } else {
+                        parent = this.popupUl;
+                        if (isLastItem) {
+                            isLastItemInPopup = true;
+                        }
+                    }
+                } else if (this.overflowMode === 'Wrap') {
+                    if (i === 0) {
+                        parent = firstOl
+                    } else {
+                        parent = wrapDiv;
+                    }
+                }
+                const li: NodeList = ListBase.createList(this.createElement, item as { [key: string]: Object; }[], listBaseOptions, isSingleLevel, this).childNodes;
+                if (!isItemCancelled) {
+                    append(li, parent);
+                } else if (isDefaultOverflowMode || isCollasped || this.overflowMode === 'Menu' || this.overflowMode === 'Wrap') {
+                    items.splice(j, 1);
+                    this.initPvtProps();
+                    return this.reRenderItems();
+                }
+                else if ((i === len - 1 || isLastItem)) {
+                    remove(parent.lastElementChild);
+                }
+                if (this.overflowMode === 'Wrap' && i !== 0 && i % 2 === 0) {
+                    ol.appendChild(wrapDiv);
+                }
                 if (isCollasped && i === 1) {
-                    const li: Element = this.createElement('li', { className: 'e-icons e-breadcrumb-collapsed', attrs: { 'tabindex': '0' } });
+                    const li: Element = this.createElement('li', { className: 'e-icons e-breadcrumb-collapsed', attrs: { TABINDEX: '0' } });
                     EventHandler.add(li, 'keyup', this.expandHandler, this);
-                    ol.append(li);
+                    ol.appendChild(li);
+                }
+                if (this.overflowMode === 'Menu' && this.startIndex === i && this.endIndex >= this._maxItems && this._maxItems >= 0) {
+                    const menu: Element = this.getMenuElement();
+                    EventHandler.add(menu, 'keyup', this.keyDownHandler, this);
+                    ol.appendChild(menu);
                 }
                 if (isActiveItem || isLastItem) {
                     break;
+                }
+                if (isItemCancelled) {
+                    i++;
                 }
             }
             if ((this as unknown as { isReact: boolean }).isReact) {
                 this.renderReactTemplates();
             }
-            this.element.append(ol);
+            if (this.overflowMode === 'Wrap') {
+                this.element.appendChild(firstOl);
+            }
+            this.element.appendChild(ol);
             this.calculateMaxItems();
         }
     }
 
     private calculateMaxItems(): void {
-        if (!this._maxItems) {
-            if (this.overflowMode === 'Default' || this.overflowMode === 'Collapsed') {
-                const width: number = this.element.offsetWidth;
-                let liWidth: number = (this.element.children[0].children[0] as HTMLElement).offsetWidth;
-                const liElems: HTMLElement[] = [].slice.call(this.element.children[0].children).reverse();
-                for (let i: number = 0; i < liElems.length; i++) {
-                    if (liWidth > width) {
-                        this._maxItems = Math.ceil((i - 1) / 2) + 1;
+        if (this.overflowMode === 'Hidden' || this.overflowMode === 'Collapsed' || this.overflowMode === 'Menu') {
+            let maxItems: number;
+            const width: number = this.element.offsetWidth;
+            const liElems: HTMLElement[] = [].slice.call(this.element.children[0].children).reverse();
+            let liWidth: number = this.overflowMode === 'Menu' ? 0 : liElems[liElems.length - 1].offsetWidth + (liElems[liElems.length - 2] ? liElems[liElems.length - 2].offsetWidth : 0);
+            if (this.overflowMode === 'Menu') {
+                const menuEle: HTMLElement = this.getMenuElement();
+                this.element.appendChild(menuEle);
+                liWidth += menuEle.offsetWidth;
+                remove(menuEle);
+            }
+            for (let i: number = 0; i < liElems.length - 2; i++) {
+                if (liWidth > width) {
+                    maxItems = Math.ceil((i - 1) / 2) + ((this.overflowMode === 'Menu' && i <= 2) ? 0 : 1);
+                    if (((this.maxItems > maxItems && !(this.maxItems > -1 && maxItems == -1)) || this.maxItems == -1) && this._maxItems != maxItems) {
+                        this._maxItems = maxItems;
                         this.initPvtProps();
                         return this.reRenderItems();
                     } else {
+                        break;
+                    }
+                } else {
+                    if (this.overflowMode === 'Menu' && i === 2) {
+                        liWidth += liElems[liElems.length - 1].offsetWidth + liElems[liElems.length - 2].offsetWidth;
+                        if (liWidth > width) {
+                            this._maxItems = 1;
+                            this.initPvtProps();
+                            return this.reRenderItems();
+                        }
+                    }
+                    if (!(this.overflowMode === 'Menu' && liElems[i].classList.contains(MENUCLASS))) {
                         liWidth += liElems[i].offsetWidth;
                     }
+                }
+            }
+        } else if ((this.overflowMode === 'Wrap' || this.overflowMode === 'Scroll') && this._maxItems > 0) {
+            let width: number = 0;
+            const liElems: NodeListOf<HTMLElement> = this.element.querySelectorAll(DOT + ITEMCLASS);
+            if (liElems.length > this._maxItems + this._maxItems - 1) {
+                for (let i: number = this.overflowMode === 'Wrap' ? 1 : 0; i < this._maxItems + this._maxItems - 1; i++) {
+                    width += liElems[i].offsetWidth;
+                }
+                width = width + 5 + (parseInt(getComputedStyle(this.element.children[0]).paddingLeft, 10) * 2);
+                if (this.overflowMode === 'Wrap') {
+                    (this.element.querySelector('.e-breadcrumb-wrapped-ol') as HTMLElement).style.width = width + 'px';
+                } else {
+                    this.element.style.width = width + 'px';
                 }
             }
         }
@@ -431,6 +575,10 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
         return false;
     }
 
+    private getMenuElement(): HTMLElement {
+        return this.createElement('li', { className: 'e-icons e-breadcrumb-menu', attrs: { TABINDEX: '0' } })
+    }
+
     private beforeItemRenderChanges(prevItem: BreadcrumbItemModel, currItem: BreadcrumbItemModel, elem: Element, isRightIcon: boolean)
         : void {
         const wrapElem: Element = elem.querySelector('.e-anchor-wrap');
@@ -441,14 +589,14 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 }
             });
         }
-        if (currItem.iconCss !== prevItem.iconCss) {
-            const iconElem: Element = elem.querySelector('.' + ICONCLASS);
+        if (currItem.iconCss !== prevItem.iconCss && wrapElem) { // wrapElem - for checking it is item not a separator
+            const iconElem: Element = elem.querySelector(DOT + ICONCLASS);
             if (iconElem) {
                 if (currItem.iconCss) {
                     removeClass([iconElem], prevItem.iconCss.split(' '));
                     addClass([iconElem], currItem.iconCss.split(' '));
                 } else {
-                    iconElem.remove();
+                    remove(iconElem);
                 }
             } else if (currItem.iconCss) {
                 const iconElem: Element = this.createElement('span', { className: ICONCLASS + ' ' + currItem.iconCss });
@@ -477,30 +625,81 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     }
 
     private clickHandler(e: MouseEvent): void {
-        const li: Element = closest(e.target as Element, '.e-breadcrumb-item');
-        if (li && (closest(e.target as Element, '.' + ITEMTEXTCLASS) || this.itemTemplate)) {
-            let idx: number = [].slice.call(li.parentElement.children).indexOf(li);
-            idx = Math.floor(idx / 2);
-            if (this.overflowMode === 'Default' && this._maxItems > 0 && this.endIndex !== 0) {
+        const li: Element = closest(e.target as Element, DOT + ITEMCLASS + ':not(.e-breadcrumb-separator)');
+        if (!this.enableNavigation) {
+            e.preventDefault();
+        }
+        if (li && (closest(e.target as Element, DOT + ITEMTEXTCLASS) || this.itemTemplate)) {
+            let idx: number;
+            if (this.overflowMode === 'Wrap') {
+                idx = [].slice.call(this.element.querySelectorAll(DOT + ITEMCLASS)).indexOf(li);
+            } else {
+                idx = [].slice.call(li.parentElement.children).indexOf(li);
+            }
+            if (this.overflowMode === 'Menu') {
+                if (closest(e.target as Element, DOT + POPUPCLASS)) {
+                    idx += this.startIndex;
+                    this.endIndex = idx;
+                    if (e.type === 'keydown') {
+                        this.documentClickHandler(e);
+                    }
+                } else if (this.element.querySelector(DOT + MENUCLASS)) {
+                    if (idx > [].slice.call(this.element.children[0].children).indexOf(this.element.querySelector(DOT + MENUCLASS))) {
+                        idx += (this.popupUl.childElementCount * 2) - 2;
+                        idx = Math.floor(idx / 2);
+                        this.endIndex = idx;
+                    } else {
+                        this.startIndex = this.endIndex = idx;
+                    }
+                } else {
+                    idx = Math.floor(idx / 2);
+                    this.startIndex = this.endIndex = idx;
+                }
+            } else {
+                idx = Math.floor(idx / 2);
+            }
+            if (this.overflowMode === 'Hidden' && this._maxItems > 0 && this.endIndex !== 0) {
                 idx = parseInt(li.getAttribute('item-index'), 10);
                 if (this.startIndex > 1) {
                     this.startIndex -= (this.endIndex - idx);
                 }
                 this.endIndex = idx;
-                this.reRenderItems();
             }
             this.trigger('itemClick', { element: li, item: this.items[idx], event: e });
-            if (this.items[idx].url) {
-                this.activeItem = this.items[idx].url;
-                this.dataBind();
-            }
-        }
-        if (!this.enableNavigation) {
-            e.preventDefault();
+            this.activeItem = this.items[idx].url || this.items[idx].text;
+            this.dataBind();
         }
         if ((e.target as Element).classList.contains('e-breadcrumb-collapsed')) {
             this.isExpanded = true;
             this.reRenderItems();
+        }
+        if ((e.target as Element).classList.contains(MENUCLASS)) {
+            this.renderPopup();
+        }
+    }
+
+    private renderPopup(): void {
+        const wrapper: HTMLElement = this.createElement('div', { className: POPUPCLASS + ' ' + this.cssClass + (this.enableRtl ? ' e-rtl' : '') });
+        document.body.appendChild(wrapper);
+        this.popupObj = new Popup(wrapper, {
+            content: this.popupUl,
+            relateTo: this.element.querySelector(DOT + MENUCLASS) as HTMLElement,
+            enableRtl: this.enableRtl,
+            position: { X: 'left', Y: 'bottom' },
+            collision: { X: 'fit', Y: 'flip' },
+            open: (): void => {
+                this.popupUl.focus();
+            }
+        });
+        this.popupWireEvents();
+        this.popupObj.show();
+    }
+
+    private documentClickHandler(e: Event): void {
+        if (this.overflowMode === 'Menu' && this.popupObj && this.popupObj.element.classList.contains('e-popup-open') && !closest(e.target as Element, DOT + MENUCLASS)) {
+            this.popupObj.hide();
+            this.popupObj.destroy();
+            detach(this.popupObj.element);
         }
     }
 
@@ -523,6 +722,12 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
         }
     }
 
+    private popupKeyDownHandler(e: KeyboardEvent): void {
+        if (e.key === 'Escape') {
+            this.documentClickHandler(e);
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      *
@@ -534,24 +739,33 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     public onPropertyChanged(newProp: BreadcrumbModel, oldProp: BreadcrumbModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'activeItem':
                 case 'items':
                 case 'enableActiveItemNavigation':
                     this.reRenderItems();
                     break;
-                case 'overflowMode':
-                case 'maxItems':
+                case 'activeItem':
+                    this._maxItems = this.maxItems;
                     this.initPvtProps();
                     this.reRenderItems();
+                    break;
+                case 'overflowMode':
+                case 'maxItems':
+                    this._maxItems = this.maxItems;
+                    this.initPvtProps();
+                    this.reRenderItems();
+                    if (oldProp.overflowMode === 'Wrap') {
+                        this.element.classList.remove(WRAPMODECLASS);
+                    } else if (newProp.overflowMode === 'Wrap') {
+                        this.element.classList.add(WRAPMODECLASS);
+                    }
+                    if (oldProp.overflowMode === 'Scroll') {
+                        this.element.classList.remove(SCROLLMODECLASS);
+                    } else if (newProp.overflowMode === 'Scroll') {
+                        this.element.classList.add(SCROLLMODECLASS);
+                    }
                     break;
                 case 'url':
                     this.initItems();
-                    this.reRenderItems();
-                    break;
-                case 'width':
-                    this.setWidth();
-                    this._maxItems = this.maxItems;
-                    this.initPvtProps();
                     this.reRenderItems();
                     break;
                 case 'cssClass':
@@ -567,18 +781,37 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                         this.reRenderItems();
                     }
                     break;
+                case 'enableRtl':
+                    this.element.classList.toggle('e-rtl');
+                    break;
+                case 'disabled':
+                    this.element.classList.toggle(DISABLEDCLASS);
+                    this.element.setAttribute(ARIADISABLED, newProp.disabled + '');
+                    break;
             }
         }
     }
 
     private wireEvents(): void {
+        this.delegateClickHanlder = this.documentClickHandler.bind(this);
+        EventHandler.add(document, 'click', this.delegateClickHanlder, this);
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         window.addEventListener('resize', this.resize.bind(this));
     }
 
+    private popupWireEvents(): void {
+        EventHandler.add(this.popupObj.element, 'click', this.clickHandler, this);
+        EventHandler.add(this.popupObj.element, 'keydown', this.popupKeyDownHandler, this);
+    }
+
     private unWireEvents(): void {
+        EventHandler.remove(document, 'click', this.delegateClickHanlder);
         EventHandler.remove(this.element, 'click', this.clickHandler);
         window.removeEventListener('resize', this.resize.bind(this));
+        if (this.popupObj) {
+            EventHandler.remove(this.popupObj.element, 'click', this.clickHandler);
+            EventHandler.remove(this.popupObj.element, 'keydown', this.popupKeyDownHandler);
+        }
     }
 
     /**
@@ -606,10 +839,29 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      * @returns {void}
      */
     public destroy(): void {
+        let classes: string[] = [];
+        let attributes: string[] = ['aria-label'];
+        if (this.cssClass) {
+            classes.concat(this.cssClass.split(' '));
+        }
+        if (this.enableRtl) {
+            classes.push('e-rtl');
+        }
+        if (this.disabled) {
+            classes.push(DISABLEDCLASS);
+            attributes.push(ARIADISABLED);
+        }
+        if (this.overflowMode === 'Wrap') {
+            classes.push(WRAPMODECLASS);
+        } else if (this.overflowMode === 'Scroll') {
+            classes.push(SCROLLMODECLASS);
+        }
         this.unWireEvents();
         this.element.innerHTML = '';
-        if (this.cssClass) {
-            removeClass([this.element], this.cssClass.split(' '));
-        }
+        removeClass([this.element], classes);
+        attributes.forEach((attribute: string) => {
+            this.element.removeAttribute(attribute);
+        });
+        super.destroy();
     }
 }

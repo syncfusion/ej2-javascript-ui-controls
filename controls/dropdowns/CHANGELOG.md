@@ -2,7 +2,71 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.3.56 (2021-12-02)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I343860` - Issue with "list items are not read by the NVDA screen reader" has been resolved.
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I342745` - The performance issue that occurred when selecting a node that was rendered with a huge data source has been resolved.
+
+## 19.3.55 (2021-11-23)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#I343913` -  Issue with "exception throws while preventing the request to the server in the `actionBegin` event" has been resolved.
+
+## 19.3.53 (2021-11-12)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I345378` - The issue with "The interaction value is not updated properly in the select event while selecting via Select All checkbox" has been resolved.
+
+## 19.3.48 (2021-11-02)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I344723` - The issue with "The selected value is not removed from the Dropdown Tree while using the value property as two-way binding" has been resolved.
+
+## 19.3.47 (2021-10-26)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I343096` - The issue with "The Dropdown Tree item getting unselected when clicking the text content of the input element" has been fixed.
+
+## 19.3.46 (2021-10-19)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#F169190` - The issue with "The Dropdown tree is not focused while pressing single tab key" has been resolved.
+
+- `#I341135` - The issue with "The Dropdown Tree selected items are misaligned while adding  the `e-outline` and `e-filled` CSS classes" has been resolved.
+
+## 19.3.45 (2021-10-12)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I343666` - Issue with "data list is not updated to the popup while changing the query property on dynamically with filtering mode" has been resolved.
+
+## 19.3.44 (2021-10-05)
 
 ### Dropdown Tree
 
@@ -13,6 +77,8 @@
 #### Bug Fixes
 
 - `#I342360`, `#I342351` - The issue with "The Dropdown Tree component is not rendered when providing an id that starts with an integer type" has been resolved.
+
+- `I341114` - Issue with "When listbox is selected with checkbox, drag and drop is not working properly" has been resolved.
 
 ## 19.2.62 (2021-09-14)
 

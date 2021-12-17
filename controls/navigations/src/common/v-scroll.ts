@@ -131,7 +131,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
         }
         scrollBar.appendChild(scrollCnt);
         ele.appendChild(scrollBar);
-        scrollBar.style.overflowY = 'hidden';
+        scrollBar.style.overflow = 'hidden';
         this.scrollEle = scrollBar;
         this.scrollItems = scrollCnt;
     }

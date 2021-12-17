@@ -191,6 +191,9 @@ export class Resize extends ActionBase {
 
     private monthResizing(): void {
         this.removeCloneElement();
+        if (isNullOrUndefined(this.actionObj.pageX) || isNullOrUndefined(this.actionObj.pageY)) {
+            return;
+        }
         const td: HTMLTableCellElement = document.elementFromPoint(this.actionObj.pageX, this.actionObj.pageY) as HTMLTableCellElement;
         if (isNullOrUndefined(td)) {
             return;
@@ -324,13 +327,16 @@ export class Resize extends ActionBase {
         const eventEnd: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.endTime]).getTime());
         let resizeTime: Date;
         let isDateHeader: boolean = false;
+        const isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1;
+        const isTimelineMonth: boolean = this.parent.currentView === 'TimelineMonth';
+        const isWithoutScale: boolean = isTimelineMonth || isTimeViews && !this.parent.activeViewOptions.timeScale.enable;
         if (this.parent.activeView.isTimelineView()) {
             const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
             let headerName: string = this.parent.currentView;
             if (this.parent.activeViewOptions.headerRows.length > 0) {
                 const rows: string[] = this.parent.activeViewOptions.headerRows.map((row: Record<string, any>) => row.option as string);
                 headerName = rows.slice(-1)[0];
-                if (this.parent.currentView === 'TimelineMonth' && headerName === 'Hour') {
+                if (isTimelineMonth && headerName === 'Hour') {
                     headerName = rows.slice(-2)[0] || 'Month';
                 }
             }
@@ -349,9 +355,8 @@ export class Resize extends ActionBase {
                     offsetValue += (this.actionObj.clone.offsetWidth - this.actionObj.cellWidth);
                 }
                 cellIndex = Math.floor(offsetValue / Math.floor((<HTMLElement>tr).offsetWidth / noOfDays));
-                isDateHeader =
-                    ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 && headerName === 'Date';
-                cellIndex = isLeft ? cellIndex : (this.parent.currentView === 'TimelineMonth' || isDateHeader) ? cellIndex + 1 : cellIndex;
+                isDateHeader = isTimeViews && headerName === 'Date';
+                cellIndex = isLeft ? cellIndex : (isTimelineMonth || isDateHeader) ? cellIndex + 1 : cellIndex;
                 isLastCell = cellIndex === tdCollections.length;
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
@@ -362,7 +367,7 @@ export class Resize extends ActionBase {
                 if (this.parent.enableRtl) {
                     let cellOffsetWidth: number = 0;
                     if (headerName === 'TimelineMonth' || (!this.parent.activeViewOptions.timeScale.enable &&
-                        this.parent.currentView !== 'TimelineMonth')) {
+                        !isTimelineMonth)) {
                         cellOffsetWidth = this.actionObj.cellWidth;
                     }
                     const offsetWidth: number = (Math.floor(parseInt(this.actionObj.clone.style.right, 10) / this.actionObj.cellWidth) *
@@ -410,15 +415,17 @@ export class Resize extends ActionBase {
             }
         }
         if (isLeft) {
-            if (((this.actionObj.event[this.parent.eventFields.endTime] as Date).getTime() - resizeTime.getTime()) <= 0) {
-                resizeTime = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
+            if ((eventEnd.getTime() - resizeTime.getTime()) <= 0) {
+                resizeTime = isWithoutScale ? util.resetTime(eventEnd) : eventStart;
             }
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         } else {
-            const isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
-                this.parent.activeViewOptions.timeScale.enable;
-            const resizeEnd: Date = ((!isTimeViews || isDateHeader) && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
+            const isTimeScaleViews: boolean = isTimeViews && this.parent.activeViewOptions.timeScale.enable;
+            let resizeEnd: Date = ((!isTimeScaleViews || isDateHeader) && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
                 util.addDays(resizeTime, 1) : resizeTime;
+            if (isWithoutScale && (resizeEnd.getTime() - eventStart.getTime()) <= 0) {
+                resizeEnd = util.addDays(util.resetTime(eventStart), 1);
+            }
             this.actionObj.end = this.parent.activeViewOptions.timeScale.enable && this.parent.currentView !== 'Month' ?
                 this.calculateIntervalTime(resizeEnd) : resizeEnd;
         }

@@ -96,7 +96,6 @@ export class Lists {
             }
         }
     }
-    // eslint-disable-next-line
     private enterList(e: IHtmlKeyboardEvent): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         const startNode: Element = range.startContainer.nodeName === 'LI' ? (range.startContainer as Element) :

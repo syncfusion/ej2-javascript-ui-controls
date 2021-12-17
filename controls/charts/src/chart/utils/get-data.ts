@@ -3,7 +3,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Chart } from '../chart';
-import { withInBounds, PointData, getValueXByPoint, getValueYByPoint, AccPointData } from '../../common/utils/helper';
+import { withInBounds, PointData, getValueXByPoint, getValueYByPoint, AccPointData, sort } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from '../series/chart-series';
 
@@ -21,6 +21,7 @@ export class ChartData {
     /** @private */
     public previousPoints: PointData[] | AccPointData[] = [];
     public insideRegion: boolean = false;
+    public commonXvalues: number[] = [];
 
     /**
      * Constructor for the data.
@@ -54,10 +55,10 @@ export class ChartData {
             if (series.dragSettings.enable && series.isRectSeries) {
                 if (!(series.type === 'Bar' && chart.isTransposed) && (chart.isTransposed || series.type === 'Bar')) {
                     const markerWidth: number = series.marker.width / 2;
-                    mouseX = series.yAxis.isInversed ? mouseX + markerWidth : mouseX - markerWidth;
+                    mouseX = series.yAxis.isAxisInverse ? mouseX + markerWidth : mouseX - markerWidth;
                 } else {
                     const markerHeight: number = series.marker.height / 2;
-                    mouseY = series.yAxis.isInversed ? mouseY - markerHeight : mouseY + markerHeight;
+                    mouseY = series.yAxis.isAxisInverse ? mouseY - markerHeight : mouseY + markerHeight;
                 }
             }
             if (series.visible && withInBounds(mouseX, mouseY, series.clipRect, width, height)) {
@@ -154,7 +155,7 @@ export class ChartData {
      */
     private isPointInThresholdRegion(x: number, y: number, point: Points, rect: Rect, series: Series): boolean {
         const isBar: boolean = series.type === 'Bar';
-        const isInversed: boolean = series.yAxis.isInversed;
+        const isInversed: boolean = series.yAxis.isAxisInverse;
         const isTransposed: boolean = series.chart.isTransposed;
         const heightValue: number = 10; let yValue: number = 0;
         let xValue: number = 0;
@@ -210,8 +211,9 @@ export class ChartData {
     public getClosest(series: Series, value: number, xvalues?: number[]): number {
         let closest: number; let data: number;
         const xData: number[] = xvalues ? xvalues : series.xData;
+        const xLength: number = xData.length;
         if (value >= <number>series.xMin - 0.5 && value <= <number>series.xMax + 0.5) {
-            for (let i: number = 0; i < xData.length; i++) {
+            for (let i: number = 0; i < xLength; i++) {
                 data = xData[i];
                 if (closest == null || Math.abs(data - value) < Math.abs(closest - value)) {
                     closest = data;
@@ -226,6 +228,27 @@ export class ChartData {
         }
     }
 
+    private binarySearch(target: number, list: Points[]): Points {
+        let first: number = 0;
+        let last: number = list.length;
+        let position: number = -1;
+        let found: boolean = false;
+        let middle: number;
+
+        while(found == false && first <= last) {
+            middle = Math.floor((first + last) / 2);
+            if (list[middle].xValue == target){
+                found = true;
+                position = middle;
+            } else if (list[middle].xValue > target) {
+                last = middle - 1;
+            } else {
+                first = middle + 1;
+            }
+        }
+        return position !==-1 ? list[position] : null;
+    }
+
     public getClosestX(chart: Chart, series: Series, xvalues?: number[]): PointData {
         let value: number;
         const rect: Rect = series.clipRect;
@@ -236,10 +259,9 @@ export class ChartData {
         }
 
         const closest: number = this.getClosest(series, value, xvalues);
-        for (const point of series.points) {
-            if (closest === point.xValue && point.visible) {
-                return new PointData(point, series);
-            }
+        let point: Points = (closest || closest === 0) ? this.binarySearch(closest, sort(series.points, ['xValue']) as Points[]) : null;
+        if (point && point.visible) {
+            return new PointData(point, series);
         }
         return null;
     }
@@ -247,16 +269,38 @@ export class ChartData {
     /**
      * Merge all visible series X values for shared tooltip (EJ2-47072)
      *
-     * @param visibleSeries 
+     * @param visibleSeries
      * @private
      */
     public mergeXvalues(visibleSeries: Series[]): number[] {
-        let collection: number[] = [];
-        for (let index: number = 0; index < visibleSeries.length; index++) {
-            collection = collection.concat(visibleSeries[index].xData);
+        if (visibleSeries.length && (!this.commonXvalues.length || (this.commonXvalues.length !== visibleSeries[0].xData.length))) {
+            this.commonXvalues = visibleSeries[0].xData;
+            for (let index: number = 1; index < visibleSeries.length; index++) {
+                this.commonXvalues = this.getDistinctValues(this.commonXvalues, visibleSeries[index].xData);
+            }
         }
-        return collection.filter((item, index) => {
-            return index === collection.indexOf(item);
-        })
+        return this.commonXvalues;
+    }
+
+    private getDistinctValues(first: number [], second: number[] = []): number[] {
+            let intial: object = {};
+            let result: number[] = [];
+            let index: number;
+            
+            for (index = 0; index < first.length; index++) {
+                let temp: number = first[index];
+                if (!intial[temp]){
+                    intial[temp] = true;
+                    result.push(temp);
+                }
+            }
+            for (index = 0; index < second.length; index++) {
+                let temp: number = second[index];
+                if (!intial[temp]){
+                    intial[temp] = true;
+                    result.push(temp);
+                }
+            }
+            return result;
     }
 }

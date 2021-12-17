@@ -8,7 +8,28 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### Maps
+
+#### New Features
+
+- GeoJSON maps with "LineString" geometry type is now supported in the Maps control.
+- When the `animationDuration` property is set, the zooming of map service providers such as OSM, Bing, and others is now smoother.
+
+#### Bug Fixes
+
+- `#F163990` - When the `imageUrlValuePath` property is set as the source image for the markers, image type markers will render properly.
+
+## 19.3.46 (2021-10-19)
+
+### Maps
+
+#### Bug Fixes
+
+- Script error will not be thrown when a shape is selected without binding the data source to the Maps.
+
+## 19.3.44 (2021-10-05)
 
 ### Maps
 

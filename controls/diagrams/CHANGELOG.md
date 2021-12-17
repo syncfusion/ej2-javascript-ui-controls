@@ -2,7 +2,99 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### Diagram
+
+#### Bug Fixes
+
+- `SF-356262` - The issue "Dragging and Drop node not working properly by enabling page settings" has been fixed.
+- `F170399` - The issue "Unable to cast exception occurs when clicking on the expand icon" has been fixed.
+- `#I337722` - The issue "Connector Position not Updated Properly when rotating it with segments" has been fixed.
+- `#I341943` - The issue "BringIntoView API does not bring the large bounds into the screen viewport" has been fixed.
+- `#I342681` - The issue "BPMN Task shape becomes ellipse shape when printing the diagram" has been fixed.
+- `#I342979` - The issue "While loading the JSON data with line routing causes exception in Angular" has been fixed.
+- `#I345844` - The issue "An exception occurs when perform search in the symbol palette" has been fixed.
+- `#F169922` - The issue "Need to provide support to set assistants based on datasource field in organizational chart" has been fixed.
+- `#I345570` - The issue "Nodes doesn't gets arranged in zindex order after grouping it" has been fixed.
+- `#I346110` - The issue "Text did not display on Connector line after adjusting the Bezier Connector" has been fixed.
+- `#I346676` - The issue "Drag and drop item from Tree-View to Diagram doesn't behave correctly" has been fixed.
+- `#I347727` - The issue "RemovePalette API not working properly" has been fixed.
+- `#I348028` - The issue "SelectionChange newValue is null when deselecting one of multiple selected shapes" has been fixed.
+
+## 19.3.56 (2021-12-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#F30109` - The issue "Diagram virtualization does not work with BPMN shapes" has been fixed.
+- `#348672` - The issue "Swimlane nodes helper position not updated properly" has been fixed.
+- `#F170298` - The issue "Template is not updated properly while render multiple diagram in same page" has been fixed.
+- `#347603` - The issue "HTML Nodes are not rendered in Overview" has been fixed.
+
+## 19.3.55 (2021-11-23)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I346676` - The issue "Drag and drop item from Tree-View to Diagram doesn't behave correctly" has been fixed.
+- `#I347727` - The issue "RemovePalette API not working properly" has been fixed.
+- `#I348028` - The issue "SelectionChange newValue is null when deselecting one of multiple selected shapes" has been fixed.
+
+## 19.3.53 (2021-11-12)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I346110` - The issue "Text did not display on Connector line after adjusting the Bezier Connector" has been fixed.
+
+## 19.3.48 (2021-11-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I345844` - The issue "An exception occurs when perform search in the symbol palette" has been fixed.
+- `#F169922` - The issue "Need to provide support to set assistants based on datasource field in organizational chart" has been fixed.
+- `#I345570` - The issue "Nodes doesn't gets arranged in zindex order after grouping it" has been fixed.
+
+## 19.3.47 (2021-10-26)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I342681` - The issue "BPMN Task shape becomes square shape when printing the diagram" has been fixed.
+
+## 19.3.46 (2021-10-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I342979` - The issue "While loading the JSON data with line routing causes exception in Angular" has been fixed.
+
+## 19.3.45 (2021-10-12)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I342681` - The issue "BPMN Task shape becomes ellipse shape when printing the diagram" has been fixed.
+
+## 19.3.44 (2021-10-05)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I337722` - The issue "Connector Position not Updated Properly when rotating it with segments" has been fixed.
+- `#I341943` - The issue "BringIntoView API does not bring the large bounds into the screen viewport" has been fixed.
+
+## 19.3.43 (2021-09-30)
 
 ### Diagram
 
@@ -16,7 +108,7 @@
 - `#I339619` - The issue "An exception occurs when save and load the swimlane with BPMN children" has been fixed.
 - `#I339487` - The issue "The connector drawing object does not snap to near by port" has been fixed.
 - `#I342173` - The issue "An exception occurs when clear the diagram using Clear API" has been fixed.
-- `#I337722` - The issue "Connector Position not Updated Properly when rotating it with segments" has been fixed.
+- `#I341524` - The issue "The selection change event returns empty NewValue argument while selecting one of the multi-selected nodes" has been fixed.
 
 ## 19.2.56 (2021-08-17)
 

@@ -75,6 +75,14 @@ describe('Diagram Control', () => {
                 mouseEvents.clickEvent(diagramCanvas, 250 + 8, 250 + 8);
                 done();
             });
+
+            it('Checking Values By Rubber Band Selection', (done: Function) => {
+                diagram.unSelect(diagram.nodes[0]);
+                diagram.selectionChange = (args: ISelectionChangeEventArgs) => {
+                    expect(args.newValue.length !== 0).toBe(true);
+                }
+                done();
+            });
         });
         
         describe('Testing selection events', () => {

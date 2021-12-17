@@ -212,6 +212,13 @@ export class FormulaBar {
                                     type: 'date',
                                     skeleton: 'yMd'
                                 });
+                                if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0) {
+                                    const dateSplit: string[] = value.split(/-|\//);
+                                    const cellFormat: string = cell ? cell.format : '';
+                                    if (((cellFormat === 'dd-MM-yyyy' || cellFormat === 'dd/MM/yyyy')) && Number(dateSplit[0]) <= 12 && Number(dateSplit[1]) <= 31) {
+                                        value = dateSplit[1] + '/' + dateSplit[0] + '/' + dateSplit[2];
+                                    }
+                                }
                             } else if (intDate.toString() !== 'Invalid Date' && type === 'Time') {
                                 if (Number(cell.value) >= 1) {
                                     value = intl.formatDate(intDate, { type: 'dateTime', skeleton: 'yMd' }) + ' ';
@@ -234,11 +241,14 @@ export class FormulaBar {
                     const addressRange: number[] = getRangeIndexes(address);
                     const cellEle: HTMLElement = this.parent.getCell(addressRange[0], addressRange[1]);
                     if (cell && !cell.formula && cellEle && (type !== 'Time' || !value)) {
-                        if (cell.value === undefined || this.isDateTimeType(cell.format) || isNullOrUndefined(cell.format)) {
+                        if (cell.value === undefined || (this.isDateTimeType(cell.format) && cell.value && intToDate(Number(cell.value)).toString() !== 'Invalid Date') || isNullOrUndefined(cell.format)) {
                             const key: string = this.isDateTimeType(cell.format);
                             if (key) {
                                 const intl: Internationalization = new Internationalization();
-                                const format: string = key === 'date' ? 'M/d/yyyy' : 'h:mm:ss a';
+                                let format: string = key === 'date' ? 'M/d/yyyy' : 'h:mm:ss a';
+                                if (cell.format === 'dd-MM-yyyy' || cell.format === 'dd/MM/yyyy') {
+                                    format = cell.format;
+                                }
                                 formulaInp.value = intl.formatDate(intToDate(parseFloat(cell.value)), { type: key, format: format});
                             } else {
                                 if (cell.validation && cell.validation.type === 'List') {

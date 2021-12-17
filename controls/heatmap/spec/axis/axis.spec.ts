@@ -144,8 +144,8 @@ describe('Heatmap Control', () => {
             heatmap.xAxis.isInversed = true;
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label0');        
-            expect(text.textContent == 'test').toBe(true);  
-            expect((text.getAttribute('x') == '675.9' || text.getAttribute('x') == '678.9') && (text.getAttribute('y') == '52' || text.getAttribute('y') == '50')).toBe(true);
+            expect(text.textContent == 'test').toBe(true);
+            expect((text.getAttribute('x') == '667.8' || text.getAttribute('x') == '678.9') && (text.getAttribute('y') == '52' || text.getAttribute('y') == '50')).toBe(true);
         });
 
         //y-axis
@@ -194,7 +194,7 @@ describe('Heatmap Control', () => {
                heatmap.yAxis.opposedPosition = true;
                heatmap.refresh();
                text = document.getElementById('container_YAxisLine');
-              expect((text.getAttribute('x1') == '695' || text.getAttribute('x1') == '701') && (text.getAttribute('y1') == '62' || text.getAttribute('y1') == '60')).toBe(true);
+              expect((text.getAttribute('x1') == '686' || text.getAttribute('x1') == '701') && (text.getAttribute('y1') == '62' || text.getAttribute('y1') == '60')).toBe(true);
            });
 
            it('Checking y-axis with inversed', () => {
@@ -210,7 +210,7 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label0');        
             expect(text.textContent == 'test').toBe(true);
-            expect((text.getAttribute('x') == '78.5' || text.getAttribute('x') == '79.1') && (text.getAttribute('y') == '53.500892639160156' || text.getAttribute('y') == '49.860291481018066')).toBe(true);
+            expect((text.getAttribute('x') == '77.6' || text.getAttribute('x') == '79.1') && (text.getAttribute('y') == '49.85407638549805' || text.getAttribute('y') == '53.170817375183105')).toBe(true);
         });
 
         it('Checking x-axis with label rotation', () => {
@@ -219,15 +219,15 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label0');        
             expect(text.textContent == 'test').toBe(true);
-            expect((text.getAttribute('x') == '78.5' || text.getAttribute('x') == '79.1') && (text.getAttribute('y') == '53.500892639160156' || text.getAttribute('y') == '49.860291481018066')).toBe(true);
+            expect((text.getAttribute('x') == '77.6' || text.getAttribute('x') == '79.1') && (text.getAttribute('y') == '49.85407638549805' || text.getAttribute('y') == '53.170817375183105')).toBe(true);
         });
 
         it('Checking x-axis with label rotation', () => {
             heatmap.xAxis.labelRotation = 270;
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label0');        
-            expect(text.textContent == 'test').toBe(true);  
-            expect((text.getAttribute('x') == '78.5' || text.getAttribute('x') == '79.1') && (text.getAttribute('y') == '52.75' || text.getAttribute('y') == '49.015625')).toBe(true);
+            expect(text.textContent == 'test').toBe(true);
+            expect((text.getAttribute('x') == '77.6' || text.getAttribute('x') == '79.1') && (text.getAttribute('y') == '49.0068359375' || text.getAttribute('y') == '52.283203125')).toBe(true);
         });
 
         it('Checking x-axis with label rotation', () => {
@@ -244,7 +244,7 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label1');
             expect(text.textContent == 'test1').toBe(true);
-            expect((text.getAttribute('x') == '215.5' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '44' || text.getAttribute('y') == '43')).toBe(true);
+            expect((text.getAttribute('x') == '212.79999999999998' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '44' || text.getAttribute('y') == '43')).toBe(true);
         });
         it('Checking x-axis with label rotation without trim in opposed position', function () {
             heatmap.xAxis.labelRotation = 45;
@@ -253,7 +253,7 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label1');
             expect(text.textContent == 'test1').toBe(true);
-            expect((text.getAttribute('x') == '215.5' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '398.7861557006836' || text.getAttribute('y') == '402.02900981903076')).toBe(true);
+            expect((text.getAttribute('x') == '212.79999999999998' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '399.0218563079834' || text.getAttribute('y') == '402.0345344543457')).toBe(true);
         });
         it('Checking x-axis with minimum and maximum', () => {
             heatmap.xAxis.interval = 1;
@@ -425,14 +425,14 @@ describe('Heatmap Control', () => {
             ],
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label0');
-            expect((text.getAttribute('x') == '31.8' || text.getAttribute('x') == '32.2') && (text.getAttribute('y') == '78.1170482635498' || text.getAttribute('y') == '75.0620174407959')).toBe(true);
+            expect((text.getAttribute('x') == '31.8' || text.getAttribute('x') == '32.2') && (text.getAttribute('y') == '74.59728813171387' || text.getAttribute('y') == '75.0620174407959')).toBe(true);
         });
         it('Check the Rotate45 label intersect action for x-axis', function () {
             heatmap.xAxis.labelIntersectAction = "Rotate45";
             heatmap.xAxis.isInversed = true;
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label0');
-            expect((text.getAttribute('x') == '206.2' || text.getAttribute('x') == '209.8') && (text.getAttribute('y') == '78.1170482635498' || text.getAttribute('y') == '75.0620174407959')).toBe(true);
+            expect((text.getAttribute('x') == '206.2' || text.getAttribute('x') == '209.8') && (text.getAttribute('y') == '74.59728813171387' || text.getAttribute('y') == '78.10599708557129')).toBe(true);
         });
         it('Checking auto increment in numeric axis', function () {
             heatmap.xAxis.labelIntersectAction = "Trim";

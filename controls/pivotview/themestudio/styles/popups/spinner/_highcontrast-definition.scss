@@ -1,0 +1,68 @@
+$skin-name: 'highcontrast' !default;
+$theme: 'HighContrast' !default;
+$spin-overlay-background: $bg-base-75 !default;
+$spin-overlay-stroke-color: $bg-base-75 !default;
+$spin-overlay-font-color: $header-font !default;
+$spin-material-stroke-color: $bg-base-75 !default;
+$spin-boot4-stroke-color: $bg-base-75 !default;
+$spin-boot4-stroke-width: 4 !default;
+$spin-fabric-stroke-color: none !default;
+$spin-fabric-stroke-width: 1.5 !default;
+$spin-fabric-arc-color: $selection-border !default;
+$spin-bootstrap-stroke-color: none !default;
+$spin-label-font-family: 'Segoe UI' !default;
+$spin-label-font-size: 14px !default;
+$spin-label-margin-top: 10px !default;
+$spin-label-color: $header-font !default;
+$spin-padding: 10px !default;
+$spin-boot5-stroke-width: 4;
+$spin-tailwind-stroke-width: 4.5;
+$spin-boot5-stroke-color: $bg-base-75;
+$spin-tailwind-arc-color: $selection-border;
+$spin-tailwind-stroke-color: none;
+
+@mixin boot5-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
+}
+
+@mixin tw-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.21, .21, .21, .21);
+}
+
+@mixin mat-spinner-rotate {
+  animation: material-spinner-rotate 1568.63ms linear infinite;
+}
+
+@mixin fb-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.53, .21, .29, .67);
+}
+
+@mixin boot4-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes material-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes fabric-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

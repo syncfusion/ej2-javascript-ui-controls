@@ -85,6 +85,8 @@ export class Signature {
     private signaturetype: string;
     private tabObj: Tab;
     private isSaveSignature: boolean = false;
+    private isInitialFiledSaveSignature: boolean = false;
+    private isSignatureFieldsSaveSignature: boolean = false;
     // eslint-disable-next-line
     private saveSignatureString: string = '';
     /**
@@ -115,6 +117,7 @@ export class Signature {
      * @returns {void}
      */
     public createSignaturePanel(): void {
+        let maximumWidth: number = 750;
         if (!isBlazor()) {
             const elementID: string = this.pdfViewer.element.id;
             const dialogDiv: HTMLElement = createElement('div', { id: elementID + '_signature_window', className: 'e-pv-signature-window' });
@@ -174,6 +177,8 @@ export class Signature {
                 ];
                 this.signatureDialog.appendTo(dialogDiv);
             }
+            if (this.pdfViewer.element.offsetWidth < maximumWidth)
+                this.updateCanvasSize();
             if(this.pdfViewer.enableRtl){
                 this.signatureDialog.enableRtl = this.pdfViewer.enableRtl;
             }
@@ -235,7 +240,7 @@ export class Signature {
         }
     }
     private hideSignatureCheckbox(checkbox: any): void {
-        if(!this.pdfViewerBase.isToolbarSignClicked) {
+        if(this.pdfViewerBase.isToolbarSignClicked) {
             if(this.pdfViewerBase.isInitialField) {
                 if(this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.hideSaveSignature) {
                    this.hideCheckboxParent(checkbox);
@@ -251,6 +256,26 @@ export class Signature {
             } else {
                 if (this.pdfViewer.signatureFieldSettings.signatureDialogSettings.hideSaveSignature) {
                    this.hideCheckboxParent(checkbox);
+                }
+            }
+        }
+    }
+
+    private saveSignatureCheckbox(): boolean {
+        if (this.pdfViewerBase.isToolbarSignClicked) {
+            return false;
+        } else {
+            if (this.pdfViewerBase.isInitialField) {
+                if (this.pdfViewer.initialFieldSettings.initialDialogSettings.hideSaveSignature) {
+                    return false;
+                } else {
+                    return this.isInitialFiledSaveSignature;
+                }
+            } else {
+                if (this.pdfViewer.signatureFieldSettings.signatureDialogSettings.hideSaveSignature) {
+                    return false;
+                } else {
+                    return this.isSignatureFieldsSaveSignature;
                 }
             }
         }
@@ -354,9 +379,11 @@ export class Signature {
                 if (checkbox && checkbox.checked) {
                     this.isSaveSignature = true;
                     this.saveSignatureString = this.outputString;
+                    this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, true);
                 } else {
                     this.isSaveSignature = false;
                     this.saveSignatureString = '';
+                    this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
                 }
                 this.signatureImageString = this.saveImageString;
                 this.pdfViewer.formFieldsModule.drawSignature(null, null, this.pdfViewerBase.currentTarget, null);
@@ -364,6 +391,15 @@ export class Signature {
             }
         }
     }
+
+    private checkSaveFiledSign(initialField: boolean, saveSign: boolean) {
+        if (initialField) {
+            this.isInitialFiledSaveSignature = saveSign;
+        } else {
+            this.isSignatureFieldsSaveSignature = saveSign;
+        }
+    }
+
     private addSignatureInPage(): void {
         if (this.signaturetype === 'Draw') {
             this.addSignature();
@@ -606,6 +642,7 @@ export class Signature {
             checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
             checkBoxObj.appendTo(input);
         }
+        this.isSaveSignature = this.saveSignatureCheckbox();
         if (this.isSaveSignature) {
             checkBoxObj.checked = true;
         }
@@ -686,7 +723,7 @@ export class Signature {
         this.signfontStyle = [{ FontName: 'Helvetica' }, { FontName: 'Times New Roman' }, { FontName: 'Courier' }, { FontName: 'Symbol' }];
         // eslint-disable-next-line
         let fontSignature: any = [];
-        if (!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.typeSignatureFonts)) {
+        if (this.pdfViewerBase.isToolbarSignClicked && !isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.typeSignatureFonts)) {
             for (let j: number = 0; j < 4; j++) {
                 if (!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.typeSignatureFonts[j])) {
                     this.signfontStyle[j].FontName = this.pdfViewer.handWrittenSignatureSettings.typeSignatureFonts[j];
@@ -702,7 +739,7 @@ export class Signature {
         // eslint-disable-next-line
         let proxy: any = this;
         let items: any = [];
-        if (!this.pdfViewerBase.isToolbarSignClicked) {
+        if (this.pdfViewerBase.isToolbarSignClicked) {
             if(this.pdfViewerBase.isInitialField) {
                 items = this.showHideSignatureTab(this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
             } else {
@@ -742,6 +779,7 @@ export class Signature {
     private handleSelectEvent(e: SelectEventArgs): void {
         // eslint-disable-next-line
         let headerText: string = '';
+        let maximumWidth: number = 750;
         let tabInstance = (document.getElementById(this.pdfViewer.element.id + 'Signature_tab') as any).ej2_instances[0];
         if(tabInstance) {
             if (tabInstance.items.length > 0) {
@@ -792,7 +830,9 @@ export class Signature {
             this.enableCreateButton(true);
             let imageCheckbox = document.getElementById("checkbox2");
             this.hideSignatureCheckbox(imageCheckbox);
-        }
+        } 
+        if (this.pdfViewer.element.offsetWidth < maximumWidth)
+            this.updateCanvasSize();
     }
 
     private showHideSignatureTab(displayMode: DisplayMode, appearanceDiv: HTMLElement, typeDiv: HTMLElement, uploadDiv: HTMLElement): any {
@@ -873,8 +913,11 @@ export class Signature {
                 reader.readAsDataURL(uploadedFile);
             }
         }
+        args.target.value = '';
+        args.currentTarget.value = '';
     };
     private renderSignatureText(): void {
+        let maximumWidth: number = 750;
         // eslint-disable-next-line
         let fontDiv: any = document.getElementById(this.pdfViewer.element.id + '_font_appearance');
         // eslint-disable-next-line
@@ -894,6 +937,8 @@ export class Signature {
         }
         this.enableCreateButton(false);
         this.enableClearbutton(false);
+        if (this.pdfViewer.element.offsetWidth < maximumWidth)
+           this.updateCanvasSize();
     }
     private typeSignatureclick(): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
@@ -1130,16 +1175,41 @@ export class Signature {
     public updateCanvasSize(): void {
         // eslint-disable-next-line
         let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+        this.setTabItemWidth(canvas);
+        let uploadCanvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureuploadCanvas_');
+        this.setTabItemWidth(uploadCanvas);
+        let fontAppearance: any = document.getElementById(this.pdfViewer.element.id + '_font_appearance')
+        this.setTabItemWidth(fontAppearance);
+    }
+
+    private setTabItemWidth(canvas: any): void {
+        let padding: number = 2;
+        let maximumWidth: number = 750;
+        let canvasWidth: number = 714;
+        let margin: number = 50;
+        let elem: any = document.querySelector('.e-dlg-content');
+        if (elem) {
+           let style: any = getComputedStyle(elem);
+           padding = padding + parseInt(style.paddingLeft, 10) + parseInt(style.paddingRight, 10);
+        }
         if (canvas && this.signatureDialog && this.signatureDialog.visible) {
-            if (this.pdfViewer.element.offsetWidth > 750) {
-                canvas.width = 714;
-                canvas.style.width = '714px';
+            if (this.pdfViewer.element.offsetWidth > maximumWidth) {
+                canvas.width = canvasWidth;
+                canvas.style.width =  canvasWidth + 'px';
             } else {
-                canvas.width = this.pdfViewer.element.offsetWidth - 35;
+                canvas.width = this.pdfViewer.element.offsetWidth - padding;
                 canvas.style.width = canvas.width + 'px';
             }
         }
+        let fontInnerDiv: any = document.getElementsByClassName('e-pv-font-sign');
+        if (canvas && fontInnerDiv && fontInnerDiv.length > 0) {
+            for (let i: number = 0; i < fontInnerDiv.length; i++) {
+                let fontDiv: any = fontInnerDiv[i];
+                fontDiv.style.width = ((canvas.width / 2) - margin) + 'px';
+            }
+        }
     }
+
     private signaturePanelMouseDown(e: MouseEvent | TouchEvent): void {
         if (e.type !== 'contextmenu') {
             e.preventDefault();
@@ -1392,11 +1462,20 @@ export class Signature {
         let currentAnnotation: any = this.pdfViewerBase.currentSignatureAnnot;
         const annotationName: string = this.pdfViewer.annotation.createGUID();
         if (currentAnnotation) {
-            annot = {
-                // eslint-disable-next-line max-len
-                id: currentAnnotation.id, bounds: { x: left, y: top, width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height }, pageIndex: currentAnnotation.pageIndex, data: currentAnnotation.data,
-                shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.opacity, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
-            };
+            if (this.pdfViewerBase.currentSignatureAnnot.shapeAnnotationType === 'HandWrittenSignature') {
+                annot = {
+                    // eslint-disable-next-line max-len
+                    id: currentAnnotation.id, bounds: { x: left, y: top, width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height }, pageIndex: currentAnnotation.pageIndex, data: currentAnnotation.data,
+                    shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.opacity, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
+                };
+            }
+            if (this.pdfViewerBase.currentSignatureAnnot.shapeAnnotationType === 'SignatureText') {
+                annot = {
+                    // eslint-disable-next-line max-len
+                    id: currentAnnotation.id, bounds: { x: left, y: top, width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height }, pageIndex: currentAnnotation.pageIndex, data: currentAnnotation.data,
+                    shapeAnnotationType: 'SignatureText', opacity: currentAnnotation.opacity, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
+                };
+            }
             this.pdfViewer.add(annot as PdfAnnotationBase);
             // eslint-disable-next-line
             let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
@@ -1436,7 +1515,7 @@ export class Signature {
                     if (currentAnnotation.IsSignature) {
                         data = currentAnnotation.PathData;
                     } else if (currentAnnotation.AnnotationType === 'SignatureImage' || currentAnnotation.AnnotationType === 'SignatureText' ) {
-                        data = JSON.parse(currentAnnotation.PathData);
+                        data = JSON.parse(JSON.stringify(currentAnnotation.PathData));
                     } else {
                         if (data.includes('command')) {
                             data = getPathString(JSON.parse(currentAnnotation.PathData));
@@ -1560,7 +1639,7 @@ export class Signature {
      */
     // eslint-disable-next-line
     public modifySignatureCollection(property: string, pageNumber: number, annotationBase: any, isSignatureEdited?: boolean): ISignAnnotation {
-        this.pdfViewer.isDocumentEdited = true;
+        this.pdfViewerBase.updateDocumentEditedProperty(true);
         let currentAnnotObject: ISignAnnotation = null;
         const pageAnnotations: ISignAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {

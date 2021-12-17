@@ -291,6 +291,8 @@ export interface ExportOptions {
     exportType?: ExcelFormat;
     /** The custom or specific field collection of event dataSource to be exported can be provided through fields option. */
     fields?: string[];
+    /** Specifies the collection of field name and its header text to export to excel. If this list is empty, the scheduler exports based on fields. If both fieldsInfo and fields are empty then the scheduler exported all the fields. */
+    fieldsInfo?: ExportFieldInfo[];
     /** The custom data collection can be exported by passing them through the customData option. */
     customData?: Record<string, any>[];
     /** There also exists option to export each individual instances of the recurring events to an Excel file,
@@ -298,6 +300,14 @@ export interface ExportOptions {
      * the occurrences as separate instances on an exported Excel file.
      */
     includeOccurrences?: boolean;
+}
+
+/** An interface that holds the field name and its header text to export to excel. */
+export interface ExportFieldInfo {
+    /** Defines the header display text. */
+    text: string;
+    /** Defines the field name to export. */
+    name: string;
 }
 
 /** An interface that holds the details of a resource. */
@@ -314,6 +324,14 @@ export interface ResourceDetails {
     resourceId?: string;
     /** It returns the Name of current resource in compact mode. */
     resourceName?: string;
+}
+
+/** An interface that represents time zone and display text for scheduler.  */
+export interface TimezoneFields {
+    /** Assigns the timezone display text. */
+    Text: string;
+    /** Assigns the IANA timezone value. */
+    Value: string;
 }
 
 /** An interface that holds options of events once it bound to scheduler. */
@@ -396,6 +414,8 @@ export interface IRenderer {
     isCurrentDate(date: Date): boolean;
     startDate(): Date;
     endDate(): Date;
+    getStartDate?(): Date;
+    getEndDate?(): Date;
     scrollToHour?(hour: string, scrollDate?: Date): void;
     scrollToDate?(scrollDate?: Date): void;
     highlightCurrentTime?(): void;
@@ -505,6 +525,7 @@ export interface UIStateArgs {
     groupIndex?: number;
     action?: boolean;
     isBlock?: boolean;
+    isCustomMonth?: boolean;
 }
 
 /**
@@ -594,6 +615,6 @@ export interface CallbackFunction extends Function {
 
 /** @private */
 export interface SortComparerFunction {
-    (param:  Record<string, any>[]):  Record<string, any>[];
+    (param: Record<string, any>[]): Record<string, any>[];
 }
 

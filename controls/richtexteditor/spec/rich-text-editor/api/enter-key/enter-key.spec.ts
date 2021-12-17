@@ -332,7 +332,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, nodetext.textContent.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>​</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1<br><br></strong>');
     });
 
     it('Press enter by selecting whole line 1 - Style Applied -', function (): void {
@@ -365,7 +365,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<br><strong>​Line 1</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong><br>​Line 1</strong>');
     });
 
     it('Press enter at the middle of the line', function (): void {
@@ -387,7 +387,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, 3);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Li</strong><br><strong>ne 1</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Li<br>ne 1</strong>');
     });
 
     it('Multiple lines - Press enter at the end of the first line', function (): void {
@@ -409,7 +409,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, nodetext.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>​</strong><br><strong>Line 2​</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1<br><br></strong><br><strong>Line 2​</strong>');
     });
 
     it('Multiple lines - Press enter at the start of the second line', function (): void {
@@ -468,7 +468,7 @@ describe('Enter key support - When `BR` is configured', () => {
         expect(rteObj.inputElement.innerHTML).toBe('Line 1<br>Li<br>ne 3');
     });
 
-    it('Multiple lines - Press enter by selecting few chars from line 2 and few chars from line 3', function (): void {
+    it('Multiple lines - Press enter by selecting few chars from line 2 and few chars from line 3 - Styles Applied', function (): void {
         rteObj.value = '<strong>​Line 1</strong><br><strong>Line 2</strong><br><strong>Line 3​</strong>';
         rteObj.inputElement.innerHTML = '<strong>​Line 1</strong><br><strong>Line 2</strong><br><strong>Line 3​</strong>';
         rteObj.dataBind();
@@ -477,7 +477,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setSelectionText(
             document, startNode, endNode, 2, 2);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>Li</strong><br><strong>ne 3​</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>Li</strong><strong><br>ne 3​</strong>');
     });
 
     it('Multiple lines - Press enter on empty line', function (): void {
@@ -983,7 +983,7 @@ describe('When P configured - only image in the editor content', () => {
         expect(rteObj.inputElement.innerHTML).toBe('<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p><p><br></p>');
     });
 
-    it('When image is loaded as initial value and press enter after the image', function (): void {
+    it('When image is loaded as initial value and press enter before the image', function (): void {
         rteObj.value = '<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;">';
         rteObj.inputElement.innerHTML = '<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;">';
         rteObj.dataBind();
@@ -1022,6 +1022,263 @@ describe('Enter key support - Changing both APIs when content is empty and press
             document, startNode, startNode, 0, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.innerHTML).toBe('<div><br></div><div><br></div>');
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-54630 - Enter Removes the first line issue', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode">The Rich Te<br>xt Editor content</p>`
+        });
+        done();
+    });
+
+    it('When shift enter is pressed at the middle and then pressing enter at the start of the second line', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[2], startNode.childNodes[2], 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p').length === 2).toBe(true);
+        expect(rteObj.inputElement.innerHTML === '<p class="focusNode">The Rich Te<br></p><p>xt Editor content</p>').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('CR Issue - Paste some content and then press enter twice at the start(top) ', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p><span style="box-sizing: border-box; font-size: 14.6667px; letter-spacing: 0.25px; font-family: &quot;Segoe UI&quot;, sans-serif; color: rgb(32, 31, 30); border: 1pt none windowtext; padding: 0in;"><span class="focusNode" style="box-sizing: border-box; border-style: initial;">We are able to reproduce the issue from our end and we have considered&nbsp;</span><span style="box-sizing: border-box; font-weight: 700;"><span style="box-sizing: border-box; border-style: initial;">“</span></span></span><span style="box-sizing: border-box; font-weight: 700; color: rgb(17, 17, 17); font-family: Calibri, sans-serif; font-size: 14.6667px; letter-spacing: 0.25px;"><span style="box-sizing: border-box; font-family: &quot;Segoe UI&quot;, sans-serif; color: black;">Page scrolls automatically when press enter key inside the editor</span></span><span style="box-sizing: border-box; font-weight: 700; color: rgb(17, 17, 17); font-family: Calibri, sans-serif; font-size: 14.6667px; letter-spacing: 0.25px;"><span style="box-sizing: border-box; font-family: &quot;Segoe UI&quot;, sans-serif; color: rgb(32, 31, 30); border: 1pt none windowtext; padding: 0in;">”</span><br style="box-sizing: border-box;"></span><span style="box-sizing: border-box; font-size: 14.6667px; letter-spacing: 0.25px; font-family: &quot;Segoe UI&quot;, sans-serif; color: rgb(32, 31, 30); border: 1pt none windowtext; padding: 0in;"><span style="box-sizing: border-box; border-style: initial;">as a bug from our end, and logged the report for the same and it will be included in our patch release on&nbsp;<span style="box-sizing: border-box; font-weight: 700;">12<span style="box-sizing: border-box; position: relative; font-size: 11px; line-height: 0; vertical-align: baseline; top: -0.5em;">th</span>&nbsp;October 2021.</span></span></span><br></p>`
+        });
+        done();
+    });
+
+    it('Paste some content and then press enter twice at the start(top)', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0], 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p').length === 2).toBe(true);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p').length === 3).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-55453 - New P tag not created when enter press ', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode">\n    The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid\n    <a href=\"https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor\">HTML markup</a> or\n    <a href=\"https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor\">markdown</a> of the content     \n</p><p><b>Toolbar</b>`
+        });
+        done();
+    });
+
+    it('Enter Key press two times creates one P tag and then moves the cursor to next line instead of the new P tag creation', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.lastChild, startNode.lastChild, startNode.lastChild.textContent.length, startNode.lastChild.textContent.length);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p').length === 3).toBe(true);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p').length === 4).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('Table Enter Key Testing', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class='focusNode'>RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+        });
+        done();
+    });
+
+    it('Enter Key testing in table when P is configured and P content is inside', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, startNode.childNodes[0], 11);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelector('.focusNode').nextElementSibling.tagName === 'P').toBe(true);
+    });
+
+    it('Enter Key testing in table when DIV is configured and P content is inside', function (): void {
+        rteObj.enterKey = 'DIV';
+        rteObj.value = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
+        rteObj.inputElement.innerHTML = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, startNode.childNodes[0], 11);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelector('.focusNode').nextElementSibling.tagName === 'DIV').toBe(true);
+    });
+
+    it('Enter Key testing in table when BR is configured and P content is inside', function (): void {
+        rteObj.enterKey = 'BR';
+        rteObj.value = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
+        rteObj.inputElement.innerHTML = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, startNode.childNodes[0], 11);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelector('.focusNode').nextElementSibling.tagName === 'BR').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-54662 - Insert HTML after enter when cursor is placed before the P tag ', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode">Sample</p>`
+        });
+        done();
+    });
+
+    it('Insert HTML after enter when cursor is placed before the P tag', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0],
+            startNode.childNodes[0].textContent.length, startNode.childNodes[0].textContent.length);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).focusIn();
+        (<any>rteObj).executeCommand(
+        'insertHTML',
+        `<p class="secondFocus">Sehr geehrte Frau Leider erreiche ich Sie nicht telefonisch. Wie mit Ihrer Assistentin telefonisch besprochen, sende ich Ihnen mein Anliegen per Email.</p>`);
+        const startNode2: any = rteObj.inputElement.querySelector('.secondFocus');
+        const sel2: void = new NodeSelection().setSelectionText(
+            document, startNode2.childNodes[0], startNode2.childNodes[0], 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(((<any>rteObj).getRange().startContainer as HTMLElement).classList.contains('secondFocus')).toBe(true)
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-55294 - Enter Key press at the start of the content when content have space in HTML ', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class='focusNode'>\n    The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid\n    <a href=\"https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor\">HTML markup</a> or\n    <a href=\"https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor\">markdown</a> of the content\n</p>`
+        });
+        done();
+    });
+
+    it('Enter Key press at the start of the content when content have space in HTML', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0], 5, 5);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p').length === 2).toBe(true);
+        expect(rteObj.inputElement.querySelectorAll('p')[0].querySelectorAll('br').length === 1).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-54628 - Enter Key press read only mode', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            readonly: true,
+            enterKey: 'P',
+            value: `<p class='focusNode'>The Rich Text Editor</p>`
+        });
+        done();
+    });
+
+    it('Enter Key press read only mode', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0], 3, 3);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p').length === 1).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('BLAZ-18839 - Enter Key press after link make the first char in the next line as link when typing', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p>RTE&nbsp;<a class="e-rte-anchor focusNode" href="http://Link" title="Link" target="_blank">Link</a></p>`
+        });
+        done();
+    });
+
+    it('Enter Key press after link make the first char in the next line as link when typing', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0], 4, 4);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p')[1].querySelectorAll('a').length === 0).toBe(true);
     });
 
     afterAll(() => {

@@ -62,7 +62,7 @@ export class InkAnnotation {
                 if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
                 }
-                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode && this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar) {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools("Ink");
                 }
             } else {
@@ -96,6 +96,7 @@ export class InkAnnotation {
             this.pdfViewerBase.isToolbarInkClicked = true;
             this.pdfViewer.tool = 'Ink';
         }
+        let zoom : any = this.pdfViewerBase.getZoomFactor();
         // eslint-disable-next-line
         let canvas: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
         // eslint-disable-next-line
@@ -106,9 +107,11 @@ export class InkAnnotation {
         // eslint-disable-next-line max-len
         const strokeColor: string = this.pdfViewer.inkAnnotationSettings.strokeColor ? this.pdfViewer.inkAnnotationSettings.strokeColor : '#ff0000';
         context.beginPath();
+        context.lineJoin = 'round';
+        context.lineCap = 'round';
         context.moveTo(position.prevPosition.x, position.prevPosition.y);
         context.lineTo(position.currentPosition.x, position.currentPosition.y);
-        context.lineWidth = thickness;
+        context.lineWidth = thickness * zoom > 1 ? thickness * zoom : thickness;
         context.strokeStyle = strokeColor;
         context.globalAlpha = opacity;
         context.stroke();
@@ -497,7 +500,7 @@ export class InkAnnotation {
      */
     // eslint-disable-next-line
     public modifySignatureInkCollection(property: string, pageNumber: number, annotationBase: any): any {
-        this.pdfViewer.isDocumentEdited = true;
+        this.pdfViewerBase.updateDocumentEditedProperty(true);
         // eslint-disable-next-line
         let currentAnnotObject: any = null;
         // eslint-disable-next-line

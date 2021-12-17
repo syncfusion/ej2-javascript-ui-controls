@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
-import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, compile as templateComplier, Browser, enableRtl } from '@syncfusion/ej2-base';
 import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
@@ -25,6 +25,7 @@ import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRend
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { RangeColorSettingModel } from '../../chart/chart-model';
 import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
+import {Alignment} from './enum';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -366,7 +367,8 @@ export function subArray(values: number[], index: number): number[] {
 export function valueToCoefficient(value: number, axis: Axis): number {
     const range: VisibleRangeModel = axis.visibleRange;
     const result: number = (value - <number>range.min) / (range.delta);
-    return axis.isInversed ? (1 - result) : result;
+    const isInverse: boolean = axis.isChart ? axis.isAxisInverse : axis.isInversed;
+    return isInverse ? (1 - result) : result;
 
 }
 /** @private */
@@ -425,7 +427,7 @@ export function valueToPolarCoefficient(value: number, axis: Axis): number {
             (axis.visibleLabels[axis.visibleLabels.length - 1].value - axis.visibleLabels[0].value);
         length = axis.visibleLabels.length;
     }
-    return axis.isInversed ? ((value - <number>range.min) / delta) * (1 - 1 / (length)) :
+    return axis.isAxisInverse ? ((value - <number>range.min) / delta) * (1 - 1 / (length)) :
         1 - ((value - <number>range.min) / delta) * (1 - 1 / (length));
 }
 /** @private */
@@ -488,7 +490,7 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
 /** @private */
 export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, index: number, isVertical: boolean, rect: Rect): Element {
     const margin: number = 5;
-    const opposedPosition: boolean = axis.opposedPosition;
+    const opposedPosition: boolean = axis.isAxisOpposedPosition;
     const anchor: string = isVertical ? 'start' : 'auto';
     let size: Size;
     const chartRect: number = chart.availableSize.width;
@@ -546,12 +548,12 @@ export function withInBounds(x: number, y: number, bounds: Rect, width: number =
 }
 /** @private */
 export function getValueXByPoint(value: number, size: number, axis: Axis): number {
-    const actualValue: number = !axis.isInversed ? value / size : (1 - (value / size));
+    const actualValue: number = !axis.isAxisInverse ? value / size : (1 - (value / size));
     return actualValue * (axis.visibleRange.delta) + axis.visibleRange.min;
 }
 /** @private */
 export function getValueYByPoint(value: number, size: number, axis: Axis): number {
-    const actualValue: number = axis.isInversed ? value / size : (1 - (value / size));
+    const actualValue: number = axis.isAxisInverse ? value / size : (1 - (value / size));
     return actualValue * (axis.visibleRange.delta) + axis.visibleRange.min;
 }
 /** @private */
@@ -1785,6 +1787,9 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): vo
             });
         }
     }
+    if ((chart as Chart).enableCanvas) {
+        (chart.renderer as CanvasRenderer).ctx.direction = chart.enableRtl ? 'rtl' : 'ltr';
+    }
 }
 
 /**
@@ -2166,4 +2171,16 @@ export function getPercentageColor(percent: number, previous: string, next: stri
 export function getPercentage(percent: number, previous: number, next: number): number {
     const full: number = next - previous;
     return Math.round((previous + (full * percent)));
+}
+
+/** @private */
+export function getTextAnchor(alignment: Alignment, enableRTL : boolean) : string {
+    switch(alignment) {
+    case 'Near':
+       return enableRTL ? 'end' : 'start';
+    case 'Far':
+       return enableRTL ? 'start' : 'end';
+    default:
+        return 'middle'
+    }
 }

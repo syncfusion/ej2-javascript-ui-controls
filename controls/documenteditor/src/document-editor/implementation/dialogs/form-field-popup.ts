@@ -94,7 +94,7 @@ export class FormFieldPopUp {
         const dateDiv: HTMLElement = createElement('div', { className: 'e-de-date-field' });
         const dateInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
         /* eslint-disable-next-line max-len */
-        const datePicker: DateTimePicker = new DateTimePicker({ allowEdit: false, strictMode: true, change: this.enableDisableDatePickerOkButton });
+        const datePicker: DateTimePicker = new DateTimePicker({ strictMode: true, change: this.enableDisableDatePickerOkButton });
         this.dateInput = dateInput;
         const textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
         const textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;

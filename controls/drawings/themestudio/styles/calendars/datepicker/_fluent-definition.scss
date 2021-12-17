@@ -1,0 +1,36 @@
+//default 
+$datepicker-icon: '\e901' !default;
+$datepicker-icon-font-size: 18px !default;
+$datepicker-icon-container-min-height: 18px !default;
+$datepicker-icon-container-min-width: 30px !default;
+$datepicker-bigger-icon-container-min-height: 18px !default;
+$datepicker-bigger-icon-container-min-width: 36px !default;
+$datepicker-bigger-icon-font-size: 22px !default;
+$datepicker-icon-normal-margin: 0 !default;
+$datepicker-icon-bigger-margin: 0 !default;
+$datepicker-icon-border-radius: 50% !default;
+$datepicker-popup-border-radius: 6px !default;
+$datepicker-box-sizing: border-box !default;
+$datepicker-modal-header-display: block !default;
+$datepicker-calendar-tbody-landscape-height: 130px !default;
+$datepicker-popup-bigger-margin-top: 8px !default;
+// mouse small icon
+$datepicker-small-icon-font-size: 16px !default;
+// Touch small icon
+$datepicker-bigger-small-icon-font-size: 20px !default;
+// color variables
+$datepicker-popup-border: 0 solid $border-light !default;
+$datepicker-input-border-style: none !default;
+$datepicker-calendar-border-style: none !default;
+$datepicker-icon-color: $icon-color !default;
+$datepicker-active-icon-color: $datepicker-icon-color !default;
+$datepicker-icon-active-bg-color: $content-bg-color-alt4 !default;
+$datepicker-active-border-color: $border !default;
+$datepicker-popup-box-shadow: $shadow-md !default;
+$datepicker-overlay: $overlay-bg-color !default;
+$datepicker-icon-hover-color: $icon-color-hover !default;
+$datepicker-popup-bg-color: $flyout-bg-color !default;
+$datepicker-othermonth-row: none !default;
+$datepicker-modal-header-bg: $flyout-bg-color !default;
+$datepicker-modal-header-color: $flyout-text-color !default;
+//enddefault

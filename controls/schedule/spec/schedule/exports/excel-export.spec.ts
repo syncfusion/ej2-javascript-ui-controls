@@ -4,7 +4,7 @@
  */
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth,
-    MonthAgenda, ScheduleModel, ExcelExport, ExportOptions
+    MonthAgenda, ScheduleModel, ExcelExport, ExportOptions, ExportFieldInfo
 } from '../../../src/schedule/index';
 import { createSchedule, destroy } from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -136,6 +136,19 @@ describe('excel export', () => {
             expect(style.caption.fontSize).toBe(10);
             expect(style.record.fontName).toBe('TimesRoman');
             expect(style.record.fontColor).toBe('#FFFFFF');
+        });
+
+        it('Excel schedule Check Custom Column', (done: DoneFn) => {
+            const customFields: ExportFieldInfo[] = [
+                { name: 'Subject', text: 'Summary' },
+                { name: 'StartTime', text: 'First Date' },
+                { name: 'EndTime', text: 'Last Date' },
+                { name: 'Location', text: 'Place' },
+                { name: 'OwnerId', text: 'Owners' }
+            ];
+            const exportValues: ExportOptions = { fieldsInfo: customFields };
+            schObj.exportToExcel(exportValues);
+            setTimeout(() => done(), 50);
         });
     });
 

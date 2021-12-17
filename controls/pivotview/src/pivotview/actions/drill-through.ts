@@ -34,7 +34,7 @@ export class DrillThrough {
      * @hidden
      */
     public getModuleName(): string {
-        return 'drillthrough';
+        return 'drillThrough';
     }
 
     private addInternalEvents(): void {
@@ -184,11 +184,13 @@ export class DrillThrough {
         let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
             valueCaption;
+        let rowHeaders: string = this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.getRowText(Number(element.getAttribute('index')), 0) :
+            pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
         let eventArgs: DrillThroughEventArgs = {
             currentTarget: element,
             currentCell: pivotValue,
             rawData: rawData,
-            rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - '),
+            rowHeaders: rowHeaders,
             columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - '),
             value: valuetText + '(' + pivotValue.formattedText + ')',
             gridColumns: this.drillThroughDialog.frameGridColumns(rawData),

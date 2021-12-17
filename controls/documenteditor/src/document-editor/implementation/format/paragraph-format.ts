@@ -66,9 +66,15 @@ export class WParagraphFormat {
     public tabs: WTabStop[] = undefined;
     public getUpdatedTabs(): WTabStop[] {
         let inTabs: WTabStop[] = [];
+        const tabStops: Dictionary<number, WTabStop> = new Dictionary<number, WTabStop>();
+        let tabsInListFormat: WTabStop[] = this.getTabStopsFromListFormat();
+        for (const tabStop of tabsInListFormat) {
+            if (!tabStops.containsKey(tabStop.position)) {
+                tabStops.add(tabStop.position, tabStop);
+            }
+        }
         if (!isNullOrUndefined(this.baseStyle)) {
             let baseStyle: any = this.baseStyle;
-            const tabStops: Dictionary<number, WTabStop> = new Dictionary<number, WTabStop>();
             while (!isNullOrUndefined(baseStyle)) {
                 for (const tab of baseStyle.paragraphFormat.tabs) {
                     if (!tabStops.containsKey(tab.position)) {
@@ -87,6 +93,16 @@ export class WParagraphFormat {
         }
         return inTabs;
     }
+    private getTabStopsFromListFormat(): WTabStop[] {
+        if (this.listFormat.listId > -1 && this.listFormat.listLevelNumber > -1) {
+            const level: WListLevel = this.listFormat.listLevel;
+            if (level && level.paragraphFormat) {
+                return level.paragraphFormat.tabs;
+            }
+        }
+        return [];
+    }
+
     private hasTabStop(position: number): boolean {
         for (let i: number = 0; i < this.tabs.length; i++) {
             if (parseFloat(this.tabs[i].position.toFixed(4)) === position ||

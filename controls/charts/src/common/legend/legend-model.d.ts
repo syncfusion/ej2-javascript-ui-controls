@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition } from '../utils/enum';import { StockChart } from '../../stock-chart';
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition } from '../utils/enum';import { StockChart } from '../../stock-chart';
 
 /**
  * Interface for a class Location
@@ -240,12 +240,19 @@ export interface LegendSettingsModel {
     enablePages?: boolean;
 
     /**
-     * If set to true, legend will be Reversed.
+     * If `isInversed` set to true, then it inverses legend item content (image and text). 
+     * @default false. 
+     */ 
+
+    isInversed?: boolean;
+
+    /**
+     * If `reverse` set to true, then it reverse the legend items order.
      *
      * @default false
      */
 
-    isInversed?: boolean;
+    reverse?: boolean;
 
 }
 

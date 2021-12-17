@@ -17,7 +17,7 @@ import { Search } from './index';
 import { OptionsPane } from './index';
 import { WordExport } from './index';
 import { TextExport } from './index';
-import { FormatType, PageFitType, DialogType, FormattingExceptions } from './index';
+import { FormatType, PageFitType, DialogType, FormattingExceptions, CompatibilityMode } from './index';
 import { ContextMenu } from './index';
 import { ImageResizer } from './index';
 import { SfdtExport } from './index';
@@ -26,7 +26,7 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
-import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel } from './document-editor-model';
+import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
 import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';
@@ -38,7 +38,7 @@ import { RevisionCollection } from './implementation/track-changes/track-changes
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent } from './base/constants';
-import { Optimized, Regular } from './index';
+import { Optimized, Regular, HelperMethods } from './index';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -86,9 +86,22 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      * @aspType bool
      * @returns {boolean} - `true` use optimized text measuring approach to match Microsoft Word pagination; otherwise, `false`
      */
-     @Property(true)
-     public enableOptimizedTextMeasuring: boolean
+    @Property(true)
+    public enableOptimizedTextMeasuring: boolean;
+}
 
+/**
+ * Represents the settings and properties of the document that is opened in Document editor component.
+ */
+ export class DocumentSettings extends ChildProperty<DocumentSettings> {
+    /**
+     * Gets or sets the compatibility mode of the current document.
+     *
+     * @default `Word2013`
+     * @returns {CompatibilityMode}
+     */
+    @Property('Word2013')
+    public compatibilityMode: CompatibilityMode;
 }
 
 /**
@@ -258,13 +271,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public searchModule: Search;
-     /**
-      * @private
-      */
+    /**
+     * @private
+     */
     public optimizedModule: Optimized;
-      /**
-       * @private
-       */
+    /**
+     * @private
+     */
     public regularModule: Regular;
     private createdTriggered: boolean = false;
     /**
@@ -273,6 +286,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public collaborativeEditingModule: CollaborativeEditing;
     /**
      * Holds regular or optimized module based on DocumentEditorSettting `enableOptimizedTextMeasuring` property.
+     *
      * @private
      */
     public textMeasureHelper: Regular | Optimized
@@ -621,6 +635,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
     public documentEditorSettings: DocumentEditorSettingsModel;
     /**
+     * Gets the settings and properties of the document that is opened in Document editor component.
+     *
+     * @default {}
+     */
+    @Complex<DocumentSettingsModel>({}, DocumentSettings)
+    public documentSettings: DocumentSettingsModel;
+    /**
      * Defines the settings of the DocumentEditor services
      */
     @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
@@ -820,8 +841,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * This event is triggered before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
      */
-     @Event()
-     public beforeXmlHttpRequestSend: EmitType<XmlHttpRequestEventArgs>;
+    @Event()
+    public beforeXmlHttpRequestSend: EmitType<XmlHttpRequestEventArgs>;
     /**
      * @private
      */
@@ -1026,6 +1047,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         //pre render section
         this.findResultsList = [];
+        if (!isNullOrUndefined(this.element) && this.element.id === '') {
+            //Set unique id, if id is empty
+            this.element.id = HelperMethods.getUniqueElementId();
+        }
         if (this.refreshing) {
             this.initHelper();
         }
@@ -1051,7 +1076,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.element.style.width = formatUnit(this.width);
             }
         }
-        this.textMeasureHelper = (this.optimizedModule) ? this.optimizedModule : this.regularModule
+        this.textMeasureHelper = (this.optimizedModule) ? this.optimizedModule : this.regularModule;
         if (isNullOrUndefined(this.textMeasureHelper)) {
             this.textMeasureHelper = new Optimized(this.documentHelper);
         }
@@ -1104,7 +1129,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.selection.clearSelectionHighlightInSelectedWidgets();
                     this.selection.selectContent(this.documentStart, true);
                 }
-                this.editor.layoutWholeDocument();
+                this.editor.layoutWholeDocument(true);
                 setTimeout((): void => {
                     this.fireViewChange();
                 }, 200);
@@ -1158,10 +1183,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 break;
             case 'showRevisions':
                 if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
-                    this.showRevisions = false;
                     this.documentHelper.showRevisions(false);
                 } else if (this.viewer) {
                     this.documentHelper.showRevisions(model.showRevisions);
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'documentSettings':
+                if (!isNullOrUndefined(model.documentSettings.compatibilityMode)) {
+                    let oldValue: CompatibilityMode = oldProp.documentSettings.compatibilityMode;
+                    let newValue: CompatibilityMode = model.documentSettings.compatibilityMode;
+                    if ((oldValue == "Word2013" && newValue != "Word2013") || (oldValue != "Word2013" && newValue == "Word2013")) {
+                        if (this.documentHelper.compatibilityMode !== newValue) {
+                            this.documentHelper.compatibilityMode = newValue;
+                            this.editor.layoutWholeDocument(true);
+                        }
+                    }
                 }
                 this.viewer.updateScrollBars();
                 break;
@@ -2152,7 +2189,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Outset':'Outset',
         'Emboss3D':'Emboss3D',
         'ThinThickLargeGap':'ThinThickLargeGap',
-        'ThinThickMediumGap':'ThinThickMediumGap'
+        'ThinThickMediumGap':'ThinThickMediumGap',
+        'Number of rows must be between 1 and 32767.': 'Number of rows must be between 1 and 32767.',
+        'Number of columns must be between 1 and 63.':'Number of columns must be between 1 and 63.'
     };
     /* eslint-enable */
     // Public Implementation Starts
@@ -2171,7 +2210,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.abstractLists = [];
             this.documentHelper.styles = new WStyles();
             this.documentHelper.cachedPages = [];
-            this.showRevisions = false;
             this.clearSpellCheck();
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
                 this.documentHelper.triggerElementsOnLoading = true;

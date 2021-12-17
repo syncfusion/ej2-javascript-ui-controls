@@ -38,7 +38,7 @@ describe('Form field Text dialog', () => {
         }, 2000);
     });
     it('Insert Form field Text Value updates', () => {
-console.log('Insert Form field Text Value updates');
+        console.log('Insert Form field Text Value updates');
         editor.editorModule.insertFormField('Text');
         (dialog as any).typeDropDown.value = 'Date';
         (dialog as any).defaultTextInput.value = '3/20/2020';
@@ -62,7 +62,7 @@ console.log('Insert Form field Text Value updates');
         expect(fieldData.helpText).toBe('testsync');
     });
     it('Load Values - Form field Text Dialog', () => {
-console.log('Load Values - Form field Text Dialog');
+        console.log('Load Values - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         editor.selection.selectAll();
         dialog.loadTextDialog();
@@ -79,7 +79,7 @@ console.log('Load Values - Form field Text Dialog');
         expect(fieldData.enabled).toBe((dialog as any).fillInEnable.checked);
     });
     it('Valid Date format - Form field Text Dialog', () => {
-console.log('Valid Date format - Form field Text Dialog');
+        console.log('Valid Date format - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         editor.selection.selectAll();
         (dialog as any).defaultTextInput.value = '3/20/2020';
@@ -88,7 +88,7 @@ console.log('Valid Date format - Form field Text Dialog');
         expect(dialog.isValidDateFormat()).toBe(false);
     });
     it('Change Type DropDown - Form field Text Dialog', () => {
-console.log('Change Type DropDown - Form field Text Dialog');
+        console.log('Change Type DropDown - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         let event: any = {};
         event.value = 'Number';
@@ -111,7 +111,7 @@ console.log('Change Type DropDown - Form field Text Dialog');
         expect((dialog as any).textFormatDropDown.dataSource[0]).toBe('Uppercase');
     });
     it('Change Type DropDown isinteracted - Form field Text Dialog', () => {
-console.log('Change Type DropDown isinteracted - Form field Text Dialog');
+        console.log('Change Type DropDown isinteracted - Form field Text Dialog');
         editor.editorModule.insertFormField('Text');
         let event: any = {};
         (dialog as any).defaultTextInput.value = 'Sync';
@@ -119,5 +119,25 @@ console.log('Change Type DropDown isinteracted - Form field Text Dialog');
         event.isInteracted = true;
         dialog.changeTypeDropDown(event as ChangeEventArgs);
         expect((dialog as any).defaultTextInput.value).toBe('');
+    });
+    it('Insert Form field Text Value updates', () => {
+        console.log('Insert Form field Text Value updates - Date time validation');
+        editor.editorModule.insertFormField('Text');
+        (dialog as any).typeDropDown.value = 'Date';
+        (dialog as any).textFormatDropDown.value = 'M/d/yyyy h:mm am/pm';
+        (dialog as any).defaultTextInput.value = '10/1/2021 2:12 AM';
+        (dialog as any).maxLengthNumber.value = 0;
+        
+        (dialog as any).bookmarkTextInput.value = 'Test';
+        (dialog as any).fillInEnable.checked = false;
+        (dialog as any).tooltipTextInput.value = 'testsync';
+        editor.selection.selectAll();
+        dialog.insertTextField();
+        dialog.show();
+    
+        dialog.onCancelButtonClick();
+        editor.selection.selectAll();
+        let fieldData:TextFormField = editor.selection.getCurrentFormField().formFieldData as TextFormField;
+        expect(fieldData.defaultValue).toBe('10/1/2021 2:12 AM');
     });
 });

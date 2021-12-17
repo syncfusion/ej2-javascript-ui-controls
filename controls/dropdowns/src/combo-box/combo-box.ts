@@ -451,7 +451,7 @@ export class ComboBox extends DropDownList {
         if ((Browser.isDevice && !this.isDropDownClick || !Browser.isDevice) &&
             !isNullOrUndefined(this.liCollections) && this.liCollections.length > 0) {
             const inputValue: string = this.inputElement.value;
-            const activeItem: { [key: string]: Element | number } = Search(inputValue, this.liCollections, 'StartsWith', true);
+            const activeItem: { [key: string]: Element | number } = Search(inputValue, this.liCollections, this.filterType, true);
             const activeElement: Element = activeItem.item as Element;
             if (!isNullOrUndefined(activeElement)) {
                 const count: number = this.getIndexByValue(activeElement.getAttribute('data-value')) - 1;
@@ -607,7 +607,7 @@ export class ComboBox extends DropDownList {
         } else {
             this.activeIndex = null;
             this.removeSelection();
-            if (this.liCollections && this.liCollections.length < 0) {
+            if (this.liCollections && this.liCollections.length > 0 && !this.isCustomFilter) {
                 this.removeFocus();
             }
         }
@@ -798,6 +798,7 @@ export class ComboBox extends DropDownList {
                     EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
                     EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
                 }
+                this.setReadOnly();
                 break;
             case 'allowFiltering':
                 this.setSearchBox();

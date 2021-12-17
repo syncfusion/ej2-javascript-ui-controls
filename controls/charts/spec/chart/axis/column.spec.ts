@@ -94,7 +94,7 @@ describe('Chart Control', () => {
                 expect(svg.getAttribute('y') == '287.375' || svg.getAttribute('y') == '287.875').toBe(true);
                 svg = document.getElementById('chartContainer1_AxisLabel_0');
                 expect(svg.getAttribute('y') == '543' || svg.getAttribute('y') == '546.75').toBe(true);
-                expect(svg.getAttribute('x') == '47' || svg.getAttribute('x') == '43').toBe(true);
+                expect(svg.getAttribute('x') == '37').toBe(true);
 
                 svg = document.getElementById('chartContainer_AxisTitle_2');
                 expect(svg.getAttribute('y') == '584.75' || svg.getAttribute('y') == '585.5').toBe(true);

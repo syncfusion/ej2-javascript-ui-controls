@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { TimezoneFields} from '../base/interface';
 /**
  * Time zone
  */
 export class Timezone {
-    public timezoneData: Record<string, string>[] = [];
+    public timezoneData: TimezoneFields[] = [];
 
     constructor() {
         this.timezoneData = this.getTimezoneData();
@@ -51,13 +52,13 @@ export class Timezone {
         return (window as any).Intl ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
     }
 
-    private getTimezoneData(): Record<string, string>[] {
+    private getTimezoneData(): TimezoneFields[] {
         return timezoneData;
     }
 
 }
 
-export const timezoneData: Record<string, string>[] = [
+export const timezoneData: TimezoneFields[] = [
     { Value: 'Pacific/Niue', Text: '(UTC-11:00) Niue' },
     { Value: 'Pacific/Pago_Pago', Text: '(UTC-11:00) Pago Pago' },
     { Value: 'Pacific/Honolulu', Text: '(UTC-10:00) Hawaii Time' },

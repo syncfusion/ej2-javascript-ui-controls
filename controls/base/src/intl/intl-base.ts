@@ -1212,7 +1212,7 @@ export namespace IntlBase {
         }
         iCulture = iCulture.slice(0, 2).toUpperCase() + iCulture.substr(2);
         if (mapper) {
-            firstDay = mapper[iCulture] || defaultFirstDay;
+            firstDay = mapper[iCulture] || mapper[iCulture.slice(0, 2)] || defaultFirstDay;
         }
         return firstDayMapper[firstDay];
     }
@@ -1247,7 +1247,7 @@ export namespace IntlBase {
         if (day < 4) {
             weeknum = Math.floor((daynum + day - 1) / 7) + 1;
             if (weeknum > 52) {
-                const nYear: Date = new Date(this.getFullYear() + 1, 0, 1);
+                const nYear: Date = new Date(date.getFullYear() + 1, 0, 1);
                 let nday: number = nYear.getDay();
                 nday = nday >= 0 ? nday : nday + 7;
                 weeknum = nday < 4 ? 1 : 53;

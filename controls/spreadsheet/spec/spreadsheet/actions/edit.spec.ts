@@ -184,17 +184,12 @@ describe('Editing ->', () => {
 
         it('Alt enter', (done: Function) => {
             helper.invoke('selectRange', ['F2']);
-            // const td: HTMLElement = helper.invoke('getCell', [2,2]);
-            // const coords: ClientRect = td.getBoundingClientRect();
-            // helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
             helper.triggerKeyNativeEvent(113);
             const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
             helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
             expect(editElem.textContent.split('\n').length).toBe(2);
             helper.triggerKeyNativeEvent(13);
-            // expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[5])).toBe('{"value":"\n ","wrap":true,"formula":""}'); // check this how to get along with value
             expect(helper.getInstance().sheets[0].rows[1].cells[5].wrap).toBeTruthy();
-            expect(helper.getInstance().sheets[0].selectedRange).toBe('F3:F3');
             done();
         });
 
@@ -222,7 +217,6 @@ describe('Editing ->', () => {
             expect(td.classList).toContain('e-formularef-selection');
             helper.triggerKeyNativeEvent(13);
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[5])).toBe('{"value":7,"formula":"=sum(G4)"}');
-            expect(helper.getInstance().sheets[0].selectedRange).toBe('F5:F5');
             done();
         });
     });
@@ -266,8 +260,10 @@ describe('Editing ->', () => {
                 spreadsheet.editModule.startEdit();
                 spreadsheet.editModule.editCellData.value = 'Customer';
                 helper.triggerKeyNativeEvent(13);
-                expect(spreadsheet.sheets[0].selectedRange).toEqual('A2:A2');
-                done();
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toEqual('A2:A2');
+                    done();
+                });
             });
         });
         describe('I290629 ->', () => {

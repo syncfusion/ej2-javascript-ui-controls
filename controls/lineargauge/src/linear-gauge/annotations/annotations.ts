@@ -1,11 +1,11 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable max-len */
 
-import { createElement, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis } from '../axes/axis';
 import { Annotation } from '../model/base';
-import { getTemplateFunction, getElement, getElementOffset, Size, Rect } from '../utils/helper';
+import { getTemplateFunction, getElement, getElementOffset, Size, Rect, getExtraWidth } from '../utils/helper';
 import { getFontStyle, valueToCoefficient, VisibleRange } from '../utils/helper';
 import { annotationRender } from '../model/constant';
 import { IAnnotationRenderEventArgs } from '../model/interface';
@@ -36,9 +36,6 @@ export class Annotations {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElement(secondaryID)))) {
             getElement(secondaryID).appendChild(annotationGroup);
-            for (let i: number = 0; i < this.gauge.annotations.length; i++) {
-                updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.annotations[i]);
-            }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.gauge as any).renderReactTemplates();
@@ -62,15 +59,11 @@ export class Annotations {
             annotation: annotation, textStyle: annotation.font
         };
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
-        if (this.gauge.isBlazor) {
-            const {cancel, name, content, annotation, textStyle} : IAnnotationRenderEventArgs = argsData;
-            argsData = {cancel, name, content, annotation, textStyle};
-        }
         this.gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
+                if (templateFn && templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length) {
+                    templateElement = Array.prototype.slice.call(templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     const length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -88,14 +81,19 @@ export class Annotations {
                     const range: VisibleRange = axis.visibleRange;
                     renderAnnotation = (annotation.axisValue >= range.min && annotation.axisValue <= range.max) ? true : false;
                     const line: Rect = axis.lineBounds;
+                    const extraWidth: number = getExtraWidth(this.gauge.element);
+                    const axisCollection: HTMLElement = getElement(this.gauge.element.id + '_Axis_Collections');
+                    const transformValue: string = axisCollection.getAttribute('transform').split("(")[1].split(")")[0];
+                    const leftTransformValue: number = parseInt(transformValue.split(",")[0]);
+                    const topTransformValue: number = parseInt(transformValue.split(",")[1]);
                     if (this.gauge.orientation === 'Vertical') {
-                        left = line.x + annotation.x;
+                        left = line.x + annotation.x + leftTransformValue - extraWidth;
                         top = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.height) + line.y);
                         top += annotation.y;
                     } else {
-                        left = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.width) + line.x);
+                        left = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.width) + line.x - extraWidth);
                         left += annotation.x;
-                        top = line.y + annotation.y;
+                        top = line.y + annotation.y + topTransformValue;
                     }
                     left -= (offset.width / 2);
                     top -= (offset.height / 2);

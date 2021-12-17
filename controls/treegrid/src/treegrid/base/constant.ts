@@ -97,6 +97,8 @@ export const virtualColumnIndex: string = 'virtualColumnIndex';
 /** @hidden */
 export const virtualActionArgs: string = 'virtual-action-args';
 /** @hidden */
+export const destroy: string = 'destroy';
+/** @hidden */
 export const dataListener: string = 'data-listener';
 /** @hidden */
 export const indexModifier: string = 'index-modifier';
@@ -124,4 +126,5 @@ export const rowsRemove: string = 'rows-remove';
 export const rowdraging: string = 'row-draging';
 /** @hidden */
 export const rowDropped: string = 'row-dropped';
-
+/** @hidden */
+export const autoCol: string = 'auto-col';

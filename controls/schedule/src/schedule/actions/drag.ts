@@ -40,6 +40,7 @@ export class DragAndDrop extends ActionBase {
     private targetTd: HTMLElement = null;
     private isCursorAhead: boolean = false;
     private dragArea: HTMLElement;
+
     public wireDragEvent(element: HTMLElement): void {
         new Draggable(element, {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
@@ -165,7 +166,9 @@ export class DragAndDrop extends ActionBase {
         const eventGuid: string = this.actionObj.element.getAttribute('data-guid');
         this.actionObj.event = this.parent.eventBase.getEventByGuid(eventGuid) as Record<string, any>;
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
-        this.startTime = (eventObj[this.parent.eventFields.startTime] as Date).getTime();
+        if (!isNullOrUndefined(eventObj)) {
+            this.startTime = (eventObj[this.parent.eventFields.startTime] as Date).getTime();
+        }
         const dragArgs: DragEventArgs = {
             cancel: false,
             data: eventObj,
@@ -584,7 +587,7 @@ export class DragAndDrop extends ActionBase {
             return;
         }
         const td: HTMLElement = tr.children[colIndex] as HTMLElement;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.actionObj.groupIndex = parseInt(td.getAttribute('data-group-index'), 10);
         }
         let dragStart: Date; let dragEnd: Date;
@@ -666,21 +669,20 @@ export class DragAndDrop extends ActionBase {
         const eventData: Record<string, any>[] = [];
         const startTime: Date = event[eventFields.startTime] as Date;
         const endTime: Date = event[eventFields.endTime] as Date;
-        const isDifferentDate: boolean =
-            util.resetTime(new Date(startTime.getTime())) < util.resetTime(new Date(endTime.getTime()));
-        if (isDifferentDate) {
-            const scheduleStartHour: Date = this.parent.activeView.getStartHour();
-            const scheduleEndHour: Date = this.parent.activeView.getEndHour();
-            const startDate: { [key: string]: Date } =
-                util.getStartEndHours(util.resetTime(startTime), scheduleStartHour, scheduleEndHour);
-            const endDate: { [key: string]: Date } =
-                util.getStartEndHours(util.resetTime(endTime), scheduleStartHour, scheduleEndHour);
-            const firstEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
-            firstEventObj[eventFields.endTime] = startDate.endHour;
-            eventData.push(firstEventObj);
-            const secondEventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
-            secondEventObj[eventFields.startTime] = endDate.startHour;
-            eventData.push(secondEventObj);
+        if (util.resetTime(new Date(startTime.getTime())) < util.resetTime(new Date(endTime.getTime()))) {
+            let startReferenceDate: Date = util.resetTime(new Date(startTime.getTime()));
+            let endReferenceDate: Date = new Date(startReferenceDate.getTime());
+            for (let i: number = 0; startReferenceDate < new Date(endTime.getTime()); i++) {
+                endReferenceDate = new Date(endReferenceDate.setDate(startReferenceDate.getDate() + 1));
+                const eventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+                eventObj[eventFields.startTime] = new Date(startReferenceDate);
+                eventObj[eventFields.endTime] = new Date(endReferenceDate);
+                startReferenceDate = new Date(startReferenceDate.setDate(startReferenceDate.getDate() + 1));
+                eventData.push(eventObj);
+            }
+            const index: number = eventData.length - 1;
+            eventData[0][eventFields.startTime] = startTime;
+            eventData[index][eventFields.endTime] = endTime;
         } else {
             eventData.push(event);
         }
@@ -751,8 +753,8 @@ export class DragAndDrop extends ActionBase {
                     // eslint-disable-next-line max-len
                     this.parent.getDateFromElement(isNullOrUndefined(index) ? this.actionObj.target as HTMLElement : this.targetTd as HTMLElement)));
             const splitEvents: Record<string, any>[] = this.splitEvent(event);
-            const events: Record<string, any>[] = event[this.parent.eventFields.isAllDay] ||
-                this.parent.eventBase.isAllDayAppointment(event) || splitEvents.length > 2 ? [event] : splitEvents;
+            const events: Record<string, any>[] = this.parent.eventBase.isAllDayAppointment(event) || splitEvents.length > 2 ||
+                this.parent.eventSettings.spannedEventPlacement !== 'TimeSlot' ? [event] : splitEvents;
             for (let i: number = 0; i < events.length; i++) {
                 if (i > 0) {
                     let filterQuery: string =
@@ -849,7 +851,7 @@ export class DragAndDrop extends ActionBase {
         const renderDates: Date[] = this.getRenderedDates();
         const events: Record<string, any>[] = this.parent.eventBase.splitEvent(event, renderDates);
         let query: string = `.e-all-day-cells[data-date="${(<Date>events[0][this.parent.eventFields.startTime]).getTime()}"]`;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             query = query.concat('[data-group-index = "' + this.actionObj.groupIndex + '"]');
         }
         const cell: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(query));
@@ -1046,7 +1048,12 @@ export class DragAndDrop extends ActionBase {
         if (this.parent.eventDragArea) {
             const targetDate: Date = this.parent.getDateFromElement(e.target as HTMLElement);
             if (!isNullOrUndefined(targetDate)) {
-                eventStart = targetDate;
+                if (!this.parent.activeViewOptions.timeScale.enable || (this.parent.currentView === 'TimelineMonth')) {
+                    const eventSrt: Date = eventObj[this.parent.eventFields.startTime];
+                    eventStart = new Date(eventStart.setHours(eventSrt.getHours(), eventSrt.getMinutes(), eventSrt.getSeconds()));
+                } else {
+                    eventStart = targetDate;
+                }
             }
         }
         const eventEnd: Date = new Date(eventStart.getTime());

@@ -56,7 +56,7 @@ export class LineBase {
         let tempPoint: Points;
         for (let i: number = 0; i < tempPoints.length; i++) {
             tempPoint = tempPoints[i];
-            if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '') {
+            if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '' || (series.category === 'Indicator' && (isNaN(tempPoint.xValue) || isNaN(tempPoint.yValue)))) {
                 continue;
             } else {
                 tempPoints2.push(tempPoint);
@@ -87,6 +87,7 @@ export class LineBase {
             const point2: ChartLocation = getPointLocation(
                 secondPoint.xValue, secondPoint.yValue, series.xAxis, series.yAxis, isInverted, series
             );
+            
             direction = startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ' +
                 'L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ';
         }

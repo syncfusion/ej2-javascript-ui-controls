@@ -1,14 +1,14 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
-import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
-import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart } from '../index';
+import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, beginAction } from './index';
+import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, UndoRedoEventArgs } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
 import { getCell, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
-import { workbookFormulaOperation, DefineNameModel, getSheet } from '../../workbook/index';
+import { workbookFormulaOperation, DefineNameModel, clearRange, getAddressInfo, getSheet, setCellFormat } from '../../workbook/index';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -201,10 +201,12 @@ export function getCellPosition(
  * @param {HTMLElement} ele - Specify the element
  * @param {number[]} range - Specify the range
  * @param {string} cls - Specify the class name
+ * @param {boolean} preventAnimation - Specify the preventAnimation.
  * @returns {void} - To set the position
  * @hidden
  */
-export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number[], cls: string = 'e-selection'): void {
+export function setPosition(
+    parent: Spreadsheet, ele: HTMLElement, range: number[], cls: string = 'e-selection', preventAnimation?: boolean): Promise<null> | void {
     const sheet: SheetModel = parent.getActiveSheet();
     if (sheet.frozenRows || sheet.frozenColumns) {
         let content: HTMLElement;
@@ -218,10 +220,10 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                 if (!rangeEle) { rangeEle = ele.cloneNode(true) as HTMLElement; content.appendChild(rangeEle); }
                 ele = rangeEle;
                 locateElem(
-                    ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, true, parent.viewport.beforeFreezeHeight,
+                    ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation, true, parent.viewport.beforeFreezeHeight,
                     parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
             } else {
-                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol);
+                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation);
             }
             if (ele.style.display) { ele.style.display = ''; }
             removeRangeEle(parent.getSelectAllContent(), content, 'e-active-cell');
@@ -239,11 +241,11 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                 if (!rangeEle) { rangeEle = ele.cloneNode(true) as HTMLElement; contentElem.appendChild(rangeEle); }
                 ele = rangeEle;
                 locateElem(
-                    ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, true, parent.viewport.beforeFreezeHeight,
+                    ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, true, parent.viewport.beforeFreezeHeight,
                     parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-autofill');
             }
             else {
-                locateElem(ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-autofill');
+                locateElem(ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, false, 0, 0, 0, 'e-autofill');
             }
             if (ele.style.display) { ele.style.display = ''; }
             removeRangeEle(parent.getSelectAllContent(), contentElem, 'e-autofill');
@@ -255,9 +257,13 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
             const freezeRow: number = parent.frozenRowCount(sheet); const freezeCol: number = parent.frozenColCount(sheet);
             if ((range[0] < freezeRow || range[1] < freezeCol)) {
                 if (range[3] + 1 === freezeCol && range[2] + 1 > freezeRow) {
-                    locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
+                    locateElem(
+                        parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
+                        preventAnimation, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
                 } else if (range[2] + 1 === freezeRow && range[3] + 1 > freezeCol) {
-                    locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4 });
+                    locateElem(
+                        parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
+                        preventAnimation, false, 0, 0, 0, 'e-filloption', true, { top: -4 });
                 } else if (range[3] + 1 === freezeCol && range[2] + 1 < freezeRow) { // for upper side
                     contentElem = parent.getColumnHeaderContent();
                     const rangeElem: HTMLElement = contentElem.querySelector('.' + cls);
@@ -265,9 +271,13 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                         parent.notify(getautofillDDB, { id: parent.element.id + '_autofilloptionbtn', appendElem: contentElem });
                     }
                     ele = parent.autofillModule.autoFillDropDown.element;
-                    locateElem(ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
+                    locateElem(
+                        ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, false, 0, 0, 0, 'e-filloption', true,
+                        { left: -4 });
                 } else if (range[2] + 1 === freezeRow && range[3] + 1 === freezeCol) { // corner cell
-                    locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true, { top: -4, left: -4 });
+                    locateElem(
+                        parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
+                        preventAnimation, false, 0, 0, 0, 'e-filloption', true, { top: -4, left: -4 });
                 }
                 else {
                     contentElem = range[0] < freezeRow && range[1] < freezeCol ? parent.getSelectAllContent() :
@@ -278,12 +288,14 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                     }
                     ele = parent.autofillModule.autoFillDropDown.element;
                     locateElem(
-                        ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, true, parent.viewport.beforeFreezeHeight,
-                        parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-filloption', true);
+                        ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, true, parent.viewport.
+                            beforeFreezeHeight, parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-filloption', true);
                 }
             }
             else {
-                locateElem(parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol, false, 0, 0, 0, 'e-filloption', true);
+                locateElem(
+                    parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
+                    preventAnimation, false, 0, 0, 0, 'e-filloption', true);
             }
             if (ele.style.display) { ele.style.display = ''; }
             removeRangeEle(parent.getSelectAllContent(), contentElem, 'e-filloption');
@@ -393,23 +405,24 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                         }
                     }
                     locateElem(
-                        rangeEle, rng, sheet, parent.enableRtl, frozenRow, frozenCol, false, parent.viewport.beforeFreezeHeight,
-                        parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
+                        rangeEle, rng, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation, false,
+                        parent.viewport.beforeFreezeHeight, parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
                     if (rangeEle.classList.contains('e-hide')) { rangeEle.classList.remove('e-hide'); }
                 });
             } else {
                 removeRangeEle(parent.getSelectAllContent(), null, 'e-selection');
                 removeRangeEle(parent.getColumnHeaderContent(), null, 'e-selection');
                 removeRangeEle(parent.getRowHeaderContent(), null, 'e-selection');
-                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol);
+                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation);
                 if (cls === 'e-range-indicator' || !parent.getMainContent().querySelector('.' + cls)) {
                     parent.getMainContent().appendChild(ele);
                 }
             }
         }
     }  else {
-        locateElem(ele, range, sheet, parent.enableRtl, 0, 0);
+        const promise: Promise<null> = locateElem(ele, range, sheet, parent.enableRtl, 0, 0, preventAnimation) as Promise<null>;
         if (ele && !parent.getMainContent().querySelector('.' + cls)) { parent.getMainContent().appendChild(ele); }
+        return promise;
     }
 }
 /**
@@ -452,6 +465,7 @@ export function removeRangeEle(content: Element, checkElement: HTMLElement, clsN
  * @param {boolean} isRtl - Specify the boolean value.
  * @param {number} frozenRow - Specidy the frozen row.
  * @param {number} frozenColumn - Specify the frozen column
+ * @param {boolean} preventAnimation - Specify the preventAnimation.
  * @param {boolean} isActiveCell - Specidy the boolean value.
  * @param {number} freezeScrollHeight - Specify the freeze scroll height
  * @param {number} freezeScrollWidth - Specify the freeze scroll width
@@ -464,9 +478,9 @@ export function removeRangeEle(content: Element, checkElement: HTMLElement, clsN
  * @returns {void} - Position element with given range
  */
 export function locateElem(
-    ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow?: number, frozenColumn?: number,
-    isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number, cls?: string,
-    isFillOptShow?: boolean, freezeFillOpt?: {top?: number; left?: number}): void {
+    ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow: number, frozenColumn: number,
+    preventAnimation?: boolean, isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number,
+    cls?: string, isFillOptShow?: boolean, freezeFillOpt?: {top?: number; left?: number}): Promise<null> | void {
     const swapRange: number[] = getSwapRange(range);
     const cellPosition: { top: number, left: number } = getCellPosition(
         sheet, swapRange, frozenRow, frozenColumn, freezeScrollHeight, freezeScrollWidth, rowHdrWidth);
@@ -488,7 +502,10 @@ export function locateElem(
                 && frozenColumn && swapRange[1] < frozenColumn && swapRange[3] >= frozenColumn ? 1 : 0) + 'px'
         };
         attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
-        if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
+        if (ele) {
+            const promise: Promise<null> = setStyleAttribute([{ element: ele, attrs: attrs }], preventAnimation);
+            return promise;
+        }
     } else {
         if (isRowSelected) {
             tdiff = -5;
@@ -520,13 +537,13 @@ export function locateElem(
                 'top': top + otdiff + 'px',
                 'left': left + oldiff + 'px'
             };
-            if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
+            if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }], preventAnimation); }
         } else {
             attrs = {
                 'top': top + 'px'
             };
             attrs[isRtl ? 'right' : 'left'] = left + 'px';
-            if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
+            if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }], preventAnimation); }
         }
     }
 }
@@ -536,14 +553,24 @@ export function locateElem(
  *
  * @hidden
  * @param {StyleType[]} styles - Specify the styles
+ * @param {boolean} preventAnimation - Specify the preventAnimation.
  * @returns {void} - To update element styles using request animation frame
  */
-export function setStyleAttribute(styles: StyleType[]): void {
-    requestAnimationFrame(() => {
-        styles.forEach((style: StyleType): void => {
-            setBaseStyleAttribute(style.element as HTMLElement, style.attrs);
-        });
+export function setStyleAttribute(styles: StyleType[], preventAnimation?: boolean): Promise<null> {
+    const promise: Promise<null> = new Promise((resolve: Function) => {
+        const setStyleFn: Function = () => {
+            styles.forEach((style: StyleType): void => {
+                setBaseStyleAttribute(style.element as HTMLElement, style.attrs);
+                resolve();
+            });
+        };
+        if (preventAnimation) {
+            setStyleFn();
+        } else {
+            requestAnimationFrame(() => setStyleFn());
+        }
     });
+    return promise;
 }
 
 /**
@@ -1105,11 +1132,14 @@ export function findMaxValue(
  * @param {CollaborativeEditArgs} options - Specify the collaborative edit arguments.
  * @param {Spreadsheet} spreadsheet - specify the spreadsheet.
  * @param {boolean} isRedo - Specifyt the boolean value.
- * @param {CollaborativeEditArgs[]} undoCollections - Specifyt the undo collections.
+ * @param {CollaborativeEditArgs[]} undoCollections - Specify the undo collections.
+ * @param {any} actionEventArgs - Specify the actionEventArgs.
+ * @param {UndoRedoEventArgs} actionEventArgs.eventArgs - Specify the eventArgs.
  * @returns {void} - To update the Action.
  */
 export function updateAction(
-    options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean, undoCollections?: CollaborativeEditArgs[]): void {
+    options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean, undoCollections?: CollaborativeEditArgs[],
+    actionEventArgs?: { eventArgs: UndoRedoEventArgs }): void {
     /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
     const eventArgs: any = options.eventArgs;
     let chartElement: HTMLElement;
@@ -1139,29 +1169,47 @@ export function updateAction(
             spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(args.range));
         });
         break;
-    case 'cellSave':
+    case 'cellSave': {
         cellEvtArgs = options.eventArgs as CellSaveEventArgs;
-        cellValue = eventArgs.formula ? (isRedo ? { value: cellEvtArgs.formula } : { formula: cellEvtArgs.formula })
-            : { value: cellEvtArgs.value };
-        spreadsheet.updateCell(cellValue, cellEvtArgs.address);
+        const cellSaveArgs: UndoRedoEventArgs = { element: cellEvtArgs.element, value: cellEvtArgs.value,
+            oldValue: cellEvtArgs.oldValue, address: cellEvtArgs.address, displayText: cellEvtArgs.displayText,
+            formula: cellEvtArgs.formula, originalEvent: cellEvtArgs.originalEvent } as UndoRedoEventArgs;
+        if (actionEventArgs) {
+            actionEventArgs.eventArgs = cellSaveArgs;
+            spreadsheet.notify(beginAction, actionEventArgs);
+        }
+        cellValue = cellSaveArgs.formula ? (isRedo ? { value: cellSaveArgs.formula } : { formula: cellSaveArgs.formula })
+            : { value: cellSaveArgs.value };
+        spreadsheet.updateCell(cellValue, cellSaveArgs.address);
+        if (actionEventArgs) {
+            spreadsheet.trigger('cellSave', actionEventArgs.eventArgs);
+        }
         break;
-    case 'cellDelete':
-        spreadsheet.clearRange(options.eventArgs.address, null, true);
+    }
+    case 'cellDelete': {
+        const addrInfo: { sheetIndex: number, indices: number[] } = getAddressInfo(spreadsheet, options.eventArgs.address);
+        clearRange(spreadsheet, addrInfo.indices, addrInfo.sheetIndex, true);
         spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(options.eventArgs.address));
         break;
+    }
     case 'format':
         if (eventArgs.requestType === 'CellFormat') {
             if (eventArgs.style && eventArgs.style.border && !isNullOrUndefined(eventArgs.borderType)) {
                 const style: CellStyleModel = {};
                 Object.assign(style, eventArgs.style, null, true);
                 eventArgs.style.border = undefined;
-                spreadsheet.cellFormat(eventArgs.style, eventArgs.range);
+                spreadsheet.notify(
+                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: getRangeIndexes(eventArgs.range),
+                        onActionUpdate: true });
                 eventArgs.style.border = style.border;
                 spreadsheet.setBorder(eventArgs.style, eventArgs.range, eventArgs.borderType);
                 eventArgs.style = style;
             } else {
-                spreadsheet.cellFormat(eventArgs.style, eventArgs.range);
+                spreadsheet.notify(
+                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: getRangeIndexes(eventArgs.range),
+                        onActionUpdate: true });
             }
+            getUpdateUsingRaf((): void => spreadsheet.selectRange(spreadsheet.getActiveSheet().selectedRange));
         } else {
             spreadsheet.numberFormat(eventArgs.format, eventArgs.range);
         }
@@ -1216,12 +1264,12 @@ export function updateAction(
         if (isRedo === false) {
             spreadsheet.notify(
                 initiateFilterUI, {
-                    predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.index, isCut: true, isUndoRedo: true
+                    predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.index, isUndoRedo: true
                 });
         } else {
             spreadsheet.notify(
                 initiateFilterUI, {
-                    predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.index, isCut: true, isUndoRedo: true
+                    predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.index, isUndoRedo: true
                 });
         }
         break;
@@ -1239,8 +1287,8 @@ export function updateAction(
         } else {
             spreadsheet.notify(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, end: options.eventArgs.index +
-                    (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isAction: false,
-                checkCount: options.eventArgs.sheetCount, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
+                    (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount:
+                    options.eventArgs.sheetCount, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
         }
         break;
     case 'delete':
@@ -1253,8 +1301,8 @@ export function updateAction(
         if (isRedo === false) {
             spreadsheet.notify(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.deletedModel, modelType:
-                    options.eventArgs.modelType, isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel,
-                definedNames: options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
+                    options.eventArgs.modelType, isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames:
+                    options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
         } else {
             spreadsheet.notify(
                 deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.startIndex, checkCount:
@@ -1768,4 +1816,15 @@ export function isLockedCells(parent: Spreadsheet, rangeIndexes?: number[]): boo
         }
     }
     return hasLockCell;
+}
+
+/**
+ * Checks whether the range is discontinuous or not.
+ *
+ * @param {string} range - Specify the sheet
+ * @returns {boolean} - Returns true if the range is discontinuous range.
+ * @hidden
+ */
+export function isDiscontinuousRange(range: string): boolean {
+    return range.includes(' ');
 }

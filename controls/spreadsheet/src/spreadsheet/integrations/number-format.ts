@@ -48,7 +48,6 @@ export class NumberFormat {
                 if (span3) {
                     cellElem.appendChild(span3);
                 }
-                cellElem.style.display = 'flex';
             }
             span2.innerHTML = '';
             const width: number = getTextWidth(args.value.toString(), (args.cell as CellModel).style, this.parent.cellStyle);

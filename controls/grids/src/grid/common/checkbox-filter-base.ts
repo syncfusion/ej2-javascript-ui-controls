@@ -520,7 +520,12 @@ export class CheckBoxFilterBase {
             }
             this.initiateFilter(coll);
         } else {
-            this.clearFilter();
+            const isClearFilter: boolean = this.parent.filterSettings.columns.some((value: PredicateModel) => {
+                return this.options.field === value.field;
+            });
+            if (isClearFilter) {
+                this.clearFilter();
+            }
         }
     }
 

@@ -321,6 +321,7 @@ export class TaskbarEdit extends DateProcessor {
     public showHideTaskBarEditingElements(element: Element, secondElement: Element, fadeConnectorLine?: boolean): void {
         secondElement = secondElement ? secondElement : this.editElement;
         let isShowProgressResizer: boolean = this.parent.taskFields.progress ? true : false;
+        let isShowConnectorPoints: boolean = true;
         if (this.parent.readOnly) {
             return;
         }
@@ -330,6 +331,7 @@ export class TaskbarEdit extends DateProcessor {
             if (!isNullOrUndefined(parentRecord)) {
                 if (!parentRecord.expanded) {
                     isShowProgressResizer = false;
+                    isShowConnectorPoints = false;
                 }
             }
         }
@@ -356,7 +358,7 @@ export class TaskbarEdit extends DateProcessor {
             if (!isNullOrUndefined(this.parent.taskFields.dependency)
                 && (element.querySelector('.' + cls.connectorPointLeft)
                     || element.parentElement.querySelector('.' + cls.connectorPointLeft))
-                && isShowProgressResizer) {
+                && isShowConnectorPoints) {
                 const connectorElement: Element = !isNullOrUndefined(element.querySelector('.' + cls.connectorPointLeft)) ?
                     element : element.parentElement;
 
@@ -504,8 +506,11 @@ export class TaskbarEdit extends DateProcessor {
         if (this.isMouseDragged && this.taskBarEditAction) {
             const args: IActionBeginEventArgs = {
                 cancel: false,
-                requestType: 'mergeSegment'
+                requestType: 'taskbarediting'
             };
+            if(this.segmentIndex !== -1) {
+                args.requestType = 'mergeSegment'
+            }
             this.parent.trigger('actionBegin', args, (arg: IActionBeginEventArgs) => {
                 if (arg.cancel === false) {
                     this.taskBarEditingAction(event, false);
@@ -1345,36 +1350,13 @@ export class TaskbarEdit extends DateProcessor {
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.topTier :
             this.parent.timelineModule.bottomTier;
         if (tierMode !== 'Hour' && tierMode !== 'Minutes') {
-            if (this.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && !this.isInDst(pStartDate)) {
+            if (this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && !this.parent.isInDst(pStartDate)) {
                 pStartDate.setTime(pStartDate.getTime() + (60 * 60 * 1000));
-            } else if (!this.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && this.isInDst(pStartDate)) {
+            } else if (!this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && this.parent.isInDst(pStartDate)) {
                 pStartDate.setTime(pStartDate.getTime() - (60 * 60 * 1000));
             }
         }
         return pStartDate;
-    }
-
-    /**
-     * To get timezone offset.
-     *
-     * @returns {number} .
-     * @private
-     */
-    private getDefaultTZOffset(): number {
-        const janMonth: Date = new Date(new Date().getFullYear(), 0, 1);
-        const julMonth: Date = new Date(new Date().getFullYear(), 6, 1); //Because there is no reagions DST inbetwwen this range
-        return Math.max(janMonth.getTimezoneOffset(), julMonth.getTimezoneOffset());
-    }
-
-    /**
-     * To check whether the date is in DST.
-     *
-     * @param {Date} date .
-     * @returns {boolean} .
-     * @private
-     */
-    public isInDst(date: Date): boolean {
-        return date.getTimezoneOffset() < this.getDefaultTZOffset();
     }
 
     /**

@@ -202,6 +202,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public isExpandCollapseLevelMethod: boolean = false;
     /** @hidden */
+    public isDynamicData: boolean = false;
+    /** @hidden */
     public contentHeight: number;
     /** @hidden */
     // eslint-disable-next-line
@@ -1555,6 +1557,29 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
+     * To get timezone offset.
+     *
+     * @returns {number} .
+     * @private
+     */
+     private getDefaultTZOffset(): number {
+        const janMonth: Date = new Date(new Date().getFullYear(), 0, 1);
+        const julMonth: Date = new Date(new Date().getFullYear(), 6, 1); //Because there is no reagions DST inbetwwen this range
+        return Math.max(janMonth.getTimezoneOffset(), julMonth.getTimezoneOffset());
+    }
+
+    /**
+     * To check whether the date is in DST.
+     *
+     * @param {Date} date .
+     * @returns {boolean} .
+     * @private
+     */
+    public isInDst(date: Date): boolean {
+        return date.getTimezoneOffset() < this.getDefaultTZOffset();
+    }
+
+    /**
      * Method to map resource fields.
      *
      * @returns {void} .
@@ -1681,6 +1706,8 @@ export class Gantt extends Component<HTMLElement>
     public renderGantt(isChange?: boolean): void {
         // predecessor calculation
         if (this.predecessorModule && this.taskFields.dependency) {
+            this.predecessorModule['parentIds'] = [];
+            this.predecessorModule['parentRecord'] = [];
             this.predecessorModule.updatePredecessors();
             if (this.isInPredecessorValidation && this.enableValidation) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
@@ -1699,7 +1726,7 @@ export class Gantt extends Component<HTMLElement>
                 const count: number = getValue('count', this.dataSource);
                 this.treeGrid.dataSource = {result: this.flatData, count: count};
             } else {
-                this.treeGrid.dataSource = this.flatData.length > 0 ? this.flatData : [];
+                this.treeGrid.dataSource = this.flatData;
             }
         } else {
             if (this.enableValidation) {
@@ -2415,6 +2442,10 @@ export class Gantt extends Component<HTMLElement>
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
         }
+        if(this.editModule && this.editModule.dialogModule){
+
+            this.editModule.dialogModule.destroy();
+        }
         super.destroy();
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';
@@ -2661,6 +2692,23 @@ export class Gantt extends Component<HTMLElement>
         this.treeGrid.height = this.ganttHeight - toolbarHeight -
             (this.treeGrid.grid.getHeaderContent() as HTMLElement).offsetHeight;
         this.splitterModule.splitterObject.height = (this.ganttHeight - toolbarHeight).toString();
+        if (!isNullOrUndefined( this.chartVerticalLineContainer)) {
+            this.chartVerticalLineContainer.style.height = this.ganttHeight + 'px';
+        }
+        if (!isNullOrUndefined(this.dayMarkersModule)) {
+            const holidayContainer: HTMLElement = getValue('nonworkingDayRender.holidayContainer', this.dayMarkersModule);
+            const weekendContainer: HTMLElement = getValue('nonworkingDayRender.weekendContainer', this.dayMarkersModule);
+            const eventMarkersContainer: HTMLElement = getValue('eventMarkerRender.eventMarkersContainer', this.dayMarkersModule);
+            if (holidayContainer) {
+                holidayContainer.style.height = this.ganttHeight + 'px';
+            }
+            if (weekendContainer) {
+                weekendContainer.style.height =  this.ganttHeight + 'px';
+            }
+            if (eventMarkersContainer) {
+                eventMarkersContainer.style.height =  this.ganttHeight + 'px';
+            }
+        }
         this.splitterModule.splitterObject.width = this.ganttWidth.toString();
         this.ganttChartModule.scrollObject.
             setHeight(this.ganttHeight - this.ganttChartModule.chartTimelineContainer.offsetHeight - toolbarHeight);
@@ -3725,6 +3773,7 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public updateDataSource(dataSource: Object[], args: object): void {
+        this.isDynamicData = true;
         if (!isNullOrUndefined(args)) {
             for (let prop of Object.keys(args)) { // eslint-disable-line
                 switch (prop) {
@@ -3938,11 +3987,14 @@ export class Gantt extends Component<HTMLElement>
         if (!isNullOrUndefined(rowData)) {
             const data: Object = extend({}, {}, rowData.taskData, true);
             const taskfields: TaskFieldsModel = this.taskFields;
+            if (data[taskfields.startDate]) {
+                this.setRecordValue(taskfields.startDate, rowData.ganttProperties.startDate, data, true);
+            }
             if (!isNullOrUndefined(taskfields.duration)) {
                 data[taskfields.duration] = 0;
             } else {
-                data[taskfields.startDate] = new Date(rowData.taskData[taskfields.startDate]);
-                data[taskfields.endDate] = new Date(rowData.taskData[taskfields.startDate]);
+                data[taskfields.startDate] = new Date(rowData.ganttProperties.startDate);
+                data[taskfields.endDate] = new Date(rowData.ganttProperties.endDate);
             }
             if (!isNullOrUndefined(taskfields.milestone)) {
                 if (data[taskfields.milestone] === false) {

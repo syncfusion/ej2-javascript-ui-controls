@@ -27,10 +27,10 @@ Following list of components are available in the package
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=accordion#/material/accordion/default.html)
   * [Product Page](https://www.syncfusion.com/products/javascript/accordion)
 
-  * Breadcrumb - Graphical user interface that helps to identify or highlight the current location within a hierarchical structure of websites. The aim is to make the user aware of their current position in a hierarchy of website links.
+* Breadcrumb - Graphical user interface that helps to identify or highlight the current location within a hierarchical structure of websites. The aim is to make the user aware of their current position in a hierarchy of website links.
 
-  * [Getting Started](https://ej2.syncfusion.com/documentation/breadcrumb/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=breadcrumb)
-  * [API References](https://ej2.syncfusion.com/documentation/breadcrumb/api-breadcrumb.html?utm_source=npm&utm_campaign=breadcrumb)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/breadcrumb/getting-started?lang=typescript&utm_source=npm&utm_campaign=breadcrumb)
+  * [API References](https://ej2.syncfusion.com/documentation/api/breadcrumb?utm_source=npm&utm_campaign=breadcrumb)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=breadcrumb#/material/breadcrumb/default.html)
   * [Product Page](https://www.syncfusion.com/javascript-ui-controls/js-breadcrumb)
 
@@ -105,10 +105,10 @@ Sidebar component is used in the following samples.
 
 ### Breadcrumb
 
-1. **Overflow Mode** - Used to limit the number of breadcrumb items to be displayed.
-2. **Icons** - Icons can be specified in Breadcrumb items.
-3. **Template** - Supports template for item and separator.
-4. **Bind To Location** - Supports items to be rendered based on the URL or current location.
+1. **Icons** - Icons can be specified in Breadcrumb items.
+2. **Template** - Supports template for item and separator.
+3. **Bind To Location** - Supports items to be rendered based on the URL or current location.
+4. **Overflow Mode** - Used to limit the number of breadcrumb items to be displayed.
 5. **Accessibility** - Provided with built-in accessibility support that helps to access all the Breadcrumb component features through the keyboard, screen readers, or other assistive technology devices.
 
 ### ContextMenu

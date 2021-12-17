@@ -2,7 +2,7 @@
  * Gantt Drag and drop spec
  */
 import { Gantt, Edit, Selection, IGanttData, RowDD } from '../../src/index';
-import { dragSelfReferenceData, normalResourceData, resourceCollection } from '../base/data-source.spec';
+import { dragSelfReferenceData, normalResourceData, resourceCollection, editingData } from '../base/data-source.spec';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 
 Gantt.Inject(Edit, Selection, RowDD);
@@ -64,6 +64,7 @@ describe('Gantt Drag and Drop support', () => {
             ganttObj_self.reorderRows([1], 6, 'child');
             expect(parseInt(ganttObj_self.flatData[6].ganttProperties.parentId)).toBe(7);
             expect(ganttObj_self.flatData[6][ganttObj_self.taskFields.parentID]).toBe(7);
+            expect(ganttObj_self.flatData[1].index).toBe(1);
             expect(ganttObj_self.flatData[6].taskData[ganttObj_self.taskFields.parentID]).toBe(7);
         });
         it('Drag and drop child to child above', function () {
@@ -312,4 +313,59 @@ describe('Gantt Drag and Drop support', () => {
             }, 100);
         });
     });
+    describe('Drag and drop', () => {
+        let ganttObj_self: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_self = createGantt(
+                {
+                    dataSource: editingData,
+                    height: '450px',
+                    highlightWeekends: true,
+                    allowSelection: true,
+                    treeColumnIndex: 1,
+                    taskFields: {
+                      id: 'TaskID',
+                      name: 'TaskName',
+                      startDate: 'StartDate',
+                      endDate: 'EndDate',
+                      progress: 'Progress',
+                      duration: 'Duration',
+                      dependency: 'Predecessor',
+                      child: 'subtasks',
+                      notes: 'Notes',
+                      expandState: 'isExpand'
+                    },
+                    editSettings: {
+                      allowAdding: true,
+                      allowEditing: true,
+                      allowDeleting: true,
+                      allowTaskbarEditing: true,
+                      showDeleteConfirmDialog: true
+                    },
+                  
+                    allowSorting: true,
+                    allowRowDragAndDrop: true,
+                    enableContextMenu: true,
+                    enableImmutableMode: true,
+                    splitterSettings: {
+                      columnIndex: 2
+                    }
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj_self) {
+                destroyGantt(ganttObj_self);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+       it('Expand/collapse', function ()  {
+           ganttObj_self.collapseByID(5);
+           ganttObj_self.reorderRows([4],2, 'child');
+           ganttObj_self.expandByID(5);
+           let chartRow: HTMLElement = document.querySelector('#' + ganttObj_self.element.id + 'GanttTaskTableBody > tr:nth-child(5)') as HTMLElement;
+           expect(chartRow.style.display).toBe('table-row');
+        });    
+    }); 
 });

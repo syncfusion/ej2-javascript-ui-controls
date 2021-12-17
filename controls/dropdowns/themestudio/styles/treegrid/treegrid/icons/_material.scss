@@ -1,0 +1,26 @@
+@include export-module('treegrid-material-icons') {
+  .e-treegrid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: '\e848';
+    }
+
+    .e-toolbar-item {
+      .e-expand::before {
+        content: '\e556';
+      }
+
+      .e-collapse::before {
+        content: '\e554';
+      }
+
+      .e-indent::before {
+        content: '\e33f';
+      }
+
+      .e-outdent::before {
+        content: '\e35d';
+      }
+    }
+  }
+}

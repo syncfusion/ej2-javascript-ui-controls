@@ -737,6 +737,90 @@ describe('FileManager control', () => {
             }, 500);
         });
     });
+    describe('Search Settings', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('Placeholder property testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                searchSettings: { placeholder: "Search Files"}
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                let addressLi: any = document.getElementById('file_breadcrumbbar').querySelectorAll('.e-address-list-item');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(6);
+                expect(gridLi.length).toEqual(5);
+                expect(addressLi.length).toEqual(1);
+                expect(feObj.path).toBe('1/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(addressLi[0].innerText).toBe('Files');
+                expect((document.getElementById('file_search') as any).placeholder).toBe('Search Files');
+                done();
+            }, 500);
+        });
+        it('Placeholder property new data testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                searchSettings: { placeholder: "Search More Files"}
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                let addressLi: any = document.getElementById('file_breadcrumbbar').querySelectorAll('.e-address-list-item');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(6);
+                expect(gridLi.length).toEqual(5);
+                expect(addressLi.length).toEqual(1);
+                expect(feObj.path).toBe('1/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(addressLi[0].innerText).toBe('Files');
+                expect((document.getElementById('file_search') as any).placeholder).toBe('Search More Files');
+                done();
+            }, 500);
+        });
+    });
+
     describe('Worst case testing', () => {
         let feObj: FileManager;
         let ele: HTMLElement, demo: HTMLElement;

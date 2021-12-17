@@ -1,0 +1,26 @@
+@include export-module('vscroll-tailwind-icons') {
+  /*! vscroll icons */
+  #{&}.e-vscroll {
+
+    &.e-scroll-device {
+
+      .e-nav-up-arrow::before {
+        content: '\e7a0';
+      }
+
+      .e-nav-down-arrow::before {
+        content: '\e7b3';
+      }
+    }
+
+    .e-nav-up-arrow::before {
+      content: '\e7a0';
+      line-height: normal;
+    }
+
+    .e-nav-down-arrow::before {
+      content: '\e7b3';
+      line-height: normal;
+    }
+  }
+}

@@ -81,7 +81,7 @@ describe('Gantt - Resource view', () => {
         });
         it('Add resources using add dialog', () => {
             ganttObj.actionBegin = function (args: any): void {
-                if (args.requestType === "beforeOpenEdiaDialog") {
+                if (args.requestType === "beforeOpenEditDialog") {
                     args.dialogModel.animationSettings = { 'effect': 'none' };
                 }
             };
@@ -91,25 +91,25 @@ describe('Gantt - Resource view', () => {
                 }
             };
             ganttObj.dataBind();
-            let resourceCheckbox1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-            let resourceCheckbox2: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-            let resourceCheckbox3: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            let resourceCheckbox3: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
             triggerMouseEvent(resourceCheckbox3, 'click')
-            let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         it('Adding task under unassigned task', () => {
             expect(ganttObj.currentViewData[3].ganttProperties.sharedTaskUniqueIds.length).toBe(3);
             expect(ganttObj.currentViewData[4].childRecords.length).toBe(4);
-            let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         it('Left resizing the added record', () => {
             expect(ganttObj.flatData[19].childRecords.length).toBe(2);
             expect(ganttObj.flatData[21].parentItem).toBeDefined();
-            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'save' && args.taskBarEditAction === 'LeftResizing') {
@@ -118,13 +118,13 @@ describe('Gantt - Resource view', () => {
                 }
             };
             ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+            let dragElement: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon')[0] as HTMLElement;
             triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
             triggerMouseEvent(dragElement, 'mousemove', -80, 0);
             triggerMouseEvent(dragElement, 'mouseup');
         });
         it('Right resizing the added record', () => {
-            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'save' && args.taskBarEditAction === 'RightResizing') {
@@ -140,7 +140,7 @@ describe('Gantt - Resource view', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
         it('Taskbar drag action', () => {
-            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'save' && args.taskBarEditAction === 'ChildDrag') {
@@ -156,12 +156,12 @@ describe('Gantt - Resource view', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
         it('Editing task name', () => {
-            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
             ganttObj.dataBind();
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');
-            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            let input: any = document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
             input.value = 'TaskName updated';
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(element, 'click');
@@ -170,7 +170,7 @@ describe('Gantt - Resource view', () => {
         });
         it('Editing resource column', () => {
             ganttObj.dataBind();
-            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
             let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(5)') as HTMLElement;
             triggerMouseEvent(resource, 'dblclick');
@@ -392,15 +392,15 @@ describe('Resoure editing using Edit dialog', () => {
             }
         };
         ganttObj.dataBind();
-        let resourceCheckbox1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-        let resourceCheckbox2: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-        let resourceCheckbox3: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-        let resourceCheckbox4: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(4) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox3: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox4: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(4) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
         triggerMouseEvent(resourceCheckbox1, 'click')
         triggerMouseEvent(resourceCheckbox2, 'click')
         triggerMouseEvent(resourceCheckbox3, 'click')
         triggerMouseEvent(resourceCheckbox4, 'click')
-        let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
 
     });
@@ -572,25 +572,25 @@ describe('Self reference data', () => {
             }
         };
         ganttObj.dataBind();
-        let resourceCheckbox1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-        let resourceCheckbox2: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-        let resourceCheckbox3: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox3: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
         triggerMouseEvent(resourceCheckbox1, 'click')
         triggerMouseEvent(resourceCheckbox2, 'click')
         triggerMouseEvent(resourceCheckbox3, 'click')
-        let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
     });
     it('Adding task under unassigned task', () => {
         expect(ganttObj.currentViewData[1].ganttProperties.sharedTaskUniqueIds.length).toBe(3);
         expect(ganttObj.currentViewData[0].childRecords.length).toBe(1);
-        let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
     });
     it('Left resizing the added record', () => {
         expect(ganttObj.flatData[14].childRecords.length).toBe(1);
         expect(ganttObj.flatData[15].parentItem).toBeDefined();
-        let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
         triggerMouseEvent(cancelRecord, 'click');
         ganttObj.actionComplete = (args: any): void => {
             if (args.requestType === 'save' && args.taskBarEditAction === 'LeftResizing') {
@@ -605,7 +605,7 @@ describe('Self reference data', () => {
         triggerMouseEvent(dragElement, 'mouseup');
     });
     it('Right resizing the added record', () => {
-        let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
         triggerMouseEvent(cancelRecord, 'click');
         ganttObj.actionComplete = (args: any): void => {
             if (args.requestType === 'save' && args.taskBarEditAction === 'RightResizing') {
@@ -621,7 +621,7 @@ describe('Self reference data', () => {
         triggerMouseEvent(dragElement, 'mouseup');
     });
     it('Taskbar drag action', () => {
-        let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
         triggerMouseEvent(cancelRecord, 'click');
         ganttObj.actionComplete = (args: any): void => {
             if (args.requestType === 'save' && args.taskBarEditAction === 'ChildDrag') {
@@ -637,7 +637,7 @@ describe('Self reference data', () => {
         triggerMouseEvent(dragElement, 'mouseup');
     });
     it('Editing task name', () => {
-        let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
         triggerMouseEvent(cancelRecord, 'click');
         ganttObj.dataBind();
         let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
@@ -743,10 +743,10 @@ describe('Self reference data', () => {
       ganttObj.dataBind();
       ganttObj.openAddDialog();
       setTimeout(done, 1500);
-      let resourceCheckbox1: HTMLElement = ganttObj.element.querySelector("#" +
+      let resourceCheckbox1: HTMLElement = document.querySelector("#" +
           ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
       triggerMouseEvent(resourceCheckbox1, "click");
-      let saveButton: HTMLElement = ganttObj.element.querySelector("#" + ganttObj.element.id +
+      let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id +
           "_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
       triggerMouseEvent(saveButton, "click");
     });

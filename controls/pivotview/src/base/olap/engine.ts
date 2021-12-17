@@ -1,7 +1,7 @@
 import { extend, Internationalization, isNullOrUndefined, L10n, Ajax } from '@syncfusion/ej2-base';
 import { PivotUtil } from '../util';
 import { MDXQuery } from './mdx-query';
-import { IField, IDataOptions, IMembers, IDrillOptions, IDrilledItem, IFieldOptions, IPageSettings, ISort, IPivotRows } from '../engine';
+import { IField, IDataOptions, IMembers, IDrillOptions, IDrilledItem, IFieldOptions, IPageSettings, ISort, IPivotRows, IDataSet } from '../engine';
 import { IAxisSet, IGridValues, IPivotValues, IFilter, ICustomProperties, IValueSortSettings, ICalculatedFieldSettings } from '../engine';
 import { IFormatSettings, IMatrix2D } from '../engine';
 import * as cls from '../../common/base/css-constant';
@@ -77,6 +77,8 @@ export class OlapEngine {
     /** @hidden */
     public isMondrian: boolean;
     /** @hidden */
+    public olapValueAxis: string;
+    /** @hidden */
     public isMeasureAvail: boolean;
     /** @hidden */
     public selectedItems: string[];
@@ -107,6 +109,7 @@ export class OlapEngine {
     private localeObj: L10n;
     private measureReportItems: string[];
     private locale: string;
+    private olapRowValueIndex: number;
     private mappingFields: { [key: string]: IFieldOptions } = {};
     private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
@@ -308,6 +311,7 @@ export class OlapEngine {
             this.updateTupCollection(customArgs.drillInfo.axis === 'row' ? rowTuples.length : columnTuples.length);
         }
         if (customArgs.action === 'down' ? customArgs.drillInfo.axis === 'column' : true) {
+            this.olapValueAxis = isNullOrUndefined(this.getValueAxis(undefined, undefined)) ? 'column' : 'row';
             this.frameColumnHeader(columnTuples);
             if (!this.isPaging) {
                 this.performColumnSorting();
@@ -363,6 +367,7 @@ export class OlapEngine {
     private frameRowHeader(tuples: Element[]): void {
         this.headerGrouping = {};
         this.lastLevel = [];
+        let isGrandTotalAdd: boolean = true;
         let position: number = this.pivotValues.length;
         let pivotValues: IPivotValues = [];
         let valueContent: IGridValues = [];
@@ -424,6 +429,7 @@ export class OlapEngine {
         let startTupPos: number = tupPos;
         let pagingAllowFlag: boolean = true;
         let lastMesPos: number = 0;
+        let isGrandTotalTop: boolean = false;
         while (tupPos < tuplesLength && pagingAllowFlag) {
             let members: NodeListOf<Element> = tuples[this.customArgs.action === 'down' ?
                 (tupPos - (this.customArgs.drillInfo.currentCell.ordinal + 1)) : tupPos].querySelectorAll('Member');
@@ -478,34 +484,26 @@ export class OlapEngine {
                             (allStartPos === (drillStartPos + 1) || this.tupRowInfo[tupPos].measurePosition === (drillStartPos + 1))))
                     : drillAllow;
                 let withoutAllAllow: boolean = (withoutAllStartPos > -1 && allCount > 0) ? (attrDrill || allStartPos > withoutAllEndPos) : true;
-                if (members.length === allCount + (measure ? 1 : 0) && measure) {
+                isGrandTotalTop = this.dataSourceSettings.grandTotalsPosition === 'Top' && this.olapRowValueIndex === 0 && this.olapValueAxis === 'row'
+                    && this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals && (this.olapValueAxis === 'row' ? this.dataSourceSettings.rows.length > 1 : true);
+                if (isGrandTotalTop && gTotals.length === 1) {
+                    gTotals = this.frameGrandTotalValues(tuples, gTotals, typeColl, measurePos);
+                }
+                if (members.length === allCount + (measure ? 1 : 0) && measure && !isGrandTotalTop) {
                     let levelName: string = 'Grand Total.' + members[measurePos].querySelector('Caption').textContent;
-                    gTotals.push({
-                        axis: 'row',
-                        actualText: this.getUniqueName(members[measurePos].querySelector('UName').textContent),
-                        colIndex: 0,
-                        formattedText: (typeColl[measurePos] === '3' &&
-                            this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)] &&
-                            this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption) ?
-                            this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption :
-                            members[measurePos].querySelector('Caption').textContent,
-                        hasChild: false,
-                        level: - 1,
-                        rowIndex: position,
-                        index: [],
-                        ordinal: tupPos,
-                        colSpan: 1,
-                        rowSpan: 1,
-                        memberType: Number(typeColl[measurePos]),
-                        isDrilled: false,
-                        parentUniqueName: members[measurePos].querySelector('PARENT_UNIQUE_NAME') ?
-                            members[measurePos].querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
-                        levelUniqueName: members[measurePos].querySelector('LName').textContent,
-                        hierarchy: members[measurePos].getAttribute('Hierarchy'),
-                        valueSort: { levelName: levelName, axis: members[measurePos].getAttribute('Hierarchy') }
-                    });
+                    let formattedText: string = (typeColl[measurePos] === '3' && this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)] &&
+                        this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption) ? this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption :
+                        members[measurePos].querySelector('Caption').textContent;
+                    gTotals = this.frameGrandTotalAxisSet(gTotals, this.getUniqueName(members[measurePos].querySelector('UName').textContent), formattedText, position, tupPos, Number(typeColl[measurePos]),
+                        members[measurePos].querySelector('PARENT_UNIQUE_NAME') ? members[measurePos].querySelector('PARENT_UNIQUE_NAME').textContent : undefined, members[measurePos].querySelector('LName').textContent,
+                        members[measurePos].getAttribute('Hierarchy'), { levelName: levelName, axis: members[measurePos].getAttribute('Hierarchy') });
                     gTotals[gTotals.length - 1].valueSort['Grand Total.' + members[measurePos].querySelector('Caption').textContent] = 1;
                 } else if (!(allStartPos === 0 || (measurePos === 0 && allStartPos === 1)) && drillAllow && withoutAllAllow) {
+                    if (this.dataSourceSettings.grandTotalsPosition === 'Top' && isGrandTotalAdd && this.dataSourceSettings.showGrandTotals && (this.olapValueAxis === 'row' ? this.dataSourceSettings.rows.length > 1 : true)) {
+                        this.insertRowGrandTotal(gTotals, valueContent, pivotValues, tuples, position);
+                        position = this.pivotValues.length;
+                        isGrandTotalAdd = false;
+                    }
                     prevTupInfo = this.tupRowInfo[tupPos];
                     let lastPos: number = position;
                     let lastMemPos: number = memPos;
@@ -594,6 +592,11 @@ export class OlapEngine {
             }
             tupPos++;
         }
+        if (!(this.dataSourceSettings.grandTotalsPosition === 'Top') || (this.olapValueAxis === 'row' && this.dataSourceSettings.rows.length === 1 && this.dataSourceSettings.grandTotalsPosition === 'Top') || this.dataSourceSettings.rows.length === 0) {
+            this.insertRowGrandTotal(gTotals, valueContent, pivotValues, tuples, position);
+        }
+    }
+    private insertRowGrandTotal(gTotals: IAxisSet[], valueContent: IGridValues, pivotValues: IPivotValues, tuples: Element[], position: number): IAxisSet[] {
         if (gTotals.length > 1 && gTotals[0].memberType !== 3) {
             gTotals[0].ordinal = -1;
         }
@@ -618,6 +621,41 @@ export class OlapEngine {
             this.updateRowEngine(pivotValues, valueContent, tuples.length);
             this.onDemandDrillEngine = pivotValues;
         }
+        return gTotals;
+    }
+    private getValueAxis(valueAxis: string, valueIndex: number): string {
+        this.olapValueAxis = valueAxis; this.olapRowValueIndex =valueIndex;
+        for (let i: number = 0; i < this.dataSourceSettings.rows.length; i++) {
+            if(this.dataSourceSettings.rows[i].name === '[Measures]') {
+                this.olapValueAxis = 'row';
+                this.olapRowValueIndex = i;
+                break;
+            }
+        }
+        return this.olapValueAxis;
+    }
+    private frameGrandTotalAxisSet(gTotals: IAxisSet[], actualText: string | number, formattedText: string,
+        rowIndex: number, ordinal: number, memberType: number, parentUniqueName: string, levelUniqueName: string, hierarchy: string, valueSort: IDataSet): IAxisSet[] {
+        gTotals.push({
+            axis: 'row',
+            actualText: actualText,
+            colIndex: 0,
+            formattedText: formattedText,
+            hasChild: false,
+            level: - 1,
+            rowIndex: rowIndex,
+            index: [],
+            ordinal: ordinal,
+            colSpan: 1,
+            rowSpan: 1,
+            memberType: memberType,
+            isDrilled: false,
+            parentUniqueName: parentUniqueName,
+            levelUniqueName: levelUniqueName,
+            hierarchy: hierarchy,
+            valueSort: valueSort
+        });
+        return gTotals;
     }
     private getDepth(tupInfo: ITupInfo, uniqueName: string, memberType: number): number {
         let memberPosition: number = tupInfo.uNameCollection.indexOf(uniqueName);
@@ -859,6 +897,58 @@ export class OlapEngine {
         }
     }
 
+    private frameGrandTotalValues(tuples: Element[], gTotals: IAxisSet[], typeColl: string[], measurePos: number): IAxisSet[] {
+        let tupPos: number = 0;
+        let lastAllStartPos: number;
+        let lastAllCount: number;
+        let availAllMember: boolean = false;
+        let withoutAllEndPos: number = -1;
+        let isGrandtoalDataAdd: boolean = false;
+        let prevTupInfo: ITupInfo;
+        let isGrandTotalTop: boolean = false;
+        while (tupPos < tuples.length && !isGrandtoalDataAdd) {
+            let members: NodeListOf<Element> = tuples[this.customArgs.action === 'down' ?
+                (tupPos - (this.customArgs.drillInfo.currentCell.ordinal + 1)) : tupPos].querySelectorAll('Member');
+            let memPos: number = 0;
+            let allCount: number = this.tupRowInfo[tupPos].allCount;
+            let allStartPos: number = this.tupRowInfo[tupPos].allStartPos;
+            let measure: Element = this.tupRowInfo[tupPos].measure;
+            let typeColl: string[] = this.tupRowInfo[tupPos].typeCollection;
+            let drillStartPos: number = this.tupRowInfo[tupPos].drillStartPos;
+            let startDrillUniquename: string = this.tupRowInfo[tupPos].startDrillUniquename;
+            memPos = 0;
+            if (tupPos === 0 && (members.length > (allCount + (measure ? 1 : 0)) || (members.length === 1 && measure))) {
+                gTotals.pop();
+            }
+            if ((tupPos === 0 && this.isPaging) ? gTotals.length === 0 :
+                (!availAllMember || allCount === lastAllCount || allStartPos !== lastAllStartPos || (members.length === 1 && measure))) {
+                let attrDrill: boolean = this.checkAttributeDrill(this.tupRowInfo[tupPos].drillInfo, 'rows');
+                let drillAllow: boolean = drillStartPos > -1 ? (allCount > 0 ? (attrDrill || allStartPos > drillStartPos) : true) : true;
+                drillAllow = (prevTupInfo && drillAllow && drillStartPos > -1) ?
+                    (prevTupInfo.startDrillUniquename !== startDrillUniquename ? true :
+                        ((withoutAllEndPos > prevTupInfo.measurePosition ? false :
+                            prevTupInfo.measureName !== this.tupRowInfo[tupPos].measureName) &&
+                            (allStartPos === (drillStartPos + 1) || this.tupRowInfo[tupPos].measurePosition === (drillStartPos + 1))))
+                    : drillAllow;
+                if (members.length === allCount + (measure ? 1 : 0) && measure && !isGrandTotalTop) {
+                    let levelName: string = 'Grand Total.' + members[measurePos].querySelector('Caption').textContent;
+                    let formattedText: string = (typeColl[measurePos] === '3' && this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)] &&
+                        this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption) ? this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption :
+                        members[measurePos].querySelector('Caption').textContent;
+                    gTotals = this.frameGrandTotalAxisSet(gTotals, this.getUniqueName(members[measurePos].querySelector('UName').textContent), formattedText, this.pivotValues.length, tupPos, Number(typeColl[measurePos]),
+                        members[measurePos].querySelector('PARENT_UNIQUE_NAME') ? members[measurePos].querySelector('PARENT_UNIQUE_NAME').textContent : undefined, members[measurePos].querySelector('LName').textContent,
+                        members[measurePos].getAttribute('Hierarchy'), { levelName: levelName, axis: members[measurePos].getAttribute('Hierarchy') });
+                    gTotals[gTotals.length - 1].valueSort['Grand Total.' + members[measurePos].querySelector('Caption').textContent] = 1;
+                }
+                lastAllCount = allCount;
+                lastAllStartPos = allStartPos;
+            }
+            isGrandtoalDataAdd = this.dataSourceSettings.values.length + 1 === gTotals.length ? true : false;
+            tupPos++;
+        }
+        return gTotals;
+    }
+
     private frameColumnHeader(tuples: Element[]): void {
         this.headerGrouping = {};
         this.lastLevel = [];
@@ -923,8 +1013,18 @@ export class OlapEngine {
                 withoutAllAvail = true;
                 isStartCol = (allCount > 0 && isStartCol) ? (allStartPos > withoutAllStartPos) : isStartCol;
             }
-            if (isStartCol) {
-                if (allCount === 0) {
+            let isGrandTotalTop: boolean = false;
+            if (this.dataSourceSettings.grandTotalsPosition === 'Top' && this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) {
+                let count: number = 0;
+                for (let i: number = 0; i < members.length; i++) {
+                    if ((members[i].querySelector('Caption').textContent).indexOf('All') === 0) {
+                        count++;
+                    }
+                }
+                isGrandTotalTop = count === (this.olapValueAxis === 'column' ? this.dataSourceSettings.columns.length - 1 : this.dataSourceSettings.columns.length);
+            }
+            if (isStartCol || isGrandTotalTop) {
+                if (allCount === 0 || isGrandTotalTop) {
                     let levelComp: number[] = [-1, -1, -1];
                     if (this.tupColumnInfo[tupPos - 1] && this.tupColumnInfo[tupPos - 1].allCount === 0) {
                         levelComp = this.levelCompare(levelColl, this.tupColumnInfo[tupPos - 1].levelCollection);
@@ -961,8 +1061,10 @@ export class OlapEngine {
                         }
                         this.setParentCollection(members);
                         if (withoutAllAvail ? (withoutAllEndPos <= drillStartPos) : true) {
-                            this.totalCollection[this.totalCollection.length] =
-                                ({ allCount: allCount, ordinal: tupPos, members: members, drillInfo: drillInfo });
+                            if (!isGrandTotalTop) {
+                                this.totalCollection[this.totalCollection.length] =
+                                    ({ allCount: allCount, ordinal: tupPos, members: members, drillInfo: drillInfo });
+                            }
                             (lastSavedInfo as ITupInfo).allCount = allCount;
                             (lastSavedInfo as ITupInfo).allStartPos = allStartPos;
                             (lastSavedInfo as ITupInfo).drillStartPos = drillStartPos;
@@ -987,10 +1089,12 @@ export class OlapEngine {
                         }
                         this.setParentCollection(members);
                         if ((withoutAllAvail && drillStartPos > -1) ? (withoutAllEndPos <= drillStartPos) : true) {
-                            this.totalCollection[this.totalCollection.length] =
-                                ({
-                                    allCount: allCount, ordinal: tupPos, members: members, allStartPos: allStartPos, drillInfo: drillInfo
-                                });
+                            if (!isGrandTotalTop) {
+                                this.totalCollection[this.totalCollection.length] =
+                                    ({
+                                        allCount: allCount, ordinal: tupPos, members: members, allStartPos: allStartPos, drillInfo: drillInfo
+                                    });
+                            }
                             (lastSavedInfo as ITupInfo).allCount = allCount;
                             (lastSavedInfo as ITupInfo).allStartPos = allStartPos;
                             (lastSavedInfo as ITupInfo).drillStartPos = drillStartPos;
@@ -1486,19 +1590,26 @@ export class OlapEngine {
             }
             let newPos: number = 0;
             let totPos: number = 0;
+            let valuePos: number = 0;
             gSumFlag = false;
             gSumGrouping = this.sortRowHeaders(gSumGrouping);
             for (let rPos: number = this.colDepth; rPos < rowCount; rPos++) {
                 /* eslint-disable @typescript-eslint/dot-notation */
+                if (this.dataSourceSettings.grandTotalsPosition === 'Top' && (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) &&
+                    ((this.olapValueAxis === 'column' && this.colDepth + 1 === rPos) || (this.olapValueAxis === 'row' && this.colDepth + this.dataSourceSettings.values.length + 1 === rPos))) {
+                    newPos = 0;
+                    gSumFlag = false;
+                }
                 let cell: IAxisSet[] = gSumFlag ? gSumGrouping : sortLvlGrouping[levels[0]]['parent'];
                 /* eslint-enable @typescript-eslint/dot-notation */
-                let currPos: number = gSumFlag ? (newPos - totPos) : newPos;
+                let currPos: number = (this.dataSourceSettings.grandTotalsPosition === 'Top' && (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) && this.colDepth === rPos) ? cell.length : gSumFlag ? (newPos - totPos) : newPos;
                 if (cell[currPos]) {
                     this.pivotValues[rPos] = [cell[currPos]];
                     (this.pivotValues[rPos][0] as IAxisSet).rowIndex = rPos;
-                    this.valueContent[newPos][0] = this.pivotValues[rPos][0] as IAxisSet;
+                    this.valueContent[valuePos][0] = this.pivotValues[rPos][0] as IAxisSet;
                 }
                 newPos++;
+                valuePos++;
                 if ((this.pivotValues[rPos][0] as IAxisSet).type === 'grand sum') {
                     gSumFlag = true;
                     totPos = newPos;

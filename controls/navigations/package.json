@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-navigations",
-	"version": "19.24.0",
+	"version": "19.20.6",
 	"description": "A package of Essential JS 2 navigation components such as Tree-view, Tab, Toolbar, Context-menu, and Accordion which is used to navigate from one page to another",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -115,7 +115,18 @@
 		"multiple-sidebar",
 		"slide-navigation",
 		"navigation-drawer",
-		"breadcrumb"
+		"breadcrumb",
+		"breadcrumb navigation",
+		"breadcrumb trail",
+		"ej2 breadcrumb",
+		"navigation links",
+		"navigational aid",
+		"previous page navigation",
+		"current page hierarchy",
+		"current page location",
+		"path of url",
+		"trace page location",
+		"list of breadcrumb links"
 	],
 	"repository": {
 		"type": "git",

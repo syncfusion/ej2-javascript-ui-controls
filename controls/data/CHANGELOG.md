@@ -2,6 +2,46 @@
 
 ## [Unreleased]
 
+## 19.3.57 (2021-12-07)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I342682` - Expand query is not generated properly has been fixed.
+
+## 19.3.56 (2021-12-02)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I348308` - `predicate.and` function argument type issue has been fixed.
+
+## 19.3.47 (2021-10-26)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I345190` - Date column filtering operator issue has been fixed.
+
+## 19.3.46 (2021-10-19)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I342682` - column `querymode` is not generated the expand query when using complex binding.
+
+## 19.3.44 (2021-10-05)
+
+### DataManager
+
+#### New Features
+
+- `#I183510`, `#I183348` - Provided `GraphQL` Adaptor support.
+
 ## 19.2.48 (2021-07-20)
 
 ### DataManager

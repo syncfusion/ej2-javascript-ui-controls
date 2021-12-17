@@ -388,6 +388,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private filterDelayTime: number = 300;
     private nestedTableUpdate: { flag: boolean, fields: FieldsModel };
     private clearIconWidth: number;
+    private isClicked: boolean = false;
     /**
      * Specifies the template that renders to the popup list content of the
      * Dropdown Tree component when the data fetch request from the remote server fails.
@@ -985,9 +986,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.createClearIcon();
         this.inputWrapper.classList.add(DROPDOWNTREE);
         this.setElementWidth(this.width);
-        this.setAttributes();
         this.updateDataAttribute();
         this.setHTMLAttributes();
+        this.setAttributes();
         this.popupDiv = this.createElement('div', { className: CONTENT, attrs: { 'tabindex': '0' } });
         this.popupDiv.classList.add(DROPDOWN);
         this.tree = this.createElement('div', { id: this.element.id + '_tree' });
@@ -1277,9 +1278,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.isClearButtonClick = false;
             return;
         }
-        if (!this.wrapText && (e.target as HTMLElement).classList.contains(CHIP_CLOSE)) {
-            this.removeChip(e);
-        }
         if (this.isPopupOpen) {
             this.hidePopup();
         } else {
@@ -1355,7 +1353,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateView(): void {
-        if ((!this.showCheckBox && !this.allowMultiSelection) || this.mode === 'Custom') {
+        if ((!this.showCheckBox && !this.allowMultiSelection) || this.mode === 'Custom' || this.inputFocus) {
             return;
         }
         if (this.mode !== 'Box') {
@@ -1515,10 +1513,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 switch (e.action) {
                 case 'escape':
                 case 'altUp':
+                    if (this.isPopupOpen) {
+                        this.hidePopup();
+                    }
+                    break;
                 case 'shiftTab':
                 case 'tab':
                     if (this.isPopupOpen) {
                         this.hidePopup();
+                    }
+                    if (this.inputFocus) {
+                        this.onFocusOut();
                     }
                     break;
                 case 'altDown':
@@ -1785,9 +1790,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.inputWrapper.insertBefore(this.chipWrapper, this.hiddenElement);
             addClass([this.inputWrapper], SHOW_CHIP);
             const isValid: boolean = this.getValidMode();
-            if (isValid && this.value !== null) {
+            if (isValid && this.value !== null && (this.value && this.value.length !== 0)) {
                 addClass([this.inputEle], CHIP_INPUT);
-            } else if (this.value === null) {
+            } else if (this.value === null || (this.value && this.value.length === 0)) {
                 addClass([this.chipWrapper], HIDEICON);
             }
         }
@@ -1829,8 +1834,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.checkWrapper = closest((target as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
         if (!isNOU(this.checkWrapper)) {
+            this.isClicked =  true;
             const checkElement: Element = select('.' + CHECKBOXFRAME, this.checkWrapper);
             this.changeState(this.checkWrapper, checkElement.classList.contains(CHECK) ? 'uncheck' : 'check', e);
+            this.isClicked =  false;
         }
         e.preventDefault();
     }
@@ -1885,7 +1892,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private setAttributes(): void {
-        this.element.removeAttribute('tabindex');
+        this.inputEle.setAttribute('tabindex', '-1');
         const id: string = this.element.getAttribute('id');
         this.hiddenElement.id = id + '_hidden';
         this.inputWrapper.setAttribute('tabindex', '0');
@@ -2051,10 +2058,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
         } else {
             if (this.showCheckBox) {
-                this.treeObj.checkedNodes = this.value.slice();
-                setValue('selectedNodes', [], this.treeObj);
-                this.treeObj.dataBind();
-                this.setMultiSelect();
+                let difference: string[] = this.value.filter((e) => {
+                    return this.treeObj.checkedNodes.indexOf(e) === -1;
+                });
+                if (difference.length > 0 || this.treeSettings.autoCheck) {
+                    this.treeObj.checkedNodes = this.value.slice();
+                    this.treeObj.dataBind();
+                    this.setMultiSelect();
+                } 
             } else {
                 this.treeObj.selectedNodes = this.value.slice();
                 this.selectedText = [];
@@ -2510,7 +2521,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         const eventArgs: DdtSelectEventArgs = {
             action: this.showCheckBox ? state : args.action,
-            isInteracted: args.isInteracted,
+            isInteracted: this.isClicked ? true : args.isInteracted,
             item: args.node,
             itemData: this.showCheckBox ? checkData[0] : selectData
         };
@@ -2582,6 +2593,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         const target: Element = <Element>args.event.target;
         if ((target.classList.contains('e-fullrow') || target.classList.contains('e-list-text')) && this.showCheckBox) {
+            this.isClicked = true;
             // eslint-disable-next-line
             const getNodeDetails: { [key: string]: Object } = this.treeObj.getNode(args.node);
             if (getNodeDetails.isChecked === 'true') {
@@ -2589,6 +2601,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             } else {
                 this.treeObj.checkAll([args.node]);
             }
+            this.isClicked = false;
             this.setMultiSelect();
             this.ensurePlaceHolder();
         }
@@ -3072,6 +3085,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private resetValue(isDynamicChange?: boolean): void {
+        if (this.value == [] && this.text == null) { return; }
         Input.setValue(null, this.inputEle, this.floatLabelType);
         if (!isDynamicChange) {
             this.oldValue = this.value;
@@ -3083,7 +3097,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         setValue('selectedNodes', [], this.treeObj);
         this.hiddenElement.innerHTML = '';
         if (this.showCheckBox) {
-            this.treeObj.uncheckAll();
+            this.treeObj.checkedNodes = [];
+            this.treeObj.dataBind();    
             this.setMultiSelect();
             this.clearCheckAll();
         }
@@ -3417,8 +3432,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             case 'sortOrder':
                 if (this.hasTemplate) { this.updateTemplate(); }
                 this.treeObj.sortOrder = newProp.sortOrder;
-                this.updateValue(this.value);
                 this.treeObj.dataBind();
+                this.updateValue(this.value);
                 break;
             case 'showDropDownIcon': this.updateDropDownIconState(newProp.showDropDownIcon); break;
             case 'popupWidth':

@@ -366,6 +366,7 @@ export class ResourceBase {
             targetType: 'relative',
             actionOnScroll: 'none',
             content: this.treeViewObj.element,
+            relateTo: this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS) as HTMLElement,
             enableRtl: this.parent.enableRtl,
             hideAnimation: { name: 'SlideLeftOut', duration: 500 },
             showAnimation: { name: 'SlideLeftIn', duration: 500 },
@@ -684,8 +685,9 @@ export class ResourceBase {
             let temp: number = 0;
             for (const currentLevelChilds of resTreeGroup[i]) {
                 for (const currentLevelChild of currentLevelChilds) {
-                    if (resTreeGroup[i + 1]) {
+                    if (resTreeGroup[i + 1] && resTreeGroup[i + 1].length > 0) {
                         const nextLevelChilds: TdData[] = resTreeGroup[i + 1][temp];
+                        if (!nextLevelChilds) { continue; }
                         let colSpan: number = 0;
                         for (const nextLevelChild of nextLevelChilds) {
                             if (!this.parent.activeViewOptions.group.byGroupID || (this.parent.activeViewOptions.group.byGroupID &&

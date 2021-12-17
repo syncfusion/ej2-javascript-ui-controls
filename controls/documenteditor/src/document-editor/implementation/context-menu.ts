@@ -540,7 +540,7 @@ export class ContextMenu {
      * @param {string} content 
      */
     private callSelectedOption(content: string): void {
-        if (content === 'Add To Dictionary') {
+        if (content === 'Add to Dictionary') {
             this.spellChecker.handleAddToDictionary();
         } else if (content === 'Ignore All') {
             this.spellChecker.handleIgnoreAllItems();
@@ -702,7 +702,7 @@ export class ContextMenu {
             contextMenuItems.push({ text: this.locale.getConstant('More Suggestion'), items: splittedSuggestion });
             contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
         } else {
-            contextMenuItems.push({ text: this.locale.getConstant('Add to Dictionary'), id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
+            contextMenuItems.push({ text: this.locale.getConstant('Add to Dictionary'), id: '_contextmenu_otherSuggestions_spellcheck_Add to Dictionary', iconCss: '' });
         }
         contextMenuItems.push({ text: this.locale.getConstant('Ignore Once'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
         contextMenuItems.push({ text: this.locale.getConstant('Ignore All'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });

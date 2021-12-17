@@ -191,6 +191,14 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     public enableOpacity: boolean;
 
     /**
+    * Specifies the popup element creation on open.
+    *
+    * @default false
+    */
+    @Property(false)
+    public createPopupOnClick: boolean;
+
+    /**
      * Triggers while selecting the color in picker / palette, when showButtons property is enabled.
      *
      * @event select
@@ -381,6 +389,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 target: this.container,
                 disabled: this.disabled,
                 enableRtl: this.enableRtl,
+                createPopupOnClick: this.createPopupOnClick,
                 open: this.onOpen.bind(this),
                 click: () => {
                     this.trigger('change', {
@@ -1552,7 +1561,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (!this.showButtons && !isKey) {
             this.trigger('change', { currentValue: { hex: hex, rgba: rgba },
                 previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }, value: cValue });
-            this.setProperties({ 'value': cValue }, true);
+            if (this.enableOpacity) {
+                this.setProperties({ 'value': cValue }, true);
+            } else {
+                this.setProperties({ 'value': hex }, true);
+            }
             this.element.value = hex ? hex : '#000000';
         } else {
             this.trigger('select', {

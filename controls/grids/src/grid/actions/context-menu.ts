@@ -325,7 +325,9 @@ export class ContextMenu implements IAction {
             args.cancel = true;
         } else {
             this.targetColumn = this.getColumn(args.event);
-            this.targetRowdata = this.parent.getRowInfo(args.event.target as Element);
+            if (parentsUntil(args.event.target as Element, 'e-grid')) {
+                this.targetRowdata = this.parent.getRowInfo(args.event.target as Element);
+            }
             if ((isNullOrUndefined(args.parentItem)) && this.targetColumn) {
                 if (this.targetRowdata.cell) {
                     this.parent.notify(events.selectRowOnContextOpen, { isOpen: true });

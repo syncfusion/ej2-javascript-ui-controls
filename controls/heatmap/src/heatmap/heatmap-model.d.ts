@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, setCulture, Browser, isBlazor } from '@syncfusion/ej2-base';import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility } from './utils/helper';import { DrawSvgCanvas, TextOption, titlePositionX, getTitle, showTooltip, getElement, SelectedCellDetails } from './utils/helper';import { removeElement, CanvasTooltip, getTooltipText } from './utils/helper';import { FontModel, MarginModel, TitleModel } from './model/base-model';import { Margin, Title, ColorCollection, LegendColorCollection } from './model/base';import { Theme, getThemeColor } from './model/theme';import { IThemeStyle, ILoadedEventArgs, ICellClickEventArgs, ITooltipEventArgs, IResizeEventArgs } from './model/interface';import { ICellEventArgs, ISelectedEventArgs } from './model/interface';import { DrawType, HeatMapTheme, ColorGradientMode } from './utils/enum';import { Axis } from './axis/axis';import { AxisModel } from './axis/axis-model';import { AxisHelper } from './axis/axis-helpers';import { Series, CellSettings } from './series/series';import { CellSettingsModel } from './series/series-model';import { PaletteSettingsModel } from './utils/colorMapping-model';import { PaletteSettings, CellColor } from './utils/colorMapping';import { TooltipSettings } from './utils/tooltip';import { TooltipSettingsModel } from './utils/tooltip-model';import { TwoDimensional } from './datasource/twodimensional';import { Tooltip } from './utils/tooltip';import { LegendSettingsModel } from '../heatmap/legend/legend-model';import { LegendSettings, Legend } from '../heatmap/legend/legend';import { Adaptor, Data } from './datasource/adaptor';import { DataModel } from './datasource/adaptor-model';import { ILegendRenderEventArgs } from './model/interface';import { ExportUtils } from '../heatmap/utils/export';import { ExportType } from '../heatmap/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { Component, Property, NotifyPropertyChanges, Internationalization, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility } from './utils/helper';import { DrawSvgCanvas, TextOption, titlePositionX, getTitle, showTooltip, getElement, SelectedCellDetails } from './utils/helper';import { removeElement, CanvasTooltip, getTooltipText } from './utils/helper';import { FontModel, MarginModel, TitleModel } from './model/base-model';import { Margin, Title, ColorCollection, LegendColorCollection } from './model/base';import { Theme, getThemeColor } from './model/theme';import { IThemeStyle, ILoadedEventArgs, ICellClickEventArgs, ITooltipEventArgs, IResizeEventArgs } from './model/interface';import { ICellEventArgs, ISelectedEventArgs } from './model/interface';import { DrawType, HeatMapTheme, ColorGradientMode } from './utils/enum';import { Axis } from './axis/axis';import { AxisModel } from './axis/axis-model';import { AxisHelper } from './axis/axis-helpers';import { Series, CellSettings } from './series/series';import { CellSettingsModel } from './series/series-model';import { PaletteSettingsModel } from './utils/colorMapping-model';import { PaletteSettings, CellColor } from './utils/colorMapping';import { TooltipSettings } from './utils/tooltip';import { TooltipSettingsModel } from './utils/tooltip-model';import { TwoDimensional } from './datasource/twodimensional';import { Tooltip } from './utils/tooltip';import { LegendSettingsModel } from '../heatmap/legend/legend-model';import { LegendSettings, Legend } from '../heatmap/legend/legend';import { Adaptor, Data } from './datasource/adaptor';import { DataModel } from './datasource/adaptor-model';import { ILegendRenderEventArgs } from './model/interface';import { ExportUtils } from '../heatmap/utils/export';import { ExportType } from '../heatmap/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -38,7 +38,6 @@ export interface HeatMapModel extends ComponentModel{
      * {% codeBlock src='heatmap/tooltipRender/index.md' %}{% endcodeBlock %}
      *
      * @event 'object'
-     * @blazorProperty 'TooltipRendering'
      */
     tooltipRender?: EmitType<ITooltipEventArgs>;
 
@@ -46,7 +45,6 @@ export interface HeatMapModel extends ComponentModel{
      * Triggers after resizing of Heatmap.
      *
      * @event 'object'
-     * @blazorProperty 'Resized'
      */
     resized?: EmitType<IResizeEventArgs>;
 
@@ -54,7 +52,6 @@ export interface HeatMapModel extends ComponentModel{
      * Triggers after heatmap is loaded.
      *
      * @event 'object'
-     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
@@ -64,7 +61,6 @@ export interface HeatMapModel extends ComponentModel{
      *
      * @deprecated
      * @event 'object'
-     * @blazorProperty 'CellRendering'
      */
     cellRender?: EmitType<ICellEventArgs>;
 
@@ -72,7 +68,6 @@ export interface HeatMapModel extends ComponentModel{
      * Triggers when multiple cells gets selected.
      *
      * @event 'object'
-     * @blazorProperty 'CellSelected'
      */
     cellSelected?: EmitType<ISelectedEventArgs>;
 
@@ -174,7 +169,6 @@ export interface HeatMapModel extends ComponentModel{
      * Triggers after heat map rendered.
      *
      * @event 'object'
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -183,7 +177,6 @@ export interface HeatMapModel extends ComponentModel{
      * {% codeBlock src='heatmap/load/index.md' %}{% endcodeBlock %}
      *
      * @event 'object'
-     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadedEventArgs>;
 
@@ -191,7 +184,6 @@ export interface HeatMapModel extends ComponentModel{
      * Triggers when click the heat map cell.
      *
      * @event 'object'
-     * @blazorProperty 'CellClicked'
      */
     cellClick?: EmitType<ICellClickEventArgs>;
 
@@ -201,7 +193,6 @@ export interface HeatMapModel extends ComponentModel{
      *
      * @deprecated
      * @event 'object'
-     * @blazorProperty 'LegendRendering'
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 

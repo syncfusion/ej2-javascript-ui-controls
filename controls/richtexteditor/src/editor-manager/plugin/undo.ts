@@ -1,4 +1,4 @@
-import { debounce, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { debounce, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import { IHtmlSubCommands, IHtmlUndoRedoData } from './../base/interface';
 import { NodeSelection } from './../../selection/selection';
@@ -104,7 +104,16 @@ export class UndoRedoManager {
      * @deprecated
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
-        const range: Range = new NodeSelection().getRange(this.parent.currentDocument);
+        let range: Range = new NodeSelection().getRange(this.parent.currentDocument);
+        let currentContainer: Node = range.startContainer;
+        for (let i = currentContainer.childNodes.length - 1; i >= 0; i--) {
+            if (!isNullOrUndefined(currentContainer.childNodes[i]) && currentContainer.childNodes[i].nodeName === '#text' &&
+            currentContainer.childNodes[i].textContent.length === 0 && currentContainer.childNodes[i].nodeName !== 'IMG' &&
+            currentContainer.childNodes[i].nodeName !== 'BR' && currentContainer.childNodes[i].nodeName && 'HR') {
+                detach(currentContainer.childNodes[i])
+            }
+        }
+        range = new NodeSelection().getRange(this.parent.currentDocument);
         const save: NodeSelection = new NodeSelection().save(range, this.parent.currentDocument);
         const htmlText: string = this.parent.editableElement.innerHTML;
         const changEle: { [key: string]: string | Object} = { text: htmlText, range: save };

@@ -1,0 +1,25 @@
+
+@include export-module('breadcrumb-fluent-icons') {
+  /*! breadcrumb icons */
+  .e-breadcrumb {
+    .e-breadcrumb-collapsed::before,
+    .e-breadcrumb-menu::before {
+      content: '\e7ae';
+    }
+
+    .e-home::before {
+      content: '\e7fe';
+    }
+
+    .e-home {
+      height: 16px;
+    }
+  }
+
+  .e-bigger .e-breadcrumb,
+  .e-bigger.e-breadcrumb {
+    .e-home {
+      height: 18px;
+    }
+  }
+}

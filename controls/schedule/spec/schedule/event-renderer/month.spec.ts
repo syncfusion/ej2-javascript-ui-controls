@@ -3,12 +3,13 @@
  * Month view appointment rendering spec
  */
 import { closest, Browser, Internationalization } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, MoreEventsClickArgs, CallbackFunction } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, TimelineMonth, Agenda, MoreEventsClickArgs, CallbackFunction } from '../../../src/schedule/index';
+import { triggerMouseEvent } from '../util.spec';
 import { testData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
-Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
+Schedule.Inject(Day, Week, WorkWeek, Month, TimelineMonth, Agenda);
 
 describe('Month Event Render Module', () => {
     beforeAll(() => {
@@ -38,6 +39,37 @@ describe('Month Event Render Module', () => {
             expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
+        });
+    });
+
+    describe('EJ2-54280 Scroll position goes back to the normal in the TimelineMonth, while dragging/resizing an event', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { views: ['TimelineMonth'], rowAutoHeight: true, width: '500px', selectedDate: new Date(2017, 10, 6) };
+            schObj = util.createSchedule(model, testData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('right resizing', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
+                expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(138);
+                expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toEqual(0);
+                done();
+            };
+            schObj.element.querySelector('.e-content-wrap').scrollLeft = 0;
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resizeElement.offsetWidth).toEqual(68);
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            triggerMouseEvent(resizeHandler, 'mousedown');
+            triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
+            triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
+            triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
+            triggerMouseEvent(resizeHandler, 'mouseup');
         });
     });
 

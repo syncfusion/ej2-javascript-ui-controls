@@ -688,7 +688,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
     protected resetHandler(e?: MouseEvent): void {
         e.preventDefault();
-        if (!(this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide'))) {
+        if (!(this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')) || this.inputWrapper.container.classList.contains('e-static-clear')) {
             this.clear(e);
         }
         this.isInteract = true;
@@ -934,8 +934,13 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             this.preventChange = true;
         }
         if (this.isVue) {
-            const current: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            let current: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             const previous: number = this.instance.getNumberParser({ format: 'n' })(this.elementPrevValue);
+            //EJ2-54963-if type "." or ".0" or "-.0" it converts to "0" automatically when binding v-model
+            const nonZeroRegex = new RegExp('[^1-9]+$');
+            if (nonZeroRegex.test(this.element.value)) {
+                current = this.value;
+            }
             const eventArgs: object = {
                 event: event,
                 value: (current === null || isNaN(current) ? null : current),

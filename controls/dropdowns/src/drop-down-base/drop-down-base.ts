@@ -867,12 +867,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                     this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
                         if (!localDataArgs.cancel) {
-                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);
+                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);                            
                             this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[]);
                             if (this.groupTemplate) {
                                 this.renderGroupTemplate(ulElement);
                             }
                             this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
+                            setTimeout(() => {
+                                if (this.getModuleName() === 'multiselect' && this.itemTemplate != null && (ulElement.childElementCount > 0 && ulElement.children[0].childElementCount > 0)) {
+                                    this.updateDataList();
+                                }
+                            });
                         }
                     });
                 }
@@ -1031,12 +1036,24 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     groupValue as string, <{ [key: string]: Object }[]>dataSource,
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
                     headerItems, option, this);
+                //EJ2-55168- Group checkbox is not working with group template
+                if (this.isGroupChecking) {
+                    for (var i = 0; i < tempHeaders.length; i++) {
+                        this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i] });
+                    }
+                }
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const tempHeaders: Element[] = ListBase.renderGroupTemplate(
                     this.groupTemplate as string, <{ [key: string]: Object }[]>dataSource,
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
                     headerItems, option, this);
+                //EJ2-55168- Group checkbox is not working with group template
+                if (this.isGroupChecking) {
+                    for (var i = 0; i < tempHeaders.length; i++) {
+                        this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i] });
+                    }
+                }
             }
             this.renderReactTemplates();
         }

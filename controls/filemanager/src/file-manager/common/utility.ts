@@ -1020,7 +1020,7 @@ export function createVirtualDragElement(parent: IFileManager): void {
             parent.dragNodes.push(parent.selectedItems[i]);
             i++;
         }
-        if (parent.selectedItems.length == 0 && parent.dragData && parent.dragData.length == 1) {
+        if (parent.selectedItems.length === 0 && parent.dragData && parent.dragData.length === 1) {
             parent.dragNodes.push(getItemName(parent, parent.dragData[0]));
         }
     }

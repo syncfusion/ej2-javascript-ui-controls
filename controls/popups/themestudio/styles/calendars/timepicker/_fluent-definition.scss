@@ -1,0 +1,52 @@
+// size variables
+$timepicker-default-text-indent: 12px !default;
+$timepicker-list-bigger-line-height: 32px !default;
+$timepicker-list-normal-line-height: 30px !default;
+$timepicker-list-normal-font-size: $text-sm !default;
+$timepicker-list-bigger-font-size: $text-lg !default;
+$timepicker-list-normal-text-indent: $timepicker-default-text-indent !default;
+$timepicker-list-bigger-text-indent: 16px !default;
+$timepicker-popup-border-radius: 6px !default;
+$timepicker-list-font-weight: normal !default;
+$timepicker-list-normal-padding: 0 !default;
+$timepicker-list-bigger-padding: 0 !default;
+$timepicker-font-icon: '\e20c' !default;
+$timepicker-icon-normal-font-size: 16px !default;
+$timepicker-icon-bigger-font-size: 18px !default;
+$timepicker-normal-input-min-height: 20px !default;
+$timepicker-normal-input-min-width: 20px !default;
+$timepicker-bigger-input-min-height: 22px !default;
+$timepicker-bigger-input-min-width: 22px !default;
+$timepicker-list-default-border-style: none !default;
+$timepicker-disable-opacity: 1 !default;
+// mouse small
+$timepicker-list-small-font-size: $text-xs !default;
+$timepicker-list-small-line-height: 26px !default;
+$timepicker-list-small-text-indent: 8px !default;
+// mouse small icon
+$timepicker-icon-small-font-size: 14px !default;
+// Touch small
+$timepicker-list-bigger-small-font-size: $text-base !default;
+$timepicker-list-bigger-small-line-height: 30px !default;
+$timepicker-list-bigger-small-text-indent: 16px !default;
+// Touch small icon
+$timepicker-icon-bigger-small-font-size: 16px !default;
+// color variables
+$timepicker-popup-shadow: $shadow-md !default;
+$timepicker-list-default-font-color: $flyout-text-color !default;
+$timepicker-list-border-color: 0 solid $border-light !default;
+$timepicker-list-hover-border-color: none !default;
+$timepicker-list-bg-color: $flyout-bg-color !default;
+$timepicker-list-active-bg-color: $flyout-bg-color-selected !default;
+$timepicker-icon-active-bg-color: $flyout-text-color-selected;
+$timepicker-active-border-color: darken($primary, 10%) !default;
+$timepicker-list-active-font-color: $flyout-text-color-pressed !default;
+$timepicker-list-active-icon-color: $flyout-text-color-selected !default;
+$timepicker-list-hover-bg-color: $flyout-bg-color-hover !default;
+$timepicker-list-hover-font-color: $flyout-text-color-hover !default;
+$timepicker-list-popup-icon-active-color: $flyout-text-color-selected !default;
+$timepicker-list-active-hover-bg-color: $flyout-bg-color-hover !default;
+$timepicker-list-active-hover-font-color: $flyout-text-color-hover !default;
+$timepicker-disable-text: $flyout-text-color-disabled !default;
+$timepicker-default-overlay: $overlay-bg-color !default;
+$timepicker-list-small-font-color: $flyout-text-color !default;

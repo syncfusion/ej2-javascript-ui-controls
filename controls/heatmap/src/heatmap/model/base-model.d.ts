@@ -271,7 +271,6 @@ export interface AxisLabelBorderModel {
      * The width of the border in pixels.
      *
      * @default 1
-     * @blazorDefaultValue 0
      */
     width?: number;
 
@@ -322,7 +321,6 @@ export interface MultiLevelCategoriesModel {
      *
      * @default null
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     start?: number | Date | string;
 
@@ -331,7 +329,6 @@ export interface MultiLevelCategoriesModel {
      *
      * @default null
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     end?: number | Date | string;
 
@@ -347,7 +344,6 @@ export interface MultiLevelCategoriesModel {
      *
      * @default null
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     maximumTextWidth?: number;
 

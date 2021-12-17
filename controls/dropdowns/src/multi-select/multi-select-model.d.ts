@@ -1,4 +1,4 @@
-import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
+import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 import {visualMode,MultiSelectChangeEventArgs,RemoveEventArgs,ISelectAllEventArgs,TaggingEventArgs,CustomValueEventArgs} from "./multi-select";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -442,6 +442,15 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * @default true
      */
     openOnClick?: boolean;
+
+    /**
+     * By default, the typed value is converting into chip or update as value of the component when you press the enter key or select from the popup.
+     * If you want to convert the typed value into chip or update as value of the component while focusing out the component, then enable this property.
+     * If custom value is enabled, both custom value and value present in the list are converted into tag while focusing out the component; Otherwise, value present in the list is converted into tag while focusing out the component.
+     *
+     * @default false
+     */
+    addTagOnBlur?: boolean; 
 
     /**
      * Fires each time when selection changes happened in list items after model and input value get affected.

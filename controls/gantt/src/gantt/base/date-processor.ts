@@ -977,7 +977,10 @@ export class DateProcessor {
     }
 
     public remove(date: Date, timezone: string): Date {
-        return this.reverse(date, timezone, date.getTimezoneOffset());
+        if (!isNullOrUndefined(date)) {
+            date = this.reverse(date, timezone, date.getTimezoneOffset());
+        }
+        return date;
     }
 
     public reverse(date: Date, fromOffset: number | string, toOffset: number | string): Date {

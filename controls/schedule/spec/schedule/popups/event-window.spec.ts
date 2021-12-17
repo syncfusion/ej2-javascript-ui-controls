@@ -2428,6 +2428,66 @@ describe('Schedule event window initial load', () => {
 
     });
 
+    describe('To check timezone datasource loaded in the event window', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2017, 10, 3),
+                timezoneDataSource: [
+                    { Value: 'Pacific/Niue', Text: 'Niue' },
+                    { Value: 'Pacific/Pago_Pago', Text: 'Pago Pago' },
+                    { Value: 'Pacific/Honolulu', Text: 'Hawaii Time' },
+                    { Value: 'Pacific/Rarotonga', Text: 'Rarotonga' },
+                    { Value: 'Pacific/Tahiti', Text: 'Tahiti' }
+                ]
+            };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('To Check if the given datasource loaded in the dropdown list', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement, 'click');
+                expect(schObj.quickPopup.quickPopup.element).toBeTruthy();
+                expect((schObj.quickPopup.quickPopup.element.querySelector('.' + cls.TIME_ZONE_CLASS) as HTMLElement).innerText)
+                    .toEqual('Pacific/Rarotonga - Pacific/Rarotonga');
+                (<HTMLElement>schObj.quickPopup.quickPopup.element.querySelector('.e-event-popup .e-close')).click();
+                const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+                cancelButton.click();
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const timezoneElement: HTMLElement = dialogElement.querySelector('.' + cls.TIME_ZONE_CLASS + ' input');
+            timezoneElement.click();
+            expect(((timezoneElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(true);
+            const startTZDropDown: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_TZ_CLASS);
+            const keyEventArgs: any = { keyCode: 74, metaKey: false, preventDefault: (): void => { /** NO Code */ } };
+            expect((startTZDropDown as HTMLInputElement).value).toEqual(schObj.tzModule.getLocalTimezoneName());
+            const listObj: any = (startTZDropDown as EJ2Instance).ej2_instances[0] as DropDownList;
+            listObj.showPopup();
+            listObj.filterInput.value = 'Ha';
+            listObj.onInput();
+            listObj.onFilterUp(keyEventArgs);
+            let element: Element = document.querySelector('.e-dropdownbase .e-list-parent');
+            expect(element.childNodes[0].textContent).toEqual('Hawaii Time');
+            listObj.filterInput.value = '';
+            listObj.onInput();
+            listObj.onFilterUp(keyEventArgs);
+            element = document.querySelector('.e-dropdownbase .e-list-parent');
+            expect(element.childNodes.length).toEqual(6);
+            listObj.onInput();
+            listObj.onFilterUp(keyEventArgs);
+            (element.children[3] as HTMLLIElement).click();
+            const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            expect((startTZDropDown as HTMLInputElement).value).toEqual('Rarotonga');
+            saveButton.click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

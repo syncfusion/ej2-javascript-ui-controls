@@ -1,5 +1,5 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';import { EventHandler, detach, EmitType, Event, addClass, getElement } from '@syncfusion/ej2-base';import { ChipModel } from './chip';
-import {Selection,ClickEventArgs,DeleteEventArgs} from "./chip-list";
+import {Selection,ClickEventArgs,DeleteEventArgs,ChipDeletedEventArgs} from "./chip-list";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -145,5 +145,13 @@ export interface ChipListModel extends ComponentModel{
      * @event
      */
     delete?: EmitType<DeleteEventArgs>;
+
+    /**
+     * Triggers when the chip item is removed.
+     * {% codeBlock src='chips/deleted/index.md' %}{% endcodeBlock %}
+     *
+     * @event
+     */
+    deleted?: EmitType<ChipDeletedEventArgs>;
 
 }

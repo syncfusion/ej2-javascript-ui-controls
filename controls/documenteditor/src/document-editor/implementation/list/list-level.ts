@@ -12,10 +12,10 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * @private
  */
 export class WListLevel {
-    public static dotBullet: string = '\uf0b7';
-    public static squareBullet: string = '\uf0a7'; //Symbol font \u25aa.
-    public static arrowBullet: string = '\u27a4';
-    public static circleBullet: string = '\uf06f' + '\u0020';
+    public static dotBullet: string = String.fromCharCode(61623);
+    public static squareBullet: string = String.fromCharCode(61607); //Symbol font \u25aa.
+    public static arrowBullet: string = String.fromCharCode(10148);
+    public static circleBullet: string = String.fromCharCode(61551) + String.fromCharCode(32);
 
     private uniqueListLevel: WUniqueFormat = undefined;
     private static uniqueListLevels: WUniqueFormats = new WUniqueFormats();

@@ -2,7 +2,74 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### Chart
+
+#### New Features
+
+- `#I271263`,`#I344376` - Provided grouping support for the column and bar chart based on categories.
+- `#F163374` - Provided color support to the highlighted point.
+- `#I342748` - Fixed width support have been provided for chart area.
+- `#I280225`, `#I340912` - Provided support to rotate y-axis labels to a given angle.
+- `#I345716` - Provided support to reverse the rendering order of the legend items in a chart.
+- Right to Left(RTL) feature added for all chart elements like legend, tooltip, data label, title, etc.
+
+## 19.3.55 (2021-11-23)
+
+### Chart
+
+#### Bug Fixes
+
+- Tooltip is now working fine in react library for mobile device.
+- `#I347059` - Data label is now rendering properly for stacking column.
+- `#F170296` - Datalabels are now removed for empty datasource on dynamic update.
+
+## 19.3.54 (2021-11-17)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I346999` - Data label connector line is now working properly for value zero.
+- `#I347279` - Marker color is now working properly for `MulticoloredLine` series type.
+
+## 19.3.53 (2021-11-12)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I346472`- Selection and highlight color is not proper when using pointColorMapping is fixed.
+- `#I346183` - StackingArea not rendering properly in huge data has been fixed.
+
+## 19.3.48 (2021-11-02)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I346066` - Pie chart datalabels are now rendering properly while disabling the legend dynamically.
+
+## 19.3.46 (2021-10-19)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I345054` - Chart with shared tooltip and huge data throws console error issue is fixed.
+
+## 19.3.45 (2021-10-12)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I339050` - Resolved CSP issues in the chart while using inline styles.
+
+- Data point highlight is now properly working while enabling the tooltip.
+
+## 19.3.44 (2021-10-05)
 
 ### Chart
 

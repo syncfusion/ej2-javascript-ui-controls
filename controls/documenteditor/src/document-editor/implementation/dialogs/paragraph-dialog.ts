@@ -773,30 +773,31 @@ export class ParagraphDialog {
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
-        let dialogElement: HTMLElement = this.documentHelper.dialog.element;
+        const dialogElement: HTMLElement = this.documentHelper.dialog.element;
         if (dialogElement) {
             //Update dialog height
-            let header: HTMLElement = dialogElement.getElementsByClassName('e-dlg-header-content')[0] as HTMLElement;
-            let contentElement: HTMLElement = dialogElement.getElementsByClassName('e-dlg-content')[0] as HTMLElement;
-            let footer: HTMLElement = dialogElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
-            let contentStyle: CSSStyleDeclaration = getComputedStyle(contentElement);
-            let dialogStyle: CSSStyleDeclaration = getComputedStyle(dialogElement);
-            let paddingTop: number = parseInt(contentStyle.paddingTop);
-            let paddingBottom: number = parseInt(contentStyle.paddingBottom);
-            let paddingVertical: number = (isNaN(paddingTop) ? 0 : paddingTop) + (isNaN(paddingBottom) ? 0 : paddingBottom);
-            let borderTop: number = parseInt(dialogStyle.borderTop);
-            let borderBottom: number = parseInt(dialogStyle.borderBottom);
-            let borderVertical: number = (isNaN(borderTop) ? 0 : borderTop) + (isNaN(borderBottom) ? 0 : borderBottom);
-            let contentHeight: number = dialogElement.offsetHeight - (header.offsetHeight + footer.offsetHeight + paddingVertical + borderVertical);
+            const header: HTMLElement = dialogElement.getElementsByClassName('e-dlg-header-content')[0] as HTMLElement;
+            const contentElement: HTMLElement = dialogElement.getElementsByClassName('e-dlg-content')[0] as HTMLElement;
+            const footer: HTMLElement = dialogElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+            const contentStyle: CSSStyleDeclaration = getComputedStyle(contentElement);
+            const dialogStyle: CSSStyleDeclaration = getComputedStyle(dialogElement);
+            const paddingTop: number = parseInt(contentStyle.paddingTop, 10);
+            const paddingBottom: number = parseInt(contentStyle.paddingBottom, 10);
+            const paddingVertical: number = (isNaN(paddingTop) ? 0 : paddingTop) + (isNaN(paddingBottom) ? 0 : paddingBottom);
+            const borderTop: number = parseInt(dialogStyle.borderTop, 10);
+            const borderBottom: number = parseInt(dialogStyle.borderBottom, 10);
+            const borderVertical: number = (isNaN(borderTop) ? 0 : borderTop) + (isNaN(borderBottom) ? 0 : borderBottom);
+            /* eslint-disable-next-line max-len */
+            const contentHeight: number = dialogElement.offsetHeight - (header.offsetHeight + footer.offsetHeight + paddingVertical + borderVertical);
             this.target.style.height = contentHeight + 'px';
             //Update dialog width
-            let paddingLeft: number = parseInt(contentStyle.paddingLeft);
-            let paddingRight = parseInt(contentStyle.paddingRight);
-            let paddingHorizontal: number = (isNaN(paddingLeft) ? 0 : paddingLeft) + (isNaN(paddingRight) ? 0 : paddingRight);
-            let borderLeft: number = parseInt(dialogStyle.borderLeft);
-            let borderRight = parseInt(dialogStyle.borderRight);
-            let borderHorizontal: number = (isNaN(borderLeft) ? 0 : borderLeft) + (isNaN(borderRight) ? 0 : borderRight);
-            let contentWidth: number = dialogElement.offsetWidth - (paddingHorizontal + borderHorizontal);
+            const paddingLeft: number = parseInt(contentStyle.paddingLeft, 10);
+            const paddingRight: number = parseInt(contentStyle.paddingRight, 10);
+            const paddingHorizontal: number = (isNaN(paddingLeft) ? 0 : paddingLeft) + (isNaN(paddingRight) ? 0 : paddingRight);
+            const borderLeft: number = parseInt(dialogStyle.borderLeft, 10);
+            const borderRight: number = parseInt(dialogStyle.borderRight, 10);
+            const borderHorizontal: number = (isNaN(borderLeft) ? 0 : borderLeft) + (isNaN(borderRight) ? 0 : borderRight);
+            const contentWidth: number = dialogElement.offsetWidth - (paddingHorizontal + borderHorizontal);
             this.paginationDiv.style.width = contentWidth + 'px';
         }
     }

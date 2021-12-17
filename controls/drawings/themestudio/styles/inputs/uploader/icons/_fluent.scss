@@ -1,0 +1,34 @@
+@include export-module('uploader-fluent-icons') {
+  .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
+    content: '\e74f';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
+    content: '\e7c5';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
+    content: '\e7a3';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
+    content: '\e80d';
+  }
+
+  .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
+    content: '\e75b';
+  }
+
+  .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
+    content: '\e709';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-msie::before {
+    position: relative;
+    right: $ie-icons-position-value;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-abort-icon.e-msie::before {
+    right: $ie-abort-icon-position-value;
+  }
+}

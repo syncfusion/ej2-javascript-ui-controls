@@ -282,6 +282,15 @@ export class Selection extends BaseSelection {
                     if (this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1 &&
                         (isElement || event.type === 'click')) {
                         this.previousSelectedEle[i].removeAttribute('class');
+                        if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None') {
+                            if (this.previousSelectedEle[i].id.indexOf('Group') > 0) {
+                                for (let j: number = 0; j < this.previousSelectedEle[i].children.length; j++) {
+                                    this.previousSelectedEle[i].children[j].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(this.previousSelectedEle[i].id).series].interior);
+                                }
+                            } else {
+                                this.previousSelectedEle[i].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(this.previousSelectedEle[i].id).series].interior);
+                            }
+                        }
                         this.addOrRemoveIndex(this.highlightDataIndexes, this.indexFinder((<HTMLElement>this.previousSelectedEle[i]).id));
                     } else if (!isElement && this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1) {
                         this.performSelection(this.indexFinder(this.previousSelectedEle[i].id), this.chart, this.previousSelectedEle[i]);
@@ -572,7 +581,7 @@ export class Selection extends BaseSelection {
     public checkSelectionElements(element: Element, className: string, visibility: boolean, legendClick: boolean, series: number): void {
         let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes);
         if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
-            children =  (element.children);
+            children = (element.children);
         }
         let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
         for (let i: number = 0; i < children.length; i++) {
@@ -613,18 +622,42 @@ export class Selection extends BaseSelection {
             if (legendShape) {
                 if (legendShape.hasAttribute('class')) {
                     this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
+                    if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '')) {
+                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series].interior);
+                        if (this.chart.highlightPattern === 'None') {
+                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series].interior);
+                        }
+                    }
                 }
                 elementClassName = selectElement.getAttribute('class') || '';
                 parentClassName = (<Element>selectElement.parentNode).getAttribute('class') || '';
                 if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
                     this.addSvgClass(legendShape, this.unselected);
                     this.removeSvgClass(legendShape, className);
+                    if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
+                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series].interior);
+                        if (this.chart.highlightPattern === 'None') {
+                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series].interior);
+                        }
+                    }
                 } else {
                     this.removeSvgClass(legendShape, this.unselected);
+                    if (!isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightColor !== '') {
+                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series].interior);
+                        if (this.chart.highlightPattern === 'None') {
+                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series].interior);
+                        }
+                    }
                     if ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') {
                         this.removeSvgClass(legendShape, className);
                     } else {
                         this.addSvgClass(legendShape, className);
+                        if (className.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
+                            legendShape.setAttribute('stroke', this.chart.highlightColor);
+                            if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightPattern === 'None') {
+                                legendShape.setAttribute('fill', this.chart.highlightColor);
+                            }
+                        }
                     }
                 }
                 if (legendClick && parentClassName.indexOf(className) > -1) {
@@ -644,6 +677,15 @@ export class Selection extends BaseSelection {
                 this.removeSvgClass(<Element>element.parentNode, this.unselected);
                 this.removeSvgClass(element, this.unselected);
                 this.addSvgClass(element, this.getSelectionClass(element.id));
+                if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None') {
+                    if (element.id.indexOf('Group') > 0) {
+                        for (let i: number = 0; i < element.children.length; i++) {
+                            element.children[i].setAttribute('fill', this.chart.highlightColor);
+                        }
+                    } else {
+                        element.setAttribute('fill', this.chart.highlightColor);
+                    }
+                }
             }
         }
     }
@@ -666,6 +708,15 @@ export class Selection extends BaseSelection {
                 this.removeSvgClass(
                     element, this.getSelectionClass(element.id)
                 );
+                if (this.chart.highlightPattern === 'None' && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
+                    if (element.id.indexOf('Group') > 0) {
+                        for (let i: number = 0; i < element.children.length; i++) {
+                            element.children[i].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(element.id).series].interior);
+                        }
+                    } else {
+                        element.setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(element.id).series].interior);
+                    }
+                }
             }
         }
     }

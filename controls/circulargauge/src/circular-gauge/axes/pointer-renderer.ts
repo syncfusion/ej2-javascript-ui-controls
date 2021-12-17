@@ -43,7 +43,7 @@ export class PointerRenderer {
         });
         let childElement: Element;
         let range: VisibleRangeModel;
-        if (this.gauge.isComponentRender) {
+        if (this.gauge.allowComponentRender) {
             axis.pointers.map((pointer: Pointer, pointerIndex: number) => {
                 if (!isNullOrUndefined(pointer.offset) && (<string>pointer.offset).length > 0) {
                     pointer.currentDistanceFromScale = stringToNumber(<string>pointer.offset, axis.currentRadius);
@@ -258,10 +258,14 @@ export class PointerRenderer {
             (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
         const oldEndValue: number = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((endAngle * Math.PI) / 180) +
                 (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
-        const roundStartAngle: number = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
+        let roundStartAngle: number = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
                 radius) / (pointer.currentRadius)) * 180) / Math.PI;
-        const roundEndAngle: number = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
+        let roundEndAngle: number = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
                 radius) / (pointer.currentRadius)) * 180) / Math.PI;
+        if (roundStartAngle > roundEndAngle && (roundStartAngle - roundEndAngle) <= radius && pointer.type === 'RangeBar') {
+            roundStartAngle = startAngle;
+            roundEndAngle = endAngle;
+        }
         if (isNullOrUndefined(pointer.currentRadius)) {
             this.calculatePointerRadius(axis, pointer);
         }

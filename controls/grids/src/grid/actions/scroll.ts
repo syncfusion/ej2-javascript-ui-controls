@@ -395,7 +395,7 @@ export class Scroll implements IAction {
                                 addClass(
                                     this.parent.getContent().querySelector('.e-frozen-right-content').querySelectorAll('tr:last-child td'),
                                     'e-lastrowcell'
-                                ); 
+                                );
                             }
                         }
                     }

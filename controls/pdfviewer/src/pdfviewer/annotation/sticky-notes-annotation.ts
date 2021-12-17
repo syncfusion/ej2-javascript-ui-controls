@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { StickyNotesSettings } from './../pdfviewer';
 import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint } from '../index';
-import { createElement, Browser, Internationalization } from '@syncfusion/ej2-base';
+import { createElement, Browser, Internationalization, isBlazor } from '@syncfusion/ej2-base';
 import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -296,7 +296,7 @@ export class StickyNotesAnnotation {
                     // eslint-disable-next-line max-len
                     // eslint-disable-next-line
                     let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
-                    this.pdfViewer.isDocumentEdited = true;
+                    this.pdfViewerBase.updateDocumentEditedProperty(true);
                     // eslint-disable-next-line
                     let settings: any = { opacity: annot.opacity, author: author, modifiedDate: annot.modifiedDate, subject: annot.shapeAnnotationType };
                     this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'StickyNotes', bounds, settings);
@@ -709,7 +709,14 @@ export class StickyNotesAnnotation {
     public initializeAcccordionContainer(): void {
         // eslint-disable-next-line max-len
         const commentPanelText: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentsPanelText', className: 'e-pv-comments-panel-text' });
-        commentPanelText.textContent = this.pdfViewer.localeObj.getConstant('No Comments Yet');
+        if (isBlazor()) {
+            const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_NoCommentsYet');
+            promise.then((value: string) => {
+                commentPanelText.textContent = value;
+            });
+        } else {
+            commentPanelText.textContent = this.pdfViewer.localeObj.getConstant('No Comments Yet');
+        }
         this.updateCommentPanelTextTop();
         this.pdfViewerBase.navigationPane.commentsContentContainer.appendChild(commentPanelText);
         // eslint-disable-next-line max-len

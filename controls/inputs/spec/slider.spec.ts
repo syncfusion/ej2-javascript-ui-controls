@@ -2239,6 +2239,11 @@ describe('Slider Control', () => {
         });
         it('click event testing', () => {
             expect((document.querySelector('.e-slider-input') as HTMLInputElement).value).toEqual('0');
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(true);
+            var e = new MouseEvent("focusout", { view: window, bubbles: true, cancelable: true });
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-slider'))[0];
+            ele1.dispatchEvent(e);
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(false);
         });
     });
 
@@ -2259,6 +2264,11 @@ describe('Slider Control', () => {
         });
         it('click event testing', () => {
             expect((document.querySelector('.e-slider-input') as HTMLInputElement).value).toEqual('0,100');
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(true);
+            var e = new MouseEvent("focusout", { view: window, bubbles: true, cancelable: true });
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-slider'))[0];
+            ele1.dispatchEvent(e);
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(false);
         });
     });
 
@@ -2279,6 +2289,32 @@ describe('Slider Control', () => {
         });
         it('click event testing', () => {
             expect((document.querySelector('.e-slider-input') as HTMLInputElement).value).toEqual('0');
+        });
+    });
+
+    describe('Slider button focus testing ', () => {
+        let ele: HTMLElement;
+        beforeAll((done: Function) => {
+            ele = createElement('div', { id: 'slider' });
+            document.body.appendChild(ele);
+            let clickFn: Function = jasmine.createSpy('click');
+            let slider: Slider = new Slider({ showButtons: true }, '#slider');
+            slider.dataBind();
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-first-button'))[0];
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            setTimeout(() => { done(); }, 500);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('click event testing', () => {
+            expect((document.querySelector('.e-slider-input') as HTMLInputElement).value).toEqual('0');
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(true);
+            var e = new MouseEvent("focusout", { view: window, bubbles: true, cancelable: true });
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-first-button'))[0];
+            ele1.dispatchEvent(e);
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(false);
         });
     });
 
@@ -2315,6 +2351,32 @@ describe('Slider Control', () => {
         });
         it('click event testing', () => {
             expect((document.querySelector('.e-slider-input') as HTMLInputElement).value).toEqual('0,100');
+        });
+    });
+
+    describe('Slider button focus enabled with Range slider testing ', () => {
+        let ele: HTMLElement;
+        beforeAll((done: Function) => {
+            ele = createElement('div', { id: 'slider' });
+            document.body.appendChild(ele);
+            let clickFn: Function = jasmine.createSpy('click');
+            let slider: Slider = new Slider({ showButtons: true, type: 'Range' }, '#slider');
+            slider.dataBind();
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-first-button'))[0];
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            setTimeout(() => { done(); }, 500);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('click event testing', () => {
+            expect((document.querySelector('.e-slider-input') as HTMLInputElement).value).toEqual('0,100');
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(true);
+            var e = new MouseEvent("focusout", { view: window, bubbles: true, cancelable: true });
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-first-button'))[0];
+            ele1.dispatchEvent(e);
+            expect(document.querySelector('.e-handle-first').classList.contains("e-tab-handle")).toEqual(false);
         });
     });
 

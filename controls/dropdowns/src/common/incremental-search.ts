@@ -7,7 +7,7 @@ let prevString: string = '';
 let matches: Element[] = [];
 const activeClass: string = 'e-active';
 let prevElementId: string = '';
-export type SearchType = 'StartsWith' | 'Equal';
+export type SearchType = 'StartsWith' | 'Equal' | 'EndsWith' | 'Contains';
 /**
  * Search and focus the list item based on key code matches with list text content
  *
@@ -85,7 +85,7 @@ export function Search(
         for (let i: number = 0, itemsData: Element[] = listItems; i < itemsData.length; i++) {
             const item: Element = itemsData[i];
             const text: string = (ignoreCase ? item.textContent.toLocaleLowerCase() : item.textContent).replace(/^\s+|\s+$/g, '');
-            if ((searchType === 'Equal' && text === queryStr) || (searchType === 'StartsWith' && text.substr(0, strLength) === queryStr)) {
+            if ((searchType === 'Equal' && text === queryStr) || (searchType === 'StartsWith' && text.substr(0, strLength) === queryStr) || (searchType === 'EndsWith' && text.substr(text.length - queryStr.length) === queryStr) || (searchType === 'Contains' && new RegExp(queryStr,"g").test(text))) {
                 itemData.item = item;
                 itemData.index = i;
                 return { item: item, index: i };

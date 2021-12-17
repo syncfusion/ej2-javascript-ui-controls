@@ -199,6 +199,45 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.refresh();
         });
 
+        it('Tooltip with Highlight color', (done: Function) => {
+            remove(document.getElementById('container_tooltip'));
+
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_2');
+                let series: Series = <Series>chartObj.series[0];
+
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = series.points[2].regions[0].y + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = series.points[2].regions[0].x + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                expect(target.getAttribute('opacity') == '1').toBe(true);
+                expect(target.getAttribute('fill') == 'red').toBe(true);
+
+                target = document.getElementById('container_Series_0_Point_0');
+                y = series.points[0].regions[0].y + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = series.points[0].regions[0].x + series.points[0].regions[0].width / 2 + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                expect(target.getAttribute('opacity') == '1').toBe(true);
+                expect(target.getAttribute('fill') == 'red').toBe(true);
+
+                target = document.getElementById('container_Series_0_Point_5');
+                y = series.points[5].regions[0].y + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = series.points[5].regions[0].x + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                expect(target.getAttribute('opacity') == '1').toBe(true);
+                expect(target.getAttribute('fill') == 'red').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.highlightColor = 'red';
+            chartObj.series[0].type = 'Column';
+            chartObj.series[0].dataSource = data;
+            chartObj.refresh();
+        });
+
         it('Tooltip for Negative point', (done: Function) => {
             remove(document.getElementById('container_tooltip'));
 
@@ -226,6 +265,7 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.loaded = loaded;
             data[1].y = -40; data[5].y = -20;
             chartObj.series[0].dataSource = data;
+            chartObj.highlightColor = '';
             chartObj.refresh();
 
         });

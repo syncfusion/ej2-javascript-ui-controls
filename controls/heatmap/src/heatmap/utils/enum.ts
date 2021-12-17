@@ -53,7 +53,11 @@ export type HeatMapTheme =
     /**  Render a HeatMap with TailwindDark theme. */
     'TailwindDark'|
     /**  Render a HeatMap with Tailwind theme. */
-    'Tailwind';
+    'Tailwind' |
+    /**  Render a HeatMap with Bootstrap5 theme. */
+    'Bootstrap5' |
+    /**  Render a HeatMap with Bootstrap5Dark theme. */
+    'Bootstrap5Dark';
 
 export type Orientation =
     /**  Horizontal Axis. */

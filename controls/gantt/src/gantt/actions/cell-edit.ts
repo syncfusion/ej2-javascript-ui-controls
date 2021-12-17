@@ -521,6 +521,7 @@ export class CellEdit {
                 this.parent.editModule.dialogModule.isResourceUpdate = true;
                 this.parent.editModule.dialogModule.previousResource = previousResource;
             }
+            this.updateDates(args);
             this.updateEditedRecord(args);
         }
     }

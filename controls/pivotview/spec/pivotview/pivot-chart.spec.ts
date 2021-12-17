@@ -288,7 +288,7 @@ describe('Chart - ', () => {
 
         it('load y axis properties', () => {
             pivotGridObj.setProperties({ chartSettings: { primaryYAxis: { labelFormat: 'C', title: 'Custom title', plotOffset: 30 } } }, true);
-            pivotGridObj.chartModule.refreshChart();
+            pivotGridObj.pivotChartModule.refreshChart();
         });
         it('load y axis properties-update', () => {
             expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600');
@@ -429,7 +429,7 @@ describe('Chart - ', () => {
         });
         it('change width to  800px', (done: Function) => {
             pivotGridObj.width = '800px';
-            pivotGridObj.chartModule.loadChart(pivotGridObj, pivotGridObj.chartSettings);
+            pivotGridObj.pivotChartModule.loadChart(pivotGridObj, pivotGridObj.chartSettings);
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
                 done();
@@ -437,7 +437,7 @@ describe('Chart - ', () => {
         });
         it('change width to 500', (done: Function) => {
             pivotGridObj.width = 500;
-            pivotGridObj.chartModule.loadChart(pivotGridObj, pivotGridObj.chartSettings);
+            pivotGridObj.pivotChartModule.loadChart(pivotGridObj, pivotGridObj.chartSettings);
             setTimeout(() => {
                 //  expect(Math.ceil(Number(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis').getAttribute('width')))).toBe(445);
                 done();
@@ -464,12 +464,12 @@ describe('Chart - ', () => {
             pivotGridObj.chartSettings.chartSeries.type = 'Radar';
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
-                // pivotGridObj.chartModule.destroy();
+                // pivotGridObj.pivotChartModule.destroy();
                 done();
             }, 2000);
         });
         it('onResize', (done: Function) => {
-            (pivotGridObj.chartModule as any).resized({
+            (pivotGridObj.pivotChartModule as any).resized({
                 chart: pivotGridObj.chart,
                 currentSize: { height: 800, width: 800 },
                 previousSize: { height: 500, width: 500 },
@@ -483,7 +483,7 @@ describe('Chart - ', () => {
         it('onExport', (done: Function) => {
             pivotGridObj.chartExport('JPEG', 'jp');
             setTimeout(() => {
-                pivotGridObj.chartModule.destroy();
+                pivotGridObj.pivotChartModule.destroy();
                 expect(pivotGridObj.chart.isDestroyed).toBeTruthy(true);
                 done();
             }, 2000);

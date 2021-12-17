@@ -150,6 +150,12 @@ export class Browser {
         if ('undefined' === typeof (<{ [key: string]: Object }>browserDetails)[key]) {
             return (<{ [key: string]: Object }>browserDetails)[key] = regX.test(Browser.userAgent);
         }
+        if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && Browser.isTouch === true) {
+            browserDetails['isIos'] = true;
+            browserDetails['isDevice'] = true;
+            browserDetails['isTouch'] = true;
+            browserDetails['isPointer'] = true;
+        }
         return (<{ [key: string]: Object }>browserDetails)[key];
     }
 

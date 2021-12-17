@@ -109,6 +109,102 @@ describe('Schedule Month view', () => {
         });
     });
 
+    describe('custom month view with displayDate', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = { views: [{ option: 'Month', displayName: 'Month', displayDate: new Date(2020, 4, 20) }] };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 4, 17).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 5, 27).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May - June 2020');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+        });
+
+        it('previous month start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 3, 5).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 4, 16).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('April - May 2020');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+        });
+        it('next month start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 4, 17).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 5, 27).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May - June 2020');
+        });
+    });
+
+    describe('custom month view with numberOfWeeks', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = { views: [{ option: 'Month', displayName: 'Month', numberOfWeeks: 6 }], selectedDate: new Date(2020, 4, 20) };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 3, 26).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 5, 6).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('April - June 2020');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+        });
+
+        it('previous month start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 2, 15).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 3, 25).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('March - April 2020');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+        });
+        it('next month start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 3, 26).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 5, 6).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('April - June 2020');
+        });
+    });
+
+    describe('custom month view with displayName and numberOfWeeks', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = { views: [{ option: 'Month', displayName: 'Month', numberOfWeeks: 6, displayDate: new Date(2020, 4, 20) }] };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 4, 17).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 5, 27).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May - June 2020');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+        });
+
+        it('previous month start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 3, 5).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 4, 16).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('April - May 2020');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+        });
+        it('next month start and end dates of custom month view', () => {
+            const cells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(cells[0].getAttribute('data-date')).toEqual(new Date(2020, 4, 17).getTime().toString());
+            expect(cells[cells.length - 1].getAttribute('data-date')).toEqual(new Date(2020, 5, 27).getTime().toString());
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May - June 2020');
+        });
+    });
+
     describe('Current Day Highlight testing', () => {
         let schObj: Schedule;
         beforeAll((): void => {

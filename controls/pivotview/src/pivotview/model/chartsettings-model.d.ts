@@ -2567,7 +2567,7 @@ export interface PivotAxisModel {
      * * Shift: Shifts the edge labels.
      * * None: No action will be performed.
      * * Hide: Edge label will be hidden.
-     * @default 'None'
+     * @default 'Shift'
      */
     edgeLabelPlacement?: EdgeLabelPlacement;
 

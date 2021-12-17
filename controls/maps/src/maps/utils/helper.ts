@@ -946,15 +946,17 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
             data[eventArgs.shapeValuePath]);
         eventArgs.shape = shape;
         if (data[eventArgs.shapeValuePath] === 'Image') {
-            eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath) &&
-                !isNullOrUndefined(data[eventArgs.imageUrlValuePath])) ?
-                ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() : data[eventArgs.imageUrlValuePath]) : eventArgs.imageUrl;
+            eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
+                ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
+                    data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl)) : eventArgs.imageUrl;
         }
     }
     else {
         const shapes: MarkerType = (!isNullOrUndefined(eventArgs.shapeValuePath)) ? ((eventArgs.shapeValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.shapeValuePath).toString() as MarkerType) : eventArgs.shape) : eventArgs.shape;
         eventArgs.shape = shapes;
-        const shapeImage: string = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ? ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.imageUrlValuePath)).toString() as MarkerType : eventArgs.imageUrl) : eventArgs.imageUrl;
+        const shapeImage: string = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
+            ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() as MarkerType : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
+                data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl)) : eventArgs.imageUrl;
         eventArgs.imageUrl = shapeImage;
     }
     return eventArgs;
@@ -1339,6 +1341,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
  * @param {number} markerIndex - Specifies the marker index
  * @param {HTMLElement} markerTemplate - Specifies the marker template element
  * @param {Point} location - Specifies the location
+ * @param {Point} transPoint - Specifies the translate point.
  * @param {number} scale - Specifies the scale value
  * @param {Point} offset - Specifies the offset value
  * @param {Maps} maps - Specifies the instance of the maps
@@ -1844,6 +1847,7 @@ export function getRatioOfBubble(min: number, max: number, value: number, minVal
  *
  * @param {MapLocation[]} points - Specifies the points
  * @param {string} type - Specifies the type
+ * @param {string} geometryType - Specified the type of the geometry
  * @returns {any} - Specifies the object
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1891,7 +1895,7 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
     let height: number = 0;
     for (let i: number = min; i <= max - 1; i++) {
         const point: MapLocation = points[i];
-        point.y = type === 'Mercator' || geometryType === 'Normal'? point.y : -(point.y);
+        point.y = type === 'Mercator' || geometryType === 'Normal' ? point.y : -(point.y);
         if (point.y > ySum) {
             if (point.x < xSum && xSum - point.x < xSum - bottomMinPoint.x) {
                 bottomMinPoint = { x: point.x, y: point.y };
@@ -2063,9 +2067,9 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
         mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const min: any = mapObject.baseMapRectBounds['min'] as any;
+    const min: any = !isNullOrUndefined(mapObject.baseMapRectBounds) ? mapObject.baseMapRectBounds['min'] as any : null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const max: any = mapObject.baseMapRectBounds['max'] as any;
+    const max: any = !isNullOrUndefined(mapObject.baseMapRectBounds) ? mapObject.baseMapRectBounds['max'] as any : null;
     const zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     if (isNullOrUndefined(mapObject.currentShapeDataLength)) {
         mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData['features'])
@@ -2074,99 +2078,101 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     const size: Rect = (mapObject.totalRect && mapObject.legendSettings.visible) ? mapObject.totalRect : mapObject.mapAreaRect;
     const availSize: Size = mapObject.availableSize;
     let x: number; let y: number;
-    let mapWidth: number = Math.abs(max['x'] - min['x']);
-    let mapHeight: number = Math.abs(min['y'] - max['y']);
-    const factor: number = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
-    center = mapObject.zoomSettings.shouldZoomInitially
-        && mapObject.markerZoomedState && !mapObject.zoomPersistence ? mapObject.markerZoomCenterPoint :
-        mapObject.centerPosition;
-    if ((!isNullOrUndefined(centerLongitude) && !isNullOrUndefined(centerLatitude)) || checkMethodeZoom) {
-        const leftPosition: number = (((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) + mapObject.mapAreaRect.x) / factor;
-        const topPosition: number = (((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) + mapObject.mapAreaRect.y) / factor;
-        const point: Point = checkMethodeZoom ? calculateCenterFromPixel(mapObject, layer) :
-            convertGeoToPoint(
-                centerLatitude, centerLongitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
-        if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
-            x = -point.x + leftPosition;
-            y = -point.y + topPosition;
-            scaleFactor = zoomFactor;
-        } else {
-            if (Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially || (mapObject.zoomNotApplied)) {
+    if (!isNullOrUndefined(min) && !isNullOrUndefined(max)) {
+        let mapWidth: number = Math.abs(max['x'] - min['x']);
+        let mapHeight: number = Math.abs(min['y'] - max['y']);
+        const factor: number = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
+        center = mapObject.zoomSettings.shouldZoomInitially
+            && mapObject.markerZoomedState && !mapObject.zoomPersistence ? mapObject.markerZoomCenterPoint :
+            mapObject.centerPosition;
+        if ((!isNullOrUndefined(centerLongitude) && !isNullOrUndefined(centerLatitude)) || checkMethodeZoom) {
+            const leftPosition: number = (((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) + mapObject.mapAreaRect.x) / factor;
+            const topPosition: number = (((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) + mapObject.mapAreaRect.y) / factor;
+            const point: Point = checkMethodeZoom ? calculateCenterFromPixel(mapObject, layer) :
+                convertGeoToPoint(
+                    centerLatitude, centerLongitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
+            if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
+                scaleFactor = zoomFactor;
             } else {
-                if (mapObject.zoomSettings.shouldZoomInitially || mapObject.zoomNotApplied) {
+                if (Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially || (mapObject.zoomNotApplied)) {
                     x = -point.x + leftPosition;
                     y = -point.y + topPosition;
-                    scaleFactor = zoomFactor;
                 } else {
-                    x = mapObject.zoomTranslatePoint.x;
-                    y = mapObject.zoomTranslatePoint.y;
-                }
-            }
-            scaleFactor = mapObject.mapScaleValue;
-        }
-    } else {
-        if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
-            scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
-            mapWidth *= scaleFactor;
-            mapHeight *= scaleFactor;
-            const widthDiff: number = min['x'] !== 0 && mapObject.translateType === 'layers' ? availSize.width - size.width : 0;
-            x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2))) - widthDiff;
-            y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
-            mapObject.previousTranslate = new Point(x, y);
-        } else {
-            if (!mapObject.zoomSettings.shouldZoomInitially && mapObject.markerZoomFactor === 1 && mapObject.mapScaleValue === 1) {
-                scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
-                mapHeight *= scaleFactor; mapWidth *= scaleFactor;
-                y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
-                x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
-            } else {
-                scaleFactor = mapObject.mapScaleValue < 1 ? mapObject.mapScaleValue + 1 : mapObject.mapScaleValue;
-                mapObject.mapScaleValue = mapObject.zoomSettings.enable && mapObject.mapScaleValue !== 1 ? mapObject.mapScaleValue : 1;
-                if ((mapObject.currentShapeDataLength !== (!isNullOrUndefined(layer.shapeData['features'])
-                    ? layer.shapeData['features'].length : layer.shapeData['geometries'].length)) && layer.type !== 'SubLayer') {
-                    const scale: number = parseFloat(Math.min(size.height / mapHeight, size.width / mapWidth).toFixed(2));
-                    mapHeight *= scale; mapWidth *= scale;
-                    y = size.y + ((-(min['y'])) + ((size.height / 2)
-                        - (mapHeight / 2)));
-                    scaleFactor = scale;
-                    x = size.x + ((-(min['x']))
-                        + ((size.width / 2) - (mapWidth / 2)));
-                } else if (mapObject.availableSize.height !== mapObject.heightBeforeRefresh || mapObject.widthBeforeRefresh !== mapObject.availableSize.width) {
-                    const cscaleFactor: number = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
-                    let cmapWidth: number = mapWidth; cmapWidth *= cscaleFactor;
-                    let cmapHeight: number = mapHeight; cmapHeight *= cscaleFactor;
-                    const x1: number = size.x + ((-(min['x'])) + ((size.width / 2) - (cmapWidth / 2)));
-                    const y1: number = size.y + ((-(min['y'])) + ((size.height / 2) - (cmapHeight / 2)));
-                    const xdiff: number = (mapObject.translatePoint.x - mapObject.previousTranslate.x) / (mapObject.widthBeforeRefresh);
-                    const ydiff: number = (mapObject.translatePoint.y - mapObject.previousTranslate.y) / (mapObject.heightBeforeRefresh);
-                    const actxdiff: number = xdiff * (mapObject.availableSize.width);
-                    const actydiff: number = ydiff * (mapObject.availableSize.height);
-                    x = x1 + actxdiff;
-                    y = y1 + actydiff;
-                    mapObject.previousTranslate = new Point(x1, y1);
-                    mapObject.zoomTranslatePoint.x = x;
-                    mapObject.zoomTranslatePoint.y = y;
-                } else {
-                    if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1 && !mapObject.zoomModule.isDragZoom) {
-                        scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
-                        mapWidth *= scaleFactor;
-                        x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
-                        mapHeight *= scaleFactor;
-                        y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                    if (mapObject.zoomSettings.shouldZoomInitially || mapObject.zoomNotApplied) {
+                        x = -point.x + leftPosition;
+                        y = -point.y + topPosition;
+                        scaleFactor = zoomFactor;
                     } else {
                         x = mapObject.zoomTranslatePoint.x;
                         y = mapObject.zoomTranslatePoint.y;
-                        scaleFactor = mapObject.scale;
+                    }
+                }
+                scaleFactor = mapObject.mapScaleValue;
+            }
+        } else {
+            if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
+                scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                mapWidth *= scaleFactor;
+                mapHeight *= scaleFactor;
+                const widthDiff: number = min['x'] !== 0 && mapObject.translateType === 'layers' ? availSize.width - size.width : 0;
+                x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2))) - widthDiff;
+                y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                mapObject.previousTranslate = new Point(x, y);
+            } else {
+                if (!mapObject.zoomSettings.shouldZoomInitially && mapObject.markerZoomFactor === 1 && mapObject.mapScaleValue === 1) {
+                    scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                    mapHeight *= scaleFactor; mapWidth *= scaleFactor;
+                    y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                    x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
+                } else {
+                    scaleFactor = mapObject.mapScaleValue < 1 ? mapObject.mapScaleValue + 1 : mapObject.mapScaleValue;
+                    mapObject.mapScaleValue = mapObject.zoomSettings.enable && mapObject.mapScaleValue !== 1 ? mapObject.mapScaleValue : 1;
+                    if ((mapObject.currentShapeDataLength !== (!isNullOrUndefined(layer.shapeData['features'])
+                        ? layer.shapeData['features'].length : layer.shapeData['geometries'].length)) && layer.type !== 'SubLayer') {
+                        const scale: number = parseFloat(Math.min(size.height / mapHeight, size.width / mapWidth).toFixed(2));
+                        mapHeight *= scale; mapWidth *= scale;
+                        y = size.y + ((-(min['y'])) + ((size.height / 2)
+                            - (mapHeight / 2)));
+                        scaleFactor = scale;
+                        x = size.x + ((-(min['x']))
+                            + ((size.width / 2) - (mapWidth / 2)));
+                    } else if (mapObject.availableSize.height !== mapObject.heightBeforeRefresh || mapObject.widthBeforeRefresh !== mapObject.availableSize.width) {
+                        const cscaleFactor: number = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                        let cmapWidth: number = mapWidth; cmapWidth *= cscaleFactor;
+                        let cmapHeight: number = mapHeight; cmapHeight *= cscaleFactor;
+                        const x1: number = size.x + ((-(min['x'])) + ((size.width / 2) - (cmapWidth / 2)));
+                        const y1: number = size.y + ((-(min['y'])) + ((size.height / 2) - (cmapHeight / 2)));
+                        const xdiff: number = (mapObject.translatePoint.x - mapObject.previousTranslate.x) / (mapObject.widthBeforeRefresh);
+                        const ydiff: number = (mapObject.translatePoint.y - mapObject.previousTranslate.y) / (mapObject.heightBeforeRefresh);
+                        const actxdiff: number = xdiff * (mapObject.availableSize.width);
+                        const actydiff: number = ydiff * (mapObject.availableSize.height);
+                        x = x1 + actxdiff;
+                        y = y1 + actydiff;
+                        mapObject.previousTranslate = new Point(x1, y1);
+                        mapObject.zoomTranslatePoint.x = x;
+                        mapObject.zoomTranslatePoint.y = y;
+                    } else {
+                        if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1 && !mapObject.zoomModule.isDragZoom) {
+                            scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                            mapWidth *= scaleFactor;
+                            x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
+                            mapHeight *= scaleFactor;
+                            y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                        } else {
+                            x = mapObject.zoomTranslatePoint.x;
+                            y = mapObject.zoomTranslatePoint.y;
+                            scaleFactor = mapObject.scale;
+                        }
                     }
                 }
             }
         }
-    }
-    if (!isNullOrUndefined(mapObject.translatePoint)) {
-        x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
-        y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
+        if (!isNullOrUndefined(mapObject.translatePoint)) {
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
+        }
     }
     scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
     mapObject.widthBeforeRefresh = mapObject.availableSize.width;
@@ -2610,6 +2616,12 @@ export function elementAnimate(
         delay: delay,
         progress: (args: AnimationOptions): void => {
             if (args.timeStamp > args.delay) {
+                if (maps.isTileMap && height === 0) {
+                    const layerGroupElement: HTMLElement = document.querySelector('.GroupElement') as HTMLElement;
+                    if (!isNullOrUndefined(layerGroupElement)) {
+                        layerGroupElement.style.display = 'block';
+                    }
+                }
                 height = ((args.timeStamp - args.delay) / args.duration);
                 element.setAttribute('transform', 'translate( ' + (centerX - (radius * height)) + ' ' + (centerY - (radius * height)) +
                     ' ) scale(' + height + ')');
@@ -2954,6 +2966,7 @@ export function changeBorderWidth(element: Element, index: number, scale: number
             let value: number = 0;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const borderWidthValue: any = maps.layersCollection[index].shapeSettings.borderWidthValuePath;
+            const borderWidth: number = (<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width;
             if (maps.layersCollection[index].shapeSettings.borderWidthValuePath) {
                 value = checkShapeDataFields(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2964,13 +2977,16 @@ export function changeBorderWidth(element: Element, index: number, scale: number
                     if (maps.layersCollection[index].dataSource[value][borderWidthValue]) {
                         currentStroke = maps.layersCollection[index].dataSource[value][borderWidthValue];
                     } else {
-                        currentStroke = ((<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width);
+                        currentStroke = (isNullOrUndefined(borderWidth) ? 0 : borderWidth);
                     }
                 }
             } else {
-                currentStroke = ((<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width);
+                currentStroke = (isNullOrUndefined(borderWidth) ? 0 : borderWidth);
             }
             childNode.setAttribute('stroke-width', (currentStroke / scale).toString());
+            if (element.id.indexOf('_LineString') > -1 && isNullOrUndefined(currentStroke)) {
+                childNode.setAttribute('stroke-width', (1 / scale).toString());
+            }
         }
     }
 }

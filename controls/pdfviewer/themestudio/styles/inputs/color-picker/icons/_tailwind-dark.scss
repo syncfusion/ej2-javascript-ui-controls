@@ -1,0 +1,9 @@
+@include export-module('color-picker-tailwind-dark-icons') {
+  .e-container {
+    & .e-value-switch-btn {
+      &::before {
+        content: '\e7b7';
+      }
+    }
+  }
+}

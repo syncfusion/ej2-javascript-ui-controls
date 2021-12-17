@@ -20,6 +20,7 @@ export class ContextMenu implements IContextMenu {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private copyContextMenu: MenuItemModel[] = [];
+    private contextMenuList: MenuItemModel[] = [];
     // eslint-disable-next-line
     public currentTarget: any;
     /**
@@ -96,6 +97,7 @@ export class ContextMenu implements IContextMenu {
 
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         const target: HTMLElement = this.setTarget(args);
+        let currentAnnotSettings : any = this.pdfViewer.selectedItems.annotations.length !== 0 ? this.pdfViewer.selectedItems.annotations[0].annotationSettings : null;
         // eslint-disable-next-line max-len
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && target && target.className === 'free-text-input' && target.tagName === 'TEXTAREA') {
             this.pdfViewerBase.isFreeTextContextMenu = true;
@@ -155,7 +157,7 @@ export class ContextMenu implements IContextMenu {
                 } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage')) {
                     this.onOpeningForShape(false, true);
                     // eslint-disable-next-line max-len
-                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Path') {
+                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Path' && !currentAnnotSettings.isLock) {
                     this.onOpeningForShape(true);
                     // eslint-disable-next-line max-len
                 } else if (this.pdfViewer.selectedItems.formFields.length !== 0 && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType && this.pdfViewer.designerMode) {
@@ -179,7 +181,7 @@ export class ContextMenu implements IContextMenu {
                         (target).classList.contains('e-pv-text'))) {
                         this.onOpeningForShape(false);
                         // eslint-disable-next-line max-len
-                    } else if (this.pdfViewerBase.isCalibrateAnnotationModule() && this.pdfViewer.annotationModule.measureAnnotationModule.currentAnnotationMode) {
+                    } else if (this.pdfViewerBase.isCalibrateAnnotationModule() && this.pdfViewer.annotationModule.measureAnnotationModule.currentAnnotationMode && !currentAnnotSettings.isLock) {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties')]);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
@@ -187,7 +189,7 @@ export class ContextMenu implements IContextMenu {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Comment')], false);
                         // eslint-disable-next-line max-len
-                    } else if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    } else if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock) {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Cut'),
                             this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Scale Ratio')]);
@@ -224,10 +226,11 @@ export class ContextMenu implements IContextMenu {
     private contextMenuItems(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.pdfViewer.contextMenuSettings.contextMenuItems.length) {
             const hideMenuItems: string[] = [];
+            const contextMenuList: MenuItemModel[] = this.contextMenuCollection();
             const ul: HTMLElement = this.contextMenuObj.getRootElement();
             for (let j: number = 0; j < this.pdfViewer.contextMenuSettings.contextMenuItems.length; j++) {
-                for (let i: number = 0; i < this.copyContextMenu.length; i++) {
-                    let menuItem: string = this.copyContextMenu[i].text;
+                for (let i: number = 0; i < this.contextMenuList.length; i++) {
+                    let menuItem: string = this.contextMenuList[i].text;
                     switch (menuItem) {
                     case 'Highlight':
                         menuItem = 'Highlight context';
@@ -251,7 +254,7 @@ export class ContextMenu implements IContextMenu {
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         break;
                     }
-                    let menuName: string = this.pdfViewer.localeObj.getConstant(menuItem);
+                    let menuName: string = this.contextMenuList[i].text;
                     if (j === 0 && menuName !== ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
                         hideMenuItems.push(menuName);
                     }
@@ -276,13 +279,46 @@ export class ContextMenu implements IContextMenu {
                     }
                 }
             }
-            this.contextMenuObj.hideItems(hideMenuItems);
+            let hideLocaleItem: string[] = this.processLocaleContent(hideMenuItems);
+            this.contextMenuObj.hideItems(hideLocaleItem);
             if (this.getEnabledItemCount(ul) === 0) {
                 args.cancel = true;
             }
         }
     }
 
+    private processLocaleContent(hideMenuItems: string[]): any {
+        let contextMenuLocaleContent: string[] = [];
+        if (hideMenuItems.length > 0) {
+            for (let i: number = 0; i < hideMenuItems.length; i++) {
+                let menuItem: string = hideMenuItems[i];
+                switch (menuItem) {
+                    case 'Highlight':
+                        menuItem = 'Highlight context';
+                        break;
+                    case 'Underline':
+                        menuItem = 'Underline context';
+                        break;
+                    case 'Strikethrough':
+                        menuItem = 'Strikethrough context';
+                        break;
+                    case 'Delete':
+                        menuItem = 'Delete Context';
+                        break;
+                    case 'ScaleRatio':
+                        menuItem = 'Scale Ratio';
+                        break;
+                }
+                contextMenuLocaleContent.push(this.pdfViewer.localeObj.getConstant(menuItem));
+            }
+        }
+        return contextMenuLocaleContent;
+    }
+
+    private contextMenuCollection(): MenuItemModel[] {
+        return this.contextMenuList = [{ text: 'Cut' }, { text: 'Copy' }, { text: 'Highlight' },{ text: 'Underline' }, { text: 'Strikethrough' },
+        { text: 'Paste' }, { text: 'Delete' }, { text: 'ScaleRatio' }, { text: 'Comment' }, { text: 'Properties' }];
+    }
     private getEnabledItemCount(ul: HTMLElement): number {
         let enabledItemCount : number = this.copyContextMenu.length;
         const liCollection : HTMLCollection = ul.children;

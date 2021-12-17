@@ -2,7 +2,71 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### Schedule
+
+#### New Features
+
+- `#I256450`, `#I256493`, `#I341525` - Provides support for flexible month view that starts from the beginning of the week the displayed date falls in. Also, users can set the number of weeks to be displayed in the Month view.
+- `#FB9963`, `#I331086` - Provided an option to customize the header names when the Scheduler is exported to Excel.
+- `#I276542`, `#F169844` - Provided support to set the minimum event duration for appointments to make the event subject easier to read.
+
+#### Bug Fixes
+
+- `#T357194` - An issue while slower the performance of the schedule, while drag and drop the event with `eventTemplate` has been fixed.
+- `#T353817` - An issue with all-day region scrolling issue only in the Mac device has been fixed.
+
+## 19.3.55 (2021-11-23)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I347217` - An issue while using `getRecurrenceDates` method in the weekly rule option has been fixed.
+
+## 19.3.53 (2021-11-12)
+
+### Schedule
+
+#### New Features
+
+- `#I224286`, `#I224730`, `#I316683`, `#I321325`, `#I331265`, `#I331820`, `#I338907`, `#I342102`, `#F169564`, `#F169824`, `#F169024` - Provided option to render the spanned events greater than 24 hours in either `AllDayRow` region or `TimeSlot` region.
+- `#I339786` - Provided localization support for timezone collections which are displayed in the editor window.
+
+## 19.3.48 (2021-11-02)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F158202` - The `getCurrentViewEvents` method not returns current view events in Agenda view has been fixed.
+- `#I343356` - An issue while using two dynamic validation error message for the scheduler field has been fixed.
+- `#I345316` - An issue while saving an event dynamically using `saveEvent` method only with `timezone` property for the scheduler has been fixed.
+- `#F169453` - An issue with the horizontal scroll position in the timeline month, while dragging or resizing an event has been fixed.
+- `#I342117` - An issue with virtual scrolling down not happening issue in Agenda view mobile mode has been fixed.
+
+## 19.3.46 (2021-10-19)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I344571` - An alignment issue between the resource cells and work cells in timeline year has been fixed.
+- `#FB29199` - Dragging an event from one month to another throws an exception in month view has been fixed.
+- `#I344682` - An issue with virtual up-scrolling while enabling the `rowAutoHeight` property has been fixed.
+
+## 19.3.44 (2021-10-05)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#FB29036` - An issue with the `renderCell` event arguments as `resourceGroupCells` has been fixed in the timeline year view with resources.
+- `#I339839` - An issue with the scheduler resize action is not working properly in timeline month has been fixed.
+- `#F168909` - The scheduler agenda view throws script error on multilevel resources grouping has been fixed.
+
+## 19.3.43 (2021-09-30)
 
 ### Schedule
 
@@ -26,10 +90,18 @@
 
 ### Schedule
 
+#### New Features
+
+- `#I242605`, `#F160122`, `#F165334` - Provided public method for Scheduler to refresh the Scheduler layout without re-render.
+- `#I314842`, `#I320731` - Provided public method for Scheduler to refresh the given templates.
+
 #### Bug Fixes
 
 - `#I339839` - An issue with the scheduler resize action is not working properly in timeline views has been fixed.
 - `#I338473` - An issue with the scheduler `showWeekend` property set to false appointments missing has been fixed.
+- `#I340348` - An issue with opening the editor window in RTL mode has been fixed.
+- `#I342117` - An issue with today button navigation in Agenda view has been fixed.
+- `#I340332` - An issue with the scheduler performance in Vertical views has been fixed.
 
 ## 19.2.56 (2021-08-17)
 

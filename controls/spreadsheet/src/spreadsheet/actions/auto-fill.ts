@@ -1,7 +1,7 @@
 import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, beginAction, completeAction, showAggregate, dialog, locale, fillRange, hideAutoFillOptions, performUndoRedo, hideAutoFillElement } from '../../spreadsheet/index';
 import { Spreadsheet, contentLoaded, positionAutoFillElement, getCellPosition, getRowIdxFromClientY } from '../../spreadsheet/index';
 import { performAutoFill, isLockedCells } from '../../spreadsheet/index';
-import { ICellRenderer, editAlert } from '../common/index';
+import { ICellRenderer, editAlert  } from '../common/index';
 import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, Workbook, getRowsHeight, getColumnsWidth, isInRange } from '../../workbook/index';
 import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol } from '../../workbook/index';
@@ -109,18 +109,11 @@ export class AutoFill {
         const fillRange: number[] = this.getFillRange({ rowIndex: minr, colIndex: minc }, { rowIndex: maxr, colIndex: maxc },
                                                       { rowIndex: currcell[2], colIndex: currcell[3] }, dir);
         this.refreshAutoFillOption(l10n.getConstant(args.type));
-        this.parent.notify(performUndoRedo, { isUndo: true });
+        this.parent.notify(performUndoRedo, { isUndo: true, isPublic: true, preventEvt: args.type === 'FillWithoutFormatting' });
         this.parent.selectRange(sheet.name + '!' + getRangeAddress(currcell));
-        const eventArgs: {
-            dataRange: string,
-            fillRange: string,
-            direction: AutoFillDirection,
-            fillType: AutoFillType,
-            isFillOptClick: boolean
-        } = {
-            dataRange: sheet.name + '!' + getRangeAddress(dataRange),
-            fillRange: sheet.name + '!' + getRangeAddress(fillRange), direction: dir, fillType: args.type, isFillOptClick: true
-        };
+        const eventArgs: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
+            isFillOptClick: boolean } = { dataRange: sheet.name + '!' + getRangeAddress(dataRange), fillRange:
+            sheet.name + '!' + getRangeAddress(fillRange), direction: dir, fillType: args.type, isFillOptClick: true };
         this.isVerticalFill = eventArgs.direction === 'Down' || eventArgs.direction === 'Up';
         this.parent.notify(setAutoFill, eventArgs);
         this.positionAutoFillElement({ isautofill: true });
@@ -150,7 +143,7 @@ export class AutoFill {
         }
         this.autoFillDropDown.dataBind();
     }
-    private positionAutoFillElement(args?: { isautofill?: boolean }): void {
+    private positionAutoFillElement(args?: { isautofill?: boolean, preventAnimation?: boolean }): void {
         let top: number = 0; let left: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
@@ -164,6 +157,12 @@ export class AutoFill {
         let colIdx: number = indexes[3];
         let height: number; let width: number;
         let pos: { top: number, left: number };
+        const cell: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+        if ((isColSelected && isHiddenCol(sheet, indexes[3])) || isRowSelected && isHiddenRow(sheet, indexes[2]) ||
+            (cell && cell.classList.contains('e-formularef-selection'))) {
+            this.hideAutoFillElement();
+            return;
+        }
         if ((!sheet.isProtected && !sheet.protectSettings.selectCells) || sheet.protectSettings.selectCells) {
             if (isRowSelected) {
                 tdiff = -5;
@@ -183,13 +182,14 @@ export class AutoFill {
             }
             if (sheet.frozenColumns || sheet.frozenRows) {
                 if (isColSelected || isRowSelected) {
-                    setPosition(this.parent, this.autoFillElement, indexes, 'e-autofill');
+                    setPosition(this.parent, this.autoFillElement, indexes, 'e-autofill', args && args.preventAnimation);
                     if (this.parent.autoFillSettings.showFillOptions && args && args.isautofill) {
                         setPosition(this.parent, this.autoFillDropDown.element, indexes, 'e-filloption');
                     }
                 }
                 else {
-                    setPosition(this.parent, this.autoFillElement, [rowIdx, colIdx, rowIdx, colIdx], 'e-autofill');
+                    setPosition(
+                        this.parent, this.autoFillElement, [rowIdx, colIdx, rowIdx, colIdx], 'e-autofill', args && args.preventAnimation);
                     if (this.parent.autoFillSettings.showFillOptions && args && args.isautofill) {
                         setPosition(this.parent, this.autoFillDropDown.element, [rowIdx, colIdx, rowIdx, colIdx], 'e-filloption');
                     }
@@ -285,11 +285,13 @@ export class AutoFill {
         const scell: { colIndex: number, rowIndex: number } = { rowIndex: range[0], colIndex: range[1] };
         const ecell: { colIndex: number, rowIndex: number } = { rowIndex: range[2], colIndex: range[3] };
         const maxIdx: { colIndex: number, rowIndex: number } = { rowIndex: maxr, colIndex: maxc };
+        const modifiedIdx: { colIndex: number, rowIndex: number } = this.modifyRangeForMerge(idx.rowIndex,
+            idx.colIndex, aCell.rowIndex, aCell.colIndex, range);
         if (idx.rowIndex < aCell.rowIndex) {// up
             if ((minr - idx.rowIndex > idx.colIndex - maxc) && (minr - idx.rowIndex > minc - idx.colIndex))
             {
                 return inRange ? { startCell: minIdx, endCell: { rowIndex: idx.rowIndex, colIndex: maxc } } : { startCell: maxIdx, endCell:
-                    { rowIndex: idx.rowIndex, colIndex: minc }, fillRange: [idx.rowIndex, minc, minr - 1, maxc], direction: 'Up' };
+                    { rowIndex: modifiedIdx.rowIndex, colIndex: minc }, fillRange: [modifiedIdx.rowIndex, minc, minr - 1, maxc], direction: 'Up' };
             }
             else if (idx.colIndex > aCell.colIndex) {
                 return { startCell: minIdx, endCell: { rowIndex: maxr, colIndex: idx.colIndex },
@@ -307,8 +309,8 @@ export class AutoFill {
                     fillRange: [maxr + 1, minc, idx.rowIndex, maxc], direction: 'Down' };
             }
             else {
-                return { startCell: minIdx, endCell: { rowIndex: maxr, colIndex: idx.colIndex },
-                    fillRange: [minr, maxc + 1, maxr, idx.colIndex], direction: 'Right' };
+                return { startCell: minIdx, endCell: { rowIndex: maxr, colIndex: modifiedIdx.colIndex },
+                    fillRange: [minr, maxc + 1, maxr, modifiedIdx.colIndex], direction: 'Right' };
             }
         }
 
@@ -319,12 +321,12 @@ export class AutoFill {
             }
             else {
                 return inRange ? { startCell: minIdx, endCell: maxIdx } : { startCell: maxIdx, endCell:
-                    { rowIndex: minr, colIndex: idx.colIndex }, fillRange: [minr, idx.colIndex, maxr, minc - 1], direction: 'Left' };
+                    { rowIndex: minr, colIndex: modifiedIdx.colIndex }, fillRange: [minr, modifiedIdx.colIndex, maxr, minc - 1], direction: 'Left' };
             }
         }
         else if (idx.rowIndex > aCell.rowIndex) {// down
-            return { startCell: minIdx, endCell: { rowIndex: idx.rowIndex, colIndex: maxc },
-                fillRange: [maxr + 1, minc, idx.rowIndex, maxc], direction: 'Down' };
+            return { startCell: minIdx, endCell: { rowIndex: modifiedIdx.rowIndex, colIndex: maxc },
+                fillRange: [maxr + 1, minc, modifiedIdx.rowIndex, maxc], direction: 'Down' };
         }
         else if (idx.rowIndex === aCell.rowIndex && idx.colIndex === aCell.colIndex) {
             return { startCell: scell, endCell: ecell };
@@ -332,6 +334,41 @@ export class AutoFill {
         else {
             return { startCell: scell, endCell: ecell };
         }
+    }
+
+    private modifyRangeForMerge(rowIdx: number, colIdx: number, autoFillRowIdx: number, autoFillColIdx:
+        number, selRange: number[]): { colIndex: number, rowIndex: number } {
+        const modifiedIdx: { colIndex: number, rowIndex: number } = { rowIndex: rowIdx, colIndex: colIdx };
+        if (this.isMergedRange(selRange)) {
+            const selRowCount: number = selRange[2] - selRange[0] + 1;
+            const selColCount: number = selRange[3] - selRange[1] + 1;
+            let remainder: number;
+            if (rowIdx < autoFillRowIdx) { // up
+                remainder = (selRange[2] - rowIdx + 1) % selRowCount;
+                if (remainder && rowIdx - (selRowCount - remainder) >= 0) {
+                    modifiedIdx.rowIndex = rowIdx - (selRowCount - remainder);
+                }
+            }
+            else if (colIdx > autoFillColIdx) { // right
+                remainder = (colIdx - selRange[1] + 1) % selColCount;
+                if (remainder) {
+                    modifiedIdx.colIndex = colIdx + (selColCount - remainder);
+                }
+            }
+            else if (colIdx < autoFillColIdx) { // left
+                remainder = (selRange[3] - colIdx + 1) % selColCount;
+                if (remainder && colIdx - (selColCount - remainder) >= 0) {
+                    modifiedIdx.colIndex = colIdx - (selColCount - remainder);
+                }
+            }
+            else if (rowIdx > autoFillRowIdx) { // down
+                remainder = (rowIdx - selRange[0] + 1) % selRowCount;
+                if (remainder) {
+                    modifiedIdx.rowIndex = rowIdx + (selRowCount - remainder);
+                }
+            }
+        }
+        return modifiedIdx;
     }
 
     private performAutoFill(args: { event: MouseEvent & TouchEvent, dAutoFillCell: string }): void {

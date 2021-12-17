@@ -2494,6 +2494,50 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("- EJ2-54390: Align Top in the table cell vertical align quickToolbar of table is always disabled", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                client side.</p><table class="e-rte-table" style="width: 100%;"><thead><tr><th class="e-cell-select"><br></th><th><br></th></tr></thead><tbody><tr><td style="width: 50%;" class=""><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>
+                `
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('- Align top in the table cell vertical align quickToolbar of table is always disabled', (done) => {
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("td");
+            setCursorPoint(node, 0);
+            node.focus();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            (rteObj as any).inputElement.dispatchEvent(clickEvent);
+            let eventsArg: any = { pageX: 50, pageY: 300, target: node };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let tablePop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                let insertBtn: HTMLElement = tablePop.querySelector("#" + controlId + "_quick_TableCellVerticalAlign");
+                insertBtn.click();
+                expect(document.querySelector('#' + controlId + "_quick_TableCellVerticalAlign-popup").querySelector('li').classList.contains('e-disabled')).toBe(false);
+                done();
+            }, 600);
+        });
+    });
+
     describe(" IE - table delete testing", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

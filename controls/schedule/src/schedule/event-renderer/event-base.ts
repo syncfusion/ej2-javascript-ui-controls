@@ -45,12 +45,7 @@ export class EventBase {
             if (generateID) {
                 event[fields.id] = temp++;
             }
-            if (typeof event[fields.startTime] === 'string') {
-                event[fields.startTime] = util.getDateFromString(event[fields.startTime] as string);
-            }
-            if (typeof event[fields.endTime] === 'string') {
-                event[fields.endTime] = util.getDateFromString(event[fields.endTime] as string);
-            }
+            event = this.updateEventDateTime(event);
             if (timeZonePropChanged) {
                 this.processTimezoneChange(event, oldTimezone);
             } else if (!this.parent.isPrinting) {
@@ -107,6 +102,16 @@ export class EventBase {
             }
         }
         this.parent.blockProcessed = blockData;
+        return eventData;
+    }
+
+    public updateEventDateTime(eventData: Record<string, any>): Record<string, any> {
+        if (typeof eventData[this.parent.eventFields.startTime] === 'string') {
+            eventData[this.parent.eventFields.startTime] = util.getDateFromString(eventData[this.parent.eventFields.startTime]);
+        }
+        if (typeof eventData[this.parent.eventFields.endTime] === 'string') {
+            eventData[this.parent.eventFields.endTime] = util.getDateFromString(eventData[this.parent.eventFields.endTime]);
+        }
         return eventData;
     }
 
@@ -612,7 +617,7 @@ export class EventBase {
         const isAllDay: boolean = event[fieldMapping.isAllDay] as boolean;
         const isFullDay: boolean = (((<Date>event[fieldMapping.endTime]).getTime() - (<Date>event[fieldMapping.startTime]).getTime())
             / util.MS_PER_DAY) >= 1;
-        return (isAllDay || isFullDay) ? true : false;
+        return (isAllDay || (this.parent.eventSettings.spannedEventPlacement !== 'TimeSlot' && isFullDay)) ? true : false;
     }
 
     public addEventListener(): void {
@@ -703,7 +708,8 @@ export class EventBase {
 
     private eventClick(eventData: Event & MouseEvent): void {
         const target: HTMLElement = eventData.target as HTMLElement;
-        if (target.classList.contains(cls.DRAG_CLONE_CLASS) || target.classList.contains(cls.RESIZE_CLONE_CLASS)) {
+        if (target.classList.contains(cls.DRAG_CLONE_CLASS) || target.classList.contains(cls.RESIZE_CLONE_CLASS) ||
+            target.classList.contains(cls.INLINE_SUBJECT_CLASS)) {
             return;
         }
         if ((eventData.ctrlKey || eventData.metaKey) && eventData.which === 1 && this.parent.keyboardInteractionModule) {
@@ -1175,11 +1181,27 @@ export class EventBase {
         indentHeight = dateHeader.offsetHeight - indentHeight;
         (this.parent.element.querySelector('.' + cls.ALLDAY_CELLS_CLASS) as HTMLElement).style.height = (indentHeight / 12) + 'em';
         const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        if (this.parent.uiStateValues.expand && (content.offsetWidth - content.clientWidth > 0 || heightPropChanged)) {
+        if (this.parent.uiStateValues.expand && (content.offsetWidth - content.clientWidth > 0 || heightPropChanged || this.parent.element.classList.contains(cls.DEVICE_CLASS))) {
             addClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
         } else {
             removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
         }
+    }
+
+    public updateEventMinimumDuration(startEndHours: Record<string, Date>, startTime: Date, endTime: Date): Record<string, Date> {
+        const eventDuration: number = (util.getUniversalTime(endTime) - util.getUniversalTime(startTime)) / util.MS_PER_MINUTE;
+        if (eventDuration < this.parent.eventSettings.minimumEventDuration) {
+            const tempEnd: Date = new Date(startTime);
+            tempEnd.setMinutes(tempEnd.getMinutes() + this.parent.eventSettings.minimumEventDuration);
+            endTime = tempEnd;
+            if (endTime.getTime() > startEndHours.endHour.getTime()) {
+                const tempStart: Date = new Date(startEndHours.endHour.getTime());
+                tempStart.setMinutes(tempStart.getMinutes() - this.parent.eventSettings.minimumEventDuration);
+                startTime = tempStart;
+                endTime = startEndHours.endHour;
+            }
+        }
+        return { startDate: startTime, endDate: endTime };
     }
 
     private unWireEvents(): void {

@@ -1,0 +1,419 @@
+@include export-module('document-editor-container-bootstrap5-icons') {
+  .e-de-ctnr-close::before {
+    color: $icon-color;
+    content: '\e7e7';
+    font-size: 16px;
+  }
+
+  .e-de-ctnr-linespacing::before {
+    content: '\e78d';
+  }
+
+  .e-de-ctnr-undo::before {
+    content: '\e713';
+  }
+
+  .e-de-ctnr-find::before {
+    content: '\e754';
+  }
+
+  .e-de-ctnr-lock::before {
+    content: '\e7ff';
+  }
+
+  .e-de-ctnr-italic::before {
+    content: '\e75a';
+  }
+
+  .e-de-selected-spellcheck-item::before {
+    color: $icon-color;
+    content: '\e774';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
+  .e-de-selected-underline-item::before {
+    color: $icon-color;
+    content: '\e774';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
+  .e-de-ctnr-link::before {
+    content: '\e757';
+  }
+
+  .e-de-ctnr-table::before {
+    content: '\e7d1';
+  }
+
+  .e-de-ctnr-download::before {
+    color: $icon-color;
+    content: '\e7a1';
+  }
+
+  .e-de-ctnr-justify::before {
+    content: '\e721';
+  }
+
+  .e-de-ctnr-tableofcontent::before {
+    content: '\e73d';
+  }
+
+  .e-de-ctnr-pagenumber::before {
+    content: '\e77d';
+  }
+
+  .e-de-ctnr-highlight::before {
+    content: '\e739';
+  }
+
+  .e-de-ctnr-new::before {
+    content: '\e805';
+  }
+
+  .e-de-ctnr-paste::before {
+    content: '\e70b';
+  }
+
+  .e-de-ctnr-bold::before {
+    content: '\e737';
+  }
+
+  .e-de-ctnr-subscript::before {
+    content: '\e80a';
+  }
+
+  .e-de-ctnr-aligncenter::before {
+    content: '\e813';
+  }
+
+  .e-de-ctnr-fontcolor::before {
+    content: '\e79f';
+  }
+
+  .e-de-ctnr-change-case::before {
+    content: '\e7f5';
+  }
+
+  .e-de-ctnr-pagesetup::before {
+    content: '\e794';
+  }
+
+  .e-de-ctnr-strokestyle::before {
+    content: '\eb62';
+  }
+
+  .e-de-ctnr-strikethrough::before {
+    content: '\e758';
+  }
+
+  .e-de-ctnr-image::before {
+    content: '\e786';
+  }
+
+  .e-de-ctnr-redo::before {
+    content: '\e755';
+  }
+
+  .e-de-ctnr-bookmark::before {
+    content: '\e750';
+  }
+
+  .e-de-ctnr-increaseindent::before {
+    content: '\e810';
+  }
+
+  .e-de-ctnr-header::before {
+    content: '\e704';
+  }
+
+  .e-de-ctnr-backgroundcolor::before {
+    content: '\eb6b';
+  }
+
+  .e-de-ctnr-open::before {
+    content: '\e760';
+  }
+
+  .e-de-ctnr-underline::before {
+    content: '\e82f';
+  }
+
+  .e-de-ctnr-superscript::before {
+    content: '\e7a7';
+  }
+
+  .e-de-ctnr-alignleft::before {
+    content: '\e7b8';
+  }
+
+  .e-de-ctnr-numbering::before {
+    content: '\e7cb';
+  }
+
+  .e-de-ctnr-bullets::before {
+    content: '\e77e';
+  }
+
+  .e-de-ctnr-decreaseindent::before {
+    content: '\e72a';
+  }
+
+  .e-de-ctnr-showhide::before {
+    content: '\e71a';
+    font-size: 16px;
+  }
+
+  .e-de-ctnr-print::before {
+    content: '\e75d';
+  }
+
+  .e-de-ctnr-alignright::before {
+    content: '\e719';
+  }
+
+  .e-de-ctnr-footer::before {
+    content: '\e7bb';
+  }
+
+  .e-de-ctnr-clearall::before {
+    content: '\e7cc';
+  }
+
+  .e-de-ctnr-outsideborder::before {
+    content: '\e7ad';
+  }
+
+  .e-de-ctnr-allborders::before {
+    content: '\e7d1';
+  }
+
+  .e-de-ctnr-insideborders::before {
+    content: '\e78f';
+  }
+
+  .e-de-ctnr-leftborders::before {
+    content: '\e806';
+  }
+
+  .e-de-ctnr-insideverticalborder::before {
+    content: '\e792';
+  }
+
+  .e-de-ctnr-rightborder::before {
+    content: '\e7ab';
+  }
+
+  .e-de-ctnr-topborder::before {
+    content: '\e7e0';
+  }
+
+  .e-de-ctnr-insidehorizondalborder::before {
+    content: '\e83b';
+  }
+
+  .e-de-ctnr-bottomborder::before {
+    content: '\e766';
+  }
+
+  .e-de-ctnr-strokesize::before {
+    content: '\e7bf';
+  }
+
+  .e-de-ctnr-highlightcolor::before {
+    content: '\e739';
+  }
+
+  .e-de-ctnr-mergecell::before {
+    content: '\e71e';
+  }
+
+  .e-de-ctnr-insertleft::before {
+    content: '\e78b';
+  }
+
+  .e-de-ctnr-insertright::before {
+    content: '\e70e';
+  }
+
+  .e-de-ctnr-insertabove::before {
+    content: '\e836';
+  }
+
+  .e-de-ctnr-insertbelow::before {
+    content: '\e801';
+  }
+
+  .e-de-ctnr-deleterows::before {
+    content: '\e7f2';
+  }
+
+  .e-de-ctnr-deletecolumns::before {
+    content: '\e714';
+  }
+
+  .e-de-ctnr-aligntop::before {
+    content: '\e707';
+  }
+
+  .e-de-ctnr-alignbottom::before {
+    content: '\e7a0';
+  }
+
+  .e-de-ctnr-aligncenter-table::before {
+    content: '\e74f';
+  }
+
+  .e-de-ctnr-cellbg-clr-picker::before {
+    content: '\e783';
+  }
+
+  .e-de-ctnr-bullet-none::before {
+    color: $icon-color;
+    content: '\e7f3';
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-dot::before {
+    color: $icon-color;
+    content: '\e747';
+    font-size: 8px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-circle::before {
+    color: $icon-color;
+    content: '\e7d0';
+    font-size: 8px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-square::before {
+    color: $icon-color;
+    content: '\e7be';
+    font-size: 8px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-flower::before {
+    color: $icon-color;
+    content: '\e79b';
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-arrow::before {
+    color: $icon-color;
+    content: '\e763';
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-tick::before {
+    color: $icon-color;
+    content: '\e7fc';
+    line-height: 28px;
+  }
+
+  .e-de-selected-item::before {
+    color: $icon-color;
+    content: '\e774';
+  }
+
+  .e-de-ctnr-break::before {
+    content: '\e7bc';
+  }
+
+  .e-de-ctnr-page-break::before {
+    content: '\e742';
+  }
+
+  .e-de-ctnr-section-break::before {
+    content: '\e762';
+  }
+
+  .e-de-ctnr-upload::before {
+    color: $icon-color;
+    content: '\e712';
+  }
+
+  .e-de-flip {
+    transform: scaleX(-1);
+  }
+
+  .e-de-cnt-cmt-add::before {
+    content: '\e82c';
+  }
+
+  .e-de-cnt-track::before {
+    content: '\e80b';
+  }
+
+  .e-de-printlayout::before {
+    content: '\e73a';
+  }
+
+  .e-de-weblayout::before {
+    content: '\e7d3';
+  }
+
+  .e-de-textform::before {
+    color: $icon-color;
+    content: '\e830';
+    font-family: 'e-icons';
+  }
+
+  .e-de-formproperties::before {
+    color: $icon-color;
+    content: '\e83e';
+    font-family: 'e-icons';
+  }
+
+  .e-de-clearform::before {
+    color: $icon-color;
+    content: '\e7f8';
+    font-family: 'e-icons';
+  }
+
+  .e-de-dropdownform::before {
+    color: $icon-color;
+    content: '\e7a6';
+    font-family: 'e-icons';
+  }
+
+  .e-de-formfield::before {
+    content: '\e7cd';
+    font-family: 'e-icons';
+  }
+
+  .e-de-checkbox-form::before {
+    color: $icon-color;
+    content: '\e7e4';
+    font-family: 'e-icons';
+  }
+
+  .e-de-arrow-up::before {
+    content: '\e776';
+    font-family: 'e-icons';
+  }
+
+  .e-de-arrow-down::before {
+    content: '\e729';
+    font-family: 'e-icons';
+  }
+
+  .e-de-update-field::before {
+    content: '\e828';
+    font-family: 'e-icons';
+  }
+
+  .e-de-footnote::before {
+    content: '\e7af';
+    font-family: 'e-icons';
+  }
+
+  .e-de-endnote::before {
+    content: '\e7af';
+    font-family: 'e-icons';
+  }
+}

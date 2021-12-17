@@ -42,6 +42,8 @@ export const chartMouseMove: string  = 'chartMouseMove';
 /** @private */
 export const chartMouseClick: string  = 'chartMouseClick';
 /** @private */
+export const chartDoubleClick: string  = 'chartDoubleClick';
+/** @private */
 export const pointClick: string  = 'pointClick';
 /** @private */
 export const pointDoubleClick: string = 'pointDoubleClick';

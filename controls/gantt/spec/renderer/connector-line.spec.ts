@@ -375,8 +375,8 @@ describe('Gantt connector line support', () => {
             ganttObj.dataSource = changeDuration(connectorLineSSDatasource);
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[1].ganttProperties.left).toBe(99);
-                expect(ganttObj.flatData[3].ganttProperties.left).toBe(264);
-                expect(ganttObj.flatData[5].ganttProperties.left).toBe(99);
+                expect(ganttObj.flatData[3].ganttProperties.left).toBe(297);
+                expect(ganttObj.flatData[5].ganttProperties.left).toBe(132);
                 expect(ganttObj.flatData[7].ganttProperties.left).toBe(264);
                 expect(ganttObj.flatData[9].ganttProperties.left).toBe(363);
                 done();
@@ -388,7 +388,7 @@ describe('Gantt connector line support', () => {
             ganttObj.connectorLineWidth = 8;
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[2].ganttProperties.left).toBe(363);
-                expect(ganttObj.flatData[4].ganttProperties.left).toBe(363);
+                expect(ganttObj.flatData[4].ganttProperties.left).toBe(396);
                 expect(ganttObj.flatData[6].ganttProperties.left).toBe(264);
                 expect(ganttObj.flatData[8].ganttProperties.left).toBe(99);
                 expect(ganttObj.flatData[10].ganttProperties.left).toBe(264);
@@ -400,8 +400,8 @@ describe('Gantt connector line support', () => {
             ganttObj.dataSource = changeDuration(connectorLineSFDatasource);
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[1].ganttProperties.left).toBe(99);
-                expect(ganttObj.flatData[3].ganttProperties.left).toBe(165);
-                expect(ganttObj.flatData[5].ganttProperties.left).toBe(66);
+                expect(ganttObj.flatData[3].ganttProperties.left).toBe(297);
+                expect(ganttObj.flatData[5].ganttProperties.left).toBe(132);
                 expect(ganttObj.flatData[7].ganttProperties.left).toBe(264);
                 expect(ganttObj.flatData[9].ganttProperties.left).toBe(363);
                 done();
@@ -508,6 +508,105 @@ describe('Gantt connector line support', () => {
                 done();
             }
             ganttObj.refresh();            
+        });
+    });
+      let projectNewData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5",Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8" ,Progress: 30},
+                { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+                { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+            ]
+        }
+    ];
+    describe('Cancel connector line using actionBegin event', () => {
+        let ganttObj_tree: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_tree = createGantt(
+                {
+                    dataSource: projectNewData,
+                    taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks'
+                },
+
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+        });
+        it('cancel connector line using actionBegin event', () => {
+            ganttObj_tree.actionBegin = (args) => {
+                if(args.action == 'DrawConnectorLine') {
+                    args.cancel = true;
+                }
+            }
+            ganttObj_tree.updatePredecessor(Number(ganttObj_tree.flatData[2].ganttProperties.taskId), '2SS');
+            expect(ganttObj_tree.flatData[2]['Predecessor']).toBe(null);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj_tree);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
         });
     });
 });

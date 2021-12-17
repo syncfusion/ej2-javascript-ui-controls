@@ -2,6 +2,7 @@ import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, active
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, checkConditionalFormat } from '../index';
+import { getRow, ExtendedRowModel } from '../index';
 
 /**
  * Workbook Cell format.
@@ -83,7 +84,15 @@ export class WorkbookCellFormat {
         }
         let border: string; let isFullBorder: boolean; let cell: CellModel;
         if (Object.keys(args.style).length) {
+            const parent: ExtendedWorkbook = this.parent as ExtendedWorkbook;
+            const activeSheet: boolean = parent.viewport && this.parent.getActiveSheet().id === sheet.id;
+            const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
+            const viewport: number[] = [frozenRow + parent.viewport.topIndex, frozenCol + parent.viewport.leftIndex,
+                parent.viewport.bottomIndex, parent.viewport.rightIndex];
+            let uiRefresh: boolean;
             for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+                if (((getRow(sheet, i) || {}) as ExtendedRowModel).isFiltered) { continue; }
+                uiRefresh = activeSheet && ((i >= viewport[0] && i <= viewport[2]) || i < frozenRow);
                 for (let j: number = indexes[1]; j <= indexes[3]; j++) {
                     if (isFullBorder === undefined) {
                         if (eventArgs.style.border !== undefined) {
@@ -108,7 +117,7 @@ export class WorkbookCellFormat {
                         this.setFullBorder(sheet, border, indexes, i, j, args.onActionUpdate);
                     }
                     this.setCellStyle(sheet, i, j, eventArgs.style);
-                    if (this.parent.getActiveSheet().id === sheet.id) {
+                    if (uiRefresh && ((j >= viewport[1] && j <= viewport[3]) || j < frozenCol)) {
                         this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: eventArgs.style, rowIdx: i, colIdx: j,
                             lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate
                         });
@@ -404,4 +413,8 @@ export class WorkbookCellFormat {
     public getModuleName(): string {
         return 'workbookcellformat';
     }
+}
+
+interface ExtendedWorkbook extends Workbook {
+    viewport: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number };
 }

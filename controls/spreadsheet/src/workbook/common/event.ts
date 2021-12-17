@@ -20,6 +20,8 @@ export const sortImport: string = 'sortImport';
 /** @hidden */
 export const ribbonFind: string = 'ribbonFind';
 /** @hidden */
+export const exportDialog: string = 'exportDialog';
+/** @hidden */
 export const getFilteredCollection: string = 'getFilteredCollection';
 /** @hidden */
 export const saveCompleted: string = 'saveCompleted';

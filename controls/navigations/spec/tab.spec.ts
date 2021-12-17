@@ -4498,6 +4498,8 @@ describe('Tab Control', () => {
         let tab: Tab;
         let i: number = 0;
         let selectedContent: HTMLElement;
+        let isInteracted_selecting: boolean = false;
+        let isInteracted_selected: boolean = false;
         function clickFn(): void {
             i++;
         }
@@ -4554,6 +4556,43 @@ describe('Tab Control', () => {
             expect(selectedContent.classList.contains('e-active')).toBe(true);
             let activeContent: HTMLElement = tab.element.querySelector("#e-content" + tab.tabId + "_1");
             expect(activeContent.classList.contains('e-active')).toBe(true);
+        });
+        it('selecting and selected event isInteracted testing', () => {
+            let isInteracted_selecting: boolean = false;
+            let isInteracted_selected: boolean = false;
+            tab = new Tab({
+                selected: (args: SelectEventArgs) => {
+                    isInteracted_selected = args.isInteracted;
+                },
+                selecting: (args: SelectingEventArgs) => {
+                    isInteracted_selecting = args.isInteracted;
+                },
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            tab.select(1);
+            expect(isInteracted_selecting).toBe(false);
+            expect(isInteracted_selected).toBe(false);
+            let activeContent: HTMLElement = tab.element.querySelector("#e-content" + tab.tabId + "_1");
+            expect(activeContent.classList.contains('e-active')).toBe(true);
+            let thirdTab: HTMLElement = <HTMLElement>document.querySelectorAll(".e-tab-header .e-toolbar-item")[2];
+            thirdTab.click();
+            expect(isInteracted_selecting).toBe(true);
+            expect(isInteracted_selected).toBe(true);
+            tab.selectedItem = 0;
+            tab.dataBind();
+            expect(element.querySelector('#e-item' + tab.tabId + '_0').classList.contains('e-active')).toEqual(true);
+            expect(isInteracted_selecting).toBe(false);
+            expect(isInteracted_selected).toBe(false);
+            let secondTab: HTMLElement = <HTMLElement>document.querySelectorAll(".e-tab-header .e-toolbar-item")[1];
+            secondTab.click();
+            expect(isInteracted_selecting).toBe(true);
+            expect(isInteracted_selected).toBe(true);
         });
         it('Items - removing and removed events', () => {
             tab = new Tab({
@@ -7964,7 +8003,7 @@ describe('Tab Control', () => {
             expect(tabIndex).toEqual(0);
             expect(element.querySelectorAll(".e-toolbar-item")[1].getAttribute('data-id')).toBe("2");
             tabIndex = tab.getItemIndex(tab.items[1].id);
-            expect(tabIndex).toEqual(1);        
+            expect(tabIndex).toEqual(1);
         });
     });
     describe('Localization - Mouseover on close icon testing', () => {
@@ -10565,6 +10604,155 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('allowDragandDrop property testing', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('allowDragAndDrop property with default value testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            }, '#ej2Tab');
+            expect(tab.allowDragAndDrop).toBe(false);
+        });
+        it('allowDragAndDrop property testing', () => {
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+            expect(element.querySelectorAll('.e-toolbar-item')[0].classList.contains('e-draggable')).toBe(true);
+            expect(element.querySelectorAll('.e-toolbar-item')[1].classList.contains('e-draggable')).toBe(true);
+            expect(element.querySelectorAll('.e-toolbar-item')[2].classList.contains('e-draggable')).toBe(true);
+        });
+        it('Disabled property with drag and drop', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            }, '#ej2Tab');
+            tab.enableTab(1, false);
+            expect((tab.element.querySelectorAll('.e-toolbar-item')[1]).classList.contains('e-draggable')).toBe(false);
+        });
+    });
+
+    describe('reorderActiveTab property testing', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Items - Default model value', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            expect(tab.reorderActiveTab).toEqual(true);
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(false);
+        });
+        it('Items - reorderActiveTab at initial rendering', () => {
+            tab = new Tab({
+                reorderActiveTab: false,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            expect(tab.reorderActiveTab).toEqual(false);
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(true);
+        });
+        it('Items - onPropertyChanged with reorderActiveTab', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            expect(tab.reorderActiveTab).toEqual(true);
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(false);
+            tab.reorderActiveTab = false;
+            tab.dataBind();
+            expect(tab.reorderActiveTab).toEqual(false);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(true);
+            tab.reorderActiveTab = true;
+            tab.dataBind();
+            expect(tab.reorderActiveTab).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(false);
+        });
+        it('Template - Default model value', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            element.innerHTML = '<div class="e-tab-header"> <div> item1 </div> <div> item2 </div> </div>'
+                + '<div class="e-content"> <div> <div> <h1>Content1</h1> <p> text</p> </div> </div> <div>'
+                + '<div> <h1>Content2</h1> <p> text</p> </div> </div> </div>';
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+            expect(tab.reorderActiveTab).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(false);
+        });
+        it('Template - reorderActiveTab at initial rendering', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            element.innerHTML = '<div class="e-tab-header"> <div> item1 </div> <div> item2 </div> </div>'
+                + '<div class="e-content"> <div> <div> <h1>Content1</h1> <p> text</p> </div> </div> <div>'
+                + '<div> <h1>Content2</h1> <p> text</p> </div> </div> </div>';
+            tab = new Tab({ reorderActiveTab: false });
+            tab.appendTo('#ej2Tab');
+            expect(tab.reorderActiveTab).toEqual(false);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(true);
+        });
+
+        it('Template - onPropertyChanged with reorderActiveTab', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            element.innerHTML = '<div class="e-tab-header"> <div> item1 </div> <div> item2 </div> </div>'
+                + '<div class="e-content"> <div> <div> <h1>Content1</h1> <p> text</p> </div> </div> <div>'
+                + '<div> <h1>Content2</h1> <p> text</p> </div> </div> </div>';
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+            expect(tab.reorderActiveTab).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(false);
+            tab.reorderActiveTab = false;
+            tab.dataBind();
+            expect(tab.reorderActiveTab).toEqual(false);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(true);
+            tab.reorderActiveTab = true;
+            tab.dataBind();
+            expect(tab.reorderActiveTab).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(false);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -10574,54 +10762,4 @@ describe('Tab Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
-});
-
-describe('allowDragandDrop property testing', () => {
-    let tab: Tab;
-    beforeEach((): void => {
-        tab = undefined;
-        let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
-        document.body.appendChild(ele);
-    });
-    afterEach((): void => {
-        if (tab) {
-            tab.destroy();
-        }
-        document.body.innerHTML = '';
-    });
-    it('allowDragAndDrop property with default value testing', () => {
-        tab = new Tab({
-            items: [
-                { header: { "text": "item1" }, content: "Content1" },
-                { header: { "text": "item2" }, content: "Content2" }
-            ]
-        }, '#ej2Tab');
-        expect(tab.allowDragAndDrop).toBe(false);
-    });
-    it('allowDragAndDrop property testing', () => {
-        tab = new Tab({
-            allowDragAndDrop: true,
-            items: [
-                { header: { "text": "item1" }, content: "Content1" },
-                { header: { "text": "item2" }, content: "Content2" },
-                { header: { "text": "item3" }, content: "Content3" }
-            ]
-        });
-        tab.appendTo('#ej2Tab');
-        let element: HTMLElement = document.getElementById('ej2Tab');
-        expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
-        expect(element.querySelectorAll('.e-toolbar-item')[0].classList.contains('e-draggable')).toBe(true);
-        expect(element.querySelectorAll('.e-toolbar-item')[1].classList.contains('e-draggable')).toBe(true);
-        expect(element.querySelectorAll('.e-toolbar-item')[2].classList.contains('e-draggable')).toBe(true);
-    });
-    it('Disabled property with drag and drop', () => {
-        tab = new Tab({
-            items: [
-                { header: { "text": "item1" }, content: "Content1" },
-                { header: { "text": "item2" }, content: "Content2" }
-            ]
-        }, '#ej2Tab');
-        tab.enableTab(1, false);
-        expect((tab.element.querySelectorAll('.e-toolbar-item')[1]).classList.contains('e-draggable')).toBe(false);
-    });
 });

@@ -2,8 +2,13 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
-import { baselineData, scheduleModeData, splitTasksData, editingData } from '../base/data-source.spec';
+import { DataManager } from '@syncfusion/ej2-data';
+import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 describe('Gantt taskbar editing', () => {
     describe('Gantt taskbar edit action', () => {
         Gantt.Inject(Edit);
@@ -98,7 +103,7 @@ describe('Gantt taskbar editing', () => {
             };
             ganttObj.dataBind();
             ganttObj.actionBegin = (args: object) => {
-                if (args['requestType'] !== 'mergeSegment') {
+                if (args['requestType'] !== 'taskbarediting') {
                     expect(ganttObj.getFormatedDate(args['data'].ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/16/2017 08:00');
                     if (args['requestType'] === 'beforeSave') {
                         args['cancel'] = true;
@@ -136,7 +141,7 @@ describe('Gantt taskbar editing', () => {
             };
             ganttObj.dataBind();
             ganttObj.actionBegin = (args: object) => {
-                if (args['requestType'] !== 'mergeSegment') {
+                if (args['requestType'] !== 'taskbarediting') {
                     expect(args['data'].ganttProperties.progress).toBe(0);
                     if (args['requestType'] === 'beforeSave') {
                         args['cancel'] = true;
@@ -505,6 +510,7 @@ describe('Gantt taskbar editing', () => {
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
             triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 5, dragElement.offsetTop + 5);
             expect((ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody >tr:nth-child(3) > td > div.e-taskbar-main-container> div.e-child-progress-resizer').classList.contains('e-progress-resize-gripper'))).toBe(false);
+            expect(document.getElementsByClassName('e-connectorpoint-right-hover').length).toBe(1);
         });
     });   
     describe('Schedule mode', () => {
@@ -695,6 +701,7 @@ describe('Gantt taskbar editing', () => {
                         child: 'subtasks',
                         segments: 'Segments'
                     },
+                    dateFormat:'MM/dd/yyyy hh:mm:ss',
                     editSettings: {
                         allowAdding: true,
                         allowEditing: true,
@@ -718,6 +725,16 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 500), dragElement.offsetTop);
             triggerMouseEvent(dragElement, 'mouseup');
         });
+        it('Date time picker in dialog segment tab', () => {
+            ganttObj.openEditDialog(2);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 2;
+            tab.dataBind();
+            let addIcon: HTMLElement = document.querySelector("#"+ganttObj.element.id +"SegmentsTabContainer_toolbarItems > div > div.e-toolbar-right > div:nth-child(1)");
+            addIcon.click();
+            var timerExistence = document.querySelector("#"+ganttObj.element.id+"SegmentsTabContainerEditForm > table > tbody > tr > td:nth-child(1) > div > span.e-input-group-icon.e-time-icon.e-icons")
+            expect(!isNullOrUndefined(timerExistence)).toBeTruthy();
+        });
         afterAll(() => {
             destroyGantt(ganttObj);
         });
@@ -725,4 +742,47 @@ describe('Gantt taskbar editing', () => {
             setTimeout(done, 2000);
         });
     });
+
+    describe('Split task - with self data', () => {
+        let ganttObj: Gantt;
+        var segmentCollection = [{ segmentId: 3, startDate: new Date('02/04/2019'), duration: 2 }, { segmentId: 3, startDate: new Date('02/07/2019'), duration: 3 }];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: new DataManager(dragSelfReferenceData),
+                    taskFields: {
+                        id: 'taskID',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        dependency: 'predecessor',
+                        parentID: 'parentID',
+                        segmentId: 'segmentId'
+                    },
+                    segmentData: segmentCollection,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    
+                    allowSelection: true,
+                    height: '450px',
+                }, done);
+        });
+        it('Rendering datamanager data', () => {
+            expect(ganttObj.currentViewData[2].taskData['Segments'].length).toBe(2);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+
 });

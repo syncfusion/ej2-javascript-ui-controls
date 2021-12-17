@@ -12,21 +12,21 @@ import { remove, extend, isNullOrUndefined, updateBlazorTemplate } from '@syncfu
 import { AccumulationChartModel } from './accumulation-model';
 import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';
 import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
-import { AccumulationType, AccumulationSelectionMode } from './model/enum';
+import { AccumulationType, AccumulationSelectionMode, AccumulationHighlightMode } from './model/enum';
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs } from './model/pie-interface';
-import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';
+import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs, IAccSelectionCompleteEventArgs } from './model/pie-interface';
 import { Theme, getThemeColor } from '../common/model/theme';
 import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRenderEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
 import { IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, pointClick } from '../common/model/constants';
-import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';
+import { pointMove, chartDoubleClick, chartMouseClick, chartMouseDown } from '../common/model/constants';
 import { chartMouseLeave, chartMouseMove, chartMouseUp, resized, beforeResize } from '../common/model/constants';
 import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel } from '../common/model/base-model';
 import { AccumulationSeriesModel, PieCenterModel } from './model/acc-base-model';
 import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
-import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset } from '../common/utils/helper';
+import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset, getTextAnchor } from '../common/utils/helper';
 import { RectOption, showTooltip, ImageOption } from '../common/utils/helper';
 import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase, withInBounds } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
@@ -39,6 +39,7 @@ import { AccumulationDataLabel } from './renderer/dataLabel';
 import { FunnelSeries } from './renderer/funnel-series';
 import { PyramidSeries } from './renderer/pyramid-series';
 import { AccumulationSelection } from './user-interaction/selection';
+import { AccumulationHighlight } from './user-interaction/high-light';
 import { AccumulationTheme } from './model/enum';
 import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';
 import { AccumulationAnnotationSettings } from './model/acc-base';
@@ -115,7 +116,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * `accumulationSelectionModule` is used to manipulate and add selection in accumulation chart.
      */
     public accumulationSelectionModule: AccumulationSelection;
-
+    /**
+     * `accumulationHighlightModule` is used to manipulate and add highlight to the accumulation chart.
+     */
+    public accumulationHighlightModule: AccumulationHighlight;
     /**
      * `annotationModule` is used to manipulate and add annotation in chart.
      */
@@ -235,7 +239,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies whether point has to get selected or not. Takes value either 'None 'or 'Point'
-     *
+     * None: Disables the selection.
+     * Point: selects a point.
      * @default None
      */
     @Property('None')
@@ -243,11 +248,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies whether point has to get highlighted or not. Takes value either 'None 'or 'Point'
-     *
+     * None: Disables the highlight.
+     * Point: highlight a point.
      * @default None
      */
     @Property('None')
-    public highLightMode: AccumulationSelectionMode;
+    public highlightMode: AccumulationHighlightMode;
 
     /**
      * Specifies whether series or data point for accumulation chart has to be selected. They are,
@@ -530,6 +536,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public chartMouseClick: EmitType<IMouseEventArgs>;
 
     /**
+     * Triggers on double clicking the accumulation chart.
+     *
+     * @event
+     * @blazorProperty 'OnChartDoubleClick'
+     */
+
+    @Event()
+    public chartDoubleClick: EmitType<IMouseEventArgs>;
+
+    /**
      * Triggers on point click.
      *
      * @event
@@ -614,6 +630,15 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     @Event()
     public afterExport: EmitType<IAfterExportEventArgs>;
+
+    /**
+     * Triggers after the selection is completed.
+     *
+     * @event selectionComplete
+     */
+
+    @Event()
+    public selectionComplete: EmitType<IAccSelectionCompleteEventArgs>;
 
     /**
      * Defines the currencyCode format of the accumulation chart
@@ -767,6 +792,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         calculateSize(this);
         this.wireEvents();
+        this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
     }
     /**
      * Themeing for chart goes here
@@ -824,6 +850,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         EventHandler.remove(this.element, stop, this.accumulationMouseEnd);
         EventHandler.remove(this.element, start, this.accumulationMouseStart);
         EventHandler.remove(this.element, 'click', this.accumulationOnMouseClick);
+        EventHandler.remove(this.element, 'dblclick', this.accumulationOnDoubleClick);
         EventHandler.remove(this.element, 'contextmenu', this.accumulationRightClick);
         EventHandler.remove(this.element, cancel, this.accumulationMouseLeave);
         window.removeEventListener(
@@ -854,6 +881,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         EventHandler.add(this.element, stop, this.accumulationMouseEnd, this);
         EventHandler.add(this.element, start, this.accumulationMouseStart, this);
         EventHandler.add(this.element, 'click', this.accumulationOnMouseClick, this);
+        EventHandler.add(this.element, 'dblclick', this.accumulationOnDoubleClick, this);
         EventHandler.add(this.element, 'contextmenu', this.accumulationRightClick, this);
         EventHandler.add(this.element, cancel, this.accumulationMouseLeave, this);
         this.accumulationResizeBound = this.accumulationResize.bind(this);
@@ -1079,6 +1107,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
 
+    /**
+     * Handles the mouse double click on accumulation chart.
+     *
+     * @returns {boolean} Mouse double click of accumulation chart.
+     * @private
+     */
+    public accumulationOnDoubleClick(e: PointerEvent): boolean {
+        this.trigger(chartDoubleClick, { target: (<Element>e.target).id, x: this.mouseX, y: this.mouseY });
+        return false;
+    }
     /**
      * Handles the mouse click on accumulation chart.
      *
@@ -1425,11 +1463,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @private
      */
     public processSelection(): void {
-        if (!this.accumulationSelectionModule || this.selectionMode === 'None') {
-            return null;
+        let selectedDataIndexes: Indexes[] = [];
+        if (this.accumulationSelectionModule && this.selectionMode !== 'None') {
+            selectedDataIndexes = <Indexes[]>extend([], this.accumulationSelectionModule.selectedDataIndexes, null, true);
+            this.accumulationSelectionModule.invokeSelection(this);
         }
-        const selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.accumulationSelectionModule.selectedDataIndexes, null, true);
-        this.accumulationSelectionModule.invokeSelection(this);
+        if (this.accumulationHighlightModule && this.highlightMode !== 'None') {
+            this.accumulationHighlightModule.invokeHighlight(this);
+        }
         if (selectedDataIndexes.length > 0) {
             this.accumulationSelectionModule.selectedDataIndexes = selectedDataIndexes;
             this.accumulationSelectionModule.redrawSelection(this);
@@ -1443,8 +1484,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (!this.title) {
             return null;
         }
-        const alignment: Alignment = this.titleStyle.textAlignment;
-        const getAnchor: string = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
+        const getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
         const titleSize: Size = measureText(this.title, this.titleStyle);
         const rect: Rect = new Rect(
             margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
@@ -1472,9 +1512,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         let titleWidth: number = 0;
         const padding: number = 10;
         const alignment: Alignment = this.titleStyle.textAlignment;
-        const getAnchor: Function = (alignment: Alignment): string => {
-            return alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
-        };
         const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle);
         for (const titleText of this.titleCollection) {
             titleWidth = measureText(titleText, this.titleStyle).width;
@@ -1490,7 +1527,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 rect, this.subTitleStyle
             ),
             options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding,
-            getAnchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto'
+            getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, '', 'auto'
         );
         textElement(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle,
                     this.svgObject, false, this.redraw);
@@ -1585,6 +1622,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.selectionMode !== 'None') {
             modules.push({
                 member: 'AccumulationSelection',
+                args: [this]
+            });
+        }
+        if (this.highlightMode !== 'None') {
+            modules.push({
+                member: 'AccumulationHighlight',
                 args: [this]
             });
         }

@@ -5944,4 +5944,41 @@ describe('Change Event testing', () => {
             expect(inputObj.element.getAttribute('data-val')).toBe('false');
         });
     });
+    describe('EJ2-54142-Using Static Clear Button to reset value does not reset the model value', () => {
+        let numeric: any;
+        let isBlurTriggerd: boolean = false;
+        let isChangeTriggered: boolean = false;
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        beforeEach((): void => {
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'Numeric' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numeric) {
+                numeric.destroy();
+            }
+            document.body.innerHTML = '';
+            isBlurTriggerd = false;
+            isChangeTriggered = false;
+        });
+        it('change event and blur event value testing ', () => {
+            numeric = new NumericTextBox({ value: 25, showClearButton:true, cssClass:"e-static-clear", change: function (args) {
+                isChangeTriggered =true;
+                expect(args.value==null).toBe(true);
+            }, blur: function(args){
+                isBlurTriggerd = true;
+                expect(args.value == null).toBe(true);}
+        });
+            numeric.appendTo('#Numeric');
+            expect(numeric.inputWrapper.container.classList.contains('e-static-clear')).toBe(true);
+            expect(numeric.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+            let clearBtn = document.getElementById('Numeric').parentElement.querySelector('.e-clear-icon-hide');
+            clearBtn.dispatchEvent(clickEvent);
+            expect(numeric.value === null).toEqual(true);
+            expect(numeric.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+            numeric.element.blur();
+            expect(numeric.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+       });
+    });
 });

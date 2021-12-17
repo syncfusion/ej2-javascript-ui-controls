@@ -199,7 +199,7 @@ export class LayerPanel {
         if (this.mapObject.zoomSettings.resetToInitial && this.mapObject.initialCheck && !isNullOrUndefined(panel.mapObject.height)
         && this.mapObject.availableSize.height > 512) {
             this.mapObject.applyZoomReset = true;
-            this.mapObject.initialZoomLevel = Math.floor(this.mapObject.availableSize.height / 512) + 1;
+            this.mapObject.initialZoomLevel = Math.floor(this.mapObject.availableSize.height / 512);
             const padding : number = this.mapObject.layers[this.mapObject.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
                 20 : 0;
             const totalSize : number = Math.pow(2, this.mapObject.initialZoomLevel) * 256;
@@ -243,7 +243,7 @@ export class LayerPanel {
                 }
             }
         }
-        let eventArgs: ILayerRenderingEventArgs = {
+        const eventArgs: ILayerRenderingEventArgs = {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject, visible: layer.visible
         };
@@ -282,6 +282,9 @@ export class LayerPanel {
                             proxy.mapObject['bingMap'] = bing;
                             proxy.renderTileLayer(proxy, layer, layerIndex, bing);
                             this.mapObject.arrangeTemplate();
+                            if (this.mapObject.zoomModule && (this.mapObject.previousScale !== this.mapObject.scale)) {
+                                this.mapObject.zoomModule.applyTransform(true);
+                            }
                         };
                         ajax.send();
                     }
@@ -359,9 +362,7 @@ export class LayerPanel {
                 const data: any = geometryData['geometry'];
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const properties: any = geometryData['properties'];
-                if (type !== 'LineString' ) {
-                    this.generatePoints(type, coords, data, properties);
-                }
+                this.generatePoints(type, coords, data, properties);
             }
         });
         this.currentLayer.rectBounds = this.rectBounds;
@@ -390,7 +391,7 @@ export class LayerPanel {
                 const currentShapeData: any[] = <any[]>this.currentLayer.layerData[i];
                 let pathOptions: PathOption; let polyLineOptions: PolylineOption;
                 let circleOptions: CircleOption; let groupElement: Element; let drawObject: Element;
-                let path: string = ''; let points: string = '';
+                let path: string = ''; const points: string = '';
                 let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] :
                     (shapeSettings.fill || this.mapObject.themeStyle.shapeFill);
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
@@ -436,7 +437,7 @@ export class LayerPanel {
                 }
                 const opacity: number = (Object.prototype.toString.call(getShapeColor) === '[object Object]'
                     && !isNullOrUndefined(getShapeColor['opacity'])) ? getShapeColor['opacity'] : shapeSettings.opacity;
-                let eventArgs: IShapeRenderingEventArgs = {
+                const eventArgs: IShapeRenderingEventArgs = {
                     cancel: false, name: shapeRendering, index: i,
                     data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
                     maps: this.mapObject,
@@ -456,7 +457,8 @@ export class LayerPanel {
                         eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
                         if (isNullOrUndefined(shapeSettings.borderColorValuePath)) {
                             this.mapObject.layers[layerIndex].shapeSettings.border.color = eventArgs.border.color;
-                        } else if (isNullOrUndefined(shapeSettings.borderWidthValuePath)) {
+                        }
+                        if (isNullOrUndefined(shapeSettings.borderWidthValuePath)) {
                             this.mapObject.layers[layerIndex].shapeSettings.border.width = eventArgs.border.width;
                         }
                     } else {
@@ -508,21 +510,25 @@ export class LayerPanel {
                         }
                         break;
                     case 'LineString':
+                        path += 'M ' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         currentShapeData.map((lineData: any) => {
-                            points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
+                            path += 'L' + (lineData['point']['x']) + ' , ' + (lineData['point']['y']) + ' ';
                         });
-                        polyLineOptions = new PolylineOption(
-                            shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
-                            opacity, eventArgs.border.opacity, shapeSettings.dashArray);
-                        pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions) as SVGPolylineElement;
+                        if (path.length > 3) {
+                            pathOptions = new PathOption(
+                                shapeID, 'transparent', !isNullOrUndefined(eventArgs.border.width) ? eventArgs.border.width : 1, eventArgs.border.color,
+                                opacity, eventArgs.border.opacity, shapeSettings.dashArray, path);
+                            pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
+                        }
                         break;
                     case 'Point':
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const pointData: any = <any>currentShapeData['point'];
+                        const circleRadius: number = (this.mapObject.layers[layerIndex].type !== 'SubLayer') ? shapeSettings.circleRadius : shapeSettings.circleRadius / this.currentFactor ;
                         circleOptions = new CircleOption(
                             shapeID, eventArgs.fill, eventArgs.border, opacity,
-                            pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                            pointData['x'], pointData['y'], circleRadius, null);
                         pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
                         break;
                     case 'Path':
@@ -546,6 +552,9 @@ export class LayerPanel {
                         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
                             (currentShapeData['property'][properties]) : ''));
                         pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
+                        if (drawingType === 'LineString') {
+                            pathEle.setAttribute('style', 'outline:none');
+                        }
                         maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle,
                                           'ShapeselectionMapStyle');
                         if (this.mapObject.toggledShapeElementId) {
@@ -773,12 +782,15 @@ export class LayerPanel {
             this.currentLayer.layerData.push(multiPolygonDatas);
             break;
         case 'linestring':
+            const extraSpace: number = !isNullOrUndefined(this.currentLayer.shapeSettings.border.width) ?
+                this.currentLayer.shapeSettings.border.width : 1;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             coordinates.map((points: any, index: number) => {
                 latitude = <number>points[1];
                 longitude = <number>points[0];
                 const point: Point = convertGeoToPoint(
                     latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
+                this.calculateBox(point, extraSpace);
                 newData.push({
                     point: point, lat: latitude, lng: longitude
                 });
@@ -789,6 +801,8 @@ export class LayerPanel {
             break;
         case 'point': {
             let arrayCollections: boolean = false;
+            const extraSpace: number = (!isNullOrUndefined(this.currentLayer.shapeSettings.border.width) ?
+                this.currentLayer.shapeSettings.border.width : 1) + (this.currentLayer.shapeSettings.circleRadius * 2);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             coordinates.map((points: any, index: number) => {
                 if (Object.prototype.toString.call(points) === '[object Array]') {
@@ -805,6 +819,7 @@ export class LayerPanel {
                 latitude = <number>coordinates[1];
                 longitude = <number>coordinates[0];
                 const point: Point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
+                this.calculateBox(point, extraSpace);
                 this.currentLayer.layerData.push({
                     point: point, type: type, lat: latitude, lng: longitude, property: properties
                 });
@@ -816,6 +831,17 @@ export class LayerPanel {
                 point: data['d'], type: type, property: properties
             });
             break;
+        }
+    }
+
+    public calculateBox(point: Point, extraSpace: number): void {
+        if (isNullOrUndefined(this.rectBounds)) {
+            this.rectBounds = { min: { x: point.x, y: point.y - extraSpace }, max: { x: point.x, y: point.y + extraSpace } };
+        } else {
+            this.rectBounds['min']['x'] = Math.min(this.rectBounds['min']['x'], point.x);
+            this.rectBounds['min']['y'] = Math.min(this.rectBounds['min']['y'], point.y - extraSpace);
+            this.rectBounds['max']['x'] = Math.max(this.rectBounds['max']['x'], point.x);
+            this.rectBounds['max']['y'] = Math.max(this.rectBounds['max']['y'], point.y + extraSpace);
         }
     }
 
@@ -923,6 +949,15 @@ export class LayerPanel {
                         this.calculateRectBox(point[0]);
                     });
                     break;
+                case 'linestring':
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    coordinates.map((point: any, index: number) => {
+                        this.calculateRectBox(point, 'LineString', index === 0 ? true : false);
+                    });
+                    break;
+                case 'point':
+                    this.calculateRectBox(coordinates, 'point');
+                    break;
                 }
             }
         });
@@ -961,20 +996,33 @@ export class LayerPanel {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public calculateRectBox(coordinates: any[]): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Array.prototype.forEach.call(coordinates, (currentCoords: any) => {
-            if (isNullOrUndefined(this.mapObject.baseMapBounds)) {
+    public calculateRectBox(coordinates: any[], type?: string, isFirstItem?: boolean): void {
+        if (type !== 'LineString' && type !== 'point') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Array.prototype.forEach.call(coordinates, (currentCoords: any) => {
+                if (isNullOrUndefined(this.mapObject.baseMapBounds)) {
+                    this.mapObject.baseMapBounds = new GeoLocation(
+                        { min: currentCoords[1], max: currentCoords[1] },
+                        { min: currentCoords[0], max: currentCoords[0] });
+                } else {
+                    this.mapObject.baseMapBounds.latitude.min = Math.min(this.mapObject.baseMapBounds.latitude.min, currentCoords[1]);
+                    this.mapObject.baseMapBounds.latitude.max = Math.max(this.mapObject.baseMapBounds.latitude.max, currentCoords[1]);
+                    this.mapObject.baseMapBounds.longitude.min = Math.min(this.mapObject.baseMapBounds.longitude.min, currentCoords[0]);
+                    this.mapObject.baseMapBounds.longitude.max = Math.max(this.mapObject.baseMapBounds.longitude.max, currentCoords[0]);
+                }
+            });
+        } else {
+            if ((isFirstItem || type === 'point') && isNullOrUndefined(this.mapObject.baseMapBounds)) {
                 this.mapObject.baseMapBounds = new GeoLocation(
-                    { min: currentCoords[1], max: currentCoords[1] },
-                    { min: currentCoords[0], max: currentCoords[0] });
+                    { min: coordinates[1], max: coordinates[1] },
+                    { min: coordinates[0], max: coordinates[0] });
             } else {
-                this.mapObject.baseMapBounds.latitude.min = Math.min(this.mapObject.baseMapBounds.latitude.min, currentCoords[1]);
-                this.mapObject.baseMapBounds.latitude.max = Math.max(this.mapObject.baseMapBounds.latitude.max, currentCoords[1]);
-                this.mapObject.baseMapBounds.longitude.min = Math.min(this.mapObject.baseMapBounds.longitude.min, currentCoords[0]);
-                this.mapObject.baseMapBounds.longitude.max = Math.max(this.mapObject.baseMapBounds.longitude.max, currentCoords[0]);
+                this.mapObject.baseMapBounds.latitude.min = Math.min(this.mapObject.baseMapBounds.latitude.min, coordinates[1]);
+                this.mapObject.baseMapBounds.latitude.max = Math.max(this.mapObject.baseMapBounds.latitude.max, coordinates[1]);
+                this.mapObject.baseMapBounds.longitude.min = Math.min(this.mapObject.baseMapBounds.longitude.min, coordinates[0]);
+                this.mapObject.baseMapBounds.longitude.max = Math.max(this.mapObject.baseMapBounds.longitude.max, coordinates[0]);
             }
-        });
+        }
     }
     public generateTiles(zoomLevel: number, tileTranslatePoint: Point, zoomType?: string, bing?: BingMap, position?: Point): void {
         const userLang: string = this.mapObject.locale;
@@ -1056,16 +1104,18 @@ export class LayerPanel {
                 }
             }
         }
-        this.arrangeTiles(zoomType, this.animateToZoomX, this.animateToZoomY);
+        if (this.mapObject.previousScale !== this.mapObject.scale || this.mapObject.isReset) {
+            this.arrangeTiles(zoomType, this.animateToZoomX, this.animateToZoomY);
+        }
     }
 
     public arrangeTiles(type: string, x: number, y: number): void {
         const element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
         const element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
         let timeOut: number;
-        if (!isNullOrUndefined(type) && type !== 'Pan' && type !== 'Reset' && type.indexOf('ZoomOut') === -1) {
+        if (!isNullOrUndefined(type) && type !== 'Pan') {
             this.tileAnimation(type, x, y);
-            timeOut = 250;
+            timeOut = this.mapObject.layersCollection[0].animationDuration;
         } else {
             timeOut = 0;
         }
@@ -1078,7 +1128,6 @@ export class LayerPanel {
                 }
                 if (element1) {
                     element1.style.zIndex = '0';
-                    element1.style.visibility = 'hidden';
                 }
                 let animateElement: HTMLElement;
                 if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
@@ -1135,34 +1184,23 @@ export class LayerPanel {
      * @returns {void}
      */
     private tileAnimation(zoomType: string, translateX: number, translateY: number): void {
-        const element: HTMLElement =  document.getElementById(this.mapObject.element.id + '_tile_parent');
-        let element1: HTMLElement = document.getElementById('animated_tiles');
-        const ele: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
+        const tileParent: HTMLElement =  document.getElementById(this.mapObject.element.id + '_tile_parent');
+        const animatedTiles: HTMLElement = document.getElementById(this.mapObject.element.id + '_animated_tiles');
+        const tileElement: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
         let scaleValue: string = '2';
-        if (zoomType.indexOf('ZoomOut') === 0) {
-            ele.style.zIndex = '1';
-            element.style.zIndex = '0';
-            // element1 = ele.children[ele.childElementCount - 1] as HTMLElement;
-            while (ele.childElementCount >= 1) {
-                ele.removeChild(ele.children[0]);
+        if (zoomType.indexOf('ZoomOut') === 0 || zoomType === 'Reset') {
+            tileElement.style.zIndex = '1';
+            tileParent.style.zIndex = '0';
+            while (tileElement.childElementCount >= 1) {
+                tileElement.removeChild(tileElement.children[0]);
             }
             translateX = 0;
-            translateY = 128 - 23;
-            scaleValue = '0.5';
-        } else if (zoomType === 'Reset') {
-            ele.style.zIndex = '1';
-            element.style.zIndex = '0';
-            while (!(ele.childElementCount === 1) && !(ele.childElementCount === 0)) {
-                ele.removeChild(ele.children[1]);
-            }
-            element1 = ele.children[0] as HTMLElement;
-            translateX = 0;
-            translateY = 0;
-            scaleValue = '1';
+            translateY = document.getElementById(this.mapObject.element.id + '_tile_parent').getClientRects()[0].height / 4;
+            scaleValue = zoomType.indexOf('ZoomOut') === 0 ? '0.5' : '0.2';
         }
-        if (!isNullOrUndefined(element1)) {
-            element1.style.transition = '250ms';
-            element1.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scaleValue + ')';
+        if (!isNullOrUndefined(animatedTiles)) {
+            animatedTiles.style.transition = this.mapObject.layersCollection[0].animationDuration + 'ms';
+            animatedTiles.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scaleValue + ')';
         }
     }
 

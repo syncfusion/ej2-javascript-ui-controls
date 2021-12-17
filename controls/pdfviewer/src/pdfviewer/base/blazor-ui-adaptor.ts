@@ -102,7 +102,7 @@ export class BlazorUiAdaptor {
         this.stampElement = this.pdfViewerBase.getElement('_annotation_stamp') as HTMLElement;
         this.freeTextElement = this.pdfViewerBase.getElement('_annotation_freeTextEdit') as HTMLElement;
         this.signatureElement = this.pdfViewerBase.getElement('_annotation_signature') as HTMLElement;
-        this.inkElement = document.getElementById('InkAnnotation') as HTMLElement;
+        this.inkElement = this.pdfViewerBase.getElement('_annotation_ink') as HTMLElement;
         // tslint:disable-next-line:max-line-length
         this.annotationFontSizeInputElement = this.pdfViewerBase.getElement('_annotation_fontsize').children[0].children[0] as HTMLInputElement;
         // tslint:disable-next-line:max-line-length

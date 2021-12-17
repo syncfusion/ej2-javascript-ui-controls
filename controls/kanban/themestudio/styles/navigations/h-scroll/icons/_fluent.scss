@@ -1,0 +1,49 @@
+@include export-module('hscroll-fluent-icons') {
+  /*! hscroll icons */
+  #{&}.e-hscroll {
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-nav-right-arrow::before {
+          content: '\e80e';
+        }
+
+        .e-nav-left-arrow::before {
+          content: '\e80f';
+        }
+
+      }
+
+      .e-nav-left-arrow::before {
+        content: '\e7c2';
+         }
+
+      .e-nav-right-arrow::before {
+        content: '\e7c1';
+        }
+    }
+
+    &.e-scroll-device {
+
+      .e-nav-right-arrow::before {
+        content: '\e80f';
+      }
+
+      .e-nav-left-arrow::before {
+        content: '\e80e';
+      }
+    }
+
+    .e-nav-left-arrow::before {
+      content: '\e7c1';
+      line-height: normal;
+    }
+
+    .e-nav-right-arrow::before {
+      content: '\e7c2';
+      line-height: normal;
+    }
+  }
+}

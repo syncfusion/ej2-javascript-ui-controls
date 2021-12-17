@@ -883,7 +883,12 @@ function onSubmitValidate(parent: IFileManager, ele: HTMLInputElement): void {
  */
 function addInvalid(parent: IFileManager, ele: HTMLInputElement): void {
     const error: string = getLocaleText(parent, 'Validation-Invalid').replace('{0}', '"' + ele.value + '"');
-    ele.parentElement.nextElementSibling.innerHTML = error;
+    if (parent.enableHtmlSanitizer) {
+        ele.parentElement.nextElementSibling.textContent = error;
+    }
+    else {
+        ele.parentElement.nextElementSibling.innerHTML = error;
+    }
 }
 
 /**

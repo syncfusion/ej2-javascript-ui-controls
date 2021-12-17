@@ -1,0 +1,12 @@
+@include export-module('calendar-fluent-icons') {
+  /*! component icons */
+  .e-calendar .e-header {
+    #{if(&, '&', '*')} .e-date-icon-prev::before {
+      content: '\e788';
+      }
+
+    #{if(&, '&', '*')} .e-date-icon-next::before {
+      content: '\e789';
+    }
+  }
+}

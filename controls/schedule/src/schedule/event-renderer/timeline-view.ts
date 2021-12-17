@@ -134,6 +134,10 @@ export class TimelineEvent extends MonthEvent {
         const eventData: Record<string, any> = event.data as Record<string, any>;
         startTime = this.getStartTime(event, eventData);
         endTime = this.getEndTime(event, eventData);
+        const startEndHours: Record<string, Date> = util.getStartEndHours(event[this.fields.startTime], this.startHour, this.endHour);
+        const eventDates: Record<string, Date> = this.updateEventMinimumDuration(startEndHours, startTime, endTime);
+        startTime = eventDates.startDate;
+        endTime = eventDates.endDate;
         this.day = this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(startTime.getTime())));
         if (this.day < 0) {
             return;

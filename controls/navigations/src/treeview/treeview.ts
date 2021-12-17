@@ -19,6 +19,8 @@ const COLLAPSIBLE: string = 'e-icon-collapsible';
 const EXPANDABLE: string = 'e-icon-expandable';
 const LISTITEM: string = 'e-list-item';
 const LISTTEXT: string = 'e-list-text';
+const LISTWRAP: string = 'e-text-wrap';
+const IELISTWRAP: string = 'e-ie-wrap';
 const PARENTITEM: string = 'e-list-parent';
 const HOVER: string = 'e-hover';
 const ACTIVE: string = 'e-active';
@@ -669,6 +671,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isOffline: boolean;
     private firstTap : Element;
     private hasTemplate: boolean = false;
+    private isFirstRender: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -705,6 +708,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public allowMultiSelection: boolean;
+
+    /**
+     * Enables or disables text wrapping when text exceeds the bounds in the TreeView node.  
+     * When the allowTextWrap property is set to true, the TreeView node text content will wrap to the next line 
+     * when it exceeds the width of the TreeView node.
+     * The TreeView node height will be adjusted automatically based on the TreeView node content.  
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowTextWrap: boolean;
 
     /**
      * Specifies the type of animation applied on expanding and collapsing the nodes along with duration.
@@ -1200,6 +1214,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.setCssClass(null, this.cssClass);
         this.setEnableRtl();
         this.setFullRow(this.fullRowSelect);
+        this.setTextWrap();
         this.nodeTemplateFn = this.templateComplier(this.nodeTemplate);
     }
     private setDisabledMode(): void {
@@ -1859,6 +1874,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                                 let id: string = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : null;
                                 if (this.checkedNodes.indexOf(id) !== -1) {
                                     this.checkedNodes.splice(this.checkedNodes.indexOf(id), 1);
+                                    let ele: Element = this.element.querySelector('[data-uid="' + id + '"]');
+                                    if (ele) {
+                                        this.changeState(ele, 'uncheck', null);
+                                    }
                                 }
                             }
                             if (this.parentNodeCheck.indexOf(node) !== -1) {
@@ -2072,6 +2091,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         doCheck?: boolean): void {
         let eventArgs: NodeCheckEventArgs;
         let currLi: Element = closest(wrapper, '.' + LISTITEM);
+        if (wrapper === currLi) {
+            wrapper = select('.' + CHECKBOXWRAP, currLi);
+        }
         if (!isPrevent) {
             this.checkActionNodes = [];
             eventArgs = this.getCheckEvent(currLi, state, e);
@@ -2158,9 +2180,35 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 addClass([firstNode], FOCUS);
                 this.updateIdAttr(null, firstNode);
             }
+            if (this.allowTextWrap) {
+                this.updateWrap();
+            }
             this.renderReactTemplates();
             this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
             this.doExpandAction();
+        }
+    }
+
+    private setTextWrap(): void {
+        (this.allowTextWrap ? addClass : removeClass)([this.element], LISTWRAP);
+        if (Browser.isIE) {
+            (this.allowTextWrap ? addClass : removeClass)([this.element], IELISTWRAP);
+        } 
+    }
+
+    private updateWrap(ulEle?: HTMLElement): void {
+        if (!this.fullRowSelect) { return; }
+        const liEle: Element[] = ulEle ? selectAll('.' + LISTITEM, ulEle) : this.liList;
+        const length: number = liEle.length;
+        for (let i: number = 0; i < length; i++) {
+            this.calculateWrap(liEle[i]);
+        }
+    }
+
+    private calculateWrap (liEle : Element) {
+        const element: HTMLElement = select('.' + FULLROW, liEle);
+        if (element && element.nextElementSibling) {
+            element.style.height = this.allowTextWrap ? (element.nextElementSibling as HTMLElement).offsetHeight + 'px' : '';
         }
     }
 
@@ -2392,6 +2440,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         currLi.style.height = '';
         removeClass([icon], PROCESS);
         this.addExpand(currLi);
+        if (this.allowTextWrap && this.isLoaded && this.isFirstRender) { 
+            this.updateWrap(currLi);
+            this.isFirstRender = false;
+        }
         if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
             this.trigger('nodeExpanded', this.expandArgs);
@@ -2902,6 +2954,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (ul && ul.nodeName === 'UL') {
             this.expandNode(currLi, icon);
         } else {
+            this.isFirstRender = true;
             this.renderChildNodes(currLi, expandChild, callback);
             let liEles: Element[] = selectAll('.' + LISTITEM, currLi);
             for (let i: number = 0; i < liEles.length; i++) {
@@ -3079,8 +3132,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                                eventArgs: NodeCheckEventArgs, e: KeyboardEventArgs | MouseEvent): void {
         if (this.checkedElement.indexOf(li.getAttribute('data-uid')) === -1) {
             this.checkedElement.push(li.getAttribute('data-uid'));
-            let child: { [key: string]: Object }[] = this.getChildNodes(this.treeData, li.getAttribute('data-uid'));
-            (child !== null) ? this.allCheckNode(child, this.checkedElement, null, null, false) : child = null;
+            if (this.autoCheck) {
+                let child: { [key: string]: Object }[] = this.getChildNodes(this.treeData, li.getAttribute('data-uid'));
+                (child !== null) ? this.allCheckNode(child, this.checkedElement, null, null, false) : child = null;
+            }
         }
         this.changeState(checkWrap, isCheck ? 'uncheck' : 'check', e, true);
         if (this.autoCheck) {
@@ -3242,11 +3297,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (newCheck.indexOf(childId.toString()) === -1 && isNOU(checked)) {
                     newCheck.push(childId.toString());
                 }
+                let hierChildId: { [key: string]: Object }[] = getValue(this.fields.child.toString(), child[length]);
                 //Gets if any next level children are available for child nodes
-                if (getValue(this.fields.hasChildren, child[length]) === true ||
-                    getValue(this.fields.child.toString(), child[length])) {
+                if (getValue(this.fields.hasChildren, child[length]) === true || hierChildId) {
                         let id: string = getValue(this.fields.id, child[length]);
-                        let childId: { [key: string]: Object }[] = this.getChildNodes(this.treeData, id.toString());
+                        let childId: { [key: string]: Object }[];
+                        if (this.dataType === 1) {
+                            childId = this.getChildNodes(this.treeData, id.toString());
+                        }
+                        else {
+                            childId =  hierChildId;
+                        }
                         if (childId) {
                             (isNOU(validateCheck)) ? this.allCheckNode(childId, newCheck, checked, childCheck) :
                                                      this.allCheckNode(childId, newCheck, checked, childCheck, validateCheck);
@@ -3610,6 +3671,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 removeClass([liEle], EDITING);
                 (<HTMLElement>txtEle).focus();
             }
+        if (this.allowTextWrap) { this.calculateWrap(liEle); }
     }
 
     private getElement(ele: string | Element): Element {
@@ -5212,6 +5274,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.setMultiSelect(this.allowMultiSelection);
                     this.addMultiSelect(this.allowMultiSelection);
                     break;
+                case 'allowTextWrap':
+                    this.setTextWrap();
+                    this.updateWrap();
+                    break;
                 case 'checkedNodes':
                     if (this.showCheckBox) {
                         this.checkedNodes = oldProp.checkedNodes;
@@ -5263,6 +5329,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 case 'fullRowSelect':
                     this.setFullRow(this.fullRowSelect);
                     this.addFullRow(this.fullRowSelect);
+                    if (this.allowTextWrap) {  
+                        this.setTextWrap();
+                        this.updateWrap();
+                    }
                     break;
                 case 'loadOnDemand':
                     if (this.loadOnDemand === false  && !this.onLoaded) {

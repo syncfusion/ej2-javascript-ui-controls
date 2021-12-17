@@ -25,289 +25,289 @@ describe('Zoom feature tesing for map control', () => {
             return;
         }
     });
-    describe('Checking tool bar zooming', () => {
-        let id: string = 'container';
-        let map: Maps;
-        let prevent: Function = (): void => {
-        };
-        let ele: HTMLDivElement;
-        let trigger: MouseEvents = new MouseEvents();
-        beforeAll(() => {
-            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
-            document.body.appendChild(ele);
-            map = new Maps({
-                zoomSettings: {
-                    enable: true,
-                    toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
-                },
-                baseLayerIndex: 0,
-                layers: [
-                    {
-                        shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
-                    }
-                ]
-            }, '#' + id);
-            let bing: BingMap = new BingMap(map);
-            bing.imageUrl = imageUrl;
-            bing.maxZoom = zoomMax;
-            bing.subDomains = subDomains;
-            map.mapLayerPanel["bing"] = bing;
-        });
-        afterAll(() => {
-            remove(ele);
-            map.destroy();
-        });
+    // describe('Checking tool bar zooming', () => {
+        // let id: string = 'container';
+        // let map: Maps;
+        // let prevent: Function = (): void => {
+        // };
+        // let ele: HTMLDivElement;
+        // let trigger: MouseEvents = new MouseEvents();
+        // beforeAll(() => {
+            // ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            // document.body.appendChild(ele);
+            // map = new Maps({
+                // zoomSettings: {
+                    // enable: true,
+                    // toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                // },
+                // baseLayerIndex: 0,
+                // layers: [
+                    // {
+                        // shapeData: MapData,
+                        // key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                    // }
+                // ]
+            // }, '#' + id);
+            // let bing: BingMap = new BingMap(map);
+            // bing.imageUrl = imageUrl;
+            // bing.maxZoom = zoomMax;
+            // bing.subDomains = subDomains;
+            // map.mapLayerPanel["bing"] = bing;
+        // });
+        // afterAll(() => {
+            // remove(ele);
+            // map.destroy();
+        // });
 
-        it('Checking with Zoom in button -geometry ', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'touchstart',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                for (let i: number = 0; i < 5; i++) {
-                    map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-                }
-            };
-            map.refresh();
-        });
-        it('Checking with Zoom in button -geometry with persistence ', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'touchstart',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                for (let i: number = 0; i < 5; i++) {
-                    map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-                }
-            };
-            map.enablePersistence = true;
-            map.mapsArea.border.width = 0;
-            map.refresh();
-        });
+        // it('Checking with Zoom in button -geometry ', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'touchstart',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // for (let i: number = 0; i < 5; i++) {
+                    // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                // }
+            // };
+            // map.refresh();
+        // });
+        // it('Checking with Zoom in button -geometry with persistence ', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'touchstart',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // for (let i: number = 0; i < 5; i++) {
+                    // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                // }
+            // };
+            // map.enablePersistence = true;
+            // map.mapsArea.border.width = 0;
+            // map.refresh();
+        // });
 
-        it('Checking with Zoom out button -geometry ', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'mousedown',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                for (let i: number = 0; i < 5; i++) {
-                    map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-                }
-            };
-            map.width = '400px';
-            map.height = '400px';
-            map.refresh();
-        });
+        // it('Checking with Zoom out button -geometry ', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'mousedown',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // for (let i: number = 0; i < 5; i++) {
+                    // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                // }
+            // };
+            // map.width = '400px';
+            // map.height = '400px';
+            // map.refresh();
+        // });
 
-        it('Checking with pan button', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'mouseup',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-                element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
-                eventObj['target'] = element;
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-                element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
-                eventObj['target'] = element;
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-            };
-            map.refresh();
-        });
+        // it('Checking with pan button', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'mouseup',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                // element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                // eventObj['target'] = element;
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                // element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
+                // eventObj['target'] = element;
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            // };
+            // map.refresh();
+        // });
 
-        it('Checking with zoom button', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Zoom_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'touchstart',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-            };
-            map.refresh();
-        });
+        // it('Checking with zoom button', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Zoom_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'touchstart',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            // };
+            // map.refresh();
+        // });
 
-        it('Checking with reset button', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'touchstart',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-            };
-            map.refresh();
-        });
-        it('Checking with Zoom using public method', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-                expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -187.70715126367102 -99.21828842120752 ) ");
-            };
-            map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
-        });
-        it('Checking with Zoom using public method', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-                expect(element.getAttribute("transform")).toBe("scale( 10 ) translate( -246.93412391666658 -149.3926670651955 ) ");
-            };
-            map.zoomToCoordinates(19.1555762, 72.8849595, null, null);
-        });
-        it('Checking with reset button with persistence', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'touchstart',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-            };
-            map.enablePersistence = true;
-            map.refresh();
-        });
+        // it('Checking with reset button', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'touchstart',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            // };
+            // map.refresh();
+        // });
+        // it('Checking with Zoom using public method', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+                // expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -187.70715126367102 -99.21828842120752 ) ");
+            // };
+            // map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
+        // });
+        // it('Checking with Zoom using public method', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+                // expect(element.getAttribute("transform")).toBe("scale( 10 ) translate( -246.93412391666658 -149.3926670651955 ) ");
+            // };
+            // map.zoomToCoordinates(19.1555762, 72.8849595, null, null);
+        // });
+        // it('Checking with reset button with persistence', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'touchstart',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            // };
+            // map.enablePersistence = true;
+            // map.refresh();
+        // });
       
-        it('Checking with pan button', () => {
-          map.loaded = (args: ILoadedEventArgs) => {
-              let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
-              let eventObj: Object = {
-                  target: element,
-                  type: 'mouseup',
-                  stopImmediatePropagation: prevent,
-                  pageX: element.getBoundingClientRect().left,
-                  pageY: element.getBoundingClientRect().top
-              };
-              map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-              element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
-              eventObj['target'] = element;
-              map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-              element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
-              eventObj['target'] = element;
-              map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-          };
-          map.layers[0].layerType = "OSM";
-          map.refresh();
-      });
+        // it('Checking with pan button', () => {
+          // map.loaded = (args: ILoadedEventArgs) => {
+              // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
+              // let eventObj: Object = {
+                  // target: element,
+                  // type: 'mouseup',
+                  // stopImmediatePropagation: prevent,
+                  // pageX: element.getBoundingClientRect().left,
+                  // pageY: element.getBoundingClientRect().top
+              // };
+              // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+              // element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+              // eventObj['target'] = element;
+              // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+              // element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
+              // eventObj['target'] = element;
+              // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+          // };
+          // map.layers[0].layerType = "OSM";
+          // map.refresh();
+      // });
 
-        it('Checking with Zoom in button - bing map ', () => {
-            map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
-            };
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'touchstart',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-            };
-            map.layers[0].layerType = 'Bing';
-            map.layers[0].navigationLineSettings = [{
-                dashArray: '5,1',
-                width: 10,
-                visible: true,
-                color: '#15c6f2',
-                latitude: [23.6445, 34.0522],
-                longitude: [-102.832, -118.2437]
-            }];
-            map.layers[0].markerSettings = [{
-                visible: !0,
-                template: '<div><img src="http://js.syncfusion.com/demos/web/Images/map/pin.png"' +
-                    'style="height:30px;width:20px;"></img></div>',
-                tooltipSettings: {
-                    visible: true,
-                    valuePath: 'name'
-                },
-                latitudeValuePath: null,
-                longitudeValuePath: null,
-                dataSource: [{
-                    name: 'Manhattan, New York, USA',
-                    latitude: 40.7489,
-                    longitude: -74.968
-                }]
-            }];
-            map.refresh();
-        });
+        // it('Checking with Zoom in button - bing map ', () => {
+            // map.load = (args: ILoadEventArgs) => {
+                // let bing: BingMap = new BingMap(map);
+                // bing.imageUrl = imageUrl;
+                // bing.maxZoom = zoomMax;
+                // bing.subDomains = subDomains;
+                // map.mapLayerPanel["bing"] = bing;
+            // };
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'touchstart',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            // };
+            // map.layers[0].layerType = 'Bing';
+            // map.layers[0].navigationLineSettings = [{
+                // dashArray: '5,1',
+                // width: 10,
+                // visible: true,
+                // color: '#15c6f2',
+                // latitude: [23.6445, 34.0522],
+                // longitude: [-102.832, -118.2437]
+            // }];
+            // map.layers[0].markerSettings = [{
+                // visible: !0,
+                // template: '<div><img src="http://js.syncfusion.com/demos/web/Images/map/pin.png"' +
+                    // 'style="height:30px;width:20px;"></img></div>',
+                // tooltipSettings: {
+                    // visible: true,
+                    // valuePath: 'name'
+                // },
+                // latitudeValuePath: null,
+                // longitudeValuePath: null,
+                // dataSource: [{
+                    // name: 'Manhattan, New York, USA',
+                    // latitude: 40.7489,
+                    // longitude: -74.968
+                // }]
+            // }];
+            // map.refresh();
+        // });
 
-        it('Checking with zoom out button - bing map ', () => {
-            map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
-            };
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
-                let eventObj: Object = {
-                    target: element,
-                    type: 'touchstart',
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left,
-                    pageY: element.getBoundingClientRect().top
-                };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-            };
-            map.layers[0].layerType = 'Bing';
-            map.refresh();
-        });
-        it('Checking with public methode zooming', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_svg');
-            };
-            map.zoomToCoordinates(52.4643089, 13.4107368, 19.1555762, 72.8849595);
-        });
-        it('Checking with double tab zooming ', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = getElementByID(map.element.id + '_svg');
-                let rect: ClientRect = element.getBoundingClientRect();
-                let eventObj: Object = {
-                    target: element,
-                    stopImmediatePropagation: prevent,
-                    pageX: element.getBoundingClientRect().left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
-                    pageY: element.getBoundingClientRect().top + map.mapAreaRect.y + (map.mapAreaRect.height / 2)
-                };
-                map.zoomModule.doubleClick(<PointerEvent>eventObj);
-            };
-            map.layers[0].layerType = 'Geometry';
-            map.zoomSettings.doubleClickZoom = true;
-            map.refresh();
-        });
-    });
+        // it('Checking with zoom out button - bing map ', () => {
+            // map.load = (args: ILoadEventArgs) => {
+                // let bing: BingMap = new BingMap(map);
+                // bing.imageUrl = imageUrl;
+                // bing.maxZoom = zoomMax;
+                // bing.subDomains = subDomains;
+                // map.mapLayerPanel["bing"] = bing;
+            // };
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                // let eventObj: Object = {
+                    // target: element,
+                    // type: 'touchstart',
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left,
+                    // pageY: element.getBoundingClientRect().top
+                // };
+                // map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            // };
+            // map.layers[0].layerType = 'Bing';
+            // map.refresh();
+        // });
+        // it('Checking with public methode zooming', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_svg');
+            // };
+            // map.zoomToCoordinates(52.4643089, 13.4107368, 19.1555762, 72.8849595);
+        // });
+        // it('Checking with double tab zooming ', () => {
+            // map.loaded = (args: ILoadedEventArgs) => {
+                // let element: Element = getElementByID(map.element.id + '_svg');
+                // let rect: ClientRect = element.getBoundingClientRect();
+                // let eventObj: Object = {
+                    // target: element,
+                    // stopImmediatePropagation: prevent,
+                    // pageX: element.getBoundingClientRect().left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    // pageY: element.getBoundingClientRect().top + map.mapAreaRect.y + (map.mapAreaRect.height / 2)
+                // };
+                // map.zoomModule.doubleClick(<PointerEvent>eventObj);
+            // };
+            // map.layers[0].layerType = 'Geometry';
+            // map.zoomSettings.doubleClickZoom = true;
+            // map.refresh();
+        // });
+    // });
 
     describe('Checking with mouse wheel zooming', () => {
         let id: string = 'container';

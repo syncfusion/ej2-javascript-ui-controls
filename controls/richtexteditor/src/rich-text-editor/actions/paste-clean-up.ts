@@ -289,7 +289,7 @@ export class PasteCleanup {
                             if (!isNullOrUndefined(imgElem)) {
                                 detach(imgElem);
                             }
-                            if(!isNullOrUndefined(popupObj.element)) {
+                            if (!isNullOrUndefined(popupObj.element)) {
                                 detach(popupObj.element);
                             }
                         } else {

@@ -526,10 +526,11 @@ export class HeaderRender implements IRenderer {
             }
             if (this.lockColsRendered) {
                 for (let i: number = 0, len: number = cols.columns.length; i < len; i++) {
-                    const isFirstCol: boolean = this.isFirstCol = (cols.columns[i] as Column).visible && !this.isFirstCol && len !== 1 ;
-                    const isLaststackedCol: boolean = i === (len - 1);
+                    isFirstObj = isFirstObj && i === 0;
+                    const isFirstCol: boolean = this.isFirstCol = (cols.columns[i] as Column).visible && !isFirstObj;
+                    const isLaststackedCol: boolean = i === (len - 1) && isLastCol;
                     rows = this.appendCells(
-                        (cols.columns as Column[])[i], rows, index + 1, isFirstObj, isFirstCol, isLaststackedCol && isLastCol,
+                        (cols.columns as Column[])[i], rows, index + 1, isFirstObj, isFirstCol && !isLaststackedCol, isLaststackedCol,
                         isMovable, tableName
                     );
                 }

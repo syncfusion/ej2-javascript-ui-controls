@@ -77,15 +77,15 @@ describe('Chart Control', () => {
                 let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
                 expect(svg.getAttribute('y') == '162.5625' || svg.getAttribute('y') == '163.8125').toBe(true);
                 svg = document.getElementById('chartContainer1_AxisLabel_0');
-                expect(svg.getAttribute('y') == '295.75' || svg.getAttribute('y') == '296').toBe(true);
-                expect(svg.getAttribute('x') == '53' || svg.getAttribute('x') == '49').toBe(true);
+                expect(svg.getAttribute('y') == '292').toBe(true);
+                expect(svg.getAttribute('x') == '40').toBe(true);
 
                 svg = document.getElementById('chartContainer_AxisTitle_2');
-                expect(svg.getAttribute('y') == '413.1875' || svg.getAttribute('y') == '410.9375').toBe(true);
+                expect(svg.getAttribute('y') == '413.1875' || svg.getAttribute('y') == '410.9375' || svg.getAttribute('y') == '292').toBe(true);
 
                 svg = document.getElementById('chartContainer2_AxisLabel_3');
-                expect(svg.getAttribute('y') == '295.75' || svg.getAttribute('y') == '296').toBe(true);
-                expect(svg.getAttribute('x') == '53' || svg.getAttribute('x') == '49').toBe(true);
+                expect(svg.getAttribute('y') == '292').toBe(true);
+                expect(svg.getAttribute('x') == '43').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -150,7 +150,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('chartContainer1_AxisLabel_6');                
                               
-                expect(svg.getAttribute('y') == '166' || svg.getAttribute('y') == '166.75').toBe(true);
+                expect(svg.getAttribute('y') == '163').toBe(true);
                 
                
                /* expect(svg.getAttribute('x') == '173' || svg.getAttribute('x') == '162').toBe(true);

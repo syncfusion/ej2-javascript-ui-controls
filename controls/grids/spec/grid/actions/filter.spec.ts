@@ -2751,3 +2751,49 @@ describe('EJ2-54457 - showFilterBarOperator is not working with filterBarTemplat
         gridObj = null;
     });
 });
+
+describe('EJ2-55035 - Row selected automatically when `persistSelection` enabled ', ()=>{
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                selectionSettings: { persistSelection: true },
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('Filter the single records ', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('OrderID', 'equal', 10248);
+    });
+    it('Select the row and again filter another records ', (done: Function) => {
+        gridObj.selectRow(0, true);
+        actionComplete = (args?: any): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('OrderID', 'equal', 10250);
+    });
+    it('Check Selected Records ', () => {
+        expect(gridObj.getSelectedRecords().length).toBe(1);
+        expect((<any>gridObj.element.querySelector('.e-checkselectall').nextSibling).classList.contains('e-uncheck')).toBeTruthy();
+    });      
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

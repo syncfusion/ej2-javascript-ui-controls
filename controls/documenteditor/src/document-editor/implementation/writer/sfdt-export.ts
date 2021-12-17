@@ -386,6 +386,16 @@ export class SfdtExport {
         if (widget instanceof ParagraphWidget) {
             if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.blockContentControl(widget);
+                if (!isNullOrUndefined(this.nextBlock)) {
+                    if (widget.contentControlProperties === this.nextBlock.contentControlProperties) {
+                        this.isBlockClosed = false;
+                        return this.blocks = block.blocks;
+                    } else {
+                        this.isBlockClosed = true;
+                    }
+                } else {
+                    this.isBlockClosed = true;
+                }
                 if (!isNullOrUndefined(block) && this.isBlockClosed) {
                     blocks.push(block);
                     this.blocks = [];
@@ -400,8 +410,9 @@ export class SfdtExport {
             let tableWidget: TableWidget = widget as TableWidget;
             if (tableWidget.hasOwnProperty('contentControlProperties') && tableWidget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.tableContentControl(tableWidget);
-                if (this.isBlockClosed) {
+                if (!isNullOrUndefined(block) && this.isBlockClosed) {
                     blocks.push(block);
+                    this.blocks = [];
                 }
                 return this.nextBlock;
             }
@@ -545,10 +556,13 @@ export class SfdtExport {
         block.blocks = this.tableContentControls(tableWidget);
         if (!isNullOrUndefined(this.nextBlock)) {
             if (tableWidget.contentControlProperties === this.nextBlock.contentControlProperties) {
+                this.isBlockClosed = false;
                 return this.blocks = block.blocks;
+            } else {
+                this.isBlockClosed = true;
             }
         }
-        block.contentControlProperties = this.contentControlProperty(tableWidget.contentControlProperties);
+        block.contentControlProperties = this.contentControlProperty(tableWidget.contentControlProperties);        
         return block;
     }
     private tableContentControls(tableWidget: TableWidget): any {
@@ -777,9 +791,9 @@ export class SfdtExport {
             inline.name = element.name;
         } else if (element instanceof TextElementBox) {
             // replacing the no break hyphen character by '-'
-            if (element.text.indexOf('\u001e') !== -1) {
+            if (element.text.indexOf(String.fromCharCode(30)) !== -1) {
                 inline.text = element.text.replace(/\u001e/g, '-');
-            } else if (element.text.indexOf('\u001f') !== -1) {
+            } else if (element.text.indexOf(String.fromCharCode(31)) !== -1) {
                 inline.text = element.text.replace(/\u001f/g, '');
             } else if (element.revisions.length !== 0) {
                 if (!this.isExport && this.owner.enableTrackChanges && !this.isPartialExport) {
@@ -1188,8 +1202,8 @@ export class SfdtExport {
         inline.characterFormat = {};
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
         inline.blocks = [];
-        for (let i: number = 0; i < element.blocks.length; i++) {
-            this.writeBlock(element.blocks[i], 0, inline.blocks);
+        for (let i: number = 0; i < element.bodyWidget.childWidgets.length; i++) {
+            this.writeBlock(element.bodyWidget.childWidgets[i], 0, inline.blocks);
         }
         inline.symbolCode = element.symbolCode;
         inline.symbolFontName = element.symbolFontName;
@@ -1297,6 +1311,12 @@ export class SfdtExport {
         characterFormat.italicBidi = isInline ? format.italic : format.getValue('italic');
         characterFormat.fontSizeBidi = isInline ? format.fontSize : format.getValue('fontSize');
         characterFormat.fontFamilyBidi = isInline ? format.fontFamily : format.getValue('fontFamily');
+        if (format.revisions.length > 0) {
+            characterFormat.revisionIds = [];
+            for (let x: number = 0; x < format.revisions.length; x++) {
+                characterFormat.revisionIds.push(format.revisions[x].revisionID);
+            }
+        }
         if (this.writeInlineStyles && !isInline) {
             characterFormat.inlineFormat = this.writeCharacterFormat(format, true);
         }

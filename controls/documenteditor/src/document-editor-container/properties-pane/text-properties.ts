@@ -677,7 +677,7 @@ export class Text {
             this.fontFamily.destroy();
             this.fontFamily = undefined;
         }
-        if(this.changeCaseDropdown) {
+        if (this.changeCaseDropdown) {
             this.changeCaseDropdown.destroy();
             this.changeCaseDropdown = undefined;
         }

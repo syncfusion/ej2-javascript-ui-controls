@@ -5,7 +5,7 @@
 /**
  * AccumulationChart legend
  */
-import { extend, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { extend, Browser, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { AccumulationSeries, AccPoints, pointByIndex } from '../model/acc-base';
 import { MarginModel } from '../../common/model/base-model';
 import { AccumulationChart } from '../accumulation';
@@ -34,6 +34,43 @@ export class AccumulationLegend extends BaseLegend {
         super(chart);
         this.library = this;
         this.titleRect = new Rect(0, chart.margin.top, 0, 0);
+        this.addEventListener();
+    }
+    /**
+    * Binding events for legend module.
+    */
+     private addEventListener(): void {
+        if (this.chart.isDestroyed) { return; }
+        this.chart.on(Browser.touchMoveEvent, this.mouseMove, this);
+        this.chart.on('click', this.click, this);
+        this.chart.on(Browser.touchEndEvent, this.mouseEnd, this);
+    }
+    /**
+    * UnBinding events for legend module.
+    */
+     private removeEventListener(): void {
+        if (this.chart.isDestroyed) { return; }
+        this.chart.off(Browser.touchMoveEvent, this.mouseMove);
+        this.chart.off('click', this.click);
+        this.chart.off(Browser.touchEndEvent, this.mouseEnd);
+    }
+    /**
+    * To handle mosue move for legend module
+    */
+    private mouseMove(e: MouseEvent): void {
+        if (this.chart.legendSettings.visible && !this.chart.isTouch) {
+            if ((<AccumulationChart>this.chart).accumulationHighlightModule && (<AccumulationChart>this.chart).highlightMode !== 'None') {
+                this.click(e);
+            }
+        }
+    }
+    /**
+    * To handle mosue end for legend module
+    */
+    private mouseEnd(e: MouseEvent): void {
+        if (this.chart.legendSettings.visible && this.chart.isTouch) {
+            this.move(e);
+        }
     }
     /**
      * Get the legend options.
@@ -43,6 +80,8 @@ export class AccumulationLegend extends BaseLegend {
      */
     public getLegendOptions(chart: AccumulationChart, series: AccumulationSeries[]): void {
         this.legendCollections = [];
+        this.isRtlEnable = chart.enableRtl;
+        this.isReverse = !this.isRtlEnable && chart.legendSettings.reverse;
         for (let i: number = 0; i < 1; i++) {
             let seriesType: AccumulationType = series[i].type;
             if (seriesType === 'Pie' || seriesType === <AccumulationType>'Doughnut') {
@@ -56,6 +95,9 @@ export class AccumulationLegend extends BaseLegend {
                         point.index, series[i].index
                     ));
                 }
+            }
+            if (this.isReverse) {
+                this.legendCollections.reverse();
             }
         }
     }
@@ -220,17 +262,19 @@ export class AccumulationLegend extends BaseLegend {
         const padding: number = this.legend.padding;
         if (this.isVertical) {
             if (count === firstLegend || (prevLegend.location.y + (this.maxItemHeight * 1.5) + (padding * 2) > rect.y + rect.height )) {
-                legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : this.maxColumnWidth);
+                legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : (!this.isRtlEnable) ? this.maxColumnWidth : -this.maxColumnWidth);
                 legendOption.location.y = start.y;
-                this.pageXCollections.push(legendOption.location.x - (this.legend.shapeWidth / 2) - padding);
+                const textStartLoc: number = (this.legend.shapeWidth / 2) + padding;
+                this.pageXCollections.push(legendOption.location.x + ((!this.isRtlEnable) ? -textStartLoc : textStartLoc));
                 this.totalPages++;
             } else {
                 legendOption.location.x = prevLegend.location.x;
                 legendOption.location.y = prevLegend.location.y + this.maxItemHeight + padding;
             }
         } else {
-            const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
-            if ((previousBound + (legendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2)) {
+            const textWidth = textPadding + prevLegend.textSize.width;
+            const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
+            if (this.isWithinBounds(previousBound, legendOption.textSize.width + textPadding, rect, this.legend.shapeWidth / 2)) {
                 legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
                     prevLegend.location.y + this.maxItemHeight + padding;
                 legendOption.location.x = start.x;
@@ -243,6 +287,20 @@ export class AccumulationLegend extends BaseLegend {
         const availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
         legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
     }
+
+     /**
+     * check whether legend group within legend bounds or not.
+     *
+     */
+    private isWithinBounds(previousBound: number, textWidth: number, legendBounds: Rect, shapeWidth: number): boolean {
+        if (!this.isRtlEnable) {
+            return (previousBound + textWidth) > (legendBounds.x + legendBounds.width + shapeWidth);
+        }
+        else {
+            return (previousBound - textWidth) < (legendBounds.x - shapeWidth);
+        }
+    }
+
     /**
      * finding the smart legend place according to positions.
      *
@@ -334,7 +392,10 @@ export class AccumulationLegend extends BaseLegend {
                     (<AccumulationChart>this.chart).renderElements();
                 } else if ((<AccumulationChart>this.chart).accumulationSelectionModule && !isNaN(pointIndex)) {
                     (<AccumulationChart>this.chart).accumulationSelectionModule.legendSelection(
-                        <AccumulationChart>this.chart, 0, pointIndex);
+                        <AccumulationChart>this.chart, 0, pointIndex, event);
+                } else if ((<AccumulationChart>this.chart).accumulationHighlightModule && !isNaN(pointIndex)) {
+                    (<AccumulationChart>this.chart).accumulationHighlightModule.legendSelection(
+                        <AccumulationChart>this.chart, 0, pointIndex, event);
                 }
             }
         }
@@ -396,5 +457,6 @@ export class AccumulationLegend extends BaseLegend {
         /**
          * Destroy method calling here
          */
+        this.removeEventListener();
     }
 }

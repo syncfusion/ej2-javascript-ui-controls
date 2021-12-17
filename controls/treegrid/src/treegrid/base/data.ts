@@ -525,7 +525,9 @@ export class DataManipulation {
             const parentData: Object = this.parent.parentData;
             const query: Query = getObject('query', args); const srtQry: Query = new Query();
             for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-                const col: GridColumnModel = this.parent.grid.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+                const getColumnByField: string = 'getColumnByField';
+                const col: GridColumnModel = this.parent.grid.renderModule.data[getColumnByField](this.parent.grid.
+                    sortSettings.columns[srt].field);
                 const compFun: Function | string = col.sortComparer && isOffline(this.parent) ?
                     (col.sortComparer as Function).bind(col) :
                     this.parent.grid.sortSettings.columns[srt].direction;

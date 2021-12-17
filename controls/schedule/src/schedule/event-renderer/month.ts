@@ -121,10 +121,10 @@ export class MonthEvent extends EventBase {
                     this.parent.virtualScrollModule.updateVirtualScrollHeight();
                 }
             }
-            this.parent.notify(events.scrollUiUpdate, data);
             if (!this.parent.enablePersistence) {
                 this.parent.notify(events.contentReady, {});
             }
+            this.parent.notify(events.scrollUiUpdate, data);
             if (this.parent.currentView === 'Month' && this.parent.showWeekNumber) {
                 const totalCells: HTMLElement[] =
                     [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
@@ -173,7 +173,7 @@ export class MonthEvent extends EventBase {
         this.cellHeight = cellDetail.height;
         this.dateRender = dateRender;
         const filteredDates: Date[] = this.getRenderedDates(dateRender);
-        this.getSlotDates(workDays);
+        this.getSlotDates(workDays || this.parent.activeViewOptions.workDays);
         this.processBlockEvents(blockList, resIndex, resData);
         for (const event of eventsList) {
             if (this.parent.resourceBase && !resData) {

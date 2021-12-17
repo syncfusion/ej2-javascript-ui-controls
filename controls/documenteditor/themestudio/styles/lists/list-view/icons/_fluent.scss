@@ -1,0 +1,8 @@
+.e-icon-collapsible::before {
+  content: '\e7c2';
+}
+
+.e-icon-back::before {
+  content: '\e7e4';
+  font-size: $listview-back-icon-font-size;
+}

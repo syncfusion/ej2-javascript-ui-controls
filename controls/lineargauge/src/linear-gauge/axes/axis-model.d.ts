@@ -15,7 +15,6 @@ export interface LineModel {
      * Sets and gets the height of the axis line.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      */
     height?: number;
 
@@ -34,7 +33,6 @@ export interface LineModel {
     /**
      * Sets and gets the offset to position the axis line in linear gauge.
      *
-     * @blazorDefaultValue 0
      */
     offset?: number;
 
@@ -233,7 +231,6 @@ export interface PointerModel {
     /**
      * Sets and gets the value of the pointer in axis.
      *
-     * @blazorDefaultValue 0
      * @default null
      */
 

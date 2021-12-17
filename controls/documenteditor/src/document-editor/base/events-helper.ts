@@ -325,35 +325,35 @@ export interface CustomToolbarItemModel {
 export interface XmlHttpRequestEventArgs {
     /**
      * Gets the type of server action that is to be triggered.
-     * 
+     *
      * @default undefined
      * @returns {ServerActionType}
      */
     serverActionType: ServerActionType
     /**
      * Gets or sets a value indicating whether to enable or disable withCredentials property of XMLHttpRequest object.
-     * 
+     *
      * @default false
      * @returns {boolean}
      */
     withCredentials: boolean
     /**
      * Gets or sets the collection of custom headers to set in the XMLHttpRequest object.
-     * 
+     *
      * @default undefined
      * @returns {object[]}
      */
     headers: object[]
     /**
      * Gets or sets the timeout to set in the XMLHttpRequest object. It denotes number of milliseconds a request can take before automatically being terminated. The default value is 0, which means there is no timeout.
-     * 
+     *
      * @default 0
      * @returns {number}
      */
     timeout: number
     /**
      * Gets or sets a value indicating whether this server request has been canceled.
-     * 
+     *
      * @default false
      * @returns {boolean}
      */

@@ -407,18 +407,21 @@ export class VerticalEvent extends EventBase {
         if (currentDay.length === 0) {
             currentDate = util.resetTime(renderedDate[0]);
         }
-        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        const startEndHours: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+        const field: EventFieldsMapping = this.parent.eventFields;
+        const schedule: Record<string, Date> = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         const event: Record<string, any> = extend({}, record, null, true) as Record<string, any>;
         event.isSpanned = { isBottom: false, isTop: false };
-        if ((<Date>record[fieldMapping.startTime]).getTime() < startEndHours.startHour.getTime()) {
-            event[fieldMapping.startTime] = startEndHours.startHour;
+        if ((<Date>record[field.startTime]).getTime() < schedule.startHour.getTime()) {
+            event[field.startTime] = schedule.startHour;
             (event.isSpanned as Record<string, any>).isTop = true;
         }
-        if ((<Date>record[fieldMapping.endTime]).getTime() > startEndHours.endHour.getTime()) {
-            event[fieldMapping.endTime] = startEndHours.endHour;
+        if ((<Date>record[field.endTime]).getTime() > schedule.endHour.getTime()) {
+            event[field.endTime] = schedule.endHour;
             (event.isSpanned as Record<string, any>).isBottom = true;
         }
+        const eventDates: Record<string, Date> = this.updateEventMinimumDuration(schedule, event[field.startTime], event[field.endTime]);
+        event[field.startTime] = eventDates.startDate;
+        event[field.endTime] = eventDates.endDate;
         return event;
     }
 
@@ -555,7 +558,7 @@ export class VerticalEvent extends EventBase {
             const index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
             this.wireAppointmentEvents(appointmentElement, eventObj);
-            if (appHeight  < this.cellHeight) {
+            if (appHeight < this.cellHeight) {
                 const resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
                 resizeHandlers.forEach((resizeHandler: HTMLElement) => {
                     resizeHandler.style.height = Math.ceil(appHeight / resizeHandler.offsetHeight) + 'px';

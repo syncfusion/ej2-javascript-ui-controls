@@ -1,0 +1,245 @@
+@include export-module('grid-fluent-icons') {
+  /*! component icons */
+
+  .e-icon-check::before {
+    content: '\e7b9';
+  }
+
+  #{&}.e-grid,
+  .e-grid-menu {
+
+    .e-group-animate .e-drag.e-icon-drag::before {
+      content: '\e7fa';
+    }
+
+    .e-group-animate .e-nextgroup.e-icon-next::before {
+      content: '\e7c1';
+    }
+
+    .e-icon-ascending::before {
+      content: '\e788';
+    }
+
+    .e-icon-descending::before {
+      content: '\e789';
+    }
+
+    .e-icon-hide::before {
+      content: '\e74f';
+    }
+
+    .e-ungroupbutton.e-icon-hide::before {
+      content: '\e74f';
+    }
+
+    .e-icon-rowselect::before {
+      content: '\e78a';
+    }
+
+    .e-icon-sortdirect::before {
+      content: '\e75a';
+    }
+
+    .e-icon-gdownarrow::before {
+      content: '\e7c3';
+    }
+
+    .e-icon-grightarrow::before {
+      content: '\e7c2';
+    }
+
+    .e-icon-filter::before,
+    .e-icon-filter.e-filtered::before {
+      content: '\e7d8';
+    }
+
+    .e-resfilter-icon::before {
+      content: '\e7d8';
+    }
+
+    .e-ressort-icon::before {
+      content: '\e8a2';
+    }
+
+    .e-excl-filter-icon::before {
+      content: '\e7d8';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e7d9';
+    }
+
+    &.e-rtl {
+      .e-icon-grightarrow::before {
+        content: '\e7c2';
+      }
+    }
+
+    .e-icon-group::before {
+      content: '\e736';
+    }
+
+    .e-icon-ungroup::before {
+      content: '\e736';
+    }
+
+    .e-icon-reorderuparrow::before {
+      content: '\e81a';
+    }
+
+    .e-icon-reorderdownarrow::before {
+      content: '\e81b';
+    }
+
+    .e-print::before {
+      content: '\e7bd';
+    }
+
+    .e-add::before {
+      content: '\e7ba';
+    }
+
+    .e-resback-icon::before {
+      content: '\e7e4';
+    }
+
+    .e-wordexport::before {
+      content: '\e726';
+    }
+
+    .e-pdfexport::before {
+      content: '\e7d1';
+    }
+
+    .e-csvexport::before {
+      content: '\e833';
+    }
+
+    .e-excelexport::before {
+      content: '\e7d2';
+    }
+
+    .e-edit::before {
+      content: '\e822';
+    }
+
+    .e-columnmenu::before,
+    .e-columnmenu.e-filtered::before {
+      content: '\e7ad';
+    }
+
+    .e-delete::before {
+      content: '\e75b';
+    }
+
+    .e-cancel::before {
+      content: '\e74f';
+    }
+
+    .e-copy::before {
+      content: '\e7b3';
+    }
+
+    .e-save::before {
+      content: '\e7bf';
+    }
+
+    .e-update::before {
+      content: '\e7bf';
+    }
+
+    .e-search-icon::before {
+      content: '\e7a8';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e74f';
+    }
+
+    .e-columnchooserdiv::before {
+      content: '\e7d8';
+    }
+
+    .e-ccsearch-icon::before {
+      content: '\e7a8';
+    }
+
+    .e-columnchooser::before {
+      content: '\e21e'; // icon not found
+    }
+
+    .e-columnchooser-btn::before {
+      content: '\e81b';
+    }
+
+    .e-cc-icon::before {
+      content: '\e81b';
+    }
+
+    .e-icon-rowdragicon::before {
+      content: '\e7fa';
+    }
+
+    &.e-rtl {
+      .e-icon-rowdragicon::before {
+        content: '\e7fa';
+      }
+    }
+
+    .e-ccsearch-icon.e-cc-cancel::before,
+    .e-chkcancel-icon::before {
+      content: '\e74f';
+    }
+  }
+}
+
+.e-responsive-dialog {
+
+  & .e-resfilterback::before {
+    content: '\e7e4';
+  }
+
+  &.e-rtl .e-resfilterback::before {
+    content: '\e773';
+  }
+
+  & .e-filterset::before {
+    content: '\e7d8';
+  }
+
+  & .e-search-icon::before {
+    content: '\e7a8';
+  }
+
+  & .e-chkcancel-icon::before {
+    content: '\e74f';
+  }
+
+  & .e-icon-filter-clear::before {
+    content: '\e7d9';
+  }
+}
+
+.e-row-responsive-filter {
+  & .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e7e4';
+    }
+  }
+
+  &.e-rtl .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e773';
+    }
+  }
+}
+
+.e-checkboxfilter {
+  .e-search-icon::before {
+    content: '\e7a8';
+  }
+
+  .e-chkcancel-icon::before {
+    content: '\e74f';
+  }
+}

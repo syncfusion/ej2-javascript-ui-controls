@@ -13,7 +13,7 @@ import { getShapeColor } from '../../../src/maps/model/theme';
 import { LayerSettingsModel } from '../../../src/maps/index';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { Bubble, MapsTooltip, DataLabel, Zoom, Marker, ColorMapping, Highlight, Selection, Legend } from '../../../src/index';
-import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
+import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1, sample } from '../data/data.spec';
 import { map } from '../data/mappoint.spec';
 import { data } from '../data/bubblepointdata.spec';
 import { doesNotThrow } from 'assert';
@@ -544,7 +544,7 @@ describe('Maps Component Base Spec', () => {
                 let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');
                 expect(element === null).toBe(false);
                 element = document.getElementById(maps.element.id + '_LayerIndex_1_LineString_Group');
-                expect(element === null).toBe(true);
+                expect(element !== null).toBe(true);
             };
             maps.layers = [{
                 shapeData: World_Map
@@ -578,7 +578,7 @@ describe('Maps Component Base Spec', () => {
                 let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');
                 expect(element.childElementCount === null).toBe(false);
                 element = document.getElementById(maps.element.id + '_LayerIndex_1_LineString_Group');
-                expect(element === null).toBe(true);
+                expect(element !== null).toBe(true);
                 element = document.getElementById(maps.element.id + '_LayerIndex_2_Point_Group');
                 expect(element.childElementCount === null).toBe(false);
             };
@@ -606,6 +606,34 @@ describe('Maps Component Base Spec', () => {
             maps.layers = [{
                 shapeData: CustomPathData
             }];
+            maps.refresh();
+        });
+
+        it('Shape layer render checking with LineString', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById(maps.element.id + '_LayerIndex_0_LineString_Group');
+                expect(element !== null).toBe(true);
+            };
+            maps.layers = [{
+                shapeData: sample
+            }]
+            maps.refresh();
+        });
+
+        it('Shape layer render checking with LineString as sublayer', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');
+                expect(element === null).toBe(false);
+                element = document.getElementById(maps.element.id + '_LayerIndex_1_LineString_Group');
+                expect(element !== null).toBe(true);
+            };
+            maps.layers = [{
+                shapeData: World_Map
+            },
+            {
+                type: 'SubLayer',
+                shapeData: sample
+            }]
             maps.refresh();
         });
     });

@@ -196,7 +196,7 @@ export function bindClearEvent(): void {
 }
 function resetHandler(e?: MouseEvent): void {
     e.preventDefault();
-    if (!this.inputObj.clearButton.classList.contains('e-clear-icon-hide')) {
+    if (!this.inputObj.clearButton.classList.contains('e-clear-icon-hide') || (this.inputObj.container.classList.contains('e-static-clear'))) {
         clear.call(this, e);
         this.value = '';
     }

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.4.38 (2021-12-17)
+
+### Tooltip
+
+#### New Features
+
+- `#322737` - The `container` property support has been provided which allows to place the tooltip's pop-up within any user preferred element.
+
+## 19.3.47 (2021-10-26)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I341459` - The issue with "The Tooltip's pop-up position misaligns on window resize" has been resolved.
+
 ## 19.2.62 (2021-09-14)
 
 ### Dialog

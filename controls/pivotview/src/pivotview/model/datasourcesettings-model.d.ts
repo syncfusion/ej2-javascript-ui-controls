@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode } from '../../base/types';import { DataSourceType } from '../../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode } from '../../base/types';import { DataSourceType } from '../../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';import { GrandTotalsPosition } from '../../common/base/enum';
 
 /**
  * Interface for a class FieldOptions
@@ -820,6 +820,13 @@ export interface DataSourceSettingsModel {
      * @default true
      */
     showGrandTotals?: boolean;
+
+    /**
+     * Allows the grand totals to be displayed at the top or bottom of the pivot table's row and column axes.
+     * > By default, the grand totals are displayed at the bottom of the pivot table's row and column axes.
+     * @default Bottom
+     */
+    grandTotalsPosition?: GrandTotalsPosition;
 
     /**
      * Allows to show or hide grand totals in row axis of the pivot table.

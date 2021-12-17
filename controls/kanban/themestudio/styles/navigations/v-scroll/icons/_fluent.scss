@@ -1,0 +1,26 @@
+@include export-module('vscroll-fluent-icons') {
+  /*! vscroll icons */
+  #{&}.e-vscroll {
+
+    &.e-scroll-device {
+
+      .e-nav-up-arrow::before {
+        content: '\e810';
+      }
+
+      .e-nav-down-arrow::before {
+        content: '\e811';
+      }
+    }
+
+    .e-nav-up-arrow::before {
+      content: '\e7c4';
+      line-height: normal;
+    }
+
+    .e-nav-down-arrow::before {
+      content: '\e7c3';
+      line-height: normal;
+    }
+  }
+}

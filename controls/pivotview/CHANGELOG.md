@@ -2,22 +2,58 @@
 
 ## [Unreleased]
 
-## 19.3.59 (2021-12-14)
+## 19.4.38 (2021-12-17)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I349396` - When the virtual scrolling feature is enabled, as well as when members are filtered, the Pivot Table can now be rendered properly.
+- `#I340539` - In Angular, the bundle size for Pivot Table has been reduced.
+- `#I347116` - With the toolbar UI, the Pivot Chart is now refreshed properly.
+- `#I347116` - With the Pivot Chart's default settings, its labels are displayed properly.
+- `#I348183` - While performing value sorting with a single measure, the Pivot Table will now be rendered properly.
+- `#I348952` - In the pivot table, the tooltip for string fields is now properly displayed.
+- `#F170928` - When using the virtual scrolling feature, the calculated field buttons with edit option inside grouping bar and field list layout are now properly displayed.
+- `#F170654` - The caption in the grouping field buttons within the grouping bar and field list layout is now displayed properly.
+
+#### New Features
+
+- `#I295658`, `#I320675`, `#I329355`, `#F158271`, `#F158475` - Provided support to display summarized totals (grand totals) either at the first or last position in the Pivot Table's row and column axes.
+- `#I327744` - Provided support to align text for specific column headers.
+- `#F159996` - Provided action begin and complete events to identify UI actions in the Pivot Table such as drill down/up, value sorting, grouping bar and field list UI actions, and CRUD operations. If the UI actions do not achieve the desired result, the action failure event is triggered.
+
+## 19.3.46 (2021-10-19)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I345673` - Even the value fields starts with the same caption, the Pivot Table values are now properly displayed.
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I345297` - While clicking the value sorting icon, the cell click event is now properly triggered.
+- `#I342886` - The "Calculated Field" feature in the pivot table now works properly in Angular production mode.
+
+## 19.3.44 (2021-10-05)
 
 ### Pivot Table
 
 #### Bug Fixes
 
 - `#F168308` - The pivot table can now be rendered properly with custom number formats.
-- `#339705` - When the virtualization feature is used, the pivot table can now be rendered properly without an unnecessary horizontal scrollbar when the content does not require it.
-- `#341987` - The pivot table can now be rendered properly while perform filtering with OLAP data source.
-- `#342221` - The pivot table can now be rendered properly while applying date grouing through UI.
+- `#I339705` - When the virtual scrolling feature is used, the pivot table can now be rendered properly without an unnecessary horizontal scrollbar when the content does not require it.
+- `#I341987` - The pivot table can now be rendered properly while perform filtering with OLAP data source.
+- `#I342221` - The pivot table can now be rendered properly while applying date grouping through UI.
 - The column headers are now displayed properly while perform resizing.
-- `#342221` - The pivot table can now be rendered properly while perform member filtering with an empty header.
+- `#I342221` - The pivot table can now be rendered properly while perform member filtering with an empty header.
 
 #### New Features
 
-- `#300095` - Provided support to display measures at any desired positions in the column or row axis for relational data sources.
+- `#I300095` - Provided support to display measures at any desired positions in the column or row axis for relational data sources.
 
 ## 19.2.56 (2021-08-17)
 
@@ -33,7 +69,7 @@
 
 #### Bug Fixes
 
-- `#I337487` - Now the field's caption can be changed dynamically using the value field settings dialog.
+- `#I337487` - Now the field's caption can be changed dynamically using the value field settings pop-up.
 - `#F167449` - Now the fields panel has been refreshed properly with toolbar UI.
 
 ## 19.2.51 (2021-08-03)
@@ -42,9 +78,9 @@
 
 #### Bug Fixes
 
-- `#F166428` - Issue while resizing column with virtualization in the pivot table has been resolved.
-- `#336591`,`#337082` - When using the virtualization feature, the pivot table columns are now properly displayed when scrolling horizontally.
-- `#337082` - The pivot table is now properly displayed when scrolling horizontally while filtering is applied when using the virtualization feature.
+- `#F166428` - Issue while resizing column with virtual scrolling in the pivot table has been resolved.
+- `#336591`,`#337082` - When using the virtual scrolling feature, the pivot table columns are now properly displayed when scrolling horizontally.
+- `#337082` - The pivot table is now properly displayed when scrolling horizontally while filtering is applied when using the virtual scrolling feature.
 
 ## 19.2.49 (2021-07-27)
 
@@ -60,9 +96,9 @@
 ## 19.2.48 (2021-07-20)
 
 ### Pivot Table
- 
+
 #### Bug Fixes
- 
+
 - `#327131` - Now the number format issue for empty cells in excel exporting has been fixed.
 
 ## 19.2.46 (2021-07-06)
@@ -95,8 +131,8 @@
 
 #### Bug Fixes
 
-- The drill through dialog now be showed the correct raw items when we filtering applied in fields in filter axis.
-- The drill through dialog can now be openend when we bind measures in row axis.
+- The drill through pop-up now be showed the correct raw items when we filtering applied in fields in filter axis.
+- The drill through pop-up can now be open when we bind measures in row axis.
 
 ## 18.2.54 (2020-08-18)
 
@@ -104,14 +140,14 @@
 
 #### Bug Fixes
 
-- Now drill-through dialog can be opened when the measures are placed in row axis.
+- Now drill-through pop-up can be open when the measures are placed in row axis.
 
 #### New Features
 
 - `#260352`,`#276917`,`#280407`,`#281842` - Provided an option to do the aggregation in server side and the rendering part alone will be done in client side. It is to improve the performance while binding huge size of data from remote server.
 - `#279727` - Provided support to sort the alphanumeric field members.
-- `#F155279` - Provided an option to restrict the drill-through dialog to display.
-- `#281462`,`#282526`,`#287070` - Provided an option to edit the aggregated cells directly (inline editing) without opening editing dialog.
+- `#F155279` - Provided an option to restrict the drill-through pop-up to display.
+- `#281462`,`#282526`,`#287070` - Provided an option to edit the aggregated cells directly (inline editing) without opening editing pop-up.
 - `#283107` - Provided template support in toolbar panel to create custom toolbar option.
 - `#284800` - Introduced an event to get the edited raw data information after the editing operation.
 
