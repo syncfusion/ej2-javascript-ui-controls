@@ -694,3 +694,34 @@ describe('Row paste validation', () => {
     //     expect(cell.cellFormat.rowSpan).toBe(3);
     // });
 });
+
+describe('Paste large content', () => {
+    let editor: DocumentEditor = undefined;
+    beforeEach(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableLocalPaste: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterEach((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it('Pasting large content', () => {
+        console.log('Pasting large content');
+        editor.openBlank();
+        editor.editor.pasteContents('What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the ndustrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.');
+        expect(editor.documentHelper.viewer.visiblePages[0].bodyWidgets[0].childWidgets.length).toBe(7);
+    });
+});

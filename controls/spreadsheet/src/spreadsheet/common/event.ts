@@ -325,3 +325,5 @@ export const hideAutoFillElement: string = 'hideAutoFillElement';
 export const unProtectSheetPassword: string = 'unProtectSheetPassword';
 /** @hidden */
 export const updateTranslate: string = 'updateTranslate';
+/** @hidden */
+export const getUpdatedScrollPosition: string = 'getUpdatedScrollPosition';

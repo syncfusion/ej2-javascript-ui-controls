@@ -812,7 +812,7 @@ export interface ColumnModel {
      *
      * @default Syncfusion.EJ2.Grids.FreezeDirection.None
      * @isEnumeration true
-     * @aspType Syncfusion.EJ2.Grids.FreezeDirection.None
+     * @aspType Syncfusion.EJ2.Grids.FreezeDirection
      */
     freeze?: freezeDirection;
 }

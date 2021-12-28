@@ -10,7 +10,7 @@ import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
 import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
-import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, beginAction } from '../common/event';
+import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, beginAction, activeSheetChanged } from '../common/event';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -96,6 +96,7 @@ export class Edit {
         this.parent.on(forRefSelRender, this.refSelectionRender, this);
         this.parent.on(checkUniqueRange, this.checkUniqueRange, this);
         this.parent.on(reApplyFormula, this.reApplyFormula, this);
+        this.parent.on(activeSheetChanged, this.sheetChangeHandler, this);
     }
 
     private removeEventListener(): void {
@@ -112,6 +113,7 @@ export class Edit {
             this.parent.off(forRefSelRender, this.refSelectionRender);
             this.parent.off(checkUniqueRange, this.checkUniqueRange);
             this.parent.off(reApplyFormula, this.reApplyFormula);
+            this.parent.off(activeSheetChanged, this.sheetChangeHandler);
         }
     }
 
@@ -1343,6 +1345,10 @@ export class Edit {
             return editEle;
         }
         return this.editorElem;
+    }
+
+    private sheetChangeHandler(): void {
+        this.editCellData && (this.editCellData.value = null);
     }
 }
 

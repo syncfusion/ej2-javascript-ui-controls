@@ -2,21 +2,37 @@
 
 ## [Unreleased]
 
+## 19.4.40 (2021-12-28)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I347750` - Resolved the hanging issue when pasting large non-formatted content.
+- `#I349289`, `#I349128` - Resolved the endnote shifting and overlapping issue.
+- `#F171307` - Resolved the track changes issue in editing paragraph inside table.
+- `#SF-359156` - Resolved the cropped image issue rendering in header/footer.
+- `#SF-356951`, `#F170963`, `#SF-351886`, #`SF-359815`, `#SF-359312` - Resolved the merged cell width rendering issue.
+- `#I347523` - Resolved the invalid SFDT generation after pasting formatted content.
+- `#SF-357703` - Resolved the table row splitting issue.
+
 ## 19.4.38 (2021-12-17)
 
 ### Document Editor
 
-- `I348089` - Resolved the protected columns, rows, and cells editing issue.
-- `I344822` - Word with hyphen characters are now displayed properly.
-- `I345558` - Resolved the table layout for the nested table with position.
-- `I346408` - Table cell content reversed on undo is now resolved.
-- `I346992` - Paragraph with widow/orphan property is now displayed properly.
-- `I341119` - Document with image and table with top and bottom wrapping style is now opened properly.
-- `I344713`- Resolved table header row rendering issue.
-- `I341963`, `#I341840` - Resolved the table rendering issue.
-- `I344704` - Resolved issue with tracking changes in empty paragraph.
-- `I344351` - Line height is now calculated properly when space character has font size greater than the paragraph mark.
-- `I345759`, `#I343106`- Resolved the table border rendering issue.
+#### Bug Fixes
+
+- `#I348089` - Resolved the protected columns, rows, and cells editing issue.
+- `#I344822` - Word with hyphen characters are now displayed properly.
+- `#I345558` - Resolved the table layout for the nested table with position.
+- `#I346408` - Table cell content reversed on undo is now resolved.
+- `#I346992` - Paragraph with widow/orphan property is now displayed properly.
+- `#I341119` - Document with image and table with top and bottom wrapping style is now opened properly.
+- `#I344713`- Resolved table header row rendering issue.
+- `#I341963`, `#I341840` - Resolved the table rendering issue.
+- `#I344704` - Resolved issue with tracking changes in empty paragraph.
+- `#I344351` - Line height is now calculated properly when space character has font size greater than the paragraph mark.
+- `#I345759`, `#I343106`- Resolved the table border rendering issue.
 - `#I343645` - Table grid after width defined as percentage type is now properly exported in server-side.
 - `#I341659` - Resolved the list alignment issue.
 - `#I347230` - Line spacing value zero is now properly exported in server-side.

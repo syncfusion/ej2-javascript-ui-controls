@@ -173,6 +173,17 @@ describe('Table creation', () => {
                 (tableTBItems.item(3).childNodes[0] as HTMLElement).click();
                 expect(document.querySelectorAll('.e-rte-backgroundcolor-dropdown.e-popup-open').length > 0).toBe(true);
                 (document.querySelectorAll('.e-rte-backgroundcolor-dropdown.e-popup-open .e-custom-palette .e-palette .e-row')[1].children[4] as HTMLElement).click();
+                var bottomColor = (document.getElementsByClassName("e-background-color e-rte-elements e-icons")[0] as HTMLElement).style.borderBottomColor;
+                tar = rteObj.contentModule.getEditPanel().querySelector('table tr td');
+                var selObj = new NodeSelection();
+                (rteObj.tableModule as any).cellSelect({ args: { target: tar, preventDefault: function () { } } });
+                selObj.setSelectionText(rteObj.contentModule.getDocument(), tar, tar, 0, 0);
+                (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+                rteObj.inputElement.dispatchEvent(clickEvent);
+                eventsArg = { pageX: 50, pageY: 300, target: tar };
+                (rteObj.tableModule as any).editAreaClickHandler({ args: eventsArg });
+                var defaultBottomcolor = (document.getElementsByClassName("e-background-color e-rte-elements e-icons")[0] as HTMLElement).style.borderBottomColor;
+                expect(defaultBottomcolor).toEqual(bottomColor);
                 (tableTBItems.item(6).childNodes[0] as HTMLElement).click();
                 popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {

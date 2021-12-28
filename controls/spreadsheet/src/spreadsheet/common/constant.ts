@@ -294,6 +294,7 @@ export const defaultLocale: object = {
     NOW: 'Returns the current date and time.',
     MONTH: 'Returns the number of months in a specified date string.',
     TODAY: 'Returns the current date as date value.',
+    WEEKDAY: 'Returns the day of the week corresponding to a date.',
     AVERAGE: 'Calculates average for the series of numbers and/or cells excluding text.',
     AVERAGEIF: 'Calculates average for the cells based on specified criterion.',
     AVERAGEIFS: 'Calculates average for the cells based on specified conditions.',

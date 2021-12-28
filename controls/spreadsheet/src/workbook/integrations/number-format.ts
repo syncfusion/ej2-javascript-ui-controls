@@ -291,7 +291,7 @@ export class WorkbookNumberFormat {
             cell.format = custFormat[0];
         } else if (cellValue === 0) {
             if (isNullOrUndefined(custFormat[2])) {
-                return cellValue.toString();
+                cell.format = custFormat[0];
             } else {
                 cell.format = custFormat[2] + '0';
                 return this.processCustomNumberFormat(cell, rowIdx, colIdx, td).split('0').join('');

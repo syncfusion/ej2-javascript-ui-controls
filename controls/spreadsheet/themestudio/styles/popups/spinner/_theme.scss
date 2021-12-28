@@ -37,24 +37,20 @@
         }
       }
 
-      @if $skin-name == 'tailwind' {
-        .e-spin-tailwind {
+      .e-spin-tailwind {
 
-          .e-path-circle {
-            stroke: $spin-tailwind-stroke-color;
-          }
+        .e-path-circle {
+          stroke: $spin-tailwind-stroke-color;
+        }
 
-          .e-path-arc {
-            stroke: $spin-tailwind-arc-color;
+        .e-path-arc {
+          stroke: $spin-tailwind-arc-color;
         }
       }
-    }
 
-      @if $skin-name == 'bootstrap5'  {
-        .e-spin-bootstrap5 {
-          stroke: $spin-boot5-stroke-color;
+      .e-spin-bootstrap5 {
+        stroke: $spin-boot5-stroke-color;
       }
-    }
 
       .e-spin-high-contrast {
 

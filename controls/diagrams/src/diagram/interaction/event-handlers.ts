@@ -266,7 +266,11 @@ export class DiagramEventHandler {
     }
 
     private isMetaKey(evt: PointerEvent | WheelEvent | KeyboardEvent): boolean {
-        return navigator.platform.match('Mac') ? evt.metaKey : evt.ctrlKey;
+        let metaaKey: boolean = evt.metaKey;
+        if (navigator.platform.match('Mac') && Math.abs((evt as WheelEvent).deltaY) < 50 && !metaaKey) {
+            metaaKey = true;
+        }
+        return navigator.platform.match('Mac') ? metaaKey : evt.ctrlKey;
     }
     private renderUmlHighLighter(args: MouseEventArgs): void {
         this.diagram.commandHandler.removeStackHighlighter();
@@ -1049,7 +1053,7 @@ export class DiagramEventHandler {
                 this.tool.mouseWheel(this.eventArgs);
             }
             this.diagram.scrollActions |= ScrollActions.Interaction;
-            if (evt.shiftKey) {
+            if (evt.shiftKey || evt.deltaX !== -0) {
                 this.diagram.scroller.zoom(1, change, 0, mousePosition);
             } else {
                 this.diagram.scroller.zoom(1, 0, change, mousePosition);

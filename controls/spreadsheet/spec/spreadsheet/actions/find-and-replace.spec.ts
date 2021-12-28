@@ -19,11 +19,13 @@ describe('Find & Replace ->', () => {
             expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
 
             helper.invoke('replace', [{ replaceValue: '150', replaceBy: 'replaceall', value: 10 }]);
-            expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toBe(150);
-            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('150');
-            expect(helper.getInstance().sheets[0].rows[10].cells[4].value).toBe(150);
-            expect(helper.invoke('getCell', [10, 4]).textContent).toBe('150');
-            done();
+            setTimeout((): void => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toBe(150);
+                expect(helper.invoke('getCell', [1, 7]).textContent).toBe('150');
+                expect(helper.getInstance().sheets[0].rows[10].cells[4].value).toBe(150);
+                expect(helper.invoke('getCell', [10, 4]).textContent).toBe('150');
+                done();
+            });
         });
 
         it('Find all', (done: Function) => {
@@ -130,45 +132,47 @@ describe('Find & Replace ->', () => {
 
                                     // Replace all
                                     helper.click('.e-find-dlg .e-btn-replaceAll');
-                                    expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe('Test');
-                                    expect(helper.invoke('getCell', [10, 3]).textContent).toBe('Test');
-                                    expect(helper.getInstance().sheets[0].rows[10].cells[5].value).toBe('Test0');
-                                    expect(helper.invoke('getCell', [10, 5]).textContent).toBe('Test0');
-                                    expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe('2 matches replaced with Test');
-
-                                    // Find by matching exact cell content
-                                    helper.click('.e-find-dlg .e-findnreplace-checkmatch');
-                                    findTxtBox.value = 'Sneakers';
-                                    helper.click('.e-find-dlg .e-btn-findNext');
-                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H3:H3');
-                                    helper.invoke('selectRange', ['A1']);
-                                    findTxtBox.value = 'Sneaker';
-                                    helper.click('.e-find-dlg .e-btn-findNext');
-                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
-                                    expect(helper.getElementFromSpreadsheet('.e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
-
-                                    // Search by column
-                                    const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
-                                    dropDownList.ej2_instances[0].value = 'By Column';
-                                    dropDownList.ej2_instances[0].dataBind();
-                                    findTxtBox.value = '10';
-                                    helper.click('.e-find-dlg .e-btn-findNext');
-                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
-                                    helper.click('.e-find-dlg .e-btn-findNext');
-                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('E6:E6');
-
-                                    // Checking disabling find button when it has empty value
-                                    // findTxtBox.value = ''; // Check this case
-                                    // helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
-                                    // setTimeout(() => {
-                                    //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as any).disabled).toBeTruthy();
-                                    //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as any).disabled).toBeTruthy();
-                                    helper.click('.e-find-dlg .e-dlg-closeicon-btn');
                                     setTimeout(() => {
-                                        // expect(helper.getElementFromSpreadsheet('.e-find-dlg')).toBeNull(); // Check this now
-                                        done();
+                                        expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe('Test');
+                                        expect(helper.invoke('getCell', [10, 3]).textContent).toBe('Test');
+                                        expect(helper.getInstance().sheets[0].rows[10].cells[5].value).toBe('Test0');
+                                        expect(helper.invoke('getCell', [10, 5]).textContent).toBe('Test0');
+                                        expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe('2 matches replaced with Test');
+
+                                        // Find by matching exact cell content
+                                        helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+                                        findTxtBox.value = 'Sneakers';
+                                        helper.click('.e-find-dlg .e-btn-findNext');
+                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('H3:H3');
+                                        helper.invoke('selectRange', ['A1']);
+                                        findTxtBox.value = 'Sneaker';
+                                        helper.click('.e-find-dlg .e-btn-findNext');
+                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                                        expect(helper.getElementFromSpreadsheet('.e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
+
+                                        // Search by column
+                                        const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
+                                        dropDownList.ej2_instances[0].value = 'By Column';
+                                        dropDownList.ej2_instances[0].dataBind();
+                                        findTxtBox.value = '10';
+                                        helper.click('.e-find-dlg .e-btn-findNext');
+                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
+                                        helper.click('.e-find-dlg .e-btn-findNext');
+                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('E6:E6');
+
+                                        // Checking disabling find button when it has empty value
+                                        // findTxtBox.value = ''; // Check this case
+                                        // helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                                        // setTimeout(() => {
+                                        //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as any).disabled).toBeTruthy();
+                                        //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as any).disabled).toBeTruthy();
+                                        helper.click('.e-find-dlg .e-dlg-closeicon-btn');
+                                        setTimeout(() => {
+                                            // expect(helper.getElementFromSpreadsheet('.e-find-dlg')).toBeNull(); // Check this now
+                                            done();
+                                        });
+                                        //});
                                     });
-                                    //});
                                 });
                             });
                         });

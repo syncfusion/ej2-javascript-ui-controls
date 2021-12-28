@@ -521,7 +521,7 @@ export class Sort {
      * @param {string} args.range - Specifies the range.
      * @returns {void}
      */
-    private applySortHandler(args: { sortOptions?: SortOptions, range?: string }): void {
+    private applySortHandler(args: { sortOptions?: SortOptions, range?: string, previousSort?: SortCollectionModel }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let address: string = args && args.range || sheet.selectedRange;
         const sortOptions: SortOptions = args && args.sortOptions || { sortDescriptors: {} };
@@ -546,9 +546,9 @@ export class Sort {
         this.parent.showSpinner();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
-        const sortArgs: { promise: Promise<SortEventArgs>, args: { range: string, checkForHeader?: boolean, sortOptions: SortOptions } } = {
-            args: { range: beforeArgs.range, sortOptions: beforeArgs.sortOptions, checkForHeader: isSingleCell && address !==
-                beforeArgs.range }, promise: promise };
+        const sortArgs: { promise: Promise<SortEventArgs>, args: { range: string, checkForHeader?: boolean, sortOptions: SortOptions },
+            previousSort: SortCollectionModel } = { args: { range: beforeArgs.range, sortOptions: beforeArgs.sortOptions, checkForHeader:
+                isSingleCell && address !== beforeArgs.range }, promise: promise, previousSort: args && args.previousSort };
         this.parent.notify(initiateSort, sortArgs);
         sortArgs.promise.then((sortArgs: SortEventArgs) => {
             this.sortCompleteHandler(sortArgs);

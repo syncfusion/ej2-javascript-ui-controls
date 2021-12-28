@@ -1058,7 +1058,7 @@ describe('EJ2-46956: Applying background color to multiple span element does not
         let rteEle = rteObj.element;
         let startSpan: Node = rteObj.element.querySelectorAll('.e-content span')[2];
         let endSpan: Node = rteObj.element.querySelectorAll('.e-content span')[4];
-        domSelection.setSelectionText(document, startSpan, endSpan, 1, 1);
+        domSelection.setSelectionText(document, startSpan.childNodes[0], endSpan.childNodes[0], 1, 1);
         rteObj.notify('selection-save', {});
         let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
         backgroundColorPicker.click();
@@ -1068,6 +1068,33 @@ describe('EJ2-46956: Applying background color to multiple span element does not
         expect(rteObj.element.querySelectorAll('.e-content span > span')[4].style.backgroundColor).toBe('transparent');
         expect(rteObj.element.querySelectorAll('.e-content span > span')[6].style.backgroundColor).toBe('transparent');
     });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-55031 - Selecting some texts and applying Font and background colors alternatively, will create some new elements Issue', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    it('EJ2-55031 - Selecting some texts and applying Font and background colors alternatively, will create some new elements', () => {
+        rteObj = renderRTE({
+            value: `<p><b><span class="firstFocusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">Description:</span></b></p><p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">The Rich Text Editor (RTE) c<span style="background-color: rgb(255, 255, 0);">ontrol is an easy to rende</span>r in the client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area. </span></p><p><b><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Functional Specifications/Requirements:</span></b></p><p><b><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Description:</span></b></p><p><span class="lastFocusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</span></p>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+        let rteEle = rteObj.element;
+        let startSpan: Node = rteObj.element.querySelector('.firstFocusNode');
+        let endSpan: Node = rteObj.element.querySelector('.lastFocusNode');
+        domSelection.setSelectionText(document, startSpan.childNodes[0], endSpan.childNodes[0], 0, endSpan.childNodes[0].textContent.length);
+        rteObj.notify('selection-save', {});
+        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        fontColorPicker.click();
+        let blackItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item").nextElementSibling;
+        blackItem.click();
+        expect(rteObj.element.querySelectorAll('p')[2].textContent).toBe('Functional Specifications/Requirements:');
+    });
+
     afterEach(() => {
         destroy(rteObj);
     });

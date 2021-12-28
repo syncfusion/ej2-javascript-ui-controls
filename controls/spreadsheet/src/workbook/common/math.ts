@@ -115,9 +115,9 @@ export function toDate(text: Date | string | number, intl: Internationalization,
     if (isNullOrUndefined(dObj.dateObj)) {
         text = text.toString();
         if (text && text.indexOf('/') > -1 || text.indexOf('-') > 0) {
-            let cFormat: string = cell ? cell.format : '';
+            let cFormat: string = cell ? cell.format : format;
             if (((cFormat === 'dd-MM-yyyy' || cFormat === 'dd/MM/yyyy'))) {
-                cFormat = cFormat === 'dd-MM-yyyy' ? 'd-M-yyyy' : 'd/M/yyyy';
+                cFormat = cFormat === 'dd-MM-yyyy' ? 'd-M-y' : 'd/M/y';
                 dObj.dateObj = intl.parseDate(text as string, { format: cFormat });
                 if (dObj.dateObj) {
                     dObj.type = 'date';

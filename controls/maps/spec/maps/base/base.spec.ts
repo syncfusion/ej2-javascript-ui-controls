@@ -311,7 +311,7 @@ describe('Maps Component Base Spec', () => {
         it('dummy spec for coverage', () => {
             let border: BorderModel = { width: 1, color: 'aqua' };
             let option: PathOption = new PathOption('balloon', 'blueviolet', 2, 'blueviolet', 1, 1, "");
-            let bal: Element = drawBalloon(maps, option, new Size(30, 50), new MapLocation(20, 30), maps.svgObject);
+            let bal: Element = drawBalloon(maps, option, new Size(30, 50), new MapLocation(20, 30), 'Marker', maps.svgObject);
             let circle: Element = drawCircle(maps, new CircleOption('circle', 'orange', border, 1, 25, 95, 20, null), maps.svgObject);
             let pathOpt: PathOption = new PathOption('cross', 'teal', 2, 'red');
             let cross: Element = drawCross(maps, pathOpt, new Size(50, 50), { x: 30, y: 165 }, maps.svgObject);
@@ -356,9 +356,9 @@ describe('Maps Component Base Spec', () => {
             new RectOption('rect', 'url(#pat)', border, 1, new Rect(100, 250, 400, 180), 5, 5, 'translate(0, 0)', '5, 5');
             drawRectangle(maps, new RectOption('rect', 'url(#pat)', border, 1, new Rect(100, 250, 400, 180)), maps.svgObject);
             let option1: PathOption = new PathOption('balloon1', 'blueviolet', 2, 'white', 1, 1, "");
-            let bal1: Element = drawBalloon(maps, option1, new Size(30, 50), new MapLocation(20, 30));
+            let bal1: Element = drawBalloon(maps, option1, new Size(30, 50), new MapLocation(20, 30), 'Marker');
             option1 = new PathOption('balloon2', 'teal', 2, 'white', 1, 1, "");
-            let bal2: Element = drawBalloon(maps, option1, new Size(30, 50), new MapLocation(53, 30));
+            let bal2: Element = drawBalloon(maps, option1, new Size(30, 50), new MapLocation(53, 30), 'Marker');
             let patt: PatternOptions = new PatternOptions('pat', 10, 55, 70, 60);
             new PatternOptions('pat', 10, 55, 70, 60, 'objectBoundingBox', 'objectBoundingBox', 'translate(0, 0)', 'url(#rect)');
             drawPattern(maps, patt, [bal1, bal2], maps.svgObject);

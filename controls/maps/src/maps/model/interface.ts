@@ -113,9 +113,7 @@ export interface ITooltipRenderCompleteEventArgs extends IMapsEventArgs {
 /**
  * Specifies the event arguments for the resize event in maps.
  */
-export interface IResizeEventArgs {
-    /** Defines the name of the event. */
-    name: string;
+export interface IResizeEventArgs extends IMapsEventArgs {
     /** Defines the previous size of the maps before the resize event. */
     previousSize: Size;
     /** Defines the current size of the maps after the resize event. */

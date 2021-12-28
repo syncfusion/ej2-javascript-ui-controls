@@ -1032,6 +1032,13 @@ export class ToggleLegendSettings extends ChildProperty<ToggleLegendSettings> {
  */
 export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
+     * Enables or disables to render the legend item based on the shapes from the data source of markers.
+     *
+     * @default false
+     */
+     @Property(false)
+     public useMarkerShape: boolean;
+    /**
      * Enables or disables the toggle visibility for legend in maps.
      *
      * @default false

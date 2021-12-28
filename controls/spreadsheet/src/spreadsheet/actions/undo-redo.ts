@@ -6,8 +6,9 @@ import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHe
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, ValidationModel, setValidation, getIndexesFromAddress, getSheetNameFromAddress } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, triggerDataChange, applyCellFormat, CellFormatArgs } from '../../workbook/index';
-import { addClass, extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { addClass, extend, isNullOrUndefined, L10n, select } from '@syncfusion/ej2-base';
 import { CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, getRow, ExtendedRowModel } from '../../workbook/index';
+import { SortDescriptor, getColIndex } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
  */
@@ -401,6 +402,18 @@ export class UndoRedo {
         const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex);
         const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [range[0], range[1]], isUnique: false , uniqueRange: ''};
         this.parent.notify(checkUniqueRange, uniqueArgs);
+        const updateSortIcon: Function = (idx: number, add: boolean): void => {
+            if (sheetIndex === this.parent.activeSheetIndex) {
+                let td: Element = this.parent.getCell(range[0] - 1, this.parent.sortCollection[idx].columnIndex);
+                if (td) {
+                    td = select('.e-filter-icon', td);
+                    if (td) {
+                        add ? td.classList.add(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`) :
+                            td.classList.remove(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`);
+                    }
+                }
+            }
+        };
         if (this.isUndo) {
             if (uniqueArgs.isUnique && eventArgs.formula && eventArgs.formula.indexOf('UNIQUE') > - 1) {
                 const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
@@ -444,6 +457,21 @@ export class UndoRedo {
                     }
                 }
                 this.parent.notify(reApplyFormula, null);
+            }
+            if (args.action === 'sorting' && this.parent.sortCollection && eventArgs.previousSort) {
+                for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+                    if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
+                        updateSortIcon(i, false);
+                        this.parent.sortCollection.splice(i, 1);
+                        if (eventArgs.previousSort.order) {
+                            this.parent.sortCollection.splice(i, 0, eventArgs.previousSort);
+                            updateSortIcon(i, true);
+                        } else if (!this.parent.sortCollection.length) {
+                            this.parent.sortCollection = undefined;
+                        }
+                        break;
+                    }
+                }
             }
         } else {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -538,6 +566,25 @@ export class UndoRedo {
                         this.parent.notify(reApplyFormula, null);
                     }
                 }
+            }
+            if (args.action === 'sorting' && eventArgs.previousSort) {
+                let idx: number;
+                if (this.parent.sortCollection) {
+                    for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+                        if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
+                            updateSortIcon(i, false);
+                            idx = i; this.parent.sortCollection.splice(i, 1);
+                            break;
+                        }
+                    }
+                } else {
+                    this.parent.sortCollection = []; idx = 0;
+                }
+                this.parent.sortCollection.splice(
+                    idx, 0, { sortRange: address[1], sheetIndex: sheetIndex, columnIndex:
+                        getColIndex((eventArgs.sortOptions.sortDescriptors as SortDescriptor).field), order:
+                        (eventArgs.sortOptions.sortDescriptors as SortDescriptor).order });
+                updateSortIcon(idx, true);
             }
         }
         if (args.action === 'autofill') {

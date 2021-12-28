@@ -291,6 +291,8 @@ export class Filter {
         const range: number[] = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
         if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell
             range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
+        } else if (range[3] > sheet.usedRange.colIndex) {
+            range[3] = sheet.usedRange.colIndex;
         }
         this.filterRange.set(sheetIdx, range);
         this.filterCollection.set(sheetIdx, []);
@@ -360,7 +362,7 @@ export class Filter {
         const field: string = getColumnHeaderText(cell[1] + 1);
         const type: string = this.getColumnType(sheet, cell[1] + 1, range);
         const predicates: PredicateModel[] = [{ field: field, operator: 'equal', matchCase: false, type: type,
-            value: getCell(cell[0], cell[1], sheet).value }];
+            value: getCell(cell[0], cell[1], sheet, false, true).value }];
         const addr: string = `${sheet.name}!${this.getPredicateRange(range, this.filterCollection.get(sheetIdx))}`;
         const fullAddr: string = getRangeAddress(range);
         getData(this.parent, addr, true, true, null, true, null, null, false, fullAddr).then((jsonData: { [key: string]: CellModel }[]) => {
@@ -437,7 +439,7 @@ export class Filter {
             if (remove) {
                 if (cell && cell.hasChildNodes()) {
                     const element: Element = cell.querySelector('.e-filter-btn');
-                    if (element) { cell.removeChild(element); }
+                    if (element) { element.parentElement.removeChild(element); }
                 }
             } else {
                 this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index, sIdx: sheetIdx });
@@ -737,18 +739,20 @@ export class Filter {
         const range: number[] = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
-        this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: sortOrder } }, range: getRangeAddress(range) });
-        const cell: number[] = getIndexesFromAddress(sheet.activeCell);
         this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
+        let prevSort: SortCollectionModel;
         for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
             if (this.parent.sortCollection[i] && this.parent.sortCollection[i].sheetIndex === sheetIdx) {
+                prevSort = this.parent.sortCollection[i];
                 this.parent.sortCollection.splice(i, 1);
             }
         }
-        this.parent.sortCollection.push({
-            sortRange: getRangeAddress(range), columnIndex: cell[1], order: sortOrder,
-            sheetIndex: sheetIdx
-        });
+        this.parent.sortCollection.push(
+            { sortRange: getRangeAddress(range), columnIndex: getIndexesFromAddress(sheet.activeCell)[1], order: sortOrder,
+                sheetIndex: sheetIdx });
+        if (!prevSort) { prevSort = { order: '' }; }
+        this.parent.notify(
+            applySort, { sortOptions: { sortDescriptors: { order: sortOrder } }, previousSort: prevSort, range: getRangeAddress(range) });
         this.refreshFilterRange();
         this.closeDialog();
     }

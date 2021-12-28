@@ -154,6 +154,24 @@
       background: none;
       margin: 0 2px;
       width: 14px;
+      @if ($skin-name == 'bootstrap5') {
+        &:hover {
+          color: $field-list-active-color;
+        }
+      }
+    }
+
+    .e-colorpicker-wrapper,
+    .e-colorpicker-container {
+      .e-split-btn-wrapper .e-split-btn {
+        pointer-events: none;
+
+        .e-selected-color {
+          background: none;
+          margin: 0 2px;
+          width: 14px;
+        }
+      }
     }
 
     .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn,

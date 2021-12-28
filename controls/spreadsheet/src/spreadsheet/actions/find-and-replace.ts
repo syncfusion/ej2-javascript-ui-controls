@@ -1,10 +1,9 @@
 import { Spreadsheet } from '../base/index';
-import { findDlg, locale, dialog, gotoDlg, replace, findHandler, beginAction, BeforeReplaceEventArgs, focus } from '../common/index';
-import { ReplaceEventArgs, completeAction, ReplaceAllEventArgs, DialogBeforeOpenEventArgs } from '../common/index';
+import { findDlg, locale, dialog, gotoDlg, replace, findHandler, focus } from '../common/index';
+import { DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
-import { ToolbarFind, goto, FindOptions, showDialog, findUndoRedo, count, replaceAllDialog, findKeyUp } from '../../workbook/index';
-import { ReplaceAllArgs } from '../../workbook/index';
+import { ToolbarFind, goto, FindOptions, showDialog, count, replaceAllDialog, findKeyUp } from '../../workbook/index';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -36,7 +35,6 @@ export class FindAndReplace {
         this.parent.on(replace, this.replaceHandler, this);
         this.parent.on(showDialog, this.showDialog, this);
         this.parent.on(replaceAllDialog, this.replaceAllDialog, this);
-        this.parent.on(findUndoRedo, this.findUndoRedo, this);
         this.parent.on(findKeyUp, this.findKeyUp, this);
     }
 
@@ -49,29 +47,7 @@ export class FindAndReplace {
             this.parent.off(replace, this.replaceHandler);
             this.parent.off(showDialog, this.showDialog);
             this.parent.off(replaceAllDialog, this.replaceAllDialog);
-            this.parent.off(findUndoRedo, this.findUndoRedo);
             this.parent.off(findKeyUp, this.findKeyUp);
-        }
-    }
-    private findUndoRedo(options: ReplaceAllArgs): void {
-        const eventArgs: BeforeReplaceEventArgs = { address: options.address, compareVal: options.compareVal, cancel: false };
-        if (options.undoRedoOpt === 'before') {
-            this.parent.notify(beginAction, { action: 'beforeReplace', eventArgs: eventArgs });
-        } else if (options.undoRedoOpt === 'after') {
-            if (!eventArgs.cancel) {
-                const eventArgs: ReplaceEventArgs = { address: options.address, compareVal: options.compareVal };
-                this.parent.notify(completeAction, { action: 'replace', eventArgs: eventArgs });
-            }
-        } else if (options.undoRedoOpt === 'beforeReplaceAll') {
-            if (!eventArgs.cancel) {
-                const eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection};
-                this.parent.notify(beginAction, { action: 'beforeReplaceAll', eventArgs });
-            }
-        } else if (options.undoRedoOpt === 'afterReplaceAll') {
-            if (!eventArgs.cancel) {
-                const eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection };
-                this.parent.notify(completeAction, { action: 'replaceAll', eventArgs });
-            }
         }
     }
     private renderFindDlg(): void {

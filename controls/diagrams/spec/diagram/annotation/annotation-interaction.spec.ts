@@ -1702,3 +1702,3504 @@ describe('Check annotation horizontalAlignment value ', () => {
         done();
     });
 });
+
+describe('Checking annotation', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let savedata: string;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'CheckhorizontalAlignment' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+        });
+        diagram.appendTo('#CheckhorizontalAlignment');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    function numbersinranges(x: number, r: number, t: number) {
+        if ((x >= r && x <= t)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    it('After Save and Load', (done: Function) => {
+        let data = `{
+            "width": "100%",
+            "height": "100%",
+            "nodes": [{
+                    "shape": {
+                        "type": "Flow",
+                        "shape": "Process"
+                    },
+                    "ports": [],
+                    "id": "Títulof3rS2",
+                    "width": 2339.9999999999995,
+                    "height": 35,
+                    "style": {
+                        "fill": "rgba(179,157,219,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#3A3A3A",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "annotations": [{
+                            "id": "vVGcB",
+                            "content": "Realizar Análise de Esteira de Proposta ",
+                            "annotationType": "String",
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "rotateAngle": 0,
+                            "margin": {
+                                "right": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "top": 0
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center",
+                            "offset": {
+                                "x": 0.5,
+                                "y": 0.5
+                            }
+                        }
+                    ],
+                    "container": null,
+                    "offsetX": 1270,
+                    "offsetY": -336.5,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 2339.9999999999995,
+                            "height": 35
+                        },
+                        "offsetX": 1270,
+                        "offsetY": -336.5
+                    },
+                    "constraints": 5240430,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 3,
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Bpmn",
+                        "shape": "Event",
+                        "event": {
+                            "event": "Start",
+                            "trigger": "Timer"
+                        },
+                        "annotations": [],
+                        "activity": {
+                            "subProcess": {}
+                        }
+                    },
+                    "ports": [{
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "B8E3A",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": ["connectorqvrHT"],
+                            "offset": {
+                                "x": 1,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "wAPsD",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "oBm0n",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "Kwtrd",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "m8MEL",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "aQGuK",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "id": "Iniciar-cronômetroP0cfO",
+                    "width": 35,
+                    "height": 35,
+                    "style": {
+                        "fill": "rgba(178,223,219,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#004d40ff",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "container": null,
+                    "offsetX": 197.5,
+                    "offsetY": 417.4999999999999,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {},
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 35,
+                            "height": 35
+                        },
+                        "offsetX": 197.5,
+                        "offsetY": 417.4999999999999
+                    },
+                    "constraints": 5240814,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 16,
+                    "annotations": [{
+                            "id": "dTM79",
+                            "content": "",
+                            "annotationType": "String",
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "rotateAngle": 0,
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center",
+                            "offset": {
+                                "x": 0.5,
+                                "y": 0.5
+                            }
+                        }
+                    ],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": ["connectorqvrHT"],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Text",
+                        "content": "Diariamente ",
+                        "margin": {
+                            "left": 0,
+                            "top": 0,
+                            "right": 0,
+                            "bottom": 0
+                        }
+                    },
+                    "ports": [],
+                    "style": {
+                        "fill": "none",
+                        "strokeColor": "none",
+                        "strokeWidth": 1,
+                        "strokeDashArray": "2 2",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        },
+                        "fontSize": 12,
+                        "fontFamily": "Arial",
+                        "textOverflow": "Wrap",
+                        "textDecoration": "None",
+                        "whiteSpace": "CollapseSpace",
+                        "textWrapping": "WrapWithOverflow",
+                        "textAlign": "Center",
+                        "color": "black",
+                        "italic": false,
+                        "bold": false
+                    },
+                    "offsetX": 198,
+                    "width": 86,
+                    "height": 16.875,
+                    "offsetY": 443.55,
+                    "id": "nodeNlPn3",
+                    "zIndex": 17,
+                    "container": null,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 86,
+                            "height": 16.875
+                        },
+                        "offsetX": 198,
+                        "offsetY": 443.55
+                    },
+                    "constraints": 5240814,
+                    "annotations": [],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Bpmn",
+                        "shape": "Activity",
+                        "activity": {
+                            "activity": "Task",
+                            "subProcess": {
+                                "type": "None",
+                                "collapsed": true
+                            },
+                            "task": {
+                                "call": false,
+                                "compensation": false,
+                                "loop": "None",
+                                "type": "None"
+                            }
+                        },
+                        "annotations": []
+                    },
+                    "ports": [{
+                            "inEdges": ["connectorqvrHT"],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "KUG1O",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": ["connectorK89KV"],
+                            "offset": {
+                                "x": 1,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "IETOA",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "QBbar",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "Fsrkc",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "DNeat",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "MDGIe",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "id": "Tarefadn24E",
+                    "width": 130,
+                    "height": 65,
+                    "style": {
+                        "fill": "rgba(227,242,253,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#0d47a1ff",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "container": null,
+                    "offsetX": 323,
+                    "offsetY": 417.4875,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {},
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 130,
+                            "height": 65
+                        },
+                        "offsetX": 323,
+                        "offsetY": 417.4875
+                    },
+                    "constraints": 5240814,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 18,
+                    "annotations": [{
+                            "id": "ggFOO",
+                            "content": "Acessar sistema dos Bancos",
+                            "annotationType": "String",
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "rotateAngle": 0,
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center",
+                            "offset": {
+                                "x": 0.5,
+                                "y": 0.5
+                            }
+                        }
+                    ],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": ["connectorqvrHT"],
+                    "outEdges": ["connectorK89KV"],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Bpmn",
+                        "shape": "Activity",
+                        "activity": {
+                            "activity": "Task",
+                            "subProcess": {
+                                "type": "None",
+                                "collapsed": true
+                            },
+                            "task": {
+                                "call": false,
+                                "compensation": false,
+                                "loop": "None",
+                                "type": "None"
+                            }
+                        },
+                        "annotations": []
+                    },
+                    "ports": [{
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "xqMUb",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 1,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "nkLvw",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "Ee77c",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "oCub1",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "WU6K7",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "RPDQb",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "id": "TarefaMIeVG",
+                    "width": 130,
+                    "height": 65,
+                    "style": {
+                        "fill": "rgba(227,242,253,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#0d47a1ff",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "container": null,
+                    "offsetX": 495,
+                    "offsetY": 417.4875,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {},
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 130,
+                            "height": 65
+                        },
+                        "offsetX": 495,
+                        "offsetY": 417.4875
+                    },
+                    "constraints": 5240814,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 21,
+                    "annotations": [{
+                            "id": "uX2Js",
+                            "content": "Baixar relatório de digitação",
+                            "annotationType": "String",
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "rotateAngle": 0,
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center",
+                            "offset": {
+                                "x": 0.5,
+                                "y": 0.5
+                            }
+                        }
+                    ],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": ["connectorK89KV", "Linha-Bezier-2tqUAl"],
+                    "outEdges": ["connectormTdJ3"],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Bpmn",
+                        "shape": "DataObject",
+                        "dataObject": {
+                            "type": "None",
+                            "collection": false
+                        },
+                        "annotations": [],
+                        "activity": {
+                            "subProcess": {}
+                        }
+                    },
+                    "ports": [{
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "WTBJW",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 1,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "kHi0D",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "Cxsbx",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "MCpZr",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "U2CyV",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "lecvf",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "id": "Objeto-de-DadosumK60",
+                    "width": 80,
+                    "height": 80,
+                    "style": {
+                        "fill": "rgba(230,230,230,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#3A3A3A",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "container": null,
+                    "offsetX": 531,
+                    "offsetY": 304,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 80,
+                            "height": 80
+                        },
+                        "offsetX": 531,
+                        "offsetY": 304
+                    },
+                    "constraints": 5240814,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 23,
+                    "annotations": [{
+                            "id": "t6QGt",
+                            "content": "Baixar banco a Banco",
+                            "annotationType": "String",
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 11,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 124,
+                            "visibility": true,
+                            "rotateAngle": 0,
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center",
+                            "offset": {
+                                "x": 0.5,
+                                "y": 0.5
+                            }
+                        }
+                    ],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": ["Linha-Bezier-2tqUAl"],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Bpmn",
+                        "shape": "Activity",
+                        "activity": {
+                            "activity": "Task",
+                            "subProcess": {
+                                "type": "None",
+                                "collapsed": true
+                            },
+                            "task": {
+                                "call": false,
+                                "compensation": false,
+                                "loop": "None",
+                                "type": "None"
+                            }
+                        },
+                        "annotations": []
+                    },
+                    "ports": [{
+                            "inEdges": ["connectormTdJ3"],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "IAJua",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 1,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "DCg1b",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "JgKPg",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "mL837",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "w3UA2",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "RQvxc",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "id": "TarefaKJpm0",
+                    "width": 130,
+                    "height": 65,
+                    "style": {
+                        "fill": "rgba(227,242,253,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#0d47a1ff",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "container": null,
+                    "offsetX": 667,
+                    "offsetY": 417.4875,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {},
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 130,
+                            "height": 65
+                        },
+                        "offsetX": 667,
+                        "offsetY": 417.4875
+                    },
+                    "constraints": 5240814,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 25,
+                    "annotations": [{
+                            "id": "c4xAs",
+                            "content": "Integrar no Virtaus",
+                            "annotationType": "String",
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "rotateAngle": 0,
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center",
+                            "offset": {
+                                "x": 0.5,
+                                "y": 0.5
+                            }
+                        }
+                    ],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": ["connectormTdJ3"],
+                    "outEdges": ["connectorS8FCH"],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Bpmn",
+                        "shape": "Gateway",
+                        "gateway": {
+                            "type": "Exclusive"
+                        },
+                        "annotations": [],
+                        "activity": {
+                            "subProcess": {}
+                        }
+                    },
+                    "ports": [{
+                            "inEdges": ["connectorS8FCH"],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "MSigX",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": ["connectorP67B4"],
+                            "offset": {
+                                "x": 1,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "JxaVm",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "l9m08",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "LH19v",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "VgTlW",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "wTZha",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "id": "Gateway-Exclusivel7TOi",
+                    "width": 35,
+                    "height": 35,
+                    "style": {
+                        "fill": "rgba(251,192,45,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#3A3A3A",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "container": null,
+                    "offsetX": 791.5,
+                    "offsetY": 417.4875,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {},
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 35,
+                            "height": 35
+                        },
+                        "offsetX": 791.5,
+                        "offsetY": 417.4875
+                    },
+                    "constraints": 5240814,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 27,
+                    "annotations": [],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": ["connectorS8FCH"],
+                    "outEdges": ["connectorP67B4"],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Text",
+                        "content": "Qual o tipo de empréstimo?",
+                        "margin": {
+                            "left": 0,
+                            "top": 0,
+                            "right": 0,
+                            "bottom": 0
+                        }
+                    },
+                    "ports": [],
+                    "style": {
+                        "fill": "none",
+                        "strokeColor": "none",
+                        "strokeWidth": 1,
+                        "strokeDashArray": "2 2",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        },
+                        "fontSize": 12,
+                        "fontFamily": "Arial",
+                        "textOverflow": "Wrap",
+                        "textDecoration": "None",
+                        "whiteSpace": "CollapseSpace",
+                        "textWrapping": "WrapWithOverflow",
+                        "textAlign": "Center",
+                        "color": "black",
+                        "italic": false,
+                        "bold": false
+                    },
+                    "offsetX": 791.5,
+                    "width": 53,
+                    "height": 34.93624999999997,
+                    "offsetY": 456.53,
+                    "id": "nodedZZPe",
+                    "zIndex": 29,
+                    "container": null,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 53,
+                            "height": 34.93624999999997
+                        },
+                        "offsetX": 791.5,
+                        "offsetY": 456.53
+                    },
+                    "constraints": 5240814,
+                    "annotations": [],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Text",
+                        "content": "Portabilidade ",
+                        "margin": {
+                            "left": 0,
+                            "top": 0,
+                            "right": 0,
+                            "bottom": 0
+                        }
+                    },
+                    "ports": [],
+                    "style": {
+                        "fill": "none",
+                        "strokeColor": "none",
+                        "strokeWidth": 1,
+                        "strokeDashArray": "2 2",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        },
+                        "fontSize": 12,
+                        "fontFamily": "Arial",
+                        "textOverflow": "Wrap",
+                        "textDecoration": "None",
+                        "whiteSpace": "CollapseSpace",
+                        "textWrapping": "WrapWithOverflow",
+                        "textAlign": "Center",
+                        "color": "black",
+                        "italic": false,
+                        "bold": false
+                    },
+                    "offsetX": 757,
+                    "width": 79.99999999999997,
+                    "height": 19.98750000000001,
+                    "offsetY": 357.99,
+                    "id": "nodetXaTa",
+                    "zIndex": 33,
+                    "container": null,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 79.99999999999997,
+                            "height": 19.98750000000001
+                        },
+                        "offsetX": 757,
+                        "offsetY": 357.99
+                    },
+                    "constraints": 5240814,
+                    "annotations": [],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Bpmn",
+                        "shape": "Activity",
+                        "activity": {
+                            "activity": "Task",
+                            "subProcess": {
+                                "type": "None",
+                                "collapsed": true
+                            },
+                            "task": {
+                                "call": false,
+                                "compensation": false,
+                                "loop": "None",
+                                "type": "None"
+                            }
+                        },
+                        "annotations": []
+                    },
+                    "ports": [{
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "bC0Kf",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 1,
+                                "y": 0.5
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "Uby5s",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "qBhQD",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 0
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "dL5AB",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.25,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "CTPbZ",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }, {
+                            "inEdges": [],
+                            "outEdges": [],
+                            "offset": {
+                                "x": 0.75,
+                                "y": 1
+                            },
+                            "visibility": 12,
+                            "constraints": 28,
+                            "id": "Thx5P",
+                            "height": 12,
+                            "width": 12,
+                            "shape": "Square",
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "fill": "white",
+                                "strokeColor": "black",
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "strokeWidth": 1
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "id": "Tarefawx6id",
+                    "width": 130,
+                    "height": 65,
+                    "style": {
+                        "fill": "rgba(227,242,253,1)",
+                        "strokeWidth": 2,
+                        "strokeColor": "#0d47a1ff",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "container": null,
+                    "offsetX": 963,
+                    "offsetY": 417.4875,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {},
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 130,
+                            "height": 65
+                        },
+                        "offsetX": 963,
+                        "offsetY": 417.4875
+                    },
+                    "constraints": 5240814,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 37,
+                    "annotations": [{
+                            "id": "yU5U1",
+                            "content": "Analisar classificação do parceiro",
+                            "annotationType": "String",
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "rotateAngle": 0,
+                            "margin": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "horizontalAlignment": "Center",
+                            "verticalAlignment": "Center",
+                            "offset": {
+                                "x": 0.5,
+                                "y": 0.5
+                            }
+                        }
+                    ],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": ["connectorP67B4"],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Text",
+                        "content": "Outros Tipos ",
+                        "margin": {
+                            "left": 0,
+                            "top": 0,
+                            "right": 0,
+                            "bottom": 0
+                        }
+                    },
+                    "ports": [],
+                    "style": {
+                        "fill": "none",
+                        "strokeColor": "none",
+                        "strokeWidth": 1,
+                        "strokeDashArray": "2 2",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        },
+                        "fontSize": 12,
+                        "fontFamily": "Arial",
+                        "textOverflow": "Wrap",
+                        "textDecoration": "None",
+                        "whiteSpace": "CollapseSpace",
+                        "textWrapping": "WrapWithOverflow",
+                        "textAlign": "Center",
+                        "color": "black",
+                        "italic": false,
+                        "bold": false
+                    },
+                    "offsetX": 844.5,
+                    "width": 71,
+                    "height": 31.875,
+                    "offsetY": 415.05,
+                    "id": "nodeH3qPR",
+                    "zIndex": 39,
+                    "container": null,
+                    "visible": true,
+                    "horizontalAlignment": "Left",
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 71,
+                            "height": 31.875
+                        },
+                        "offsetX": 844.5,
+                        "offsetY": 415.05
+                    },
+                    "constraints": 5240814,
+                    "annotations": [],
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Flow",
+                        "shape": "Process"
+                    },
+                    "ports": [],
+                    "id": "FunçãoV9ZVv",
+                    "width": 2339.9999999999995,
+                    "height": 200,
+                    "style": {
+                        "fill": "white",
+                        "strokeWidth": 2,
+                        "gradient": {
+                            "type": "None"
+                        },
+                        "strokeColor": "black",
+                        "strokeDashArray": "",
+                        "opacity": 1
+                    },
+                    "horizontalAlignment": "Left",
+                    "annotations": [{
+                            "id": "OUf8Z",
+                            "content": "Assistente de Portabilidade ",
+                            "annotationType": "String",
+                            "rotateAngle": 270,
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "horizontalAlignment": "Center",
+                            "margin": {
+                                "left": 20,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "constraints": 5240430,
+                    "container": null,
+                    "offsetX": 1270,
+                    "offsetY": 35,
+                    "visible": true,
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 2339.9999999999995,
+                            "height": 200
+                        },
+                        "offsetX": 1270,
+                        "offsetY": 35
+                    },
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 40,
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Flow",
+                        "shape": "Process"
+                    },
+                    "ports": [],
+                    "id": "FunçãocJoAT",
+                    "width": 2339.9999999999995,
+                    "height": 255,
+                    "style": {
+                        "fill": "white",
+                        "strokeWidth": 2,
+                        "gradient": {
+                            "type": "None"
+                        },
+                        "strokeColor": "black",
+                        "strokeDashArray": "",
+                        "opacity": 1
+                    },
+                    "horizontalAlignment": "Left",
+                    "annotations": [{
+                            "id": "OUf8Z",
+                            "content": "Analista de Prevenção e Segurança ",
+                            "annotationType": "String",
+                            "rotateAngle": 270,
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "horizontalAlignment": "Center",
+                            "margin": {
+                                "left": 20,
+                                "top": 0,
+                                "right": 0,
+                                "bottom": 0
+                            },
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "constraints": 5240430,
+                    "container": null,
+                    "offsetX": 1270,
+                    "offsetY": -192.5,
+                    "visible": true,
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 2339.9999999999995,
+                            "height": 255
+                        },
+                        "offsetX": 1270,
+                        "offsetY": -192.5
+                    },
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 102,
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }, {
+                    "shape": {
+                        "type": "Flow",
+                        "shape": "Process"
+                    },
+                    "ports": [],
+                    "id": "FunçãoFRGNE",
+                    "width": 2339.9999999999995,
+                    "height": 644.9999999999999,
+                    "style": {
+                        "fill": "white",
+                        "strokeWidth": 2,
+                        "strokeColor": "#3A3A3A",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "horizontalAlignment": "Left",
+                    "annotations": [{
+                            "id": "WKdp2",
+                            "content": "Assistente de Esteira ",
+                            "annotationType": "String",
+                            "rotateAngle": 270,
+                            "offset": {
+                                "x": 0,
+                                "y": 0.5
+                            },
+                            "horizontalAlignment": "Center",
+                            "margin": {
+                                "left": 20,
+                                "right": 0,
+                                "bottom": 0,
+                                "top": 0
+                            },
+                            "style": {
+                                "strokeWidth": 0,
+                                "strokeColor": "transparent",
+                                "fill": "transparent",
+                                "bold": false,
+                                "textWrapping": "WrapWithOverflow",
+                                "color": "black",
+                                "whiteSpace": "CollapseSpace",
+                                "fontFamily": "Arial",
+                                "fontSize": 12,
+                                "italic": false,
+                                "opacity": 1,
+                                "strokeDashArray": "",
+                                "textAlign": "Center",
+                                "textOverflow": "Wrap",
+                                "textDecoration": "None"
+                            },
+                            "hyperlink": {
+                                "link": "",
+                                "content": "",
+                                "textDecoration": "None"
+                            },
+                            "constraints": 4,
+                            "visibility": true,
+                            "verticalAlignment": "Center"
+                        }
+                    ],
+                    "container": null,
+                    "offsetX": 1270.0000000000002,
+                    "offsetY": 457.49999999999994,
+                    "visible": true,
+                    "verticalAlignment": "Top",
+                    "backgroundColor": "transparent",
+                    "borderColor": "none",
+                    "borderWidth": 0,
+                    "rotateAngle": 0,
+                    "pivot": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "margin": {
+                        "top": 0,
+                        "left": 0
+                    },
+                    "flip": "None",
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 2339.9999999999995,
+                            "height": 644.9999999999999
+                        },
+                        "offsetX": 1270.0000000000002,
+                        "offsetY": 457.49999999999994
+                    },
+                    "constraints": 5240430,
+                    "previewSize": {},
+                    "dragSize": {},
+                    "zIndex": 1,
+                    "isExpanded": true,
+                    "expandIcon": {
+                        "shape": "None"
+                    },
+                    "fixedUserHandles": [],
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "inEdges": [],
+                    "outEdges": [],
+                    "parentId": "",
+                    "processId": "",
+                    "umlIndex": -1,
+                    "isPhase": false,
+                    "isLane": false
+                }
+            ],
+            "connectors": [{
+                    "shape": {
+                        "type": "None"
+                    },
+                    "type": "Orthogonal",
+                    "sourcePortID": "wAPsD",
+                    "sourcePoint": {
+                        "x": 215,
+                        "y": 417.5
+                    },
+                    "targetPoint": {
+                        "x": 258,
+                        "y": 417.49
+                    },
+                    "id": "connectorqvrHT",
+                    "sourceID": "Iniciar-cronômetroP0cfO",
+                    "zIndex": 20,
+                    "targetID": "Tarefadn24E",
+                    "targetPortID": "KUG1O",
+                    "flip": "None",
+                    "segments": [{
+                            "type": "Orthogonal",
+                            "length": null,
+                            "direction": null
+                        }
+                    ],
+                    "sourceDecorator": {
+                        "shape": "None",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "targetDecorator": {
+                        "shape": "Arrow",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "cornerRadius": 0,
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 43,
+                            "height": 0.009999999999990905
+                        },
+                        "offsetX": 236.5,
+                        "offsetY": 417.495
+                    },
+                    "style": {
+                        "strokeWidth": 1,
+                        "strokeColor": "black",
+                        "fill": "transparent",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "annotations": [],
+                    "fixedUserHandles": [],
+                    "visible": true,
+                    "constraints": 470590,
+                    "sourcePadding": 0,
+                    "targetPadding": 0,
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "connectionPadding": 0,
+                    "bridgeSpace": 10,
+                    "hitPadding": 10,
+                    "parentId": ""
+                }, {
+                    "shape": {
+                        "type": "None"
+                    },
+                    "type": "Orthogonal",
+                    "sourcePortID": "IETOA",
+                    "sourcePoint": {
+                        "x": 388,
+                        "y": 417.49
+                    },
+                    "targetPoint": {
+                        "x": 430,
+                        "y": 417.49
+                    },
+                    "id": "connectorK89KV",
+                    "sourceID": "Tarefadn24E",
+                    "zIndex": 22,
+                    "targetID": "TarefaMIeVG",
+                    "targetPortID": "",
+                    "flip": "None",
+                    "segments": [{
+                            "type": "Orthogonal",
+                            "length": null,
+                            "direction": null
+                        }
+                    ],
+                    "sourceDecorator": {
+                        "shape": "None",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "targetDecorator": {
+                        "shape": "Arrow",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "cornerRadius": 0,
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 42,
+                            "height": 0
+                        },
+                        "offsetX": 409,
+                        "offsetY": 417.49
+                    },
+                    "style": {
+                        "strokeWidth": 1,
+                        "strokeColor": "black",
+                        "fill": "transparent",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "annotations": [],
+                    "fixedUserHandles": [],
+                    "visible": true,
+                    "constraints": 470590,
+                    "sourcePadding": 0,
+                    "targetPadding": 0,
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "connectionPadding": 0,
+                    "bridgeSpace": 10,
+                    "hitPadding": 10,
+                    "parentId": ""
+                }, {
+                    "shape": {
+                        "type": "None"
+                    },
+                    "id": "Linha-Bezier-2tqUAl",
+                    "type": "Bezier",
+                    "sourcePoint": {
+                        "x": 518.31,
+                        "y": 344
+                    },
+                    "targetPoint": {
+                        "x": 505.31,
+                        "y": 384.99
+                    },
+                    "style": {
+                        "strokeWidth": 1,
+                        "strokeColor": "black",
+                        "strokeDashArray": "3,3",
+                        "fill": "transparent",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "targetDecorator": {
+                        "shape": "None",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "sourcePortID": "",
+                    "targetPortID": "",
+                    "sourceID": "Objeto-de-DadosumK60",
+                    "targetID": "TarefaMIeVG",
+                    "flip": "None",
+                    "segments": [{
+                            "type": "Bezier",
+                            "point1": {
+                                "x": 0,
+                                "y": 0
+                            },
+                            "vector1": {
+                                "angle": 0,
+                                "distance": 0
+                            },
+                            "point2": {
+                                "x": 0,
+                                "y": 0
+                            },
+                            "vector2": {
+                                "angle": 0,
+                                "distance": 0
+                            },
+                            "point": {
+                                "x": 0,
+                                "y": 0
+                            }
+                        }
+                    ],
+                    "sourceDecorator": {
+                        "shape": "None",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "cornerRadius": 0,
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 12.906056461944786,
+                            "height": 38.33142971478344
+                        },
+                        "offsetX": 511.85697176902755,
+                        "offsetY": 363.1657148573917
+                    },
+                    "annotations": [],
+                    "fixedUserHandles": [],
+                    "previewSize": {},
+                    "zIndex": 24,
+                    "visible": true,
+                    "constraints": 470590,
+                    "connectionPadding": 0,
+                    "hitPadding": 10,
+                    "bridgeSpace": 10,
+                    "sourcePadding": 0,
+                    "targetPadding": 0,
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "parentId": ""
+                }, {
+                    "shape": {
+                        "type": "None"
+                    },
+                    "type": "Orthogonal",
+                    "sourcePortID": "",
+                    "sourcePoint": {
+                        "x": 560,
+                        "y": 417.49
+                    },
+                    "targetPoint": {
+                        "x": 602,
+                        "y": 417.49
+                    },
+                    "id": "connectormTdJ3",
+                    "sourceID": "TarefaMIeVG",
+                    "zIndex": 26,
+                    "targetID": "TarefaKJpm0",
+                    "targetPortID": "IAJua",
+                    "flip": "None",
+                    "segments": [{
+                            "type": "Orthogonal",
+                            "length": null,
+                            "direction": null
+                        }
+                    ],
+                    "sourceDecorator": {
+                        "shape": "None",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "targetDecorator": {
+                        "shape": "Arrow",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "cornerRadius": 0,
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 42,
+                            "height": 0
+                        },
+                        "offsetX": 581,
+                        "offsetY": 417.49
+                    },
+                    "style": {
+                        "strokeWidth": 1,
+                        "strokeColor": "black",
+                        "fill": "transparent",
+                        "strokeDashArray": "None",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "annotations": [],
+                    "fixedUserHandles": [],
+                    "visible": true,
+                    "constraints": 470590,
+                    "sourcePadding": 0,
+                    "targetPadding": 0,
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "connectionPadding": 0,
+                    "bridgeSpace": 10,
+                    "hitPadding": 10,
+                    "parentId": ""
+                }, {
+                    "shape": {
+                        "type": "None"
+                    },
+                    "type": "Orthogonal",
+                    "sourcePortID": "",
+                    "sourcePoint": {
+                        "x": 732,
+                        "y": 417.49
+                    },
+                    "targetPoint": {
+                        "x": 774,
+                        "y": 417.49
+                    },
+                    "id": "connectorS8FCH",
+                    "sourceID": "TarefaKJpm0",
+                    "zIndex": 28,
+                    "targetID": "Gateway-Exclusivel7TOi",
+                    "targetPortID": "MSigX",
+                    "flip": "None",
+                    "segments": [{
+                            "type": "Orthogonal",
+                            "length": null,
+                            "direction": null
+                        }
+                    ],
+                    "sourceDecorator": {
+                        "shape": "None",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "targetDecorator": {
+                        "shape": "Arrow",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "cornerRadius": 0,
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 42,
+                            "height": 0
+                        },
+                        "offsetX": 753,
+                        "offsetY": 417.49
+                    },
+                    "style": {
+                        "strokeWidth": 1,
+                        "strokeColor": "black",
+                        "fill": "transparent",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "annotations": [],
+                    "fixedUserHandles": [],
+                    "visible": true,
+                    "constraints": 470590,
+                    "sourcePadding": 0,
+                    "targetPadding": 0,
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "connectionPadding": 0,
+                    "bridgeSpace": 10,
+                    "hitPadding": 10,
+                    "parentId": ""
+                }, {
+                    "shape": {
+                        "type": "None"
+                    },
+                    "type": "Orthogonal",
+                    "sourcePortID": "JxaVm",
+                    "sourcePoint": {
+                        "x": 809,
+                        "y": 417.49
+                    },
+                    "targetPoint": {
+                        "x": 898,
+                        "y": 417.49
+                    },
+                    "id": "connectorP67B4",
+                    "sourceID": "Gateway-Exclusivel7TOi",
+                    "zIndex": 38,
+                    "targetID": "Tarefawx6id",
+                    "targetPortID": "",
+                    "flip": "None",
+                    "segments": [{
+                            "type": "Orthogonal",
+                            "length": null,
+                            "direction": null
+                        }
+                    ],
+                    "sourceDecorator": {
+                        "shape": "None",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "targetDecorator": {
+                        "shape": "Arrow",
+                        "width": 10,
+                        "height": 10,
+                        "pivot": {
+                            "x": 0,
+                            "y": 0.5
+                        },
+                        "style": {
+                            "fill": "black",
+                            "strokeColor": "black",
+                            "strokeWidth": 1,
+                            "strokeDashArray": "",
+                            "opacity": 1,
+                            "gradient": {
+                                "type": "None"
+                            }
+                        }
+                    },
+                    "cornerRadius": 0,
+                    "wrapper": {
+                        "actualSize": {
+                            "width": 89,
+                            "height": 0
+                        },
+                        "offsetX": 853.5,
+                        "offsetY": 417.49
+                    },
+                    "style": {
+                        "strokeWidth": 1,
+                        "strokeColor": "black",
+                        "fill": "transparent",
+                        "strokeDashArray": "",
+                        "opacity": 1,
+                        "gradient": {
+                            "type": "None"
+                        }
+                    },
+                    "annotations": [],
+                    "fixedUserHandles": [],
+                    "visible": true,
+                    "constraints": 470590,
+                    "sourcePadding": 0,
+                    "targetPadding": 0,
+                    "tooltip": {
+                        "openOn": "Auto"
+                    },
+                    "connectionPadding": 0,
+                    "bridgeSpace": 10,
+                    "hitPadding": 10,
+                    "parentId": ""
+                }
+            ],
+            "contextMenuSettings": {
+                "show": true,
+                "items": [{
+                        "text": "Duplicar",
+                        "id": "duplicate"
+                    }
+                ],
+                "showCustomMenuOnly": true
+            },
+            "contextMenuOpen": {},
+            "contextMenuClick": {},
+            "enableRtl": false,
+            "locale": "en-US",
+            "enablePersistence": false,
+            "scrollSettings": {
+                "viewPortWidth": 1127.4000244140625,
+                "viewPortHeight": 1000,
+                "currentZoom": 0.2325680393613779,
+                "horizontalOffset": 169.83,
+                "verticalOffset": 196.52,
+                "padding": {
+                    "left": 50,
+                    "right": 50,
+                    "top": 50,
+                    "bottom": 50
+                },
+                "scrollLimit": "Infinity",
+                "canAutoScroll": false,
+                "minZoom": 0.2,
+                "maxZoom": 30
+            },
+            "rulerSettings": {
+                "showRulers": false,
+                "horizontalRuler": {
+                    "orientation": "Horizontal",
+                    "arrangeTick": null
+                },
+                "verticalRuler": {
+                    "orientation": "Vertical",
+                    "arrangeTick": null
+                }
+            },
+            "backgroundColor": "transparent",
+            "constraints": 500,
+            "layout": {
+                "type": "None",
+                "enableAnimation": true,
+                "connectionPointOrigin": "SamePoint",
+                "arrangement": "Nonlinear",
+                "enableRouting": false
+            },
+            "snapSettings": {
+                "constraints": 31,
+                "gridType": "Lines",
+                "verticalGridlines": {
+                    "lineIntervals": [1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75],
+                    "snapIntervals": [20],
+                    "lineDashArray": "",
+                    "lineColor": "lightgray"
+                },
+                "horizontalGridlines": {
+                    "lineIntervals": [1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75],
+                    "snapIntervals": [20],
+                    "lineDashArray": "",
+                    "lineColor": "lightgray"
+                },
+                "snapObjectDistance": 5
+            },
+            "dataSourceSettings": {
+                "dataManager": null,
+                "dataSource": null,
+                "crudAction": {
+                    "read": ""
+                },
+                "connectionDataSource": {
+                    "crudAction": {
+                        "read": ""
+                    }
+                }
+            },
+            "mode": "SVG",
+            "layers": [{
+                    "objects": ["Títulof3rS2", "Iniciar-cronômetroP0cfO", "nodeNlPn3", "Tarefadn24E", "connectorqvrHT", "TarefaMIeVG", "connectorK89KV", "Objeto-de-DadosumK60", "Linha-Bezier-2tqUAl", "TarefaKJpm0", "connectormTdJ3", "Gateway-Exclusivel7TOi", "connectorS8FCH", "nodedZZPe", "nodetXaTa", "Tarefawx6id", "connectorP67B4", "nodeH3qPR", "FunçãoV9ZVv", "FunçãocJoAT", "FunçãoFRGNE"],
+                    "id": "default_layer",
+                    "visible": true,
+                    "lock": false,
+                    "zIndex": 0,
+                    "objectZIndex": 108
+                }
+            ],
+            "diagramSettings": {
+                "inversedAlignment": true
+            },
+            "pageSettings": {
+                "boundaryConstraints": "Infinity",
+                "orientation": "Landscape",
+                "height": 816,
+                "width": 1056,
+                "background": {
+                    "source": "",
+                    "color": "transparent"
+                },
+                "showPageBreaks": false,
+                "fitOptions": {
+                    "canFit": false
+                },
+                "multiplePage": false
+            },
+            "selectedItems": {
+                "nodes": [],
+                "connectors": [],
+                "wrapper": null,
+                "constraints": 16382,
+                "userHandles": [],
+                "rotateAngle": 0,
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "width": 34,
+                "height": 2,
+                "offsetX": 1719,
+                "offsetY": 426.125,
+                "rubberBandSelectionMode": "CompleteIntersect"
+            },
+            "basicElements": [],
+            "tooltip": {
+                "content": "",
+                "relativeMode": "Mouse"
+            },
+            "commandManager": {
+                "commands": []
+            },
+            "dragEnter": {},
+            "tool": 3,
+            "bridgeDirection": "Top",
+            "drawingObject": {
+                "type": "Orthogonal",
+                "sourcePortID": "wTZha"
+            },
+            "customCursor": [],
+            "version": 17.1
+        }`;
+        diagram.loadDiagram(data);
+        let lablePosition = document.getElementById('Tarefawx6id' + '_' + diagram.nameTable['Tarefawx6id'].annotations[0].id).getBoundingClientRect();
+        let nodePosition = document.getElementById('Tarefawx6id').getBoundingClientRect();
+        let x1 = Math.round((nodePosition as any).x);
+        let z1 = Math.round((lablePosition as any).x);
+        let check: boolean = numbersinranges(z1, x1 - 2, x1 + 2)
+        expect(check).toEqual(true);
+        done();
+    });
+});

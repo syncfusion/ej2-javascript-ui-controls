@@ -338,47 +338,7 @@ function tocJson(): string {
     };
     return JSON.stringify(json);
 }
-function updateToc(editor: DocumentEditor) {
-    let field: FieldElementBox = editor.selection.getTocField();
-    editor.editorModule.updateToc(editor.selection.getTocField());
-    return field;
-}
-describe('Toc test case validation - 1', () => {
-    let editor: DocumentEditor;
-    let event: any;
-    beforeAll((): void => {
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
-        DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        editor.enableEditorHistory = true;
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-        editor.open(tocJson());
-    });
-    afterAll((done): void => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        document.body.innerHTML = '';
-        setTimeout(function () {
-            done();
-        }, 1000);
-    });
-    it('Toc linking validation', () => {
-console.log('Toc linking validation');
-        let fieldCode = updateToc(editor);
-        expect(editor.selection.getFieldCode(fieldCode)).not.toBe('');
-        editor.selection.handleControlEndKey();
-        editor.editorModule.insertText('s');
-        editor.selection.handleControlHomeKey();
-        fieldCode = updateToc(editor);
-        expect(editor.selection.getFieldCode(fieldCode)).not.toBe('');
-    });
-});
+
 
 describe('TOC test case validation - 2', () => {
     let editor: DocumentEditor;

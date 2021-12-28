@@ -918,7 +918,7 @@
 
     & .e-gridheader .e-frozenheader .e-headercell .e-rhandler:last-of-type,
     & .e-gridheader .e-frozenheader .e-headercell .e-rsuppress:last-of-type {
-      right: -1px;
+      right: 0;
     }
 
     & .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rhandler,
@@ -3694,6 +3694,15 @@
         background-color: transparent;
       }
     }
+  }
+
+  & .e-defaultcell.e-ralign,
+  & .e-editedrow .e-defaultcell.e-ralign,
+  & .e-insertedrow .e-defaultcell.e-ralign,
+  & .e-defaultcell.e-ralign:focus,
+  & .e-insertedrow .e-defaultcell.e-ralign:focus
+  & .e-editedrow .e-defaultcell.e-ralign:focus {
+    padding-right: 10px;
   }
 }
 

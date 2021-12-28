@@ -100,7 +100,7 @@ console.log('Copy and paste text when track change is enabled (local clipboard)'
         container.enableLocalPaste = true;
         container.editor.paste();
         var count = container.revisions.changes.length;
-        expect(count).toBe(2);
+        expect(count).toBe(3);
     });
     it('Copy when trackchange disabled and paste text when track change is enabled (local clipboard)', function () {
 console.log('Copy when trackchange disabled and paste text when track change is enabled (local clipboard)');

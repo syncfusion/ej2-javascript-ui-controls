@@ -1,8 +1,8 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
-import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndexFromId } from '../base/index';
+import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndexFromId, getRow } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
 import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
-import { triggerDataChange } from '../common/index';
+import { triggerDataChange, ExtendedRowModel } from '../common/index';
 import { getFormatFromType } from './number-format';
 
 /**
@@ -450,7 +450,8 @@ export class DataBind {
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number, modelType: string,
         deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, isMethod?: boolean, fillRange?: string
-        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean, pastedRange: string
+        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean, pastedRange: string,
+        skipFilterCheck?: boolean
     }): void {
         const changedData: Object[] = [{}];
         let action: string;
@@ -587,14 +588,18 @@ export class DataBind {
                             }
                         }
                         if (inRange || isNewRow) {
-                            for (let i: number = 0; i < (isNewRow ? args.model.length : (cellIndices[2] - cellIndices[0]) + 1 || 1); i++) {
-                                changedData[i + addedCutData] = {};
+                            const filterCheck: boolean = !args.isDataRequest && !inRangeCut && !isNewRow && !args.skipFilterCheck;
+                            for (let i: number = 0, count: number = 0; i < (isNewRow ? args.model.length : (cellIndices[2] - cellIndices[0])
+                                + 1 || 1); i++) {
+                                if (filterCheck && ((getRow(sheet, cellIndices[0] + i) || {}) as ExtendedRowModel).isFiltered) { continue; }
+                                changedData[count + addedCutData] = {};
                                 range.info.flds.forEach((fld: string, idx: number) => {
                                     if (fld) {
                                         cell = getCell(cellIndices[0] + i, startCell[1] + idx, sheet);
-                                        changedData[i + addedCutData][fld] = this.getFormattedValue(cell);
+                                        changedData[count + addedCutData][fld] = this.getFormattedValue(cell);
                                     }
                                 });
+                                count++;
                             }
                         }
                     }

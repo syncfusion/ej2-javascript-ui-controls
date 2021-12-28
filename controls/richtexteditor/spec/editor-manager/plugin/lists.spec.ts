@@ -1421,7 +1421,8 @@ describe ('left indent testing', () => {
             <p>three node</p><p class='space-four-node'>*four node</p><p><br></p>
             <p class='space-five-node'>*five node</p><p class='space-six-node'>1.six node</p>
             <p><br></p><p class='space-seven-node'>a.seven node</p>
-            <p><br></p><p class='space-eight-node'>i.eight node</p><div>`;
+            <p><br></p><p class='space-eight-node'>i.eight node</p>
+            <p><br></p><p class='space-nine-node'>11.nine node</p><div>`;
             beforeEach(() => {
                 elem = createElement('div', {
                     id: 'dom-node', innerHTML: innerValue
@@ -1512,6 +1513,19 @@ describe ('left indent testing', () => {
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
                 expect(editNode.querySelector('.space-eight-node').parentElement.tagName).toBe('OL');
+            });
+
+            it(' space key press after 11.', () => {
+                startNode = editNode.querySelector('.space-nine-node');
+                expect(startNode.querySelector('ol')).toBeNull();
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 3);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.space-nine-node').tagName).toBe('P');
             });
 
             afterAll(() => {

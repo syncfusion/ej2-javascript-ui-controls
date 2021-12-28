@@ -10,7 +10,7 @@ import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange } from '../common/interface';
-import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType } from '../common/index';
+import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType, dateToInt } from '../common/index';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
@@ -18,7 +18,7 @@ import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn, InsertDeleteEventArgs } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookChart } from '../integrations/index';
-import { WorkbookNumberFormat } from '../integrations/number-format';
+import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
@@ -1718,5 +1718,22 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         return updated;
+    }
+
+    /**
+     * Used in calculate to compute integer value of date
+     */
+    private dateToInt(date: Date): number {
+        return dateToInt(date);
+    }
+
+    /**
+     * Used to update format from calculate.
+     */
+    private setDateFormat(sheetId: number, rowIndex: number, colIndex: number): void {
+        const sheet: SheetModel = getSheet(this, getSheetIndexFromId(this, sheetId));
+        if (!getCell(rowIndex, colIndex, sheet, null, true).format) {
+            setCell(rowIndex, colIndex, sheet, { format: getFormatFromType('ShortDate') }, true);
+        }
     }
 }

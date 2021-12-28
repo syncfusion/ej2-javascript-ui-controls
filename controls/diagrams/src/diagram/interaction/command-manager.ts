@@ -1666,7 +1666,11 @@ export class CommandHandler {
             newObj.id = (this.diagram.drawingObject.id || 'node') + randomId();
         } else {
             newObj = new Connector(this.diagram, 'connectors', cloneObject, true);
-            newObj.id = (this.diagram.drawingObject.id || 'connector') + randomId();
+            if (isBlazor() && !this.diagram.drawingObject) {
+                newObj.type === 'Orthogonal';
+            }
+            newObj.id = (this.diagram.drawingObject ? (this.diagram.drawingObject.id ? this.diagram.drawingObject.id : 'connector')
+                : 'connector') + randomId();
         }
         if (isBlazor()) {
             updateDefaultValues(
@@ -1828,7 +1832,8 @@ export class CommandHandler {
                     return;
                 }
             }
-            if (!canDoSingleSelection && obj.length === 1 && (!multipleSelection || !hasSelection(this.diagram))) {
+            if (!(canDoSingleSelection || canDoMultipleSelection) && obj.length === 1
+                && (!multipleSelection || !hasSelection(this.diagram))) {
                 this.clearSelection();
                 return;
             }
@@ -3014,7 +3019,7 @@ export class CommandHandler {
                 const backNode: HTMLElement = getDiagramElement(nodeId + id, this.diagram.views[i]);
                 const diagramDiv: HTMLElement = targetID ? getDiagramElement(targetID + id, this.diagram.views[i])
                     : backNode.parentElement.firstChild as HTMLElement;
-                if ((backNode.parentNode as HTMLElement).id === (diagramDiv.parentNode as HTMLElement).id) {
+                if ((backNode && backNode.parentNode as HTMLElement).id === (diagramDiv && diagramDiv.parentNode as HTMLElement).id) {
                     diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
                 }
             }

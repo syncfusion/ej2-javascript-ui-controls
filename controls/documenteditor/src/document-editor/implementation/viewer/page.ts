@@ -1855,9 +1855,7 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
                 let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
-                if (cell.cellFormat.preferredWidthType === 'Auto' || cell.cellFormat.cellWidth === 0) {
-                    cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
-                }
+                cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
                  //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
             }
             if (rowFormat.gridAfter > 0) {
@@ -5844,10 +5842,42 @@ export class ImageElementBox extends ShapeBase {
     private imageStr: string = '';
     private imgElement: HTMLImageElement = undefined;
     private isInlineImageIn: boolean = true;
+    private crop: boolean = false;
     /**
      * @private
      */
-    public isCrop: boolean = false;
+    public get isCrop(): boolean {
+        return this.crop;
+    }
+    public set isCrop(value: boolean) {
+        this.crop = value;
+        if (value) {
+            let right: number = 0;
+            let bottom: number = 0;
+            if (this.left !== 0) {
+                this.cropX = (this.left * this.cropWidthScale) / 100;
+            }
+            if (this.top !== 0) {
+                this.cropY = (this.top * this.cropHeightScale) / 100;
+            }
+            if (this.right !== 0) {
+                right = (this.right * this.cropWidthScale) / 100;
+            }
+            if (this.bottom !== 0) {
+                bottom = (this.bottom * this.cropHeightScale) / 100;
+            }
+            this.cropWidth = (this.cropWidthScale - (this.x + right));
+            this.cropHeight = (this.cropHeightScale - (this.y + bottom));
+        }
+    }
+    /**
+     * @private
+     */
+    public cropX: number;
+    /**
+     * @private
+     */
+    public cropY: number;
     /**
      * @private
      */
@@ -5950,15 +5980,15 @@ export class ImageElementBox extends ShapeBase {
         image.metaFileImageString = this.metaFileImageString;
         image.width = this.width;
         image.height = this.height;
-        if (this.isCrop) {
-            image.top = this.top;
-            image.left = this.left;
-            image.bottom = this.bottom;
-            image.right = this.right;
-            image.isCrop = this.isCrop;
-            image.cropHeightScale = this.cropHeightScale;
-            image.cropWidthScale = this.cropWidthScale;
-        }
+        image.top = this.top;
+        image.left = this.left;
+        image.bottom = this.bottom;
+        image.right = this.right;        
+        image.cropHeightScale = this.cropHeightScale;
+        image.cropWidthScale = this.cropWidthScale;
+        image.cropX = this.cropX;
+        image.cropY = this.cropY;
+        image.isCrop = this.isCrop;
         if (this.margin) {
             image.margin = this.margin.clone();
         }

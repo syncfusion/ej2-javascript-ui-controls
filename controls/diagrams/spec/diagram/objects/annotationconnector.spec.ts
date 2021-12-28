@@ -316,7 +316,7 @@ describe('Diagram Control', () => {
             diagram.connectors[0].annotations[0].displacement.y = 15;
             diagram.dataBind();
             expect(diagram.connectors[0].wrapper.children[3].offsetX === 100 &&
-                diagram.connectors[0].wrapper.children[3].offsetY === 107.7).toBe(true);
+                diagram.connectors[0].wrapper.children[3].offsetY === 122.2).toBe(true);
             done();
         });
         it('memory leak', () => { 

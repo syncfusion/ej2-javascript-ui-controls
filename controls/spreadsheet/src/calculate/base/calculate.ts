@@ -75,7 +75,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public dependencyCollection: string[] = [];
     /** @hidden */
     public uniqueRange: string[] = [];
-
+    /** @hidden */
+    public skipSpill: boolean = false;
     /**
      * @hidden
      */
@@ -1702,7 +1703,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         let num2: string = stack.pop();
-        num2 = num2 === this.emptyString ? (stack.length ? stack.pop() : '0') : num2;
+        num2 = num2 === this.emptyString ? '0' : num2;
         num = Number(num2);
         if (isNaN(num)) {
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
@@ -2457,9 +2458,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     public valueChanged(
         grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[], refresh?: boolean,
-        sheetName?: string): void {
+        sheetName?: string, skip?: boolean): void {
         const pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
+        this.skipSpill = skip;
         let isComputedValueChanged: boolean = true;
         let isCompute: boolean = true;
         const calcFamily: CalcSheetFamilyItem = this.getSheetFamilyItem(pgrid);

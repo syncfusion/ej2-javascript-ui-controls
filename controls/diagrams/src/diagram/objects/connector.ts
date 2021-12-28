@@ -48,6 +48,7 @@ import { SymbolSizeModel } from './preview-model';
 import { SymbolSize } from './preview';
 import { ConnectorFixedUserHandle } from './fixed-user-handle';
 import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';
+import { ResizeTool } from '../interaction/tool';
 const getConnectorType: Function = (obj: ConnectorShape): Object => {
     if (isBlazor()) {
         return DiagramConnectorShape;
@@ -1881,11 +1882,18 @@ export class Connector extends NodeBase implements IElement {
             }
         } else {
             if (this.type === 'Bezier') {
+                let isrezise: boolean;
+                let isDrawing: boolean;
+                if ((this as any).parentObj.element) {
+                    let action: string = (this as any).parentObj.element.ej2_instances[0]['eventHandler'].action;
+                    isrezise = ((this as any).parentObj.element.ej2_instances[0]['eventHandler']).tool instanceof ResizeTool;
+                    isDrawing = action.includes('PortDraw') || action.includes('Drag');
+                }
                 let direction: string; const segments: BezierSegment[] = (this.segments as BezierSegment[]);
                 for (let j: number = 0; j < segments.length; j++) {
                     if (pts.length > 2) { segments[j].bezierPoint1 = { x: 0, y: 0 }; segments[j].bezierPoint2 = { x: 0, y: 0 }; }
                     if (Point.isEmptyPoint(segments[j].point1) && !segments[j].vector1.angle && !segments[j].vector1.distance) {
-                        if ((connector.sourceID || this.sourcePortID) && this.sourceWrapper) {
+                        if ((connector.sourceID || this.sourcePortID) && this.sourceWrapper && !isDrawing && !isrezise) {
                             direction = getDirection(this.sourceWrapper.bounds, pts[j], true);
                         }
                         segments[j].bezierPoint1 = getBezierPoints(pts[j], pts[j + 1], direction);
@@ -1898,7 +1906,7 @@ export class Connector extends NodeBase implements IElement {
                         };
                     }
                     if (Point.isEmptyPoint(segments[j].point2) && !segments[j].vector2.angle && !segments[j].vector2.distance) {
-                        if ((connector.targetID || this.targetPortID) && this.targetWrapper) {
+                        if ((connector.targetID || this.targetPortID) && this.targetWrapper && !isDrawing && !isrezise) {
                             direction = getDirection(this.targetWrapper.bounds, pts[j + 1], true);
                         }
                         segments[j].bezierPoint2 = getBezierPoints(pts[j + 1], pts[j], direction);

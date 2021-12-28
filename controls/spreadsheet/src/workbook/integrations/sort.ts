@@ -2,7 +2,7 @@ import { Workbook, SheetModel, CellModel, getCell, setCell, getData } from '../b
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
 import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
-import { parseIntValue } from '../common/index';
+import { parseIntValue, SortCollectionModel } from '../common/index';
 import { initiateSort } from '../common/event';
 import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 
@@ -47,9 +47,11 @@ export class WorkbookSort {
      * @param {{ args: BeforeSortEventArgs, promise: Promise<SortEventArgs> }} eventArgs - Specify the arguments.
      * @param {BeforeSortEventArgs} eventArgs.args - arguments for sorting.
      * @param {Promise<SortEventArgs>} eventArgs.promise - Specify the promise.
+     * @param {SortCollectionModel} eventArgs.previousSort - Specify the previous sort model.
      * @returns {void} - Sorts range of cells in the sheet.
      */
-    private initiateSortHandler(eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs> }): void {
+    private initiateSortHandler(
+        eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs>, previousSort: SortCollectionModel }): void {
         const args: BeforeSortEventArgs = eventArgs.args;
         const deferred: Deferred = new Deferred();
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -139,8 +141,10 @@ export class WorkbookSort {
                         setCell(sRIdx, sCIdx, sheet, cell);
                     }
                 });
-                const eventArgs: SortEventArgs = { range: `${sheet.name}!${address}`, sortOptions: args.sortOptions };
-                deferred.resolve(eventArgs);
+                const sortArgs: { range: string, sortOptions: SortOptions, previousSort?: SortCollectionModel } = { range:
+                    `${sheet.name}!${address}`, sortOptions: args.sortOptions };
+                if (eventArgs.previousSort) { sortArgs.previousSort = eventArgs.previousSort; }
+                deferred.resolve(sortArgs);
             });
         });
     }
@@ -175,7 +179,7 @@ export class WorkbookSort {
         const comparer: Function = DataUtil.fnSort(direction);
         let isXStringVal: boolean = false; let isYStringVal: boolean = false;
         const caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
-        if (x && y && (typeof x.value === 'string' || typeof y.value === 'string')) {
+        if (x && y && (typeof x.value === 'string' || typeof y.value === 'string') && (x.value !== '' && y.value !== '')) {
             if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
                 x.value = <string>parseIntValue(x.value);
                 isXStringVal = true;
@@ -193,13 +197,13 @@ export class WorkbookSort {
                 }
             }
         }
-        if ((x === null || x && isNullOrUndefined(x.value)) && (y === null || y && isNullOrUndefined(y.value))) {
+        if ((x === null || x && (isNullOrUndefined(x.value) || x.value === '')) && (y === null || y && (isNullOrUndefined(y.value) || y.value === ''))) {
             return -1;
         }
-        if (x === null || x && isNullOrUndefined(x.value)) {
+        if (x === null || x && (isNullOrUndefined(x.value) || x.value === '')) {
             return 1;
         }
-        if (y === null || y && isNullOrUndefined(y.value)) {
+        if (y === null || y && (isNullOrUndefined(y.value) || y.value === '')) {
             return -1;
         }
         return comparer(x ? x.value : x, y ? y.value : y);

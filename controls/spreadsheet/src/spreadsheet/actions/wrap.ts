@@ -146,7 +146,9 @@ export class WrapText {
                     }
                 }
             }
-            this.parent.notify(positionAutoFillElement, null);
+            if (!args.initial) {
+                this.parent.notify(positionAutoFillElement, null);
+            }
         }
     }
     private ribbonClickHandler(args: ClickEventArgs): void {

@@ -1,8 +1,8 @@
-import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel } from '../base/index';
+import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell } from '../base/index';
 import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count } from '../common/index';
-import { goto, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, replaceAllDialog, ReplaceAllArgs } from '../common/index';
+import { goto, replaceHandler, replaceAllHandler, showDialog, replaceAllDialog, ReplaceAllEventArgs } from '../common/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { findAllValues, FindAllArgs, workBookeditAlert } from '../common/index';
+import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs } from '../common/index';
 /**
  * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
  */
@@ -609,8 +609,8 @@ export class WorkbookFindAndReplace {
             return;
         }
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const activecell: number[] = getCellIndexes(sheet.activeCell);
-        const currentCell: string = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
+        let activeCell: number[] = getCellIndexes(sheet.activeCell);
+        const currentCell: string = sheet.rows[activeCell[0]].cells[activeCell[1]].value.toString();
         const index: boolean = currentCell.indexOf(args.value) > -1;
         const lowerCaseIndex: boolean = currentCell.toLowerCase().indexOf(args.value.toString().toLowerCase()) > -1;
         const val: string = currentCell.toString().toLowerCase();
@@ -618,53 +618,53 @@ export class WorkbookFindAndReplace {
             args.findOpt = 'next';
             this.findNext(args);
         }
-        this.parent.getActiveSheet();
-        const activecel: number[] = getCellIndexes(sheet.activeCell);
-        const address: string = sheet.activeCell;
-        const cell: CellModel = sheet.rows[activecel[0]].cells[activecel[1]];
-        const cellFormat: string = sheet.rows[activecel[0]].cells[activecel[1]].format;
-        let compareVal: string;
-        const replaceAddress: string = sheet.name + '!' + getCellAddress(activecel[0], activecel[1]);
-        if (cellFormat) {
-            const dispTxt: string = this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]);
-            compareVal = dispTxt.toString();
-
-        } else {
-            compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
+        activeCell = getCellIndexes(sheet.activeCell);
+        let compareVal: string = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet)).toString();
+        const replaceAddress: string = sheet.name + '!' + getCellAddress(activeCell[0], activeCell[1]);
+        const eventArgs: BeforeReplaceEventArgs = { address: replaceAddress, compareValue: compareVal, replaceValue: args.replaceValue,
+            cancel: false };
+        this.parent.notify('actionBegin', { action: 'beforeReplace', eventArgs: eventArgs });
+        if (eventArgs.cancel) { return; }
+        compareVal = eventArgs.compareValue;
+        const triggerEvent: Function = (): void => {
+            this.parent.notify(
+                'actionComplete', { action: 'replace', eventArgs: { address: eventArgs.address, compareValue: compareVal, replaceValue:
+                    eventArgs.replaceValue } });
         }
-        const replaceAllCollection: ReplaceAllArgs = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
         const lcValueOfCell: string = compareVal.toLowerCase();
-        const ivalueOfCell: boolean = compareVal.indexOf(args.value) > -1;
-        const caseInSensitive: boolean = lcValueOfCell.indexOf(args.value) > -1;
         if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
-            sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
-            this.parent.updateCell(cell, address);
-            const replaceAllCollection: ReplaceAllArgs = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection);
-        } else if (ivalueOfCell) {
-            const newValue: string = compareVal.replace(args.value, args.replaceValue);
-            sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
-            this.parent.updateCell(cell, address);
-            const replaceAllCollection: ReplaceAllArgs = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection);
-        } else if (caseInSensitive) {
+            this.parent.updateCell({ value: eventArgs.replaceValue }, eventArgs.address);
+            triggerEvent();
+        } else if (compareVal.indexOf(args.value) > -1) {
+            this.parent.updateCell({ value: compareVal.replace(args.value, eventArgs.replaceValue) }, eventArgs.address);
+            triggerEvent();
+        } else if (lcValueOfCell.indexOf(args.value) > -1) {
             const regx: RegExp = new RegExp(
                 args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-            const updateValue: string = compareVal.replace(regx, args.replaceValue);
-            sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
-            this.parent.updateCell(cell, address);
-            const replaceAllCollection: ReplaceAllArgs = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection);
+            this.parent.updateCell({ value: compareVal.replace(regx, eventArgs.replaceValue) }, eventArgs.address);
+            triggerEvent();
         }
     }
     public replaceAll(args: FindOptions): void {
         let startSheet: number = args.mode === 'Sheet' ? args.sheetIndex : 0;
         let sheet: SheetModel = this.parent.sheets[startSheet];
-        let endRow: number = sheet.usedRange.rowIndex; let count: number = 0; const undoRedoOpt: string = 'beforeReplaceAll';
+        let endRow: number = sheet.usedRange.rowIndex;
         let startRow: number = 0; let endColumn: number = sheet.usedRange.colIndex; let startColumn: number = 0;
         const addressCollection: string[] = [];
-        let address: string ;
+        const eventArgs: ReplaceAllEventArgs = { addressCollection: addressCollection, replaceValue: args.replaceValue, compareValue:
+            args.value, cancel: false };
+        const updateAsync: (cellValue: string, index: number) => void = (cellValue: string, index: number): void => {
+            if (requestAnimationFrame) {
+                requestAnimationFrame(() => {
+                    if (!eventArgs.cancel && eventArgs.addressCollection[index]) {
+                        this.parent.updateCell({ value: cellValue }, eventArgs.addressCollection[index]);
+                    }
+                });
+            } else {
+                this.parent.updateCell({ value: cellValue }, eventArgs.addressCollection[index]);
+            }
+        }
+        let cellval: string; let row: RowModel; let regX: RegExp;
         for (startRow; startRow <= endRow + 1; startRow++) {
             if (startColumn > endColumn && startRow > endRow) {
                 if (args.mode === 'Workbook') {
@@ -672,70 +672,44 @@ export class WorkbookFindAndReplace {
                     if (sheet) {
                         startColumn = 0; startRow = 0; endColumn = sheet.usedRange.colIndex;
                         endRow = sheet.usedRange.rowIndex;
+                    } else {
+                        break;
                     }
                 }
             }
-            if (sheet) {
-                if (sheet.rows[startRow]) {
-                    const row: RowModel = sheet.rows[startRow];
-                    if (startColumn === endColumn + 1) {
-                        startColumn = 0;
-                    }
-                    for (startColumn; startColumn <= endColumn; startColumn++) {
-                        const cell: CellModel = sheet.rows[startRow].cells[startColumn];
-                        if (row) {
-                            if (row.cells && row.cells[startColumn] && row.cells[startColumn].value) {
-                                const cellType: CellModel = sheet.rows[startRow].cells[startColumn];
-                                if (cellType) {
-                                    const cellTypeVal: string = cellType.format; let cellval: string;
-                                    if (cellTypeVal) {
-                                        const displayTxt: string = this.parent.getDisplayText(sheet.rows[startRow].
-                                            cells[startColumn]);
-                                        cellval = displayTxt.toString();
-                                    } else {
-                                        cellval = sheet.rows[startRow].cells[startColumn].value.toString();
-                                    }
-                                    if (args.isCSen && args.isEMatch) {
+            row = sheet.rows[startRow];
+            if (row) {
+                if (startColumn === endColumn + 1) { startColumn = 0; }
+                for (startColumn; startColumn <= endColumn; startColumn++) {
+                    if (row) {
+                        if (row.cells && row.cells[startColumn]) {
+                            cellval = this.parent.getDisplayText(sheet.rows[startRow].cells[startColumn]).toString();
+                            if (cellval) {
+                                if (args.isCSen) {
+                                    if (args.isEMatch) {
                                         if (cellval === args.value) {
-                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                            updateAsync(args.replaceValue, addressCollection.length);
+                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                                         }
-                                    } else if (args.isCSen && !args.isEMatch) {
-                                        const index: boolean = cellval.indexOf(args.value) > -1;
-                                        if ((cellval === args.value) || (index)) {
-                                            const newValue: string = cellval.replace(args.value, args.replaceValue);
-                                            sheet.rows[startRow].cells[startColumn].value = newValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                    } else {
+                                        if (cellval.indexOf(args.value) > -1) {
+                                            updateAsync(cellval.replace(args.value, args.replaceValue), addressCollection.length);
+                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                                         }
-                                    } else if (!args.isCSen && args.isEMatch) {
-                                        const val: string = cellval.toString().toLowerCase();
-                                        if (val === args.value) {
-                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                    }
+                                } else {
+                                    if (args.isEMatch) {
+                                        if (cellval.toLowerCase() === args.value) {
+                                            updateAsync(args.replaceValue, addressCollection.length);
+                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                                         }
-                                    } else if (!args.isCSen && !args.isEMatch) {
-                                        const val: string = cellval.toString().toLowerCase();
-                                        const index: boolean = val.indexOf(args.value.toString().toLowerCase()) > -1;
-                                        const lowerCaseValue: boolean = val.indexOf(args.value) > -1;
-                                        if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
-                                            (lowerCaseValue)) {
-                                            const regExepression: RegExp = new RegExp(
-                                                args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-                                            const newValue: string = cellval.replace(regExepression, args.replaceValue);
-                                            sheet.rows[startRow].cells[startColumn].value = newValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                    } else {
+                                        const val: string = cellval.toLowerCase();
+                                        if ((cellval === args.value || val.indexOf(args.value.toString().toLowerCase()) > -1) || val ===
+                                            args.value || cellval === args.value || val.indexOf(args.value) > -1) {
+                                            regX = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                                            updateAsync(cellval.replace(regX, args.replaceValue), addressCollection.length);
+                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                                         }
                                     }
                                 }
@@ -745,18 +719,17 @@ export class WorkbookFindAndReplace {
                 }
             }
         }
-        let replaceAllCollection: ReplaceAllArgs = {
-            undoRedoOpt: undoRedoOpt, Collection: addressCollection,
-            replaceValue: args.value
-        };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
-        replaceAllCollection = {
-            undoRedoOpt: 'afterReplaceAll', Collection: addressCollection,
-            replaceValue: args.replaceValue
-        };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
-        const countNumber: number = count;
-        this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
+        if (addressCollection.length) {
+            this.parent.notify('actionBegin', { action: 'beforeReplaceAll', eventArgs: eventArgs });
+            if (!eventArgs.cancel) {
+                this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });
+                this.parent.notify(
+                    'actionComplete', { action: 'replaceAll', eventArgs: <ReplaceAllEventArgs>{ addressCollection: addressCollection,
+                        replaceValue: args.replaceValue, compareValue: args.value } });
+            }            
+        } else {
+            this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });
+        }
     }
     private totalCount(args: FindOptions): void {
         const sheet: SheetModel = this.parent.sheets[args.sheetIndex];

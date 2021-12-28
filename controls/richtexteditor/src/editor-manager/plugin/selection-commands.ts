@@ -225,6 +225,9 @@ export class SelectionCommands {
         endNode: Node,
         domNode: DOMNode): Node {
         let splitNode: HTMLElement = null;
+        let startText: string = range.startContainer.nodeName === '#text' ?
+        range.startContainer.textContent.substring(range.startOffset, range.startContainer.textContent.length) :
+        range.startContainer.textContent;
         if (!(range.startContainer === range.endContainer && range.startOffset === 0
             && range.endOffset === (range.startContainer as Text).length)) {
             const nodeIndex: number[] = [];
@@ -322,11 +325,13 @@ export class SelectionCommands {
                     child[num] = InsertMethods.Wrap(
                         child[num] as HTMLElement,
                         this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
-                    if (num === 0) {
-                        range.setStartBefore(child[num]);
-                    }
-                    else if (num === child.length - 1) {
-                        range.setEndAfter(child[num]);
+                    if (child[num].textContent === startText) {
+                        if (num === 0) {
+                            range.setStartBefore(child[num]);
+                        }
+                        else if (num === child.length - 1) {
+                            range.setEndAfter(child[num]);
+                        }
                     }
                 }
             }

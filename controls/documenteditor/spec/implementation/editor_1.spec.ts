@@ -893,20 +893,27 @@ console.log('Bullet List validation with back ward selection');
                 done();
             }, 1000);
         });
-        it('Asterisk List validation', () => {
+        it('Asterisk List validation', (done) => {
 console.log('Asterisk List validation');
             editor.openBlank();
             editor.editorModule.insertText('*');
             editor.editorModule.insertText(' ');
-            expect(editor.selection.paragraphFormat.listId).toBe(0);
+            setTimeout(function () {
+                expect(editor.selection.paragraphFormat.listId).toBe(0);
+                done();
+            }, 200);            
         });
-//         it('Hyphen list validation', () => {
-// console.log('Hyphen list validation');
-//             editor.openBlank();
-//             editor.editorModule.insertText('-');
-//             editor.editorModule.insertText(' ');
-//             expect(editor.selection.paragraphFormat.listId).toBe(1);
-//         });
+        it('Hyphen list validation', (done) => {
+console.log('Hyphen list validation');
+            editor.openBlank();
+            editor.editorModule.insertText('-');
+            editor.editorModule.insertText(' ');
+            setTimeout(function () {
+                expect(editor.selection.paragraphFormat.listId).toBe(1);
+                done();
+            }, 200); 
+            
+        });
     });
 });
 

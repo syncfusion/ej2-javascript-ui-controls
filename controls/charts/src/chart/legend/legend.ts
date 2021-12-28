@@ -54,7 +54,18 @@ export class Legend extends BaseLegend {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
             this.move(e);
             if ((<Chart>this.chart).highlightModule && (<Chart>this.chart).highlightMode !== 'None') {
-                this.click(e);
+                const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
+                this.legendID + '_shape_'];
+                const targetId: string = (<HTMLElement>e.target).id;
+                let index: number;
+                for (const id of legendItemsId) {
+                    if (targetId.indexOf(id) > -1) {
+                        index = parseInt(targetId.split(id)[1], 10);
+                        (<Chart>this.chart).highlightModule.legendSelection((<Chart>this.chart), index, e);
+                        break;
+                    }
+                }
+                // this.click(e);
             }
         }
     }
@@ -302,10 +313,10 @@ export class Legend extends BaseLegend {
                 legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
                     (series.visible);
                 this.refreshLegendToggle(chart, series);
-            } else if (chart.selectionModule) {
-                chart.selectionModule.legendSelection(chart, index, event);
             } else if (chart.highlightModule) {
                 chart.highlightModule.legendSelection(chart, index, event);
+            } else if (chart.selectionModule) {
+                chart.selectionModule.legendSelection(chart, index, event);
             }
             series.chart[changeDetection] = false;
         } else if (chart.legendSettings.mode === 'Point') {
@@ -408,7 +419,6 @@ export class Legend extends BaseLegend {
                     'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(series);
             }
-
             series.position = undefined;
         }
     }

@@ -69,8 +69,7 @@ export class TableDialog {
             format: '#',
             value: 2,
             min: 1,
-            max: 32767,
-            strictMode: false,
+            strictMode: true,
             enablePersistence: false
         });
         this.rowValueTextBox.appendTo(this.rowsCountBox);
@@ -78,8 +77,7 @@ export class TableDialog {
             format: '#',
             value: 2,
             min: 1,
-            max: 63,
-            strictMode: false,
+            strictMode: true,
             enablePersistence: false
         });
         this.columnValueTexBox.appendTo(this.columnsCountBox);

@@ -17,10 +17,9 @@ describe('DocumentEditorContainer Events', () => {
         container.appendTo(element);
     });
     afterAll(() => {
-        container.destroy();
+        expect(() => { container.destroy(); }).not.toThrowError();
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
-        expect(() => { container.destroy(); }).not.toThrowError();
         document.body.innerHTML = '';
         element = undefined;
         container = undefined;

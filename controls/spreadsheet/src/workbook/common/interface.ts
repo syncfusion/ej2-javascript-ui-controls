@@ -43,12 +43,12 @@ export interface FindOptions {
     findCount?: string;
     isAction?: boolean;
 }
-export interface ReplaceAllArgs {
-    undoRedoOpt: string;
-    replaceValue?: string;
-    Collection?: string[];
-    address?: string;
-    compareVal?: string;
+/**@hidden */
+export interface  ReplaceAllEventArgs {
+    replaceValue: string;
+    addressCollection: string[];
+    compareValue: string;
+    cancel?: boolean;
 }
 /**
  * Specifies FindAll options in arguments.
@@ -82,6 +82,16 @@ export interface FindPrevious {
     rowIndex: number; colIndex: number; endRow: number; endColumn: number; startRow: number;
     loopCount: number; count: number; args: FindOptions; val: string; stringValue: string; sheetIndex: number; startColumn: number;
     sheets: SheetModel[];
+}
+/**@hidden */
+export interface ReplaceEventArgs {
+    address: string;
+    compareValue: string;
+    replaceValue: string;
+}
+/**@hidden */
+export interface BeforeReplaceEventArgs extends ReplaceEventArgs {
+    cancel: boolean;
 }
 /**
  * @hidden

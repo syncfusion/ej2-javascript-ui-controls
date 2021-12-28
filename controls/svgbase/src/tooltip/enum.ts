@@ -62,7 +62,11 @@ export type TooltipTheme =
     /**  Render a chart with Tailwind theme. */
     'Tailwind' |
     /**  Render a chart with TailwindDark theme. */
-    'TailwindDark';
+    'TailwindDark' |
+    /**  Render a chart with Bootstrap5 theme. */
+    'Bootstrap5' |
+    /**  Render a chart with Bootstrap5Dark theme. */
+    'Bootstrap5Dark';
 
 /**
  * Defines the tooltip position.

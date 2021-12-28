@@ -14,8 +14,8 @@ import { OpenOptions } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
-import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
+import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel, isHiddenRow } from '../../workbook/index';
+import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight, checkHiddenRows } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, ModelType, getRow, ExtendedRowModel, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
 
 /**
@@ -28,6 +28,7 @@ export class Clipboard {
         pictureElem: HTMLElement, sId: number, sheetIdx: number, isCut: boolean,
         copiedRange: string, height: number, width: number, chartInfo: ChartModel
     };
+    private pasteInfo: { hiddenRows: number[], isPaste: boolean } = { hiddenRows: [], isPaste: false };
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.init();
@@ -51,6 +52,7 @@ export class Clipboard {
         this.parent.on(contentLoaded, this.initCopyIndicator, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
         this.parent.on(refreshClipboard, this.refreshOnInsertDelete, this);
+        this.parent.on(checkHiddenRows, this.checkHiddenRows, this);
         EventHandler.add(ele, 'cut', this.cut, this);
         EventHandler.add(ele, 'copy', this.copy, this);
         EventHandler.add(ele, 'paste', this.paste, this);
@@ -69,6 +71,7 @@ export class Clipboard {
             this.parent.off(contentLoaded, this.initCopyIndicator);
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
             this.parent.off(refreshClipboard, this.refreshOnInsertDelete);
+            this.parent.off(checkHiddenRows, this.checkHiddenRows);
         }
         EventHandler.remove(ele, 'cut', this.cut);
         EventHandler.remove(ele, 'copy', this.copy);
@@ -207,6 +210,15 @@ export class Clipboard {
             if (beginEventArgs.cancel) {
                 return;
             }
+            if (rfshRange) {
+                this.pasteInfo.hiddenRows = [];
+                for (let i: number = rfshRange[0]; i <= rfshRange[2]; i++ ) {
+                    if (isHiddenRow(curSheet, i)) {
+                        this.pasteInfo.hiddenRows.push(i);
+                    }
+                }
+            }
+            this.pasteInfo.isPaste = true;
             let cell: CellModel;
             let isExtend: boolean; let prevCell: CellModel; const mergeCollection: MergeArgs[] = [];
             const prevSheet: SheetModel = getSheet(this.parent as Workbook, isExternal ? cSIdx : copiedIdx);
@@ -327,7 +339,7 @@ export class Clipboard {
                                 }
                                 break;
                             }
-                            isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
+                            isExtend = ['Formats', 'Values'].indexOf(args.type || pasteType) > -1;
                         }
                         if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
                             || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
@@ -475,12 +487,15 @@ export class Clipboard {
                         pastedRange: curSheet.name + '!' + getRangeAddress(rfshRange),
                         type: pasteType || 'All'
                     };
+                    if (!!hiddenCount) { eventArgs['skipFilterCheck'] = true; }
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
             }
         } else {
             this.getClipboardEle().select();
         }
+        this.pasteInfo.hiddenRows = [];
+        this.pasteInfo.isPaste = false;
     }
 
     private setCF(
@@ -1148,6 +1163,11 @@ export class Clipboard {
                 this.clearCopiedInfo();
             }
         }
+    }
+
+    private checkHiddenRows(args: { hiddenRows: number[], isPaste: boolean}): void {
+        args.hiddenRows = this.pasteInfo.hiddenRows;
+        args.isPaste = this.pasteInfo.isPaste;
     }
 
     private performAction(): void {

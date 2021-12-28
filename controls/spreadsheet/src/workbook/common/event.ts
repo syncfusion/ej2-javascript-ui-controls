@@ -74,6 +74,8 @@ export const reApplyFormula: string = 'reApplyFormula';
 /** @hidden */
 export const clearFormulaDependentCells: string = 'clearFormulaDependentCells';
 /** @hidden */
+export const getFormulaInfoTable: string = 'getFormulaInfoTable';
+/** @hidden */
 export const formulaInValidation: string = 'formulaInValidation';
 /** @hidden */
 export const beforeSort: string = 'beforeSort';
@@ -142,8 +144,6 @@ export const replaceHandler: string = 'replace';
 export const replaceAllHandler: string = 'replaceAll';
 /** @hidden */
 export const showDialog: string = 'ShowDialog';
-/** @hidden */
-export const findUndoRedo: string = 'findUndoRedo';
 /** @hidden */
 export const findKeyUp: string = 'findKeyUp';
 /** @hidden */
@@ -266,3 +266,5 @@ export const selectionComplete: string = 'selectionComplete';
 export const refreshInsertDelete: string = 'refreshInsertDelete';
 /** @hidden */
 export const checkConditionalFormat: string = 'checkConditionalFormat';
+/** @hidden */
+export const checkHiddenRows: string = 'checkHiddenRows';

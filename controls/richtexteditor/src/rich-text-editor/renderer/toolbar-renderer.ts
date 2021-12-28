@@ -310,7 +310,7 @@ export class ToolbarRenderer implements IRenderer {
      * @hidden
      * @deprecated
      */
-    public renderColorPickerDropDown(args: IColorPickerModel, item: string, colorPicker: ColorPicker): DropDownButton {
+    public renderColorPickerDropDown(args: IColorPickerModel, item: string, colorPicker: ColorPicker, defaultColor: string): DropDownButton {
         // eslint-disable-next-line
         const proxy: this = this;
         let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
@@ -318,8 +318,9 @@ export class ToolbarRenderer implements IRenderer {
         const content: HTMLElement = proxy.parent.createElement('span', { className: CLS_COLOR_CONTENT });
         const inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass });
         let range: Range;
+        let initialBackgroundColor = (isNullOrUndefined(defaultColor)) ? proxy.parent.backgroundColor.default : defaultColor;
         inlineEle.style.borderBottomColor = (item === 'backgroundcolor') ?
-            proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
+        initialBackgroundColor  : proxy.parent.fontColor.default;
         content.appendChild(inlineEle);
         const dropDown: DropDownButton = new DropDownButton({
             target: colorPicker.element.parentElement, cssClass: css,

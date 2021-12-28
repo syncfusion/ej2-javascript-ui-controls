@@ -109,6 +109,9 @@ export function getSkeletonVal(value: string): string {
     case 'M/yyyy':
         value = 'yM';
         break;
+    case 'ddd':
+        value = 'E';
+        break;
     default:
         value = '';
         break;

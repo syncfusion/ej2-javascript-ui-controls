@@ -1258,7 +1258,7 @@ export function updateAction(
         }
         break;
     case 'replace':
-        spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
+        spreadsheet.updateCell({ value: eventArgs.replaceValue }, eventArgs.address);
         break;
     case 'filter':
         if (isRedo === false) {
@@ -1516,8 +1516,11 @@ export function setRowEleHeight(
     const dprHgt: number = getDPRValue(height);
     row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
     if (row) { row.style.height = `${dprHgt}px`; }
-    hRow = hRow || (sheet.frozenColumns ? parent.getRow(rowIdx, null, frozenCol - 1) :
-        parent.getRow(rowIdx, parent.getRowHeaderTable()));
+    if (sheet.frozenColumns) {
+        hRow = parent.getRow(rowIdx, null, frozenCol - 1);
+    } else {
+        hRow = hRow || parent.getRow(rowIdx, parent.getRowHeaderTable());
+    }
     if (hRow) { hRow.style.height = `${dprHgt}px`; }
     setRowHeight(sheet, rowIdx, height);
     parent.setProperties({ sheets: parent.sheets }, true);

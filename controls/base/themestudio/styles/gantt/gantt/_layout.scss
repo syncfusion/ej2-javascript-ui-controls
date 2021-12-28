@@ -402,7 +402,12 @@
       }
 
       .e-gantt-split-container-line {
-        border-color: inherit;
+        @if ($theme-name == 'material-dark' or $theme-name == 'fabric-dark') {
+          border-color: $gantt-active-background-color;
+        }
+        @else {
+          border-color:  inherit;
+        }
         border-top-style: dotted;
         border-top-width: 2px;
         height: 0;

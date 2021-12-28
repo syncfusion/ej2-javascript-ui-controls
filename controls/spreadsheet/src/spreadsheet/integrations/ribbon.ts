@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF, focus, freeze } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
-import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
+import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook, clearCopy } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink, clearFilter } from '../common/index';
@@ -2388,6 +2388,7 @@ export class Ribbon {
     }
 
     private blankWorkbook(): void {
+        this.parent.notify(clearCopy, null);
         this.parent.sheets.length = 0; this.parent.sheetNameCount = 1;
         this.parent.notify(sheetsDestroyed, {}); this.parent.createSheet();
         this.parent.activeSheetIndex = this.parent.sheets.length - 1;

@@ -4,6 +4,7 @@ import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell, ChartTheme } from './../../workbook/index';
+import { SortCollectionModel } from './../../workbook/index';
 
 
 /**
@@ -96,10 +97,6 @@ export interface IViewport {
     width: number;
     beforeFreezeWidth: number;
     beforeFreezeHeight: number;
-}
-export interface ReplaceAllEventArgs {
-    replaceValue: string;
-    addressCollection: string[];
 }
 
 /**
@@ -397,6 +394,7 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     cFColor?: CFColor;
     sheetIdx?: number;
     validation?: CellValidationEventArgs;
+    previousSort?: SortCollectionModel;
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
@@ -472,16 +470,6 @@ export interface WrapEventArgs {
     address: string;
     wrap: boolean;
     action: string;
-}
-export interface BeforeReplaceEventArgs {
-    address: string;
-    compareVal: string;
-    cancel: boolean;
-}
-export interface ReplaceEventArgs {
-    address: string;
-    compareVal: string;
-    action?: string;
 }
 
 /**

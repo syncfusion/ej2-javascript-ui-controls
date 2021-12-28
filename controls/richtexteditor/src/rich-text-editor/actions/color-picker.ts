@@ -14,6 +14,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
  * `Color Picker` module is used to handle ColorPicker actions.
  */
 export class ColorPickerInput {
+    private defaultColorPicker: string;
     private fontColorPicker: ColorPicker;
     private backgroundColorPicker: ColorPicker;
     private fontColorDropDown: DropDownButton;
@@ -94,7 +95,7 @@ export class ColorPickerInput {
                     this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(
                         options,
                         'backgroundcolor',
-                        this.backgroundColorPicker);
+                        this.backgroundColorPicker, this.defaultColorPicker);
                     break; }
                 }
             }
@@ -130,6 +131,7 @@ export class ColorPickerInput {
         if (this.backgroundColorDropDown && !this.backgroundColorDropDown.isDestroyed) {
             const innerEle: HTMLElement = this.backgroundColorDropDown.element.querySelector('.e-rte-color-content') as HTMLElement;
             if (innerEle) {
+                this.defaultColorPicker = (innerEle.children[0] as HTMLElement).style.borderBottomColor;
                 detach(innerEle);
             }
             this.backgroundColorDropDown.destroy();

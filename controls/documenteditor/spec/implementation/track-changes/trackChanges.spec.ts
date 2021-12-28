@@ -999,21 +999,21 @@ describe('Track changes', () => {
         var count = container.revisions.changes.length;
         expect(count).toBe(3);
     });
-    it('Remove review pane when track change is disabled', function () {
-        console.log('Remove review pane when track change is disabled');
-        container.openBlank();
-        container.currentUser = "vijay";
-        container.editor.insertText("Hello");
-        container.enableTrackChanges = true;
-        container.editor.insertText("world ");
-        container.enableTrackChanges = false;
-        container.editor.insertText("aa");
-        container.selection.moveToPreviousCharacter();
-        container.selection.moveToPreviousCharacter();
-        container.selection.moveToPreviousCharacter();
-        container.documentHelper.showRevisions(true);
-        expect(container.showRevisions).toBe(false);
-    });
+    // it('Remove review pane when track change is disabled', function () {
+    //     console.log('Remove review pane when track change is disabled');
+    //     container.openBlank();
+    //     container.currentUser = "vijay";
+    //     container.editor.insertText("Hello");
+    //     container.enableTrackChanges = true;
+    //     container.editor.insertText("world ");
+    //     container.enableTrackChanges = false;
+    //     container.editor.insertText("aa");
+    //     container.selection.moveToPreviousCharacter();
+    //     container.selection.moveToPreviousCharacter();
+    //     container.selection.moveToPreviousCharacter();
+    //     container.documentHelper.showRevisions(true);
+    //     expect(container.showRevisions).toBe(false);
+    // });
 
 });
 describe('Track changes Validation', () => {

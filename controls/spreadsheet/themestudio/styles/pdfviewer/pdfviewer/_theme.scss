@@ -2950,6 +2950,9 @@
   .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item,
   .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item .e-menu-icon,
   .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item .e-caret {
+    @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+      border-radius: 4px;
+    }
     @if $skin-name == 'bootstrap5' {
       color: $pv-icon-color;
       height: 32px;

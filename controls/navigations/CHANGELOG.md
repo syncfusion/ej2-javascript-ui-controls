@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.4.40 (2021-12-28)
+
+### Context Menu
+
+#### Bug Fixes
+
+- `#I346314` - Issue with stopPropagation not works for context menu has been resolved.
+
 ## 19.4.38 (2021-12-17)
 
 ### Tab

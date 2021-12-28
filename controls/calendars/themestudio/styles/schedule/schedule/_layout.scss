@@ -125,7 +125,7 @@
           }
 
           .e-tbar-btn.e-btn.e-tbtn-txt .e-icons.e-btn-icon {
-            @if ($schedule-skin == 'tailwind' or $schedule-skin == 'fabric' or $schedule-skin == 'fabric-dark' or $schedule-skin == 'highcontrast') {
+            @if ($schedule-skin == 'tailwind' or $schedule-skin == 'fabric' or $schedule-skin == 'bootstrap-dark' or $schedule-skin == 'fabric-dark' or $schedule-skin == 'highcontrast') {
               padding: 0 12px;
             }
           }

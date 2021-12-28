@@ -255,7 +255,9 @@ export type LegendShape =
     /** Specifies the legend shape as a pentagon. */
     'Pentagon' |
     /** Specifies the legend shape as a inverted triangle. */
-    'InvertedTriangle';
+    'InvertedTriangle'|
+    /** Specifies to render the marker shape as balloon on maps. */
+    'Balloon';
 /**
  * Defines the legend arrangement in the maps component.
  */

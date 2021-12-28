@@ -187,7 +187,7 @@ export interface IRenderer {
     renderPopup?(args: BaseQuickToolbar): void
     renderDropDownButton?(args: DropDownItemModel): DropDownButton
     renderColorPicker?(args: IColorPickerModel, item?: string): ColorPicker
-    renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker): DropDownButton
+    renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker, defaultColor?: string): DropDownButton
     renderListDropDown?(args: IDropDownModel): DropDownButton
 }
 

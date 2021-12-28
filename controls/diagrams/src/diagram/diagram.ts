@@ -7863,6 +7863,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if (renderNode instanceof Connector && renderNode.type === 'Bezier') {
                         getCenterPoint = this.getMidPoint(renderNode);
+                    } else {
+                        getCenterPoint = null;
                     }
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
@@ -10176,6 +10178,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if ((changedObject as PathAnnotation).displacement.x !== undefined ||
                     (changedObject as PathAnnotation).displacement.y !== undefined) {
                     isMeasure = true;
+                    (actualObject as Connector).updateAnnotation(
+                        actualAnnotation, (actualObject as Connector).intermediatePoints,
+                        (actualObject as Connector).wrapper.bounds, (annotationWrapper as TextElement));
                 }
             }
             if (changedObject.margin !== undefined) {
@@ -10841,9 +10846,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             newObj.targetPoint.x += diffx; newObj.targetPoint.y += diffy;
                         }
                         this.preventDiagramUpdate = true;
-                        if (newObj.zIndex !== -1) {
-                            newObj.zIndex = -1;
-                        }
                         this.currentSymbol = newObj as Node | Connector;
                         if (this.mode !== 'SVG') {
                             this.refreshDiagramLayer();
@@ -10851,6 +10853,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.selectDragedNode(newObj, args, selectedSymbol);
                         delete this['enterObject'];
                         delete this['enterTable'];
+                        this.droppable[selectedSymbols] = selectedSymbol;
+                        this.allowServerDataBinding = true;
                     }
                     if (paletteId) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any

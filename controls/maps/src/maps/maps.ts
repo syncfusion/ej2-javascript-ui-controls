@@ -11,7 +11,7 @@ import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement, setV
 import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition } from './utils/helper';
+import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition, calculateSize } from './utils/helper';
 import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';
 import { createStyle } from './utils/helper';
 import { ZoomSettings, LegendSettings, Tile } from './model/base';
@@ -1873,27 +1873,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public mapsOnResize(e: Event): boolean {
         this.isResize = this.isReset = true;
         const args: IResizeEventArgs = {
+            cancel: false,
             name: resize,
             previousSize: this.availableSize,
-            currentSize: new Size(0, 0),
+            currentSize: calculateSize(this),
             maps: this
         };
-
-        if (this.resizeTo) {
-            clearTimeout(this.resizeTo);
-        }
-        if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-maps')) {
-            this.resizeTo = setTimeout(
-                (): void => {
-                    this.unWireEVents();
-                    this.createSVG();
-                    this.refreshing = true;
-                    this.wireEVents();
-                    args.currentSize = this.availableSize;
-                    this.trigger(resize, args);
-                    this.render();
-                },
-                500);
+        this.trigger(resize, args);
+        if (!args.cancel) {
+            if (this.resizeTo) {
+                clearTimeout(this.resizeTo);
+            }
+            if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-maps')) {
+                this.resizeTo = setTimeout(
+                    (): void => {
+                        this.unWireEVents();
+                        this.createSVG();
+                        this.refreshing = true;
+                        this.wireEVents();
+                        this.render();
+                    },
+                    500);
+            }
         }
         return false;
     }
@@ -2338,7 +2339,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 if (this.isTileMap) {
                     this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
                 }
-                else {
+				else {
                     this.render();
                 }
             } else if (newProp.layers && isStaticMapType) {

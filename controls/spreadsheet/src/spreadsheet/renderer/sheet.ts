@@ -6,8 +6,8 @@ import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAl
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
 import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx, isReact, getDPRValue } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, renderReactTemplates, rowHeightChanged } from '../common/index';
-import { colWidthChanged, clearUndoRedoCollection } from '../common/index';
-import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getFormattedCellObject, getColorCode } from '../../workbook/index';
+import { colWidthChanged, clearUndoRedoCollection, getUpdatedScrollPosition } from '../common/index';
+import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getFormattedCellObject, getColorCode, getRowHeight } from '../../workbook/index';
 
 /**
  * Sheet module is used to render Sheet
@@ -294,6 +294,7 @@ export class SheetRender implements IRenderer {
             }
             sheetContent.appendChild(frag);
             sheetContent.style.backgroundColor = '';
+            this.checkRowHeightChanged(args, sheet);
             if (args.top) {
                 content.parentElement.scrollTop = args.top;
             }
@@ -348,6 +349,27 @@ export class SheetRender implements IRenderer {
             this.parent.notify(clearUndoRedoCollection, null);
         }
     }
+
+    /**
+     * This method is used to check whether row height increased above the viewport after import
+     */
+    private checkRowHeightChanged(args: { top?: number, left?: number }, sheet: SheetModel): void {
+        const eventArgs: { top: number, left: number, sheet: SheetModel } = { top: args.top, left: args.left, sheet: sheet };
+        this.parent.notify(getUpdatedScrollPosition, eventArgs);
+        if (args.top != eventArgs.top) {
+            if (this.parent.scrollModule && (eventArgs.top - args.top) < getRowHeight(sheet, this.parent.scrollModule.offset.top.idx)) {
+                this.parent.scrollModule.offset.top.size = eventArgs.top;
+            }
+            args.top = eventArgs.top;
+        }
+        if (args.left != eventArgs.left) {
+            if (this.parent.scrollModule && (eventArgs.left - args.left) < getColumnWidth(sheet, this.parent.scrollModule.offset.left.idx)) {
+                this.parent.scrollModule.offset.left.size = eventArgs.left
+            }
+            args.left = eventArgs.left;
+        }
+    }
+
     private checkTableWidth(sheet: SheetModel): void {
         if (this.parent.scrollSettings.isFinite && !this.parent.scrollSettings.enableVirtualization && sheet.colCount - 1 ===
             this.parent.viewport.rightIndex) {

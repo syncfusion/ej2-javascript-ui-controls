@@ -68,6 +68,7 @@ export class BasicFormulas {
         { formulaName: 'DAY', category: 'Date', description: 'Returns the day of a given date.' },
         { formulaName: 'TODAY', category: 'Date', description: 'Returns the current date as date value.' },
         { formulaName: 'DAYS', category: 'Date', description: 'Returns the number of days between two dates.' },
+        { formulaName: 'WEEKDAY', category: 'Date', description: 'Returns the day of the week corresponding to a date.' },
         {
             formulaName: 'IF', category: 'Logical',
             description: 'Returns one value if a logical expression is TRUE and another if it is FALSE'
@@ -293,10 +294,34 @@ export class BasicFormulas {
             str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         } else {
             const dt: Date = new Date(Date.now());
-            str = dt.getFullYear() + '/' + this.parent.calculateDate((dt.getMonth() + 1).toString()) + '/'
-                + this.parent.calculateDate(dt.getDate().toString());
+            if ((this.parent.parentObject as { getModuleName: Function }).getModuleName() === 'spreadsheet') {
+                str = (this.parent.parentObject as { dateToInt: Function }).dateToInt(dt);
+                if ((this.parent.parser as unknown as { storedStringText: string }).storedStringText.toUpperCase().indexOf('TODAY') === 0) {
+                    (this.parent.parentObject as { setDateFormat: Function }).setDateFormat((this.parent as unknown as { getSheetId: Function }).getSheetId(this.parent.grid),
+                        this.parent.rowIndex(this.parent.cell) - 1, this.parent.colIndex(this.parent.cell) - 1);
+                }
+            } else {
+                str = dt.getFullYear() + '/' + this.parent.calculateDate((dt.getMonth() + 1).toString()) + '/'
+                    + this.parent.calculateDate(dt.getDate().toString());
+            }
         }
         return str;
+    }
+
+    /**
+     * @hidden
+     * @param {string[]} args - specify the args.
+     * @returns {number} - Compute the day from the date.
+     */
+    public ComputeWEEKDAY(...args: string[]): number | string {
+        let day: number | string;
+        if (args[0] === '') {
+            day = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        } else {
+            const date: string = this.parent.getValueFromArg(args[0]);
+            day = Math.ceil(Number(date)) % 7 || 7;
+        }
+        return day;
     }
 
     /**
@@ -1053,7 +1078,7 @@ export class BasicFormulas {
         }
         if (value && (value.indexOf('UNIQUE') < 0 ||
             (formulaString && !formulaString.toUpperCase().includes('UNIQUE'))) &&
-            value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
+            value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments] && !this.parent.skipSpill) {
             spill = true;
         }
         return spill;

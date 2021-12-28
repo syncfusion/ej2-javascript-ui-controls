@@ -9,7 +9,7 @@ import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell 
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView } from '../../workbook/index';
-import { checkIsFormula, checkConditionalFormat } from '../../workbook/common/index';
+import { checkIsFormula, checkConditionalFormat, getFormulaInfoTable } from '../../workbook/common/index';
 /**
  * CellRenderer class which responsible for building cell content.
  *
@@ -259,8 +259,16 @@ export class CellRenderer implements ICellRenderer {
             if (eventArgs.added) { return; }
         }
         const isFormula: boolean = checkIsFormula(args.cell.formula);
+        let skip: boolean = args.cell.formula.indexOf('UNIQUE') > - 1;
+        if (skip) {
+            const formulaArgs: {cellRef: string, toSkip: boolean } = {  toSkip: false ,
+                cellRef: getRangeAddress([args.rowIdx, args.colIdx])};
+            this.parent.notify(getFormulaInfoTable, formulaArgs);
+            skip = formulaArgs.toSkip;
+        }
         const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
-            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing };
+            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex,
+        isRefreshing: args.isRefreshing, skip: skip };
         this.parent.notify(workbookFormulaOperation, eventArgs);
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
@@ -557,6 +565,7 @@ export class CellRenderer implements ICellRenderer {
      * @param {number[]} range - Specifies the range.
      * @param {boolean} refreshing - Specifies the refresh.
      * @param {boolean} checkWrap - Specifies the range.
+     * @param {boolean} checkHeight - Specifies the checkHeight.
      * @returns {void}
      */
     public refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean): void {

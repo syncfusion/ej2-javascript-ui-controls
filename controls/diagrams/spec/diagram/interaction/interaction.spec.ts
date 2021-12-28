@@ -3150,7 +3150,7 @@ describe('Tool constraints TestCases', () => {
         diagram.tool = DiagramTools.MultipleSelect;
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 200, 100, true);
-        expect(diagram.selectedItems.nodes.length === 0).toBe(true)
+        expect(diagram.selectedItems.nodes.length === 1).toBe(true)
         mouseEvents.dragAndDropEvent(diagramCanvas, 30 + diagram.element.offsetLeft, 30 + diagram.element.offsetTop, 600 - diagram.element.offsetLeft, 300 - diagram.element.offsetTop);
         expect(diagram.selectedItems.nodes.length === 2 && diagram.selectedItems.connectors.length === 1).toBe(true);
 

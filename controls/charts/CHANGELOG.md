@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.4.40 (2021-12-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I357152` - Legend highlight and selection is now working properly.
+
 ## 19.4.38 (2021-12-17)
 
 ### Chart

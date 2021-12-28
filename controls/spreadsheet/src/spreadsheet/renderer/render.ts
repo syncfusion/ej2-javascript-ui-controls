@@ -1,12 +1,12 @@
 ﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, skipHiddenIdx } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
-import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook, setColumn } from '../../workbook/index';
 import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, setRow } from '../../workbook/index';
 import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact, updateTranslate } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
-import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus } from '../common/index';
+import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus, getUpdatedScrollPosition } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet
@@ -200,22 +200,7 @@ export class Render {
                 address = `${getCellAddress(startRow, startCol)}:${getCellAddress(lastRow, lastCol)}`;
             } else {
                 if (args.refresh === 'All') {
-                    const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
-                    const paneTopLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
-                    if (sheet.frozenRows) {
-                        const frozenRow: number = this.parent.frozenRowCount(sheet);
-                        if (paneTopLeftCell[0] > frozenRow) { args.top = getRowsHeight(sheet, frozenRow, paneTopLeftCell[0] - 1); }
-                    } else {
-                        args.rowIndex = 0;
-                        if (topLeftCell[0] !== 0) { args.top = getRowsHeight(sheet, 0, topLeftCell[0] - 1); }
-                    }
-                    if (sheet.frozenColumns) {
-                        const frozenCol: number = this.parent.frozenRowCount(sheet);
-                        if (paneTopLeftCell[1] > frozenCol) { args.left = getColumnsWidth(sheet, frozenCol, paneTopLeftCell[1] - 1); }
-                    } else {
-                        args.colIndex = 0;
-                        if (topLeftCell[1] !== 0) { args.left = getColumnsWidth(sheet, 0, topLeftCell[1] - 1); }
-                    }
+                    this.updateTopLeftScrollPosition(extend(args, { sheet: sheet }));
                 }
                 this.parent.viewport.bottomIndex = sheet.rowCount - 1; this.parent.viewport.rightIndex = sheet.colCount - 1;
                 address = `${getCellAddress(args.rowIndex, args.colIndex)}:${getCellAddress(
@@ -277,6 +262,25 @@ export class Render {
             if (this.parent && this.parent[isReact]) { this.parent[renderReactTemplates](); }
         });
         this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh, skipTranslate: args.skipTranslate });
+    }
+
+    private updateTopLeftScrollPosition(args: { top?: number, left?: number, rowIndex?: number, colIndex?: number, sheet?: SheetModel }): void {
+        const topLeftCell: number[] = getCellIndexes(args.sheet.topLeftCell);
+        const paneTopLeftCell: number[] = getCellIndexes(args.sheet.paneTopLeftCell);
+        if (args.sheet.frozenRows) {
+            const frozenRow: number = this.parent.frozenRowCount(args.sheet);
+            if (paneTopLeftCell[0] > frozenRow) { args.top = getRowsHeight(args.sheet, frozenRow, paneTopLeftCell[0] - 1, true); }
+        } else {
+            args.rowIndex && (args.rowIndex = 0);
+            if (topLeftCell[0] !== 0) { args.top = getRowsHeight(args.sheet, 0, topLeftCell[0] - 1, true); }
+        }
+        if (args.sheet.frozenColumns) {
+            const frozenCol: number = this.parent.frozenRowCount(args.sheet);
+            if (paneTopLeftCell[1] > frozenCol) { args.left = getColumnsWidth(args.sheet, frozenCol, paneTopLeftCell[1] - 1, true); }
+        } else {
+            args.colIndex && (args.colIndex = 0);
+            if (topLeftCell[1] !== 0) { args.left = getColumnsWidth(args.sheet, 0, topLeftCell[1] - 1, true); }
+        }
     }
 
     private removeSheet(): void {
@@ -385,6 +389,7 @@ export class Render {
         this.parent.on(dataRefresh, this.refreshSheet, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
         this.parent.on(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler, this);
+        this.parent.on(getUpdatedScrollPosition, this.updateTopLeftScrollPosition, this);
     }
 
     private removeEventListener(): void {
@@ -392,5 +397,6 @@ export class Render {
         this.parent.off(dataRefresh, this.refreshSheet);
         this.parent.off(spreadsheetDestroyed, this.destroy);
         this.parent.off(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler);
+        this.parent.off(getUpdatedScrollPosition, this.updateTopLeftScrollPosition);
     }
 }

@@ -94,6 +94,38 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipHeaderLine: '#9CA3AF',
         };
         break;
+    case 'Bootstrap5':
+        style = {
+            tooltipFill: '#212529',
+            tooltipBoldLabel: '#F9FAFB',
+            tooltipLightLabel: '#F9FAFB',
+            tooltipHeaderLine: '#9CA3AF',
+        };
+        break;
+    case 'Bootstrap5Dark':
+        style = {
+            tooltipFill: '#E9ECEF',
+            tooltipBoldLabel: '#212529',
+            tooltipLightLabel: '#212529',
+            tooltipHeaderLine: '#ADB5BD',
+        };
+        break;
+    // case 'Fluent':
+    //     style = {
+    //         tooltipFill: '#FFFFFF',
+    //         tooltipBoldLabel: '#323130',
+    //         tooltipLightLabel: '#323130',
+    //         tooltipHeaderLine: '#D2D0CE',
+    //     };
+    //     break;
+    // case 'FluentDark':
+    //     style = {
+    //         tooltipFill: '#252423',
+    //         tooltipBoldLabel: '#F3F2F1',
+    //         tooltipLightLabel: '#F3F2F1',
+    //         tooltipHeaderLine: '#3B3A39',
+    //     };
+    //     break;
     default:
         style = {
             tooltipFill: 'rgba(0, 8, 22, 0.75)',

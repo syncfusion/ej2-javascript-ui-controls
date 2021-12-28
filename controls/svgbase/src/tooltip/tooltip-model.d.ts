@@ -416,4 +416,12 @@ export interface TooltipModel extends ComponentModel{
      */
     animationComplete?: EmitType<ITooltipAnimationCompleteArgs>;
 
+    /**
+     * Enables / Disables the rtl rendering of tooltip elements.
+     *
+     * @default false.
+     * @private
+     */
+    enableRTL?: boolean;
+
 }

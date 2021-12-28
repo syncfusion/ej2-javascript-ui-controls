@@ -5,7 +5,7 @@ import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { LineWidget, ImageElementBox } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
-import { LayoutViewer } from '../../../src/index';
+import { LayoutViewer, DocumentHelper, TableCellWidget, TableRowWidget } from '../../../src/index';
 
 /**
  * Section Break Validation
@@ -286,6 +286,82 @@ describe("TOC Validation", () => {
     });
 });
 
+describe("Merge Cells Validation", () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it("Merge cells", () => {
+        console.log('Merge cells');
+        editor.editor.insertTable(4,4);
+        editor.selection.handleShiftRightKey();
+        editor.selection.handleShiftRightKey();
+        editor.selection.handleShiftRightKey();
+        editor.selection.handleShiftRightKey();
+        editor.editor.mergeCells();
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).width).toBe(608.93333);
+    });
+});
+describe('Update top border validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:100%' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        //destroy validation
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Update top border validation', () => {
+        editor.openBlank();
+        editor.editor.insertTable(4, 4);
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.editor.mergeCells();
+        editor.selection.handleHomeKey();
+        let cell: TableCellWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[3] as TableRowWidget).childWidgets[0] as TableCellWidget;
+        expect(cell.updatedTopBorders.length).toBe(1);
+    });
+});
 // describe("Paste Validation", () => {
 //     let editor: DocumentEditor = undefined;
 //     let viewer: LayoutViewer;

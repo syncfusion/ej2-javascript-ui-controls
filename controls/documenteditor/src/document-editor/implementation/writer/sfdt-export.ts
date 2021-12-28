@@ -109,13 +109,9 @@ export class SfdtExport {
      * @returns {Promise<Blob>}
      */
     public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
-        const streamWriter: StreamWriter = new StreamWriter();
-        streamWriter.write(this.serialize());
-        const blob: Blob = streamWriter.buffer;
-        streamWriter.destroy();
-        let promise: Promise<Blob>;
+        let sfdt: Blob = new Blob([this.serialize()], { type: 'text/plain' });
         return new Promise((resolve: Function, reject: Function) => {
-            resolve(blob);
+            resolve(sfdt);
         });
     }
     private updateEditRangeId(): void {

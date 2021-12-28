@@ -645,7 +645,7 @@ export class ConditionalFormatting {
             }
             let style: CellStyleModel = {};
             if (cFRules[cFRuleIdx].cFColor) {
-                td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
+                td && td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
                 style = this.setFormat(style, cFRules[cFRuleIdx]);
             } else {
                 style = cFRules[cFRuleIdx].format.style;

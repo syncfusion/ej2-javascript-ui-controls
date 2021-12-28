@@ -178,7 +178,7 @@
       #{if(&, '&', '*')} .e-next:active,
       #{if(&, '&', '*')} .e-prev:focus,
       #{if(&, '&', '*')} .e-next:focus {
-        background: $calendar-none-style;
+        background: $calendar-device-icon-hover-bg-color;
       }#{if(&, '&', '*')} button.e-prev:active span,
       #{if(&, '&', '*')} button.e-next:active span {
         color: $calendar-header-icon-color;

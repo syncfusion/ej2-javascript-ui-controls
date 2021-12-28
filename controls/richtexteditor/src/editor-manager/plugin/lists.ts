@@ -58,8 +58,9 @@ export class Lists {
     private testCurrentList(range: Range): boolean {
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
         if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
+            const currentContent = range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim();
             for (let i: number = 0; i < olListStartRegex.length; i++) {
-                if (olListStartRegex[i].test(range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim())) {
+                if (olListStartRegex[i].test(currentContent) && currentContent.length === 2) {
                     return true;
                 }
             }

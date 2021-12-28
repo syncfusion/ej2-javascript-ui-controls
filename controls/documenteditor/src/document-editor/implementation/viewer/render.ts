@@ -1190,12 +1190,22 @@ export class Renderer {
             try {
                 if (!elementBox.isCrop) {
 
-                    this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+                    this.pageContext.drawImage(elementBox.element, 
+                        this.getScaledValue(left + leftMargin, 1), //dx
+                        this.getScaledValue(top + topMargin, 2), //dy
+                        this.getScaledValue(elementBox.width), //dw
+                        this.getScaledValue(elementBox.height)); //dh
                 } else {
 
-                    this.pageContext.drawImage(elementBox.element, this.getScaledValue(elementBox.x), this.getScaledValue(elementBox.y),
-                        elementBox.cropWidth, elementBox.cropHeight, this.getScaledValue(left + leftMargin, 1),
-                        this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+                    this.pageContext.drawImage(elementBox.element, 
+                        elementBox.cropX, //sx
+                        elementBox.cropY, //sy
+                        elementBox.cropWidth, //sw
+                        elementBox.cropHeight, //sh
+                        this.getScaledValue(left + leftMargin, 1), //dx
+                        this.getScaledValue(top + topMargin, 2), //dy
+                        this.getScaledValue(elementBox.width), //dw
+                        this.getScaledValue(elementBox.height)); //dh
                 }
             } catch (e) {
 

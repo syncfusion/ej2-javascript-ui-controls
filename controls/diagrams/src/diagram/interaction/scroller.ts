@@ -340,12 +340,12 @@ export class DiagramScroller {
 
         for (let j = 0; j < oObjects.length; j++) {
             let bpmnShape: any = oObjects[j].shape;
-            if (bpmnShape.type === "Bpmn" && bpmnShape.activity.subProcess && bpmnShape.activity.subProcess.processes && bpmnShape.activity.subProcess.processes.length > 0) {
+            if (bpmnShape.type === "Bpmn" && bpmnShape && bpmnShape.activity && bpmnShape.activity.subProcess && bpmnShape.activity.subProcess.processes && bpmnShape.activity.subProcess.processes.length > 0) {
                 for (var k = 0; k < bpmnShape.activity.subProcess.processes.length; k++) {
                     renderOrder.push(bpmnShape.activity.subProcess.processes[k]);
                 }
                 renderOrder.push(oObjects[j].id);
-            } else if ((oObjects[j] as any).processId === "") {
+            } else if ((oObjects[j] as any).processId === "" || (oObjects[j] as any).processId === undefined) {
                 renderOrder.push(oObjects[j].id);
             }
         }
@@ -356,12 +356,12 @@ export class DiagramScroller {
 
         for (let j = 0; j < oObjects.length; j++) {
             let items: any = oObjects[j].shape;
-            if (items.type === "Bpmn" && items.activity.subProcess && items.activity.subProcess.processes && items.activity.subProcess.processes.length > 0) {
+            if (items.type === "Bpmn" && items && items.activity && items.activity.subProcess && items.activity.subProcess.processes && items.activity.subProcess.processes.length > 0) {
                 zindexOrder.push(oObjects[j].id);
                 for (let t = 0; t < items.activity.subProcess.processes.length; t++) {
                     zindexOrder.push(items.activity.subProcess.processes[t]);
                 }
-            } else if ((oObjects[j] as any).processId === "") {
+            } else if ((oObjects[j] as any).processId === "" || (oObjects[j] as any).processId === undefined) {
                 zindexOrder.push(oObjects[j].id);
             }
         }

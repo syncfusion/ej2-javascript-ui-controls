@@ -346,7 +346,7 @@ export class Image {
             left: elem.offsetLeft
         };
     }
-    private setAspectRatio(img: HTMLImageElement, expectedX: number, expectedY: number): void {
+    private setAspectRatio(img: HTMLImageElement, expectedX: number, expectedY: number, e: ResizeArgs): void {
         if (isNullOrUndefined(img.width)) {
             return;
         }
@@ -393,7 +393,7 @@ export class Image {
                 img.style.width = expectedX + 'px';
                 img.style.height = (height / width * expectedX) + 'px';
             } else {
-                img.setAttribute('width', expectedX.toString());
+                img.setAttribute('width', this.resizeBtnStat.botRight ? (this.getPointX(e.event as PointerEvent) - img.getBoundingClientRect().left).toString() : expectedX.toString());
             }
         } else {
             if (this.parent.insertImageSettings.resizeByPercent) {
@@ -429,7 +429,7 @@ export class Image {
                     return;
                 }
                 this.imgEle.parentElement.style.cursor = 'pointer';
-                this.setAspectRatio(this.imgEle, parseInt(width, 10), parseInt(height, 10));
+                this.setAspectRatio(this.imgEle, parseInt(width, 10), parseInt(height, 10), args);
                 this.resizeImgDupPos(this.imgEle);
                 this.imgResizePos(this.imgEle, this.imgResizeDiv);
                 this.parent.setContentHeight('', false);

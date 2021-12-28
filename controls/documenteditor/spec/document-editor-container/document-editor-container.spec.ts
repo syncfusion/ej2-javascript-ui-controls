@@ -17,15 +17,6 @@ describe('Document Editor container initialization', () => {
         container = new DocumentEditorContainer({ showPropertiesPane: true });
         container.appendTo(element);
     });
-    afterAll(() => {
-        container.destroy();
-        expect(element.childNodes.length).toBe(0);
-        document.body.removeChild(element);
-        expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
-        element = undefined;
-        container = undefined;
-    });
     it('Init container with toolbar', () => {
 console.log('Init container with toolbar');
         container.onPropertyChanged({}, {});
@@ -35,18 +26,19 @@ console.log('Init container with toolbar');
 console.log('Get Persist Data');
         expect(container.getPersistData()).toBe('documenteditor-container');
     });
-    it('Test control destroy 1', () => {
+    it('Test control destroy 1', (done) => {
 console.log('Test control destroy 1');
         let element: HTMLElement = container.element;
-        container.destroy();
-        //expect((element.parentNode as any).querySelectorAll('div').length).toBe(1);
+        
+        setTimeout(function () {
+            expect(function () { container.destroy(); }).not.toThrowError();
+            expect(element.childNodes.length).toBe(0);
+            document.body.innerHTML = '';
+            element = undefined;
+            container = undefined;
+            done();
+        }, 1000);
     });
-//     it('Test control destroy 2', () => {
-// console.log('Test control destroy 2');
-//         let element: HTMLElement = container.element;
-//         container.destroy();
-//         expect(container.element).toBe(undefined);
-//     });
 });
 
 describe('Property vaidation', () => {

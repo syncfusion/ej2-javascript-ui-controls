@@ -982,6 +982,12 @@ export class SfdtReader {
                 image.textWrappingType = inline.textWrappingType;
                 image.zOrderPosition = inline.zOrderPosition;
                 image.layoutInCell = inline.layoutInCell;
+                if (!isNullOrUndefined(inline.top) && inline.top !== 0 ||
+                    !isNullOrUndefined(inline.bottom) && inline.bottom !== 0 ||
+                    !isNullOrUndefined(inline.left) && inline.left !== 0 ||
+                    !isNullOrUndefined(inline.right) && inline.right !== 0) {
+                    image.isCrop = true;
+                }
                 if (image.textWrappingStyle !== 'Inline') {
                     paragraph.floatingElements.push(image);
                 }

@@ -33,6 +33,14 @@
       content: '';
     }
 
+    .e-gridheader {
+
+      .e-headercell .e-css.e-hierarchycheckbox {
+        height: 20px;
+        vertical-align: middle;
+      }
+    }
+
     .e-treegridexpand::before,
     .e-treegridcollapse::before {
       text-align: center;

@@ -495,6 +495,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public animationComplete: EmitType<ITooltipAnimationCompleteArgs>;
 
+    /**
+     * Enables / Disables the rtl rendering of tooltip elements.
+     *
+     * @default false.
+     * @private
+     */
+    @Property(false)
+    public enableRTL: boolean;
+
     //Internal variables
 
     private elementSize: Size;
@@ -599,6 +608,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.textElements = [];
         if (!this.template || this.shared) {
             // SVG element for tooltip
+            if (this.enableRTL) {
+                this.element.setAttribute('dir', 'ltr');
+            }
             const svgObject: Element = this.renderer.createSvg({ id: this.element.id + '_svg' });
             this.element.appendChild(svgObject);
             // Group to hold text and path.
@@ -610,9 +622,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             svgObject.appendChild(groupElement);
             const pathElement: Element = this.renderer.drawPath({
                 'id': this.element.id + '_path', 'stroke-width': this.border.width,
-                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': 
-                    ((this.theme === 'TailwindDark' || this.theme === 'Tailwind') && this.opacity === 0.75) ?
-                    1 : this.opacity,
+                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity':
+                    ((this.theme === 'TailwindDark' || this.theme === 'Tailwind' || this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') && this.opacity === 0.75) ?
+                        1 : this.opacity,
                 'stroke': this.border.color
             });
             groupElement.appendChild(pathElement);
@@ -628,7 +640,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
         const markerGroup: HTMLElement = <HTMLElement>this.renderer.createGroup({ id: this.element.id + '_trackball_group' });
         const groupElement: Element = getElement(this.element.id + '_group');
-        const x: number = (this.marginX * 2) + (size / 2) + (isRight ? this.arrowPadding : 0);
+        const x: number = ((this.enableRTL) ? this.elementSize.width - (size / 2) :
+            (this.marginX * 2) + (size / 2)) + (isRight ? this.arrowPadding : 0);
         for (const shape of this.shapes) {
             if (shape !== 'None') {
                 shapeOption = new PathOption(
@@ -675,8 +688,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (this.header !== '') {
+            let wrapPadding: number = 2;
+            const wrapHeader: string = this.isWrap ? this.wrappedText : this.header;
+            if (this.isWrap && typeof (wrapHeader) === 'string' && (wrapHeader.indexOf('<') > -1 || wrapHeader.indexOf('>') > -1)) {
+                const textArray: string[] = wrapHeader.split('<br>');
+                wrapPadding = textArray.length;
+            }
             const headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, this.textStyle).height +
-                (this.marginY * 2) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : 0); //header padding;
+                (this.marginY * wrapPadding) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : 0); //header padding;
             const xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
             const direction: string = 'M ' + xLength + ' ' + headerSize +
                 'L ' + (rect.width + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0) - (this.marginX * 2)) +
@@ -712,8 +731,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.enableShadow && this.theme !== 'Bootstrap4') {
             // To fix next chart initial tooltip opacity issue in tab control
             const shadowId: string = this.element.id + '_shadow';
-            if (this.theme === 'Tailwind' || this.theme === 'TailwindDark') {
-                pathElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');    
+            if (this.theme === 'Tailwind' || this.theme === 'TailwindDark'
+                || this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') {
+                pathElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');
             } else {
                 pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
             }
@@ -767,8 +787,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let tspanElement: HTMLElement; let textCollection: string[];
         let tspanStyle: string = ''; let line: string; let tspanOption: Object;
         this.findFormattedText();
+        this.isWrap = false;
         const isRtlEnabled: boolean = document.body.getAttribute('dir') === 'rtl';
-        const anchor: string = isRtlEnabled ? 'end' : 'start';
+        const anchor: string = isRtlEnabled && !this.enableRTL ? 'end' : 'start';
         this.leftSpace = this.areaBounds.x + this.location.x;
         this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
         const headerContent: string = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
@@ -783,6 +804,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const spaceWidth: number = 4; let subStringLength: number;
         const fontSize: string = '13px'; let fontWeight: string = 'Normal'; let labelColor: string = this.themeStyle.tooltipLightLabel;
         const dy: number = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
+        const contentWidth: number[] = [];
         if (!isRender || this.isCanvas) {
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
@@ -818,13 +840,20 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
             for (let i: number = 0, len: number = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
-                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, '<br>\u200E:<br>')
+                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, (this.enableRTL) ? '<br>\u200E: <br>' : '<br>\u200E:<br>')
                     .split('<br>');
+                if (this.enableRTL && lines.length > 0 && textCollection[i].match(/:/g)) {
+                    lines[0] = lines[0].trim();
+                    lines.reverse();
+                }
                 subWidth = 0;
                 isColumn = true;
                 height += dy;
                 for (let j: number = 0, len: number = lines.length; j < len; j++) {
                     line = lines[j];
+                    if (this.enableRTL && line !== '' && this.isRTLText(line)) {
+                        line = line.concat('\u200E');
+                    }
                     if (!/\S/.test(line) && line !== '') {
                         line = ' ';  //to trim multiple white spaces to single white space
                     }
@@ -877,6 +906,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 subWidth -= spaceWidth;
                 width = Math.max(width, subWidth);
+                contentWidth.push(subWidth);
             }
         }
         this.elementSize = new Size(width + (width > 0 ? (2 * this.marginX) : 0), height);
@@ -887,14 +917,29 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             const width: number = (this.elementSize.width + (2 * this.padding)) / 2 - measureText(headerContent, font).width / 2;
             element.setAttribute('x', width.toString());
         }
+        this.renderContentRTL(parentElement, isHeader, markerSize + markerPadding, contentWidth);
+    }
+
+    private renderContentRTL(textElement: Element, isHeader: boolean, markerSize: number, contentWidth: number[]): void {
+        if (this.enableRTL) {
+            let tspanElement: HTMLElement;
+            let contentWidthIndex: number = isHeader ? 1 : 0;
+            for (let i: number = 0; i < textElement.childNodes.length; i++) {
+                tspanElement = <HTMLElement>(textElement.childNodes[i]);
+                if ((!isHeader || i > 0) && !isNullOrUndefined(tspanElement.getAttribute('x'))) {
+                    tspanElement.setAttribute('x', (this.elementSize.width - (markerSize + contentWidth[contentWidthIndex])).toString());
+                    contentWidthIndex++;
+                }
+            }
+        }
     }
 
     private getTooltipTextContent(tooltipText: string): string {
         let characterCollection: string[] = tooltipText.match(/<[a-zA-Z\/](.|\n)*?>/g);
-        if(isNullOrUndefined(characterCollection)){
+        if (isNullOrUndefined(characterCollection)) {
             return tooltipText;
         }
-        const isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(tooltipText);
+        const isRtlText: boolean = this.isRTLText(tooltipText);
         for (let i: number = 0; i < characterCollection.length; i++) {
             if (this.isValidHTMLElement(characterCollection[i].replace('<', '').replace('/', '').replace('>', '').trim())) {
                 tooltipText = tooltipText.replace(characterCollection[i], isRtlText ? '\u200E' : '');
@@ -905,6 +950,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     private isValidHTMLElement(element: string): boolean {
         return document.createElement(element).toString() != "[object HTMLUnknownElement]";
+    }
+
+    private isRTLText(tooltipContent: string): boolean {
+        return /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(tooltipContent);
     }
 
     private createTemplate(areaBounds: Rect, location: TooltipLocation): void {
@@ -1153,6 +1202,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
+            if (tooltipGroup.nodeType != Node.ELEMENT_NODE) {
+                tooltipGroup = tooltipElement.firstElementChild as HTMLElement;
+            }
             if (this.isCanvas && !this.template) {
                 tooltipGroup = document.getElementById(this.element.id + '_group') ? document.getElementById(this.element.id + '_group') :
                     tooltipGroup;
@@ -1160,7 +1212,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (!tooltipGroup) {
                 return null;
             }
-            const opacity: number = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
+            let opacity: number = parseFloat(tooltipGroup.getAttribute('opacity'));
+            opacity = !isNullOrUndefined(opacity) ? opacity : 1;
             new Animation({}).animate(tooltipGroup, {
                 duration: 200,
                 progress: (args: AnimationOptions): void => {
@@ -1235,4 +1288,3 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 }
-

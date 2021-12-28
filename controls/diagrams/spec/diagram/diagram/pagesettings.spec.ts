@@ -1116,7 +1116,7 @@ describe('Swimlane Resize functionality', () => {
                                     margin: { left: 60, top: 20 },
                                     height: 40, width: 100
                                 },
-                               
+
                             ],
                         },
 
@@ -1148,13 +1148,13 @@ describe('Swimlane Resize functionality', () => {
     });
     it('Check whether swimlane is resized properly or not ', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 200+diagram.element.offsetLeft, 300+diagram.element.offsetTop);
+        mouseEvents.clickEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop);
         let x = diagram.selectedItems.wrapper.bounds.x + diagram.selectedItems.wrapper.bounds.width / 2 + diagram.element.offsetLeft;
         let y = diagram.selectedItems.wrapper.bounds.y + diagram.selectedItems.wrapper.bounds.height + diagram.element.offsetTop;
         mouseEvents.mouseMoveEvent(diagramCanvas, x, y);
-        mouseEvents.mouseDownEvent(diagramCanvas, 200+diagram.element.offsetLeft, y);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 200+diagram.element.offsetLeft, y +50);
-        mouseEvents.mouseUpEvent(diagramCanvas, 200+diagram.element.offsetLeft, y+50);
+        mouseEvents.mouseDownEvent(diagramCanvas, 200 + diagram.element.offsetLeft, y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, y + 50);
+        mouseEvents.mouseUpEvent(diagramCanvas, 200 + diagram.element.offsetLeft, y + 50);
         console.log(diagram.selectedItems.nodes[0].wrapper.height);
         expect(diagram.selectedItems.nodes[0].wrapper.height != 100).toBe(true);
         done();
@@ -1250,7 +1250,7 @@ describe('Swimlane child disappears', () => {
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
-               id: 'nodes', height: 100, width: 100, offsetX: 200, offsetY: 200
+                id: 'nodes', height: 100, width: 100, offsetX: 200, offsetY: 200
             },
             {
                 id: 'swimlane',
@@ -1270,9 +1270,9 @@ describe('Swimlane child disappears', () => {
                             },
                             height: 100
                         },
-        
+
                     ],
-        
+
                 },
                 offsetX: 420, offsetY: 270,
                 height: 100,
@@ -1428,13 +1428,13 @@ describe('Swimlane - Z order commands', () => {
 
         ele = createElement('div', { id: 'diagramlane' });
         document.body.appendChild(ele);
-        let nodes: NodeModel[] =  [
+        let nodes: NodeModel[] = [
             {
-                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
-             },
-             {
-                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
-              },
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200,
+            },
+            {
+                id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200,
+            },
             {
                 id: 'swimlane',
                 shape: {
@@ -1453,16 +1453,16 @@ describe('Swimlane - Z order commands', () => {
                             },
                             height: 100
                         },
-        
+
                     ],
-        
+
                 },
                 offsetX: 420, offsetY: 270,
                 height: 100,
                 width: 650
             },
-            
-             
+
+
         ];
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
@@ -1507,13 +1507,13 @@ describe('Swimlane & Child - Send to back command', () => {
 
         ele = createElement('div', { id: 'diagramorder' });
         document.body.appendChild(ele);
-        let nodes: NodeModel[] =  [
+        let nodes: NodeModel[] = [
             {
-                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
-             },
-             {
-                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
-              },
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200,
+            },
+            {
+                id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200,
+            },
             {
                 id: 'swimlane',
                 shape: {
@@ -1532,16 +1532,16 @@ describe('Swimlane & Child - Send to back command', () => {
                             },
                             height: 100
                         },
-        
+
                     ],
-        
+
                 },
                 offsetX: 420, offsetY: 270,
                 height: 100,
                 width: 650
             },
-            
-             
+
+
         ];
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
@@ -1590,7 +1590,7 @@ describe('Swimlane & Child - Bring to Front command', () => {
 
         ele = createElement('div', { id: 'diagramorder2' });
         document.body.appendChild(ele);
-        let nodes: NodeModel[] =  [
+        let nodes: NodeModel[] = [
             {
                 id: 'swimlane',
                 shape: {
@@ -1609,16 +1609,16 @@ describe('Swimlane & Child - Bring to Front command', () => {
                             },
                             height: 100
                         },
-        
+
                     ],
-        
+
                 },
                 offsetX: 420, offsetY: 270,
                 height: 100,
                 width: 650
             },
-            
-             
+
+
         ];
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
@@ -1631,14 +1631,14 @@ describe('Swimlane & Child - Bring to Front command', () => {
         ele.remove();
     });
     it('Bring child Front to swimlane', (done: Function) => {
-        let newnode: NodeModel =  {
-            id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
-         };
-         diagram.add(newnode);
-         let newNode2: NodeModel = {
-            id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
-         };
-         diagram.add(newNode2);
+        let newnode: NodeModel = {
+            id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200,
+        };
+        diagram.add(newnode);
+        let newNode2: NodeModel = {
+            id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200,
+        };
+        diagram.add(newNode2);
         let node: NodeModel = diagram.getObject('swimlane');
         diagram.select([node]);
         diagram.bringToFront();
@@ -1676,13 +1676,13 @@ describe('Swimlane Order commands - Undo & Redo', () => {
 
         ele = createElement('div', { id: 'diagramorder2' });
         document.body.appendChild(ele);
-        let nodes: NodeModel[] =  [
+        let nodes: NodeModel[] = [
             {
-                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
-             },
-             {
-                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
-              },
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200,
+            },
+            {
+                id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200,
+            },
             {
                 id: 'swimlane',
                 shape: {
@@ -1709,16 +1709,16 @@ describe('Swimlane Order commands - Undo & Redo', () => {
                             },
                             height: 150
                         },
-        
+
                     ],
-        
+
                 },
                 offsetX: 420, offsetY: 270,
                 height: 100,
                 width: 650
             },
-            
-             
+
+
         ];
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
@@ -1766,13 +1766,13 @@ describe('Swimlane Order commands - Undo & Redo', () => {
 
         ele = createElement('div', { id: 'diagramorder2' });
         document.body.appendChild(ele);
-        let nodes: NodeModel[] =  [
+        let nodes: NodeModel[] = [
             {
-                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
-             },
-             {
-                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
-              },
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200,
+            },
+            {
+                id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200,
+            },
             {
                 id: 'swimlane',
                 shape: {
@@ -1799,16 +1799,16 @@ describe('Swimlane Order commands - Undo & Redo', () => {
                             },
                             height: 150
                         },
-        
+
                     ],
-        
+
                 },
                 offsetX: 420, offsetY: 270,
                 height: 100,
                 width: 650
             },
-            
-             
+
+
         ];
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
@@ -1853,7 +1853,7 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
 
         ele = createElement('div', { id: 'diagramorder2' });
         document.body.appendChild(ele);
-        let nodes: NodeModel[] =  [
+        let nodes: NodeModel[] = [
             {
                 id: 'swimlane',
                 shape: {
@@ -1872,16 +1872,16 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
                             },
                             height: 100
                         },
-        
+
                     ],
-        
+
                 },
                 offsetX: 420, offsetY: 270,
                 height: 100,
                 width: 650
             },
-            
-             
+
+
         ];
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
@@ -1894,21 +1894,21 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
         ele.remove();
     });
     it('Bring child Front to swimlane', (done: Function) => {
-        let newnode: NodeModel =  {
-            id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
-         };
-         diagram.add(newnode);
-         let newNode2: NodeModel = {
-            id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
-         };
-         diagram.add(newNode2);
+        let newnode: NodeModel = {
+            id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200,
+        };
+        diagram.add(newnode);
+        let newNode2: NodeModel = {
+            id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200,
+        };
+        diagram.add(newNode2);
         let node: NodeModel = diagram.getObject('swimlane');
         diagram.select([node]);
         diagram.bringToFront();
         zIndex = node.zIndex;
         diagram.clearSelection();
         diagram.undo();
-        expect(node.zIndex !== zIndex ).toBe(true);
+        expect(node.zIndex !== zIndex).toBe(true);
         done();
     });
     it('Bring Swimlane Front to all child', (done: Function) => {
@@ -1963,7 +1963,7 @@ describe('Connector Segment -Rotate', () => {
     it('Rotate the connectors and check rotate angle', (done: Function) => {
         diagram.selectAll();
         diagram.rotate(diagram.selectedItems, 300);
-        expect(diagram.selectedItems.rotateAngle === 300 ).toBe(true);
+        expect(diagram.selectedItems.rotateAngle === 300).toBe(true);
         done();
     });
     it('Rotate the connector with segment and check points', (done: Function) => {
@@ -2025,13 +2025,104 @@ describe('Multiple Connector Rotate Issue', () => {
         rotateMatrix(matrix, 320, bounds.center.x, bounds.center.y);
         let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
         mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + 8, rotator.y + 8, endPoint.x + 8, endPoint.y + 8);
-        console.log("Rotate Angle: "+ diagram.selectedItems.rotateAngle);
-        expect(Math.floor(diagram.selectedItems.rotateAngle) === 316 || Math.floor(diagram.selectedItems.rotateAngle) === 320 || Math.floor(diagram.selectedItems.rotateAngle) === 315 ).toBe(true);
+        console.log("Rotate Angle: " + diagram.selectedItems.rotateAngle);
+        expect(Math.floor(diagram.selectedItems.rotateAngle) === 316 || Math.floor(diagram.selectedItems.rotateAngle) === 320 || Math.floor(diagram.selectedItems.rotateAngle) === 315).toBe(true);
         done();
     });
     it('Scale the connector and check selector offset', (done: Function) => {
         diagram.scale(diagram.selectedItems, 1.2, 1, { x: 0.5, y: 0.5 });
-        expect(diagram.selectedItems.offsetX === 275 && diagram.selectedItems.offsetY === 150 ).toBe(true);
+        expect(diagram.selectedItems.offsetX === 275 && diagram.selectedItems.offsetY === 150).toBe(true);
         done();
     });
 })
+
+describe('Connector Annotation Displacement issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let connector: ConnectorModel = {
+            id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 },
+            annotations: [{ content: 'Connector', horizontalAlignment: 'Left', displacement: { x: 10, y: 10 } }]
+        };
+        diagram = new Diagram({
+            width: '750px',
+            height: '800px',
+            connectors: [connector],
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Change the connector displacement to 50', (done: Function) => {
+        diagram.connectors[0].annotations[0].displacement = { x: 50, y: 20 };
+        diagram.dataBind();
+        expect(diagram.connectors[0].annotations[0].displacement.x === 50).toBe(true);
+        done();
+    });
+
+})
+
+describe('Multiple Select Tool Issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            { id: 'node', offsetX: 100, offsetY: 100, height: 100, width: 100, },
+            { id: 'node2', offsetX: 400, offsetY: 100, height: 100, width: 100 }
+        ];
+        diagram = new Diagram({
+            width: '750px',
+            height: '800px',
+            nodes: nodes,
+            tool: DiagramTools.MultipleSelect | DiagramTools.ZoomPan
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Single select the node and check selected items length', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 100, 100);
+        expect(diagram.selectedItems.nodes.length === 1).toBe(true);
+        done();
+    });
+    it('Multiselect the node and check selected items length', (done: Function) => {
+        diagram.clearSelection();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 100, 100);
+        mouseEvents.clickEvent(diagramCanvas, 400, 100, true);
+        expect(diagram.selectedItems.nodes.length === 2).toBe(true);
+        done();
+    });
+})
+

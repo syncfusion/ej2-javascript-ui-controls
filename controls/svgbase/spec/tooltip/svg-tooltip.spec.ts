@@ -505,4 +505,27 @@ describe('SVG Tooltip', () => {
         document.body.setAttribute('dir', 'rtl');
         tooltip.refresh();
     });
+    it('Checking Tooltip elements render with RTL Position', () => {
+        tooltip.loaded = () => {
+            let textPosX: string  = (<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x");
+            let trackballCenterX: string = document.getElementById('tooltipcontainer_Trackball_0').getAttribute('cx');
+            expect(textPosX === '124' || textPosX === '120').toBe(true);
+            expect(trackballCenterX === '196' || trackballCenterX === '190').toBe(true);
+        };
+       tooltip.header = "RTL For Marker & Text Content";
+       tooltip.content = ['TooltipText'];
+       tooltip.shapes = ['Circle'];
+       tooltip.enableRTL = true;   
+       tooltip.refresh();
+    });
+    it('Checking RTL with arabic text', () => {
+        tooltip.loaded = () => {
+            let textPosX: string  = (<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[5])).getAttribute("x");
+            expect((<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x")).toBe("39");
+            expect(textPosX === '33' || textPosX === '30').toBe(true);
+        };
+       tooltip.header = "RTL For Arabic";
+       tooltip.content = ['يناير : <b>3M</b>','فبراير : <b>3M</b>'];
+       tooltip.refresh();
+    });
 });

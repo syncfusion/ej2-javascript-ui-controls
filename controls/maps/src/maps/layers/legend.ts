@@ -9,7 +9,7 @@ import {
 } from '../index';
 import { LegendArrangement, LegendMode } from '../index';
 import {
-    Rect, measureText, CircleOption, PathOption, textTrim,
+    Rect, measureText, CircleOption, PathOption, textTrim, drawBalloon,
     removeClass, querySelector, getTemplateFunction, maintainStyleClass, getValueFromObject
 } from '../utils/helper';
 import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol, checkPropertyPath, getElement } from '../utils/helper';
@@ -427,6 +427,7 @@ export class Legend {
         const shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
         let textOptions: TextOption; let renderOptions: CircleOption | PathOption | RectOption;
         const render: SvgRenderer = map.renderer;
+        let legendShape: LegendShape = legend.shape;
         if (page >= 0 && page < this.totalPages.length) {
             if (querySelector(this.legendGroup.id, this.maps.element.id)) {
                 remove(querySelector(this.legendGroup.id, this.maps.element.id));
@@ -436,7 +437,7 @@ export class Legend {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const collection: any = <any[]>this.totalPages[page]['Collection'][i];
                 const shapeBorder: BorderModel = collection['shapeBorder'];
-                const legendElement: Element = render.createGroup({ id: map.element.id + '_Legend_Index_' + collection['idIndex'] });
+                let legendElement: Element = render.createGroup({ id: map.element.id + '_Legend_Index_' + collection['idIndex'] });
                 let legendText: string = collection['DisplayText'];
                 const shape: LegendShape = <LegendShape>((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
                     legend.shape : 'Image') : collection['legendShape']);
@@ -465,7 +466,17 @@ export class Legend {
                 if (i === 0) {
                     this.renderLegendBorder();
                 }
-                legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
+                if (legend.type === 'Markers' && legend.useMarkerShape) {
+                    const legendShapeData: object = this.legendCollection[collection['idIndex']].data[0];
+                    const marker: MarkerSettingsModel = map.layers[legendShapeData['layerIndex']].markerSettings[legendShapeData['markerIndex']];
+                    legendShape = !isNullOrUndefined(marker.dataSource[legendShapeData['dataIndex']][marker['shapeValuePath']]) && marker.dataSource[legendShapeData['dataIndex']][marker['shapeValuePath']] !== '' ? marker.dataSource[legendShapeData['dataIndex']][marker['shapeValuePath']] : marker.shape;
+                }
+                if (legendShape === "Balloon") {
+                    legendElement.appendChild(drawBalloon(map, renderOptions, shapeSize, { x: shapeLocation.x, y: (shapeLocation.y + 5)}, 'Legend'));
+                }
+                else {
+                    legendElement.appendChild(drawSymbol(shapeLocation, legendShape, shapeSize, collection['ImageSrc'], renderOptions));
+                }
                 const legendRectSize : number = collection['Rect']['x'] + collection['Rect']['width'];
                 if (legendRectSize > this.legendBorderRect.width) {
                     const trimmedText: string = this.legendTextTrim(this.legendBorderRect.width, legendText, legendTextStyle, legendRectSize);
@@ -1337,7 +1348,7 @@ export class Legend {
                         this.getOverallLegendItemsCollection(text, legendFill, newData, showLegend);
                     } else {
                         newData.push({layerIndex : layerIndex, markerIndex: markerIndex, dataIndex: dataIndex, value: legendFill, name: text,
-                            shape: !isNullOrUndefined(marker.shapeValuePath) ? data[marker.shapeValuePath] : marker.shape});
+                            shape: (!isNullOrUndefined(marker.shapeValuePath) && !isNullOrUndefined(data[marker.shapeValuePath]) && data[marker.shapeValuePath] !== '') ? data[marker.shapeValuePath] : (this.maps.legendSettings.useMarkerShape ? marker.shape: this.maps.legendSettings.shape)});
                         this.getOverallLegendItemsCollection(text, legendFill, newData, showLegend);
                     }
                 }
@@ -1715,7 +1726,7 @@ export class Legend {
                             shape = this.legendCollection[legendIndex]['data'][i];
                             mapElement = this.maps.legendSettings.type === 'Bubbles' ? querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
                                 '_BubbleIndex_' + j + '_dataIndex_' + shape['dataIndex'], this.maps.element.id) : querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
-                                '_MarkerIndex_' + j + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
+                                '_MarkerIndex_' + shape['markerIndex'] + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
                             if (!isNullOrUndefined(shape['shape']) && shape['shape'] === 'Balloon') {
                                 mapElement = mapElement.children[0];
                             }
@@ -1738,6 +1749,9 @@ export class Legend {
                                 if (targetEle !== null) {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
                                     legendShapeId.setAttribute('fill', '#E5E5E5');
+                                    if (this.maps.legendSettings.shape === 'HorizontalLine' || this.maps.legendSettings.shape === 'VerticalLine' || this.maps.legendSettings.shape === 'Cross') {
+                                        legendShapeId.setAttribute('stroke', '#E5E5E5');
+                                    }
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     legendTextId.setAttribute('fill', '#E5E5E5');
                                 }
@@ -1750,6 +1764,9 @@ export class Legend {
                                 if (targetEle !== null) {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
                                     legendShapeId.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
+                                    if (this.maps.legendSettings.shape === 'HorizontalLine' || this.maps.legendSettings.shape === 'VerticalLine' || this.maps.legendSettings.shape === 'Cross') {
+                                        legendShapeId.setAttribute('stroke', this.legendCollection[legendIndex]['fill']);
+                                    }
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     legendTextId.setAttribute('fill', '#757575');
                                 }
@@ -1829,7 +1846,7 @@ export class Legend {
             targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendSettings.visible &&
             targetEle.id.indexOf('_Text') === -1) {
             let LegendInteractive: Element;
-            const legendIndex: number = parseFloat(targetEle.id.substr((this.maps.element.id + '_Legend_Index_').length));
+            const legendIndex: number = parseFloat(targetEle.id.split(this.maps.element.id + '_Legend_Index_')[1]);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let mapdata: any;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

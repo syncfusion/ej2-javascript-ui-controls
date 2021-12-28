@@ -4344,10 +4344,42 @@ export class Editor {
             let arr: string[] = [];
             let txt: string = pasteContent;
             txt = txt.replace(/\r\n/g, '\r');
-            if (navigator.userAgent.indexOf('Firefox') !== -1) {
-                arr = txt.split('\n');
+
+            //Too many character in single line it took time past the content.
+            //So we split that line into multiple textrange.In single line it took 90 characters so we take a static value.
+            const singleLineLength: number = 90;
+            if (txt.length > singleLineLength) {
+                let start = 0;
+                let increment = singleLineLength;
+                let split: string;
+                let lineLength = (txt.length / singleLineLength) + 1;
+                let count = 0;
+                while (count < lineLength) {
+                    if (lineLength - 1 != count) {
+                        split = txt.substr(start, increment);
+                    }
+                    else {
+                        increment = txt.length % singleLineLength;
+                        split = txt.substr(start, increment);
+                    }
+                    let splits = [];
+                    if (navigator.userAgent.indexOf('Firefox') !== -1) {
+                        splits = split.split('\n');
+                    } else {
+                        splits = split.split('\r');
+                    }
+                    for (let str of splits) {
+                        arr.push(str)
+                    }
+                    count++;
+                    start += singleLineLength;
+                }
             } else {
-                arr = txt.split('\r');
+                if (navigator.userAgent.indexOf('Firefox') !== -1) {
+                    arr = txt.split('\n');
+                } else {
+                    arr = txt.split('\r');
+                }
             }
             let widget: BlockWidget[] = [];
             let bodyWidget: BodyWidget = new BodyWidget();
@@ -11064,14 +11096,14 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public removeBlock(block: BlockWidget, isSkipShifting?: boolean, skipComment?: boolean): void {
+    public removeBlock(block: BlockWidget, isSkipShifting?: boolean, skipElementRemoval?: boolean): void {
         let index: number;
         let blockCollection: IWidget[];
         let containerWidget: Widget;
-        this.removeFieldInBlock(block);
-        this.removeFieldInBlock(block, true);
-        this.removeFieldInBlock(block, undefined, true);
-        if(!skipComment) {
+        if (!skipElementRemoval) {
+            this.removeFieldInBlock(block);
+            this.removeFieldInBlock(block, true);
+            this.removeFieldInBlock(block, undefined, true);
             this.removeCommentsInBlock(block);
         }
         if (block.isInsideTable) {
@@ -12756,7 +12788,9 @@ export class Editor {
             if (offset > 0 || !currentLine.isFirstLine()) {
                 paragraphAdv = paragraphAdv.combineWidget(this.owner.viewer) as ParagraphWidget;
                 this.moveInlines(paragraphAdv, paragraph, 0, 0, paragraphAdv.firstChild as LineWidget, offset, currentLine);
-                this.insertParaRevision(paragraph, paragraphAdv.firstChild as LineWidget);
+                if (this.owner.enableTrackChanges) {
+                    this.insertParaRevision(paragraph, paragraphAdv.firstChild as LineWidget);
+                }
             } else {
                 if (this.owner.enableTrackChanges) {
                     let firstLine: LineWidget = paragraphAdv.firstChild as LineWidget;

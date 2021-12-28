@@ -55,22 +55,24 @@ export function stringToNumber(value: string, containerSize: number): number {
  * @param {Maps} maps Specifies the maps instance
  * @returns {void}
  */
-export function calculateSize(maps: Maps): void {
+export function calculateSize(maps: Maps): Size {
     maps.element.style.height = !isNullOrUndefined(maps.height) ? maps.height : 'auto';
     maps.element.style.width = !isNullOrUndefined(maps.width) ? maps.width : 'auto';
     const containerWidth: number = maps.element.clientWidth;
     const containerHeight: number = maps.element.clientHeight;
     const containerElementWidth: number = stringToNumber(maps.element.style.width, containerWidth);
     const containerElementHeight: number = stringToNumber(maps.element.style.height, containerHeight);
+    let availableSize: Size = new Size(0,0);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
-        maps.availableSize = new Size(0, 0);
+        availableSize = new Size(0, 0);
     } else {
-        maps.availableSize = new Size(
+        availableSize = new Size(
             stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600,
             stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
                 Math.min(window.innerWidth, window.innerHeight) : 450)
         );
     }
+    return availableSize;
 }
 /**
  * Method to create svg for maps.
@@ -80,7 +82,7 @@ export function calculateSize(maps: Maps): void {
  */
 export function createSvg(maps: Maps): void {
     maps.renderer = new SvgRenderer(maps.element.id);
-    calculateSize(maps);
+    maps.availableSize = calculateSize(maps);
     maps.svgObject = maps.renderer.createSvg({
         id: maps.element.id + '_svg',
         width: maps.availableSize.width,
@@ -944,7 +946,7 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
         const shape: MarkerType = ((eventArgs.shapeValuePath.indexOf('.') > -1) ?
             (getValueFromObject(data, eventArgs.shapeValuePath).toString()) as MarkerType :
             data[eventArgs.shapeValuePath]);
-        eventArgs.shape = shape;
+        eventArgs.shape = (shape.toString() !== "") ? shape : eventArgs.shape;
         if (data[eventArgs.shapeValuePath] === 'Image') {
             eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
                 ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
@@ -953,7 +955,7 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
     }
     else {
         const shapes: MarkerType = (!isNullOrUndefined(eventArgs.shapeValuePath)) ? ((eventArgs.shapeValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.shapeValuePath).toString() as MarkerType) : eventArgs.shape) : eventArgs.shape;
-        eventArgs.shape = shapes;
+        eventArgs.shape = (shapes.toString() !== "") ? shapes : eventArgs.shape;
         const shapeImage: string = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
             ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() as MarkerType : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
                 data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl)) : eventArgs.imageUrl;
@@ -1533,7 +1535,7 @@ export function calculateShapes(
     let tempGroup: Element;
     switch (shape) {
     case 'Balloon':
-        tempGroup = drawBalloon(maps, options, size, location, markerEle);
+        tempGroup = drawBalloon(maps, options, size, location, 'Marker', markerEle);
         break;
     case 'Cross':
         options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' + (location.y + size.height
@@ -1691,9 +1693,10 @@ export function drawStar(maps: Maps, options: PathOption, size: Size, location: 
  * @returns {Element} - Returns the element
  * @private
  */
-export function drawBalloon(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
+export function drawBalloon(maps: Maps, options: PathOption, size: Size, location: MapLocation, type: string, element?: Element): Element {
     const width: number = size.width;
     const height: number = size.height;
+    let pathElement: Element;
     location.x -= width / 2;
     location.y -= height;
     options.d = 'M15,0C8.8,0,3.8,5,3.8,11.2C3.8,17.5,9.4,24.4,15,30c5.6-5.6,11.2-12.5,11.2-18.8C26.2,5,21.2,0,15,0z M15,16' +
@@ -1702,9 +1705,15 @@ export function drawBalloon(maps: Maps, options: PathOption, size: Size, locatio
     const x: number = size.width / 30;
     const y: number = size.height / 30;
     balloon.setAttribute('transform', 'translate(' + location.x + ', ' + location.y + ') scale(' + x + ', ' + y + ')');
-    const g: Element = maps.renderer.createGroup({ id: options.id });
-    appendShape(balloon, g);
-    return appendShape(g, element);
+    if (type === 'Marker') {
+        const g: Element = maps.renderer.createGroup({ id: options.id });
+        appendShape(balloon, g);
+        pathElement = appendShape(g, element);
+    }
+    else {
+        pathElement = balloon;
+    }    
+    return pathElement;
 }
 /**
  * Internal rendering of Pattern
@@ -2832,6 +2841,8 @@ export function renderLegendShape(location: MapLocation, size: Size, shape: stri
     const shapeY: number = location.y;
     const x: number = location.x + (-shapeWidth / 2);
     const y: number = location.y + (-shapeHeight / 2);
+    options['stroke'] = (shape === 'HorizontalLine' || shape === 'VerticalLine' || shape === 'Cross') ? options['fill'] : options['stroke'];
+    options['stroke-width'] = (options['stroke-width'] === 0 && (shape === 'HorizontalLine' || shape === 'VerticalLine' || shape === 'Cross')) ? 1: options['stroke-width'];
     switch (shape) {
     case 'Circle':
     case 'Bubble':
@@ -2841,6 +2852,11 @@ export function renderLegendShape(location: MapLocation, size: Size, shape: stri
     case 'VerticalLine':
         renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
             + (shapeY + (-shapeHeight / 2));
+        merge(options, { 'd': renderPath });
+        break;
+    case 'HorizontalLine':
+        renderPath = 'M' + ' ' + shapeX + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' '
+            + shapeY;
         merge(options, { 'd': renderPath });
         break;
     case 'Diamond':

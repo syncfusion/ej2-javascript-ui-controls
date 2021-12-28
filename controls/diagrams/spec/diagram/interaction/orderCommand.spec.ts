@@ -317,6 +317,60 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('order command for native node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let selArray: any = [];
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
+            let node1: NodeModel[] = [
+                {
+                    id: 'NewIdea', width: 250, height: 250, offsetX: 300, offsetY: 155,
+                    shape: {
+                        type: 'Native',
+                        content: '<g xmlns="http://www.w3.org/2000/svg" id="Laptop" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">    <path d="M4.23333333,23.0666667 L31.7666667,23.0666667 C31.8218951,23.0666667 31.8666667,23.0218951 31.8666667,22.9666667 L31.8666667,6.1 C31.8666667,6.04477153 31.8218951,6 31.7666667,6 L4.23333333,6 C4.17810486,6 4.13333333,6.04477153 4.13333333,6.1 L4.13333333,22.9666667 C4.13333333,23.0218951 4.17810486,23.0666667 4.23333333,23.0666667 Z" id="Fill-60" stroke="#5C90DF" stroke-width="2" fill="#C6D9F6"/>    <path d="M4,27.3333333 L32,27.3333333 C33.1045695,27.3333333 34,26.4379028 34,25.3333333 L34,23.1666667 C34,23.1114382 33.9552285,23.0666667 33.9,23.0666667 L2.1,23.0666667 C2.04477153,23.0666667 2,23.1114382 2,23.1666667 L2,25.3333333 C2,26.4379028 2.8954305,27.3333333 4,27.3333333 Z" id="Fill-60-Copy" stroke="#5C90DF" stroke-width="2" fill="#C6D9F6"/>    <path d="M14.4190267,25.2 L21.5809733,25.2 C21.9596713,25.2 22.2666667,24.8930046 22.2666667,24.5143066 L22.2666667,23.9286133 C22.2666667,23.8733848 22.2218951,23.8286133 22.1666667,23.8286133 L13.8333333,23.8286133 C13.7781049,23.8286133 13.7333333,23.8733848 13.7333333,23.9286133 L13.7333333,24.5143066 C13.7333333,24.8930046 14.0403287,25.2 14.4190267,25.2 Z" id="Fill-60-Copy" fill="#5C90DF"/></g>'
+                    },
+                },
+                {
+                    id: 'Meeting', width: 150, height: 60, offsetX: 300, offsetY: 155,
+                    shape: {
+                        type: 'Native',
+                        content: '<g xmlns="http://www.w3.org/2000/svg" id="Laptop" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">    <path d="M4.23333333,23.0666667 L31.7666667,23.0666667 C31.8218951,23.0666667 31.8666667,23.0218951 31.8666667,22.9666667 L31.8666667,6.1 C31.8666667,6.04477153 31.8218951,6 31.7666667,6 L4.23333333,6 C4.17810486,6 4.13333333,6.04477153 4.13333333,6.1 L4.13333333,22.9666667 C4.13333333,23.0218951 4.17810486,23.0666667 4.23333333,23.0666667 Z" id="Fill-60" stroke="#5C90DF" stroke-width="2" fill="#C6D9F6"/>    <path d="M4,27.3333333 L32,27.3333333 C33.1045695,27.3333333 34,26.4379028 34,25.3333333 L34,23.1666667 C34,23.1114382 33.9552285,23.0666667 33.9,23.0666667 L2.1,23.0666667 C2.04477153,23.0666667 2,23.1114382 2,23.1666667 L2,25.3333333 C2,26.4379028 2.8954305,27.3333333 4,27.3333333 Z" id="Fill-60-Copy" stroke="#5C90DF" stroke-width="2" fill="#C6D9F6"/>    <path d="M14.4190267,25.2 L21.5809733,25.2 C21.9596713,25.2 22.2666667,24.8930046 22.2666667,24.5143066 L22.2666667,23.9286133 C22.2666667,23.8733848 22.2218951,23.8286133 22.1666667,23.8286133 L13.8333333,23.8286133 C13.7781049,23.8286133 13.7333333,23.8733848 13.7333333,23.9286133 L13.7333333,24.5143066 C13.7333333,24.8930046 14.0403287,25.2 14.4190267,25.2 Z" id="Fill-60-Copy" fill="#5C90DF"/></g>'
+                    },
+                },
+            ]
+            diagram = new Diagram({
+                width: 1500, height: 1000, nodes: node1
+            });
+            diagram.appendTo('#diagram');
+            selArray.push(diagram.nodes[0]);
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('change the order by front and backward', (done: Function) => {
+            diagram.select(selArray);
+            let zIndex = diagram.selectedItems.nodes[0].zIndex;
+            diagram.bringToFront();
+            diagram.sendBackward();
+            expect(diagram.selectedItems.nodes[0].zIndex === zIndex).toBe(true);
+            done();
+        });
+    });
+
 
     describe('order command for svg ', () => {
         let diagram: Diagram;
@@ -630,13 +684,13 @@ describe('Diagram Control', () => {
                     constraints: NodeConstraints.None | NodeConstraints.Select | NodeConstraints.Drag | NodeConstraints.PointerEvents,
                     pivot: { x: 0, y: 0 },
                     annotations: [
-                      { content: "Group Shape" }
+                        { content: "Group Shape" }
                     ],
                     style: {
-                      fill: 'yellow'
+                        fill: 'yellow'
                     }
                 },
-                 {
+                {
                     id: 'nodegroup',
                     constraints: NodeConstraints.None | NodeConstraints.Select | NodeConstraints.Drag | NodeConstraints.PointerEvents,
                     children: ['nodehost'],
@@ -722,21 +776,23 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
-            var shape:any = { type: 'Basic', shape: 'Rectangle', cornerRadius: 16 };
+            var shape: any = { type: 'Basic', shape: 'Rectangle', cornerRadius: 16 };
             let nodes: NodeModel[] = [
-                { id: 'node1', offsetX: 100,
-                offsetY: 100,
-                 width: 3, height: 3, shape: shape, borderColor: "red" },
-                    {
-                        id: 'node2', width: 100, height: 100, offsetX: 120, offsetY: 130,
-                        annotations: [{ content: 'node2' }]
-                    },
-                    { id: 'group', children: ['node1', 'node2'], rotateAngle: 0 },
+                {
+                    id: 'node1', offsetX: 100,
+                    offsetY: 100,
+                    width: 3, height: 3, shape: shape, borderColor: "red"
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 120, offsetY: 130,
+                    annotations: [{ content: 'node2' }]
+                },
+                { id: 'group', children: ['node1', 'node2'], rotateAngle: 0 },
             ];
-            
+
             diagram = new Diagram({
                 width: '1050px', height: '500px', nodes: nodes,
-                
+
             });
             diagram.appendTo('#diagram');
         });
@@ -747,7 +803,7 @@ describe('Diagram Control', () => {
         });
 
         it('SendToBack and BringToFront not working properly when we select a single node in group and', (done: Function) => {
-            var options:IExportOptions = {};
+            var options: IExportOptions = {};
             options.mode = 'Download';
             options.stretch = 'Meet';
             options.pageWidth = 500,
@@ -757,14 +813,14 @@ describe('Diagram Control', () => {
             var data;
             var image;
             image = data = diagram.exportDiagram(options);
-                var node1id = diagram.nodes[0].id
-                diagram.select([diagram.nodes[0]]);
-                var groupNodeid = document.getElementById("group_groupElement")
-                expect(groupNodeid.children[3].id==="node2_groupElement").toBe(true);
-                diagram.bringToFront();
-                var groupNodeid = document.getElementById("group_groupElement")
-                expect(groupNodeid.children[3].id==="node1_groupElement").toBe(true);
-            
+            var node1id = diagram.nodes[0].id
+            diagram.select([diagram.nodes[0]]);
+            var groupNodeid = document.getElementById("group_groupElement")
+            expect(groupNodeid.children[3].id === "node2_groupElement").toBe(true);
+            diagram.bringToFront();
+            var groupNodeid = document.getElementById("group_groupElement")
+            expect(groupNodeid.children[3].id === "node1_groupElement").toBe(true);
+
             done();
         });
     });

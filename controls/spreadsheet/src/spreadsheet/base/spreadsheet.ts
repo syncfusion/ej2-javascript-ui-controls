@@ -47,7 +47,7 @@ import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { beginAction, contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
-import { getFilteredCollection, deleteHyperlink, getRangeAddress } from './../../workbook/common/index';
+import { getFilteredCollection, deleteHyperlink, getRangeAddress, checkHiddenRows } from './../../workbook/common/index';
 import { updateScroll, SelectionMode } from '../common/index';
 /**
  * Represents the Spreadsheet component.
@@ -870,10 +870,24 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
         }
         if (this.scrollSettings.enableVirtualization) {
+            const args: { hiddenRows: number[], isPaste: boolean } = { hiddenRows: [], isPaste: false};
+            this.notify(checkHiddenRows, args);
             if (isCol) {
                 index -= this.hiddenCount(this.viewport.leftIndex, index, 'columns'); index -= this.viewport.leftIndex;
             } else {
-                index -= this.hiddenCount(this.viewport.topIndex, index); index -= this.viewport.topIndex;
+                let hiddenCount: number = 0;
+                if (args.isPaste) {
+                    for (let i: number = 0; i < args.hiddenRows.length; i++) {
+                        if (this.viewport.topIndex <= args.hiddenRows[i] && args.hiddenRows[i] <= index) {
+                            hiddenCount = hiddenCount + 1;
+                       }
+                    }
+                    index -= hiddenCount;
+                    index -= this.viewport.topIndex;
+                } else {
+                    index -= this.hiddenCount(this.viewport.topIndex, index);
+                    index -= this.viewport.topIndex;
+                }
             }
         }
         return index;

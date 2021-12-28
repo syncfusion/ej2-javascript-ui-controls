@@ -13,6 +13,7 @@
     }
 
     &.e-dlg-resizable {
+      padding-bottom: $dialog-enable-resize-padding-bottom;
       touch-action: none;
     }
 
