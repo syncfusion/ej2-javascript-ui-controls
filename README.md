@@ -2,7 +2,7 @@
  <a href="https://www.syncfusion.com/javascript-ui-controls">
   <img src="https://ej2.syncfusion.com/github/images/syncfusion.svg" alt="Syncfusion Inc." title="Syncfusion Inc." align="top" height="40px" />
   <span>Syncfusion JavaScript UI Controls Library</span>
- </a>
+ </a> 
 </h1>
 
 [![npm](https://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2)](https://www.npmjs.com/package/@syncfusion/ej2)&nbsp;&nbsp;[![license](https://ej2.syncfusion.com/github/images/license.svg)](https://www.syncfusion.com/eula/es/)
