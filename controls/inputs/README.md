@@ -50,7 +50,12 @@ Following list of components are available in the package.
 * **Slider** - The slider component allows you to select a value or range of values between the min and max range.
   * [Getting Started](https://ej2.syncfusion.com/documentation/slider/getting-started?lang=typescript&utm_source=npm&utm_campaign=slider)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/slider/default.html)
-  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/slider/?utm_source=npm&utm_campaign=slider)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/slider/?utm_source=npm&utm_campaign=slider)]
+
+* **Signature** - The Signature control allows user to draw smooth signatures as vector outline of strokes using variable width bezier curve interpolation. It allows to save signature as image.
+  * [Getting Started](https://ej2.syncfusion.com/documentation/signature/getting-started?lang=typescript&utm_source=npm&utm_campaign=signature)
+  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=signature#/material/signature/default.html)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/signature/?utm_source=npm&utm_campaign=signature)
 
 * **Uploader** - The [JavaScript File Upload](https://www.syncfusion.com/javascript-ui-controls/js-file-upload?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm) component is an extended version of the HTML5 upload control which is used to upload images, documents, and other files to a server.
   * [Product Page](https://www.syncfusion.com/javascript-ui-controls/js-file-upload?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm)
@@ -115,7 +120,15 @@ Input component is also offered in following list of frameworks.
 - [**Accessibility**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/slider/default.html) - Built-in compliance with the [WAI-ARIA](http://www.w3.org/WAI/PF/aria-practices/) specifications.
 - [**Keyboard Interaction**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/slider/api.html) - The Slider can be intractable through the keyboard.
 
-### 6. Upload
+### 6. Signature
+- [**Customization**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/signature/default.html) - Support various customization options like background color, background image, stroke color, stroke width, save with background, undo, redo, clear, readonly, and disabled.
+- [**Save**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/signature/default.html) - Support to save the signature as image like PNG, JPEG, and SVG.
+- [**Load**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/signature/default.html)
+- Support to load the signature as base64 url of the image.
+- [**Draw**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/signature/default.html)
+- Support to draw the text with the different font family and font size.
+
+### 7. Upload
 - [**Chunk Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm#/material/uploader/chunk-upload.html) – used to upload large files as chunks
 - [**Drag-and-drop**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm/#/material/uploader/custom-drop-area.html) – drag the files and drop into component to upload them.
 - [**Template**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm/#/material/uploader/custom-file-list.html) – the file list and buttons can be customize using template
