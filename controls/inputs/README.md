@@ -126,7 +126,7 @@ Input component is also offered in following list of frameworks.
 - [**Load**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/signature/default.html)
 - Support to load the signature as base64 url of the image.
 - [**Draw**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/signature/default.html)
-- Support to draw the text with the different font family and font size. 
+- Support to draw the text with the different font family and font size.
 
 ### 7. Upload
 - [**Chunk Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm#/material/uploader/chunk-upload.html) – used to upload large files as chunks
