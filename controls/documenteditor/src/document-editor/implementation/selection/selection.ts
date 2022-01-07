@@ -8317,9 +8317,9 @@ export class Selection {
     public pasteOptions = (event: MenuEventArgs) => {
         let locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         locale.setLocale(this.owner.locale);
-        if (event.item.text === 'Keep source formatting') {
+        if (event.item.text === locale.getConstant('Keep source formatting')) {
             this.owner.editor.applyPasteOptions('KeepSourceFormatting');
-        } else if (event.item.text === 'Match destination formatting') {
+        } else if (event.item.text === locale.getConstant('Match destination formatting')) {
             this.owner.editor.applyPasteOptions('MergeWithExistingFormatting');
         } else if (event.item.text === locale.getConstant('NestTable')) {
             this.owner.editor.applyTablePasteOptions('NestTable');
