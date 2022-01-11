@@ -70,4 +70,5 @@
 		"test": "gulp test"
 	},
 	"typings": "index.d.ts"
+
 }
