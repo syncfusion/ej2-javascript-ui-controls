@@ -17,7 +17,8 @@
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-popups": "*",
-		"@syncfusion/ej2-splitbuttons": "*"
+		"@syncfusion/ej2-splitbuttons": "*",
+		"selenium-webdriver": "^4.0.0-alpha.1"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
