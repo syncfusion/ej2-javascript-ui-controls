@@ -546,6 +546,10 @@ export class MeasureAnnotation {
         // eslint-disable-next-line
         let allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotationModel);
         annotationModel.isPrint = annotationSettings.isPrint;
+        let setting: any = this.pdfViewer.shapeLabelSettings; 
+        let labelSettings: any = { borderColor: annotationModel.strokeColor, fillColor: annotationModel.fillColor, fontColor: annotationModel.fontColor,
+            fontSize: annotationModel.fontSize, labelContent: annotationModel.labelContent, labelHeight: setting.labelHeight, labelWidth: setting.labelMaxWidth, opacity: annotationModel.opacity
+        };
         return {
             // eslint-disable-next-line max-len
             id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.measureType), author: annotationModel.author, allowedInteractions: allowedInteractions,
@@ -566,7 +570,7 @@ export class MeasureAnnotation {
             labelContent: annotationModel.labelContent, enableShapeLabel: annotationModel.enableShapeLabel, labelFillColor: annotationModel.labelFillColor,
             labelBorderColor: annotationModel.labelBorderColor, fontColor: annotationModel.fontColor, fontSize: annotationModel.fontSize,
             // eslint-disable-next-line max-len
-            labelBounds: labelBound,  annotationSelectorSettings: this.getSelector(annotationModel.subject), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
+            labelBounds: labelBound,  annotationSelectorSettings: this.getSelector(annotationModel.subject), labelSettings: labelSettings, annotationSettings: annotationSettings,
             customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock
         };
     }
@@ -734,7 +738,8 @@ export class MeasureAnnotation {
                             pageAnnotationObject.annotations[z].labelFillColor = JSON.stringify(this.getRgbCode(labelFillColorString));
                             const labelBorderColorString: string = pageAnnotationObject.annotations[z].labelBorderColor;
                             pageAnnotationObject.annotations[z].labelBorderColor = JSON.stringify(this.getRgbCode(labelBorderColorString));
-                            const fontColorString: string = pageAnnotationObject.annotations[z].fontColor;
+                            pageAnnotationObject.annotations[z].labelSettings.fillColor = labelFillColorString;
+                            const fontColorString: string = pageAnnotationObject.annotations[z].labelSettings.fontColor;
                             pageAnnotationObject.annotations[z].fontColor = JSON.stringify(this.getRgbCode(fontColorString));
                         }
                     }
@@ -934,17 +939,19 @@ export class MeasureAnnotation {
                 for (let j: number = 0; j < pageAnnotations.length; j++) {
                     pageAnnotations = this.getAnnotations(i, null);
                     const measureObject: IMeasureShapeAnnotation = pageAnnotations[j];
-                    measureObject.calibrate.ratio = ratio;
-                    measureObject.calibrate.x[0].unit = displayUnit;
-                    measureObject.calibrate.distance[0].unit = displayUnit;
-                    measureObject.calibrate.area[0].unit = displayUnit;
-                    measureObject.calibrate.x[0].conversionFactor = this.getFactor(conversionUnit);
-                    if (measureObject.indent === 'PolygonVolume') {
-                        measureObject.calibrate.depth = depth;
+                    if (!measureObject.annotationSettings.isLock) {
+                        measureObject.calibrate.ratio = ratio;
+                        measureObject.calibrate.x[0].unit = displayUnit;
+                        measureObject.calibrate.distance[0].unit = displayUnit;
+                        measureObject.calibrate.area[0].unit = displayUnit;
+                        measureObject.calibrate.x[0].conversionFactor = this.getFactor(conversionUnit);
+                        if (measureObject.indent === 'PolygonVolume') {
+                            measureObject.calibrate.depth = depth;
+                        }
+                        pageAnnotations[j] = measureObject;
+                        this.manageAnnotations(pageAnnotations, i);
+                        this.pdfViewer.annotation.updateCalibrateValues(this.getAnnotationBaseModel(measureObject.id));
                     }
-                    pageAnnotations[j] = measureObject;
-                    this.manageAnnotations(pageAnnotations, i);
-                    this.pdfViewer.annotation.updateCalibrateValues(this.getAnnotationBaseModel(measureObject.id));
                 }
             }
             this.pdfViewer.annotation.renderAnnotations(i, null, null, null, null, false);
@@ -1046,6 +1053,9 @@ export class MeasureAnnotation {
                         }
                     } else if (property === 'fill') {
                         pageAnnotations[i].fillColor = annotationBase.wrapper.children[0].style.fill;
+                        if (this.pdfViewer.enableShapeLabel) {
+                            pageAnnotations[i].labelFillColor = annotationBase.wrapper.children[0].style.fill;
+                        }
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
                     } else if (property === 'opacity') {
@@ -1554,7 +1564,11 @@ export class MeasureAnnotation {
             annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
             annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
             annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
-            annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings : this.pdfViewer.shapeLabelSettings;
+            let settings: any = this.pdfViewer.shapeLabelSettings;
+            let labelSettings: any = { borderColor: annotation.StrokeColor, fillColor: annotation.FillColor, fontColor: annotation.FontColor,
+                fontSize: annotation.FontSize, labelContent: annotation.LabelContent, labelHeight: settings.labelHeight, labelWidth: settings.labelWidth, opacity: annotation.Opacity
+            };
+            annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings : labelSettings;
         }
         // eslint-disable-next-line max-len
         annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;

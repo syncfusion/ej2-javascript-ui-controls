@@ -31,6 +31,7 @@ export interface BaseAttributes extends StyleAttributes {
     description?: string;
     canApplyStyle?: boolean;
     flip?: FlipDirection;
+    shapeType?: string;
 }
 
 /** @private */

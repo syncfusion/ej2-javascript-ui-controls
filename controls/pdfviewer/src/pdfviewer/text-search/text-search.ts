@@ -33,6 +33,7 @@ export class TextSearch {
     private prevSearchBtn: HTMLElement;
     private searchIndex: number = 0;
     private currentSearchIndex: number = 0;
+    private startIndex: number = null;
     private searchPageIndex: number = null;
     private searchString: string = null;
     private isMatchCase: boolean = false;
@@ -62,6 +63,7 @@ export class TextSearch {
     public isTextRetrieved: boolean = false;
     private isTextSearched: boolean = false;
     private isTextSearchEventTriggered: boolean = false;
+    private isSearchText: boolean = false;
     /**
      * @param pdfViewer
      * @param pdfViewerBase
@@ -88,7 +90,7 @@ export class TextSearch {
         }
         if (toolbarElement) {
             if (isBlazor()) {
-                this.searchBox.style.top = toolbarElement.style.height;
+                this.searchBox.style.top = toolbarElement.clientHeight + 'px';
             } else {
                this.searchBox.style.top = toolbarElement.clientHeight + 'px';
             }
@@ -287,6 +289,7 @@ export class TextSearch {
         if (inputString !== '' || inputString) {
             this.searchString = inputString;
             this.isTextSearch = true;
+            this.isSearchText = true;
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
             this.searchCount = 0;
             this.isTextSearchEventTriggered = false;
@@ -312,15 +315,24 @@ export class TextSearch {
     private nextSearch(): void {
         this.isPrevSearch = false;
         this.isTextSearch = true;
+        this.isSearchText = false;
         if (this.searchString) {
             this.clearAllOccurrences();
             this.searchIndex = this.searchIndex + 1;
             if (this.searchMatches[this.searchPageIndex]) {
                 // eslint-disable-next-line max-len
-                if (this.searchIndex >= this.searchMatches[this.searchPageIndex].length || this.searchPageIndex !== this.pdfViewerBase.currentPageNumber - 1) {
+                if (this.searchIndex >= this.searchMatches[this.searchPageIndex].length) {
                     this.searchIndex = 0;
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
-                    this.initSearch(this.searchPageIndex, false);
+                    if(this.pdfViewerBase.pageCount > 1) { 
+                        this.initSearch(this.searchPageIndex, false) 
+                    } else {
+                        this.initSearch(this.searchPageIndex, true);
+                        if (!this.isMessagePopupOpened) {
+                            this.onMessageBoxOpen();
+                        }
+                        this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
+                    }
                     this.showLoadingIndicator(true);
                 } else {
                     this.highlightSearchedTexts(this.searchPageIndex, false);
@@ -338,6 +350,7 @@ export class TextSearch {
     private prevSearch(): void {
         this.isPrevSearch = true;
         this.isTextSearch = true;
+        this.isSearchText = false;
         if (this.searchString) {
             this.clearAllOccurrences();
             this.searchIndex = this.searchIndex - 1;
@@ -435,13 +448,14 @@ export class TextSearch {
                     matches.push(newIndex);
                 }
             }
-            if (this.searchMatches) {
+            if (this.searchMatches && matches.length > 0) {
                 this.searchMatches[pageIndex] = matches;
             }
         }
         if (!isSinglePageSearch) {
             if (this.searchedPages.indexOf(pageIndex) === -1) {
                 this.searchedPages.push(pageIndex);
+                this.startIndex = this.searchedPages[0];
             }
             this.updateSearchInputIcon(false);
         }
@@ -453,13 +467,25 @@ export class TextSearch {
                 if ((this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
                     // eslint-disable-next-line max-len
                     if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
-                        if (!this.isMessagePopupOpened) {
+                        if (!this.isMessagePopupOpened && !this.isSearchText) {
                             this.onMessageBoxOpen();
                         }
                         this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
-                        this.searchedPages = [];
+                        this.searchedPages = [this.searchPageIndex];
                     }
-                    this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
+                    else if (this.isPrevSearch && this.searchMatches && this.searchMatches.length > 0 && this.searchMatches[this.searchPageIndex].length > 0 && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex - 1 === this.searchPageIndex) {
+                        if (!this.isMessagePopupOpened) {
+                            this.onMessageBoxOpen();
+                        }
+                        this.searchedPages = [this.startIndex];
+                    }
+                    this.pdfViewerBase.updateScrollTop(this.searchPageIndex);                  
+                }
+                else if (this.searchMatches && this.searchMatches[this.searchPageIndex].length > 0 && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex === this.searchPageIndex && this.pdfViewerBase.pageCount > 1) {
+                    if (!this.isMessagePopupOpened) {
+                        this.onMessageBoxOpen();
+                    }
+                    this.searchedPages = [this.startIndex];
                 }
             }
             this.highlightSearchedTexts(pageIndex, isSinglePageSearch);
@@ -476,11 +502,12 @@ export class TextSearch {
                 } else {
                     const searchPageIndex: number = this.getSearchPage(pageIndex);
                     // eslint-disable-next-line max-len
-                    if (this.searchMatches && this.searchMatches[this.searchPageIndex].length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
+                    if (this.searchMatches && isNullOrUndefined(this.searchMatches[this.searchPageIndex]) && this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         // eslint-disable-next-line max-len
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
+                        this.pdfViewerBase.updateScrollTop(this.startIndex); 
                         // eslint-disable-next-line max-len
                     } else if (this.searchMatches && this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
                         if (this.isPrevSearch) {
@@ -489,18 +516,27 @@ export class TextSearch {
                                 this.onMessageBoxOpen();
                             }
                             this.searchPageIndex = searchPageIndex;
-                            this.searchedPages = [];
+                            this.searchedPages = [searchPageIndex];
                             this.searchIndex = -1;
                         } else {
-                            if (!this.isMessagePopupOpened) {
+                            if (!this.isMessagePopupOpened && this.pdfViewerBase.currentPageNumber !== 1 && !this.isSearchText) {
                                 this.onMessageBoxOpen();
                             }
                             this.searchPageIndex = searchPageIndex;
-                            this.searchedPages = [];
+                            this.searchedPages = [searchPageIndex];
                             this.searchIndex = 0;
                         }
                         this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch);
-                    }
+                    } else if (this.searchMatches && this.searchMatches[this.searchPageIndex].length > 0 && this.searchedPages.length === this.pdfViewerBase.pageCount){
+                        if (!this.isMessagePopupOpened) {
+                            this.onMessageBoxOpen();
+                        }
+                        this.searchPageIndex = this.startIndex;
+                        this.searchedPages = [this.searchPageIndex];
+                        this.searchIndex = 0;
+                        this.pdfViewerBase.updateScrollTop(this.startIndex);
+                        this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch);
+                    } 
                 }
             }
         }
@@ -598,6 +634,14 @@ export class TextSearch {
         let className: string;
         // eslint-disable-next-line
         let characterBounds: any[] = this.pdfViewerBase.textLayer.characterBound[pageIndex];
+        let isHighlight: boolean = false;
+        if (isSinglePageSearch && (this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
+            if (this.searchMatches.length > 0) {
+                if (pageIndex === this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1)) {
+                    isHighlight = true;
+                }
+            }
+        }
         if (characterBounds) {
             for (let i: number = 0; i < matches.length; i++) {
                 if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
@@ -922,6 +966,10 @@ export class TextSearch {
         this.documentTextCollection = [];
         this.isTextRetrieved = false;
         this.isTextSearched = false;
+        this.isSearchText = false;
+        if (this.searchRequestHandler) {
+            this.searchRequestHandler.clear();
+        }
     }
 
     private onTextSearchClose(): void {
@@ -1143,7 +1191,9 @@ export class TextSearch {
             if (isEnable) {
                 this.prevSearchBtn.removeAttribute('disabled');
             } else {
-                (this.prevSearchBtn as HTMLButtonElement).disabled = true;
+                if (this.prevSearchBtn as HTMLButtonElement) {
+                    (this.prevSearchBtn as HTMLButtonElement).disabled = true;
+                }
             }
         }
     }
@@ -1153,7 +1203,9 @@ export class TextSearch {
             if (isEnable) {
                 this.nextSearchBtn.removeAttribute('disabled');
             } else {
-                (this.nextSearchBtn as HTMLButtonElement).disabled = true;
+                if (this.nextSearchBtn as HTMLButtonElement) {
+                    (this.nextSearchBtn as HTMLButtonElement).disabled = true;
+                }
             }
         }
     }

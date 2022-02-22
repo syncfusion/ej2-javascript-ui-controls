@@ -363,6 +363,12 @@ export class GanttChart {
      * @private
      */
     private mouseUp(e: PointerEvent): void {
+        if (this.parent.allowRowDragAndDrop) {
+            const ganttDragElemet: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
+            if (ganttDragElemet) {
+                ganttDragElemet.remove();
+            }
+        }
         if (!this.isGanttElement) {
             this.parent.notify('chartMouseUp', e);
         }
@@ -816,8 +822,6 @@ export class GanttChart {
             this.parent.treeGrid.collapseAll();
         }
         this.isExpandAll = false;
-        const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
-        focussedElement.focus();
     }
 
     /**

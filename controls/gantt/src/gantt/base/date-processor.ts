@@ -279,9 +279,15 @@ export class DateProcessor {
         if (!isNullOrUndefined(ganttProperties.segments) && ganttProperties.segments.length > 0) {
             tDuration = this.parent.editModule.taskbarEditModule.sumOfDuration(ganttProperties.segments);
         } else {
-            tDuration = this.getDuration(
-                ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit,
-                ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
+            // eslint-disable-next-line
+            if (!isNullOrUndefined(ganttProperties.startDate) && !isNullOrUndefined(ganttProperties.endDate) && 
+                (ganttProperties.startDate).getTime() === (ganttProperties.endDate).getTime() && !isNullOrUndefined(ganttData.taskData[this.parent.taskFields.milestone])) {
+                tDuration = 1;  
+            } else {
+                tDuration = this.getDuration(
+                    ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit,
+                    ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
+            }
         }
         this.parent.setRecordValue('duration', tDuration, ganttProperties, true);
         const col: GanttColumnModel = this.parent.columnByField[this.parent.columnMapping.duration];

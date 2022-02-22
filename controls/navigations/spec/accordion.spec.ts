@@ -3702,6 +3702,36 @@ describe("Accordion Testing", () => {
         });
     });
 
+    describe("Accordion item unique id testing", () => {
+        let accordion: Accordion;
+        document.body.innerHTML = "";
+        beforeEach((done: Function) => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    items: [
+                        { id: 'ItemOne', header: "Item1", content: "Content of Item1" },
+                        { id: 'ItemTwo', header: "Item2", content: "Content of Item2" }
+                    ]
+                }, ele);
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        afterEach((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Accordion item unique id value", () => {
+            const accordion: HTMLElement = document.getElementById("accordion");
+            const accordionItems: NodeListOf<Element> = accordion.querySelectorAll('.e-acrdn-item');
+            expect(accordionItems[0].id).toEqual('ItemOne');
+            expect(accordionItems[1].id).toEqual('ItemTwo');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

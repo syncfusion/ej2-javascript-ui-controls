@@ -223,6 +223,11 @@ export class DiagramElement {
     public staticSize: boolean = false;
 
     /**
+     * Defines the shape of the diagram element
+     */
+     public shapeType: string = '';
+
+    /**
      * check whether the element is rect or not
      */
     public isRectElement: boolean = false;

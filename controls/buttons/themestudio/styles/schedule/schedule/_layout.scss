@@ -125,7 +125,7 @@
           }
 
           .e-tbar-btn.e-btn.e-tbtn-txt .e-icons.e-btn-icon {
-            @if ($schedule-skin == 'tailwind' or $schedule-skin == 'fabric' or $schedule-skin == 'fabric-dark' or $schedule-skin == 'highcontrast') {
+            @if ($schedule-skin == 'tailwind' or $schedule-skin == 'fabric' or $schedule-skin == 'bootstrap-dark' or $schedule-skin == 'fabric-dark' or $schedule-skin == 'highcontrast') {
               padding: 0 12px;
             }
           }
@@ -1913,6 +1913,11 @@
         top: 0;
       }
 
+      .e-appointment-container.e-event-container {
+        height: $schedule-timeline-work-cells-height;
+        position: relative;
+      }
+
       .e-date-header-wrap table col,
       .e-content-wrap table col {
         width: $schedule-timeline-work-cells-width;
@@ -2008,8 +2013,9 @@
       }
 
       &.e-ignore-whitespace .e-work-cells,
-      &.e-ignore-whitespace .e-resource-cells {
-        height: 60px;
+      &.e-ignore-whitespace .e-resource-cells,
+      &.e-ignore-whitespace .e-event-container {
+        height: 42px;
       }
 
       &.e-virtual-mask .e-work-cells {
@@ -2169,6 +2175,10 @@
       .e-content-table {
         position: absolute;
         transform: translateY(0);
+
+        &.e-virtual-relative {
+          position: relative;
+        }
       }
 
       .e-content-wrap {
@@ -4258,7 +4268,7 @@
 
   .e-more-event-content {
     height: calc(100% - 35px);
-    max-height: 300px;
+    max-height: 150px;
     overflow-y: auto;
     padding-left: 10px;
     padding-right: 10px;

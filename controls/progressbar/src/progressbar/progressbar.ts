@@ -399,8 +399,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     // private resizeTo: number;
     /** @private */
-    public isBlazor: boolean;
-    /** @private */
     public destroyIndeterminate: boolean = false;
 
     /**
@@ -413,9 +411,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     protected preRender(): void {
-        const blazor: string = 'Blazor';
-        // tslint:disable-next-line
-        this.isBlazor = (window as any)[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.wireEvents();
@@ -427,7 +422,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     protected render(): void {
-        this.trigger('load', { progressBar: this.isBlazor ? {} as ProgressBar : this });
+        this.trigger('load', { progressBar: this });
         this.element.style.display = 'block';
         this.element.style.position = 'relative';
         this.calculateProgressBarSize();
@@ -443,7 +438,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
 
     private controlRendering(): void {
         this.renderElements();
-        this.trigger('loaded', { progressBar: this.isBlazor ? {} as ProgressBar : this });
+        this.trigger('loaded', { progressBar: this });
         this.renderComplete();
         this.controlRenderedTimeStamp = new Date().getTime();
     }

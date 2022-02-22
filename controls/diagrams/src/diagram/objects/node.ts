@@ -2622,6 +2622,13 @@ export class Node extends NodeBase implements IElement {
             break;
         }
         content.id = this.id + '_content'; content.relativeMode = 'Object';
+        // (EJ2-56444) - Added the below code to check whether node shape type is basic and shape is rectangle.
+        // This code added due to while render radial gradient in canvas mode we want to check this type and pass args according to that
+        if(this.shape.type === "Basic" && (this.shape as BasicShape).shape === 'Rectangle') {
+            content.shapeType = "Rectangle";
+        } else {
+            content.shapeType = "Others";
+        }
         if (this.width !== undefined) {
             content.width = this.width;
         }
@@ -2734,7 +2741,7 @@ export class Node extends NodeBase implements IElement {
         const canvas: Container = this.wrapper;
         let portWrapper: DiagramElement;
         // eslint-disable-next-line prefer-const
-        portWrapper = this.initPortWrapper(port);
+        portWrapper = this.initPortWrapper(port, this);
         // tslint:disable-next-line:no-any
         let wrapperContent: any;
         const contentAccessibility: Function = getFunction(accessibilityContent);
@@ -2856,7 +2863,7 @@ export class Node extends NodeBase implements IElement {
         }
     }
     /** @private */
-    public initPortWrapper(ports: Port): DiagramElement {
+    public initPortWrapper(ports: Port, Node?: NodeModel): DiagramElement {
         ports.id = ports.id || randomId();
         // Creates port element
         let portContent: PathElement = new PathElement();
@@ -2873,7 +2880,11 @@ export class Node extends NodeBase implements IElement {
         };
         portContent.horizontalAlignment = ports.horizontalAlignment;
         portContent.verticalAlignment = ports.verticalAlignment;
-        portContent = updatePortEdges(portContent, this.flip, ports);
+        if (Node && Node.flipMode !== 'Label' && Node.flipMode !== 'None') {
+            portContent = updatePortEdges(portContent, this.flip, ports);
+        } else {
+            portContent = updatePortEdges(portContent, 'None', ports);
+        }
         if (this.width !== undefined || this.height !== undefined) {
             portContent.float = true;
         }

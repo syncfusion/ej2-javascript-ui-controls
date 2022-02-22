@@ -34,6 +34,8 @@ import { Point } from '../primitives/point';
 import { RulerSettingsModel } from '../diagram/ruler-settings-model';
 import { RulerModel, Ruler } from '../../ruler';
 import { canDrawThumbs, avoidDrawSelector } from '../utility/constraints-util';
+import { AnnotationConstraints} from '../enum/enum';
+import { Diagram } from '../diagram';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -1341,6 +1343,9 @@ export class DiagramRenderer {
         if (centerPoint) {
             options.x = (centerPoint as any).cx - 2;
             options.y = (centerPoint as any).cy - 2;
+            // (EJ2-56874) - Set the calculated x and y position to the bezier connector annotation's(text element) bounds x,y position
+            element.bounds.x = options.x;
+            element.bounds.y = options.y;
         }
         (options as RectAttributes).cornerRadius = 0;
         (options as TextAttributes).whiteSpace = whiteSpaceToString(element.style.whiteSpace, element.style.textWrapping);
@@ -1532,6 +1537,11 @@ export class DiagramRenderer {
         indexValue?: number, isPreviewNode?: boolean, centerPoint?: object):
         void {
         const svgParent: SvgParent = { svg: parentSvg, g: canvas };
+        const diagramElement: Object = document.getElementById(this.diagramId);
+        const instance: string = 'ej2_instances'; let diagram: any;
+        if (diagramElement) {
+            diagram = diagramElement[instance][0];
+        }
         if (this.diagramId) {
             parentSvg = this.getParentSvg(group) || parentSvg;
             if (this.isSvgMode) {
@@ -1560,7 +1570,6 @@ export class DiagramRenderer {
         if (group.hasChildren()) {
             let parentG: HTMLCanvasElement | SVGElement;
             let svgParent: SvgParent;
-            let flip: FlipDirection;
             for (const child of group.children) {
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children) || child) || parentSvg;
                 if (this.isSvgMode) {
@@ -1575,20 +1584,70 @@ export class DiagramRenderer {
                 }
                 this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, isPreviewNode, centerPoint);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
-                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
-                    this.renderFlipElement(child, parentG, flip);
+                    this.renderFlipElement(child, parentG, child.flip);
                 }
                 if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
-                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
-                    this.renderFlipElement(group, parentG, flip);
+                    this.renderFlipElement(group, parentG, child.flip);
                 }
                 if (!(child instanceof TextElement) && group.flip !== 'None' &&
                     (group.elementActions & ElementAction.ElementIsGroup)) {
                     this.renderFlipElement(child, parentG || canvas, group.flip);
                 }
             }
-            if (!(group.elementActions & ElementAction.ElementIsGroup)) {
-                this.renderFlipElement(group, canvas, group.flip);
+            let selectedNode: any;
+            if (diagram && (diagram as Diagram).selectedItems && (diagram as Diagram).selectedItems.nodes && (diagram as Diagram).selectedItems.nodes.length > 0) {
+                selectedNode = (diagram as Diagram).selectedItems.nodes[0];
+            }
+            let innerNodeContent: any;
+            let innerLabelContent: any;
+            let isNodeSelected: boolean = false;
+            let Node;
+            if ((diagram as Diagram) && (diagram as Diagram).selectedItems) {
+                Node = diagram.getObject(group.id);
+            }
+            if (group.flip !== 'None') {
+                selectedNode = Node;
+            }
+            if (selectedNode && selectedNode.flipMode) { isNodeSelected = true; }
+            if (group.flip !== 'None' && selectedNode && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' && selectedNode.flipMode !== 'None') {
+                group.flip = 'None';
+                for (let k = 0; k < group.children.length; k++) {
+                    group.children[k].flip = 'None';
+                }
+            }
+            if (!(group.elementActions & ElementAction.ElementIsGroup) && diagram instanceof Diagram && (diagram as Diagram).nameTable[group.id] && (diagram as Diagram).nameTable[group.id].propName !== 'connectors') {
+                if (isNodeSelected && selectedNode) {
+                    if (group.children && group.children[0] instanceof DiagramNativeElement) {
+                        innerNodeContent = document.getElementById(selectedNode.id + '_content_inner_native_element');
+                    } else {
+                        innerNodeContent = document.getElementById(selectedNode.id + '_content_groupElement');
+                    }
+                    //Below code to check and flip the node.
+                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
+                        this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
+                        return;
+                    } else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Basic' && selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Image' && selectedNode.flipMode === 'Label')) {
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
+                        if (selectedNode.shape.type === 'Text') { } else {
+                            this.renderFlipElement(group, innerNodeContent, group.flip);
+                        }
+                    }
+                    //Below code to check and flip the text element in the node.
+                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
+                        for (let i = 0; i < selectedNode.wrapper.children.length; i++) {
+                            if (selectedNode.wrapper.children[i] instanceof TextElement) {
+                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[i].id + '_groupElement');
+                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                                return;
+                            }
+                        }
+                    }
+                    else {
+                        this.renderFlipElement(group, canvas, group.flip);
+                    }
+                }
             }
         }
     }
@@ -1717,7 +1776,7 @@ export class DiagramRenderer {
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: element.style.strokeWidth,
             dashArray: element.style.strokeDashArray || '', opacity: element.style.opacity, shadow: element.shadow,
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
-            canApplyStyle: element.canApplyStyle
+            canApplyStyle: element.canApplyStyle, shapeType: element.shapeType
         };
         if (isPreviewNode) {
             options.x = options.x - .5;

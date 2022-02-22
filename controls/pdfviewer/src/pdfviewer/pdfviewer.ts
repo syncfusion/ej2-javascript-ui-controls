@@ -5664,7 +5664,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 member: 'FormFields', args: [this, this.viewerBase]
             });
         }
-        if (this.enableFormDesigner) {
+        if (this.enableFormDesigner && !isBlazor()) {
             modules.push({
                 member: 'FormDesigner', args: [this, this.viewerBase]
             });
@@ -5948,8 +5948,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Loads the PDF document with the document details in the PDF viewer control
     * @private
     */
-    public loadSuccess(documentDetails: any): void {
-        this.viewerBase.loadSuccess(documentDetails);
+    public loadSuccess(documentDetails: any, password?: string): void {
+        this.viewerBase.loadSuccess(documentDetails, password);
     }
 
     /**
@@ -6100,7 +6100,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
             this.element.innerHTML = '';
         }
+        if(this.viewerBase.navigationPane){
+        this.viewerBase.navigationPane.restrictUpdateZoomValue = false;
+        }
         this.viewerBase.destroy();
+        if(this.viewerBase.navigationPane){
+        this.viewerBase.navigationPane.restrictUpdateZoomValue = true;
+        }
     }
 
     // eslint-disable-next-line
@@ -6165,6 +6171,24 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             return null;
         }
     }
+
+    /**
+     * Export annotations and returns a base64 string for both Json and XFDF formats
+     *
+     * @returns Promise<string>
+     */
+    public exportAnnotationsAsBase64String(annotationDataFormat: AnnotationDataFormat): Promise<string> {
+        if (this.annotationModule) {
+            return new Promise((resolve: Function, reject: Function) => {
+                this.viewerBase.createRequestForExportAnnotations(false, annotationDataFormat, true).then((value: string) => { 
+                    resolve(value);
+                });
+            });
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Perform to add annotations in the PDF Viewer
      *
@@ -6298,9 +6322,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param name
      * @param field
      * @param cancel
+     * @param isLeftClick - becomes true on signature panel left click.
      * @private
      */
-    public async fireFormFieldClickEvent(name: string, field: FormFieldModel, cancel?: boolean): Promise<void> {
+    public async fireFormFieldClickEvent(name: string, field: FormFieldModel, cancel?: boolean ,isLeftClick?: boolean): Promise<void> {
         let eventArgs: FormFieldClickArgs = { name: name, field: field, cancel: cancel };
         if (isBlazor()) {
             eventArgs = await this.triggerEvent('formFieldClick', eventArgs) as FormFieldClickArgs || eventArgs;
@@ -6315,7 +6340,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 this.viewerBase.isInitialField = false;
             let target: any = document.getElementById(field.id);
             target = target ? target : (document.getElementById(field.id + '_content_html_element') ? document.getElementById(field.id + '_content_html_element').children[0].children[0] : null);
-            if (!this.signatureFieldSettings.isReadOnly && !eventArgs.cancel && target && (target as any).classList.contains('e-pdfviewer-signatureformfields')) {
+            if (!this.signatureFieldSettings.isReadOnly && !eventArgs.cancel && target && !target.disabled && (target as any).classList.contains('e-pdfviewer-signatureformfields') && isLeftClick) {
                 this.viewerBase.signatureModule.showSignatureDialog(true);
             }
         }
@@ -7821,7 +7846,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
             if (!multipleSelection) {
                 if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
-                    if (annotation) {
+                    if (!this.viewerBase.isNewStamp && annotation && annotation.shapeAnnotationType !== 'HandWrittenSignature' && annotation.shapeAnnotationType !== 'SignatureText' && annotation.shapeAnnotationType !== 'SignatureImage') {
                         this.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
                     }
                     this.clearSelection(this.viewerBase.activeElements.activePageID);

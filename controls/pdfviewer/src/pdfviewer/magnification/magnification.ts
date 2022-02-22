@@ -437,7 +437,7 @@ export class Magnification {
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.maintainSelectionOnZoom(false, true);
         }
-        if (this.pdfViewer.formDesignerModule) { 
+        if (this.pdfViewer.formDesignerModule && !this.pdfViewerBase.documentLoaded && !this.pdfViewerBase.isDocumentLoaded) {
             this.isFormFieldPageZoomed = true;
         }
         if (!this.isInitialLoading) {
@@ -676,6 +676,7 @@ export class Magnification {
             this.isPagesZoomed = false;
             clearTimeout(this.magnifyPageRerenderTimer);
             this.isPinchScrolled = true;
+            this.isFormFieldPageZoomed = true;
             this.rerenderOnScrollTimer = setTimeout(() => {
                 this.rerenderOnScroll();
             }, 100);

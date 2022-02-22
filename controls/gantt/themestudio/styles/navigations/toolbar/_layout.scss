@@ -197,7 +197,8 @@
           }
         }
 
-        .e-toolbar-item.e-separator.e-multirow-separator {
+        .e-toolbar-item.e-separator.e-multirow-separator,
+        .e-toolbar-item.e-separator.e-hidden {
           display: none;
         }
 
@@ -1063,7 +1064,8 @@
           }
         }
 
-        .e-toolbar-item.e-separator.e-multirow-separator {
+        .e-toolbar-item.e-separator.e-multirow-separator,
+        .e-toolbar-item.e-separator.e-hidden {
           display: none;
         }
 

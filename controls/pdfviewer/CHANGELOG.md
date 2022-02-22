@@ -2,7 +2,96 @@
 
 ## [Unreleased]
 
+## 19.4.53 (2022-02-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-362122` - Now, the shape annotation bounds are updated properly in the `annotationResize` event.
+- `#SF-361850` - Now, the annotation toolbar icons are aligned correctly after resizing.
+- `#SF-363301` - The script error is no longer thrown while hovering the toolbar icons without using the `showTooltip` property.
+- `#SF-362647` - Now, the signature, and initial fields are unable to edit in the read-only mode.
+- `#SF-361801` - Script error is no longer thrown while destroying the viewer control in the IE browser.
+- `#SF-363899` - Now, the `annotationUnSelect` event triggers for custom stamp annotations.
+- `#SF-363936` - Now, the signature panel will not be opened on right-click of signature fields.
+- `#F168155` - The downloaded document displays Czech characters.
+
 ## 19.4.52 (2022-02-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-361967`- Copy and paste is now working properly for the signature field when it is added at the bottom of the page.
+- `#SF- 361906`- The text position for the provided PDF document is now correct.
+- `#SF-361379`- While importing the annotations, the FontColor and FillColor properties are now updated properly.
+- `#SF-360076`- In the signature field, the drawn signature is not stretched now.
+- `#SF-364148`, `#F172304`- The Script error will no longer be thrown in the mobile view while destroying the PDF Viewer.
+- `#SF-362874`- The form field names are now added properly to the form fields.
+- `#SF-365411`, `#SF-360719`- The annotations are now properly added to the pages when enableDesktopMode is true on mobile devices.
+
+## 19.4.50 (2022-02-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-360337`- Exception is thrown while downloading the empty list box field is now resolved.
+- `#SF-360635`,`#SF-361422`,`#SF-361359`- Now, the form field is hidden properly when setting the visible property to hidden.
+- `#SF-358375`- Now, the PDF document loaded properly in the PDF Viewer when you set the size limit for the memory cache.
+- `#SF-359388`- Now, the form fields position is correct for a rotated PDF document.
+- `#SF-354638`- Now, the free text annotation is not hidden when clicking outside of the free text annotation.
+- `#SF-360405`- Now, the Free text annotations and ink annotations are rendered properly in the lower zoom factors.
+- `#F171647`- Now, the annotationAdd event is triggered after adding the sticky notes annotation in the annotation collection.
+- `#SF-361639`- The Script error will no longer be thrown when loading the form-fields document without injecting the form field module.
+- `#SF-362311`- Now, the Move cursor is not showing above the custom stamp while the custom stamp annotation is selected.
+- `#SF-359233`- The hidden issue of free text characters is now resolved.
+- `#SF-363626`- The Script error will no longer be thrown while loading a PDF document when the enableHyperlink is set to false.
+- `#SF-363055`- Now, the free text becomes edited properly while clicking the selector.
+- `#SF-363411`- Now, the free text position on a downloaded document is accurate on the Chrome browser.
+
+## 19.4.43 (2022-01-18)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+`#SF-359772`,`#SF-359880`- Now, the form fields are editable on the mobile device.
+`#SF-359042`- Free text annotations are downloaded properly without hiding any last character.
+`#SF-358308`- Spinners are hidden properly while removing the display as none for the spinner.
+`#SF-360035`- The Script error will no longer be thrown while using the editAnnotation method in mobile mode.
+`#SF-358584`- Stamps are saved properly in the rotated PDF document.
+
+## 19.4.42 (2022-01-11)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-358006`- Overlapped stamp annotations are now placed at the exact position in the saved PDF document.
+- `#SF-357273`- Exception thrown while loading the provided PDF document due to an invalid key, is now resolved.
+- `#SF-357655`- The PDF pages are now exported to image in a multi-threaded environment.
+- `#SF-357060`- Now, the typed handwritten signature content does not exceed the text area.
+
+## 19.4.41 (2022-01-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-357108` - Now, the annotations are displayed properly for the rotated documents.
+- `#SF-357489` - Now, the unnecessary thumbnail requests are restricted.
+
+## 19.4.40 (2021-12-28)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#299110`, `#348963` - Now, the font size is updated properly while export and import shape annotations.
+
+## 19.4.38 (2021-12-17)
 
 ### PDF Viewer
 

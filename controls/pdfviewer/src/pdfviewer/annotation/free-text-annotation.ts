@@ -240,7 +240,17 @@ export class FreeTextAnnotation {
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
         // eslint-disable-next-line max-len
         this.author = (this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
-        this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
+        if(this.pdfViewer.freeTextSettings.fontFamily){
+            let fontName: string = this.pdfViewer.freeTextSettings.fontFamily;
+            if(fontName === 'Helvetica'|| fontName === 'Times New Roman' || fontName ==='Courier' || fontName === 'Symbol'|| fontName === 'ZapfDingbats'){
+                this.fontFamily = fontName;
+            }
+            else{
+                this.fontFamily = 'Helvetica';
+            }
+        }else{
+            this.fontFamily = 'Helvetica';
+        }
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
         this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
         this.isReadonly = false;
@@ -325,15 +335,21 @@ export class FreeTextAnnotation {
                         // eslint-disable-next-line max-len
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                         let annot: PdfAnnotationBaseModel;
-                        // eslint-disable-next-line
-                        let rotateAngle: any = Math.abs(annotation.Rotate);
-                        let annotationBoundsX: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
-                        let annotationBoundsY: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
+                        let paddingValues : any[] = this.getPaddingValues(annotation.FontSize);
+                        let leftPadding : number = paddingValues[0];
+                        let topPadding : number = paddingValues[1];
+                        let annotationBoundsX: number = !isNullOrUndefined(annotation.Bounds.X) ? annotation.Bounds.X - leftPadding : annotation.Bounds.x;
+                        let annotationBoundsY: number = !isNullOrUndefined(annotation.Bounds.Y) ? annotation.Bounds.Y - topPadding: annotation.Bounds.y;
                         let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
                         let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
+                        let rotateValue: number = this.getRotationValue(pageNumber);
                         if (Math.sign(annotation.Rotate) === 1) {
-                            annotation.Rotate = -annotation.Rotate;
+                            annotation.Rotate = -annotation.Rotate + rotateValue;
+                        } else {
+                            annotation.Rotate = annotation.Rotate + rotateValue;
                         }
+                        // eslint-disable-next-line
+                        let rotateAngle: any = Math.abs(annotation.Rotate);
                         if (rotateAngle === 90 || rotateAngle === 270) {
                             let rotationHeight: number = height;
                             let rotationWidth: number = width;
@@ -543,7 +559,7 @@ export class FreeTextAnnotation {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
                         // eslint-disable-next-line max-len
-                        pageAnnotationObject.annotations[z].bounds = this.getBoundsBasedOnRotation(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.annotations[z].rotateAngle);
+                        pageAnnotationObject.annotations[z].bounds = this.getBoundsBasedOnRotation(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.annotations[z].rotateAngle, pageAnnotationObject.pageIndex, pageAnnotationObject.annotations[z]);
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         const strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
@@ -567,13 +583,34 @@ export class FreeTextAnnotation {
         return JSON.stringify(annotations);
     }
 
-    private getBoundsBasedOnRotation(bounds: any, rotateAngle: number) {
+    // eslint-disable-next-line
+    private getRotationValue(pageIndex: number): any {
+        // eslint-disable-next-line
+        let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+        if (pageDetails.rotation === 0) {
+            return 0;
+        } else if (pageDetails.rotation === 1) {
+            return 90;
+        } else if (pageDetails.rotation === 2) {
+            return 180;
+        } else if (pageDetails.rotation === 3) {
+            return 270;
+        }
+        return 0;
+    }
+
+    private getBoundsBasedOnRotation(bounds: any, rotateAngle: number, pageIndex: number, annotation: any) {
+        let paddingValues : any[] = this.getPaddingValues(this.fontSize);
+        let leftPadding : number = paddingValues[0];
+        let topPadding : number = paddingValues[1];
+        let rotateValue: number = this.getRotationValue(pageIndex)
+        annotation.rotateAngle = rotateAngle - rotateValue;
         if (rotateAngle === 90 || rotateAngle === -90 || rotateAngle === 270 || rotateAngle === -270) {
             let x: number = bounds.x + (bounds.width / 2);
             let y: number = bounds.y - (bounds.width / 2 - bounds.height / 2);
-            return { x: x, y: y, left: x, top: y, width: bounds.height, height: bounds.width };
+            return { x: x + leftPadding, y: y + topPadding, left: x + leftPadding, top: y + topPadding, width: bounds.height, height: bounds.width };
         } else {
-            return bounds;
+            return { x: bounds.left + leftPadding, y: bounds.top + topPadding, left: bounds.left + leftPadding, top: bounds.top + topPadding, width: bounds.width, height: bounds.height };
         }
     }
     
@@ -654,7 +691,7 @@ export class FreeTextAnnotation {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
             // eslint-disable-next-line
-            let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+            let pageIndex : number = this.inputBoxElement.id && this.inputBoxElement.id.split("_freeText_")[1] && this.inputBoxElement.id.split("_freeText_")[1].split("_")[0] ? parseFloat(this.inputBoxElement.id.split("_freeText_")[1].split("_")[0]) : this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let width: number = parseFloat(this.inputBoxElement.style.width);
             let padding: number = parseFloat(this.inputBoxElement.style.paddingLeft);
@@ -766,6 +803,7 @@ export class FreeTextAnnotation {
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
+                this.modifyInCollection('bounds', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 // eslint-disable-next-line
                 this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y, x:x } });
                 // eslint-disable-next-line
@@ -842,14 +880,16 @@ export class FreeTextAnnotation {
             }
             const currentHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
             const difference: number = currentHeight - previousHeight;
+            let fontSize: number = parseFloat(inuptEleObj.inputBoxElement.style.fontSize);
             // eslint-disable-next-line max-len
-            inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
+            inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height :  inuptEleObj.inputBoxElement.scrollHeight + (fontSize / 2) + 'px';
             inuptEleObj.inputBoxElement.style.height = (difference < 0 && !inuptEleObj.inputBoxElement.readOnly) ? (previousHeight + 'px') : inuptEleObj.inputBoxElement.style.height;
         }
+        let zoomFactor: number = inuptEleObj.pdfViewerBase.getZoomFactor();
         let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
         let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
-        inputEleHeight = ((inputEleHeight - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
-        inputEleWidth = ((inputEleWidth - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
+        inputEleHeight = ((inputEleHeight) / zoomFactor);
+        inputEleWidth = ((inputEleWidth) / zoomFactor);
         if (this.selectedAnnotation) {
             let heightDiff: number = (inputEleHeight - inuptEleObj.selectedAnnotation.bounds.height);
             let y: number = 0;
@@ -886,7 +926,7 @@ export class FreeTextAnnotation {
      * @param event
      * @private
      */
-    public autoFitFreeText(xPosition?: number): void {
+    public autoFitFreeText(xPosition?: number, yPosition?: number): void {
         let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
         const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
         // eslint-disable-next-line
@@ -925,14 +965,16 @@ export class FreeTextAnnotation {
         fontSize = parseFloat(this.inputBoxElement.style.fontSize);
         let inputEleWidth: number;
         let characterLength: number = 8;
+        let inputEleHeight : number = (fontSize + (fontSize/2));
         if (this.isNewFreeTextAnnot) {
             inputEleWidth = Math.ceil(textwidth.width + ((characterLength + 1) * 2));
-            this.inputBoxElement.style.height = (fontSize + (fontSize/2)) + 'px';
+            this.inputBoxElement.style.height = inputEleHeight + 'px';
+            this.inputBoxElement.style.top = (yPosition) - (inputEleHeight / 2) + 'px';
         } else {
             inputEleWidth = Math.ceil(textwidth.width) + fontSize + Math.ceil(characterLength/2);
         }
         if (!xPosition) {
-            this.inputBoxElement.style.height = (fontSize + (fontSize / 2)) + 'px';
+            this.inputBoxElement.style.height = inputEleHeight + 'px';
         }
         this.inputBoxElement.style.width = inputEleWidth + 'px';
         let maxWidth: number = this.pdfViewerBase.getPageWidth(pageIndex) - parseFloat(this.inputBoxElement.style.left);
@@ -995,6 +1037,11 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.boxSizing = 'border-box';
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
         this.inputBoxElement.style.top = ((currentPosition.y)) - ((this.defaultHeight * zoomFactor)/2) + 'px';
+        if (this.pdfViewer.freeTextSettings.enableAutoFit) {
+            this.inputBoxElement.style.wordBreak = 'break-all';
+        } else {
+            this.inputBoxElement.style.wordBreak = 'break-word';
+        }
         if (annotation) {
             this.applyFreetextStyles(zoomFactor, annotation.isReadonly);
         } else {
@@ -1078,11 +1125,11 @@ export class FreeTextAnnotation {
         }
         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
         if (this.pdfViewer.freeTextSettings.enableAutoFit) {
-            this.autoFitFreeText(currentPosition.x);
+            this.autoFitFreeText(currentPosition.x, currentPosition.y);
         }
         pageDiv.appendChild(this.inputBoxElement);
         // eslint-disable-next-line
-        if ((this.defaultHeight * zoomFactor) < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
+        if (!this.pdfViewer.freeTextSettings.enableAutoFit && (this.defaultHeight * zoomFactor) < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
             this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 'px';
             this.inputBoxElement.style.top = ((currentPosition.y)) - (parseFloat(this.inputBoxElement.style.height) / 2) + 'px';
         }
@@ -1098,6 +1145,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.width = (this.defautWidth * zoomFactor) + 'px';
         this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
         this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
+        this.inputBoxElement.style.fontFamily = this.fontFamily;
         this.inputBoxElement.readOnly = isNullOrUndefined(isReadonly) ? this.isReadonly : isReadonly;
     }
     /**
@@ -1192,8 +1240,8 @@ export class FreeTextAnnotation {
             let annot: PdfAnnotationBaseModel;
             // eslint-disable-next-line max-len
             annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-            let annotationBoundsX: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
-            let annotationBoundsY: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
+            let annotationBoundsX: number = !isNullOrUndefined(annotation.Bounds.X) ? annotation.Bounds.X : annotation.Bounds.x;
+            let annotationBoundsY: number = !isNullOrUndefined(annotation.Bounds.Y) ? annotation.Bounds.Y : annotation.Bounds.y;
             let annotationBoundsWidth: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
             let annotationBoundsHeight: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
             // eslint-disable-next-line
@@ -1342,7 +1390,7 @@ export class FreeTextAnnotation {
            InnerColor: null,
            IsCommentLock: false,
            IsLock: annotationObject.isLock?annotationObject.isLock:false,
-           IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
+           IsPrint: (annotationObject.isPrint !== null && annotationObject.isPrint !== undefined) ? annotationObject.isPrint : true,
            Layer: null,
            LineEndingStyle: 'OpenArrow',
            Location: null,
@@ -1368,5 +1416,15 @@ export class FreeTextAnnotation {
         //Adding the annotation object to an array and return it
         freeTextAnnotation[0] = freeText;
         return {freeTextAnnotation};
+    }
+    /**
+     * This method used to get the padding.
+    */
+    private getPaddingValues(fontSize : number) : any{
+        let leftPadding : number = 4; // Left padding used in the drawing.js
+        let topPadding : number = 5; // Top padding used in the drawing.js
+        let inputBoxpadding : number = 2; // we have set the input box padding for the free text.
+        topPadding = (topPadding - inputBoxpadding)* (fontSize / 16); 
+        return [leftPadding , topPadding];
     }
 }

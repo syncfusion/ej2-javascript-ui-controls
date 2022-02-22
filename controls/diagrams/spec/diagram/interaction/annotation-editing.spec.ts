@@ -76,10 +76,17 @@ describe('Diagram Control', () => {
                 id: "connector8", sourceID: node7.id, targetID: node2.id, type: "Orthogonal",
                 annotations: [{ content: "Yes", style: { fill: "white" } }]
             };
+            let connector9: ConnectorModel = {
+                type: 'Bezier',
+                segments: [{
+                    type: 'Bezier', point1: { x: 500, y: 100 }, point2: { x: 600, y: 200 }
+                }],
+                annotations: [{ content: 'labell' }], sourcePoint: { x: 627.5, y: 200 }, targetPoint: { x: 627.5, y: 400 },
+            };
 
             diagram = new Diagram({
                 width: 800, height: 500, nodes: [node1, node2, node3, node4, node5, node6, node7],
-                connectors: [connector1, connector2, connector3, connector4, connector5, connector6, connector7, connector8]
+                connectors: [connector1, connector2, connector3, connector4, connector5, connector6, connector7, connector8, connector9]
             });
             diagram.appendTo('#textediting');
         });
@@ -139,6 +146,15 @@ describe('Diagram Control', () => {
             (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'editLabel';
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
             expect((diagram.connectors[6] as ConnectorModel).annotations[0].content == 'editLabel').toBe(true);
+            done();
+        });
+
+        it('Checking textediting for bezier connector when text box change', (done: Function) => {
+            diagram.startTextEdit(diagram.connectors[8], diagram.connectors[8].annotations[0].id);
+            (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'editLabel';
+            let position = document.getElementById(diagram.element.id + '_editBox');
+            let labelPosition: any = position.getBoundingClientRect();
+            expect(Math.round(labelPosition.x) === 548 && Math.round(labelPosition.y) === 184).toBe(true);
             done();
         });
         it('Checking textediting when text box change using keydown', (done: Function) => {

@@ -37,6 +37,7 @@ $calendar-active-icon-color: $white !default;
 $calendar-title-hover-color: $gray-900 !default;
 $calendar-icon-hover-color: $gray-900 !default;
 $calendar-icon-hover-bg-color: darken($gray-100, 2%) !default;
+$calendar-device-icon-hover-bg-color: none !default;
 $calendar-default-border-color: none !default;
 $calendar-icon-hover-border-color: $calendar-default-border-color !default;
 $calendar-active-state-icon-bg-color: darken($gray-600, 10%) !default;

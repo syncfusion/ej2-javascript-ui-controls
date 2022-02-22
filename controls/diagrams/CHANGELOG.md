@@ -2,7 +2,68 @@
 
 ## [Unreleased]
 
+## 19.4.53 (2022-02-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `SF-364857` - Now, Command/Meta key will work properly on Mac.
+
 ## 19.4.52 (2022-02-15)
+
+### Diagram
+
+#### Bug Fixes
+
+- `SF-361654` - Connector is now rendered properly in the symbol palette while try to render as straight line.
+- `SF-360571` - Provide separate tooltip support for the group children node.
+- `SF-359118` - Now, the Scroll Bar works properly when Viewport is in Negative coordinates.
+
+## 19.4.50 (2022-02-08)
+
+### Diagram
+
+#### Bug Fixes
+
+- `SF-360650` - The Undefined exception will no longer be thrown while perform ctrl + shift + mouse click on diagram area.
+- `SF-359437` - The Undefined exception will no longer be thrown while ungroup the group node in canvas mode.
+- `SF-359860` - Node gradient color is now exported properly while export the diagram in JPG.
+- `SF-362805` - Bezier connector text element bounds is now calculated properly while drag the connector.
+- `SF-362170` - Annotation editing for the Bezier Connector is now working properly.
+- `SF-362805` - Style Property margin is now working properly for the Bezier Connector Annotation.
+- `F170870` - Resolved the exception when Flipping SVG Nodes Label.
+
+## 19.4.43 (2022-01-18)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F171509` - The issue "getDiagramContent() is not working properly" has been fixed.
+
+## 19.4.42 (2022-01-11)
+
+### Diagram
+
+#### Bug Fixes
+
+- `SF-359118` - The issue "Scroll Bar is not working properly when Viewport is in Negative coordinates" has been fixed.
+- `F171398` - The issue "Exception occurs when save and load the diagram" has been fixed.
+- `SF-360354` - The issue "Symbol do not get dropped properly in the chrome android" has been fixed.
+
+## 19.4.41 (2022-01-04)
+
+### Diagram
+
+#### Bug Fixes
+
+- `SF-358407` - The issue "NodeTemplate is not rendered properly in React" has been fixed.
+- `SF-358519` - The issue "SendToBack is not working properly when re-adding shapes on diagram" has been fixed.
+- `F170870` - The issue "Ports are not flipped while flipping Node to Horizontal or Vertically" has been fixed.
+- `F170870` - The issue "Provide support to prevent label flipping while flipping the node horizontally or vertically" has been fixed.
+
+## 19.4.40 (2021-12-28)
 
 ### Diagram
 

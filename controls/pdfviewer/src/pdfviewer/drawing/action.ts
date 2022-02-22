@@ -1,4 +1,4 @@
-import { IElement } from '@syncfusion/ej2-drawings';
+import { contains, IElement } from '@syncfusion/ej2-drawings';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { Rect } from '@syncfusion/ej2-drawings';
 import { DrawingElement , Point, Matrix, identityMatrix, rotateMatrix} from '@syncfusion/ej2-drawings';
@@ -7,7 +7,7 @@ import { PdfViewerBase, PdfViewer } from '../index';
 import { PdfAnnotationBaseModel, PdfBoundsModel } from './pdf-annotation-model';
 import { ZOrderPageTable } from './pdf-annotation';
 import { isPointOverConnector } from './connector-util';
-import { LineTool, NodeDrawingTool } from './tools';
+import { LineTool, NodeDrawingTool, StampTool } from './tools';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * @private
@@ -103,7 +103,7 @@ export function findObjectUnderMouse(
             if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) && (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
                 // eslint-disable-next-line max-len
                 (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
-                if (pdfBase.tool instanceof NodeDrawingTool) {
+                if (pdfBase.tool instanceof NodeDrawingTool || pdfBase.tool instanceof StampTool) {
                     actualTarget = objects[i];
                 } else {
                     if (!boundsDiff) {
@@ -118,6 +118,9 @@ export function findObjectUnderMouse(
                         // eslint-disable-next-line max-len
                         (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
                         if (boundsDiff > objectBounds) {
+                            actualTarget = objects[i];
+                            boundsDiff = objectBounds;
+                        } else if (boundsDiff === objectBounds) {
                             actualTarget = objects[i];
                             boundsDiff = objectBounds;
                         }
@@ -277,7 +280,21 @@ export function findTargetShapeElement(container: Container, position: PointMode
         }
     }
     if (container && container.bounds.containsPoint(position, padding) && container.style.fill !== 'none') {
-        return container;
+        let element: Container = container;
+        let paddingValue: number = 10;
+        let rotateThumbDistance: number = 30;
+        let matrix: Matrix = identityMatrix();
+        rotateMatrix(matrix, element.parentTransform, element.offsetX, element.offsetY);
+        let x: number = element.offsetX - element.pivot.x * element.actualSize.width;
+        let y: number = element.offsetY - element.pivot.y * element.actualSize.height;
+        let rotateThumb: PointModel = {
+            x: x + ((element.pivot.x === 0.5 ? element.pivot.x * 2 : element.pivot.x) * element.actualSize.width / 2),
+            y: y - rotateThumbDistance
+        };
+        rotateThumb = transformPointByMatrix(matrix, rotateThumb);
+        if (contains(position, rotateThumb, paddingValue)) {
+            return container;
+        }
     }
     return null;
 }
@@ -291,7 +308,7 @@ export function findTargetShapeElement(container: Container, position: PointMode
 export function findObjects(region: PointModel, objCollection: (PdfAnnotationBaseModel)[]): (PdfAnnotationBaseModel)[] {
     const objects: (PdfAnnotationBaseModel)[] = [];
     for (const obj of objCollection) {
-        if (findElementUnderMouse(obj as IElement, region, 10)  || ((obj.shapeAnnotationType === 'Stamp' || obj.shapeAnnotationType === 'Image') && findElementUnderMouse(obj as IElement, region, 40))) {
+        if (findElementUnderMouse(obj as IElement, region, 10)  || ((obj.shapeAnnotationType === 'Stamp') && findElementUnderMouse(obj as IElement, region, 40))) {
             insertObject(obj, 'zIndex', objects);
         }
     }

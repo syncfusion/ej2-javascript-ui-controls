@@ -41,7 +41,9 @@ describe('Gantt Selection support', () => {
                         if (args.requestType == "keyPressed" && args.action == "customKey") {
                             args.keyEvent.preventDefault();
                             this.selectionModule.selectRow(6);
-                           
+                        }
+			if (args.requestType == 'add') {
+                           expect(args['data'].taskData.ganttProperties).toBe(undefined)
                         }
                     },
                     projectStartDate: new Date('02/01/2017'),

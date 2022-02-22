@@ -171,6 +171,19 @@ export class DiagramScroller {
         this.hOffset = diagram.scrollSettings.horizontalOffset;
         this.vOffset = diagram.scrollSettings.verticalOffset;
     }
+
+    // Method added to get bounds value if diagram is loaded from negative axis.
+    private getBounds() {
+        let pageBounds: Rect;
+        let postion: Rect = this.diagram.spatialSearch.getPageBounds(0, 0);
+        if ((postion.x < 0 || postion.y < 0) && !this.diagram.pageSettings.multiplePage) {
+            pageBounds = this.getPageBounds(undefined, undefined, true, true);
+        } else {
+            pageBounds = this.getPageBounds(undefined, undefined, true);
+        }
+        return pageBounds;
+    }
+
     /**
      * updateScrollOffsets method \
      *
@@ -183,7 +196,7 @@ export class DiagramScroller {
     public updateScrollOffsets(hOffset?: number, vOffset?: number): void {
         let offsetX: number = 0;
         let offsetY: number = 0;
-        const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
+        let pageBounds: Rect = this.getBounds();
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -215,7 +228,7 @@ export class DiagramScroller {
      */
     public setScrollOffset(hOffset: number, vOffset: number): void {
         this.scrolled = false;
-        const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
+        let pageBounds: Rect = this.getBounds();
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -485,11 +498,11 @@ export class DiagramScroller {
      *
      * @private
      */
-    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean): Rect {
+    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean, isnegativeRegion?:boolean): Rect {
         let rect: Rect = new Rect();
-        let pageBounds: Rect;
         const temp: number = 0;
-        if (region !== 'Content' && this.diagram.pageSettings.width !== null && this.diagram.pageSettings.height !== null) {
+        let pageBounds: Rect;
+        if (region !== 'Content' && !isnegativeRegion && this.diagram.pageSettings.width !== null && this.diagram.pageSettings.height !== null) {
             let width: number = this.diagram.pageSettings.width;
             let height: number = this.diagram.pageSettings.height;
             let negwidth: number = 0;

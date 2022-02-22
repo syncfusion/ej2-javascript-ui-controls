@@ -308,7 +308,7 @@ export class DialogEdit {
                 tempData.ganttProperties.duration = tempData[field];
                 tempData.ganttProperties.durationUnit = this.parent.durationUnit.toLocaleLowerCase();
             } else if (columns[i].field === taskSettings.name) {
-                tempData[field] = 'New Task ' + id;
+                tempData[field] = this.localeObj.getConstant('addDialogTitle')+' '+ id;
                 tempData.ganttProperties.taskName = tempData[field];
             } else if (columns[i].field === taskSettings.progress) {
                 tempData[field] = 0;
@@ -1112,10 +1112,17 @@ export class DialogEdit {
                     field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
                     edit: {
                         write: (args: CObject): void => {
-                            const datePickerModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
-                            const value: string = args.rowData[(args.column as GridColumnModel).field];
+			    let datePickerModel: object;
+			    if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString])) {
+                                datePickerModel = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+                            } else {
+                                let columnFields: string[] = this.getGeneralColumnFields();
+                                let columnModel: object = this.getFieldsModel(columnFields);
+                                datePickerModel = columnModel[this.parent.taskFields[fields[i]]];
+                            }
+			    const value: string = args.rowData[(args.column as GridColumnModel).field];
                             setValue('value', value, datePickerModel);
-							const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i]]].editType](datePickerModel);
+			    const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i]]].editType](datePickerModel);
                             datePicker.appendTo(args.element as HTMLElement);
                         },
                         read: (args: HTMLElement): Date => {
@@ -1137,8 +1144,15 @@ export class DialogEdit {
                     field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '100px',
                     edit: {
                         write: (args: CObject): void => {
-                            const inputTextModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
-                            (inputTextModel as TextBox).floatLabelType = 'Never';
+                            let inputTextModel: object;
+                            if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString])) {
+                             inputTextModel = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+                            } else {
+                                let columnFields: string[] = this.getGeneralColumnFields();
+                                let columnModel: object = this.getFieldsModel(columnFields);
+                                inputTextModel = columnModel[this.parent.taskFields[fields[i]]];
+                            }
+			    (inputTextModel as TextBox).floatLabelType = 'Never';
                             const value: string = args.rowData[(args.column as GridColumnModel).field];
                             if (!isNullOrUndefined(value)) {
                                 setValue('value', value, inputTextModel);
@@ -1188,7 +1202,7 @@ export class DialogEdit {
             inputValue = <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + 'SegmentsTabContainer' + columnName))
                 .ej2_instances[0] as DatePicker;
         }
-        if (inputValue.value !== tempValue.toString()) {
+        if (inputValue.value.toString() !== tempValue.toString()) {
             inputValue.value = tempValue as string;
             inputValue.dataBind();
         }

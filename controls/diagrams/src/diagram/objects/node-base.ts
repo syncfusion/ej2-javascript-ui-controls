@@ -3,7 +3,7 @@ import { Margin } from '../core/appearance';
 import { MarginModel } from '../core/appearance-model';
 import { DiagramTooltipModel } from './tooltip-model';
 import { DiagramTooltip } from './tooltip';
-import { FlipDirection } from '../enum/enum';
+import { FlipDirection, FlipMode } from '../enum/enum';
 import { SymbolPaletteInfoModel } from './preview-model';
 import { SymbolPaletteInfo } from './preview';
 
@@ -79,6 +79,15 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      */
     @Property('None')
     public flip: FlipDirection;
+
+    /**
+     * Allows you to flip only the node or along with port and label
+     *
+     * @aspDefaultValueIgnore
+     * @default All
+     */
+     @Property('All')
+     public flipMode: FlipMode;
 
     /**
      * Defines the symbol info of a connector

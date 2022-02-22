@@ -57,6 +57,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     protected tabIndex: string;
     private windowWidth: number;
     private targetEle: HTMLElement;
+    // Specifies the first render of Sidebar component.
+    private firstRender: boolean;
 
     /**
      * Specifies the size of the Sidebar in dock state.
@@ -274,6 +276,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.isOpen) {
             this.show();
+            this.firstRender = true;
         } else {
             this.setMediaQuery();
         }
@@ -384,9 +387,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private transitionEnd(e: Event): void {
         this.setDock();
-        if (!isNullOrUndefined(e)) {
+        if (!isNullOrUndefined(e) && !this.firstRender) {
             this.triggerChange();
         }
+        this.firstRender = false;
         EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     }
     private destroyBackDrop(): void {

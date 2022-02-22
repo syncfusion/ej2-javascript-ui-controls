@@ -570,8 +570,8 @@
     & .e-sheet .e-ss-overlay-active .e-ss-overlay-t {
       background-color: $selection-border-color;
       cursor: ns-resize;
+      left: 50%;
       position: absolute;
-      right: 50%;
       top: 0;
       transform: translate(-50%, -50%);
     }
@@ -588,8 +588,8 @@
     & .e-sheet .e-ss-overlay-active .e-ss-overlay-b {
       background-color: $selection-border-color;
       cursor: ns-resize;
+      left: 50%;
       position: absolute;
-      right: 50%;
       top: 100%;
       transform: translate(-50%, -50%);
     }
@@ -1908,14 +1908,17 @@
       bottom: 0;
       float: right;
       height: 18px;
-      margin-right: -1px;
       padding: 0;
-      position: relative;
+      position: absolute;
       right: 0;
       width: 20px;
       z-index: 2;
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         bottom: 1px;
+      }
+      @if $sheet-skin == 'material' or $sheet-skin == 'material-dark' {
+        bottom: .5px;
+        right: .5px;
       }
     }
   }

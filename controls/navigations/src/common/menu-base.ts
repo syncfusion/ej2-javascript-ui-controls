@@ -1177,8 +1177,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         } else {
                             this.setBlankIconStyle(this.popupWrapper);
                             this.wireKeyboardEvent(this.popupWrapper); rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
-                            this.popupWrapper.style.left = this.left + 'px';
-                            this.popupWrapper.style.top = this.top + 'px';
+                            if (this.popupWrapper.style.position === 'fixed' && this.top > 0) {
+                                this.popupWrapper.style.left = this.left + 'px';
+                                this.popupWrapper.style.top = this.top + scrollY + 'px';
+                            } else {
+                                this.popupWrapper.style.left = this.left + 'px';
+                                this.popupWrapper.style.top = this.top + 'px';
+                            }
                             const animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
                                 name: this.animationSettings.effect, duration: this.animationSettings.duration,
                                 timingFunction: this.animationSettings.easing
@@ -1676,21 +1681,23 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      * This method is used to set the menu item in the Menu based on the argument.
      *
      * @param {MenuItem} item - item need to be updated.
-     * @param {string} id - id to be passed to update the item.
+     * @param {string} id - id / text to be passed to update the item.
      * @param {boolean} isUniqueId - Set `true` if it is a unique id.
      * @returns {void}
      */
     public setItem(item: MenuItem, id?: string, isUniqueId?: boolean): void {
-        const idx: string = id ? id : item.id;
-        const isText: boolean = (isUniqueId === false) ? false : true;
-        const navIdx: number[] = this.getIndex(idx, isText);
+        let idx: string;
+        if (isUniqueId) {
+            idx =  id ? id : item.id;
+        } else {
+            idx =  id ? id : item.text;
+        }
+        const navIdx: number[] = this.getIndex(idx, isUniqueId);
         const newItem: MenuItemModel = this.getItem(navIdx);
-        newItem.iconCss = item.iconCss;
-        newItem.id = item.id;
-        newItem.text = item.text;
-        newItem.url = item.url;
-        newItem.separator = item.separator;
-        newItem.items = item.items;
+        newItem.iconCss = item.iconCss || newItem.iconCss;
+        newItem.text = item.text || newItem.text;
+        newItem.url = item.url || newItem.url;
+        newItem.separator = item.separator || newItem.separator;
     }
 
     private getItem(navIdx: number[]): MenuItemModel {

@@ -143,7 +143,15 @@ export class CanvasRenderer implements IRenderer {
         }
         ctx.setLineDash(dashArray);
         if (style.gradient && style.gradient.type !== 'None') {
-            this.renderGradient(style, ctx, (style as BaseAttributes).x, (style as BaseAttributes).y);
+            if (style.gradient.type === "Radial") {
+                if ((style as BaseAttributes).shapeType === "Rectangle") {
+                    this.renderGradient(style, ctx, (style as BaseAttributes).x, (style as BaseAttributes).y);
+                } else {
+                    this.renderGradient(style, ctx, 0, 0);
+                }
+            } else {
+                this.renderGradient(style, ctx, (style as BaseAttributes).x, (style as BaseAttributes).y);
+            }
         } else {
             ctx.fillStyle = style.fill;
         }

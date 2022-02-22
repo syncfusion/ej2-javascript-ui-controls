@@ -421,4 +421,106 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
+    describe('Rendering milestone based on milestone mapping', () => {
+        let ganttObj: Gantt;
+        let projectNewData = [
+            {
+              TaskID: 1,
+              TaskName: 'Product concept',
+              StartDate: new Date('04/02/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: 'Defining the product and its usage',
+                  StartDate: new Date('04/02/2019'),
+                  EndDate: new Date('04/02/2019'),
+                  Progress: 30,
+                  Milestone: false,
+                },
+                {
+                  TaskID: 3,
+                  TaskName: 'Defining target audience',
+                  StartDate: new Date('04/02/2019'),
+                  EndDate: new Date('04/02/2019'),
+                  Milestone: false,
+                },
+                {
+                  TaskID: 4,
+                  TaskName: 'Prepare product sketch and notes',
+                  StartDate: new Date('04/02/2019'),
+                  EndDate: new Date('04/02/2019'),
+                  Progress: 30,
+                  Milestone: true,
+                },
+              ],
+            },       
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        child: 'subtasks',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        milestone: 'Milestone',                       
+                    },                   
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    dayWorkingTime : [{
+                        from: 0,
+                        to: 24
+                    }],                    
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        { field: 'TaskName', headerText: 'Task Name', width: '180' },                      
+                        { field: 'Duration', width: '100' },                     
+                    ],
+                    height: '550px',                 
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        it('Render milestone', () => {
+            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(1);
+            expect(ganttObj.currentViewData[3].ganttProperties.duration).toBe(0);
+        });
+        
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
 });

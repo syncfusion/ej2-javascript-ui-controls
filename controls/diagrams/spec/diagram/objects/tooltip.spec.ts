@@ -1379,3 +1379,70 @@ describe('Connector tooltip does not update properly', () => {
         done();  
     });
 })
+describe('Tooltip support for the group node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_tooltip' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100,
+                 tooltip: { content: 'Node1', position: 'BottomRight', relativeMode: 'Object', animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } } },
+                constraints: NodeConstraints.Default | NodeConstraints.Tooltip, 
+            },
+            {
+                id: 'node2', height: 100, width: 100, offsetX: 300, offsetY: 100,
+                 tooltip: { content: 'Node2', position: 'BottomRight', relativeMode: 'Object', animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } } },
+                constraints: NodeConstraints.Default | NodeConstraints.Tooltip, 
+            },
+            {
+                id: 'group', children: ['node1', 'node2']
+            }
+        ];
+        
+       
+                diagram = new Diagram({
+                    width: '1000px', height: '1000px',
+                    nodes: nodes,
+                    constraints: DiagramConstraints.Default | DiagramConstraints.Tooltip,
+                    tooltip: { content: "Tooltip", position: 'TopLeft', relativeMode: 'Object', animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } } }
+                    
+                });
+                diagram.appendTo('#diagram_tooltip');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('checking group children-1 tooltip', (done: Function) => {
+        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 100);
+        var tooltipElement = document.getElementsByClassName('e-tip-content')[0];
+        expect(tooltipElement.childNodes[0].textContent === "Node1").toBe(true);
+        done();  
+    });
+    it('checking group children-2 tooltip', (done: Function) => {
+        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 100);
+        var tooltipElement = document.getElementsByClassName('e-tip-content')[0];
+        expect(tooltipElement.childNodes[0].textContent === "Node2").toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 450, 300);
+        done();  
+    });
+    it('checking group tooltip', (done: Function) => {
+        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 100);
+        var tooltipElement = document.getElementsByClassName('e-tip-content')[0];
+        expect(tooltipElement.childNodes[0].textContent === "Tooltip").toBe(true);
+        done();  
+    });
+})

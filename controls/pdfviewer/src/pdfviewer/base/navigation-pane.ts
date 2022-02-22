@@ -101,6 +101,10 @@ export class NavigationPane {
      * @private
      */
     public commentPanelResizer: HTMLElement;
+    /**
+     * @private
+     */
+     public restrictUpdateZoomValue: boolean = true;
 
     /**
      * Initialize the constructor of navigationPane.
@@ -898,7 +902,7 @@ export class NavigationPane {
      * @returns {void}
      */
     private resizeIconMouseOver = (event: MouseEvent): void => {
-        (event.srcElement as HTMLElement).style.cursor = 'default';
+        (event.srcElement as HTMLElement).style.cursor = 'e-resize';
     };
     /**
      * @param {MouseEvent} event - The event.
@@ -1089,7 +1093,9 @@ export class NavigationPane {
             proxy.pdfViewerBase.viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - proxy.sideToolbarWidth - proxy.getViewerContainerRight()) + 'px';
             // eslint-disable-next-line max-len
             proxy.pdfViewerBase.pageContainer.style.width = (proxy.pdfViewerBase.viewerContainer.offsetWidth - proxy.getViewerContainerScrollbarWidth()) + 'px';
+            if(this.restrictUpdateZoomValue){
             proxy.pdfViewerBase.updateZoomValue();
+            }
         }
     }
     /**
@@ -1245,7 +1251,7 @@ export class NavigationPane {
     }
 
     private removeThumbnailSelectionIconTheme(): void {
-        if (this.thumbnailButton) {
+        if (this.thumbnailButton && this.thumbnailButton.children[0]) {
             this.thumbnailButton.children[0].classList.add('e-pv-thumbnail-view-icon');
             this.thumbnailButton.children[0].classList.remove('e-pv-thumbnail-view-selection-icon');
             this.thumbnailButton.classList.remove('e-pv-thumbnail-view-button-selection');
@@ -1253,7 +1259,7 @@ export class NavigationPane {
     }
 
     private resetThumbnailIcon(): void {
-        if (this.thumbnailButton) {
+        if (this.thumbnailButton && this.thumbnailButton.children[0]){
             this.thumbnailButton.children[0].classList.remove('e-pv-thumbnail-view-icon');
             this.thumbnailButton.children[0].classList.add('e-pv-thumbnail-view-disable-icon');
         }
@@ -1298,7 +1304,7 @@ export class NavigationPane {
     }
 
     private removeBookmarkSelectionIconTheme(): void {
-        if (this.bookmarkButton) {
+        if (this.bookmarkButton && this.bookmarkButton.children[0]) {
             this.bookmarkButton.children[0].classList.add('e-pv-bookmark-icon');
             this.bookmarkButton.children[0].classList.remove('e-pv-bookmark-selection-icon');
             this.bookmarkButton.classList.remove('e-pv-bookmark-button-selection');
@@ -1360,7 +1366,7 @@ export class NavigationPane {
      * @returns {void}
      */
     public disableBookmarkButton(): void {
-        if (this.sideBarContentContainer) {
+        if (this.sideBarContentContainer && this.bookmarkButton && this.bookmarkButton.children[0]) {
             this.sideBarContentContainer.style.display = 'none';
             this.bookmarkButton.setAttribute('disabled', 'disabled');
             this.bookmarkButton.children[0].classList.add('e-pv-bookmark-disable-icon');
@@ -1464,14 +1470,15 @@ export class NavigationPane {
     public destroy(): void { 
         let bookmarkButtonInstance: any = this.bookmarkButton;
         let thumbnailButtonInstance: any = this.thumbnailButton;
-        if (bookmarkButtonInstance.ej2_instances){
+        if (bookmarkButtonInstance && bookmarkButtonInstance.ej2_instances && bookmarkButtonInstance.ej2_instances.length > 0) {
             bookmarkButtonInstance.ej2_instances[0].destroy();
         }
-        if (thumbnailButtonInstance.ej2_instances){
+        if (thumbnailButtonInstance && thumbnailButtonInstance.ej2_instances && thumbnailButtonInstance.ej2_instances.length > 0) {
             thumbnailButtonInstance.ej2_instances[0].destroy();
-        }        
+        } 
         if (this.annotationMenuObj) {
-            this.annotationMenuObj.destroy();
+            let annotationMenuElement : any = this.annotationMenuObj.element;
+            annotationMenuElement && annotationMenuElement.ej2_instances && annotationMenuElement.ej2_instances.length > 0 ? this.annotationMenuObj.destroy() : null;
         }
     }
     /**

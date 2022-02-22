@@ -1111,7 +1111,11 @@ export class TaskProcessor extends DateProcessor {
                 eDate.setHours(0, 0, 0, 0);
             }
         }
-        return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+        if ((sDate).getTime() === (eDate).getTime()) {
+            return (this.parent.perDayWidth);
+        } else {
+            return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+        }
     }
     /**
      * Get task left value
@@ -1197,14 +1201,16 @@ export class TaskProcessor extends DateProcessor {
             const resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
             // eslint-disable-next-line
             const resourcesId: number[] = []; let resourcesName: string[] = [];
-            for (let i: number = 0; i < resourceData.length; i++) {
-                resourcesId.push(resourceData[i][resourceSettings.id]);
-                let resName: string = resourceData[i][resourceSettings.name];
-                const resourceUnit: number = resourceData[i][resourceSettings.unit];
-                if (resourceUnit !== 100) {
-                    resName += '[' + resourceUnit + '%' + ']';
+            if (!isNullOrUndefined(resourceData)) {
+                for (let i: number = 0; i < resourceData.length; i++) {
+                    resourcesId.push(resourceData[i][resourceSettings.id]);
+                    let resName: string = resourceData[i][resourceSettings.name];
+                    const resourceUnit: number = resourceData[i][resourceSettings.unit];
+                    if (resourceUnit !== 100) {
+                        resName += '[' + resourceUnit + '%' + ']';
+                    }
+                    resourcesName.push(resName);
                 }
-                resourcesName.push(resName);
             }
             this.parent.setRecordValue('resourceNames', resourcesName.join(','), ganttProp, true);
             this.updateTaskDataResource(ganttData);

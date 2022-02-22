@@ -12,7 +12,10 @@ export class Print {
     private pdfViewerBase: PdfViewerBase;
     private printViewerContainer: HTMLElement;
     private printCanvas: HTMLCanvasElement;
-    private printRequestHandler: AjaxHandler;
+    /**
+     * @private
+     */
+    public printRequestHandler: AjaxHandler;
     // eslint-disable-next-line
     private frameDoc: any;
     // eslint-disable-next-line
@@ -150,8 +153,13 @@ export class Print {
                 proxy.printCanvas.style.width = pageWidth + 'px';
                 proxy.printCanvas.style.height = pageHeight + 'px';
                 const printScaleValue: number = 1.5;
-                proxy.printCanvas.height = 1056 * printScaleValue * window.devicePixelRatio;
-                proxy.printCanvas.width = 816 * printScaleValue * window.devicePixelRatio;
+                if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
+                    proxy.printCanvas.height = pageWidth * printScaleValue * window.devicePixelRatio;
+                    proxy.printCanvas.width = pageHeight * printScaleValue * window.devicePixelRatio;
+                } else {
+                    proxy.printCanvas.height = pageHeight * printScaleValue * window.devicePixelRatio;
+                    proxy.printCanvas.width = pageWidth * printScaleValue * window.devicePixelRatio;
+                }
                 const context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
                 const pageImage: HTMLImageElement = new Image();
                 const annotationImage: HTMLImageElement = new Image();
@@ -228,9 +236,13 @@ export class Print {
                         this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
                         inputField.InsertSpaces = currentData.InsertSpaces;
                         if (inputField.InsertSpaces) {
+                            const browserUserAgent: string = navigator.userAgent;
                             // eslint-disable-next-line
-                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseInt(inputField.style.fontSize) / 2)) - 0.5;
+                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.5;
                             // eslint-disable-next-line
+                            if ((browserUserAgent.indexOf('Firefox')) !== -1) {
+                                font = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 1.2;
+                            }
                             inputField.style.letterSpacing = '' + font + 'px';
                             inputField.style.fontFamily = 'monospace';
                         }
@@ -371,44 +383,46 @@ export class Print {
         } else {
             printDocument = this.printWindow.document;
         }
-        // tslint: disable-next-line:max-line-length
-        if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Safari') !== -1) ||
-            (browserUserAgent.indexOf('Firefox')) !== -1) {
-            //chrome and firefox
-            printDocument.write('<!DOCTYPE html>');
-            // tslint: disable-next-line:max-line-length
-            printDocument.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; }'
-                + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
-                + ' img { width:100%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; }'
-                // set default page Height and page Width for A4 size.
-                + ' div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center class="loader">');
-        } else {
-            //ie
-            printDocument.write('<!DOCTYPE html>');
-            // tslint: disable-next-line:max-line-length
-            printDocument.write('<html><head>'
-                + '<style>html, body { height: 100%; } img { height: 100%; width: 100%; }@media print { body { margin: 0cm; }'
-                + 'img { width:100%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; } '
-                // set default page Height and page Width for A4 size.
-                + 'div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center>');
-        }
         for (let i: number = 0; i < this.printViewerContainer.children.length; i++) {
+            const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
+            const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
+            let printHeight: number = pageHeight;
+            let printWidth: number = pageWidth;
+            if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
+                printHeight = pageWidth;
+                printWidth = pageHeight;
+            }
             // eslint-disable-next-line max-len
             const canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL();
-            printDocument.write('<div style="margin:0mm;width:816px;height:1056px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:816px;height:1056px;z-index:2"></div></div>');
+            printDocument.write('<div style="margin:0mm;width:' + printWidth.toString() + 'px;height:' + printHeight.toString() + 'px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:' + printWidth.toString() + 'px;height:' + printHeight.toString() + 'px;z-index:2"></div></div>');
             if (this.pdfViewer.formFieldsModule || this.pdfViewer.formDesignerModule) {
-                const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
-                const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
                 var heightRatio: number;
                 var widthRatio: number;
                 if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
-                    heightRatio = pageHeight / 816;
-                    widthRatio = pageWidth / 1056;
+                    heightRatio = pageHeight / pageWidth;
+                    widthRatio = pageWidth / pageHeight;
                 } else {
-                    heightRatio = pageHeight / 1056;
-                    widthRatio = pageWidth / 816;
+                    heightRatio = 1;
+                    widthRatio = 1;
                 }
                 this.renderFieldsForPrint(i, heightRatio, widthRatio);
+            }
+            if (i === 0) {
+                if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Safari') !== -1) ||
+                    (browserUserAgent.indexOf('Firefox')) !== -1) {
+                    printDocument.write('<!DOCTYPE html>');
+                    printDocument.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; width:100% }'
+                        + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
+                        + ' img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; }'
+                        + ' div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + printWidth.toString() + 'px ' + printHeight.toString() + 'px; }</style></head><body><center class="loader">');
+                }
+                else {
+                    printDocument.write('<!DOCTYPE html>');
+                    printDocument.write('<html><head>'
+                        + '<style>html, body { height: 100%; } img { height: 100%; width: 100%; }@media print { body { margin: 0cm; }'
+                        + 'img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; } '
+                        + 'div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + printWidth.toString() + 'px ' + printHeight.toString() + 'px; }</style></head><body><center>');
+                }
             }
         }
         if (Browser.isIE || Browser.info.name === 'edge') {

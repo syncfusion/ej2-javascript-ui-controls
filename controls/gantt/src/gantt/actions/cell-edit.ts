@@ -16,6 +16,7 @@ export class CellEdit {
      * @private
      */
     public isCellEdit: boolean = false;
+    public isResourceCellEdited: boolean = false;
     public editedColumn: ColumnModel;
     constructor(ganttObj: Gantt) {
         this.parent = ganttObj;
@@ -484,6 +485,7 @@ export class CellEdit {
         const resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
         const editedResourceId: string[] = editedObj[this.parent.taskFields.resourceInfo];
         if (editedResourceId) {
+            this.isResourceCellEdited = true;
             const tempResourceInfo: Object[] = this.parent.dataOperation.setResourceInfo(editedObj);
             const editedResouceLength: number = tempResourceInfo.length;
             const previousResource: Object[] = previousData.ganttProperties.resourceInfo;

@@ -764,33 +764,7 @@ export class PrintAndExport {
         };
     }
 
-    /** @private */
-    public getDiagramContent(styleSheets?: StyleSheetList): string {
-        const container: HTMLElement = document.getElementById(this.diagram.element.id + 'content');
-        const scrollerX: number = container.scrollLeft;
-        const scrollerY: number = container.scrollTop;
-        const oldZoom: number = this.diagram.scrollSettings.currentZoom;
-        const oldHorizontalOffset: number = this.diagram.scroller.horizontalOffset;
-        const oldVerticalOffset: number = this.diagram.scroller.verticalOffset;
-        const oldWidth: number = Number(String(this.diagram.width).split('%')[0]) ?
-            container.clientWidth : Number(String(this.diagram.width).split('px')[0]);
-        const oldHeight: number = Number(String(this.diagram.height).split('%')[0]) ?
-            container.clientHeight : Number(String(this.diagram.height).split('px')[0]);
-        const bounds: Rect = this.getDiagramBounds('', {});
-        this.diagram.scroller.zoom((1 / oldZoom));
-        let scrollX: number = 0;
-        let scrollY: number = 0;
-        scrollX = bounds.x;
-        scrollY = bounds.y;
-        this.diagram.scroller.transform = {
-            tx: -scrollX,
-            ty: -scrollY,
-            scale: this.diagram.scroller.currentZoom
-        };
-        this.diagram.scroller.horizontalOffset = -scrollX;
-        this.diagram.scroller.verticalOffset = -scrollY;
-        this.diagram.scroller.setSize();
-        this.diagram.setSize(bounds.width, bounds.height);
+    private getContent(styleSheets?: StyleSheetList): string {
         const snapConstraints: SnapConstraints = this.diagram.snapSettings.constraints;
         this.diagram.snapSettings.constraints = (this.diagram.snapSettings.constraints & ~SnapConstraints.ShowLines);
         this.diagram.dataBind();
@@ -808,26 +782,66 @@ export class PrintAndExport {
         htmlData = styleSheetRef + '<body style="margin: 0px; padding: 0px"><div style=\'' +
             marginStyle + '\'>' + htmlData + '</div></body>';
         htmlData = htmlData.replace(/ transform: t/g, ' -webkit-transform: t');
-        this.diagram.setSize(oldWidth, oldHeight);
-        this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
         this.diagram.snapSettings.constraints = snapConstraints;
         this.diagram.dataBind();
-        if (scrollerX || scrollerY) {
-            this.diagram.setOffset(scrollerX, scrollerY);
+        return htmlData;
+    }
+
+    /** @private */
+    public getDiagramContent(styleSheets?: StyleSheetList): string {
+        if (this.diagram.scroller.currentZoom === 1) {
+            let htmlData: string = this.getContent(styleSheets);
+            /* tslint:disable */
+            // eslint-disable-next-line quotes
+            return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
+            /* tslint:enable */
         } else {
+            const container: HTMLElement = document.getElementById(this.diagram.element.id + 'content');
+            const scrollerX: number = container.scrollLeft;
+            const scrollerY: number = container.scrollTop;
+            const oldZoom: number = this.diagram.scrollSettings.currentZoom;
+            const oldHorizontalOffset: number = this.diagram.scroller.horizontalOffset;
+            const oldVerticalOffset: number = this.diagram.scroller.verticalOffset;
+            const oldWidth: number = Number(String(this.diagram.width).split('%')[0]) ?
+                container.clientWidth : Number(String(this.diagram.width).split('px')[0]);
+            const oldHeight: number = Number(String(this.diagram.height).split('%')[0]) ?
+                container.clientHeight : Number(String(this.diagram.height).split('px')[0]);
+            const bounds: Rect = this.getDiagramBounds('', {});
+            this.diagram.scroller.zoom((1 / oldZoom));
+            let scrollX: number = 0;
+            let scrollY: number = 0;
+            scrollX = bounds.x;
+            scrollY = bounds.y;
             this.diagram.scroller.transform = {
-                tx: (oldHorizontalOffset) / this.diagram.scroller.currentZoom,
-                ty: (oldVerticalOffset) / this.diagram.scroller.currentZoom,
+                tx: -scrollX,
+                ty: -scrollY,
                 scale: this.diagram.scroller.currentZoom
             };
-            this.diagram.scroller.horizontalOffset = oldHorizontalOffset;
-            this.diagram.scroller.verticalOffset = oldVerticalOffset;
+            this.diagram.scroller.horizontalOffset = -scrollX;
+            this.diagram.scroller.verticalOffset = -scrollY;
+            this.diagram.scroller.setSize();
+            this.diagram.setSize(bounds.width, bounds.height);
+            let htmlData: string = this.getContent(styleSheets);
+            this.diagram.setSize(oldWidth, oldHeight);
+            this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
+            this.diagram.dataBind();
+            if (scrollerX || scrollerY) {
+                this.diagram.setOffset(scrollerX, scrollerY);
+            } else {
+                this.diagram.scroller.transform = {
+                    tx: (oldHorizontalOffset) / this.diagram.scroller.currentZoom,
+                    ty: (oldVerticalOffset) / this.diagram.scroller.currentZoom,
+                    scale: this.diagram.scroller.currentZoom
+                };
+                this.diagram.scroller.horizontalOffset = oldHorizontalOffset;
+                this.diagram.scroller.verticalOffset = oldVerticalOffset;
+            }
+            this.diagram.renderSelector(false);
+            /* tslint:disable */
+            // eslint-disable-next-line quotes
+            return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
+            /* tslint:enable */
         }
-        this.diagram.renderSelector(false);
-        /* tslint:disable */
-        // eslint-disable-next-line quotes
-        return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
-        /* tslint:enable */
     }
 
     /** @private */

@@ -166,6 +166,15 @@
             color: $tbar-active-font-color;
             }
           }
+
+        @if $skin-name == 'bootstrap5' {
+          color: $btn-flat-hover-color;
+
+          & .e-icons,
+          & .e-dropdown-btn {
+            color: $btn-flat-hover-color;
+            }
+          }
         }
 
       &.e-active {
@@ -192,6 +201,13 @@
         &:focus {
           background: $hdr-selection-bg-color;
           border-color: $hdr-selection-bg-color;
+        }
+      }
+
+      @if $skin-name == 'bootstrap5' {
+        &.e-active,
+        &:focus {
+          color: $btn-flat-active-color;
         }
       }
     }

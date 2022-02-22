@@ -284,6 +284,22 @@ describe('Gantt Edit module', () => {
                 expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[1]['unit']).toBe(100);
             }
         });
+        it('Editing parent task resource column by adding a resource', () => {
+            ganttObj.dataBind();
+            expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo).toBe(null);
+            let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(10)') as HTMLElement;
+            triggerMouseEvent(resource, 'dblclick');
+            let ddlElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolResource') as HTMLElement;
+            if (ddlElement) {
+                let input: any = ddlElement.ej2_instances[0];
+                input.value = [1];
+                input.dataBind();
+                let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+                triggerMouseEvent(element, 'click');
+                expect(ganttObj.currentViewData[0].ganttProperties.resourceNames).toBe('Resource 1');
+                expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+            }
+        });
          it('Editing duration column without resource unit and work mapping', () => {
              ganttObj.dataBind();
              //checking work values for task which have resource while before duration editing
@@ -1209,6 +1225,14 @@ describe('taskType with resourceUnit mapping', () => {
         let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
         triggerMouseEvent(update, 'click');
         expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo[0]['unit']).toBe(46.88);
+    });
+    it('Adding a new task after performing expand/collapse multiple times', () => {
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
+        triggerMouseEvent(element, 'dblclick');
+        ganttObj.openAddDialog();
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        triggerMouseEvent(saveButton, 'click');
+        expect(ganttObj.currentViewData[0]['TaskID']).toBe(10);
     });
     
     describe('Update notes tab', () => {

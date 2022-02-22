@@ -43,6 +43,9 @@
 
     .e-grid .e-gridheader {
       border-bottom-width: 1px;
+      @if($skin-name == 'bootstrap5') {
+        border-bottom-color: $border-light;
+      }
     }
 
     .e-gtot {
@@ -157,20 +160,19 @@
 
       &.e-value-sort-icon {
         margin: 0px !important;
-        padding-bottom: 10px !important;
-        padding-top: 10px !important;
+        padding: 2px 4px !important;
         @if ($pivotgrid-skin == 'bootstrap4') {
-          padding: 5px !important;
+          padding-bottom: 3px !important;
+          padding-top: 3px !important;
         }
         @if ($skin-name == 'tailwind') {
-          margin: -28px -5px !important;
-          padding-bottom: 30px !important;
-          padding-top: 30px !important;
+          padding-bottom: 0px !important;
+          padding-top: 0px !important;
         }
         @if ($skin-name == 'bootstrap5') {
           font-size: 12px !important;
-          padding-bottom: 8px !important;
-          padding-top: 8px !important;
+          padding-bottom: 4px !important;
+          padding-top: 4px !important;
         }
       }
     }
@@ -233,6 +235,14 @@
       }
     }
 
+    .sf-grid.e-responsive {
+      .e-stackedheadercelldiv .e-stackedheadertext,
+      .e-headercelldiv .e-headertext {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
     .e-grid .e-headercelldiv,
     .e-grid .e-columnsheader {
       padding-left: 8px !important;
@@ -247,8 +257,13 @@
       }
     }
 
-    .e-grid .e-headercelldiv,
-    .e-grid .e-stackedheadercelldiv {
+    .sf-grid .e-headercelldiv,
+    .sf-grid .e-columnsheader {
+      padding-right: 8px !important;
+    }
+
+    .sf-grid .e-headercelldiv,
+    .sf-grid .e-stackedheadercelldiv {
       line-height: normal;
     }
 
@@ -851,7 +866,7 @@
     }
     // sass-lint:enable-all  
 
-    .e-icons:not(.e-frame):not(.e-btn-icon):not(.e-sort):not(.e-dropdown-icon):not(.e-pv-filter):not(.e-pv-filtered):not(.e-remove):not(.e-edit) {
+    .e-icons:not(.e-frame):not(.e-btn-icon):not(.e-sort):not(.e-dropdown-icon):not(.e-pv-filter):not(.e-pv-filtered):not(.e-remove):not(.e-edit):not(.e-drag) {
       height: auto;
       width: auto;
     }

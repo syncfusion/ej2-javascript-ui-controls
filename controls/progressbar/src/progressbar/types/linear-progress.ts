@@ -73,7 +73,7 @@ export class Linear {
         let segmentWidth: number;
         let strippedStroke: string; const ismaximum: boolean = (progress.value === progress.maximum);
         const progressWidth: number = progress.calculateProgressRange(progress.argsData.value);
-        linearProgressWidth = progress.progressRect.width *
+        progress.previousWidth = linearProgressWidth = progress.progressRect.width *
                               ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
             linearProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearProgressGroup' });

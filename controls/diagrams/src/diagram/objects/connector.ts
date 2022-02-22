@@ -1990,12 +1990,12 @@ export class Connector extends NodeBase implements IElement {
 
         if (this.wrapper && this.wrapper.outerBounds) {
             const outerBounds: Rect = getOuterBounds(this);
-            const connWidth: number = (this.wrapper.bounds.width || this.style.strokeWidth || 1) - 2;
-            const connHeight: number = (this.wrapper.bounds.height || this.style.strokeWidth || 1) - 2;
+            const connWidth: number = Math.abs((this.wrapper.bounds.width || this.style.strokeWidth || 1) - 2);
+            const connHeight: number = Math.abs((this.wrapper.bounds.height || this.style.strokeWidth || 1) - 2);
             tx = (outerBounds.width - connWidth);
             ty = (outerBounds.height - connHeight);
-            sw = (width - (Math.max(tx, ty))) / connWidth;
-            sh = (height - (Math.max(tx, ty))) / connHeight;
+            sw = Math.abs((width - (Math.max(tx, ty))) / connWidth);
+            sh = Math.abs((height - (Math.max(tx, ty))) / connHeight);
             tx = ty = Math.min(tx, ty);
         }
 

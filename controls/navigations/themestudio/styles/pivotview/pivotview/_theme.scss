@@ -43,6 +43,9 @@
 
     .e-grid .e-gridheader {
       border-bottom-width: 1px;
+      @if($skin-name == 'bootstrap5') {
+        border-bottom-color: $border-light;
+      }
     }
 
     .e-gtot {

@@ -328,4 +328,160 @@ describe('Gantt toolbar support', () => {
             ganttObj.toolbarModule.destroy();
         });
     });
+     describe('Do indent in immutable mode ', () => {
+        let ganttObj: Gantt;
+        let editingData: Object[] = [
+            {
+              TaskID: 1,
+              TaskName: 'Project initiation',
+              StartDate: new Date('04/02/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: 'Identify site location',
+                  StartDate: new Date('04/02/2019'),
+                  Duration: 0,
+                  Progress: 30,
+                  resources: [1],
+                  info: 'Measure the total property area alloted for construction',
+                },
+                {
+                  TaskID: 3,
+                  TaskName: 'Perform soil test',
+                  StartDate: new Date('04/02/2019'),
+                  Duration: 4,
+                  Predecessor: '2',
+                  resources: [2, 3, 5],
+                  info:
+                    'Obtain an engineered soil test of lot where construction is planned.' +
+                    'From an engineer or company specializing in soil testing',
+                },
+                {
+                  TaskID: 4,
+                  TaskName: 'Soil test approval',
+                  StartDate: new Date('04/02/2019'),
+                  Duration: 0,
+                  Predecessor: '3',
+                  Progress: 30,
+                },
+              ],
+            },
+            {
+              TaskID: 5,
+              TaskName: 'Project estimation',
+              StartDate: new Date('04/02/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 6,
+                  TaskName: 'Develop floor plan for estimation',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 3,
+                  Predecessor: '4',
+                  Progress: 30,
+                  resources: 4,
+                  info: 'Develop floor plans and obtain a materials list for estimations',
+                },
+              ],
+            },
+          ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: editingData,
+                dateFormat: 'MMM dd, y',
+                enableImmutableMode: true,
+                taskFields: {
+                  id: 'TaskID',
+                  name: 'TaskName',
+                  startDate: 'StartDate',
+                  endDate: 'EndDate',
+                  duration: 'Duration',
+                  progress: 'Progress',
+                  dependency: 'Predecessor',
+                  child: 'subtasks',
+                  notes: 'info',
+                  resourceInfo: 'resources',
+                },
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true,
+                },
+                toolbar: ['Indent', 'Outdent'],
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '450px',
+                treeColumnIndex: 0,
+                resourceFields: {
+                  id: 'resourceId',
+                  name: 'resourceName',
+                },
+                highlightWeekends: true,
+                timelineSettings: {
+                  topTier: {
+                    unit: 'Week',
+                    format: 'MMM dd, y',
+                  },
+                  bottomTier: {
+                    unit: 'Day',
+                  },
+                },
+                columns: [
+                  { field: 'TaskID' },
+                  {
+                    field: 'TaskName',
+                    headerText: 'Job Name',
+                    width: '250',
+                    clipMode: 'EllipsisWithTooltip',
+                  },
+                  { field: 'StartDate' },
+                  { field: 'Duration' },
+                  { field: 'Progress' },
+                  { field: 'Predecessor' },
+                ],
+                eventMarkers: [
+                  { day: '4/17/2019', label: 'Project approval and kick-off' },
+                  { day: '5/3/2019', label: 'Foundation inspection' },
+                  { day: '6/7/2019', label: 'Site manager inspection' },
+                  { day: '7/16/2019', label: 'Property handover and sign-off' },
+                ],
+                labelSettings: {
+                  leftLabel: 'TaskName',
+                  rightLabel: 'resources',
+                },
+                editDialogFields: [
+                  { type: 'General', headerText: 'General' },
+                  { type: 'Dependency' },
+                  { type: 'Resources' },
+                  { type: 'Notes' },
+                ],
+                splitterSettings: {
+                  columnIndex: 2,
+                },
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Indent for children', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "indented") {
+                    expect(ganttObj.treeGrid.getRows()[5].getElementsByClassName('e-icons').length).toBe(4);
+                }
+            };
+            ganttObj.selectRow(4);
+            let indent: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_indent') as HTMLElement;
+            triggerMouseEvent(indent, 'click');
+        });
+    });
 });

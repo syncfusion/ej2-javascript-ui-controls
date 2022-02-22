@@ -399,6 +399,7 @@ export class SvgRenderer implements IRenderer {
             let offsetY: number = 0;
             let i: number = 0;
             let text: SVGTextElement;
+            let nodeContent: HTMLElement;
             if (parentSvg) {
                 text = parentSvg.getElementById(options.id + '_text') as SVGTextElement;
             }
@@ -414,7 +415,14 @@ export class SvgRenderer implements IRenderer {
                 if (options.whiteSpace === 'pre-wrap') {
                     text.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
                 }
-                canvas.appendChild(text);
+                if (parentNode) { nodeContent = document.getElementById(parentNode.id + '_content_groupElement'); }
+                if (nodeContent && parentNode && parentNode.children && parentNode.children[0] instanceof DiagramNativeElement) {
+                    let textTag: SVGGElement = this.createGElement('g', { id: ariaLabel + '_groupElement' });
+                    nodeContent.appendChild(textTag);
+                    textTag.appendChild(text);
+                } else {
+                    canvas.appendChild(text);
+                }
             }
             let pivotX: number = options.x + options.width * options.pivotX;
             let pivotY: number = options.y + options.height * options.pivotY;
@@ -630,7 +638,9 @@ export class SvgRenderer implements IRenderer {
             nativeElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             nativeElement.setAttribute('id', element.id + '_native_element');
             nativeElement.appendChild(element.template.cloneNode(true));
-            canvas.appendChild(nativeElement);
+            let svgContentTag: SVGGElement = this.createGElement('g', { id: element.id + '_inner_native_element' });
+            svgContentTag.appendChild(nativeElement);
+            canvas.appendChild(svgContentTag);
         }
         if (clipPath) {
             nativeElement.removeChild(clipPath);

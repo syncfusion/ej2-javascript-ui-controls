@@ -41,6 +41,10 @@ export class FocusModule {
     public onKeyPress(e: KeyboardEventArgs): void | boolean {
         const ganttObj: Gantt = this.parent;
         const expandedRecords: IGanttData[] = ganttObj.getExpandedRecords(ganttObj.currentViewData);
+        if (isNullOrUndefined(this.parent.focusModule.getActiveElement()) && (e.action === 'expandAll' || e.action === 'collapseAll')) {
+            const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
+            focussedElement.focus();
+        }
         const targetElement: Element = this.parent.focusModule.getActiveElement();
         if (e.action === 'home' || e.action === 'end' || e.action === 'downArrow' || e.action === 'upArrow' || e.action === 'delete' ||
             e.action === 'rightArrow' || e.action === 'leftArrow' || e.action === 'focusTask' || e.action === 'focusSearch' ||
@@ -153,9 +157,9 @@ export class FocusModule {
         {
             if (isNullOrUndefined(document.getElementById(this.parent.element.id + '_dialog'))) {
                 e.preventDefault();
-                const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-gantt-chart');
+                ganttObj.addRecord(undefined, this.parent.editSettings.newRowPosition);
+                const focussedElement: HTMLElement = <HTMLElement>ganttObj.element;
                 focussedElement.focus();
-                ganttObj.addRecord();
             }
             break;
         }

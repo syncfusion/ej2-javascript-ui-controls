@@ -2505,7 +2505,7 @@ export class CommandHandler {
     public checkObjectBehind(objectId: string, zIndexTable: {}, index: number): boolean {
         for (let i: number = 0; i < index; i++) {
             const z: string = zIndexTable[i];
-            if (objectId !== this.diagram.nameTable[z].parentId) {
+            if (this.diagram.nameTable[z] && objectId !== this.diagram.nameTable[z].parentId) {
                 return true;
             }
         }
@@ -3019,8 +3019,10 @@ export class CommandHandler {
                 const backNode: HTMLElement = getDiagramElement(nodeId + id, this.diagram.views[i]);
                 const diagramDiv: HTMLElement = targetID ? getDiagramElement(targetID + id, this.diagram.views[i])
                     : backNode.parentElement.firstChild as HTMLElement;
-                if ((backNode && backNode.parentNode as HTMLElement).id === (diagramDiv && diagramDiv.parentNode as HTMLElement).id) {
-                    diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
+                if (backNode && diagramDiv) {
+                    if ((backNode.parentNode as HTMLElement).id === (diagramDiv.parentNode as HTMLElement).id) {
+                        diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
+                    }
                 }
             }
         }
@@ -5772,7 +5774,7 @@ Remove terinal segment in initial
     public updateLaneChildrenZindex(node: Node, target: IElement): void {
         let lowerIndexobject: Node = this.findLeastIndexObject(node, target) as Node;
         let swimlane: Node = this.diagram.nameTable[(target as Node).parentId];
-        if (swimlane.zIndex > lowerIndexobject.zIndex) {
+        if (swimlane && swimlane.zIndex > lowerIndexobject.zIndex) {
             let layerIndex: number = this.diagram.layers.indexOf(this.diagram.getActiveLayer());
             const layerZIndexTable: {} = (this.diagram.layers[layerIndex] as Layer).zIndexTable;
             const tempTable: {} = JSON.parse(JSON.stringify(layerZIndexTable));

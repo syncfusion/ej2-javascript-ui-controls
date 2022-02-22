@@ -67,6 +67,7 @@ export class EditTooltip {
             tooltipPositionX += leftEnd - (tooltipPositionX + args.element.offsetWidth);
         }
         args.element.style.left = tooltipPositionX + 'px';
+        args.element.style.visibility = 'visible';
     }
     /**
      * To show/hide taskbar edit tooltip.

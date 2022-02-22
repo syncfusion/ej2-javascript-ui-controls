@@ -1014,12 +1014,21 @@ export function getContent(
         }
     } else if ((element as DiagramHtmlElement).isTemplate) {
         let compiledString: Function;
-        compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
-            /* eslint-enable */
-            // eslint-disable-next-line quotes
-            cloneObject(nodeObject), diagram, propertyName +"_"+  ((propertyName === "nodeTemplate")? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
-        for (let i: number = 0; i < compiledString.length; i++) {
-            div.appendChild(compiledString[i]);
+        if ((diagram as any).isReact) {
+            compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
+                /* eslint-enable */
+                // eslint-disable-next-line quotes
+                cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
+        } else {
+            compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
+                /* eslint-enable */
+                // eslint-disable-next-line quotes
+                cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
+        }
+        if (compiledString) {
+            for (let i: number = 0; i < compiledString.length; i++) {
+                div.appendChild(compiledString[i]);
+            }
         }
     } else {
         div.appendChild(element.content as HTMLElement);

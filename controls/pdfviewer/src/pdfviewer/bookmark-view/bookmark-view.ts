@@ -94,6 +94,9 @@ export class BookmarkView {
             if (proxy.pdfViewerBase.navigationPane) {
                 if (proxy.bookmarks == null) {
                     proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
+                    if (isBlazor() && proxy.pdfViewer._dotnetInstance) {
+                        proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', null);
+                    }
                 } else {
                     proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
                     proxy.isBookmarkViewDiv = false;
@@ -135,11 +138,9 @@ export class BookmarkView {
                 bookmarkIconView.appendChild(bookmarkIcon);
             }
             // eslint-disable-next-line max-len
-            const bookmarkTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_bookmark_Title', className: 'e-pv-bookmark-Title' });
+            const bookmarkTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_bookmark_Title', className: 'e-pv-bookmark-title' });
             if (this.pdfViewer.enableRtl) {
                 bookmarkTitle.style.paddingRight = 26 + 'px';
-            } else {
-                bookmarkTitle.style.paddingLeft = 40 + 'px';
             }
             bookmarkTitle.innerText = '${Title}';
             bookmarkIconView.appendChild(bookmarkTitle);
@@ -251,7 +252,7 @@ export class BookmarkView {
                             }
                         }
                         // eslint-disable-next-line
-                        let currentElement: any = element.getElementsByClassName('e-pv-bookmark-Title')[0];
+                        let currentElement: any = element.getElementsByClassName('e-pv-bookmark-title')[0];
                         if (currentElement) {
                             currentElement.style.color = this.bookmarkStyles[k].Color;
                         } else {
@@ -374,7 +375,7 @@ export class BookmarkView {
         if (this.bookmarksDestination) {
             this.bookmarksDestination.bookMarkDestination = [];
         }
-        if (this.bookmarkView != null) {
+        if (this.bookmarkView != null && !isBlazor()) {
             if (this.bookmarkView.parentElement !== null) {
                 this.bookmarkView.parentElement.removeChild(this.bookmarkView);
             }
@@ -382,6 +383,9 @@ export class BookmarkView {
                 this.bookmarkView.removeChild(this.bookmarkView.lastChild);
             }
         }
+        if (this.bookmarkRequestHandler) {
+            this.bookmarkRequestHandler.clear();
+        } 
     }
     /**
      * @private

@@ -554,13 +554,17 @@ export class FormDesignerToolbar {
         let componentElement: any = [this.textboxItem, this.passwordItem, this.checkboxItem, this.radioButtonItem,
         this.listboxItem, this.dropdownItem, this.handWrittenSignatureItem, this.deleteItem]; 
         for (let i: number = 0; i < componentElement.length; i++) {
-            this.destroyDependentComponent(componentElement[i]);
+            if (componentElement[i]) {
+                this.destroyDependentComponent(componentElement[i]);
+            }
         } 
     }
 
     private destroyDependentComponent(component: any): void {
-        for (let i: number = component.ej2_instances.length - 1; i >=0; i--) {
-             component.ej2_instances[i].destroy();
+        if (component.ej2_instances) {
+           for (let i: number = component.ej2_instances.length - 1; i >=0; i--) {
+                 component.ej2_instances[i].destroy();
+            }
         }
     }
 }

@@ -87,6 +87,18 @@ export class AjaxHandler {
             this.error(this);
         };
     }
+
+    /**
+     * Clear the http request
+     * @returns {void}
+     * @private
+     */
+     public clear(): void {
+        this.httpRequest && this.httpRequest.abort();
+        this.onSuccess = null;
+        this.onFailure = null;
+        this.onError = null;
+     }
     // eslint-disable-next-line
     private resendRequest(proxy: AjaxHandler, jsonObj: any): boolean {
         let isSkip: boolean = false;

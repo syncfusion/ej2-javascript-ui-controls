@@ -1206,6 +1206,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
             symbolPreviewWidth = (symbolPreview.width || this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
             symbolPreviewHeight = (symbolPreview.height || this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
+            if (symbol instanceof Connector) {
+                if (content.actualSize.width <= symbol.style.strokeWidth) {
+                    content.actualSize.width = this.symbolWidth;
+                }
+                if (content.actualSize.height <= symbol.style.strokeWidth) {
+                    content.actualSize.height = this.symbolHeight;
+                }
+            }
             sw = symbolPreviewWidth / content.actualSize.width;
             sh = symbolPreviewHeight / content.actualSize.height;
             sw = sh = Math.min(sw, sh);

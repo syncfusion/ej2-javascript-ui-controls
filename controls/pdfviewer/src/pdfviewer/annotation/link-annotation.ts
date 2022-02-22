@@ -2,6 +2,7 @@
 import { PdfViewer, PdfViewerBase } from '../index';
 import { createElement } from '@syncfusion/ej2-base';
 import { LineTool, PolygonDrawingTool } from '../drawing/tools';
+import { findObjectsUnderMouse } from '../drawing/action';
 
 /**
  * The `LinkAnnotation` module is used to handle link annotation actions of PDF viewer.
@@ -57,6 +58,30 @@ export class LinkAnnotation {
                 this.renderDocumentLink(this.linkAnnotation, this.linkPage, this.annotationY, pageIndex);
             }
         }
+    }
+
+    /** 
+     * @private
+     */
+    public disableHyperlinkNavigationUnderObjects(eventTarget: HTMLElement, evt: MouseEvent | TouchEvent, element: any): void {
+        let objects: any = findObjectsUnderMouse(element, element.pdfViewer, evt as MouseEvent);
+        if (objects.length > 0) {
+            if((evt.target as any).classList.contains('e-pv-hyperlink')) {
+                eventTarget.style.cursor = 'move';
+                eventTarget.style.pointerEvents = 'none';
+                eventTarget.title = '';
+            }
+       } else {
+           let hyperlinkObjects: any = document.getElementsByClassName('e-pv-hyperlink');
+           if (hyperlinkObjects && hyperlinkObjects.length > 0) {
+               for (let i: number = 0; i < hyperlinkObjects.length; i++) {
+                   if (hyperlinkObjects[i].style.pointerEvents === 'none')
+                        hyperlinkObjects[i].style.pointerEvents = 'all'; 
+                   if (!hyperlinkObjects[i].title)
+                        hyperlinkObjects[i].title = hyperlinkObjects[i].href;
+               }
+           }
+       }
     }
 
     private renderWebLink(hyperlinks: string[], hyperlinksBounds: number[], pageIndex: number): void {

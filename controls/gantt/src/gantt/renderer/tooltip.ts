@@ -213,6 +213,7 @@ export class Tooltip {
             tooltipPositionY = tooltipPositionY + 10;
         }
         args.element.style.top = tooltipPositionY + 'px';
+        args.element.style.visibility = 'visible';
     }
     /**
      * Method to get mouse pointor position

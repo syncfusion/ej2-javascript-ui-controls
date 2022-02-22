@@ -2,7 +2,65 @@
 
 ## [Unreleased]
 
+## 19.4.53 (2022-02-22)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I363057` - The issue with "The change event is triggered twice for the first change in Sidebar component" has been resolved.
+
 ## 19.4.52 (2022-02-15)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#SF-365188` - An issue with the toolbar item separator not being hidden in multi-row mode has been fixed.
+
+## 19.4.50 (2022-02-08)
+
+### Menu
+
+#### Bug Fixes
+
+- Issue with 'setItem' method has been fixed.
+
+## 19.4.47 (2022-01-25)
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- `#I360615` - Issue with When Breadcrumb is build, it throws style warning has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#SF-363121` - An issue with "script error occurred while adding a new tab item without content" has been fixed.
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- Issue with CSS validation has been fixed.
+
+## 19.4.41 (2022-01-04)
+
+### Menu
+
+#### Bug Fixes
+
+- Sub menu position alignment issue in menu has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#SF-359072` - An issue with active tab selection is not highlight when render inside the `dialog` has been fixed.
+
+## 19.4.40 (2021-12-28)
 
 ### Context Menu
 

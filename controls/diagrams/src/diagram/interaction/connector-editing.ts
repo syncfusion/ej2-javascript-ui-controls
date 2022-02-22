@@ -46,7 +46,7 @@ export class ConnectorEditing extends ToolBase {
         if (args.source && (args.source as SelectorModel).connectors) {
             connectors = (args.source as SelectorModel).connectors[0];
         }
-        if (args.info) {
+        if (args.info && args.actualObject) {
             edit = args.info.ctrlKey && (args.actualObject as ConnectorModel).type !== 'Orthogonal';
         }
         if (connectors && edit) {

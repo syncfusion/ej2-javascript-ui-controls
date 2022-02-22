@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
@@ -784,5 +784,143 @@ describe('Gantt taskbar editing', () => {
             setTimeout(done, 2000);
         });
     });
+  describe('CR issue', () => {
+        let ganttObj: Gantt;
 
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/03/2019'), Duration: 2, Progress: 30 },
+                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/09/2019'), Duration: 0 },
+                            ]
+                    }],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency:'Predecessor',
+                        child: 'subtasks'
+                },
+                includeWeekend: true,
+                editSettings: {
+                  allowAdding: true,
+                  allowDeleting: false,
+                  allowEditing: true,
+                  allowTaskbarEditing: true
+                }
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Avoid initial resize', () => {
+            ganttObj.actionComplete = (args: ITaskbarEditedEventArgs) => {
+                expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('04/03/2019 08:00');
+            };
+            ganttObj.dataBind();
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "taskbarediting" && args.taskBarEditAction == 'LeftResizing' && args.data.TaskID == 2) {
+                    args.cancel = true;
+                }
+            };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', -110, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+    });
+    describe('Multitaskbar issue', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: multiTaskbarData,
+                resources: resources,
+                viewType: 'ResourceView',
+                enableMultiTaskbar: true,
+                collapseAllParentTasks: true,
+                showOverAllocation: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    expandState: 'isExpand',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                actionComplete (args: any) {
+                    if(args.requestType == 'save') {
+                        expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(28);
+                    }
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                labelSettings: {
+                    taskLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    columnIndex: 2
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '450px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')            
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Timespan gets changed', () => {
+            ganttObj.openEditDialog(1);
+            let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(save, 'click');
+        });
+    });
 });

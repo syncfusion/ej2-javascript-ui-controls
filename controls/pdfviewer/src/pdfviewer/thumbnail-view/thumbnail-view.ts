@@ -12,7 +12,6 @@ export class ThumbnailView {
     private previousElement: HTMLElement;
     private thumbnailSelectionRing: HTMLElement;
     private thumbnailImage: HTMLImageElement;
-    private isThumbnailCompleted: boolean;
     private startIndex: number;
     private thumbnailLimit: number = 30;
     private thumbnailThreshold: number = 50;
@@ -81,18 +80,10 @@ export class ThumbnailView {
     }
 
     private requestCreation(proxy: ThumbnailView): void {
-        if (!proxy.isThumbnailCompleted) {
-            // eslint-disable-next-line max-len
-            proxy.thumbnailLimit = proxy.thumbnailLimit < proxy.pdfViewer.pageCount ? proxy.thumbnailLimit : proxy.pdfViewer.pageCount;
-            if (proxy.thumbnailLimit !== proxy.pdfViewer.pageCount) {
-                proxy.isThumbnailCompleted = false;
-                proxy.startIndex = 0;
-            }
-        } else {
-            proxy.startIndex = proxy.thumbnailLimit;
-            // eslint-disable-next-line max-len
-            proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
-        }
+        // Removed the condition to skip multiple request for thumbnail image.
+        proxy.startIndex = proxy.thumbnailLimit;
+        // eslint-disable-next-line max-len
+        proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
         // eslint-disable-next-line max-len
         const jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId  };
         if (this.pdfViewerBase.jsonDocumentId) {
@@ -119,11 +110,6 @@ export class ThumbnailView {
                 if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
                     proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderThumbnail, data);
                     proxy.renderThumbnailImage(data);
-                    if (!proxy.isThumbnailCompleted) {
-                        const index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;
-                        proxy.startIndex = index;
-                        proxy.isThumbnailCompleted = true;
-                    }
                     if (proxy.pdfViewer.isThumbnailViewOpen) {
                         proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true;
                         // eslint-disable-next-line max-len
@@ -228,7 +214,7 @@ export class ThumbnailView {
             const endPage: number = (data && isNaN(data.endPage)) ? data.endPage : this.thumbnailLimit;
             for (let i: number = startPage; i < endPage; i++) {
                 // eslint-disable-next-line max-len
-                const pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i , attrs: {'aria-label': 'Thumbnail of Page' + (i + 1) , 'tabindex': '-1', 'role': 'link' }}) as HTMLAnchorElement;
+                const pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i , attrs: {'aria-label': 'Thumbnail of Page' + (i + 1) , 'tabindex': '-1', 'role': 'link' }, className: 'e-pv-thumbnail-anchor-node'}) as HTMLAnchorElement;
                 // eslint-disable-next-line max-len
                 const thumbnail: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_' + i, className: 'e-pv-thumbnail e-pv-thumbnail-column' });
                 // eslint-disable-next-line max-len
@@ -403,7 +389,6 @@ export class ThumbnailView {
     public clear(): void {
         this.startIndex = 0;
         this.thumbnailLimit = 0;
-        this.isThumbnailCompleted = false;
         if (this.pdfViewerBase.navigationPane) {
             if (this.pdfViewerBase.navigationPane.sideBarContentContainer) {
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
@@ -418,6 +403,9 @@ export class ThumbnailView {
         }
         if (this.pdfViewerBase.navigationPane) {
             this.pdfViewerBase.navigationPane.resetThumbnailView();
+        }
+        if (this.thumbnailRequestHandler) {
+            this.thumbnailRequestHandler.clear();
         }
         this.unwireUpEvents();
     }

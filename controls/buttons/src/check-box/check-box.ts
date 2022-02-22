@@ -40,6 +40,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
     private wrapper: Element;
+    private clickTriggered: boolean = false;
 
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
@@ -195,6 +196,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private clickHandler(event: Event): void {
+        if ((event.target as HTMLElement).tagName === 'INPUT' && this.clickTriggered) {
+            event.stopPropagation();
+            this.clickTriggered = false;
+            return;
+        }
+        if ((event.target as HTMLElement).tagName === 'SPAN' || (event.target as HTMLElement).tagName === 'LABEL') {
+            this.clickTriggered = true;
+        }
         if (this.isMouseClick) {
             this.focusOutHandler();
             this.isMouseClick = false;
@@ -461,7 +470,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      */
     protected preRender(): void {
         let element: HTMLInputElement = this.element;
-        this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-CHECKBOX', 'checkbox', element, WRAPPER, 'checkbox');
         this.element = element;
@@ -529,15 +537,16 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected unWireEvents(): void {
         const wrapper: Element = this.wrapper;
-        EventHandler.remove(this.element, 'click', this.clickHandler);
+        EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         const label: Element = wrapper.getElementsByTagName('label')[0];
         EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);
         EventHandler.remove(label, 'mouseup', this.labelMouseUpHandler);
-        if (this.formElement) {
-            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        const formElem: HTMLFormElement = <HTMLFormElement>closest(this.element, 'form');
+        if (formElem) {
+            EventHandler.remove(formElem, 'reset', this.formResetHandler);
         }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.remove(this.element, 'change', this.changeHandler);
@@ -547,15 +556,16 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected wireEvents(): void {
         const wrapper: Element = this.getWrapper();
-        EventHandler.add(this.element, 'click', this.clickHandler, this);
+        EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         const label: Element = wrapper.getElementsByTagName('label')[0];
         EventHandler.add(label, 'mousedown', this.labelMouseDownHandler, this);
         EventHandler.add(label, 'mouseup', this.labelMouseUpHandler, this);
-        if (this.formElement) {
-            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        const formElem: HTMLFormElement = <HTMLFormElement>closest(this.element, 'form');
+        if (formElem) {
+            EventHandler.add(formElem, 'reset', this.formResetHandler, this);
         }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);

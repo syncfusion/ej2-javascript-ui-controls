@@ -1118,6 +1118,7 @@ export class TextMarkupAnnotation {
 
     // eslint-disable-next-line
     private renderHighlightAnnotation(bounds: any[], opacity: number, color: string, context: any, factor: number, isPrint: boolean, pageIndex: number): void {
+        let zoomRatio: any = this.pdfViewerBase.getZoomRatio(factor);
         for (let i: number = 0; i < bounds.length; i++) {
             // eslint-disable-next-line
             let bound: any = bounds[i];
@@ -1133,7 +1134,7 @@ export class TextMarkupAnnotation {
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
                 if (isPrint) {
                     // eslint-disable-next-line max-len
-                    context.rect((x * factor), (y * factor), (width * factor), (height * factor));
+                    context.rect((x * zoomRatio), (y * zoomRatio), (width * zoomRatio), (height * zoomRatio));
                     context.globalAlpha = opacity * 0.5;
                     context.closePath();
                     context.fillStyle = color;
@@ -1142,7 +1143,7 @@ export class TextMarkupAnnotation {
                 }
             } else {
                 // eslint-disable-next-line max-len
-                context.rect((x * factor), (y * factor), (width * factor), (height * factor));
+                context.rect((x * zoomRatio), (y * zoomRatio), (width * zoomRatio), (height * zoomRatio));
                 context.globalAlpha = opacity * 0.5;
                 context.closePath();
                 context.fillStyle = color;
@@ -1159,31 +1160,32 @@ export class TextMarkupAnnotation {
             // eslint-disable-next-line
             let bound: any = this.getProperBounds(bounds[i]);
             const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
+            let factorRatio : number = this.pdfViewerBase.getZoomRatio(factor); 
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
                 if (isPrint) {
                     if (pageDetails.rotation === 1) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factor, context, pageNumber);
+                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber);
                     } else if (pageDetails.rotation === 2) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factor, context, pageNumber);
+                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber);
                     } else if (pageDetails.rotation === 3) {
-                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factor, context, pageNumber);
+                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber);
                     } else {
-                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factor, context, pageNumber);
+                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber);
                     }
                 }
             } else {
                 if (pageDetails.rotation === 1) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factor, context, pageNumber);
+                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber);
                 } else if (pageDetails.rotation === 2) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factor, context, pageNumber);
+                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber);
                 } else if (pageDetails.rotation === 3) {
-                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factor, context, pageNumber);
+                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber);
                 } else {
-                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factor, context, pageNumber);
+                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber);
                 }
             }
         }
@@ -1194,14 +1196,15 @@ export class TextMarkupAnnotation {
         for (let i: number = 0; i < bounds.length; i++) {
             // eslint-disable-next-line
             let boundValues: any = this.getProperBounds(bounds[i]);
+            let factorRatio : number = this.pdfViewerBase.getZoomRatio(factor); 
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
                 if (isPrint) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factor, context, pageNumber);
+                    this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber);
                 }
             } else {
                 // eslint-disable-next-line max-len
-                this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factor, context, pageNumber);
+                this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber);
             }
         }
     }
@@ -1268,8 +1271,10 @@ export class TextMarkupAnnotation {
         canvas.style.height = 1056 + 'px';
         const pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
         const pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
-        canvas.height = pageHeight * this.pdfViewerBase.getZoomFactor();
-        canvas.width = pageWidth * this.pdfViewerBase.getZoomFactor();
+        let zoom : number = this.pdfViewerBase.getZoomFactor();
+        let zoomRatio : number = this.pdfViewerBase.getZoomRatio(zoom);
+        canvas.height = pageHeight * zoomRatio;
+        canvas.width = pageWidth * zoomRatio;
         // eslint-disable-next-line
         let textMarkupannotations: any = this.getAnnotations(pageIndex, null, '_annotations_textMarkup');
         // eslint-disable-next-line
@@ -1287,10 +1292,11 @@ export class TextMarkupAnnotation {
             this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
             this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
         }
+        let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         if (textMarkupannotations) {
-            this.renderTextMarkupAnnotations(null, pageIndex, canvas, 1);
+            this.renderTextMarkupAnnotations(null, pageIndex, canvas, zoomFactor);
         } else {
-            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageIndex, canvas, 1);
+            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageIndex, canvas, zoomFactor);
         }
         const imageSource: string = (canvas as HTMLCanvasElement).toDataURL();
         return imageSource;
@@ -1494,6 +1500,7 @@ export class TextMarkupAnnotation {
                     }
                     this.currentTextMarkupAnnotation = pageAnnotations[i];
                     this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(pageAnnotations[i]);
+                    this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], this.selectTextMarkupCurrentPage);
                 }
             }
         }
@@ -1518,7 +1525,7 @@ export class TextMarkupAnnotation {
                     if (removeDiv.parentElement.childElementCount === 1) {
                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
                     } else {
-                        removeDiv.remove();
+                        removeDiv.parentElement.removeChild(removeDiv);
                     }
                 }
                 pageAnnotations.splice(index, 1);
@@ -2368,6 +2375,7 @@ export class TextMarkupAnnotation {
     }
     // eslint-disable-next-line
     private drawAnnotationSelectRect(canvas: HTMLElement, x: number, y: number, width: number, height: number, annotation: any): void {
+        let ratio : number = this.pdfViewerBase.getZoomRatio();
         if (canvas) {
             const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
             context.setTransform(1, 0, 0, 1, 0, 0);
@@ -2380,7 +2388,7 @@ export class TextMarkupAnnotation {
                 }
                 context.setLineDash(lineDash);
                 context.globalAlpha = 1;
-                context.rect(x, y, width, height);
+                context.rect(x * ratio, y * ratio, width * ratio, height * ratio);
                 context.closePath();
                 // eslint-disable-next-line max-len
                 const borderColor: string = JSON.parse(annotation.annotationSelectorSettings).selectionBorderColor === '' ? '#0000ff' : JSON.parse(annotation.annotationSelectorSettings).selectionBorderColor;
@@ -2397,7 +2405,7 @@ export class TextMarkupAnnotation {
                 }
                 context.setLineDash(lineDash);
                 context.globalAlpha = 1;
-                context.rect(x, y, width, height);
+                context.rect(x * ratio, y * ratio, width * ratio, height * ratio);
                 context.closePath();
                 // eslint-disable-next-line max-len
                 const borderColor: string = (annotation.annotationSelectorSettings).selectionBorderColor === '' ? '#0000ff' : (annotation.annotationSelectorSettings).selectionBorderColor;
@@ -2443,7 +2451,7 @@ export class TextMarkupAnnotation {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElementInBlazor, this.currentTextMarkupAnnotation.color);
                     }
                 } else {
-                    if (!this.isTextMarkupAnnotationMode) {
+                    if (!isNullOrUndefined(this.isTextMarkupAnnotationMode) && !this.isTextMarkupAnnotationMode) {
                         if (!isBlazor()) {
                             // eslint-disable-next-line max-len
                             this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElement, '#000000');

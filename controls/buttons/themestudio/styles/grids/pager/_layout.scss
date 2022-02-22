@@ -574,16 +574,23 @@
    }
 
     &.sf-pager {
-      .e-last,
-      .e-mnext,
-      .e-mlast {
-        margin-left: -4px;
+      .e-pagercontainer .e-first,
+      .e-pagercontainer .e-prev,
+      .e-pagercontainer .e-next,
+      .e-pagercontainer .e-last {
+        font-size: $pager-icon-size;
       }
     }
 
     &.sf-pager {
-      .e-prev {
-        margin-left: -3px;
+      .e-numericcontainer a {
+        font-size: $pager-font-size;
+      }
+    }
+
+    &.sf-pager {
+      .e-pagercontainer {
+        font-size: 0;
       }
     }
 

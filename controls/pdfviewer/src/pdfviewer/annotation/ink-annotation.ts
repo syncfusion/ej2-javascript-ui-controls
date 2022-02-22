@@ -6,7 +6,7 @@ import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 export class InkAnnotation {
     private pdfViewer: PdfViewer;
@@ -97,6 +97,7 @@ export class InkAnnotation {
             this.pdfViewer.tool = 'Ink';
         }
         let zoom : any = this.pdfViewerBase.getZoomFactor();
+        let ratio : number = this.pdfViewerBase.getWindowDevicePixelRatio();;
         // eslint-disable-next-line
         let canvas: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
         // eslint-disable-next-line
@@ -106,6 +107,9 @@ export class InkAnnotation {
         const opacity: number = this.pdfViewer.inkAnnotationSettings.opacity ? this.pdfViewer.inkAnnotationSettings.opacity : 1;
         // eslint-disable-next-line max-len
         const strokeColor: string = this.pdfViewer.inkAnnotationSettings.strokeColor ? this.pdfViewer.inkAnnotationSettings.strokeColor : '#ff0000';
+        if (!Browser.isDevice || (Browser.isDevice && zoom <= 0.7)) {
+            context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
         context.beginPath();
         context.lineJoin = 'round';
         context.lineCap = 'round';
@@ -336,23 +340,41 @@ export class InkAnnotation {
             for (let n: number = 0; n < annotationCollection.length; n++) {
                 // eslint-disable-next-line
                 let currentAnnotation: any = annotationCollection[n];
-                // eslint-disable-next-line
                 if (currentAnnotation) {
                     // eslint-disable-next-line
-                    let bounds: any = currentAnnotation.Bounds;
-                    const currentLeft: number = bounds.X ? bounds.X : bounds.x;
-                    const currentTop: number = bounds.Y ? bounds.Y : bounds.y;
-                    const currentWidth: number = bounds.Width ? bounds.Width : bounds.width;
-                    const currentHeight: number = bounds.Height ? bounds.Height : bounds.height;
-                    // eslint-disable-next-line
                     let data: any = currentAnnotation.PathData;
-                    if (isImport) {
-                        if (currentAnnotation.IsPathData || currentAnnotation.PathData.split('command').length <= 1) {
-                            data = currentAnnotation.PathData;
+                    if (isImport && data) {
+                        if (typeof(data) === 'object' &&  data.length > 1) {
+                            data = getPathString(data);
                         } else {
-                            data = getPathString(JSON.parse(currentAnnotation.PathData));
+                            if (currentAnnotation.IsPathData || (data.split('command').length <= 1)) {
+                                data = data;
+                            } else {
+                                data = getPathString(JSON.parse(data));
+                            }
                         }
                     }
+                    this.outputString = data;
+                    // eslint-disable-next-line
+                    let calculateInkPosition: any = this.calculateInkSize();
+                    this.outputString = '';
+                    let rectDiff: number = 0;
+                    let rectDifference: number = 1;
+                    // eslint-disable-next-line
+                    let bounds: any = currentAnnotation.Bounds;
+                    if (calculateInkPosition) {
+                        if (calculateInkPosition.height < 1) {
+                            rectDiff = bounds.Height ? bounds.Height : bounds.height;
+                            rectDifference = bounds.Height ? bounds.Height : bounds.height;
+                        } else if (calculateInkPosition.width < 1) {
+                            rectDiff = bounds.Width ? bounds.Width : bounds.width;
+                            rectDifference = bounds.Width ? bounds.Width : bounds.width;
+                        }
+                    }
+                    const currentLeft: number = !isNullOrUndefined(bounds.X) ? bounds.X + (rectDiff / 2) : bounds.x + (rectDiff / 2);
+                    const currentTop: number = !isNullOrUndefined(bounds.Y) ? bounds.Y + (rectDiff / 2) : bounds.y + (rectDiff / 2);
+                    const currentWidth: number = bounds.Width ? bounds.Width - (rectDifference - 1) : bounds.width - (rectDifference - 1);
+                    const currentHeight: number = bounds.Height ? bounds.Height - (rectDifference - 1) : bounds.height - (rectDifference - 1);
                     let isLock: boolean = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings.isLock : false;
                     // eslint-disable-next-line
                     let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
@@ -365,6 +387,9 @@ export class InkAnnotation {
                     }
                     if (currentAnnotation.IsLocked) {
                         isLock = currentAnnotation.IsLocked;
+                    }
+                    if (currentAnnotation.Subject === 'Highlight' && currentAnnotation.Opacity === 1) {
+                        currentAnnotation.Opacity = currentAnnotation.Opacity / 2;
                     }
                     // eslint-disable-next-line max-len
                     currentAnnotation.allowedInteractions = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);

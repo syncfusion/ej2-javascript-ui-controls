@@ -181,7 +181,7 @@ export class ContextMenu implements IContextMenu {
                         (target).classList.contains('e-pv-text'))) {
                         this.onOpeningForShape(false);
                         // eslint-disable-next-line max-len
-                    } else if (this.pdfViewerBase.isCalibrateAnnotationModule() && this.pdfViewer.annotationModule.measureAnnotationModule.currentAnnotationMode && !currentAnnotSettings.isLock) {
+                    } else if (this.pdfViewerBase.isCalibrateAnnotationModule() && this.pdfViewer.annotationModule.measureAnnotationModule.currentAnnotationMode && !currentAnnotSettings) {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties')]);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');

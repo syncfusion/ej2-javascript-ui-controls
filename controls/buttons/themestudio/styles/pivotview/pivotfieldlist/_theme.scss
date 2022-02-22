@@ -67,11 +67,21 @@
     min-width: 300px !important;
     // sass-lint:enable-all
     .e-layout-footer {
+      display: flex;
       padding: 10px 2px 2px;
-      text-align: right;
 
-      .e-defer-apply-button {
-        margin-right: 10px;
+      .e-button-layout {
+        flex: auto;
+        text-align: end;
+
+        .e-defer-apply-button {
+          margin-right: 10px;
+        }
+
+        .e-cancel-btn,
+        .e-defer-apply-button {
+          min-width: fit-content;
+        }
       }
 
       .e-cancel-btn,
@@ -84,7 +94,7 @@
       }
 
       .e-checkbox-layout .e-label {
-        white-space: nowrap;
+        padding-right: 10px;
       }
 
       .e-checkbox-layout {
@@ -106,8 +116,6 @@
 
     &.e-rtl {
       .e-layout-footer {
-        text-align: left;
-
         .e-defer-apply-button {
           margin-left: 10px;
         }
@@ -1441,11 +1449,21 @@
     min-width: 300px;
 
     .e-layout-footer {
+      display: flex;
       padding: 10px 2px 2px;
-      text-align: right;
 
-      .e-defer-apply-button {
-        margin-right: 10px;
+      .e-button-layout {
+        flex: auto;
+        text-align: end;
+
+        .e-defer-apply-button {
+          margin-right: 10px;
+        }
+
+        .e-cancel-btn,
+        .e-defer-apply-button {
+          min-width: fit-content;
+        }
       }
 
       .e-cancel-btn,
@@ -1458,7 +1476,7 @@
       }
 
       .e-checkbox-layout .e-label {
-        white-space: nowrap;
+        padding-right: 10px;
       }
 
       .e-checkbox-layout {
@@ -1480,8 +1498,6 @@
 
     &.e-rtl {
       .e-layout-footer {
-        text-align: left;
-
         .e-defer-apply-button {
           margin-left: 10px;
         }

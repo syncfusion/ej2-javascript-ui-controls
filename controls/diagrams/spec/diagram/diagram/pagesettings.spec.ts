@@ -542,6 +542,57 @@ describe('PageSettings boundary constraints', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+
+    describe('Checking Page Break', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+
+            ele = createElement('div', { id: 'diagramconstraints' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100,
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200,
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350,
+            };
+            diagram = new Diagram({
+                width: '850px', height: '700px', nodes: [node, node2, node3],
+                pageSettings: {
+                    orientation: 'Landscape',
+                    width: 500, height: 500, showPageBreaks: true, multiplePage: false
+                }
+            });
+            diagram.appendTo('#diagramconstraints');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('By moving node into negative axis', (done: Function) => {
+            let pageArea: any = document.getElementById("diagramconstraints_backgroundLayerrect");
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, -400, -400);
+            expect(pageArea.width.baseVal.value === 500).toBe(true);
+            done();
+        });
+
+    });
+
     describe('Boundary Constraints rotate angle issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -2126,3 +2177,71 @@ describe('Multiple Select Tool Issue', () => {
     });
 })
 
+describe('Bezier annotation bounds Issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 200, annotations: [{ content: 'Node1' }]
+            },
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 500, annotations: [{ content: 'Node1' }]
+            }
+        ];
+        let connectors: ConnectorModel[] = [
+
+            {
+                id: 'connector1', type: 'Bezier',
+                segments: [{
+                    type: 'Bezier',
+                    vector1: { angle: 180, distance: 350 },
+                    vector2: { angle: 180, distance: 300 },
+                },],
+                sourceID: 'node1',
+                targetID: 'node2',
+                annotations: [{ content: 'Segment' }]
+
+            },
+
+        ];
+        diagram = new Diagram({
+            width: '750px',
+            height: '800px',
+            nodes: nodes,
+            connectors: connectors
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check the annotation bounds', (done: Function) => {
+        expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 102 && Math.floor(diagram.connectors[0].wrapper.children[3].bounds.y) === 345).toBe(true);
+        done();
+    });
+    it('Drag the node and check the bounds', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 500, 200);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 500, 200, 650, 250);
+        mouseEvents.clickEvent(diagramCanvas, 300, 500);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 300, 500, 400, 600);
+        expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 232 || Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 227).toBe(true);
+        expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.y) === 420 || Math.floor(diagram.connectors[0].wrapper.children[3].bounds.y) === 425).toBe(true);
+        done();
+    });
+})

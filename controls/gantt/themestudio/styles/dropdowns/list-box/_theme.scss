@@ -50,6 +50,14 @@
         height: $listbox-filter-height;
       }
 
+      &.e-select-all .e-list-parent {
+        height: $listbox-select-all-height;
+      }
+
+      &.e-filter-list.e-select-all .e-list-parent {
+        height: $listbox-filter-select-all-height;
+      }
+
       & .e-icons {
         @if $skin-name != 'bootstrap5' {
           color: $listview-icon-color;

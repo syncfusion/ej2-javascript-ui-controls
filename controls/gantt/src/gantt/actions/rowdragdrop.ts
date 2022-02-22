@@ -458,7 +458,7 @@ export class RowDD {
             if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
                 const rowPosition: RowPosition = this.dropPosition === 'topSegment' ? 'Above' : 'Below';
                 this.parent.editModule.addRowSelectedItem = droppedRecord;
-                this.parent.editModule.updateRealDataSource(draggedRecord, rowPosition);
+                this.parent.editModule.updateRealDataSource([draggedRecord], rowPosition);
                 delete this.parent.editModule.addRowSelectedItem;
             }
         }

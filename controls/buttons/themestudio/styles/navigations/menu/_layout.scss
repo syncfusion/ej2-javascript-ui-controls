@@ -15,7 +15,7 @@
     @at-root {
       & ul {
         @include ul-layout;
-        font-size: $menu-font-size;
+        font-size: 0;
         padding: $menu-ul-padding;
         text-align: left;
         white-space: nowrap;
@@ -53,6 +53,7 @@
         & .e-menu-item  {
           @include li-layout;
           display: inline-flex;
+          font-size: $menu-font-size;
           height: $menu-li-height;
           line-height: $menu-li-height;
           padding: $menu-li-padding;

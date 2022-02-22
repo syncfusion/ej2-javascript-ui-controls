@@ -309,7 +309,12 @@
           border-top-left-radius: 0;
           border-top-right-radius: 0;
           border-top-style: $qrybldr-rule-list-border-style;
-          border-top-width: 2px;
+          @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+            border-top-width: 1px;
+          }
+          @else {
+            border-top-width: 2px;
+          }
           margin-top: 0;
         }
 

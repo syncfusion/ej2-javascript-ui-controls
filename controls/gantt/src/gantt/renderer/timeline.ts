@@ -808,6 +808,7 @@ export class Timeline {
      * @private
      */
     private createTimelineTemplate(tier: string): string {
+        var isFirstCell = false;
         const parent: Gantt = this.parent;
         let parentTh: string = '';
         let parentTr: string = '';
@@ -824,13 +825,18 @@ export class Timeline {
             // PDf export collection
             const timelineCell: TimelineFormat = {};
             timelineCell.startDate = new Date(startDate.getTime());
-            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell);
-            scheduleDateCollection.push(new Date(startDate.toString()));
-            increment = this.getIncrement(startDate, count, mode);
-            if(this.parent.isInDst(startDate)) {
-                increment = increment + (1000 * 60 * 60);
+            if (mode === 'Month' && tier === 'bottomTier' && ((this.parent.currentZoomingLevel.level === 5) || (this.parent.currentZoomingLevel.level === 6)) && scheduleDateCollection.length === 0) {
+                isFirstCell = true;
             }
-            newTime = startDate.getTime() + increment;
+            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell, isFirstCell);
+            scheduleDateCollection.push(new Date(startDate.toString()));
+            if (isFirstCell) {
+                newTime = this.calculateQuarterEndDate(startDate).getTime();
+            } else {
+                increment = this.getIncrement(startDate, count, mode);
+                newTime = startDate.getTime() + increment;
+            }
+            isFirstCell = false;
             startDate.setTime(newTime);
             if (startDate >= endDate) {
                 /* eslint-disable-next-line */
@@ -892,24 +898,17 @@ export class Timeline {
                 dayIntervel - 1 : dayIntervel : dayIntervel;
             lastDay.setDate(lastDay.getDate() + (dayIntervel + (7 * count)));
             increment = lastDay.getTime() - firstDay.getTime();
-            if ((this.parent.isInDst(lastDay) && !this.parent.isInDst(firstDay)) ||
-                (!this.parent.isInDst(lastDay) && this.parent.isInDst(firstDay))) {
-                    increment = increment - (1000 * 60 * 60);
-            }
             break;
         }
         case 'Day':
             lastDay.setHours(24, 0, 0, 0);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24 * (count - 1));
-            if((this.parent.isInDst(lastDay) && !this.parent.isInDst(firstDay))||
-            (!this.parent.isInDst(lastDay) && this.parent.isInDst(firstDay))) {
-                increment -= (1000 * 60 * 60);
-            }
             break;
         case 'Hour':
             lastDay.setMinutes(60);
             lastDay.setSeconds(0);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * (count - 1));
+            increment = this.checkDate(firstDay, lastDay, increment, count);
             break;
         case 'Minutes':
             lastDay.setSeconds(60);
@@ -919,6 +918,20 @@ export class Timeline {
         return increment;
     }
 
+    private checkDate(firstDay: Date, lastDay: Date, increment: number, count: number): number {
+        var date = new Date(firstDay.getTime());
+        date.setTime(date.getTime() + increment);
+        if (((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+            var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60);
+            if (!this.parent.isInDst(date)) {
+                increment += (1000 * 60 * 60 * diffCount);
+            }
+            else if (this.parent.isInDst(date)) {
+                increment -= (1000 * 60 * 60 * diffCount);
+            }
+        }
+        return increment;
+    };
     /**
      * Method to find header cell was weekend or not
      *
@@ -931,6 +944,19 @@ export class Timeline {
         return (mode === 'Day' || mode === 'Hour' || mode === 'Minutes') && (this.customTimelineSettings[tier].count === 1 ||
             mode === 'Hour' || mode === 'Minutes') &&
             this.parent.nonWorkingDayIndex.indexOf(day.getDay()) !== -1;
+    }
+	
+    private calculateQuarterEndDate(date: Date) {
+        const month: number = date.getMonth();
+        if (month >= 0 && month <= 2) {
+            return new Date(date.getFullYear(), 3, 1);
+        } else if (month >= 3 && month <= 5) {
+            return new Date(date.getFullYear(), 6, 1);
+        } else if (month >= 6 && month <= 8) {
+            return new Date(date.getFullYear(), 9, 1);
+        } else {
+            return new Date(date.getFullYear() + 1, 0, 1);
+        }
     }
 
     /**
@@ -946,7 +972,7 @@ export class Timeline {
      * @private
      */
     /* eslint-disable-next-line */
-    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number, timelineCell?: TimelineFormat): string {
+    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number, timelineCell?: TimelineFormat, isFirstCell?: boolean): string {
         let parentTr: string = '';
         let td: string = '';
         const format: string = tier === 'topTier' ?
@@ -961,8 +987,8 @@ export class Timeline {
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = (this.getIncrement(scheduleWeeks, count, mode) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
         const cellWidth: number = thWidth;
-        thWidth = isLast ? this.calculateWidthBetweenTwoDate(
-            mode, scheduleWeeks, this.timelineRoundOffEndDate)
+        thWidth = isLast || isFirstCell ? isLast ? this.calculateWidthBetweenTwoDate(
+            mode, scheduleWeeks, this.timelineRoundOffEndDate) : this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks))
             : thWidth;
         const isWeekendCell: boolean = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         const textClassName: string = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
@@ -1003,10 +1029,6 @@ export class Timeline {
      */
     private calculateWidthBetweenTwoDate(mode: string, scheduleWeeks: Date, endDate: Date): number {
         let timeDifference: number = (endDate.getTime() - scheduleWeeks.getTime());
-        if ((this.parent.isInDst(scheduleWeeks) && !this.parent.isInDst(endDate)) ||
-                (!this.parent.isInDst(scheduleWeeks) && this.parent.isInDst(endDate))) {
-                    timeDifference = timeDifference - (1000 * 60 * 60);
-            }
         const balanceDay: number = (timeDifference / (1000 * 60 * 60 * 24));
         return balanceDay * this.parent.perDayWidth;
     }
@@ -1249,7 +1271,7 @@ export class Timeline {
                 const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
-                if (!isNullOrUndefined(maxStartLeft) && (maxStartLeft <= this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+                if (!isNullOrUndefined(maxStartLeft) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
                     isChanged = 'prevTimeSpan';
                     minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
                 } else {

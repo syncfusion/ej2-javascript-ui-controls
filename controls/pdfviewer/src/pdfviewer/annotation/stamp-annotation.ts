@@ -383,6 +383,9 @@ export class StampAnnotation {
      */
     // eslint-disable-next-line
     public renderStamp(X: number, Y: number, width: number, height: number, pageIndex: number, opacity: number, rotation: any, canvass: any, existingAnnotation: any, isDynamic?: any): any {
+        if (Browser.isDevice) {
+            this.pdfViewerBase.customStampCount += 1;
+        }
         // eslint-disable-next-line max-len
         let author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (this.pdfViewerBase.isDynamicStamp) {
@@ -510,13 +513,7 @@ export class StampAnnotation {
             this.storeStampInSession(pageIndex, annotationObject);
             if(this.isAddAnnotationProgramatically)
             {
-                // eslint-disable-next-line
-                let settings: any = {
-                    opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
-                    // eslint-disable-next-line
-                    fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
-                };
-                this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Stamp', annot.bounds, settings);
+                this.triggerAnnotationAdd(annot, annotation);
             }
             this.pdfViewer.add(annot as PdfAnnotationBase);
             // eslint-disable-next-line
@@ -528,7 +525,8 @@ export class StampAnnotation {
             // eslint-disable-next-line
             this.pdfViewer.renderDrawing(canvass as any, pageIndex);
             if (this.pdfViewerBase.stampAdded) {
-                // eslint-disable-next-line max-len
+                this.triggerAnnotationAdd(annot, annotation);
+                this.pdfViewerBase.isNewStamp = true;
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
             }
             this.pdfViewerBase.stampAdded = false;
@@ -560,7 +558,9 @@ export class StampAnnotation {
         this.pdfViewerBase.isDynamicStamp = false;
         this.dynamicText = '';
         this.currentStampAnnotation = null;
-        this.pdfViewerBase.customStampCount += 1;
+        if (!Browser.isDevice) {
+            this.pdfViewerBase.customStampCount += 1;
+        }
     }
     /**
      * @private
@@ -692,6 +692,9 @@ export class StampAnnotation {
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
         // eslint-disable-next-line
         let allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ? this.pdfViewer.stampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+        if (Browser.isDevice) {
+            this.pdfViewerBase.customStampCount += 1;
+        }
         if (isExistingStamp) {
             annotationName = annotation.AnnotName;
             author = annotation.Author;
@@ -790,7 +793,9 @@ export class StampAnnotation {
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
             }
         }
-        this.pdfViewerBase.customStampCount += 1;
+        if (!Browser.isDevice) {
+            this.pdfViewerBase.customStampCount += 1;
+        }
     }
     /**
      * @private
@@ -1600,6 +1605,18 @@ export class StampAnnotation {
         //Adding the annotation object to an array and return it
         stampAnnotations[0] = stickyNotes;
         return {stampAnnotations};  
+    } 
+    /**
+     * @private
+    */
+    public triggerAnnotationAdd(annot: any , annotation: any): void {
+      // eslint-disable-next-line
+      let settings: any = {
+        opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
+        // eslint-disable-next-line
+        fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
+       };
+     this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Stamp', annot.bounds, settings);
     }
 
 }

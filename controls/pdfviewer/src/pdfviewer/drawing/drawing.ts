@@ -221,6 +221,9 @@ export class Drawing {
                 }
             }
             setElementStype(obj, content);
+            if (this.pdfViewer.viewerBase.drawSignatureWithTool && (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText') {
+                content.style.strokeWidth = 0;
+            }
         }
         content.isRectElement = true;
         content.verticalAlignment = 'Stretch';
@@ -240,6 +243,7 @@ export class Drawing {
             // eslint-disable-next-line
             const htmlContent: DiagramHtmlElement = new DiagramHtmlElement();
             content = (htmlContent as DrawingElement);
+            content.rotateAngle = this.pdfViewer.formFieldsModule.getAngle(obj.pageIndex);
             content.id = obj.id + '_content';
             canvas.children.push(content);
             break;
@@ -489,7 +493,7 @@ export class Drawing {
             canvas.children.push(content);
             break;
         case 'SignatureText':
-            // eslint-disable-next-line
+            //eslint-disable-next-line
             let rectElements: any = new DrawingElement();
             rectElements.style.strokeWidth = 0;
             content = rectElements;
@@ -503,10 +507,9 @@ export class Drawing {
             signatureText.style.textAlign = 'Left';
             signatureText.rotateValue = undefined;
             signatureText.content = obj.data;
-            signatureText.margin.top = (obj.fontSize / 2);
-            signatureText.style.textWrapping = 'Wrap';
+            signatureText.margin.top = (obj.fontSize / 2); 
             signatureText.style.strokeWidth = 0;
-            canvas.children.push(signatureText);
+            canvas.children.push(signatureText);   
             break;
         case 'FreeText':
             // eslint-disable-next-line
@@ -806,7 +809,8 @@ export class Drawing {
                 }
             }
         }
-        if (obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
+        if (obj.formFieldAnnotationType === 'Textbox' || obj.formFieldAnnotationType === 'Checkbox' || obj.formFieldAnnotationType === 'RadioButton'
+            || obj.formFieldAnnotationType === 'PasswordField' || obj.formFieldAnnotationType === 'DropdownList' || obj.formFieldAnnotationType === 'ListBox' || obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
             for (let i: number = 0; i < this.pdfViewer.formFieldCollections.length; i++) {
                 // eslint-disable-next-line
                 const element: any = this.pdfViewer.formFieldCollections[i];
@@ -859,16 +863,22 @@ export class Drawing {
             diagramLayer = (document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex) as HTMLCanvasElement);
         }
         if (diagramLayer) {
-            const width: number = diagramLayer.width / this.pdfViewer.viewerBase.getZoomFactor();
-            const height: number = diagramLayer.height / this.pdfViewer.viewerBase.getZoomFactor();
             const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
+            const width: number = diagramLayer.width / zoom;
+            const height: number = diagramLayer.height / zoom;  
             const ctx: CanvasRenderingContext2D = diagramLayer.getContext('2d');
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
             if (zoom < 1) {
-                ctx.lineWidth =  ctx.lineWidth / zoom;
+                ctx.lineWidth = ctx.lineWidth / zoom;
             }
-            ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+            let devicePixelRatio: number = this.pdfViewer.viewerBase.getWindowDevicePixelRatio();
+            let zoomRatio: number = zoom * devicePixelRatio;
+            if (!Browser.isDevice || (Browser.isDevice && zoom <= 0.7)) {
+                ctx.setTransform(zoomRatio, 0, 0, zoomRatio, 0, 0);
+            } else {
+                ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+            }
             ctx.clearRect(0, 0, width, height);
 
             const objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(pageIndex);
@@ -1069,7 +1079,7 @@ export class Drawing {
                             if (node.annotName !== '') {
                                 if (helper && (node === helper) && !node.formFieldAnnotationType) {
                                     // eslint-disable-next-line max-len
-                                    if (!this.pdfViewer.viewerBase.isAddComment && !this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove && !this.pdfViewer.viewerBase.isInkAdded) {
+                                    if (!this.pdfViewer.viewerBase.isAddComment && !this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove && !this.pdfViewer.viewerBase.isInkAdded && !this.pdfViewer.viewerBase.isNewStamp) {
                                         this.pdfViewer.viewerBase.isAnnotationSelect = true;
                                         this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
                                     }
@@ -2084,7 +2094,7 @@ export class Drawing {
         for (let i: number = 0; i < objArray.length; i++) {
             // eslint-disable-next-line
             let obj: any = (this.pdfViewer.nameTable as any)[objArray[i]];
-            if (obj.formFieldAnnotationType) {
+            if (obj.formFieldAnnotationType && this.pdfViewer.designerMode) {
                 selectorModel.formFields.push(obj);
                 this.initSelectorWrapper();
                 selectorModel.wrapper.children.push(obj.wrapper);
@@ -2354,6 +2364,7 @@ export class Drawing {
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
                     if (children[i].textNodes) {
+                        actualObject.labelFillColor = node.labelFillColor;
                         children[i].style.fill = node.labelFillColor;
                     }
                 }
@@ -2456,6 +2467,9 @@ export class Drawing {
                 let children: any[] = actualObject.wrapper.children;
                 children[1].style.fontSize = node.fontSize;
                 if (actualObject.shapeAnnotationType === 'SignatureText') {
+                    actualObject.wrapper.children[1].bounds.width = actualObject.bounds.width;
+                    actualObject.wrapper.children[1].desiredSize.width = actualObject.bounds.width;
+                    actualObject.wrapper.children[1].actualSize.width = actualObject.bounds.width; 
                     children[1].horizontalAlignment = 'Center';
                     children[1].verticalAlignment = 'Center';
                     children[1].setOffsetWithRespectToBounds(0, 0, 'Absolute');
@@ -2710,9 +2724,6 @@ export class Drawing {
                                 var childHeight: any = children[i].textNodes[0].dy * (index + 1);
                                 // eslint-disable-next-line
                                 childHeight = childHeight;
-                                if (childHeight > actualObject.bounds.height && !Browser.isDevice) {
-                                    break;
-                                }
                                 contString = contString + children[i].textNodes[index].text;
                             }
                             children[i].content = contString;
@@ -3249,6 +3260,7 @@ export class Drawing {
      * @returns {void}
      */
     public paste(obj: PdfAnnotationBaseModel[], index: number): void {
+        let zoomfactor: number = this.pdfViewer.viewerBase.getZoomFactor();
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);
         if (obj || this.pdfViewer.clipboardData.clipObject) {
@@ -3279,8 +3291,8 @@ export class Drawing {
                     } else {
                         if (pageDiv) {
                             const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
-                            copy.bounds.x = events.clientX - pageCurrentRect.left;
-                            copy.bounds.y = events.clientY - pageCurrentRect.top;
+                            copy.bounds.x = (events.clientX - pageCurrentRect.left) / zoomfactor;
+                            copy.bounds.y = (events.clientY - pageCurrentRect.top) / zoomfactor;
                         }
                     }
                     const newNode: PdfAnnotationBaseModel = cloneObject(copy);
@@ -3326,7 +3338,7 @@ export class Drawing {
                             isPrint: addedAnnot.isPrint, isSelected: (addedAnnot as PdfFormFieldBaseModel).isSelected, isChecked: (addedAnnot as PdfFormFieldBaseModel).isChecked, tooltip:  (addedAnnot as PdfFormFieldBaseModel).tooltip, bounds: addedAnnot.bounds as IFormFieldBound, thickness: addedAnnot.thickness, borderColor: (addedAnnot as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (addedAnnot as PdfFormFieldBaseModel).signatureIndicatorSettings };
                         this.pdfViewer.formFieldCollections.push(formField);
                         // eslint-disable-next-line max-len
-                        this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageNumber - 1, this.pdfViewer);
+                        this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageIndex, this.pdfViewer);
                     }
                     this.pdfViewer.select([newNode.id], this.pdfViewer.annotationSelectorSettings);
                     if (!addedAnnot.formFieldAnnotationType) {
@@ -3340,6 +3352,7 @@ export class Drawing {
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
     }
     private calculateCopyPosition(copy: PdfAnnotationBaseModel, pageDiv: HTMLElement, events: MouseEvent): void {
+        let zoomfactor: number = this.pdfViewer.viewerBase.getZoomFactor();
         let x1: number;
         let y1: number;
         let x2: number;
@@ -3350,8 +3363,8 @@ export class Drawing {
                     const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
                     x1 = copy.vertexPoints[i].x;
                     y1 = copy.vertexPoints[i].y;
-                    copy.vertexPoints[i].x = events.clientX - pageCurrentRect.left;
-                    copy.vertexPoints[i].y = events.clientY - pageCurrentRect.top;
+                    copy.vertexPoints[i].x = (events.clientX - pageCurrentRect.left) / zoomfactor;
+                    copy.vertexPoints[i].y = (events.clientY - pageCurrentRect.top)  / zoomfactor;
                     x2 = copy.vertexPoints[i].x;
                     y2 = copy.vertexPoints[i].y;
                 } else {

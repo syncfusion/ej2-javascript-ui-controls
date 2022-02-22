@@ -15,6 +15,19 @@ $spin-label-font-size: 13px !default;
 $spin-label-margin-top: 16px !default;
 $spin-label-color: rgba($grey-light-font, .87) !default;
 $spin-padding: 10px !default;
+$spin-boot5-stroke-width: 4;
+$spin-tailwind-stroke-width: 4.5;
+$spin-boot5-stroke-color: $accent;
+$spin-tailwind-arc-color: $accent;
+$spin-tailwind-stroke-color: rgba($accent, .4);
+
+@mixin boot5-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
+}
+
+@mixin tw-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.21, .21, .21, .21);
+}
 
 @mixin mat-spinner-rotate {
   animation: material-spinner-rotate 1568.63ms linear infinite;

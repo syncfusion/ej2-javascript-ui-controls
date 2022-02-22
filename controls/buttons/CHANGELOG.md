@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
-## 19.4.52 (2022-02-15)
+## 19.4.53 (2022-02-22)
+
+### Radio Button
+
+#### Bug Fixes
+
+- Issue with accessing the element in the destroy method of radio button has been resolved.
+
+## 19.4.50 (2022-02-08)
+
+### Checkbox
+
+#### Bug Fixes
+
+- Issue with Checkbox value not being posted in form has been resolved.
+
+## 19.4.42 (2022-01-11)
+
+### Checkbox
+
+#### Bug Fixes
+
+- Issue with checkbox in talkback has been resolved.
+
+## 19.4.38 (2021-12-17)
 
 ### Chips
 

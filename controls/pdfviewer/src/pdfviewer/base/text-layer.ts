@@ -160,7 +160,7 @@ export class TextLayer {
     private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number): void {
         const scaleString: string = 'scaleX(' + scale + ')';
         if (rotation === 0) {
-            if (textRotation === 0) {
+            if (textRotation >= 0 && textRotation <= 90) {
                 textDiv.style.transform = scaleString;
             } else {
                 textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;

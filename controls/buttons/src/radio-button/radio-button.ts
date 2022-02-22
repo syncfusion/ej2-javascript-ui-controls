@@ -33,6 +33,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     private initialCheckedValue: boolean;
     private angularValue: string;
     private isVue: boolean;
+    private wrapper: Element;
 
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
@@ -170,25 +171,27 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @returns {void}
      */
     public destroy(): void {
-        const radioWrap: Element = this.element.parentElement;
+        const radioWrap: Element = this.wrapper;
         super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            if (radioWrap.parentNode) {
-                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+        if (radioWrap) {
+            if (!this.disabled) {
+                this.unWireEvents();
             }
-            detach(radioWrap);
-            this.element.checked = false;
-            ['name', 'value', 'disabled'].forEach((key: string) => {
-                this.element.removeAttribute(key);
-            });
-        } else {
-            ['role', 'aria-checked', 'class'].forEach((key: string) => {
-                radioWrap.removeAttribute(key);
-            });
-            radioWrap.innerHTML = '';
+            if (this.tagName === 'INPUT') {
+                if (radioWrap.parentNode) {
+                    radioWrap.parentNode.insertBefore(this.element, radioWrap);
+                }
+                detach(radioWrap);
+                this.element.checked = false;
+                ['name', 'value', 'disabled'].forEach((key: string) => {
+                    this.element.removeAttribute(key);
+                });
+            } else {
+                ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                    radioWrap.removeAttribute(key);
+                });
+                radioWrap.innerHTML = '';
+            }
         }
     }
 
@@ -429,6 +432,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             this.wireEvents();
         }
         this.renderComplete();
+        this.wrapper = this.getWrapper();
     }
 
     private setDisabled(): void {
@@ -470,12 +474,12 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     protected unWireEvents(): void {
-        const label: Element = this.getLabel();
+        const label: Element = this.wrapper;
         EventHandler.remove(this.element, 'change', this.changeHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
-        const rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
+        const rippleLabel: Element = label.getElementsByTagName('label')[0];
         if (rippleLabel) {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
             EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);

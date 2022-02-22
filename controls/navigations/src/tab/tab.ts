@@ -331,7 +331,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private draggingItems: TabItemModel[];
     private draggableItems: Draggable[] = [];
     private tbId: string;
-    private resizeContext: EventListenerObject = this.refreshActElePosition.bind(this);
+    private resizeContext: EventListenerObject = this.refreshActiveTabBorder.bind(this);
     /**
      * Contains the keyboard configuration of the Tab.
      */
@@ -1018,7 +1018,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             trg.classList.remove(CLS_CLOSE_SHOW);
         }
         this.tbObj.refreshOverflow();
-        this.refreshActElePosition();
+        this.refreshActiveTabBorder();
     }
     private prevCtnAnimation(prev: number, current: number): AnimationModel {
         let animation: AnimationModel;
@@ -1203,6 +1203,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private getContent(ele: HTEle, cnt: Str | HTEle, callType: string, index: number): void {
         let eleStr: Str;
+        cnt = isNOU(cnt) ? "" : cnt;
         if (typeof cnt === 'string' || isNOU((<HTEle>cnt).innerHTML)) {
             if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
                 cnt = SanitizeHtmlHelper.sanitize(<Str>cnt);
@@ -1700,7 +1701,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 break;
         }
     }
-    private refreshActElePosition(): void {
+    /**
+     * Refresh the active tab border
+     *
+     * @returns {void}
+     * @private
+     */
+    public refreshActiveTabBorder(): void {
         const activeEle: Element = select('.' + CLS_TB_ITEM + '.' + CLS_TB_POPUP + '.' + CLS_ACTIVE, this.element);
         if (!isNOU(activeEle) && this.reorderActiveTab) {
             this.select(this.getEleIndex(<HTEle>activeEle));
@@ -2418,7 +2425,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.setCloseButton(newProp.showCloseButton);
                     break;
                 case 'reorderActiveTab':
-                    this.refreshActElePosition();
+                    this.refreshActiveTabBorder();
                     break;
                 case 'selectedItem':
                     this.selectedItem = oldProp.selectedItem;
@@ -2433,7 +2440,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 case 'overflowMode':
                     this.tbObj.overflowMode = newProp.overflowMode;
                     this.tbObj.dataBind();
-                    this.refreshActElePosition();
+                    this.refreshActiveTabBorder();
                     break;
                 case 'heightAdjustMode':
                     this.setContentHeight(false);

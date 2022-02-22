@@ -8,6 +8,218 @@ export let projectResources: Object[] = [
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
 
+export let filteredData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Launch and flight to lunar orbit',
+        StartDate: new Date('07/16/1969'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Apollo 11 blasts off from launch pad', StartDate: new Date('07/16/1969 03:32:00 AM'),
+                EndDate: new Date('07/16/1969 03:32:00 AM'), Duration: 0,
+            },
+            {
+                TaskID: 3, TaskName: 'Entry to Earth’s orbit', StartDate: new Date('07/16/1969 03:32:00 AM'),
+                EndDate: new Date('07/16/1969 03:44:00 AM'), Predecessor: '2FS'
+            },
+            {
+                TaskID: 4, TaskName: 'Travelling in earth’s orbit', StartDate: new Date('07/16/1969 03:44:00 AM'),
+                EndDate: new Date('07/16/1969 04:22:13 AM'), Predecessor: '3FS'
+            },
+            {
+                TaskID: 5, TaskName: 'Trajectory change toward the Moon', StartDate: new Date('07/16/1969 04:22:13 AM'),
+                EndDate: new Date('07/16/1969 04:52:00 AM'), Predecessor: '4FS'
+            },
+            {
+                TaskID: 6, TaskName: 'Extraction maneuver performed', StartDate: new Date('07/16/1969 04:52:00 AM'),
+                EndDate: new Date('07/16/1969 04:52:00 AM'), Predecessor: '5FS'
+            },
+            {
+                TaskID: 7, TaskName: 'Travelling toward moon and entering into lunar orbit', StartDate: new Date('07/16/1969 04:52:00 AM'),
+                EndDate: new Date('07/16/1969 04:21:50 PM'), Predecessor: '6FS'
+            },
+            {
+                TaskID: 8, TaskName: 'Midcourse correction, sharpening the course and testing the engine',
+                StartDate: new Date('07/16/1969 11:22:00 PM'), EndDate: new Date('07/17/1969 05:21:50 AM')
+            },
+            {
+                TaskID: 9, TaskName: 'Reached half the distance spanning between earth and moon',
+                StartDate: new Date('07/17/1969 05:22:00 AM'), EndDate: new Date('07/17/1969 08:00:50 PM')
+            },
+            {
+                TaskID: 10, TaskName: 'Reached 3/4th distance spanning between earth and moon',
+                StartDate: new Date('07/17/1969 8:02:00 PM'), EndDate: new Date('07/18/1969 04:21:50 PM')
+            },
+            {
+                TaskID: 11, TaskName: 'Reached distance 45000 miles from moon',
+                StartDate: new Date('07/18/1969 11:22:00 PM'), EndDate: new Date('07/19/1969 05:21:50 PM')
+            },
+        ]
+    },
+    {
+        TaskID: 12,
+        TaskName: 'Lunar descent',
+        StartDate: new Date('07/19/1969 05:21:50 PM'),
+        subtasks: [
+            {
+                TaskID: 13, TaskName: 'Lunar Orbiting (30 orbits)', StartDate: new Date('07/19/1969 05:21:50 PM'),
+                EndDate: new Date('07/20/1969 12:52:00 AM'), Predecessor: '11FS'
+            },
+            {
+                TaskID: 14, TaskName: 'Landing site identified', StartDate: new Date('07/20/1969 12:52:00 AM'),
+                EndDate: new Date('07/20/1969 12:52:00 AM'), Predecessor: '13FS'
+            },
+            {
+                TaskID: 15, TaskName: 'Eagle separated from Columbia.', StartDate: new Date('07/20/1969 05:44:00 PM'),
+                EndDate: new Date('07/20/1969 05:44:00 PM')
+            },
+            {
+                TaskID: 16, TaskName: 'Eagle’s decent to Moon', StartDate: new Date('07/20/1969 05:44:00 PM'),
+                EndDate: new Date('07/20/1969 08:16:40 PM'), Predecessor: '15FS'
+            }
+        ]
+    },
+    {
+        TaskID: 17,
+        TaskName: 'Landing',
+        StartDate: new Date('07/20/1969 08:17:40 PM'),
+        subtasks: [
+            {
+                TaskID: 18, TaskName: 'Eagle’s touch down', StartDate: new Date('07/20/1969 08:17:40 PM'),
+                EndDate: new Date('07/20/1969 08:17:40 PM')
+            },
+            {
+                TaskID: 19, TaskName: 'Radio communication and Performing post landing checklist',
+                StartDate: new Date('07/20/1969 08:17:40 PM'), EndDate: new Date('07/20/1969 11:43:00 PM'), Predecessor: '18FS'
+            },
+            {
+                TaskID: 20, TaskName: 'Preparations for EVA (Extra Vehicular Activity)',
+                StartDate: new Date('07/20/1969 11:43:00 PM'), EndDate: new Date('07/21/1969 02:39:33 AM'), Predecessor: '19FS'
+            },
+            {
+                TaskID: 21, TaskName: 'Hatch open and climbing down the moon', StartDate: new Date('07/21/1969 02:39:33 AM'),
+                EndDate: new Date('07/21/1969 02:56:15 AM'), Predecessor: '20FS'
+            },
+            {
+                TaskID: 22, TaskName: 'Armstrong stepped down on the moon', StartDate: new Date('07/21/1969 02:56:15 AM'),
+                EndDate: new Date('07/21/1969 03:11:00 AM'), Predecessor: '21FS'
+            },
+        ]
+    },
+    {
+        TaskID: 23,
+        TaskName: 'Lunar surface operations',
+        StartDate: new Date('07/21/1969'),
+        subtasks: [
+            {
+                TaskID: 24, TaskName: 'Soil sample collections', StartDate: new Date('07/21/1969 02:56:15 AM'),
+                EndDate: new Date('07/21/1969 03:11:00 AM')
+            },
+            {
+                TaskID: 25, TaskName: 'Aldrin joined Armstrong', StartDate: new Date('07/21/1969 03:11:00 AM'),
+                EndDate: new Date('07/21/1969 03:41:00 AM'), Predecessor: '24FS'
+            },
+            {
+                TaskID: 26, TaskName: 'Planted the Lunar Flag Assembly', StartDate: new Date('07/21/1969 03:41:00 AM'),
+                EndDate: new Date('07/21/1969 03:46:00 AM'), Predecessor: '25FS'
+            },
+            {
+                TaskID: 27, TaskName: 'President Richard Nixon’s telephone-radio transmission ',
+                StartDate: new Date('07/21/1969 03:48:00 AM'), EndDate: new Date('07/21/1969 03:51:00 AM')
+            },
+            {
+                TaskID: 28, TaskName: 'Collect rock samples, photos and other mission controls',
+                StartDate: new Date('07/21/1969 03:52:00 AM'), EndDate: new Date('07/21/1969 04:50:00 AM')
+            },
+        ]
+    },
+    {
+        TaskID: 29,
+        TaskName: 'Lunar ascent',
+        StartDate: new Date('07/21/1969'),
+        subtasks: [
+            {
+                TaskID: 30, TaskName: 'Climbing the eagle to ascent', StartDate: new Date('07/21/1969 04:51:00 AM'),
+                EndDate: new Date('07/21/1969 05:00:00 AM')
+            },
+            {
+                TaskID: 31, TaskName: 'Hatch closing', StartDate: new Date('07/21/1969 05:01:00 AM'),
+                EndDate: new Date('07/21/1969 05:01:00 AM'), Predecessor: '30FS'
+            },
+            {
+                TaskID: 32, TaskName: 'Final housekeeping', StartDate: new Date('07/21/1969 05:02:00 AM'),
+                EndDate: new Date('07/21/1969 08:00:00 AM')
+            },
+            {
+                TaskID: 33, TaskName: 'Resting of astronauts', StartDate: new Date('07/21/1969 08:00:00 AM'),
+                EndDate: new Date('07/21/1969 03:00:00 PM'), Predecessor: '32FS'
+            },
+            {
+                TaskID: 34, TaskName: 'Preparation for lift off and Ascent engine started', StartDate: new Date('07/21/1969 03:00:00 PM'),
+                EndDate: new Date('07/21/1969 05:54:00 PM'), Predecessor: '33FS'
+            },
+            {
+                TaskID: 35, TaskName: 'Eagle lifted off', StartDate: new Date('07/21/1969 05:54:00 PM'),
+                EndDate: new Date('07/21/1969 05:54:00 PM'), Predecessor: '34FS'
+            },
+            {
+                TaskID: 36, TaskName: 'Eagle’s travel toward Columbia', StartDate: new Date('07/21/1969 05:54:00 PM'),
+                EndDate: new Date('07/21/1969 09:23:00 PM'), Predecessor: '35FS'
+            },
+        ]
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Return',
+        StartDate: new Date('07/21/1969 09:24:00 PM'),
+        subtasks: [
+            {
+                TaskID: 38, TaskName: 'Eagle docked with Columbia', StartDate: new Date('07/21/1969 09:24:00 PM'),
+                EndDate: new Date('07/21/1969 09:35:00 PM')
+            },
+            {
+                TaskID: 39, TaskName: 'Eagle’s ascent stage jettisoned into lunar orbit', StartDate: new Date('07/21/1969 09:35:00 PM'),
+                EndDate: new Date('07/21/1969 11:41:00 PM'), Predecessor: '38FS'
+            },
+        ]
+    },
+    {
+        TaskID: 40,
+        TaskName: 'Decent toward earth  and Splashdown',
+        StartDate: new Date('07/21/1969'),
+        subtasks: [
+            {
+                TaskID: 41, TaskName: 'Spacecraft reaches 1/4th distance spanning between moon and earth',
+                StartDate: new Date('07/21/1969 11:50:00 PM'), EndDate: new Date('07/22/1969 04:40:00 PM')
+            },
+            {
+                TaskID: 42, TaskName: 'Spacecraft travels to midway point of journey',
+                StartDate: new Date('07/22/1969 04:40:00 PM'), EndDate: new Date('07/23/1969 04:00:00 PM'), Predecessor: '41FS'
+            },
+            {
+                TaskID: 43, TaskName: 'Spacecraft travels to 3/4th point of journey', StartDate: new Date('07/23/1969 04:40:00 PM'),
+                EndDate: new Date('07/24/1969 10:00:00 AM'), Predecessor: '42FS'
+            },
+            {
+                TaskID: 44, TaskName: 'Crew prepares for splashdown', StartDate: new Date('07/24/1969 11:47:00 AM'),
+                EndDate: new Date('07/24/1969 04:20:00 PM')
+            },
+            {
+                TaskID: 45, TaskName: 'Command and service modules separates', StartDate: new Date('07/24/1969 04:20:00 PM'),
+                EndDate: new Date('07/24/1969 04:35:00 PM'), Predecessor: '44FS'
+            },
+            {
+                TaskID: 46, TaskName: 'Command module re-enters the Earth’s atmosphere', StartDate: new Date('07/24/1969 04:35:00 PM'),
+                EndDate: new Date('07/24/1969 04:50:00 PM'), Predecessor: '45FS'
+            },
+            {
+                TaskID: 47, TaskName: 'Spacecraft splashes near USS hornet', StartDate: new Date('07/24/1969 04:51:00 PM'),
+                EndDate: new Date('07/24/1969 04:51:00 PM')
+            },
+        ]
+    }
+  ];
+
 export let virtualData: Object[] = [];
 let x: number = 0;
 for (let i: number = 0; i < 50; i++) {

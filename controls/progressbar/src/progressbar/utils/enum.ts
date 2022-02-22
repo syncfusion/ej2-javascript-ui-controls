@@ -38,7 +38,17 @@ export type ProgressTheme =
 	/** Tailwind */
     'Tailwind' |
     /** TailwindDark */
-    'TailwindDark';
+    'TailwindDark' |
+    /** FabricDark */
+    'FabricDark' |
+    /** BootstrapDark */
+    'BootstrapDark' |
+    /** MaterialDark */
+    'MaterialDark' |
+    /** Bootstrap5 */
+    'Bootstrap5' |
+    /** Bootstrap5Dark */
+    'Bootstrap5Dark';
 
 /**
  * Text alignment

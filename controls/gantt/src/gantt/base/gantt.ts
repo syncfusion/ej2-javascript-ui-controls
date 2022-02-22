@@ -1617,8 +1617,13 @@ export class Gantt extends Component<HTMLElement>
     private calculateDimensions(): void {
         let settingsHeight: string;
         if (typeof(this.height) !== 'number' && (this.height as any).indexOf('%') !== -1 && (this.element.parentElement &&
-            !this.element.parentElement.style.height)) {
-            let ganttHeight: number = Number((this.height as any).split("%")[0]);
+            !this.element.parentElement.style.height || (this.element.parentElement.style.height as any).indexOf('%') !== -1)) {
+            let ganttHeight: number;
+            if ((this.element.parentElement.style.height as any).indexOf('%') == -1) {
+                ganttHeight = Number((this.height as any).split("%")[0]);
+            } else {
+                ganttHeight = Number((this.element.parentElement.style.height as any).split("%")[0]);
+            }
             ganttHeight = (ganttHeight * window.innerHeight) / 100;
             if (this.height === '100%') {
                 ganttHeight = ganttHeight - 16;
@@ -1771,9 +1776,15 @@ export class Gantt extends Component<HTMLElement>
             let settingsHeight: string;
             if ((this.height as any).indexOf('%') !== -1) {
                let ganttHeight: number = Number((this.height as any).split("%")[0]);
-               if (this.element.parentElement && this.element.parentElement.style.height) {
-                   let containerHeight: number = Number(this.element.parentElement.style.height.split("px")[0]);
-                   ganttHeight = (ganttHeight * containerHeight) / 100;
+               if (this.element.parentElement && (this.element.parentElement.style.height)) {
+                    let containerHeight: number;
+                    if (this.element.parentElement.style.height.indexOf('%') == -1) {
+                        containerHeight = Number(this.element.parentElement.style.height.split("px")[0]);
+                        ganttHeight = (ganttHeight * containerHeight) / 100;
+                    } else {
+                        containerHeight = Number(this.element.parentElement.style.height.split("%")[0]);
+                        ganttHeight = (window.innerHeight * containerHeight) / 100;
+                    }
                } else {
                    ganttHeight = Number((this.height as any).split("%")[0]);
                    ganttHeight = (ganttHeight * window.innerHeight) / 100;
@@ -2275,10 +2286,9 @@ export class Gantt extends Component<HTMLElement>
                 if (newProp.searchSettings.key !== ("" || undefined)) {
                     this.treeGrid.grid.searchSettings = getActualProperties(this.searchSettings);
                     this.treeGrid.grid.dataBind();
-                } else {
-                    this.treeGrid.searchSettings = getActualProperties(this.searchSettings);
-                    this.treeGrid.dataBind();
                 }
+                this.treeGrid.searchSettings = getActualProperties(this.searchSettings);
+                this.treeGrid.dataBind();
                 if (this.toolbarModule) {
                     this.toolbarModule.updateSearchTextBox();
                 }

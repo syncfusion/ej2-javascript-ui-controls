@@ -106,6 +106,31 @@ export type FlipDirection =
      */
     'None';
 
+/**
+ * Allows you to flip only the node or along with port and label
+ * * All - Flips port and label along the node
+ * * Label - Flips label along with the node
+ * * Port - Flips port along with the node
+ * * None - Flips only the node
+ */
+export type FlipMode =
+    /**
+     * All - Flips port and label along the node
+     */
+    'All' |
+    /**
+     * Label - Flips label along with the node
+     */
+    'Label' |
+    /**
+     * Port - Flips port along with the node
+     */
+    'Port' |
+    /**
+     * None - Flips only the node
+     */
+    'None';
+
 
 /**
  * Defines the orientation of the Page

@@ -396,4 +396,57 @@ describe('Diagram Control for shadow properties', () => {
             done();
         });
     });
+    describe('Radial Gradient issue in Canvas mode', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group' });
+            document.body.appendChild(ele);
+            
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 400, offsetY: 300, annotations: [{ content: 'Node1', height: 50, width: 50 }],
+                    style: { strokeColor: '#8f908f', fill: '#e2f3fa', gradient: {
+                            cx: 50, cy: 50, fx: 50, fy: 50,
+                            stops: [{ color: '#00555b', offset: 0 },
+                                { color: '#37909A', offset: 90 }],
+                            type: 'Radial'
+                        } },
+                    shape: { type: 'Basic', shape: 'Diamond' },
+                },
+                {
+                    id: 'node2', width: 80, height: 130, offsetX: 600, offsetY: 100, annotations: [{ content: 'Node2', height: 50, width: 50 }],
+                    style: { strokeColor: '#8f908f', fill: '#e2f3fa', gradient: {
+                            cx: 50, cy: 50, fx: 50, fy: 50,
+                            stops: [{ color: '#00555b', offset: 0 },
+                                { color: '#37909A', offset: 90 }],
+                            type: 'Radial'
+                        } },
+                    shape: { type: 'Basic', shape: 'Ellipse' },
+                }
+            ];
+    
+            diagram = new Diagram({
+                width: '800px', height: '500px', nodes: nodes,
+                mode: 'Canvas'
+            });
+            diagram.appendTo('#diagram_group');
+        });
+    
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check whether radial gradient applied for the node', (done: Function) => {
+           expect((diagram.nodes[0].style.gradient as RadialGradientModel).stops[0].color === "#00555b").toBe(true);
+           expect((diagram.nodes[0].style.gradient as RadialGradientModel).stops[1].color === "#37909A").toBe(true);
+           done();
+        });
+    });
 });

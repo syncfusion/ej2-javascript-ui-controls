@@ -6160,6 +6160,33 @@
     }
   }
 
+  .e-outline.e-float-input.e-bigger:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input.e-bigger.e-control-wrapper:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-outline.e-float-input:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-outline:not(.e-valid-input):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text,
+  .e-bigger .e-outline:not(.e-valid-input):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text,
+  .e-bigger.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text {
+    @if $input-skin-name == 'material' {
+      line-height: $outline-textarea-bigger-label-line-height;
+    }
+  }
+
   .e-outline.e-float-input.e-bigger:not(.e-error):not(.e-valid-input) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-outline.e-float-input.e-bigger.e-control-wrapper:not(.e-error):not(.e-valid-input) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-outline.e-float-input:not(.e-error):not(.e-valid-input) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -6191,6 +6218,26 @@
     }
   }
 
+  .e-outline.e-float-input.e-small:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-outline.e-float-input:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-outline.e-float-input.e-control-wrapper:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-small.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-small.e-outline:not(.e-valid-input):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text,
+  .e-small.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-small.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text {
+    @if $input-skin-name == 'material' {
+      line-height: $outline-textarea-small-label-line-height;
+    }
+  }
+
   .e-outline.e-float-input.e-small:not(.e-error):not(.e-valid-input) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-small .e-outline.e-float-input:not(.e-error):not(.e-valid-input) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-outline.e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-valid-input) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -6212,6 +6259,18 @@
   .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) input:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       line-height: $outline-label-line-height;
+    }
+  }
+
+  .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-outline:not(.e-valid-input):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text,
+  .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text {
+    @if $input-skin-name == 'material' {
+      line-height: $outline-textarea-label-line-height;
     }
   }
 
@@ -6246,6 +6305,38 @@
   .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-valid-input):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
       line-height: $outline-small-bigger-label-line-height;
+    }
+  }
+
+  .e-small.e-bigger.e-outline.e-float-input:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small.e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small.e-bigger.e-outline:not(.e-valid-input):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text,
+  .e-small.e-bigger.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-small.e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-small .e-bigger.e-outline.e-float-input:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-bigger.e-outline:not(.e-valid-input):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text,
+  .e-small .e-bigger.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-small .e-bigger.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-bigger .e-small.e-outline.e-float-input:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-small.e-outline.e-float-input.e-control-wrapper:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-small.e-outline:not(.e-valid-input):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text,
+  .e-bigger .e-small.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-bigger .e-small.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):not(:valid):not(.e-valid-input) ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-bigger:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input.e-small:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small.e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small.e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small .e-outline.e-float-input:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small .e-outline.e-float-input.e-control-wrapper:not(.e-valid-input):not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-bottom {
+    @if $input-skin-name == 'material' {
+      line-height: $outline-textarea-small-bigger-label-line-height;
     }
   }
 

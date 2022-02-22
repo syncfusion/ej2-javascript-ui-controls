@@ -180,10 +180,157 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             circularProgressThickness: 4,
             success: '#22C55E',
             danger: '#F87171',
-            warning: '#F87171',
+            warning: '#ea580c',
             info: '#06B6D4'
         };
         break;
+    case 'FabricDark':
+    case 'BootstrapDark':
+    case 'MaterialDark':
+        style = {
+            linearTrackColor: '#C8C8C8',
+            linearProgressColor: '#9A9A9A',
+            circularTrackColor: '#C8C8C8',
+            circularProgressColor: '#9A9A9A',
+            backgroundColor: 'transparent',
+            fontColor: '#000000',
+            linearFontFamily: 'Helvetica',
+            linearFontStyle: 'Normal',
+            linearFontSize: '12',
+            circularFontFamily: 'Helvetica',
+            circularFontStyle: 'Normal',
+            circularFontSize: '14',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.44,
+            linearGapWidth: 2,
+            circularGapWidth: 4,
+            linearTrackThickness: 16,
+            linearProgressThickness: 16,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            success: '#22b24b',
+            danger: '#ac2a2a',
+            warning: '#ffca1c',
+            info: '#489bd5'
+        };
+        break;
+    case 'Bootstrap5':
+        style = {
+            linearTrackColor: '#E9ECEF',
+            linearProgressColor: '#0D6EFD',
+            circularTrackColor: '#E9ECEF',
+            circularProgressColor: '#0D6EFD',
+            backgroundColor: 'transparent',
+            fontColor: '#0D6EFD',
+            linearFontFamily: 'Helvetica Neue',
+            linearFontStyle: 'Normal',
+            linearFontSize: '12',
+            circularFontFamily: 'Helvetica Neue',
+            circularFontStyle: 'Normal',
+            circularFontSize: '14',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.44,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: 16,
+            linearProgressThickness: 16,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            success: '#198754',
+            danger: '#DC3545',
+            warning: '#FFC107',
+            info: '#0DCAF0'
+        };
+        break;
+    case 'Bootstrap5Dark':
+        style = {
+            linearTrackColor: '#3B4248',
+            linearProgressColor: '#0D6EFD',
+            circularTrackColor: '#3B4248',
+            circularProgressColor: '#0D6EFD',
+            backgroundColor: 'transparent',
+            fontColor: '#0D6EFD',
+            linearFontFamily: 'Helvetica Neue',
+            linearFontStyle: 'Normal',
+            linearFontSize: '12',
+            circularFontFamily: 'Helvetica Neue',
+            circularFontStyle: 'Normal',
+            circularFontSize: '14',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.4,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: 16,
+            linearProgressThickness: 16,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            success: '#21B26F',
+            danger: '#E4606D',
+            warning: '#FFC107',
+            info: '#0DCAF0'
+        };
+        break;
+    // case 'Fluent':
+    //     style = {
+    //         linearTrackColor: '#F3F2F1',
+    //         linearProgressColor: '#0D6EFD',
+    //         circularTrackColor: '#F3F2F1',
+    //         circularProgressColor: '#0D6EFD',
+    //         backgroundColor: 'transparent',
+    //         fontColor: '#0D6EFD',
+    //         linearFontFamily: 'Helvetica Neue',
+    //         linearFontStyle: 'Normal',
+    //         linearFontSize: '12',
+    //         circularFontFamily: 'Helvetica Neue',
+    //         circularFontStyle: 'Normal',
+    //         circularFontSize: '14',
+    //         progressOpacity: 1,
+    //         trackOpacity: 1,
+    //         bufferOpacity: 0.45,
+    //         linearGapWidth: 4,
+    //         circularGapWidth: 4,
+    //         linearTrackThickness: 16,
+    //         linearProgressThickness: 16,
+    //         circularTrackThickness: 4,
+    //         circularProgressThickness: 4,
+    //         success: '#0B6A0B',
+    //         danger: '#D13438',
+    //         warning: '#CA5010',
+    //         info: '#038387'
+    //     };
+    //     break;
+    // case 'FluentDark':
+    //     style = {
+    //         linearTrackColor: '#3B4248',
+    //         linearProgressColor: '#0D6EFD',
+    //         circularTrackColor: '#3B4248',
+    //         circularProgressColor: '#0D6EFD',
+    //         backgroundColor: 'transparent',
+    //         fontColor: '#0D6EFD',
+    //         linearFontFamily: 'Helvetica Neue',
+    //         linearFontStyle: 'Normal',
+    //         linearFontSize: '12',
+    //         circularFontFamily: 'Helvetica Neue',
+    //         circularFontStyle: 'Normal',
+    //         circularFontSize: '14',
+    //         progressOpacity: 1,
+    //         trackOpacity: 1,
+    //         bufferOpacity: 0.35,
+    //         linearGapWidth: 4,
+    //         circularGapWidth: 4,
+    //         linearTrackThickness: 16,
+    //         linearProgressThickness: 16,
+    //         circularTrackThickness: 4,
+    //         circularProgressThickness: 4,
+    //         success: '#0B6A0B',
+    //         danger: '#D13438',
+    //         warning: '#CA5010',
+    //         info: '#038387'
+    //     };
+    //     break;
     default:
         style = {
             linearTrackColor: '#EAEAEA',

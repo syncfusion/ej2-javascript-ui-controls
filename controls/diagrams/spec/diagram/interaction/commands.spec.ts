@@ -75,6 +75,44 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Checking Bezire', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+
+            let connector1: ConnectorModel = {
+                type: 'Bezier',
+                segments: [{
+                    type: 'Bezier', point1: { x: 500, y: 100 }, point2: { x: 600, y: 200 }
+                }],
+                annotations: [{ content: 'labell', margin: { left: 20 } }], sourcePoint: { x: 227.5, y: 200 }, targetPoint: { x: 227.5, y: 400 },
+            };
+
+            diagram = new Diagram({
+                width: '900px', height: '700px', connectors: [connector1]
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Label after applying margin', (done: Function) => {
+            let position = document.getElementById(diagram.connectors[0].wrapper.children[3].id + '_groupElement');
+            let labelPosition: any = position.getBoundingClientRect();
+            expect(Math.round(labelPosition.x) === 493 && Math.round(labelPosition.y) === 191).toBe(true);
+            done();
+        });
+    });
+
     describe('Interactive Commands', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

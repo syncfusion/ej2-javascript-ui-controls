@@ -216,10 +216,6 @@ export class ShapeAnnotation {
                                 }
                             }
                             // eslint-disable-next-line
-                        let borderDashArray: any;
-                            if (annotationObject && annotationObject.borderDashArray) {
-                                borderDashArray = annotationObject.borderDashArray.toString();
-                            }
                             if (annotation.Bounds && annotation.EnableShapeLabel === true) {
                             // eslint-disable-next-line max-len
                                 annotation.LabelBounds = this.pdfViewer.annotationModule.inputElementModule.calculateLabelBoundsFromLoadedDocument(annotation.Bounds);
@@ -276,7 +272,7 @@ export class ShapeAnnotation {
                                 id: 'shape' + this.shapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, allowedInteractions: annotationObject.allowedInteractions, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
                                 subject: annotationObject.subject, notes: annotationObject.note, fillColor: annotationObject.fillColor, strokeColor: annotationObject.strokeColor, opacity: annotationObject.opacity,
                                 // eslint-disable-next-line max-len
-                                thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: borderDashArray, rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]), comments: annotationObject.comments, review: annotationObject.review,                            isCloudShape: annotationObject.isCloudShape, cloudIntensity: annotationObject.cloudIntensity, taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(annotationObject.lineHeadEnd),
+                                thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: annotationObject.borderDashArray ? annotationObject.borderDashArray.toString(): '0', rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]), comments: annotationObject.comments, review: annotationObject.review,                            isCloudShape: annotationObject.isCloudShape, cloudIntensity: annotationObject.cloudIntensity, taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(annotationObject.lineHeadEnd),
                                 // eslint-disable-next-line max-len
                                 sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(annotationObject.lineHeadStart), vertexPoints: vPoints, bounds: { x: annotationObject.bounds.left, y: annotationObject.bounds.top, width: annotationObject.bounds.width, height: annotationObject.bounds.height },
                                 pageIndex: pageNumber,
@@ -670,7 +666,8 @@ export class ShapeAnnotation {
                             pageAnnotationObject.annotations[z].labelFillColor = JSON.stringify(this.getRgbCode(labelFillColorString));
                             const labelBorderColorString: string = pageAnnotationObject.annotations[z].labelBorderColor;
                             pageAnnotationObject.annotations[z].labelBorderColor = JSON.stringify(this.getRgbCode(labelBorderColorString));
-                            const fontColorString: string = pageAnnotationObject.annotations[z].fontColor;
+                            pageAnnotationObject.annotations[z].labelSettings.fillColor = labelFillColorString;
+                            const fontColorString: string = pageAnnotationObject.annotations[z].labelSettings.fontColor;
                             pageAnnotationObject.annotations[z].fontColor = JSON.stringify(this.getRgbCode(fontColorString));
                         }
                     } else{
@@ -745,6 +742,10 @@ export class ShapeAnnotation {
         // eslint-disable-next-line
         let annotationSettings: any = this.pdfViewer.annotationModule.findAnnotationSettings(annotationModel, true);
         annotationModel.isPrint = annotationSettings.isPrint;
+        let setting: any = this.pdfViewer.shapeLabelSettings; 
+        let labelSettings: any = { borderColor: annotationModel.strokeColor, fillColor: annotationModel.fillColor, fontColor: annotationModel.fontColor,
+            fontSize: annotationModel.fontSize, labelContent: annotationModel.labelContent, labelHeight: setting.labelHeight, labelWidth: setting.labelMaxWidth, opacity: annotationModel.opacity
+        };
         return {
             // eslint-disable-next-line max-len
             id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.shapeAnnotationType), author: annotationModel.author, allowedInteractions: this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotationModel),  subject: annotationModel.subject, note: annotationModel.notes,
@@ -760,7 +761,7 @@ export class ShapeAnnotation {
             labelContent: annotationModel.labelContent, enableShapeLabel: annotationModel.enableShapeLabel, labelFillColor: annotationModel.labelFillColor,
             fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor, fontSize: annotationModel.fontSize,
             // eslint-disable-next-line max-len
-            labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType, annotationModel.subject ), labelSettings: this.pdfViewer.shapeLabelSettings, annotationSettings: annotationSettings,
+            labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType, annotationModel.subject ), labelSettings: labelSettings, annotationSettings: annotationSettings,
             customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock
         };
     }
@@ -821,7 +822,7 @@ export class ShapeAnnotation {
         // eslint-disable-next-line radix
         const b: number = parseInt(stringArray[2]);
         // eslint-disable-next-line radix
-        const a: number = parseInt(stringArray[3]);
+        const a: number = parseFloat(stringArray[3]);
         return { r: r, g: g, b: b, a: a };
     }
 
@@ -903,7 +904,11 @@ export class ShapeAnnotation {
             annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
             annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
             annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
-            annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings : this.pdfViewer.shapeLabelSettings;
+            let settings: any = this.pdfViewer.shapeLabelSettings;
+            let labelSettings: any = { borderColor: annotation.StrokeColor, fillColor: annotation.FillColor, fontColor: annotation.FontColor,
+                fontSize: annotation.FontSize, labelContent: annotation.LabelContent, labelHeight: settings.labelHeight, labelWidth: settings.labelWidth, opacity: annotation.Opacity
+            };
+            annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings : labelSettings;
         }
         // eslint-disable-next-line max-len
         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);

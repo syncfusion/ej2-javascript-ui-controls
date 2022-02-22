@@ -266,11 +266,13 @@ export class DiagramEventHandler {
     }
 
     private isMetaKey(evt: PointerEvent | WheelEvent | KeyboardEvent): boolean {
-        let metaaKey: boolean = evt.metaKey;
-        if (navigator.platform.match('Mac') && Math.abs((evt as WheelEvent).deltaY) < 50 && !metaaKey) {
-            metaaKey = true;
+        //EJ2-55887 - added the beow code to perform pinch zoom in mac os and windows while pinch zoom all browser return ctrl key as true.        
+        if (evt.type === 'mousewheel') {
+            return evt.ctrlKey;
         }
-        return navigator.platform.match('Mac') ? metaaKey : evt.ctrlKey;
+        else {
+            return navigator.platform.match('Mac') ? evt.metaKey : evt.ctrlKey;
+        }
     }
     private renderUmlHighLighter(args: MouseEventArgs): void {
         this.diagram.commandHandler.removeStackHighlighter();
@@ -661,9 +663,27 @@ export class DiagramEventHandler {
             (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
             ((this.hoverElement instanceof Connector) &&
                 (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip);
-        const content: string | HTMLElement = isPrivateTooltip ? this.hoverElement.tooltip.content :
+        let node: NodeModel = this.hoverElement as Node;
+        let childNode: NodeModel | ConnectorModel;
+        if (node instanceof Node && node.children && node.children.length > 0) {
+            childNode = this.findIntersectChild(node);
+        }
+        let content: string | HTMLElement = isPrivateTooltip ? this.hoverElement.tooltip.content :
             this.diagram.tooltip.content;
+        content = childNode ? childNode.tooltip.content : content;
         return content;
+    }
+
+    private findIntersectChild(node: NodeModel): NodeModel | ConnectorModel {
+        let childNode: NodeModel | ConnectorModel;
+        let rect: Rect = new Rect(this.currentPosition.x, this.currentPosition.y, 8, 8);
+        for (let i: number = 0; i < node.children.length; i++) {
+            childNode = this.diagram.getObject(node.children[i]);
+            if (childNode.wrapper.outerBounds.intersects(rect)) {
+                return childNode;
+            }
+        }
+        return null;
     }
 
     private checkAutoScroll(e: PointerEvent | TouchEvent): void {
@@ -1053,7 +1073,7 @@ export class DiagramEventHandler {
                 this.tool.mouseWheel(this.eventArgs);
             }
             this.diagram.scrollActions |= ScrollActions.Interaction;
-            if (evt.shiftKey || evt.deltaX !== -0) {
+            if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0)) {
                 this.diagram.scroller.zoom(1, change, 0, mousePosition);
             } else {
                 this.diagram.scroller.zoom(1, 0, change, mousePosition);
@@ -1367,13 +1387,25 @@ export class DiagramEventHandler {
                 (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
                 ((this.hoverElement instanceof Connector) && (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip);
             const content: string | HTMLElement = this.getContent();
+            let children: NodeModel | ConnectorModel;
+            if (this.hoverElement && (this.hoverElement as NodeModel).children && (this.hoverElement as NodeModel).children.length > 0) {
+                children = this.findIntersectChild(this.hoverElement as NodeModel);
+            }
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
-                updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
+                if(children) {
+                    updateTooltip(this.diagram, children);
+                } else {
+                    updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
+                }
+                
             }
             this.diagram.tooltipObject.offsetX = 0;
             this.diagram.tooltipObject.offsetY = 0;
             const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
-            const obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+            let obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+            if (obj instanceof Node && obj.children && obj.children.length > 0) {
+                obj = children ? children as Node : obj;
+            }
             let idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';
             let targetEle: HTMLElement = document.getElementById((obj as Node).id + idName);
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
@@ -2199,7 +2231,7 @@ class ObjectFinder {
                 }
             }
             let parent: NodeModel = diagram.nameTable[parentNode];
-            if (parent && (parent as Node).isLane && diagram.nameTable[(parent as Node).parentId].zIndex > (obj as Node).zIndex ) {
+            if (parent && (parent as Node).isLane && diagram.nameTable[(parent as Node).parentId].zIndex > (obj as Node).zIndex) {
                 actualTarget[m] = parent;
             }
             if (m > 0 && isNode && node && (node.isLane || node.isPhase || node.isHeader)) {

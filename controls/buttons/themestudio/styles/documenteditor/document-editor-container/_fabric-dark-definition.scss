@@ -20,8 +20,8 @@ $de-spellcheck-tlbr-width: 111px !default;
 $de-spellcheck-tlbr-width-big: 125px !default;
 $de-spellcheck-tlbr-height: 34px !default;
 $de-spellcheck-tlbr-margin-left: 7.5px !default;
-$de-zoom-tlbr-margin-left: calc(100% - 393px) !default;
-$de-zoom-tlbr-margin-left-big: calc(100% - 425px) !default;
+$de-zoom-tlbr-margin-left: calc(100% - 405px) !default;
+$de-zoom-tlbr-margin-left-big: calc(100% - 435px) !default;
 $e-de-statusbar-separator-color: #dadada;
 // Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 120px) !default;
@@ -47,7 +47,6 @@ $de-toggle-bg-color: $neutral-quintenary !default;
 $de-toggle-btn-outline: $neutral-light 0 solid !default;
 $de-toggle-btn-border: none !default;
 $de-panel-border: $neutral-quintenaryalt !default;
-$de-page-no-width: 100px !default;
 $de-page-no-width-spellout: calc(100% - 160px) !default;
 $de-page-no-width-spellout-big: calc(100% - 180px) !default;
 $de-font-color: $neutral-light-font !default;

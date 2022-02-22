@@ -218,6 +218,10 @@ export class GanttTreeGrid {
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
         this.parent.notify('actionBegin', args);
+	let flag:boolean = getValue('doubleClickTarget', this.parent.treeGrid.editModule);
+        if(flag !== null){
+            setValue('doubleClickTarget', null, this.parent.treeGrid.editModule);
+        }
         this.parent.trigger('actionBegin', args);
     }// eslint-disable-next-line
     private created(args: object): void {
@@ -312,6 +316,9 @@ export class GanttTreeGrid {
         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args)) && this.parent.addDeleteRecord) {
             if (this.parent.selectedRowIndex != -1) {
                 this.parent.selectRow(this.parent.selectedRowIndex);
+				if (this.parent.selectedRowIndex > this.parent.currentViewData.length - 1) {
+                    this.parent.selectedRowIndex = -1;
+                }
             } else {
                 this.parent.selectRow(0);
             }

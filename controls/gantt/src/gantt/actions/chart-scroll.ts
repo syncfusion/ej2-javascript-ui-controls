@@ -141,6 +141,7 @@ export class ChartScroll {
      */
     public setScrollTop(scrollTop: number): void {
         this.element.scrollTop = scrollTop;
+        this.parent.treeGrid.element.querySelector('.e-content').scrollTop = scrollTop;
     }
     /**
      * To set scroll left for chart scroll container

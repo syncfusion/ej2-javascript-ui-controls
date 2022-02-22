@@ -1,9 +1,9 @@
 /**
  * Gantt taskbaredit spec
  */
- import { getValue } from '@syncfusion/ej2-base';
+ import { getValue, L10n } from '@syncfusion/ej2-base';
  import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
- import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData } from '../base/data-source.spec';
+ import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData} from '../base/data-source.spec';
  import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
  import { DropDownList } from '@syncfusion/ej2-dropdowns';
  import { DataManager } from '@syncfusion/ej2-data';
@@ -1288,5 +1288,213 @@
 
         });
     });
+	describe('Localization', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            L10n.load({
+                'de-DE': {
+                    'gantt': {
+                        "emptyRecord": "Gösterilecek kayıt yok",
+                        "id": "Id",
+                        "name": "Başlık",
+                        "duration": "Süre",
+                        "progress": "İlerleme",
+                        "dependency": "Bağımlılık",
+                        "addDialogTitle": "Yeni görev",
+                        "editDialogTitle": "Görev Bilgisi",
+                        "saveButton": "Kaydet",
+                        "add": "",
+                        "edit": "",
+                        "update": "Güncelleme",
+                        "delete": "Sil",
+                        "cancel": "İptal",
+                    },
+                  }
+              });
+            ganttObj = createGantt({
+                dataSource: dialogEditData,
+                height: '450px',
+                locale: 'de-DE',
+                allowSelection: true,
+                highlightWeekends: true,
+                allowUnscheduledTasks: true,
+                enableContextMenu: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                },
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('07/06/2019'),
+                durationUnit: 'Hour',
+                treeColumnIndex: 1,
+                }, done);
+                });
+                afterAll(function () {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(done, 1000);
+                });
+                it('localization for the word New Task', () => {
+                    ganttObj.openAddDialog();
+                    let taskname: HTMLElement = document.getElementById(ganttObj.element.id + 'TaskName') as HTMLElement;
+                    expect(taskname.getAttribute('value')).toBe("Yeni görev 8");
+                });
+        });
+	    describe('Add Dialog for Bottom position', () => {
+                let ganttObj: Gantt;
+                beforeAll((done: Function) => {
+                    ganttObj = createGantt({
+                        dataSource: projectData,
+                        allowSorting: true,
+                        allowReordering: true,
+                        enableContextMenu: true,
+                        taskFields: {
+                            id: 'TaskID',
+                            name: 'TaskName',
+                            startDate: 'StartDate',
+                            duration: 'Duration',
+                            progress: 'Progress',
+                            dependency: 'Predecessor',
+                            baselineStartDate: "BaselineStartDate",
+                            baselineEndDate: "BaselineEndDate",
+                            child: 'subtasks',
+                            indicators: 'Indicators'
+                        },
+                        editSettings: {
+                            allowAdding: true,
+                            allowEditing: true,
+                            allowDeleting: true,
+                            allowTaskbarEditing: true,
+                            showDeleteConfirmDialog: true
+                        },
+                        columns: [
+                            { field: 'TaskID', headerText: 'Task ID' },
+                            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        ],
+                        editDialogFields: [
+                            { type: 'General' },
+                            { type: 'Dependency' },
+                            { type: 'Resources' },
+                            { type: 'Notes' }
+                        ],
+                        toolbar: ['Add', 'Edit', 'Update'],
+                        splitterSettings: {
+                            position: "50%",
+                        },
+                        highlightWeekends: true,
+                        timelineSettings: {
+                            showTooltip: true,
+                            topTier: {
+                                unit: 'Week',
+                                format: 'dd/MM/yyyy'
+                            },
+                            bottomTier: {
+                                unit: 'Day',
+                                count: 1
+                            }
+                        },
+                        height: '550px',
+                        allowUnscheduledTasks: true,
+                        projectStartDate: new Date('03/25/2019'),
+                        projectEndDate: new Date('05/30/2019'),
+                        }, done);
+                });
+                afterAll(() => {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(done, 1000);
+                   
+                });
+                it('Add new record as Bottom', () => {
+                    ganttObj.actionComplete = (args: any): void => {
+                        if (args.action === 'add') {
+                            expect(ganttObj.dataSource[ganttObj.dataSource['length'] - 1].ganttProperties).toBe(undefined);
+                        }
+                    };
+                    ganttObj.dataBind();
+                    let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+                    triggerMouseEvent(add, 'click');
+                    let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                    triggerMouseEvent(saveRecord, 'click');
+                });
+            });
+	   describe('Render only segments tab', function () {
+            let ganttObj: Gantt;
+            beforeAll(function (done) {
+                ganttObj = createGantt({
+                    dataSource: projectData1,
+                    height: '450px',
+                    allowSelection: true,
+                    highlightWeekends: true,
+                    enableContextMenu: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    editDialogFields: [
+                        { type: 'Segments' }
+                    ],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        duration: 'Duration',
+                        startDate: 'StartDate',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        segments: 'Segments'
+                    },
+                    projectStartDate: new Date('03/28/2019'),
+                    projectEndDate: new Date('07/06/2019'),
+                    treeColumnIndex: 1,
+                    }, done);
+                });
+                afterAll(function () {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(done, 1000);
+                });
+                it('Render segments tab', () => {
+                    ganttObj.actionComplete = (args: any): void => {
+                        if (args.requestType === 'save') {
+                            expect(args.data.ganttProperties.segments).toBe(null);
+                        }
+                    };
+                    ganttObj.selectRow(2);
+                    ganttObj.openEditDialog();
+                    let addIcon: HTMLElement = document.getElementById(ganttObj.element.id + 'SegmentsTabContainer' + '_add') as HTMLElement;
+                    triggerMouseEvent(addIcon, 'click');
+                    let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+                    triggerMouseEvent(saveRecord, 'click');
+                });
+            });
  });
  

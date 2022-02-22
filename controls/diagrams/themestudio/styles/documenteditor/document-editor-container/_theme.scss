@@ -108,7 +108,7 @@
         margin-left: $de-zoom-tlbr-margin-left;
         width: 33px;
     }
-    @if $skin-name=='tailwind' {
+    @if $skin-name=='tailwind' $skin-name=='material' or $skin-name=='bootstrap-dark' or $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='bootstrap5' or $skin-name=='fabric-dark' or $skin-name=='fabric' or $skin-name=='highcontrast' or $skin-name=='material-dark' {
         .e-bigger .e-btn-pageweb-spellcheck {
             margin-left: $de-zoom-tlbr-margin-left-big;
         }
@@ -1104,7 +1104,6 @@
         font-size: $de-ctnr-pg-no-spellout-fnt-size;
         height: 100%;
         padding-top: $e-de-ctnr-pg-no-spellout-padd-top;
-        width: $de-page-no-width;
 
         span {
             border: 1px solid transparent;

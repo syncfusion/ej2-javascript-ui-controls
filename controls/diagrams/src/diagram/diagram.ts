@@ -2264,7 +2264,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             annotation = node.annotations[0];
             if (annotation && annotation.annotationType === 'Template') {
                 // CR-F170298 Template is not updated properly while render multiple diagram in same page
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, true);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
                 break;
             }
         }
@@ -2272,14 +2272,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             pathAnnotation = this.connectors[i].annotations[0];
             if (pathAnnotation && pathAnnotation.annotationType === 'Template') {
                 // CR-F170298 Template is not updated properly while render multiple diagram in same page
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, true);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
                 break;
             }
         }
         for (let i: number = 0; i < this.selectedItems.userHandles.length; i++) {
             if (this.selectedItems.userHandles[i].template) {
                 // CR-F170298 Template is not updated properly while render multiple diagram in same page
-                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, true);
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
                 break;
             }
         }
@@ -5172,10 +5172,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         x = ((((textWrapper.bounds.center.x + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
                         y = ((((textWrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
                     }
-                    if(node instanceof Connector && node.type === 'Bezier'){
+                    if (node instanceof Connector && node.type === 'Bezier') {
                         let getCenterPoint = this.getMidPoint(node);
-                        x = (getCenterPoint as any).cx;
-                        y = (getCenterPoint as any).cy;
+                        x = (((((getCenterPoint as any).cx + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
+                        y = (((((getCenterPoint as any).cy + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
                     }
                     attributes = {
                         'id': this.element.id + '_editTextBoxDiv', 'style': 'position: absolute' + ';left:' + x + 'px;top:' +
@@ -7457,6 +7457,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    //Method used to apply margin for Bezier Curve points.
+    private applyMarginBezier(obj: NodeModel | ConnectorModel, centerPoint: any) {
+        for (let i: number = 0; i < obj.wrapper.children.length; i++) {
+            if (obj.wrapper && obj.wrapper.children[i] instanceof TextElement) {
+                centerPoint.cx = centerPoint.cx + obj.wrapper.children[i].margin.left
+                centerPoint.cx = centerPoint.cx - obj.wrapper.children[i].margin.right
+                centerPoint.cy = centerPoint.cy + obj.wrapper.children[i].margin.top
+                centerPoint.cy = centerPoint.cy - obj.wrapper.children[i].margin.bottom
+            }
+        }
+    }
+
     //Method used to get mid point of Bezier Curve
     private getMidPoint(obj: (NodeModel | ConnectorModel)) {
         let centerPoint: number | PointModel;
@@ -7478,6 +7490,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             helperPoints.push(this.findPointOnCurve(helperPoints[1], helperPoints[2], centerPoint));
             helperPoints.push(this.findPointOnCurve(helperPoints[3], helperPoints[4], centerPoint));
             finalPoint = { cx: helperPoints[5][0] - 2, cy: helperPoints[5][1] - 2 }
+            this.applyMarginBezier(obj, finalPoint);
         }
         return finalPoint;
     }
@@ -7889,7 +7902,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 const connector: Connector = this.connectors[i] as Connector;
                 this.bridgingModule.updateBridging(connector, this);
                 const canvas: Container = this.connectors[i].wrapper;
-                if (canvas) {
+                if (canvas && canvas.children && canvas.children.length > 0) {
                     const pathSegment: PathElement = canvas.children[0] as PathElement;
                     const data: string = pathSegment.data;
                     connector.getSegmentElement(
@@ -8968,7 +8981,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         this.nodes.splice(this.nodes.indexOf(node as NodeModel), 1);
-        if (groupElement.children && groupElement.children.length > 0) {
+        if (groupElement && groupElement.children && groupElement.children.length > 0) {
             let beforeElement: Element = undefined;
             for (let j: number = groupElement.children.length - 1; j >= 0; j--) {
                 const childElement: Element = groupElement.children[j];
@@ -9363,8 +9376,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
             } else {
-                actualObject.wrapper.children[0].flip = node.flip;
-                this.updatePorts(actualObject, node.flip);
+                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All'))
+                    this.updatePorts(actualObject, node.flip);
             }
         }
         if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
@@ -11188,7 +11201,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         };
 
         this.droppable.out = (args: Object) => {
-            if (this.currentSymbol && !this.eventHandler.focus) {
+            if (this.currentSymbol && (!this.eventHandler.focus || (args as any).evt.type === "touchmove")) {
                 this.unSelect(this.currentSymbol); this.removeFromAQuad(this.currentSymbol);
                 if (this.mode !== 'SVG' && this.currentSymbol.shape.type === 'Native') {
                     this.removeElements(this.currentSymbol);

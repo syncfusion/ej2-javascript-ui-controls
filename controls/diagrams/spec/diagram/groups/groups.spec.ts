@@ -1593,3 +1593,52 @@ describe('group', () => {
        done();
     });
 });
+describe('Group issue in Canvas mode', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_group' });
+        document.body.appendChild(ele);
+        
+        var nodes = [
+            {
+                id: 'node1', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,
+            },
+            {
+                id: 'node2', width: 50, height: 50, offsetX: 300,
+                offsetY: 100,
+            },
+        ];
+
+       
+
+        diagram = new Diagram({
+            width: '800px', height: '500px',nodes: nodes,
+            mode: 'Canvas'
+        });
+        diagram.appendTo('#diagram_group');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('group multiple node and connectors', (done: Function) => {
+       diagram.selectAll();
+       diagram.group();
+       expect(diagram.nodes.length === 3).toBe(true);
+       expect(function() {diagram.unGroup()}).not.toThrow();
+       expect(diagram.nodes.length === 2).toBe(true);  
+       done();
+    });
+});

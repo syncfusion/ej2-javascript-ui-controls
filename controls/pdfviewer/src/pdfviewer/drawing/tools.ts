@@ -437,25 +437,26 @@ export class SelectTool extends ToolBase {
                     let annotation: any = selectedObject.annotations[0];
                     // eslint-disable-next-line
                     let formField : any =  selectedObject.formFields[0];
+                    let currentAnnot : any = this.commandHandler.selectedItems.annotations[0];
                     const currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
                     if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey
                         // eslint-disable-next-line
                         && this.commandHandler.annotationModule && this.commandHandler.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === false) {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                    } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'FreeText'))) {
+                    } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (currentAnnot && currentAnnot.shapeAnnotationType === 'FreeText'))) {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                    } else if ( isNullOrUndefined(object) && this.commandHandler.formDesignerModule) {
+                    } else if (isNullOrUndefined(object) && this.commandHandler.formDesignerModule && !((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (currentAnnot && (currentAnnot.shapeAnnotationType === 'FreeText' || currentAnnot.shapeAnnotationType === 'Image' || currentAnnot.shapeAnnotationType === 'StickyNotes')))) {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                     }
                     if (object) {
-                        if (!this.pdfViewerBase.isFreeTextSelected) {
+                        if (!isNullOrUndefined(this.pdfViewerBase.isFreeTextSelected) && !this.pdfViewerBase.isFreeTextSelected) {
                             this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
+                            this.commandHandler.viewerBase.isAnnotationMouseDown = true;
                         }
                         this.pdfViewerBase.isFreeTextSelected = false;
-                        this.commandHandler.viewerBase.isAnnotationMouseDown = true;
                         this.commandHandler.viewerBase.isFormFieldMouseDown = true;
                     }
-                    if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp' && !annotation.formFieldAnnotationType) {
+                    if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'HandWrittenSignature' && annotation.shapeAnnotationType !== 'SignatureText' && annotation.shapeAnnotationType !== 'SignatureImage' && annotation.shapeAnnotationType !== 'Path' && !annotation.formFieldAnnotationType) {
                         if (this.commandHandler.enableToolbar && Browser.isDevice && !this.commandHandler.enableDesktopMode) {
                             this.commandHandler.toolbarModule.showToolbar(true);
                         }
@@ -730,6 +731,13 @@ export class MoveTool extends ToolBase {
                     cobject.thickness = 1;
                     cobject.opacity = 1;
                     cobject.dynamicText = '';
+                } else if(cobject.shapeAnnotationType === 'SignatureText') {
+                    cobject.strokeColor = 'red';
+                    cobject.borderDashArray = '5,5';
+                    cobject.fillColor = 'transparent';
+                    cobject.thickness = 2;
+                    cobject.opacity = 1;
+                    cobject.data = '';
                 } else {
                     cobject.strokeColor = 'red';
                     cobject.borderDashArray = '5,5';
@@ -822,6 +830,14 @@ export class StampTool extends MoveTool {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             // eslint-disable-next-line max-len
             const nodeElement: PdfAnnotationBaseModel = this.commandHandler.annotation.stampAnnotationModule.moveStampElement(args.position.x, args.position.y, pageIndex);
+            if (nodeElement.shapeAnnotationType === 'SignatureText') {
+                let textWidth: number = this.getTextWidth(nodeElement.data, nodeElement.fontSize); 
+                let widthRatio: number = 1;
+                if (textWidth > nodeElement.bounds.width)
+                   widthRatio =  nodeElement.bounds.width / textWidth;
+                nodeElement.fontSize = (nodeElement.fontSize * widthRatio); 
+                nodeElement.thickness = 0;
+            }
             newObject = this.commandHandler.add(nodeElement as PdfAnnotationBase);
             args.source = this.commandHandler.annotations[this.commandHandler.annotations.length - 1] as IElement;
             args.sourceWrapper = args.source.wrapper; this.inAction = true;
@@ -839,6 +855,13 @@ export class StampTool extends MoveTool {
         super.mouseMove.call(this, args, true, true);
         this.commandHandler.renderSelector((args.source as PdfAnnotationBaseModel).pageIndex, currentSelctor);
         return this.inAction;
+    }
+
+    private getTextWidth(text: any, font: any): number {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d'); 
+        context.font = font || getComputedStyle(document.body).font; 
+        return context.measureText(text).width;
     }
 }
 
@@ -1212,6 +1235,7 @@ export class ResizeTool extends ToolBase {
      */
     public mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): boolean {
         const object: PdfAnnotationBaseModel | SelectorModel = args.source as PdfAnnotationBaseModel | Selector;
+        let oldObject: any = cloneObject(args.source);
         if (this.commandHandler && this.prevSource) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.viewerBase.isAnnotationSelect = true;
@@ -1250,9 +1274,10 @@ export class ResizeTool extends ToolBase {
                     this.commandHandler.annotation.updateCalibrateValues(this.prevSource);
                 }
                 if (this.prevSource.shapeAnnotationType === 'SignatureText') {
-                    newObject.fontSize = newObject.bounds.height / 2;
+                    let boundsRatio = newObject.bounds.width / oldObject.width;
+                    newObject.fontSize = (this.prevSource as any).wrapper.children[1].style.fontSize * boundsRatio;
                     if (args.target != null) {
-                        (args.target as PdfAnnotationBaseModel).fontSize = newObject.bounds.height / 2;
+                        (args.target as PdfAnnotationBaseModel).fontSize = newObject.fontSize;
                         // eslint-disable-next-line
                         ((args.target as PdfAnnotationBaseModel).wrapper.children[1] as any).style.fontSize = newObject.fontSize;
                         (args.target as PdfAnnotationBaseModel).wrapper.children[1].horizontalAlignment = 'Center';
@@ -1263,12 +1288,12 @@ export class ResizeTool extends ToolBase {
                         this.commandHandler.selectedItems.annotations[0].wrapper.children[1].horizontalAlignment = 'Center';
                         this.commandHandler.selectedItems.annotations[0].wrapper.children[1].verticalAlignment = 'Center';
                         this.commandHandler.selectedItems.annotations[0].wrapper.children[1].setOffsetWithRespectToBounds(0, 0, 'Absolute');
-                        this.commandHandler.selectedItems.annotations[0].fontSize = newObject.bounds.height / 2;
+                        this.commandHandler.selectedItems.annotations[0].fontSize = newObject.fontSize;
                     }
                 }
                 if ((this.prevSource.shapeAnnotationType === 'SignatureText') && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
                     // eslint-disable-next-line max-len
-                    this.commandHandler.nodePropertyChange(this.commandHandler.selectedItems.annotations[0], { fontSize: newObject.bounds.height / 2 });
+                    this.commandHandler.nodePropertyChange(this.commandHandler.selectedItems.annotations[0], { fontSize: newObject.fontSize });
                 }
                 // eslint-disable-next-line
                 this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.prevSource, 'Resize', '', this.redoElement as any, newObject);
@@ -1295,7 +1320,8 @@ export class ResizeTool extends ToolBase {
         }
         super.mouseUp(args);
         return !this.blocked;
-    }
+    } 
+
     /**
      * @private
      * @param {MouseEventArgs} args - Specified the mouse event arguments.
@@ -1390,8 +1416,11 @@ export class ResizeTool extends ToolBase {
             if (cobject.enableShapeLabel === true) {
                 cobject.labelContent = '';
             }
-            if (cobject.shapeAnnotationType === 'SignatureText') {
-                cobject.fontSize = cobject.bounds.height / 2;
+            if (cobject.shapeAnnotationType === 'SignatureText') { 
+                cobject.fillColor = 'transparent';
+                cobject.thickness = 1;
+                cobject.opacity = 1;
+                cobject.data = '';
             }
             this.helper = cobject = this.commandHandler.add(cobject as PdfAnnotationBase);
             if (this.commandHandler.selectedItems.annotations.length > 0) {
@@ -1588,7 +1617,7 @@ export class NodeDrawingTool extends ToolBase {
         this.drawingObject.formFieldAnnotationType === 'DropdownList' || this.drawingObject.formFieldAnnotationType === 'PasswordField') {
             this.inAction = false;
             // eslint-disable-next-line
-            (this.drawingObject as any).pageNumber = this.pdfViewerBase.currentPageNumber;
+            (this.drawingObject as any).pageNumber = this.pdfViewerBase.getActivePage(true);
             // eslint-disable-next-line
             const bounds: any = this.commandHandler.formDesignerModule.updateFormFieldInitialSize(this.drawingObject.wrapper.children[0], this.drawingObject.formFieldAnnotationType);
             const pageWidth: number = this.pdfViewerBase.pageContainer.firstElementChild.clientWidth - bounds.width;
@@ -1621,9 +1650,6 @@ export class NodeDrawingTool extends ToolBase {
                 rect = { x: this.currentPosition.x, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
             }
             this.updateNodeDimension(this.drawingObject, rect);
-            // eslint-disable-next-line max-len
-            this.commandHandler.formDesignerModule.drawHTMLContent(this.drawingObject.formFieldAnnotationType, this.drawingObject.wrapper.children[0] as DiagramHtmlElement, this.drawingObject, this.drawingObject.pageIndex, this.commandHandler);
-            this.commandHandler.select([this.commandHandler.drawingObject.id], this.commandHandler.annotationSelectorSettings);
             this.commandHandler.formFieldCollection.push(this.drawingObject);
             // eslint-disable-next-line max-len
             const formField: FormFieldModel = { id: this.drawingObject.id, name: (this.drawingObject as PdfFormFieldBaseModel).name, value: (this.drawingObject as PdfFormFieldBaseModel).value,
@@ -1637,7 +1663,12 @@ export class NodeDrawingTool extends ToolBase {
                 isPrint: this.drawingObject.isPrint, isSelected: (this.drawingObject as PdfFormFieldBaseModel).isSelected, isChecked: (this.drawingObject as PdfFormFieldBaseModel).isChecked, tooltip:  (this.drawingObject as PdfFormFieldBaseModel).tooltip, bounds: this.drawingObject.bounds as IFormFieldBound, thickness: this.drawingObject.thickness, borderColor: (this.drawingObject as PdfFormFieldBaseModel).borderColor,
                 signatureIndicatorSettings: (this.drawingObject as PdfFormFieldBaseModel).signatureIndicatorSettings };
             this.commandHandler.formFieldCollections.push(formField);
-            this.commandHandler.annotation.addAction(this.pdfViewerBase.currentPageNumber, null, this.drawingObject, 'Addition', '', this.drawingObject, this.drawingObject);
+            // eslint-disable-next-line max-len
+            this.commandHandler.formDesignerModule.drawHTMLContent(this.drawingObject.formFieldAnnotationType, this.drawingObject.wrapper.children[0] as DiagramHtmlElement, this.drawingObject, this.drawingObject.pageIndex, this.commandHandler);
+            this.commandHandler.select([this.commandHandler.drawingObject.id], this.commandHandler.annotationSelectorSettings);       
+            if (this.commandHandler.annotation) {
+                this.commandHandler.annotation.addAction(this.pdfViewerBase.getActivePage(true), null, this.drawingObject, 'Addition', '', this.drawingObject, this.drawingObject);
+            }
             this.endAction();
             this.pdfViewerBase.tool = null;
             this.pdfViewerBase.action = 'Select';

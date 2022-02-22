@@ -226,6 +226,10 @@
         white-space: nowrap;
       }
 
+      .e-timeline-header-table-body > tr {
+        display: inline-flex;
+       }
+
       .e-timeline-top-header-cell,
       .e-timeline-single-header-cell {
         border-spacing: 0;
@@ -402,7 +406,12 @@
       }
 
       .e-gantt-split-container-line {
-        border-color: inherit;
+        @if ($theme-name == 'material-dark' or $theme-name == 'fabric-dark') {
+          border-color: $gantt-active-background-color;
+        }
+        @else {
+          border-color:  inherit;
+        }
         border-top-style: dotted;
         border-top-width: 2px;
         height: 0;
@@ -541,7 +550,10 @@
         font-weight: normal;
         margin-left: 8px;
         margin-right: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
         vertical-align: middle;
+        white-space: nowrap;
       }
 
       .e-task-table {
@@ -792,7 +804,6 @@
     .e-edit-form-row {
       height: $gantt-dialog-general-height;
       overflow-y: auto;
-      padding-bottom: $gantt-dialog-general-padding-bottom;
     }
 
     .e-edit-form-column:nth-child(odd) {
@@ -913,6 +924,10 @@
 
   .e-gantt-tooltip.e-tooltip-wrap {
     opacity: 1;
+  }
+
+  .e-gantt-tooltip {
+    visibility: hidden;
   }
 
   .e-gantt .e-cloneproperties.e-draganddrop .e-row .e-rowcell .e-treecolumn-container .e-icons.e-none::before {

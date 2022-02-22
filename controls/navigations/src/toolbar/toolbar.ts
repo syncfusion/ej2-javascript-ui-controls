@@ -422,7 +422,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns {void}.
      */
     public destroy(): void {
-        if ((this as any).isReact) {
+        if ((this as any).isReact || (this as any).isAngular) {
             this.clearTemplate();
         }
         const btnItems: NodeList = this.element.querySelectorAll('.e-control.e-btn');
@@ -431,20 +431,28 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 (el.ej2_instances[0] as Button).destroy();
             }
         });
-        super.destroy();
         this.unwireEvents();
         this.tempId.forEach((ele: Str): void => {
             if (!isNOU(this.element.querySelector(ele))) {
                 (<HTEle>document.body.appendChild(this.element.querySelector(ele))).style.display = 'none';
             }
         });
+        this.destroyItems();
         while (this.element.lastElementChild) {
             this.element.removeChild(this.element.lastElementChild);
         }
         if (this.trgtEle) {
             this.element.appendChild(this.ctrlTem);
+            this.trgtEle = null;
+            this.ctrlTem = null;
         }
-        this.clearProperty();
+        if (this.popObj) {
+            this.popObj.destroy();
+            detach(this.popObj.element);
+        }
+        if (this.activeEle) {
+            this.activeEle = null;
+        }
         this.popObj = null;
         this.tbarAlign = null;
         this.remove(this.element, 'e-toolpop');
@@ -454,6 +462,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.element.removeAttribute('style');
         ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach((attrb: string): void =>
             this.element.removeAttribute(attrb));
+        super.destroy();
     }
     /**
      * Initialize the event handler
@@ -551,8 +560,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.element) {
             [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach((el: HTEle) => { detach(el); });
         }
-        const tbarItems: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEMS);
         if (this.tbarAlign) {
+            const tbarItems: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEMS);
             [].slice.call(tbarItems.children).forEach((el: HTEle) => {
                 detach(el);
             });
@@ -631,7 +640,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         case 'home':
         case 'end':
             if (clst) {
-                const popupCheck: HTEle = <HTEle>closest(clst, '.e-popup');
+                let popupCheck: HTEle = <HTEle>closest(clst, '.e-popup');
+                const extendedPopup: HTEle = this.element.querySelector('.' + CLS_EXTENDABLECLASS);
+                if (this.overflowMode === 'Extended' && extendedPopup && extendedPopup.classList.contains('e-popup-open')) {
+                    popupCheck = e.action === 'end' ? extendedPopup : null;
+                }
                 if (popupCheck) {
                     if (isVisible(this.popObj.element)) {
                         nodes = [].slice.call(popupCheck.children);
@@ -642,7 +655,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                 } else {
-                    nodes = this.element.querySelectorAll('.' + CLS_ITEMS + ' .' + CLS_ITEM);
+                    nodes = this.element.querySelectorAll('.' + CLS_ITEMS + ' .' + CLS_ITEM + ':not(.' + CLS_SEPARATOR + ')');
                     if (e.action === 'home') {
                         ele = <HTEle>nodes[0];
                     } else {
@@ -2094,7 +2107,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private itemsRerender(newProp: ItemModel[]): void {
         this.items = this.tbarItemsCol;
-        if ((this as any).isReact) {
+        if ((this as any).isReact || (this as any).isAngular) {
             this.clearTemplate();
         }
         this.destroyMode();

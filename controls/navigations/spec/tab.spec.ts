@@ -7424,7 +7424,7 @@ describe('Tab Control', () => {
             tab.width = 250;
             tab.dataBind();
             toolbarObj.resize();
-            tab.refreshActElePosition();
+            tab.refreshActiveTabBorder();
             expect(element.querySelectorAll('.e-toolbar-pop').length).toEqual(1);
             expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').length).toEqual(4);
             expect(element.querySelector('.e-toolbar-item.e-active').id).toEqual('e-item' + tab.tabId + '_2');
@@ -7475,7 +7475,7 @@ describe('Tab Control', () => {
             tab.width = 300;
             tab.dataBind();
             toolbarObj.resize();
-            tab.refreshActElePosition();
+            tab.refreshActiveTabBorder();
             expect(element.querySelectorAll('.e-toolbar-pop').length).toEqual(1);
             expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').length).toEqual(3);
             expect(element.querySelector('.e-toolbar-item.e-active').id).toEqual('e-item' + tab.tabId + '_3');

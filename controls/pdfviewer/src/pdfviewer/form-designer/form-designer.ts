@@ -618,6 +618,16 @@ export class FormDesigner {
         }
         else {
             canvas = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+            let zoom: number = this.pdfViewerBase.getZoomFactor();
+            let ratio: number = this.pdfViewerBase.getZoomRatio(zoom);
+            if (canvas) {
+                let width: number = this.pdfViewerBase.pageSize[pageNumber].width;
+                let height: number = this.pdfViewerBase.pageSize[pageNumber].height;
+                (canvas as HTMLCanvasElement).width = width * ratio;
+                (canvas as HTMLCanvasElement).height = height * ratio;
+                (canvas as any).style.width = width * zoom + 'px';
+                (canvas as any).style.height = height * zoom + 'px';
+            }
         }
         this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
     }
@@ -915,6 +925,9 @@ export class FormDesigner {
                             isReadonly: updatedFormFields.isReadonly, visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip
                         };
                         formFieldsData[i].FormField.radiobuttonItem[j] = radioButtonItemUpdate;
+                        if (this.pdfViewerBase.formFieldCollection[i] && this.pdfViewerBase.formFieldCollection[i].FormField && this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j]) {
+                            this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j] = radioButtonItemUpdate;
+                        }
                         break;
                     }
                 }
@@ -926,8 +939,22 @@ export class FormDesigner {
                     backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string,  borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string, thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment, isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
                     isReadonly: updatedFormFields.isReadonly, font: { isBold: updatedFormFields.font.isBold, isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout, isUnderline: updatedFormFields.font.isUnderline }, selectedIndex: [], radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [], visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip
                 };
-                formFieldsData[i].FormField = formDesignObj
-                this.pdfViewerBase.formFieldCollection[i].FormField = formDesignObj;
+                if (formFieldsData[i].FormField.formFieldAnnotationType === "SignatureField" || formFieldsData[i].FormField.formFieldAnnotationType === "InitialField") {
+                    let updatedSignatureFormFields: any = updatedFormFields;
+                    let formDesignObj: IFormField = {
+                        id: element.id, lineBound: { X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue, Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue },
+                        name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber, value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
+                        fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize, fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color),
+                        backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor), borderColor: this.getRgbCode(updatedFormFields.borderColor), thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment, isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
+                        isReadonly: updatedFormFields.isReadonly, font: { isBold: updatedFormFields.font.isBold, isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout, isUnderline: updatedFormFields.font.isUnderline }, selectedIndex: [], radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [], visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip,
+                        signatureType: updatedFormFields.signatureType, signatureBound: updatedSignatureFormFields.signatureBound
+                    };  
+                    formFieldsData[i].FormField = formDesignObj;
+                    this.pdfViewerBase.formFieldCollection[i].FormField = formDesignObj;
+                } else {
+                    formFieldsData[i].FormField = formDesignObj;
+                    this.pdfViewerBase.formFieldCollection[i].FormField = formDesignObj;
+                }
                 break;
             }
         }
@@ -965,6 +992,7 @@ export class FormDesigner {
             divElement.style.pointerEvents = '';
         }
         divElement.id = signatureField.id;
+		(divElement as any).disabled = signatureField.isReadonly;
         element.appendChild(divElement);
         //check whether the width for sign indicator has default value or not and then set the default width value for initial field.
         let defaultWidth = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width === 19 ? (signatureField.isInitialField ? 30 : 25) : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width;
@@ -1046,6 +1074,7 @@ export class FormDesigner {
         select.className = "e-pv-formfield-dropdown";
         select.style.width = "100%";
         select.style.height = "100%";
+        select.style.position = "absolute";
         if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.DropdownFieldSettings.isReadOnly) {
             drawingObject.isReadonly = true;
         }
@@ -1086,6 +1115,7 @@ export class FormDesigner {
         select.className = "e-pv-formfield-listbox";
         select.style.width = "100%";
         select.style.height = "100%";
+        select.style.position = "absolute";
         select.multiple = true;
         if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.listBoxFieldSettings.isReadOnly) {
             drawingObject.isReadonly = true;
@@ -1106,7 +1136,6 @@ export class FormDesigner {
                     }
                 }
             }
-            this.updateListBoxProperties(drawingObject, option);
             select.appendChild(option);
         }
         element.appendChild(select);
@@ -1132,6 +1161,7 @@ export class FormDesigner {
         let inputElement: HTMLElement = createElement("input");
         let textArea: HTMLElement = createElement('textarea');
         inputElement.id = drawingObject.id + "_" + drawingObject.pageIndex + "_" + this.setFormFieldIdIndex();
+        inputElement.style.position = "absolute";
         if (formFieldAnnotationType === "Textbox") {
             if(drawingObject.isMultiline) { 
                 textArea = this.createTextAreaElement(inputElement.id);
@@ -1241,6 +1271,7 @@ export class FormDesigner {
             labelElement.style.verticalAlign = "middle";
             labelElement.style.boxShadow = drawingObject.borderColor + ' 0px 0px 0px ' + drawingObject.thickness + 'px';
             labelElement.style.borderRadius = '50%';
+            labelElement.style.visibility = drawingObject.visibility;
             if (this.isDrawHelper)
                 labelElement.style.cursor = 'crosshair';
             else
@@ -1541,25 +1572,26 @@ export class FormDesigner {
         obj.pageNumber = !isNullOrUndefined(options.pageNumber) ? options.pageNumber : this.pdfViewerBase.currentPageNumber;
         obj.pageIndex = obj.pageNumber - 1;
         obj.font = (options as any).font;
+        this.setFormFieldIndex();
         switch (formFieldType) {
             case 'Textbox':
                 obj.formFieldAnnotationType = formFieldType;
                 obj.isMultiline = (options as TextFieldSettings).isMultiline;
-                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Textbox' + this.setFormFieldIndex();
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Textbox' + this.formFieldIndex;
                 obj.maxLength = (options as any).maxLength;
                 obj.thickness = !isNullOrUndefined((options as TextFieldSettings).thickness) ? (options as TextFieldSettings).thickness : 1;
                 obj.borderColor = !isNullOrUndefined((options as TextFieldSettings).borderColor) ? (options as TextFieldSettings).borderColor : '#303030';
                 break;
             case 'Password':
                 obj.formFieldAnnotationType = 'PasswordField';
-                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Password' + this.setFormFieldIndex();
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Password' + this.formFieldIndex;
                 obj.maxLength = (options as any).maxLength;
                 obj.thickness = !isNullOrUndefined((options as PasswordFieldSettings).thickness) ? (options as PasswordFieldSettings).thickness : 1;
                 obj.borderColor = !isNullOrUndefined((options as PasswordFieldSettings).borderColor) ? (options as PasswordFieldSettings).borderColor : '#303030';
                 break;
             case 'DropDown':
                 obj.formFieldAnnotationType = 'DropdownList';
-                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Dropdown' + this.setFormFieldIndex();
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Dropdown' + this.formFieldIndex;
                 obj.options = (options as DropdownFieldSettings).options ? (options as DropdownFieldSettings).options : [];
                 for (let i: number = 0; i < this.pdfViewer.formFieldCollection.length; i++) {
                     let formField = this.pdfViewer.formFieldCollection[i] as PdfFormFieldBaseModel;
@@ -1574,7 +1606,7 @@ export class FormDesigner {
                 break;
             case 'ListBox':
                 obj.formFieldAnnotationType = formFieldType;
-                obj.name = !isNullOrUndefined(options.name) ? options.name : 'List Box' + this.setFormFieldIndex();
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'List Box' + this.formFieldIndex;
                 obj.options = (options as ListBoxFieldSettings).options ? (options as DropdownFieldSettings).options : [];
                 for (let i: number = 0; i < this.pdfViewer.formFieldCollection.length; i++) {
                     let formField = this.pdfViewer.formFieldCollection[i] as PdfFormFieldBaseModel;
@@ -1592,7 +1624,7 @@ export class FormDesigner {
                 obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
                 obj.backgroundColor = !isNullOrUndefined((options as CheckBoxFieldSettings).backgroundColor) ? (options as CheckBoxFieldSettings).backgroundColor : "#daeaf7ff";
                 obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
-                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Check Box' + this.setFormFieldIndex();
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Check Box' + this.formFieldIndex;
                 obj.isChecked = (options as CheckBoxFieldSettings).isChecked ? (options as CheckBoxFieldSettings).isChecked : false;
                 obj.visibility = options.visibility ? options.visibility : "visible";
                 obj.isRequired = options.isRequired ? options.isRequired : false;
@@ -1604,7 +1636,7 @@ export class FormDesigner {
                 obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
                 obj.backgroundColor = !isNullOrUndefined((options as RadioButtonFieldSettings).backgroundColor) ? (options as RadioButtonFieldSettings).backgroundColor : "#daeaf7ff";
                 obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
-                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Radio Button' + this.setFormFieldIndex();
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Radio Button' + this.formFieldIndex;
                 obj.isSelected = (options as RadioButtonFieldSettings).isSelected ? (options as RadioButtonFieldSettings).isSelected : false;
                 obj.visibility = options.visibility ? options.visibility : "visible";
                 obj.isRequired = options.isRequired ? options.isRequired : false;
@@ -1617,7 +1649,7 @@ export class FormDesigner {
                 obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : "#daeaf7ff";
                 obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ? (options as unknown as SignatureIndicatorSettings).fontSize : 10;
                 (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
-                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Signature' + + this.setFormFieldIndex();
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Signature' + this.formFieldIndex;
                 obj.isRequired = options.isRequired ? options.isRequired : false;
                 obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
                 obj.signatureIndicatorSettings = (options as SignatureFieldSettings).signatureIndicatorSettings ? {opacity: (options as SignatureFieldSettings).signatureIndicatorSettings.opacity ? (options as SignatureFieldSettings).signatureIndicatorSettings.opacity: 1 ,
@@ -1631,7 +1663,7 @@ export class FormDesigner {
                 obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : "#daeaf7ff";
                 obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ? (options as unknown as SignatureIndicatorSettings).fontSize : 10;
                 (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
-                (obj as any).name = !isNullOrUndefined(options.name) ? options.name : 'Initial' + + this.setFormFieldIndex();
+                (obj as any).name = !isNullOrUndefined(options.name) ? options.name : 'Initial' + this.formFieldIndex;
                 (obj as any).isRequired = options.isRequired ? options.isRequired : false;
                 (obj as any).isReadonly = options.isReadOnly ? options.isReadOnly : false;
                 (obj as any).isInitialField = true;
@@ -1914,6 +1946,27 @@ export class FormDesigner {
                 newValue = options.visibility;
             }
             formFieldObject.visibility = options.visibility;
+            htmlElement.style.visibility = options.visibility; 
+            if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
+                (htmlElement as any).parentElement.style.visibility = formFieldObject.visibility;
+            }
+            if (formFieldObject.formFieldAnnotationType === 'SignatureField' || formFieldObject.formFieldAnnotationType === 'InitialField') {
+                (htmlElement as any).parentElement.style.visibility = formFieldObject.visibility;
+                let annotation: any = (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0] + "_content"];
+                var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+                var formFieldsData = JSON.parse(data);
+                let index : number = this.getFormFiledIndex(formFieldObject.id.split('_')[0]);
+                if (formFieldObject.visibility === "hidden") {
+                    if (annotation) {
+                       this.hideSignatureValue(formFieldObject, annotation, index, formFieldsData);
+                    }
+                }
+                else {
+                    if (annotation) {
+                        this.showSignatureValue(formFieldObject, oldValue, annotation, index, formFieldsData);
+                    }
+                }
+            }
             (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].visibility = options.visibility;
             if (isVisibilityChanged) {
                 this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
@@ -2549,7 +2602,7 @@ export class FormDesigner {
     public updateTextboxProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
         (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Textbox' + this.setFormFieldIndex();
         (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
-        inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
+        inputElement.style.fontFamily = obj.fontFamily && this.getFontFamily(obj.fontFamily) ? obj.fontFamily : 'Helvetica';
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
         inputElement.style.fontSize = obj.fontSize ? (obj.fontSize * zoomValue) + 'px' : (10  * zoomValue) + 'px';
         if (obj.font.isBold) {
@@ -2750,6 +2803,7 @@ export class FormDesigner {
         (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Signature' + this.setFormFieldIndex();
         (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
         inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
+        inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
         inputElement.style.fontSize = obj.fontSize ? (obj.fontSize * zoomValue) + 'px' : (10  * zoomValue) + 'px';
         if (obj.font.isBold) {
@@ -2804,6 +2858,33 @@ export class FormDesigner {
             }
         }
     }
+     // eslint-disable-next-line
+     private getFieldBounds(bound: any, pageIndex: number): any {
+        // eslint-disable-next-line
+        let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+        // eslint-disable-next-line max-len
+        bound = {X: bound.X ? bound.X: bound.x, Y: bound.Y ? bound.Y: bound.y, Width: bound.Width ? bound.Width: bound.width, Height: bound.Height ? bound.Height: bound.height };
+        // eslint-disable-next-line
+        let bounds: any;
+        switch (pageDetails.rotation) {
+            case 0:
+                bounds = bound;
+                break;
+            case 1:
+                bounds = { X: bound.Y - (bound.Width / 2 - bound.Height / 2), Y: pageDetails.width - bound.X - bound.Height - (bound.Width / 2 - bound.Height / 2), Width: bound.Width, Height: bound.Height };
+                break;
+            case 2:
+                bounds = { X: pageDetails.width - bound.X - bound.Width, Y: pageDetails.height - bound.Y - bound.Height, Width: bound.Width, Height: bound.Height };
+                break;
+            case 3:
+                bounds = { X: (pageDetails.height - bound.Y - bound.Width + (bound.Width / 2 - bound.Height / 2)), Y: bound.X + (bound.Width / 2 - bound.Height / 2), Width: bound.Width, Height: bound.Height };
+                break;
+        }
+        if (!bounds) {
+            bounds = bound;
+        }
+        return bounds;
+    }
     /**
      * @private
      */
@@ -2815,49 +2896,56 @@ export class FormDesigner {
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 let currentData: any = formFieldsData[i].FormField;
                 currentData.Multiline = currentData.isMultiline;
-                if (currentData.formFieldAnnotationType === 'Textbox' || currentData.formFieldAnnotationType === 'PasswordField' || currentData.Multiline) {
-                    if (currentData.value === null || currentData.value === '') {
-                        this.pdfViewerBase.validateForm = true;
-                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.value;
-                    } else {
-                        delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
-                    }
-                } else if (currentData.formFieldAnnotationType === 'RadioButton') {
-                    if (currentData.radiobuttonItem) {
-                        let isSelected: boolean = false;
-                        for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
-                            if (currentData.radiobuttonItem[j].isSelected) {
-                                isSelected = true;
-                                break;
-                            }
-                        }
-                        if (!isSelected) {
+                currentData.lineBound = this.getFieldBounds(currentData.lineBound, currentData.pageNumber - 1);
+                if (currentData.isRequired) {
+                    if (currentData.formFieldAnnotationType === 'Textbox' || currentData.formFieldAnnotationType === 'PasswordField' || currentData.Multiline) {
+                        if (currentData.value === null || currentData.value === '') {
                             this.pdfViewerBase.validateForm = true;
-                            this.pdfViewerBase.nonFillableFields[currentData.name] = isSelected;
+                            this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.value;
                         } else {
                             delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
                         }
-                    }
-                } else if (currentData.formFieldAnnotationType === 'Checkbox') {
-                    if (currentData.isChecked === false) {
-                        this.pdfViewerBase.validateForm = true;
-                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.isChecked;
-                    } else {
-                        delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
-                    }
-                } else if (currentData.formFieldAnnotationType === 'DropdownList' || currentData.formFieldAnnotationType === 'ListBox') {
-                    if (isNullOrUndefined(currentData.selectedIndex) || currentData.selectedIndex.length === 0) {
-                        this.pdfViewerBase.validateForm = true;
-                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.selectedIndex;
-                    } else {
-                        delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
-                    }
-                } else if (currentData.formFieldAnnotationType === 'SignatureField' || currentData.formFieldAnnotationType === 'InitialField') {
-                    if (currentData.value === null || currentData.value === '') {
-                        this.pdfViewerBase.validateForm = true;
-                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.value;
-                    } else {
-                        delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
+                    } else if (currentData.formFieldAnnotationType === 'RadioButton') {
+                        if (currentData.radiobuttonItem) {
+                            let isSelected: boolean = false;
+                            for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
+                                currentData.radiobuttonItem[j].lineBound = this.getFieldBounds(currentData.radiobuttonItem[j].lineBound, currentData.radiobuttonItem[j].pageNumber - 1);
+                                if (currentData.radiobuttonItem[j].isSelected) {
+                                    isSelected = true;
+                                    break;
+                                }
+                            }
+                            if (!isSelected) {
+                                this.pdfViewerBase.validateForm = true;
+                                this.pdfViewerBase.nonFillableFields[currentData.name] = isSelected;
+                            } else {
+                                delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
+                            }
+                        }
+                    } else if (currentData.formFieldAnnotationType === 'Checkbox') {
+                        if (currentData.isChecked === false) {
+                            this.pdfViewerBase.validateForm = true;
+                            this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.isChecked;
+                        } else {
+                            delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
+                        }
+                    } else if (currentData.formFieldAnnotationType === 'DropdownList' || currentData.formFieldAnnotationType === 'ListBox') {
+                        if (isNullOrUndefined(currentData.selectedIndex) || currentData.selectedIndex.length === 0) {
+                            this.pdfViewerBase.validateForm = true;
+                            this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.selectedIndex;
+                        } else {
+                            delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
+                        }
+                    } else if (currentData.formFieldAnnotationType === 'SignatureField' || currentData.formFieldAnnotationType === 'InitialField') {
+                        if (currentData.signatureBound) {
+                            currentData.signatureBound = this.getFieldBounds(currentData.signatureBound, currentData.pageNumber - 1);
+                        }
+                        if (currentData.value === null || currentData.value === '') {
+                            this.pdfViewerBase.validateForm = true;
+                            this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.value;
+                        } else {
+                            delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
+                        }
                     }
                 }
             }
@@ -2873,20 +2961,12 @@ export class FormDesigner {
     public createAnnotationLayer(pageDiv: HTMLElement, pageWidth: number, pageHeight: number, pageNumber: number, displayMode: string): HTMLElement {
         const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         if (canvas) {
-            (canvas as any).width = pageWidth;
-            (canvas as any).height = pageHeight;
-            canvas.style.position = 'absolute';
-            canvas.style.zIndex = '1';
-            this.pdfViewerBase.applyElementStyles(canvas, pageNumber);
+            this.updateAnnotationCanvas(canvas as any, pageWidth, pageHeight, pageNumber);
             return canvas;
         } else {
             // eslint-disable-next-line max-len
             const annotationCanvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_annotationCanvas_' + pageNumber, className: 'e-pv-annotation-canvas' }) as HTMLCanvasElement;
-            annotationCanvas.width = pageWidth;
-            annotationCanvas.height = pageHeight;
-            annotationCanvas.style.position = 'absolute';
-            annotationCanvas.style.zIndex = '1';
-            this.pdfViewerBase.applyElementStyles(annotationCanvas, pageNumber);
+            this.updateAnnotationCanvas(annotationCanvas as any, pageWidth, pageHeight, pageNumber);  
             pageDiv.appendChild(annotationCanvas);
             return annotationCanvas;
         }
@@ -3135,6 +3215,7 @@ export class FormDesigner {
         (inputElement as IElement).autocomplete = "off";
         inputElement.style.width = '100%';
         inputElement.style.height = '100%';
+        inputElement.style.position = "absolute";
         inputElement.addEventListener('click', this.inputElementClick.bind(this));
         inputElement.addEventListener('change', this.getTextboxValue.bind(this));
         return inputElement;
@@ -3167,7 +3248,9 @@ export class FormDesigner {
             if (index > -1) {
                 formFieldsData[index].FormField.option =selectedItem.options;
                 this.pdfViewerBase.formFieldCollection[index].FormField.option = selectedItem.options;
-                formFieldsData[index] && formFieldsData[index].FormField.value ? selectedItem.selectedIndex.push(selectedItem.options.findIndex(x => x.itemValue === formFieldsData[index].FormField.value)) : selectedItem.selectedIndex.push(0);
+                if (!isNullOrUndefined(selectedItem.options) && selectedItem.options.length > 0) {
+                    formFieldsData[index] && formFieldsData[index].FormField.value ? selectedItem.selectedIndex.push(selectedItem.options.findIndex(x => x.itemValue === formFieldsData[index].FormField.value)) : selectedItem.selectedIndex.push(0);
+                }
             }
             (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].options = selectedItem.options;
             if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) { 
@@ -3235,7 +3318,9 @@ export class FormDesigner {
             if (index > -1) {
                 formFieldsData[index].FormField.option = selectedItem.options;
                 this.pdfViewerBase.formFieldCollection[index].FormField.option = selectedItem.options;
-                selectedItem.selectedIndex.push(index);
+                if (!isNullOrUndefined(selectedItem.options) && selectedItem.options.length > 0) {
+                    formFieldsData[index] && formFieldsData[index].FormField.value ? selectedItem.selectedIndex.push(selectedItem.options.findIndex(function (x) { return x.itemValue === formFieldsData[index].FormField.value; })) : selectedItem.selectedIndex.push(0);
+                }
             }
             (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].options = selectedItem.options;
 
@@ -3894,53 +3979,21 @@ export class FormDesigner {
         } 
 
         element.style.visibility = selectedItem.visibility;
+        if (selectedItem.formFieldAnnotationType === "RadioButton") {
+            element.parentElement.style.visibility = selectedItem.visibility;
+        }
         if (selectedItem.formFieldAnnotationType === "SignatureField" || selectedItem.formFieldAnnotationType === "InitialField" ) {
             let signElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.children[1];
             signElement.style.visibility = selectedItem.visibility;
+            signElement.parentElement.style.visibility = selectedItem.visibility;
             let annotation: any = (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0] + "_content"];
             if (selectedItem.visibility as VisibilityState === "hidden") {
-                selectedItem.wrapper.children.splice(selectedItem.wrapper.children.indexOf(annotation.wrapper.children[0]), 1);
-                selectedItem.value = '';
-                selectedItem.signatureType = '';
-                formFieldsData[index].FormField.value = '';
-                formFieldsData[index].FormField.signatureType = '';
-                this.pdfViewerBase.formFieldCollection[index].FormField.value = '';
-                this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = '';
-                this.pdfViewer.remove(annotation);
-                this.pdfViewer.renderDrawing();
+                if (annotation) {
+                    this.hideSignatureValue(selectedItem, annotation, index, formFieldsData);
+                 }  
             } else {
                 if (annotation) {
-                    if (annotation.shapeAnnotationType === "SignatureText") {
-                        selectedItem.value = annotation.data;
-                        selectedItem.signatureType = "Text";
-                        formFieldsData[index].FormField.signatureType = "Text";
-                        formFieldsData[index].FormField.value = annotation.data;
-                        this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
-                        this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Text";
-                    } else if (annotation.shapeAnnotationType === "SignatureImage") {
-                        selectedItem.value = annotation.data;
-                        selectedItem.signatureType = "Image";
-                        formFieldsData[index].FormField.signatureType = "Image";
-                        formFieldsData[index].FormField.value = annotation.data;
-                        this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
-                        this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Image";
-                    } else {
-                        formFieldsData[index].FormField.signatureType = "Path";
-                        selectedItem.signatureType = "Path";
-                        this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Path";
-                        let collectionData: any = processPathData(annotation.data);
-                        let csData: any = splitArrayCollection(collectionData);
-                        selectedItem.value = JSON.stringify(csData);
-                        formFieldsData[index].FormField.value = JSON.stringify(csData);
-                        this.pdfViewerBase.formFieldCollection[index].FormField.value = JSON.stringify(csData);
-                    }
-                    (selectedItem as any).signatureBound = annotation.signatureBound;
-                    if (oldValue === 'hidden') {
-                        this.pdfViewer.add(annotation);
-                        selectedItem.wrapper.children.push(annotation.wrapper);
-                        let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + selectedItem.pageIndex);
-                        this.pdfViewer.renderDrawing(canvass as any, selectedItem.pageIndex);
-                    }
+                    this.showSignatureValue(selectedItem, oldValue, annotation, index, formFieldsData);
                 }
             }
         }
@@ -3955,6 +4008,53 @@ export class FormDesigner {
             this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
                 false, false, false, false, false, false, false, isVisibilityChanged, false, false, false, false, oldValue, newValue);
         }
+    }
+
+    private hideSignatureValue(selectedItem : any, annotation : any, index : number, formFieldsData : any)  {
+        selectedItem.wrapper.children.splice(selectedItem.wrapper.children.indexOf(annotation.wrapper.children[0]), 1);
+        selectedItem.value = '';
+        selectedItem.signatureType = '';
+        formFieldsData[index].FormField.value = '';
+        formFieldsData[index].FormField.signatureType = '';
+        this.pdfViewerBase.formFieldCollection[index].FormField.value = '';
+        this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = '';
+        this.pdfViewer.remove(annotation);
+        this.pdfViewer.renderDrawing();
+    }
+
+    private showSignatureValue(selectedItem : any, oldValue : any, annotation : any, index : number, formFieldsData : any)  {
+        if (annotation.shapeAnnotationType === "SignatureText") {
+            selectedItem.value = annotation.data;
+            selectedItem.signatureType = "Text";
+            formFieldsData[index].FormField.signatureType = "Text";
+            formFieldsData[index].FormField.value = annotation.data;
+            this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
+            this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Text";
+        } else if (annotation.shapeAnnotationType === "SignatureImage") {
+            selectedItem.value = annotation.data;
+            selectedItem.signatureType = "Image";
+            formFieldsData[index].FormField.signatureType = "Image";
+            formFieldsData[index].FormField.value = annotation.data;
+            this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
+            this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Image";
+        } else {
+            formFieldsData[index].FormField.signatureType = "Path";
+            selectedItem.signatureType = "Path";
+            this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Path";
+            let collectionData: any = processPathData(annotation.data);
+            let csData: any = splitArrayCollection(collectionData);
+            selectedItem.value = JSON.stringify(csData);
+            formFieldsData[index].FormField.value = JSON.stringify(csData);
+            this.pdfViewerBase.formFieldCollection[index].FormField.value = JSON.stringify(csData);
+        }
+        (selectedItem as any).signatureBound = annotation.signatureBound;
+        if (oldValue === 'hidden') {
+            this.pdfViewer.add(annotation);
+            selectedItem.wrapper.children.push(annotation.wrapper);
+            let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + selectedItem.pageIndex);
+            this.pdfViewer.renderDrawing(canvass as any, selectedItem.pageIndex);
+        };
+        this.pdfViewer.renderDrawing();
     }
 
     private updateTooltipPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
@@ -4465,7 +4565,7 @@ export class FormDesigner {
         const formatdropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-font-family-prop' });
         fontFamilyDropdownContainer.appendChild(formatdropdownContainer);
         fontItemsContainer.appendChild(fontFamilyDropdownContainer);
-        this.formFieldFontFamily = new DropDownList({ dataSource: fontFamilyItems, value: selectedItem.fontFamily, cssClass: 'e-pv-properties-formfield-fontfamily' }, formatdropdownContainer);
+        this.formFieldFontFamily = new DropDownList({ dataSource: fontFamilyItems, value: this.getFontFamily(selectedItem.fontFamily) ? selectedItem.fontFamily : 'Helvetica', cssClass: 'e-pv-properties-formfield-fontfamily' }, formatdropdownContainer);
         this.setToolTip(this.pdfViewer.localeObj.getConstant('Font family'), fontFamilyDropdownContainer);
         const fontSizeContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-size-container' });
         const fontSizeDropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-font-family-prop' });
@@ -5220,6 +5320,22 @@ export class FormDesigner {
     */
     public getModuleName(): string {
         return 'FormDesigner';
+    }
+
+    private updateAnnotationCanvas(canvas: any, pageWidth: number, pageHeight: number, pageNumber: number) : void {
+        let ratio: number = this.pdfViewerBase.getZoomRatio();
+        canvas.width = pageWidth * ratio;
+        canvas.height = pageHeight * ratio;
+        canvas.style.width = pageWidth  + 'px';
+        canvas.style.height = pageHeight + 'px';
+        canvas.style.position = 'absolute';
+        canvas.style.zIndex = '1';
+        this.pdfViewerBase.applyElementStyles(canvas, pageNumber);
+    }
+
+    private getFontFamily(fontFamily : any) : boolean {
+        let fontFamilyNames : String[] = ['Helvetica', 'Courier', 'TimesRoman', 'Symbol', 'ZapfDingbats'];
+        return fontFamilyNames.indexOf(fontFamily) > -1 ? true : false;
     }
 }
 /**

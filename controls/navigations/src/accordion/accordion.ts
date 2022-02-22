@@ -412,7 +412,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public destroy(): void {
-        if ((this as any).isReact) {
+        if ((this as any).isReact || (this as any).isAngular || (this as any).isVue) {
             this.clearTemplate();
         }
         const ele: HTEle = this.element;
@@ -424,9 +424,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             ele.removeChild(el);
         });
         if (this.trgtEle) {
+            this.trgtEle = null;
             while (this.ctrlTem.firstElementChild) {
                 ele.appendChild(this.ctrlTem.firstElementChild);
             }
+            this.ctrlTem = null;
         }
         ele.classList.remove(CLS_ACRDN_ROOT);
         ele.removeAttribute('style');
@@ -776,11 +778,13 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             } else {
                 trgt.click();
             }
+            e.preventDefault();
             break;
         case 'home':
         case 'end':
             clst = e.action === 'home' ? <HTEle>root.firstElementChild.children[0] : <HTEle>root.lastElementChild.children[0];
             clst.focus();
+            e.preventDefault();
             break;
         }
     }
@@ -795,12 +799,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         return header;
     }
     private renderInnerItem(item: AccordionItemModel, index: number): HTEle {
-        const innerEle: HTEle = this.createElement('div', { className: CLS_ITEM });
-        innerEle.id = getUniqueID('acrdn_item');
-        if (isNOU(item.id)) {
-            item.id = innerEle.id;
-        }
-        attributes(innerEle, { 'aria-expanded': 'false', 'role': 'row' });
+        const innerEle: HTEle = this.createElement('div', {
+            className: CLS_ITEM, id: item.id || getUniqueID('acrdn_item'),
+            attrs: { 'aria-expanded': 'false', 'role': 'row' }
+        });
         if (this.headerTemplate) {
             const ctnEle: HTEle = this.headerEleGenerate();
             const hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
@@ -1377,7 +1379,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
     private destroyItems(): void {
         this.restoreContent(null);
-        if ((this as any).isReact) {
+        if ((this as any).isReact || (this as any).isAngular || (this as any).isVue) {
             this.clearTemplate();
         }
         [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach((el: HTEle) => {

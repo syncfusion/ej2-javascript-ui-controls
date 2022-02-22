@@ -49,7 +49,7 @@
 
     .e-headercell {
       height: $grid-bigger-headercell-line-height;
-      padding: 0 $grid-bigger-headercell-padding $grid-bigger-headercell-bootom-padding;
+      padding: $grid-bigger-headercell-top-padding $grid-bigger-headercell-padding $grid-bigger-headercell-bootom-padding;
     }
 
     .e-headercelldiv {
@@ -918,7 +918,7 @@
 
     & .e-gridheader .e-frozenheader .e-headercell .e-rhandler:last-of-type,
     & .e-gridheader .e-frozenheader .e-headercell .e-rsuppress:last-of-type {
-      right: -1px;
+      right: 0;
     }
 
     & .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rhandler,
@@ -1885,7 +1885,8 @@
       opacity: .95;
     }
 
-    &.e-default .e-gridheader th.e-firstcell {
+    &.e-default .e-gridheader th.e-firstcell,
+    &.e-default .e-gridheader th.e-laststackcell {
       border-left-style: $grid-border-type;
       border-left-width: $grid-border-size;
     }
@@ -2098,7 +2099,7 @@
       font-size: $grid-group-caption-font-size;
       line-height: $grid-group-captioncell-line-height;
       overflow: hidden;
-      padding: .7em;
+      padding: $grid-group-caption-header-padding;
       text-overflow: ellipsis;
       vertical-align: middle;
       white-space: nowrap;
@@ -3057,7 +3058,8 @@
     &.e-resize-lines.e-rtl {
 
       & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor,
-      & tr.e-columnheader th.e-lastcell .e-rhandler.e-rcursor {
+      & tr.e-columnheader th.e-lastcell .e-rhandler.e-rcursor,
+      & tr.e-columnheader th.e-laststackcell .e-rhandler.e-rcursor {
         border-left: 0;
       }
 
@@ -3148,7 +3150,7 @@
 
 #{&}.e-grid-min-height {
   .e-rowcell {
-    line-height: 0;
+    line-height: normal;
     padding-bottom: 0;
     padding-top: 0;
   }
@@ -3231,7 +3233,7 @@
   .e-rowcell,
   .e-rowcell:first-child,
   .e-rowcell:last-child {
-    line-height: 0;
+    line-height: normal;
     padding-bottom: 0;
     padding-top: 0;
   }
@@ -3694,6 +3696,15 @@
         background-color: transparent;
       }
     }
+  }
+
+  & .e-defaultcell.e-ralign,
+  & .e-editedrow .e-defaultcell.e-ralign,
+  & .e-insertedrow .e-defaultcell.e-ralign,
+  & .e-defaultcell.e-ralign:focus,
+  & .e-insertedrow .e-defaultcell.e-ralign:focus
+  & .e-editedrow .e-defaultcell.e-ralign:focus {
+    padding-right: 10px;
   }
 }
 

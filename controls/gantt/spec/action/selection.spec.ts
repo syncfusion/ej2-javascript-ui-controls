@@ -3,6 +3,7 @@ import { Gantt, Selection, Toolbar } from '../../src/index';
 import { projectData1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { RowSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { getValue } from  '@syncfusion/ej2-base';
 Gantt.Inject(Selection, Toolbar);
 
 describe('Gantt Selection support', () => {
@@ -162,6 +163,57 @@ describe('Gantt Selection support', () => {
             ganttObj.dataBind();
             ganttObj.selectionModule.selectRow(8);
             expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(0);
+        });
+    });
+    describe('Clear Gantt selection after deleting last row', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: true,
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single'
+                    }
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Cancel the selection after deleting last row of Gantt', () => {
+            ganttObj.selectionModule.clearSelection();
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType == "refresh") {
+                    expect(ganttObj.selectedRowIndex).toBe(-1);
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.selectRow(38, false);
+            expect(ganttObj.selectedRowIndex).toBe(38);
+            ganttObj.editModule.deleteRecord(getValue('TaskID', ganttObj.selectionModule.getSelectedRecords()[0]));
         });
     });
 });

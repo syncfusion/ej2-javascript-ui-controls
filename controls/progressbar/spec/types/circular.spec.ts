@@ -822,7 +822,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 pathWidth = (<SVGPathElement>path).getTotalLength();
-                expect(pathWidth === 173.41769409179688 ).toBe(true);
+                expect(Math.round(pathWidth) === 173 ).toBe(true);
             };
             progress.loaded = loaded;
             progress.refresh();
@@ -831,7 +831,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 pathWidth = (<SVGPathElement>path).getTotalLength();
-                expect(pathWidth === 346.8353271484375 ).toBe(true);
+                expect(Math.round(pathWidth) === 347 ).toBe(true);
             };
             progress.value += 20;
             progress.dataBind();

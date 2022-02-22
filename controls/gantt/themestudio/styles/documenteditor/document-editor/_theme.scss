@@ -1568,6 +1568,7 @@
     }
     .e-de-font-color-label {
         margin-bottom: $de-font-color-margin-bottom;
+        margin-right: $de-font-color-margin-top;
         margin-top: $de-font-color-margin-top;
     }
     .e-de-font-content-label {
@@ -1599,7 +1600,7 @@
         }
     }
     .e-de-font-checkbox {
-        margin-left: $de-font-checkbox-ltr;
+        margin-top: $de-font-style-margin;
     }
     .e-de-font-checkbox-transform {
         margin-left: $de-font-checkbox-ltr;

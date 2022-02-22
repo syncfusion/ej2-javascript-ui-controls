@@ -14,10 +14,10 @@ import { UndoRedo } from '../../src/diagram/objects/undo-redo'
 import {
     SymbolPalette, SymbolInfo, PaletteModel,
 } from '../../src/symbol-palette/index';
-import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
-import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel } from '../../src/diagram/index'; 
+import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel } from '../../src/diagram/index';
 import { BpmnShapeModel, BpmnSubProcessModel } from "../../src/index";
 Diagram.Inject(BpmnDiagrams);
 SymbolPalette.Inject(BpmnDiagrams);
@@ -29,11 +29,11 @@ describe('Symbol Palette', () => {
         let palette: SymbolPalette;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let flowshapes: NodeModel[] = [{ id: 'start', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} ,shape: { type: 'Flow', shape: 'Terminator' },pivot:{x:0,y:0} },
-        { id: 'process', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Process' } },
-        { id: 'decision', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Decision' } },
-        { id: 'data', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Data' } },
-        { id: 'end',  dragSize:{width:300, height:300}, previewSize:{width:200, height:200} ,shape: { type: 'Flow', shape: 'Terminator' } }];
+        let flowshapes: NodeModel[] = [{ id: 'start', dragSize: { width: 300, height: 300 }, previewSize: { width: 200, height: 200 }, shape: { type: 'Flow', shape: 'Terminator' }, pivot: { x: 0, y: 0 } },
+        { id: 'process', dragSize: { width: 300, height: 300 }, previewSize: { width: 200, height: 200 }, shape: { type: 'Flow', shape: 'Process' } },
+        { id: 'decision', dragSize: { width: 300, height: 300 }, previewSize: { width: 200, height: 200 }, shape: { type: 'Flow', shape: 'Decision' } },
+        { id: 'data', dragSize: { width: 300, height: 300 }, previewSize: { width: 200, height: 200 }, shape: { type: 'Flow', shape: 'Data' } },
+        { id: 'end', dragSize: { width: 300, height: 300 }, previewSize: { width: 200, height: 200 }, shape: { type: 'Flow', shape: 'Terminator' } }];
 
         let bpmnShapes: NodeModel[] = [{
             id: 'node2a', width: 100, height: 100, offsetX: 500, offsetY: 100, constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
@@ -46,7 +46,7 @@ describe('Symbol Palette', () => {
                 activity: { activity: 'SubProcess', subProcess: { type: 'Event' } }
             }
         }, {
-            id: 'annot4', width: 100, height: 100,pivot:{x:0,y:0},
+            id: 'annot4', width: 100, height: 100, pivot: { x: 0, y: 0 },
             shape: { type: 'Bpmn', shape: 'TextAnnotation', annotation: { angle: 280, length: 150, text: 'textAnnotation4' } }
         }];
 
@@ -170,17 +170,17 @@ describe('Symbol Palette', () => {
                 id: 'connector1', type: 'Straight', sourcePoint: { x: 100, y: 300 },
                 targetPoint: { x: 200, y: 400 },
             }];
-            var handle: UserHandleModel[] = [ {
+            var handle: UserHandleModel[] = [{
                 name: 'clone',
                 pathData:
-                  'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,' +
-                  '0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z ' +
-                  'M68.5,72.5h-30V34.4h30V72.5z',
+                    'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,' +
+                    '0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z ' +
+                    'M68.5,72.5h-30V34.4h30V72.5z',
                 visible: true,
                 offset: 0,
                 side: 'Bottom',
                 margin: { top: 0, bottom: 0, left: 0, right: 0 }
-              }]
+            }]
 
 
             diagram = new Diagram({
@@ -353,9 +353,9 @@ describe('Symbol Palette', () => {
             events.mouseDownEvent(palette.element, 75, 100, false, false);
             events.mouseMoveEvent(palette.element, 100, 100, false, false);
             events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            events.mouseMoveEvent(diagramCanvas, 300+diagram.element.offsetLeft, 300+diagram.element.offsetTop, false, false);
-            events.mouseMoveEvent(diagramCanvas, 400+diagram.element.offsetLeft, 400+diagram.element.offsetTop, false, false);
-            events.mouseUpEvent(diagramCanvas, 400+diagram.element.offsetLeft, 400+diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 400 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 400 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop, false, false);
             expect(diagram.selectedItems.nodes[0].offsetX === 400).toBe(true);
             expect(diagram.selectedItems.nodes[0].offsetY === 400).toBe(true);
             diagram.undo();
@@ -384,7 +384,7 @@ describe('Symbol Palette', () => {
             diagram.drop = (arg) => {
                 console.log((arg.element as NodeModel).offsetX);
                 console.log((arg.element as NodeModel).offsetY);
-                expect(Math.round((arg.element as NodeModel).offsetX) === 311||Math.round((arg.element as NodeModel).offsetX) === 311.5).toBe(true);
+                expect(Math.round((arg.element as NodeModel).offsetX) === 311 || Math.round((arg.element as NodeModel).offsetX) === 311.5).toBe(true);
                 expect(Math.round((arg.element as NodeModel).offsetY) === 311).toBe(true);
                 expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
                 done();
@@ -395,8 +395,8 @@ describe('Symbol Palette', () => {
             events.mouseDownEvent(palette.element, 175, 350, false, false);
             events.mouseMoveEvent(palette.element, 100, 350, false, false);
             events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            events.mouseMoveEvent(diagramCanvas, 300+diagram.element.offsetLeft, 300+diagram.element.offsetTop, false, false);
-            events.mouseUpEvent(diagramCanvas, 300+diagram.element.offsetLeft, 300+diagram.element.offsetTop, false, false);
+            events.mouseMoveEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
+            events.mouseUpEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, false, false);
             expect(Math.round(diagram.selectedItems.nodes[0].offsetX) === 311).toBe(true);
             expect(Math.round(diagram.selectedItems.nodes[0].offsetY) === 311).toBe(true);
             diagram.undo();
@@ -441,7 +441,7 @@ describe('Symbol Palette', () => {
             var ele = document.getElementById('diagram_SelectorElement')
             console.log('symbolpalette');
             console.log(ele);
-            expect(ele.childElementCount===1).toBe(true);
+            expect(ele.childElementCount === 1).toBe(true);
             events.mouseUpEvent(diagram.element, 400, 400, false, false);
             expect(diagram.selectedItems.nodes[0].width === 300).toBe(true);
             expect(diagram.selectedItems.nodes[0].height === 300).toBe(true);
@@ -473,18 +473,18 @@ describe('Symbol Palette', () => {
             }
             diagram.drop = (arg) => {
                 arg.cancel = true;
-                var x = arg.position.x+100;
-                var y = arg.position.y+100;
+                var x = arg.position.x + 100;
+                var y = arg.position.y + 100;
                 var id = "node" + diagram.nodes.length + 1;
                 diagram.addNode({
-                  id: id,
-                  data: {
-                    type: "state"
-                  },
-                  offsetY: y,
-                  offsetX: x,
-                  width: 125,
-                  height: 125
+                    id: id,
+                    data: {
+                        type: "state"
+                    },
+                    offsetY: y,
+                    offsetX: x,
+                    width: 125,
+                    height: 125
                 });
                 done();
             }
@@ -500,13 +500,13 @@ describe('Symbol Palette', () => {
             var ele = document.getElementById('diagram_SelectorElement')
             console.log('symbolpalette');
             console.log(ele);
-            
+
             events.mouseUpEvent(diagram.element, 400, 400, false, false);
-            console.log("Test case check"+diagram.nodes.length)
+            console.log("Test case check" + diagram.nodes.length)
             expect(diagram.nodes.length).toBe(3);
             diagram.undo()
             expect(diagram.nodes.length).toBe(2);
-            console.log("Test case check1"+diagram.nodes.length)
+            console.log("Test case check1" + diagram.nodes.length)
             done();
         });
         it('drag and drop annotation node', (done: Function) => {
@@ -568,7 +568,7 @@ describe('Symbol Palette', () => {
             done();
         });
         it('drag and drop annotation processes', (done: Function) => {
-            
+
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                 let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
@@ -708,11 +708,11 @@ describe('Symbol Palette', () => {
             expect(Math.round(diagram.connectors[1].wrapper.offsetX) == 180 || Math.round(diagram.connectors[1].wrapper.offsetX) == 176 ||
                 diagram.connectors[1].wrapper.offsetX == 154.5 || diagram.connectors[1].wrapper.offsetX === 304.5 ||
                 diagram.connectors[1].wrapper.offsetX == 309 || Math.round(diagram.connectors[1].wrapper.offsetX) == 303 ||
-                Math.round(diagram.connectors[1].wrapper.offsetX) == 304 || Math.round(diagram.connectors[1].wrapper.offsetX) == 348 || 
+                Math.round(diagram.connectors[1].wrapper.offsetX) == 304 || Math.round(diagram.connectors[1].wrapper.offsetX) == 348 ||
                 Math.round(diagram.connectors[1].wrapper.offsetX) == 347 ||
                 Math.round(diagram.connectors[1].wrapper.offsetX) == 300).toBe(true);
-                expect(diagram.connectors[1].wrapper.offsetY >= 339 && diagram.connectors[1].wrapper.offsetY <= 340).toBe(true);
-                done();
+            expect(diagram.connectors[1].wrapper.offsetY >= 339 && diagram.connectors[1].wrapper.offsetY <= 340).toBe(true);
+            done();
         });
         it('Checking dragging native node', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
@@ -792,7 +792,7 @@ describe('Symbol Palette', () => {
             let symboleelem = document.querySelector('.e-symbolpalette .e-symbol-selected');
             let symboleelemstyle = getComputedStyle(symboleelem);
             console.log(symboleelemstyle.backgroundColor);
-            expect(symboleelemstyle.backgroundColor === 'rgb(224, 224, 224)' || symboleelemstyle.backgroundColor === 'rgb(189, 189, 189)' || 
+            expect(symboleelemstyle.backgroundColor === 'rgb(224, 224, 224)' || symboleelemstyle.backgroundColor === 'rgb(189, 189, 189)' ||
                 symboleelemstyle.backgroundColor === 'rgba(0, 0, 0, 0)').toBe(true);
             done();
         });
@@ -949,12 +949,12 @@ describe('Symbol Palette', () => {
             let resizeelem = document.querySelector('.e-diagram-resize-handle');
             let resizeelemstyle = getComputedStyle(resizeelem);
             console.log(resizeelemstyle.fill);
-            expect(resizeelemstyle.fill === 'rgb(63, 81, 181)' || resizeelemstyle.fill === 'rgb(227, 22, 91)' || 
+            expect(resizeelemstyle.fill === 'rgb(63, 81, 181)' || resizeelemstyle.fill === 'rgb(227, 22, 91)' ||
                 resizeelemstyle.fill === 'rgb(255, 255, 255)').toBe(true);
             let rotateelem = document.querySelector('.e-diagram-rotate-handle');
             let rotateelemstyle = getComputedStyle(rotateelem);
             console.log(resizeelemstyle.fill);
-            expect(resizeelemstyle.fill === 'rgb(63, 81, 181)' || resizeelemstyle.fill === 'rgb(227, 22, 91)' || 
+            expect(resizeelemstyle.fill === 'rgb(63, 81, 181)' || resizeelemstyle.fill === 'rgb(227, 22, 91)' ||
                 resizeelemstyle.fill === 'rgb(255, 255, 255)').toBe(true);
             done();
         })
@@ -962,7 +962,7 @@ describe('Symbol Palette', () => {
             let pivotelem = document.querySelector('.e-diagram-pivot-line');
             let pivotelemstyle = getComputedStyle(pivotelem);
             console.log(pivotelemstyle.stroke);
-            expect(pivotelemstyle.stroke === 'rgb(63, 81, 181)' || pivotelemstyle.stroke === 'rgb(227, 22, 91)' || 
+            expect(pivotelemstyle.stroke === 'rgb(63, 81, 181)' || pivotelemstyle.stroke === 'rgb(227, 22, 91)' ||
                 pivotelemstyle.stroke === 'rgb(0, 0, 0)').toBe(true);
             let events: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -1113,8 +1113,8 @@ describe('Symbol Palette', () => {
             expect(palette.palettes[0].expanded === true).toBe(true);
             done();
         });
-        
-        });
+
+    });
     describe('Testing symbol palette', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
@@ -1192,7 +1192,7 @@ describe('Symbol Palette', () => {
             }
             let groupNodes: NodeModel[] = [];
             diagram.drop = (arg) => {
-                    arg.cancel = true;
+                arg.cancel = true;
             };
         });
 
@@ -1203,7 +1203,7 @@ describe('Symbol Palette', () => {
         });
 
         it('Checking default palette rendering', (done: Function) => {
-            
+
             setTimeout(function () {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                     let clonedElement: HTMLElement; let diagramElement: any;
@@ -1230,11 +1230,11 @@ describe('Symbol Palette', () => {
                 events.mouseUpEvent(diagram.element, 400, 50 - 10 - diagram.element.offsetTop, false, false);
                 expect(diagram.nodes.length === 4).toBe(true);
                 done();
-                expect(document.getElementById(targetNode.id+'_preview') === null).toBe(true);
+                expect(document.getElementById(targetNode.id + '_preview') === null).toBe(true);
                 done();
             }, 1000);
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -1243,6 +1243,108 @@ describe('Symbol Palette', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+    describe('Testing symbol palette with connector source and target point as same', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let flowshapes: NodeModel[] = [
+            {
+                id: 'node1', width: 5, height: 5, offsetX: 10,
+                offsetY: 100,
+            },
+            {
+                id: 'node2', width: 5, height: 5, offsetX: 20,
+                offsetY: 20
+            },
+            { id: 'group', children: ['node1', 'node2'], }
+        ];
+
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolpaletteGroupIssue', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramGroupIssue', styles: 'width:50%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+
+            diagram = new Diagram({
+                width: '70%', height: 500
+            });
+            diagram.appendTo('#diagramGroupIssue');
+
+            var palettes = [
+
+                {
+                    id: 'connectors', expanded: true, symbols: [
+                        {
+                            id: 'Link1', type: 'Straight', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 0 },
+                            targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 2 }
+                        },
+                        {
+                            id: 'Link2', type: 'Straight', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 0, y: 40 },
+                            targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 2 }
+                        },
+                        {
+                            id: 'Link3', type: 'Orthogonal', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 },
+                            targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 2 }
+                        }
+                    ], title: 'Connectors'
+                }
+            ];
+
+            palette = new SymbolPalette({
+                width: '25%', height: '500px',
+                palettes: palettes,
+                symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { height: 100, width: 100 },
+                enableSearch: true,
+                symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+                getSymbolInfo: (symbol: NodeModel): SymbolInfo => {
+                    return { fit: true };
+                }
+            });
+            palette.appendTo('#symbolpaletteGroupIssue');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+
+        it('Check connector rendering in the palette', (done: Function) => {
+
+            setTimeout(function () {
+                palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                    let clonedElement: HTMLElement; let diagramElement: any;
+                    let position: PointModel = palette['getMousePosition'](e.sender);
+                    let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                    let symbols: IElement = palette.symbolTable[target['id']];
+                    palette['selectedSymbols'] = symbols;
+                    if (symbols !== undefined) {
+                        clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                        clonedElement.setAttribute('paletteId', palette.element.id);
+                    }
+                    return clonedElement;
+                };
+                palette.getPersistData();
+                let events = new MouseEvents();
+                let element = (document.getElementById('Link1_container').getBoundingClientRect());;
+                events.mouseDownEvent(palette.element, element.left + palette.element.offsetLeft, element.top + palette.element.offsetTop, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 40 + palette.element.offsetLeft, element.top + palette.element.offsetLeft, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 60, element.top, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 100, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 100 - diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 100 - 5 - diagram.element.offsetTop, false, false);
+                events.mouseUpEvent(diagram.element, 600, 100 - 10 - diagram.element.offsetTop, false, false);
+                events.clickEvent(diagram.element, 600, 100 - 10 - diagram.element.offsetTop, false, false);
+                expect(diagram.connectors.length === 1).toBe(true);
+                done();
+            }, 1000);
+        });
+
     });
 
     describe('Testing symbol palette drag stop on escape', () => {
@@ -1256,7 +1358,7 @@ describe('Symbol Palette', () => {
                 title: 'Basic Shapes',
                 symbols: [
                     {
-                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle'}, height: 100, width: 100
+                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle' }, height: 100, width: 100
                     }
                 ]
             }
@@ -1270,7 +1372,7 @@ describe('Symbol Palette', () => {
             diagram = new Diagram({
                 pageSettings: { background: { color: 'transparent' } },
                 nodes: [
-                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle'}}
+                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle' } }
                 ],
                 width: '74%', height: '600px'
             });
@@ -1407,7 +1509,7 @@ describe('Symbol Palette', () => {
             events.mouseUpEvent(palette.element, 200, 200, false, false);
             done();
         });
-  
+
     });
     describe('Testing symbol palette issue', () => {
         let diagram: Diagram;
@@ -1497,7 +1599,7 @@ describe('Symbol Palette', () => {
                 title: 'Basic Shapes',
                 symbols: [
                     {
-                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle'}, height: 100, width: 100
+                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle' }, height: 100, width: 100
                     }
                 ]
             }
@@ -1511,7 +1613,7 @@ describe('Symbol Palette', () => {
             diagram = new Diagram({
                 pageSettings: { background: { color: 'transparent' } },
                 nodes: [
-                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle'}}
+                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle' } }
                 ],
                 width: '74%', height: '600px'
             });
@@ -1533,9 +1635,9 @@ describe('Symbol Palette', () => {
             ele.remove();
         });
 
-        
+
         it('Checking zindex for symbol palette', (done: Function) => {
-            
+
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                 let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
@@ -1548,7 +1650,7 @@ describe('Symbol Palette', () => {
                 }
                 return clonedElement;
             };
-            
+
             let events: MouseEvents = new MouseEvents();
             events.mouseDownEvent(palette.element, 45, 85, false, false);
             events.mouseMoveEvent(palette.element, 100, 100, false, false);
@@ -1653,7 +1755,7 @@ describe('Symbol Palette', () => {
 
 
         it('Node default connector default test cases', (done: Function) => {
-            
+
             var shape: NodeModel | ConnectorModel;;
             expect((palette.palettes[0].symbols[0].wrapper.children[0] as any).children[0].style.strokeWidth === 2
                 && (palette.palettes[0].symbols[0].wrapper.children[0] as any).children[0].style.fill === 'red'
@@ -1717,12 +1819,13 @@ describe('Symbol Palette', () => {
                     }, annotations: [{ content: 'Path Element' }]
                 }
             ];
-           
+
 
             diagram = new Diagram({
                 nodes: nodes, pageSettings: { background: { color: 'transparent' } },
-                selectedItems: { constraints: SelectorConstraints.All,
-                 },
+                selectedItems: {
+                    constraints: SelectorConstraints.All,
+                },
                 width: '70%'
             });
             diagram.appendTo('#diagram');
@@ -1731,7 +1834,7 @@ describe('Symbol Palette', () => {
                 width: '25%', height: '500px',
                 palettes: [
                     { id: 'flow', expanded: true, symbols: flowshapes, iconCss: '', title: 'Flow Shapes' },
-                 ], enableAnimation: false, enableSearch: true,
+                ], enableAnimation: false, enableSearch: true,
                 symbolMargin: { top: 5, bottom: 5, left: 5, right: 5 }
             });
             palette.appendTo('#symbolpalette');
@@ -1744,9 +1847,9 @@ describe('Symbol Palette', () => {
         });
 
         it('Checking default palette rendering', (done: Function) => {
-            
+
             setTimeout(() => {
-                
+
                 let events: MouseEvents = new MouseEvents();
                 events.mouseDownEvent(palette.element, 75, 100, false, false);
                 events.mouseMoveEvent(palette.element, 100, 100, false, false);
@@ -1758,7 +1861,7 @@ describe('Symbol Palette', () => {
             }, 10);
         });
 
-       
+
 
 
         it('CR issue for render Highlighter', (done: Function) => {
@@ -1828,7 +1931,7 @@ describe('Symbol Palette', () => {
                 symbolWidth: 95,
                 getSymbolInfo: function () {
                     return {
-                        description:  { text: "Aggregate"},
+                        description: { text: "Aggregate" },
                         tooltip: "Aggregate",
                         fit: true,
                     };
@@ -1848,8 +1951,8 @@ describe('Symbol Palette', () => {
             ele.remove();
         });
         it('Symbol Description render in Palette', (done: Function) => {
-            diagramCanvas=document.getElementById("aggregate_g");
-            var textelement=diagramCanvas.getElementsByTagName("text")[0];
+            diagramCanvas = document.getElementById("aggregate_g");
+            var textelement = diagramCanvas.getElementsByTagName("text")[0];
             expect(textelement.id != "undefined_text").toBe(true);
             done();
         });
@@ -1858,19 +1961,20 @@ describe('Symbol Palette', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
         let ele: HTMLElement;
-        function groupnode(){
+        function groupnode() {
             if (diagram.selectedItems.nodes.length > 0) {
                 var nodes_1 = diagram.selectedItems.nodes[0];
                 if (nodes_1.children) {
                     for (var i = 0; i < (nodes_1.children).length; i++) {
                         var child1 = diagram.getObject((nodes_1.children[i]));
-                        palette.addPaletteItem('basic', child1, true);                      
+                        palette.addPaletteItem('basic', child1, true);
                     };
                 }
                 palette.addPaletteItem('basic', nodes_1, false);
                 palette.dataBind();
-               
-            }}
+
+            }
+        }
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
             ele.appendChild(createElement('div', { id: 'symbolPaletteOrder', styles: 'width:25%;height:500px;float:left;' }));
@@ -1884,19 +1988,19 @@ describe('Symbol Palette', () => {
                     id: 'node2', width: 50, height: 50, offsetX: 200,
                     offsetY: 100
                 },
-                
-                { id: 'group', children: ['node1', 'node2']}
+
+                { id: 'group', children: ['node1', 'node2'] }
             ];
             diagram = new Diagram({
                 width: '800px', height: '500px', nodes: nodes
-        
+
             });
             diagram.appendTo('#diagramOrder');
             function getBasicShapes(): NodeModel[] {
                 let BasicShapes: NodeModel[] = [];
                 return BasicShapes;
             }
-            
+
             palette = new SymbolPalette({
                 expandMode: 'Multiple',
                 palettes: [
@@ -1904,7 +2008,7 @@ describe('Symbol Palette', () => {
                 ],
                 width: '200', height: '100%', symbolHeight: 50, symbolWidth: 50,
                 symbolPreview: { height: 100, width: 100 },
-               
+
             });
             palette.appendTo('#symbolPaletteOrder');
         });
@@ -1915,14 +2019,14 @@ describe('Symbol Palette', () => {
             ele.remove();
         });
 
-        it('Adding group node into palette test cases', (done: Function) => {  
-            debugger          
+        it('Adding group node into palette test cases', (done: Function) => {
+            debugger
             diagram.select([diagram.nodes[2]]);
             groupnode();
             expect((document.getElementById('basic').childNodes.length == 1)).toBe(true)
             done();
         });
-        
+
     });
     describe('Cancel support for symbol palette ', () => {
         let symbolPalette: SymbolPalette
@@ -1932,8 +2036,8 @@ describe('Symbol Palette', () => {
             ele = createElement('div');
             ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
             document.body.appendChild(ele);
-            symbolPalette = new SymbolPalette ({
-                palettes:  [
+            symbolPalette = new SymbolPalette({
+                palettes: [
                     {
                         id: 'swimlaneShapes', expanded: true,
                         title: 'Swimlane Shapes',
@@ -1941,30 +2045,29 @@ describe('Symbol Palette', () => {
                             {
                                 id: 'stackCanvas1',
                                 shape: {
-                                    type: 'SwimLane',lanes: [
+                                    type: 'SwimLane', lanes: [
                                         {
                                             id: 'lane1',
-                                            style: { fill: '#f5f5f5'},height: 60, width: 150,
-                                                            header:{ width: 50, height: 50, style: {fill:'#C7D4DF'} },
+                                            style: { fill: '#f5f5f5' }, height: 60, width: 150,
+                                            header: { width: 50, height: 50, style: { fill: '#C7D4DF' } },
                                         }
                                     ],
                                     orientation: 'Horizontal', isLane: true
                                 },
                                 height: 60,
                                 width: 140,
-                                style: { fill: '#f5f5f5'},
+                                style: { fill: '#f5f5f5' },
                                 offsetX: 70,
                                 offsetY: 30,
                             }
                         ]
                     }],
                 symbolHeight: 50, symbolWidth: 50,
-                symbolPreview: { width: 100, height: 100},
+                symbolPreview: { width: 100, height: 100 },
                 expandMode: 'Multiple',
                 height: '400px',
                 width: '200px',
-                paletteExpanding: function (args) 
-                {
+                paletteExpanding: function (args) {
                     args.cancel = true;
                 }
             });
@@ -1976,11 +2079,11 @@ describe('Symbol Palette', () => {
         });
         it('Cancel support while expand collapse', (done: Function) => {
             setTimeout(() => {
-            var paletteHeader : any = document.getElementsByClassName('e-acrdn-header')
-            paletteHeader[1].click();
-            clickedPalette = symbolPalette.palettes[0].expanded;
-            expect(clickedPalette === true).toBe(true);
-            done();
+                var paletteHeader: any = document.getElementsByClassName('e-acrdn-header')
+                paletteHeader[1].click();
+                clickedPalette = symbolPalette.palettes[0].expanded;
+                expect(clickedPalette === true).toBe(true);
+                done();
             }, 100);
         });
     })
@@ -1992,7 +2095,7 @@ describe('Symbol Palette', () => {
             ele = createElement('div');
             ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
             document.body.appendChild(ele);
-            let basicShapes: NodeModel[] = [ {
+            let basicShapes: NodeModel[] = [{
                 id: 'node2', style: { fill: 'none' },
                 annotations: [{ content: 'Start \n Text Editing' }],
                 shape: {
@@ -2000,25 +2103,25 @@ describe('Symbol Palette', () => {
                 }
             },
             {
-                id: 'syncfusion', style: { fill: 'none'},
+                id: 'syncfusion', style: { fill: 'none' },
                 shape: {
                     type: 'Native', content: '<g xmlns="http://www.w3.org/2000/svg">' +
-                    '<rect height="256" width="256" fill="#34353F"/>' +
-                    '<path id="path1" transform="rotate(0,128,128) translate(59,61.2230899333954) scale(4.3125,4.3125)  " fill="#FFFFFF" d="M18.88501,23.042998L26.804993,23.042998 26.804993,30.969001 18.88501,30.969001z M9.4360352,23.042998L17.358032,23.042998 17.358032,30.969001 9.4360352,30.969001z M0.014038086,23.042998L7.9360352,23.042998 7.9360352,30.969001 0.014038086,30.969001z M18.871033,13.609001L26.791016,13.609001 26.791016,21.535994 18.871033,21.535994z M9.4219971,13.609001L17.342041,13.609001 17.342041,21.535994 9.4219971,21.535994z M0,13.609001L7.9219971,13.609001 7.9219971,21.535994 0,21.535994z M9.4219971,4.1859968L17.342041,4.1859968 17.342041,12.113998 9.4219971,12.113998z M0,4.1859968L7.9219971,4.1859968 7.9219971,12.113998 0,12.113998z M25.846008,0L32,5.2310026 26.773987,11.382995 20.619019,6.155998z"/>' +
-                  '</g>'
+                        '<rect height="256" width="256" fill="#34353F"/>' +
+                        '<path id="path1" transform="rotate(0,128,128) translate(59,61.2230899333954) scale(4.3125,4.3125)  " fill="#FFFFFF" d="M18.88501,23.042998L26.804993,23.042998 26.804993,30.969001 18.88501,30.969001z M9.4360352,23.042998L17.358032,23.042998 17.358032,30.969001 9.4360352,30.969001z M0.014038086,23.042998L7.9360352,23.042998 7.9360352,30.969001 0.014038086,30.969001z M18.871033,13.609001L26.791016,13.609001 26.791016,21.535994 18.871033,21.535994z M9.4219971,13.609001L17.342041,13.609001 17.342041,21.535994 9.4219971,21.535994z M0,13.609001L7.9219971,13.609001 7.9219971,21.535994 0,21.535994z M9.4219971,4.1859968L17.342041,4.1859968 17.342041,12.113998 9.4219971,12.113998z M0,4.1859968L7.9219971,4.1859968 7.9219971,12.113998 0,12.113998z M25.846008,0L32,5.2310026 26.773987,11.382995 20.619019,6.155998z"/>' +
+                        '</g>'
                 }
             },
             {
-                id: 'network', style: { fill: 'none'},
+                id: 'network', style: { fill: 'none' },
                 shape: {
                     type: 'Native', content: '<g xmlns="http://www.w3.org/2000/svg">' +
-                    '<rect height="256" width="256" fill="#34353F"/>' +
-                    '<path id="path1" transform="rotate(0,128,128) translate(59.1078108549118,59) scale(4.3125,4.3125)  " fill="#FFFFFF" d="M12.12701,24.294998C12.75201,24.294998 13.258998,24.803009 13.258998,25.428009 13.258998,26.056 12.75201,26.563004 12.12701,26.563004 11.499019,26.563004 10.993007,26.056 10.993007,25.428009 10.993007,24.803009 11.499019,24.294998 12.12701,24.294998z M7.9750035,24.294998C8.6010101,24.294998 9.1090057,24.803009 9.1090057,25.428009 9.1090057,26.056 8.6010101,26.563004 7.9750035,26.563004 7.3480199,26.563004 6.8399942,26.056 6.8399942,25.428009 6.8399942,24.803009 7.3480199,24.294998 7.9750035,24.294998z M7.9750035,20.286011C8.6010101,20.286011 9.1090057,20.792999 9.1090057,21.419006 9.1090057,22.044006 8.6010101,22.552002 7.9750035,22.552002 7.3500035,22.552002 6.8420084,22.044006 6.8420084,21.419006 6.8420084,20.792999 7.3500035,20.286011 7.9750035,20.286011z M18.499994,19.317001C18.313013,19.317001,18.156,19.472,18.156,19.656006L18.156,27.01001C18.156,27.195007,18.313013,27.350006,18.499994,27.350006L29.521993,27.350006C29.707998,27.350006,29.865988,27.195007,29.865988,27.01001L29.865988,19.656006C29.865988,19.472,29.707998,19.317001,29.521993,19.317001z M17.243006,17.443008L30.778003,17.443008C31.425007,17.445007,31.947986,17.962006,31.950001,18.602997L31.950001,28.542007C31.947986,29.182999,31.425007,29.702011,30.778003,29.703003L25.654012,29.703003C25.511007,29.703003 25.399008,29.824997 25.413992,29.964996 25.430013,30.13501 25.452993,30.360001 25.477011,30.559998 25.506002,30.809998 25.727987,30.980011 25.976003,31.033997L27.756002,31.419006C27.907003,31.452011 28.015005,31.584 28.015005,31.738007 28.015005,31.883011 27.895986,32 27.74999,32L27.571005,32 20.450004,32 20.318016,32C20.171013,32 20.053001,31.883011 20.053001,31.738007 20.053001,31.585007 20.161003,31.452011 20.312004,31.419998L22.115989,31.033005C22.35601,30.98201 22.572014,30.815002 22.596,30.574005 22.616997,30.363007 22.636009,30.130997 22.648002,29.960007 22.658012,29.819 22.542015,29.70401 22.399986,29.70401L17.243006,29.703003C16.596002,29.702011,16.072992,29.182999,16.071008,28.542007L16.071008,18.602997C16.072992,17.962006,16.596002,17.445007,17.243006,17.443008z M7.9750035,16.133011C8.6020172,16.133011 9.1100128,16.641006 9.1100128,17.268005 9.1100128,17.893997 8.6020172,18.402008 7.9750035,18.402008 7.3489964,18.402008 6.8410013,17.893997 6.8410013,17.268005 6.8410013,16.641006 7.3489964,16.133011 7.9750035,16.133011z M24.027,13.762009C24.654014,13.762009 25.16201,14.270004 25.16201,14.895996 25.16201,15.522003 24.654014,16.029999 24.027,16.029999 23.400993,16.029999 22.892998,15.522003 22.892998,14.895996 22.892998,14.270004 23.400993,13.762009 24.027,13.762009z M24.027,9.6110077C24.653007,9.6110077 25.161003,10.119003 25.161003,10.74501 25.161003,11.37001 24.653007,11.878006 24.027,11.878006 23.402,11.878006 22.894005,11.37001 22.894005,10.74501 22.894005,10.119003 23.402,9.6110077 24.027,9.6110077z M24.027,5.6000061C24.654014,5.6000061 25.16201,6.1080017 25.16201,6.7350006 25.16201,7.3610077 24.654014,7.8690033 24.027,7.8690033 23.400993,7.8690033 22.892998,7.3610077 22.892998,6.7350006 22.892998,6.1080017 23.400993,5.6000061 24.027,5.6000061z M19.876001,5.6000061C20.503013,5.6000061 21.011009,6.1080017 21.011009,6.7350006 21.011009,7.3610077 20.503013,7.8690033 19.876001,7.8690033 19.249994,7.8690033 18.743006,7.3610077 18.743006,6.7350006 18.743006,6.1080017 19.249994,5.6000061 19.876001,5.6000061z M2.4290157,1.8740082C2.2420037,1.8740082,2.0850215,2.029007,2.0850215,2.2140045L2.0850215,9.5680084C2.0850215,9.753006,2.2420037,9.9069977,2.4290157,9.9069977L13.451014,9.9069977C13.637995,9.9069977,13.795008,9.753006,13.795008,9.5680084L13.795008,2.2140045C13.795008,2.029007,13.637995,1.8740082,13.451014,1.8740082z M1.1730042,0L14.706996,0C15.353999,0.0019989014,15.877009,0.51899719,15.878993,1.1600037L15.878993,11.100006C15.877009,11.740005,15.353999,12.26001,14.706996,12.26001L9.5830047,12.26001C9.4399994,12.26001 9.3290069,12.382004 9.3420074,12.52301 9.3600128,12.692001 9.3829925,12.917999 9.4060028,13.117004 9.4349945,13.367004 9.6570099,13.53801 9.9049957,13.591003L11.684994,13.975998C11.835994,14.009003 11.945003,14.141998 11.945003,14.294998 11.945003,14.440002 11.826015,14.557007 11.679012,14.557007L11.499996,14.557007 4.3789966,14.557007 4.2470081,14.557007C4.1000049,14.557007 3.9819935,14.440002 3.9819937,14.294998 3.9819935,14.141998 4.0899952,14.009003 4.2409961,13.977005L6.0450113,13.589996C6.2860086,13.539001 6.501005,13.373001 6.5249918,13.130997 6.5460184,12.921005 6.5650003,12.688004 6.5769937,12.516998 6.5870035,12.376999 6.4710062,12.262009 6.3290079,12.262009L1.1730042,12.26001C0.52499391,12.26001,0.0020143806,11.740005,0,11.100006L0,1.1600037C0.0020143806,0.51899719,0.52499391,0.0019989014,1.1730042,0z"/>' +
-                  '</g>'
+                        '<rect height="256" width="256" fill="#34353F"/>' +
+                        '<path id="path1" transform="rotate(0,128,128) translate(59.1078108549118,59) scale(4.3125,4.3125)  " fill="#FFFFFF" d="M12.12701,24.294998C12.75201,24.294998 13.258998,24.803009 13.258998,25.428009 13.258998,26.056 12.75201,26.563004 12.12701,26.563004 11.499019,26.563004 10.993007,26.056 10.993007,25.428009 10.993007,24.803009 11.499019,24.294998 12.12701,24.294998z M7.9750035,24.294998C8.6010101,24.294998 9.1090057,24.803009 9.1090057,25.428009 9.1090057,26.056 8.6010101,26.563004 7.9750035,26.563004 7.3480199,26.563004 6.8399942,26.056 6.8399942,25.428009 6.8399942,24.803009 7.3480199,24.294998 7.9750035,24.294998z M7.9750035,20.286011C8.6010101,20.286011 9.1090057,20.792999 9.1090057,21.419006 9.1090057,22.044006 8.6010101,22.552002 7.9750035,22.552002 7.3500035,22.552002 6.8420084,22.044006 6.8420084,21.419006 6.8420084,20.792999 7.3500035,20.286011 7.9750035,20.286011z M18.499994,19.317001C18.313013,19.317001,18.156,19.472,18.156,19.656006L18.156,27.01001C18.156,27.195007,18.313013,27.350006,18.499994,27.350006L29.521993,27.350006C29.707998,27.350006,29.865988,27.195007,29.865988,27.01001L29.865988,19.656006C29.865988,19.472,29.707998,19.317001,29.521993,19.317001z M17.243006,17.443008L30.778003,17.443008C31.425007,17.445007,31.947986,17.962006,31.950001,18.602997L31.950001,28.542007C31.947986,29.182999,31.425007,29.702011,30.778003,29.703003L25.654012,29.703003C25.511007,29.703003 25.399008,29.824997 25.413992,29.964996 25.430013,30.13501 25.452993,30.360001 25.477011,30.559998 25.506002,30.809998 25.727987,30.980011 25.976003,31.033997L27.756002,31.419006C27.907003,31.452011 28.015005,31.584 28.015005,31.738007 28.015005,31.883011 27.895986,32 27.74999,32L27.571005,32 20.450004,32 20.318016,32C20.171013,32 20.053001,31.883011 20.053001,31.738007 20.053001,31.585007 20.161003,31.452011 20.312004,31.419998L22.115989,31.033005C22.35601,30.98201 22.572014,30.815002 22.596,30.574005 22.616997,30.363007 22.636009,30.130997 22.648002,29.960007 22.658012,29.819 22.542015,29.70401 22.399986,29.70401L17.243006,29.703003C16.596002,29.702011,16.072992,29.182999,16.071008,28.542007L16.071008,18.602997C16.072992,17.962006,16.596002,17.445007,17.243006,17.443008z M7.9750035,16.133011C8.6020172,16.133011 9.1100128,16.641006 9.1100128,17.268005 9.1100128,17.893997 8.6020172,18.402008 7.9750035,18.402008 7.3489964,18.402008 6.8410013,17.893997 6.8410013,17.268005 6.8410013,16.641006 7.3489964,16.133011 7.9750035,16.133011z M24.027,13.762009C24.654014,13.762009 25.16201,14.270004 25.16201,14.895996 25.16201,15.522003 24.654014,16.029999 24.027,16.029999 23.400993,16.029999 22.892998,15.522003 22.892998,14.895996 22.892998,14.270004 23.400993,13.762009 24.027,13.762009z M24.027,9.6110077C24.653007,9.6110077 25.161003,10.119003 25.161003,10.74501 25.161003,11.37001 24.653007,11.878006 24.027,11.878006 23.402,11.878006 22.894005,11.37001 22.894005,10.74501 22.894005,10.119003 23.402,9.6110077 24.027,9.6110077z M24.027,5.6000061C24.654014,5.6000061 25.16201,6.1080017 25.16201,6.7350006 25.16201,7.3610077 24.654014,7.8690033 24.027,7.8690033 23.400993,7.8690033 22.892998,7.3610077 22.892998,6.7350006 22.892998,6.1080017 23.400993,5.6000061 24.027,5.6000061z M19.876001,5.6000061C20.503013,5.6000061 21.011009,6.1080017 21.011009,6.7350006 21.011009,7.3610077 20.503013,7.8690033 19.876001,7.8690033 19.249994,7.8690033 18.743006,7.3610077 18.743006,6.7350006 18.743006,6.1080017 19.249994,5.6000061 19.876001,5.6000061z M2.4290157,1.8740082C2.2420037,1.8740082,2.0850215,2.029007,2.0850215,2.2140045L2.0850215,9.5680084C2.0850215,9.753006,2.2420037,9.9069977,2.4290157,9.9069977L13.451014,9.9069977C13.637995,9.9069977,13.795008,9.753006,13.795008,9.5680084L13.795008,2.2140045C13.795008,2.029007,13.637995,1.8740082,13.451014,1.8740082z M1.1730042,0L14.706996,0C15.353999,0.0019989014,15.877009,0.51899719,15.878993,1.1600037L15.878993,11.100006C15.877009,11.740005,15.353999,12.26001,14.706996,12.26001L9.5830047,12.26001C9.4399994,12.26001 9.3290069,12.382004 9.3420074,12.52301 9.3600128,12.692001 9.3829925,12.917999 9.4060028,13.117004 9.4349945,13.367004 9.6570099,13.53801 9.9049957,13.591003L11.684994,13.975998C11.835994,14.009003 11.945003,14.141998 11.945003,14.294998 11.945003,14.440002 11.826015,14.557007 11.679012,14.557007L11.499996,14.557007 4.3789966,14.557007 4.2470081,14.557007C4.1000049,14.557007 3.9819935,14.440002 3.9819937,14.294998 3.9819935,14.141998 4.0899952,14.009003 4.2409961,13.977005L6.0450113,13.589996C6.2860086,13.539001 6.501005,13.373001 6.5249918,13.130997 6.5460184,12.921005 6.5650003,12.688004 6.5769937,12.516998 6.5870035,12.376999 6.4710062,12.262009 6.3290079,12.262009L1.1730042,12.26001C0.52499391,12.26001,0.0020143806,11.740005,0,11.100006L0,1.1600037C0.0020143806,0.51899719,0.52499391,0.0019989014,1.1730042,0z"/>' +
+                        '</g>'
                 }
             }];
             symbolPalette = new SymbolPalette({
-                palettes: 
+                palettes:
                     [
                         {
                             id: 'svg',
@@ -2028,7 +2131,7 @@ describe('Symbol Palette', () => {
                             iconCss: 'e-ddb-icons e-basic'
                         }
                     ],
-                
+
                 symbolHeight: 80, symbolWidth: 80,
                 expandMode: 'Multiple',
                 height: '500px',

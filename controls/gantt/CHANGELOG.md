@@ -2,7 +2,95 @@
 
 ## [Unreleased]
 
+## 19.4.53 (2022-02-22)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#365463` - Gantt timeline view gets changed when resize the task to left side has been fixed.
+
 ## 19.4.52 (2022-02-15)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#360085` - Issue in deleting a task after performing expand collapse action for multiple times has been fixed.
+- `#364950` - The `taskLabel` property does not show the task name properly when giving name with space has been fixed.
+
+## 19.4.50 (2022-02-08)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#362011` - Date alignment issue with Gantt Zoom to fit top tier and bottom tier has been fixed.
+- `#364643` - Extra fields are added in `dataSource` property for bottom position issue has been fixed.
+- `#363210` - Issue in performing edit dialog when we map only segments tab in `editDialogFields` has been fixed.
+- `#364723` - Issue in updating `dataSource` property using insert key has been fixed.
+- `#364643` - New record added in the top of datasource when row position is set as Bottom has been fixed.
+
+## 19.4.47 (2022-01-25)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#356978` - Issue in disable the initial move of taskbar drag has been fixed.
+- `#357647` - Issue in enabling scroll top during load time has been fixed.
+- `#360893` - Issue in data source not updating when dragging and dropping child record has been fixed.
+- `#359455` - Issue in rendering Gantt when parent container height is set in percentage has been fixed.
+- `#361492` - Dragged row does not disappear when the row dropped outside the Gantt issue has been fixed.
+- `#360381` - Issue in clicking on date picker while filtering has been fixed.
+- `#362566` - Child records do not indent properly when immutable mode is enabled issue has been fixed
+
+## 19.4.43 (2022-01-18)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#359455` - Issue in rendering Gantt when parent container height is set in percentage has been fixed.
+- `#360424` - Issue in performing drag and drop when resource is set to null has been fixed.
+- `#360085` - Issue in adding new record after performing expand collapse action for multiple times has been fixed.
+- `#360081` - Console error thrown when we assign resources to parent tasks has been fixed.
+
+## 19.4.42 (2022-01-11)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#354721` - Issue in rendering milestone based on the milestone mapping in datasource has been fixed.
+- `#358683` - Toolbar gets hide after `expandAll` and `collapseAll` is performed issue has been fixed.
+
+## 19.4.41 (2022-01-04)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#359120` - Issue with Gantt Context menu operation after release the connector line outside the Gantt.
+- `#359104, #359163` - Issue while Gantt loaded with taskbar Template and `queryTaskbarInfo` for segmented Tasks has been fixed.
+- `#F170631` - Issue in search settings for all hierarchy mode in Gantt has been fixed.
+
+### Gantt
+
+#### Bug Fixes
+
+- `#355824, #360027` - Gantt Chart display issue with misalign in dates on which DST change happens has been fixed.
+- `#F171256` - Issue in Localization for the word New Task has been fixed.
+
+## 19.4.40 (2021-12-28)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#357340` - Issue with Gantt `selectedRowIndex` property when deleted the selected item in last row.
+
+## 19.4.38 (2021-12-17)
 
 ### Gantt
 

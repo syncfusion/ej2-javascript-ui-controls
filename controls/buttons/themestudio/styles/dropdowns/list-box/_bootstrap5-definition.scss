@@ -78,6 +78,9 @@ $listbox-filter-bigger-small-height: calc(100% - 45px) !default;
 $listbox-filter-bigger-height: calc(100% - 55px) !default;
 $listbox-item-height: 36px !default;
 
+$listbox-select-all-height: calc(100% - 36px) !default;
+$listbox-filter-select-all-height: calc(100% - 86px) !default;
+
 $listbox-border-color: $border-light;
 $badge-color: $primary-text-color !default;
 $badge-bgcolor: $primary !default;

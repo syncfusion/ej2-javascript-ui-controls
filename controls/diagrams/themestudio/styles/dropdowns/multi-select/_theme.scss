@@ -388,6 +388,11 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   }
 }
 
+.e-multiselect.e-disabled .e-multi-select-wrapper .e-delim-values {
+  -webkit-text-fill-color: $multiselect-disable-font-color;
+  color: $multiselect-disable-font-color;
+}
+
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-disabled-chip-bg-color;

@@ -59,6 +59,7 @@ export class BlazorUiAdaptor {
     private mobileSearchNextOccurenceElement: HTMLElement = null;
     private cssClass: string = 'e-overlay';
     private disableClass: string = ' e-overlay';
+    private editAnnotationButtonElement: HTMLElement = null;
     /**
      * Initialize the constructor of blazorUIadapater.
      *
@@ -90,6 +91,8 @@ export class BlazorUiAdaptor {
         this.submitFormButton = this.pdfViewerBase.getElement('_submitFormButton') as HTMLElement;
         this.searchElement = this.pdfViewerBase.getElement('_search') as HTMLElement;
         this.annotationElement = this.pdfViewerBase.getElement('_annotation') as HTMLElement;
+        this.editAnnotationButtonElement = this.annotationElement.children[0] as HTMLElement;
+        this.editAnnotationButtonElement.classList.add('e-pv-tbar-btn');
         this.printElement = this.pdfViewerBase.getElement('_print') as HTMLElement;
         this.downloadElement = this.pdfViewerBase.getElement('_download') as HTMLElement;
 
@@ -178,6 +181,7 @@ export class BlazorUiAdaptor {
         }
         if (this.pdfViewer.enableTextSelection) {
             this.selectToolElement.classList.remove(this.cssClass);
+            this.selectItem(this.pdfViewer.toolbar.SelectToolElement);
         }
         this.handToolElement.classList.remove(this.cssClass);
         if (this.pdfViewer.enableStickyNotesAnnotation) {
@@ -226,6 +230,35 @@ export class BlazorUiAdaptor {
         if (this.pdfViewer.enableCommentPanel) {
             this.annotationCommentPanelElement.classList.remove(this.cssClass);
         }
+    }
+
+
+    public selectItem(element: HTMLElement): void {
+        if (element) {
+            element.classList.add("e-pv-select");
+        }
+    }   
+
+    public deselectItem(element: HTMLElement): void {
+        if (element) {            
+            element.classList.remove("e-pv-select");
+        } 
+    }
+
+    public showAnnotationToolbar(isToolbarVisible: any): void {
+        this.pdfViewer.toolbar.annotationToolbarModule.adjustViewer(isToolbarVisible[0]);
+        if(isToolbarVisible[0]){
+            this.pdfViewer.toolbar.selectItem(this.editAnnotationButtonElement);            
+        } else {
+            this.pdfViewer.toolbar.deSelectItem(this.editAnnotationButtonElement);
+            this.pdfViewerBase.focusViewerContainer();
+        }
+    }
+
+    public closeAnnotationToolbar(): void {        
+        this.pdfViewer.toolbar.annotationToolbarModule.adjustViewer(false);
+        this.pdfViewer.toolbar.deSelectItem(this.editAnnotationButtonElement);
+        this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
     }
 
     /**
@@ -346,7 +379,7 @@ export class BlazorUiAdaptor {
             if (!this.isEnabled(this.annotationOpacityElement)) {
                 this.annotationOpacityElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.annotationOpacityElement)) {
+            if (!this.isEnabled(this.annotationDeleteElement)) {
                 this.annotationDeleteElement.className += this.disableClass;
             }
             if (!this.isEnabled(this.annotationCommentPanelElement)) {
@@ -354,6 +387,24 @@ export class BlazorUiAdaptor {
             }
         }
     }
+
+    /**
+     * When annotation selection changed.
+     * @param {boolean} currentPageNumber - The current page number.
+     * @returns {void}
+     */
+     public EnableDeleteOption(isEnable: boolean): void {
+        if (this.annotationDeleteElement !== null) {
+            if(isEnable) {
+                this.annotationDeleteElement.classList.remove(this.cssClass);
+            } else {
+                if (!this.isEnabled(this.annotationDeleteElement)) {
+                    this.annotationDeleteElement.className += this.disableClass;
+                }
+            }
+        }
+    }
+    
     /**
      * when the page changes.
      * @param {number} currentPageNumber - The current page number.
